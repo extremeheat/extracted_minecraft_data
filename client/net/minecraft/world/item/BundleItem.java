@@ -4,6 +4,7 @@ import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -144,10 +145,10 @@ public class BundleItem extends Item {
       }
    }
 
-   private void dropContent(Player var1, ItemStack var2) {
-      if (this.dropContent(var2, var1)) {
-         playDropContentsSound(var1);
-         var1.awardStat(Stats.ITEM_USED.get(this));
+   private void dropContent(Level var1, Player var2, ItemStack var3) {
+      if (this.dropContent(var3, var2)) {
+         playDropContentsSound(var1, var2);
+         var2.awardStat(Stats.ITEM_USED.get(this));
       }
    }
 
@@ -173,7 +174,7 @@ public class BundleItem extends Item {
       BundleContents var2 = var0.get(DataComponents.BUNDLE_CONTENTS);
       if (var2 != null) {
          BundleContents.Mutable var3 = new BundleContents.Mutable(var2);
-         var3.setSelectedItem(var1);
+         var3.toggleSelectedItem(var1);
          var0.set(DataComponents.BUNDLE_CONTENTS, var3.toImmutable());
       }
    }
@@ -231,7 +232,7 @@ public class BundleItem extends Item {
          int var6 = this.getUseDuration(var3, var2);
          boolean var7 = var4 == var6;
          if (var7 || var4 < var6 - 10 && var4 % 2 == 0) {
-            this.dropContent(var5, var3);
+            this.dropContent(var1, var5, var3);
          }
       }
    }
@@ -290,8 +291,10 @@ public class BundleItem extends Item {
       var0.playSound(SoundEvents.BUNDLE_INSERT_FAIL, 1.0F, 1.0F);
    }
 
-   private static void playDropContentsSound(Entity var0) {
-      var0.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + var0.level().getRandom().nextFloat() * 0.4F);
+   private static void playDropContentsSound(Level var0, Entity var1) {
+      var0.playSound(
+         null, var1.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F
+      );
    }
 
    private void broadcastChangesOnContainerMenu(Player var1) {

@@ -18,11 +18,13 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.execution.TraceCallbacks;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -490,7 +492,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
       MutableComponent var2 = Component.translatable("chat.type.admin", this.getDisplayName(), var1).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
       if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
          for (ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-            if (var4 != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
+            if (var4.commandSource() != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
                var4.sendSystemMessage(var2);
             }
          }
@@ -528,11 +530,6 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    @Override
-   public Stream<ResourceLocation> getRecipeNames() {
-      return this.server.getRecipeManager().getRecipeIds();
-   }
-
-   @Override
    public CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1) {
       return Suggestions.empty();
    }
@@ -541,10 +538,17 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    public CompletableFuture<Suggestions> suggestRegistryElements(
       ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4
    ) {
-      return this.registryAccess().lookup(var1).map(var3x -> {
-         this.suggestRegistryElements((Registry<?>)var3x, var2, var3);
-         return var3.buildFuture();
-      }).orElseGet(Suggestions::empty);
+      if (var1 == Registries.RECIPE) {
+         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map(var0 -> var0.id().location()), var3);
+      } else if (var1 == Registries.ADVANCEMENT) {
+         Collection var5 = this.server.getAdvancements().getAllAdvancements();
+         return SharedSuggestionProvider.suggestResource(var5.stream().map(AdvancementHolder::id), var3);
+      } else {
+         return this.registryAccess().lookup(var1).map(var3x -> {
+            this.suggestRegistryElements((Registry<?>)var3x, var2, var3);
+            return var3.buildFuture();
+         }).orElseGet(Suggestions::empty);
+      }
    }
 
    @Override

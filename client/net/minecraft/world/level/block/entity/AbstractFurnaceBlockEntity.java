@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap.Entry;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -12,7 +12,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,11 +31,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -98,7 +100,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          return 4;
       }
    };
-   private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap();
+   private final Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipesUsed = new Reference2IntOpenHashMap();
    private final RecipeManager.CachedCheck<SingleRecipeInput, ? extends AbstractCookingRecipe> quickCheck;
 
    protected AbstractFurnaceBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3, RecipeType<? extends AbstractCookingRecipe> var4) {
@@ -122,7 +124,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       CompoundTag var3 = var1.getCompound("RecipesUsed");
 
       for (String var5 : var3.getAllKeys()) {
-         this.recipesUsed.put(ResourceLocation.parse(var5), var3.getInt(var5));
+         this.recipesUsed.put(ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var5)), var3.getInt(var5));
       }
    }
 
@@ -138,7 +140,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       var1.put("RecipesUsed", var3);
    }
 
-   public static void serverTick(Level var0, BlockPos var1, BlockState var2, AbstractFurnaceBlockEntity var3) {
+   public static void serverTick(ServerLevel var0, BlockPos var1, BlockState var2, AbstractFurnaceBlockEntity var3) {
       boolean var4 = var3.isLit();
       boolean var5 = false;
       if (var3.isLit()) {
@@ -154,36 +156,36 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
 
       if (var3.isLit() || var9 && var8) {
+         SingleRecipeInput var11 = new SingleRecipeInput(var7);
          RecipeHolder var10;
          if (var8) {
-            var10 = var3.quickCheck.getRecipeFor(new SingleRecipeInput(var7), var0).orElse(null);
+            var10 = var3.quickCheck.getRecipeFor(var11, var0).orElse(null);
          } else {
             var10 = null;
          }
 
-         int var11 = var3.getMaxStackSize();
-         if (!var3.isLit() && canBurn(var0.registryAccess(), var10, var3.items, var11)) {
+         int var12 = var3.getMaxStackSize();
+         if (!var3.isLit() && canBurn(var0.registryAccess(), var10, var11, var3.items, var12)) {
             var3.litTime = var3.getBurnDuration(var0.fuelValues(), var6);
             var3.litDuration = var3.litTime;
             if (var3.isLit()) {
                var5 = true;
                if (var9) {
-                  Item var12 = var6.getItem();
+                  Item var13 = var6.getItem();
                   var6.shrink(1);
                   if (var6.isEmpty()) {
-                     Item var13 = var12.getCraftingRemainingItem();
-                     var3.items.set(1, var13 == null ? ItemStack.EMPTY : new ItemStack(var13));
+                     var3.items.set(1, var13.getCraftingRemainder());
                   }
                }
             }
          }
 
-         if (var3.isLit() && canBurn(var0.registryAccess(), var10, var3.items, var11)) {
+         if (var3.isLit() && canBurn(var0.registryAccess(), var10, var11, var3.items, var12)) {
             var3.cookingProgress++;
             if (var3.cookingProgress == var3.cookingTotalTime) {
                var3.cookingProgress = 0;
                var3.cookingTotalTime = getTotalCookTime(var0, var3);
-               if (burn(var0.registryAccess(), var10, var3.items, var11)) {
+               if (burn(var0.registryAccess(), var10, var11, var3.items, var12)) {
                   var3.setRecipeUsed(var10);
                }
 
@@ -207,19 +209,21 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   private static boolean canBurn(RegistryAccess var0, @Nullable RecipeHolder<?> var1, NonNullList<ItemStack> var2, int var3) {
-      if (!((ItemStack)var2.get(0)).isEmpty() && var1 != null) {
-         ItemStack var4 = var1.value().getResultItem(var0);
-         if (var4.isEmpty()) {
+   private static boolean canBurn(
+      RegistryAccess var0, @Nullable RecipeHolder<? extends AbstractCookingRecipe> var1, SingleRecipeInput var2, NonNullList<ItemStack> var3, int var4
+   ) {
+      if (!((ItemStack)var3.get(0)).isEmpty() && var1 != null) {
+         ItemStack var5 = ((AbstractCookingRecipe)var1.value()).assemble(var2, var0);
+         if (var5.isEmpty()) {
             return false;
          } else {
-            ItemStack var5 = (ItemStack)var2.get(2);
-            if (var5.isEmpty()) {
+            ItemStack var6 = (ItemStack)var3.get(2);
+            if (var6.isEmpty()) {
                return true;
-            } else if (!ItemStack.isSameItemSameComponents(var5, var4)) {
+            } else if (!ItemStack.isSameItemSameComponents(var6, var5)) {
                return false;
             } else {
-               return var5.getCount() < var3 && var5.getCount() < var5.getMaxStackSize() ? true : var5.getCount() < var4.getMaxStackSize();
+               return var6.getCount() < var4 && var6.getCount() < var6.getMaxStackSize() ? true : var6.getCount() < var5.getMaxStackSize();
             }
          }
       } else {
@@ -227,22 +231,24 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   private static boolean burn(RegistryAccess var0, @Nullable RecipeHolder<?> var1, NonNullList<ItemStack> var2, int var3) {
-      if (var1 != null && canBurn(var0, var1, var2, var3)) {
-         ItemStack var4 = (ItemStack)var2.get(0);
-         ItemStack var5 = var1.value().getResultItem(var0);
-         ItemStack var6 = (ItemStack)var2.get(2);
-         if (var6.isEmpty()) {
-            var2.set(2, var5.copy());
-         } else if (ItemStack.isSameItemSameComponents(var6, var5)) {
-            var6.grow(1);
+   private static boolean burn(
+      RegistryAccess var0, @Nullable RecipeHolder<? extends AbstractCookingRecipe> var1, SingleRecipeInput var2, NonNullList<ItemStack> var3, int var4
+   ) {
+      if (var1 != null && canBurn(var0, var1, var2, var3, var4)) {
+         ItemStack var5 = (ItemStack)var3.get(0);
+         ItemStack var6 = ((AbstractCookingRecipe)var1.value()).assemble(var2, var0);
+         ItemStack var7 = (ItemStack)var3.get(2);
+         if (var7.isEmpty()) {
+            var3.set(2, var6.copy());
+         } else if (ItemStack.isSameItemSameComponents(var7, var6)) {
+            var7.grow(1);
          }
 
-         if (var4.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var2.get(1)).isEmpty() && ((ItemStack)var2.get(1)).is(Items.BUCKET)) {
-            var2.set(1, new ItemStack(Items.WATER_BUCKET));
+         if (var5.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var3.get(1)).isEmpty() && ((ItemStack)var3.get(1)).is(Items.BUCKET)) {
+            var3.set(1, new ItemStack(Items.WATER_BUCKET));
          }
 
-         var4.shrink(1);
+         var5.shrink(1);
          return true;
       } else {
          return false;
@@ -253,9 +259,9 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       return var1.burnDuration(var2);
    }
 
-   private static int getTotalCookTime(Level var0, AbstractFurnaceBlockEntity var1) {
+   private static int getTotalCookTime(ServerLevel var0, AbstractFurnaceBlockEntity var1) {
       SingleRecipeInput var2 = new SingleRecipeInput(var1.getItem(0));
-      return var1.quickCheck.getRecipeFor(var2, var0).map(var0x -> var0x.value().getCookingTime()).orElse(200);
+      return var1.quickCheck.getRecipeFor(var2, var0).map(var0x -> var0x.value().cookingTime()).orElse(200);
    }
 
    @Override
@@ -298,8 +304,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       boolean var4 = !var2.isEmpty() && ItemStack.isSameItemSameComponents(var3, var2);
       this.items.set(var1, var2);
       var2.limitSize(this.getMaxStackSize(var2));
-      if (var1 == 0 && !var4) {
-         this.cookingTotalTime = getTotalCookTime(this.level, this);
+      if (var1 == 0 && !var4 && this.level instanceof ServerLevel var5) {
+         this.cookingTotalTime = getTotalCookTime(var5, this);
          this.cookingProgress = 0;
          this.setChanged();
       }
@@ -320,7 +326,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    @Override
    public void setRecipeUsed(@Nullable RecipeHolder<?> var1) {
       if (var1 != null) {
-         ResourceLocation var2 = var1.id();
+         ResourceKey var2 = var1.id();
          this.recipesUsed.addTo(var2, 1);
       }
    }
@@ -350,13 +356,13 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    public List<RecipeHolder<?>> getRecipesToAwardAndPopExperience(ServerLevel var1, Vec3 var2) {
       ArrayList var3 = Lists.newArrayList();
-      ObjectIterator var4 = this.recipesUsed.object2IntEntrySet().iterator();
+      ObjectIterator var4 = this.recipesUsed.reference2IntEntrySet().iterator();
 
       while (var4.hasNext()) {
          Entry var5 = (Entry)var4.next();
-         var1.getRecipeManager().byKey((ResourceLocation)var5.getKey()).ifPresent(var4x -> {
+         var1.recipeAccess().byKey((ResourceKey<Recipe<?>>)var5.getKey()).ifPresent(var4x -> {
             var3.add(var4x);
-            createExperience(var1, var2, var5.getIntValue(), ((AbstractCookingRecipe)var4x.value()).getExperience());
+            createExperience(var1, var2, var5.getIntValue(), ((AbstractCookingRecipe)var4x.value()).experience());
          });
       }
 

@@ -79,6 +79,23 @@ public class TerrainParticle extends TextureSheetParticle {
          : null;
    }
 
+   public static class CrumblingProvider implements ParticleProvider<BlockParticleOption> {
+      public CrumblingProvider() {
+         super();
+      }
+
+      @Nullable
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         TerrainParticle var15 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
+         if (var15 != null) {
+            var15.setParticleSpeed(0.0, 0.0, 0.0);
+            var15.setLifetime(var2.random.nextInt(10) + 1);
+         }
+
+         return var15;
+      }
+   }
+
    public static class DustPillarProvider implements ParticleProvider<BlockParticleOption> {
       public DustPillarProvider() {
          super();

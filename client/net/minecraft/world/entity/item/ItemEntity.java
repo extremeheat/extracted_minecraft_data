@@ -29,7 +29,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemEntity extends Entity implements TraceableEntity {
@@ -384,8 +384,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Nullable
    @Override
-   public Entity changeDimension(DimensionTransition var1) {
-      Entity var2 = super.changeDimension(var1);
+   public Entity teleport(TeleportTransition var1) {
+      Entity var2 = super.teleport(var1);
       if (!this.level().isClientSide && var2 instanceof ItemEntity var3) {
          var3.mergeWithNeighbours();
       }

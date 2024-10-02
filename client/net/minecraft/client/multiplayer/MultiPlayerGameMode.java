@@ -43,7 +43,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.GameMasterBlock;
@@ -425,7 +425,7 @@ public class MultiPlayerGameMode {
       }
    }
 
-   public void handlePlaceRecipe(int var1, RecipeHolder<?> var2, boolean var3) {
+   public void handlePlaceRecipe(int var1, RecipeDisplayId var2, boolean var3) {
       this.connection.send(new ServerboundPlaceRecipePacket(var1, var2, var3));
    }
 

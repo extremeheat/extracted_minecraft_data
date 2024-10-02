@@ -78,13 +78,15 @@ public class BookCloningRecipe extends CustomRecipe {
       }
    }
 
+   @Override
    public NonNullList<ItemStack> getRemainingItems(CraftingInput var1) {
       NonNullList var2 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
       for (int var3 = 0; var3 < var2.size(); var3++) {
          ItemStack var4 = var1.getItem(var3);
-         if (var4.getItem().hasCraftingRemainingItem()) {
-            var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));
+         ItemStack var5 = var4.getItem().getCraftingRemainder();
+         if (!var5.isEmpty()) {
+            var2.set(var3, var5);
          } else if (var4.getItem() instanceof WrittenBookItem) {
             var2.set(var3, var4.copyWithCount(1));
             break;
@@ -95,12 +97,7 @@ public class BookCloningRecipe extends CustomRecipe {
    }
 
    @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<BookCloningRecipe> getSerializer() {
       return RecipeSerializer.BOOK_CLONING;
-   }
-
-   @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= 3 && var2 >= 3;
    }
 }

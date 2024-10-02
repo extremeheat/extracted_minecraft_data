@@ -11,6 +11,7 @@ import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -19,6 +20,7 @@ import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.data.recipes.TransmuteRecipeBuilder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -2775,7 +2777,11 @@ public class VanillaRecipeProvider extends RecipeProvider {
             Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE
          )
-         .map(var0 -> new VanillaRecipeProvider.TrimTemplate(var0, ResourceLocation.withDefaultNamespace(getItemName(var0) + "_smithing_trim")));
+         .map(
+            var0 -> new VanillaRecipeProvider.TrimTemplate(
+                  var0, ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace(getItemName(var0) + "_smithing_trim"))
+               )
+         );
    }
 
    private void shulkerBoxRecipes() {
@@ -2795,9 +2801,10 @@ public class VanillaRecipeProvider extends RecipeProvider {
       Ingredient var1 = this.tag(ItemTags.BUNDLES);
 
       for (DyeColor var5 : DyeColor.values()) {
-         TransmuteRecipeBuilder.transmute(RecipeCategory.TOOLS, var1, Ingredient.of(DyeItem.byColor(var5)), BundleItem.getByColor(var5))
+         DyeItem var6 = DyeItem.byColor(var5);
+         TransmuteRecipeBuilder.transmute(RecipeCategory.TOOLS, var1, Ingredient.of(var6), BundleItem.getByColor(var5))
             .group("bundle_dye")
-            .unlockedBy("has_bundle", this.has(ItemTags.BUNDLES))
+            .unlockedBy(getHasName(var6), this.has(var6))
             .save(this.output);
       }
    }

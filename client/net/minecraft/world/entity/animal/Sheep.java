@@ -275,7 +275,7 @@ public class Sheep extends Animal implements Shearable {
    public Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Sheep var3 = EntityType.SHEEP.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
-         var3.setColor(this.getOffspringColor(this, (Sheep)var2));
+         var3.setColor(this.getOffspringColor(var1, this, (Sheep)var2));
       }
 
       return var3;
@@ -297,19 +297,18 @@ public class Sheep extends Animal implements Shearable {
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   private DyeColor getOffspringColor(Animal var1, Animal var2) {
-      DyeColor var3 = ((Sheep)var1).getColor();
-      DyeColor var4 = ((Sheep)var2).getColor();
-      CraftingInput var5 = makeCraftInput(var3, var4);
-      return this.level()
-         .getRecipeManager()
-         .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
-         .map(var2x -> var2x.value().assemble(var5, this.level().registryAccess()))
+   private DyeColor getOffspringColor(ServerLevel var1, Sheep var2, Sheep var3) {
+      DyeColor var4 = var2.getColor();
+      DyeColor var5 = var3.getColor();
+      CraftingInput var6 = makeCraftInput(var4, var5);
+      return var1.recipeAccess()
+         .getRecipeFor(RecipeType.CRAFTING, var6, var1)
+         .map(var2x -> var2x.value().assemble(var6, var1.registryAccess()))
          .map(ItemStack::getItem)
          .filter(DyeItem.class::isInstance)
          .map(DyeItem.class::cast)
          .map(DyeItem::getDyeColor)
-         .orElseGet(() -> this.level().random.nextBoolean() ? var3 : var4);
+         .orElseGet(() -> var1.random.nextBoolean() ? var4 : var5);
    }
 
    private static CraftingInput makeCraftInput(DyeColor var0, DyeColor var1) {

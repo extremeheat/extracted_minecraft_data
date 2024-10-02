@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
 public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
    private final RecipeBookComponent<?> recipeBookComponent;
@@ -118,7 +119,7 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    }
 
    @Override
-   public RecipeBookComponent getRecipeBookComponent() {
-      return this.recipeBookComponent;
+   public void fillGhostRecipe(RecipeDisplay var1) {
+      this.recipeBookComponent.fillGhostRecipe(var1);
    }
 }

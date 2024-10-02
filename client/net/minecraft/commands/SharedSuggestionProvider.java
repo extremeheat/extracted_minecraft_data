@@ -38,8 +38,6 @@ public interface SharedSuggestionProvider {
 
    Stream<ResourceLocation> getAvailableSounds();
 
-   Stream<ResourceLocation> getRecipeNames();
-
    CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1);
 
    default Collection<SharedSuggestionProvider.TextCoordinates> getRelevantCoordinates() {

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -20,6 +21,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.ItemLike;
 
 public final class Ingredient implements Predicate<ItemStack> {
@@ -91,5 +93,14 @@ public final class Ingredient implements Predicate<ItemStack> {
 
    public static Ingredient of(HolderSet<Item> var0) {
       return new Ingredient(var0);
+   }
+
+   public SlotDisplay display() {
+      return (SlotDisplay)this.values
+         .unwrap()
+         .map(
+            SlotDisplay.TagSlotDisplay::new,
+            var0 -> new SlotDisplay.Composite(var0.stream().map(SlotDisplay.ItemSlotDisplay::new).collect(Collectors.toUnmodifiableList()))
+         );
    }
 }

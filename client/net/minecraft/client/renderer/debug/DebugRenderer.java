@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -277,13 +278,15 @@ public class DebugRenderer {
       List var14 = var2.toAabbs();
       if (!var14.isEmpty()) {
          int var15 = var13 ? var14.size() : var14.size() * 8;
-         ShapeRenderer.renderShape(var0, var1, Shapes.create((AABB)var14.get(0)), var3, var5, var7, var9, var10, var11, var12);
+         ShapeRenderer.renderShape(var0, var1, Shapes.create((AABB)var14.get(0)), var3, var5, var7, ARGB.colorFromFloat(var12, var9, var10, var11));
 
          for (int var16 = 1; var16 < var14.size(); var16++) {
             AABB var17 = (AABB)var14.get(var16);
             float var18 = (float)var16 / (float)var15;
             Vec3 var19 = shiftHue(var9, var10, var11, var18);
-            ShapeRenderer.renderShape(var0, var1, Shapes.create(var17), var3, var5, var7, (float)var19.x, (float)var19.y, (float)var19.z, var12);
+            ShapeRenderer.renderShape(
+               var0, var1, Shapes.create(var17), var3, var5, var7, ARGB.colorFromFloat(var12, (float)var19.x, (float)var19.y, (float)var19.z)
+            );
          }
       }
    }

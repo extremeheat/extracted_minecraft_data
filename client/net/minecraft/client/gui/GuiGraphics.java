@@ -712,29 +712,9 @@ public class GuiGraphics {
    public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
       if (!var2.isEmpty()) {
          this.pose.pushPose();
-         if (var2.getCount() != 1 || var5 != null) {
-            String var6 = var5 == null ? String.valueOf(var2.getCount()) : var5;
-            this.pose.translate(0.0F, 0.0F, 200.0F);
-            this.drawString(var1, var6, var3 + 19 - 2 - var1.width(var6), var4 + 6 + 3, 16777215, true);
-         }
-
-         if (var2.isBarVisible()) {
-            int var10 = var2.getBarWidth();
-            int var7 = var2.getBarColor();
-            int var8 = var3 + 2;
-            int var9 = var4 + 13;
-            this.fill(RenderType.guiOverlay(), var8, var9, var8 + 13, var9 + 2, -16777216);
-            this.fill(RenderType.guiOverlay(), var8, var9, var8 + var10, var9 + 1, ARGB.opaque(var7));
-         }
-
-         LocalPlayer var11 = this.minecraft.player;
-         float var12 = var11 == null ? 0.0F : var11.getCooldowns().getCooldownPercent(var2, this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
-         if (var12 > 0.0F) {
-            int var13 = var4 + Mth.floor(16.0F * (1.0F - var12));
-            int var14 = var13 + Mth.ceil(16.0F * var12);
-            this.fill(RenderType.guiOverlay(), var3, var13, var3 + 16, var14, 2147483647);
-         }
-
+         this.renderItemBar(var2, var3, var4);
+         this.renderItemCount(var1, var2, var3, var4, var5);
+         this.renderItemCooldown(var2, var3, var4);
          this.pose.popPose();
       }
    }
@@ -832,6 +812,33 @@ public class GuiGraphics {
          }
 
          this.pose.popPose();
+      }
+   }
+
+   private void renderItemBar(ItemStack var1, int var2, int var3) {
+      if (var1.isBarVisible()) {
+         int var4 = var2 + 2;
+         int var5 = var3 + 13;
+         this.fill(RenderType.gui(), var4, var5, var4 + 13, var5 + 2, 200, -16777216);
+         this.fill(RenderType.gui(), var4, var5, var4 + var1.getBarWidth(), var5 + 1, 200, ARGB.opaque(var1.getBarColor()));
+      }
+   }
+
+   private void renderItemCount(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
+      if (var2.getCount() != 1 || var5 != null) {
+         String var6 = var5 == null ? String.valueOf(var2.getCount()) : var5;
+         this.pose.translate(0.0F, 0.0F, 200.0F);
+         this.drawString(var1, var6, var3 + 19 - 2 - var1.width(var6), var4 + 6 + 3, -1, true);
+      }
+   }
+
+   private void renderItemCooldown(ItemStack var1, int var2, int var3) {
+      LocalPlayer var4 = this.minecraft.player;
+      float var5 = var4 == null ? 0.0F : var4.getCooldowns().getCooldownPercent(var1, this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
+      if (var5 > 0.0F) {
+         int var6 = var3 + Mth.floor(16.0F * (1.0F - var5));
+         int var7 = var6 + Mth.ceil(16.0F * var5);
+         this.fill(RenderType.gui(), var2, var6, var2 + 16, var7, 200, 2147483647);
       }
    }
 

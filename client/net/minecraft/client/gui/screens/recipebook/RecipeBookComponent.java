@@ -5,11 +5,11 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
@@ -31,16 +31,18 @@ import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.stats.RecipeBook;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
-public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements Renderable, GuiEventListener, NarratableEntry, RecipeShownListener {
+public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements Renderable, GuiEventListener, NarratableEntry {
    public static final WidgetSprites RECIPE_BUTTON_SPRITES = new WidgetSprites(
       ResourceLocation.withDefaultNamespace("recipe_book/button"), ResourceLocation.withDefaultNamespace("recipe_book/button_highlighted")
    );
@@ -61,7 +63,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    private int height;
    private float time;
    @Nullable
-   private RecipeHolder<?> ghostRecipe;
+   private RecipeDisplayId lastPlacedRecipe;
    private final GhostSlots ghostSlots;
    private final List<RecipeBookTabButton> tabButtons = Lists.newArrayList();
    @Nullable
@@ -72,10 +74,11 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    @Nullable
    private EditBox searchBox;
    private String lastSearch = "";
+   private final List<RecipeBookComponent.TabInfo> tabInfos;
    private ClientRecipeBook book;
    private final RecipeBookPage recipeBookPage;
    @Nullable
-   private RecipeHolder<?> lastRecipe;
+   private RecipeDisplayId lastRecipe;
    @Nullable
    private RecipeCollection lastRecipeCollection;
    private final StackedItemContents stackedContents = new StackedItemContents();
@@ -86,12 +89,13 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    @Nullable
    private ScreenRectangle magnifierIconPlacement;
 
-   public RecipeBookComponent(T var1) {
+   public RecipeBookComponent(T var1, List<RecipeBookComponent.TabInfo> var2) {
       super();
       this.menu = (T)var1;
-      SlotSelectTime var2 = () -> Mth.floor(this.time / 30.0F);
-      this.ghostSlots = new GhostSlots(var2);
-      this.recipeBookPage = new RecipeBookPage(var2, var1 instanceof AbstractFurnaceMenu);
+      this.tabInfos = var2;
+      SlotSelectTime var3 = () -> Mth.floor(this.time / 30.0F);
+      this.ghostSlots = new GhostSlots(var3);
+      this.recipeBookPage = new RecipeBookPage(this, var3, var1 instanceof AbstractFurnaceMenu);
    }
 
    public void init(int var1, int var2, Minecraft var3, boolean var4) {
@@ -126,13 +130,12 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
          ScreenAxis.HORIZONTAL, var2 + 8, this.searchBox.getY(), this.searchBox.getX() - this.getXOrigin(), this.searchBox.getHeight()
       );
       this.recipeBookPage.init(this.minecraft, var2, var3);
-      this.recipeBookPage.addListener(this);
       this.filterButton = new StateSwitchingButton(var2 + 110, var3 + 12, 26, 16, var1);
       this.updateFilterButtonTooltip();
       this.initFilterButtonTextures();
       this.tabButtons.clear();
 
-      for (RecipeBookCategories var6 : RecipeBookCategories.getCategories(this.menu.getRecipeBookType())) {
+      for (RecipeBookComponent.TabInfo var6 : this.tabInfos) {
          this.tabButtons.add(new RecipeBookTabButton(var6));
       }
 
@@ -204,21 +207,21 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
    public void slotClicked(@Nullable Slot var1) {
       if (var1 != null && this.isCraftingSlot(var1)) {
-         this.clearGhostRecipe();
+         this.lastPlacedRecipe = null;
+         this.ghostSlots.clear();
          if (this.isVisible()) {
             this.updateStackedContents();
          }
       }
    }
 
-   protected abstract void selectMatchingRecipes(RecipeCollection var1, StackedItemContents var2, RecipeBook var3);
+   protected abstract void selectMatchingRecipes(RecipeCollection var1, StackedItemContents var2);
 
    private void updateCollections(boolean var1, boolean var2) {
       List var3 = this.book.getCollection(this.selectedTab.getCategory());
-      var3.forEach(var1x -> this.selectMatchingRecipes(var1x, this.stackedContents, this.book));
+      var3.forEach(var1x -> this.selectMatchingRecipes(var1x, this.stackedContents));
       ArrayList var4 = Lists.newArrayList(var3);
-      var4.removeIf(var0 -> !var0.hasKnownRecipes());
-      var4.removeIf(var0 -> !var0.hasFitting());
+      var4.removeIf(var0 -> !var0.hasAnySelected());
       String var5 = this.searchBox.getValue();
       if (!var5.isEmpty()) {
          ClientPacketListener var6 = this.minecraft.getConnection();
@@ -242,8 +245,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       int var5 = 0;
 
       for (RecipeBookTabButton var7 : this.tabButtons) {
-         RecipeBookCategories var8 = var7.getCategory();
-         if (var8 == RecipeBookCategories.CRAFTING_SEARCH || var8 == RecipeBookCategories.FURNACE_SEARCH) {
+         RecipeBookCategory var8 = var7.getCategory();
+         if (var8 instanceof SearchRecipeBookCategory) {
             var7.visible = true;
             var7.setPosition(var2, var3 + 27 * var5++);
          } else if (var7.updateVisibility(this.book)) {
@@ -319,7 +322,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
          if (this.recipeBookPage.mouseClicked(var1, var3, var5, this.getXOrigin(), this.getYOrigin(), 147, 166)) {
-            RecipeHolder var10 = this.recipeBookPage.getLastClickedRecipe();
+            RecipeDisplayId var10 = this.recipeBookPage.getLastClickedRecipe();
             RecipeCollection var11 = this.recipeBookPage.getLastClickedRecipeCollection();
             if (var10 != null && var11 != null) {
                if (!this.tryPlaceRecipe(var11, var10)) {
@@ -377,11 +380,12 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
    }
 
-   private boolean tryPlaceRecipe(RecipeCollection var1, RecipeHolder<?> var2) {
-      if (!var1.isCraftable(var2) && this.ghostRecipe == var2) {
+   private boolean tryPlaceRecipe(RecipeCollection var1, RecipeDisplayId var2) {
+      if (!var1.isCraftable(var2) && var2.equals(this.lastPlacedRecipe)) {
          return false;
       } else {
-         this.clearGhostRecipe();
+         this.lastPlacedRecipe = var2;
+         this.ghostSlots.clear();
          this.minecraft.gameMode.handlePlaceRecipe(this.minecraft.player.containerMenu.containerId, var2, Screen.hasShiftDown());
          return true;
       }
@@ -499,25 +503,17 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
    }
 
-   @Override
-   public void recipesShown(List<RecipeHolder<?>> var1) {
-      for (RecipeHolder var3 : var1) {
-         this.minecraft.player.removeRecipeHighlight(var3);
-      }
+   public void recipeShown(RecipeDisplayId var1) {
+      this.minecraft.player.removeRecipeHighlight(var1);
    }
 
-   private void clearGhostRecipe() {
-      this.ghostRecipe = null;
+   public void fillGhostRecipe(RecipeDisplay var1) {
       this.ghostSlots.clear();
+      SlotDisplay.ResolutionContext var2 = SlotDisplay.ResolutionContext.forLevel(Objects.requireNonNull(this.minecraft.level));
+      this.fillGhostRecipe(this.ghostSlots, var1, var2);
    }
 
-   public void setupGhostRecipe(RecipeHolder<?> var1) {
-      this.ghostRecipe = var1;
-      this.ghostSlots.clear();
-      this.setupGhostRecipeSlots(this.ghostSlots, var1);
-   }
-
-   protected abstract void setupGhostRecipeSlots(GhostSlots var1, RecipeHolder<?> var2);
+   protected abstract void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, SlotDisplay.ResolutionContext var3);
 
    protected void sendUpdateSettings() {
       if (this.minecraft.getConnection() != null) {
@@ -549,4 +545,17 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
          var3.entry.updateNarration(var1.nest());
       }
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import net.minecraft.recipebook.ServerPlaceRecipe;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedItemContents;
@@ -34,14 +35,14 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
    }
 
    @Override
-   public RecipeBookMenu.PostPlaceAction handlePlacement(boolean var1, boolean var2, RecipeHolder<?> var3, Inventory var4) {
-      RecipeHolder var5 = var3;
+   public RecipeBookMenu.PostPlaceAction handlePlacement(boolean var1, boolean var2, RecipeHolder<?> var3, ServerLevel var4, Inventory var5) {
+      RecipeHolder var6 = var3;
       this.beginPlacingRecipe();
 
-      RecipeBookMenu.PostPlaceAction var7;
+      RecipeBookMenu.PostPlaceAction var8;
       try {
-         List var6 = this.getInputGridSlots();
-         var7 = ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<CraftingRecipe>() {
+         List var7 = this.getInputGridSlots();
+         var8 = ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<CraftingRecipe>() {
             @Override
             public void fillCraftSlotsStackedContents(StackedItemContents var1) {
                AbstractCraftingMenu.this.fillCraftSlotsStackedContents(var1);
@@ -57,18 +58,18 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
             public boolean recipeMatches(RecipeHolder<CraftingRecipe> var1) {
                return ((CraftingRecipe)var1.value()).matches(AbstractCraftingMenu.this.craftSlots.asCraftInput(), AbstractCraftingMenu.this.owner().level());
             }
-         }, this.width, this.height, var6, var6, var4, var5, var1, var2);
+         }, this.width, this.height, var7, var7, var5, var6, var1, var2);
       } finally {
-         this.finishPlacingRecipe(var3);
+         this.finishPlacingRecipe(var4, var3);
       }
 
-      return var7;
+      return var8;
    }
 
    protected void beginPlacingRecipe() {
    }
 
-   protected void finishPlacingRecipe(RecipeHolder<CraftingRecipe> var1) {
+   protected void finishPlacingRecipe(ServerLevel var1, RecipeHolder<CraftingRecipe> var2) {
    }
 
    public abstract Slot getResultSlot();

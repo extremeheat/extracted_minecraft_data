@@ -40,7 +40,9 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
    );
    private static final FileToIdConverter LISTER = new FileToIdConverter(Registries.elementsDirPath(TYPE_KEY), ".mcfunction");
    private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
-   private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader = new TagLoader<>(this::getFunction, Registries.tagsDirPath(TYPE_KEY));
+   private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader = new TagLoader<>(
+      (var1x, var2x) -> this.getFunction(var1x), Registries.tagsDirPath(TYPE_KEY)
+   );
    private volatile Map<ResourceLocation, List<CommandFunction<CommandSourceStack>>> tags = Map.of();
    private final int functionCompilationLevel;
    private final CommandDispatcher<CommandSourceStack> dispatcher;

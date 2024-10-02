@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -99,6 +100,9 @@ public interface ByteBufCodecs {
          VarInt.write(var1, var2);
       }
    };
+   StreamCodec<ByteBuf, OptionalInt> OPTIONAL_VAR_INT = VAR_INT.map(
+      var0 -> var0 == 0 ? OptionalInt.empty() : OptionalInt.of(var0 - 1), var0 -> var0.isPresent() ? var0.getAsInt() + 1 : 0
+   );
    StreamCodec<ByteBuf, Long> LONG = new StreamCodec<ByteBuf, Long>() {
       public Long decode(ByteBuf var1) {
          return var1.readLong();

@@ -14,9 +14,7 @@ public class DecoratedPotRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      if (!this.canCraftInDimensions(var1.width(), var1.height())) {
-         return false;
-      } else {
+      if (var1.width() == 3 && var1.height() == 3) {
          for (int var3 = 0; var3 < var1.size(); var3++) {
             ItemStack var4 = var1.getItem(var3);
             switch (var3) {
@@ -39,6 +37,8 @@ public class DecoratedPotRecipe extends CustomRecipe {
          }
 
          return true;
+      } else {
+         return false;
       }
    }
 
@@ -48,12 +48,7 @@ public class DecoratedPotRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 == 3 && var2 == 3;
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<DecoratedPotRecipe> getSerializer() {
       return RecipeSerializer.DECORATED_POT_RECIPE;
    }
 }

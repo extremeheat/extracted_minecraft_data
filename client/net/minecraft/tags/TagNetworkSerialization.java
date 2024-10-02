@@ -81,6 +81,10 @@ public class TagNetworkSerialization {
          return this.tags.isEmpty();
       }
 
+      public int size() {
+         return this.tags.size();
+      }
+
       public <T> TagLoader.LoadResult<T> resolve(Registry<T> var1) {
          return TagNetworkSerialization.deserializeTagsFromNetwork(var1, this);
       }

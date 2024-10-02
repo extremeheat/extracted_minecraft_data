@@ -284,6 +284,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
          if (var9 > 9.999999747378752E-6 || var2.firstIteration) {
             this.minecart.applyEffectsFromBlocks();
+            this.minecart.applyEffectsFromBlocks();
          }
       }
    }

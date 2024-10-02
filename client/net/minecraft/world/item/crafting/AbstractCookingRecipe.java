@@ -1,82 +1,109 @@
 package net.minecraft.world.item.crafting;
 
-import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
-public abstract class AbstractCookingRecipe implements Recipe<SingleRecipeInput> {
-   protected final RecipeType<?> type;
-   protected final CookingBookCategory category;
-   protected final String group;
-   protected final Ingredient ingredient;
-   protected final ItemStack result;
-   protected final float experience;
-   protected final int cookingTime;
-   @Nullable
-   private PlacementInfo placementInfo;
+public abstract class AbstractCookingRecipe extends SingleItemRecipe {
+   private final CookingBookCategory category;
+   private final float experience;
+   private final int cookingTime;
 
-   public AbstractCookingRecipe(RecipeType<?> var1, String var2, CookingBookCategory var3, Ingredient var4, ItemStack var5, float var6, int var7) {
-      super();
-      this.type = var1;
-      this.category = var3;
-      this.group = var2;
-      this.ingredient = var4;
-      this.result = var5;
-      this.experience = var6;
-      this.cookingTime = var7;
-   }
-
-   public boolean matches(SingleRecipeInput var1, Level var2) {
-      return this.ingredient.test(var1.item());
-   }
-
-   public ItemStack assemble(SingleRecipeInput var1, HolderLookup.Provider var2) {
-      return this.result.copy();
+   public AbstractCookingRecipe(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6) {
+      super(var1, var3, var4);
+      this.category = var2;
+      this.experience = var5;
+      this.cookingTime = var6;
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return true;
-   }
+   public abstract RecipeSerializer<? extends AbstractCookingRecipe> getSerializer();
 
    @Override
-   public PlacementInfo placementInfo() {
-      if (this.placementInfo == null) {
-         this.placementInfo = PlacementInfo.create(this.ingredient);
-      }
+   public abstract RecipeType<? extends AbstractCookingRecipe> getType();
 
-      return this.placementInfo;
-   }
-
-   public float getExperience() {
+   public float experience() {
       return this.experience;
    }
 
-   @Override
-   public ItemStack getResultItem(HolderLookup.Provider var1) {
-      return this.result;
-   }
-
-   @Override
-   public String getGroup() {
-      return this.group;
-   }
-
-   public int getCookingTime() {
+   public int cookingTime() {
       return this.cookingTime;
-   }
-
-   @Override
-   public RecipeType<?> getType() {
-      return this.type;
    }
 
    public CookingBookCategory category() {
       return this.category;
    }
 
+   protected abstract Item furnaceIcon();
+
+   @Override
+   public List<RecipeDisplay> display() {
+      return List.of(
+         new FurnaceRecipeDisplay(
+            this.input().display(),
+            SlotDisplay.AnyFuel.INSTANCE,
+            new SlotDisplay.ItemStackSlotDisplay(this.result()),
+            new SlotDisplay.ItemSlotDisplay(this.furnaceIcon())
+         )
+      );
+   }
+
+   @FunctionalInterface
    public interface Factory<T extends AbstractCookingRecipe> {
       T create(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6);
+   }
+
+   public static class Serializer<T extends AbstractCookingRecipe> implements RecipeSerializer<T> {
+      private final MapCodec<T> codec;
+      private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
+
+      public Serializer(AbstractCookingRecipe.Factory<T> var1, int var2) {
+         super();
+         this.codec = RecordCodecBuilder.mapCodec(
+            var2x -> var2x.group(
+                     Codec.STRING.optionalFieldOf("group", "").forGetter(SingleItemRecipe::group),
+                     CookingBookCategory.CODEC.fieldOf("category").orElse(CookingBookCategory.MISC).forGetter(AbstractCookingRecipe::category),
+                     Ingredient.CODEC.fieldOf("ingredient").forGetter(SingleItemRecipe::input),
+                     ItemStack.STRICT_SINGLE_ITEM_CODEC.fieldOf("result").forGetter(SingleItemRecipe::result),
+                     Codec.FLOAT.fieldOf("experience").orElse(0.0F).forGetter(AbstractCookingRecipe::experience),
+                     Codec.INT.fieldOf("cookingtime").orElse(var2).forGetter(AbstractCookingRecipe::cookingTime)
+                  )
+                  .apply(var2x, var1::create)
+         );
+         this.streamCodec = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8,
+            SingleItemRecipe::group,
+            CookingBookCategory.STREAM_CODEC,
+            AbstractCookingRecipe::category,
+            Ingredient.CONTENTS_STREAM_CODEC,
+            SingleItemRecipe::input,
+            ItemStack.STREAM_CODEC,
+            SingleItemRecipe::result,
+            ByteBufCodecs.FLOAT,
+            AbstractCookingRecipe::experience,
+            ByteBufCodecs.INT,
+            AbstractCookingRecipe::cookingTime,
+            var1::create
+         );
+      }
+
+      @Override
+      public MapCodec<T> codec() {
+         return this.codec;
+      }
+
+      @Override
+      public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
+         return this.streamCodec;
+      }
    }
 }

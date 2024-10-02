@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -36,12 +35,12 @@ import org.slf4j.Logger;
 
 public class TagLoader<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   final Function<ResourceLocation, Optional<? extends T>> idToValue;
+   final TagLoader.ElementLookup<T> elementLookup;
    private final String directory;
 
-   public TagLoader(Function<ResourceLocation, Optional<? extends T>> var1, String var2) {
+   public TagLoader(TagLoader.ElementLookup<T> var1, String var2) {
       super();
-      this.idToValue = var1;
+      this.elementLookup = var1;
       this.directory = var2;
    }
 
@@ -91,8 +90,8 @@ public class TagLoader<T> {
       TagEntry.Lookup var3 = new TagEntry.Lookup<T>() {
          @Nullable
          @Override
-         public T element(ResourceLocation var1) {
-            return (T)TagLoader.this.idToValue.apply(var1).orElse(null);
+         public T element(ResourceLocation var1, boolean var2x) {
+            return (T)TagLoader.this.elementLookup.get(var1, var2x).orElse(null);
          }
 
          @Nullable
@@ -127,9 +126,8 @@ public class TagLoader<T> {
 
    public static <T> void loadTagsForRegistry(ResourceManager var0, WritableRegistry<T> var1) {
       ResourceKey var2 = var1.key();
-      HolderGetter var3 = var1.createRegistrationLookup();
-      TagLoader var4 = new TagLoader(var2x -> var3.get(ResourceKey.create(var2, var2x)), Registries.tagsDirPath(var2));
-      var4.build(var4.load(var0)).forEach((var2x, var3x) -> var1.bindTag(TagKey.create(var2, var2x), (List<Holder<T>>)var3x));
+      TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromWritableRegistry(var1), Registries.tagsDirPath(var2));
+      var3.build(var3.load(var0)).forEach((var2x, var3x) -> var1.bindTag(TagKey.create(var2, var2x), (List<Holder<T>>)var3x));
    }
 
    private static <T> Map<TagKey<T>, List<Holder<T>>> wrapTags(ResourceKey<? extends Registry<T>> var0, Map<ResourceLocation, List<Holder<T>>> var1) {
@@ -138,7 +136,7 @@ public class TagLoader<T> {
 
    private static <T> Optional<Registry.PendingTags<T>> loadPendingTags(ResourceManager var0, Registry<T> var1) {
       ResourceKey var2 = var1.key();
-      TagLoader var3 = new TagLoader<>(var1::get, Registries.tagsDirPath(var2));
+      TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromFrozenRegistry(var1), Registries.tagsDirPath(var2));
       TagLoader.LoadResult var4 = new TagLoader.LoadResult(var2, wrapTags(var1.key(), var3.build(var3.load(var0))));
       return var4.tags().isEmpty() ? Optional.empty() : Optional.of(var1.prepareTagReload(var4));
    }
@@ -161,6 +159,19 @@ public class TagLoader<T> {
       }
 
       return null;
+   }
+
+   public interface ElementLookup<T> {
+      Optional<? extends T> get(ResourceLocation var1, boolean var2);
+
+      static <T> TagLoader.ElementLookup<? extends Holder<T>> fromFrozenRegistry(Registry<T> var0) {
+         return (var1, var2) -> var0.get(var1);
+      }
+
+      static <T> TagLoader.ElementLookup<Holder<T>> fromWritableRegistry(WritableRegistry<T> var0) {
+         HolderGetter var1 = var0.createRegistrationLookup();
+         return (var2, var3) -> ((HolderGetter<T>)(var3 ? var1 : var0)).get(ResourceKey.create(var0.key(), var2));
+      }
    }
 
 // $VF: Couldn't be decompiled

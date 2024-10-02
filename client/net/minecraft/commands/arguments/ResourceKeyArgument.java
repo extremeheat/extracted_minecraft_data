@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -23,6 +24,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -37,6 +40,12 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    );
    private static final DynamicCommandExceptionType ERROR_INVALID_TEMPLATE_POOL = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("commands.place.jigsaw.invalid", var0)
+   );
+   private static final DynamicCommandExceptionType ERROR_INVALID_RECIPE = new DynamicCommandExceptionType(
+      var0 -> Component.translatableEscape("recipe.notFound", var0)
+   );
+   private static final DynamicCommandExceptionType ERROR_INVALID_ADVANCEMENT = new DynamicCommandExceptionType(
+      var0 -> Component.translatableEscape("advancement.advancementNotFound", var0)
    );
    final ResourceKey<? extends Registry<T>> registryKey;
 
@@ -54,7 +63,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    ) throws CommandSyntaxException {
       ResourceKey var4 = (ResourceKey)var0.getArgument(var1, ResourceKey.class);
       Optional var5 = var4.cast(var2);
-      return (ResourceKey<T>)var5.orElseThrow(() -> var3.create(var4));
+      return (ResourceKey<T>)var5.orElseThrow(() -> var3.create(var4.location()));
    }
 
    private static <T> Registry<T> getRegistry(CommandContext<CommandSourceStack> var0, ResourceKey<? extends Registry<T>> var1) {
@@ -78,6 +87,22 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
 
    public static Holder.Reference<StructureTemplatePool> getStructureTemplatePool(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return resolveKey(var0, var1, Registries.TEMPLATE_POOL, ERROR_INVALID_TEMPLATE_POOL);
+   }
+
+   public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+      RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
+      ResourceKey var3 = getRegistryKey(var0, var1, Registries.RECIPE, ERROR_INVALID_RECIPE);
+      return var2.byKey(var3).orElseThrow(() -> ERROR_INVALID_RECIPE.create(var3.location()));
+   }
+
+   public static AdvancementHolder getAdvancement(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+      ResourceKey var2 = getRegistryKey(var0, var1, Registries.ADVANCEMENT, ERROR_INVALID_ADVANCEMENT);
+      AdvancementHolder var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().get(var2.location());
+      if (var3 == null) {
+         throw ERROR_INVALID_ADVANCEMENT.create(var2.location());
+      } else {
+         return var3;
+      }
    }
 
    public ResourceKey<T> parse(StringReader var1) throws CommandSyntaxException {

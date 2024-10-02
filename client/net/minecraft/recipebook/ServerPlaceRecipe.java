@@ -104,21 +104,23 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
          if (var2.canCraft(var1.value(), var9, var10::add)) {
             this.clearGrid();
             int var8 = var9;
-            PlaceRecipeHelper.placeRecipe(this.gridWidth, this.gridHeight, var1, var1.value().placementInfo().slotInfo(), (var3x, var4x, var5, var6x) -> {
-               if (!var3x.isEmpty()) {
-                  Slot var7x = this.inputGridSlots.get(var4x);
-                  int var8x = var3x.get().placerOutputPosition();
-                  int var9x = var8;
+            PlaceRecipeHelper.placeRecipe(
+               this.gridWidth, this.gridHeight, var1.value(), var1.value().placementInfo().slotInfo(), (var3x, var4x, var5, var6x) -> {
+                  if (!var3x.isEmpty()) {
+                     Slot var7x = this.inputGridSlots.get(var4x);
+                     int var8x = var3x.get().placerOutputPosition();
+                     int var9x = var8;
 
-                  while (var9x > 0) {
-                     Holder var10x = (Holder)var10.get(var8x);
-                     var9x = this.moveItemToGrid(var7x, var10x, var9x);
-                     if (var9x == -1) {
-                        return;
+                     while (var9x > 0) {
+                        Holder var10x = (Holder)var10.get(var8x);
+                        var9x = this.moveItemToGrid(var7x, var10x, var9x);
+                        if (var9x == -1) {
+                           return;
+                        }
                      }
                   }
                }
-            });
+            );
          }
       }
    }

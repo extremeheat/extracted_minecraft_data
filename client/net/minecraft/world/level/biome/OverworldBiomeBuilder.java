@@ -8,6 +8,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.data.worldgen.TerrainProvider;
+import net.minecraft.data.worldgen.WinterDropBiomes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.ToFloatFunction;
@@ -31,6 +32,7 @@ public final class OverworldBiomeBuilder {
    public static final float EROSION_INDEX_2_START = -0.375F;
    private static final float EROSION_DEEP_DARK_DRYNESS_THRESHOLD = -0.225F;
    private static final float DEPTH_DEEP_DARK_DRYNESS_THRESHOLD = 0.9F;
+   private final OverworldBiomeBuilder.Modifier modifier;
    private final Climate.Parameter FULL_RANGE = Climate.Parameter.span(-1.0F, 1.0F);
    private final Climate.Parameter[] temperatures = new Climate.Parameter[]{
       Climate.Parameter.span(-1.0F, -0.45F),
@@ -97,6 +99,13 @@ public final class OverworldBiomeBuilder {
       {null, null, null, null, null},
       {Biomes.ERODED_BADLANDS, Biomes.ERODED_BADLANDS, null, null, null}
    };
+   private final ResourceKey<Biome>[][] PLATEAU_BIOMES_VARIANT_WINTER_DROP = new ResourceKey[][]{
+      {Biomes.ICE_SPIKES, null, null, null, null},
+      {Biomes.CHERRY_GROVE, null, Biomes.MEADOW, Biomes.MEADOW, Biomes.OLD_GROWTH_PINE_TAIGA},
+      {Biomes.CHERRY_GROVE, Biomes.CHERRY_GROVE, Biomes.FOREST, Biomes.BIRCH_FOREST, WinterDropBiomes.PALE_GARDEN},
+      {null, null, null, null, null},
+      {Biomes.ERODED_BADLANDS, Biomes.ERODED_BADLANDS, null, null, null}
+   };
    private final ResourceKey<Biome>[][] SHATTERED_BIOMES = new ResourceKey[][]{
       {Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST},
       {Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_GRAVELLY_HILLS, Biomes.WINDSWEPT_HILLS, Biomes.WINDSWEPT_FOREST, Biomes.WINDSWEPT_FOREST},
@@ -106,7 +115,12 @@ public final class OverworldBiomeBuilder {
    };
 
    public OverworldBiomeBuilder() {
+      this(OverworldBiomeBuilder.Modifier.NONE);
+   }
+
+   public OverworldBiomeBuilder(OverworldBiomeBuilder.Modifier var1) {
       super();
+      this.modifier = var1;
    }
 
    public List<Climate.ParameterPoint> spawnTarget() {
@@ -677,7 +691,9 @@ public final class OverworldBiomeBuilder {
 
    private ResourceKey<Biome> pickPlateauBiome(int var1, int var2, Climate.Parameter var3) {
       if (var3.max() >= 0L) {
-         ResourceKey var4 = this.PLATEAU_BIOMES_VARIANT[var1][var2];
+         ResourceKey var4 = (this.modifier == OverworldBiomeBuilder.Modifier.WINTER_DROP
+            ? this.PLATEAU_BIOMES_VARIANT_WINTER_DROP
+            : this.PLATEAU_BIOMES_VARIANT)[var1][var2];
          if (var4 != null) {
             return var4;
          }
@@ -846,5 +862,13 @@ public final class OverworldBiomeBuilder {
    @VisibleForDebug
    public Climate.Parameter[] getWeirdnessThresholds() {
       return new Climate.Parameter[]{Climate.Parameter.span(-2.0F, 0.0F), Climate.Parameter.span(0.0F, 2.0F)};
+   }
+
+   public static enum Modifier {
+      NONE,
+      WINTER_DROP;
+
+      private Modifier() {
+      }
    }
 }

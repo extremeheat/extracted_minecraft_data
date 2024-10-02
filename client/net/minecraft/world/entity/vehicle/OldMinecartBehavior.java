@@ -41,6 +41,11 @@ public class OldMinecartBehavior extends MinecartBehavior {
    }
 
    @Override
+   public void cancelLerp() {
+      this.lerpSteps = 0;
+   }
+
+   @Override
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.lerpX = var1;
       this.lerpY = var3;
@@ -99,6 +104,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
             this.minecart.comeOffTrack(var1);
          }
 
+         this.minecart.applyEffectsFromBlocks();
          this.minecart.applyEffectsFromBlocks();
          this.setXRot(0.0F);
          double var5 = this.minecart.xo - this.getX();

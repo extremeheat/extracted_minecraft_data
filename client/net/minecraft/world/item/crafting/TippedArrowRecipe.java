@@ -48,12 +48,7 @@ public class TippedArrowRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= 3 && var2 >= 3;
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<TippedArrowRecipe> getSerializer() {
       return RecipeSerializer.TIPPED_ARROW;
    }
 }

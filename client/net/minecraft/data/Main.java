@@ -18,6 +18,7 @@ import net.minecraft.WorldVersion;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.advancements.packs.VanillaAdvancementProvider;
+import net.minecraft.data.advancements.packs.WinterDropAdvancementProvider;
 import net.minecraft.data.info.BiomeParametersDumpReport;
 import net.minecraft.data.info.BlockListReport;
 import net.minecraft.data.info.CommandsReport;
@@ -27,13 +28,16 @@ import net.minecraft.data.info.PacketReport;
 import net.minecraft.data.info.RegistryDumpReport;
 import net.minecraft.data.loot.packs.TradeRebalanceLootTableProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
+import net.minecraft.data.loot.packs.WinterDropLootTableProvider;
 import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.data.models.EquipmentModelProvider;
 import net.minecraft.data.models.ModelProvider;
 import net.minecraft.data.recipes.packs.VanillaRecipeProvider;
+import net.minecraft.data.recipes.packs.WinterDropRecipeProvider;
 import net.minecraft.data.registries.RegistriesDatapackGenerator;
 import net.minecraft.data.registries.TradeRebalanceRegistries;
 import net.minecraft.data.registries.VanillaRegistries;
+import net.minecraft.data.registries.WinterDropRegistries;
 import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.data.structures.SnbtToNbt;
 import net.minecraft.data.structures.StructureUpdater;
@@ -55,6 +59,10 @@ import net.minecraft.data.tags.TradeRebalanceStructureTagsProvider;
 import net.minecraft.data.tags.VanillaBlockTagsProvider;
 import net.minecraft.data.tags.VanillaEnchantmentTagsProvider;
 import net.minecraft.data.tags.VanillaItemTagsProvider;
+import net.minecraft.data.tags.WinterDropBiomeTagsProvider;
+import net.minecraft.data.tags.WinterDropBlockTagsProvider;
+import net.minecraft.data.tags.WinterDropEntityTypeTagsProvider;
+import net.minecraft.data.tags.WinterDropItemTagsProvider;
 import net.minecraft.data.tags.WorldPresetTagsProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.obfuscate.DontObfuscate;
@@ -117,43 +125,43 @@ public class Main {
       DataGenerator var9 = new DataGenerator(var0, var7, var8);
       DataGenerator.PackGenerator var10 = var9.getVanillaPack(var2 || var3);
       var10.addProvider(var1x -> new SnbtToNbt(var1x, var1).addFilter(new StructureUpdater()));
-      CompletableFuture var19 = CompletableFuture.supplyAsync(VanillaRegistries::createLookup, Util.backgroundExecutor());
+      CompletableFuture var20 = CompletableFuture.supplyAsync(VanillaRegistries::createLookup, Util.backgroundExecutor());
       DataGenerator.PackGenerator var11 = var9.getVanillaPack(var2);
       var11.addProvider(ModelProvider::new);
       var11.addProvider(EquipmentModelProvider::new);
       DataGenerator.PackGenerator var16 = var9.getVanillaPack(var3);
-      var16.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var19));
-      var16.addProvider(bindRegistries(VanillaAdvancementProvider::create, var19));
-      var16.addProvider(bindRegistries(VanillaLootTableProvider::create, var19));
-      var16.addProvider(bindRegistries(VanillaRecipeProvider.Runner::new, var19));
-      TagsProvider var20 = var16.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var19));
-      TagsProvider var12 = var16.addProvider(var2x -> new VanillaItemTagsProvider(var2x, var19, var20.contentsGetter()));
-      TagsProvider var13 = var16.addProvider(bindRegistries(BiomeTagsProvider::new, var19));
-      TagsProvider var14 = var16.addProvider(bindRegistries(BannerPatternTagsProvider::new, var19));
-      TagsProvider var15 = var16.addProvider(bindRegistries(StructureTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(CatVariantTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(DamageTypeTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(EntityTypeTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(FlatLevelGeneratorPresetTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(FluidTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(GameEventTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(InstrumentTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(PaintingVariantTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(PoiTypeTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(WorldPresetTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(VanillaEnchantmentTagsProvider::new, var19));
+      var16.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var20));
+      var16.addProvider(bindRegistries(VanillaAdvancementProvider::create, var20));
+      var16.addProvider(bindRegistries(VanillaLootTableProvider::create, var20));
+      var16.addProvider(bindRegistries(VanillaRecipeProvider.Runner::new, var20));
+      TagsProvider var21 = var16.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var20));
+      TagsProvider var12 = var16.addProvider(var2x -> new VanillaItemTagsProvider(var2x, var20, var21.contentsGetter()));
+      TagsProvider var13 = var16.addProvider(bindRegistries(BiomeTagsProvider::new, var20));
+      TagsProvider var14 = var16.addProvider(bindRegistries(BannerPatternTagsProvider::new, var20));
+      TagsProvider var15 = var16.addProvider(bindRegistries(StructureTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(CatVariantTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(DamageTypeTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(EntityTypeTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(FlatLevelGeneratorPresetTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(FluidTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(GameEventTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(InstrumentTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(PaintingVariantTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(PoiTypeTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(WorldPresetTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(VanillaEnchantmentTagsProvider::new, var20));
       var16 = var9.getVanillaPack(var4);
       var16.addProvider(var1x -> new NbtToSnbt(var1x, var1));
       var16 = var9.getVanillaPack(var5);
-      var16.addProvider(bindRegistries(BiomeParametersDumpReport::new, var19));
-      var16.addProvider(bindRegistries(ItemListReport::new, var19));
-      var16.addProvider(bindRegistries(BlockListReport::new, var19));
-      var16.addProvider(bindRegistries(CommandsReport::new, var19));
+      var16.addProvider(bindRegistries(BiomeParametersDumpReport::new, var20));
+      var16.addProvider(bindRegistries(ItemListReport::new, var20));
+      var16.addProvider(bindRegistries(BlockListReport::new, var20));
+      var16.addProvider(bindRegistries(CommandsReport::new, var20));
       var16.addProvider(RegistryDumpReport::new);
       var16.addProvider(PacketReport::new);
       var16.addProvider(DatapackStructureReport::new);
-      CompletableFuture var23 = TradeRebalanceRegistries.createLookup(var19);
-      CompletableFuture var17 = var23.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
+      CompletableFuture var24 = TradeRebalanceRegistries.createLookup(var20);
+      CompletableFuture var17 = var24.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
       DataGenerator.PackGenerator var18 = var9.getBuiltinDatapack(var3, "trade_rebalance");
       var18.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var17));
       var18.addProvider(
@@ -161,9 +169,9 @@ public class Main {
                var0x, Component.translatable("dataPack.trade_rebalance.description"), FeatureFlagSet.of(FeatureFlags.TRADE_REBALANCE)
             )
       );
-      var18.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var19));
-      var18.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var19));
-      var18.addProvider(bindRegistries(TradeRebalanceEnchantmentTagsProvider::new, var19));
+      var18.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var20));
+      var18.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var20));
+      var18.addProvider(bindRegistries(TradeRebalanceEnchantmentTagsProvider::new, var20));
       var16 = var9.getBuiltinDatapack(var3, "redstone_experiments");
       var16.addProvider(
          var0x -> PackMetadataGenerator.forFeaturePack(
@@ -176,6 +184,22 @@ public class Main {
                var0x, Component.translatable("dataPack.minecart_improvements.description"), FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS)
             )
       );
+      CompletableFuture var27 = WinterDropRegistries.createLookup(var20);
+      var17 = var27.thenApply(RegistrySetBuilder.PatchedRegistries::full);
+      var18 = var9.getBuiltinDatapack(var3, "winter_drop");
+      var18.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var27.thenApply(RegistrySetBuilder.PatchedRegistries::patches)));
+      var18.addProvider(bindRegistries(WinterDropRecipeProvider.Runner::new, var17));
+      TagsProvider var19 = var18.addProvider(var2x -> new WinterDropBlockTagsProvider(var2x, var17, var21.contentsGetter()));
+      var18.addProvider(var3x -> new WinterDropItemTagsProvider(var3x, var17, var12.contentsGetter(), var19.contentsGetter()));
+      var18.addProvider(var2x -> new WinterDropBiomeTagsProvider(var2x, var17, var13.contentsGetter()));
+      var18.addProvider(bindRegistries(WinterDropLootTableProvider::create, var17));
+      var18.addProvider(
+         var0x -> PackMetadataGenerator.forFeaturePack(
+               var0x, Component.translatable("dataPack.winter_drop.description"), FeatureFlagSet.of(FeatureFlags.WINTER_DROP)
+            )
+      );
+      var18.addProvider(bindRegistries(WinterDropEntityTypeTagsProvider::new, var17));
+      var18.addProvider(bindRegistries(WinterDropAdvancementProvider::create, var17));
       return var9;
    }
 }

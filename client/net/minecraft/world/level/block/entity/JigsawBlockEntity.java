@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Arrays;
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -18,6 +16,7 @@ import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class JigsawBlockEntity extends BlockEntity {
    public static final String TARGET = "target";
@@ -114,12 +113,7 @@ public class JigsawBlockEntity extends BlockEntity {
       this.target = ResourceLocation.parse(var1.getString("target"));
       this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
-      this.joint = JigsawBlockEntity.JointType.byName(var1.getString("joint"))
-         .orElseGet(
-            () -> JigsawBlock.getFrontFacing(this.getBlockState()).getAxis().isHorizontal()
-                  ? JigsawBlockEntity.JointType.ALIGNED
-                  : JigsawBlockEntity.JointType.ROLLABLE
-         );
+      this.joint = StructureTemplate.getJointType(var1, this.getBlockState());
       this.placementPriority = var1.getInt("placement_priority");
       this.selectionPriority = var1.getInt("selection_priority");
    }
@@ -144,6 +138,7 @@ public class JigsawBlockEntity extends BlockEntity {
       ROLLABLE("rollable"),
       ALIGNED("aligned");
 
+      public static final StringRepresentable.EnumCodec<JigsawBlockEntity.JointType> CODEC = StringRepresentable.fromEnum(JigsawBlockEntity.JointType::values);
       private final String name;
 
       private JointType(final String nullxx) {
@@ -153,10 +148,6 @@ public class JigsawBlockEntity extends BlockEntity {
       @Override
       public String getSerializedName() {
          return this.name;
-      }
-
-      public static Optional<JigsawBlockEntity.JointType> byName(String var0) {
-         return Arrays.stream(values()).filter(var1 -> var1.getSerializedName().equals(var0)).findFirst();
       }
 
       public Component getTranslatedName() {

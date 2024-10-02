@@ -1,8 +1,10 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.FurnaceRecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,8 +17,17 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
    private final ResourceLocation litProgressSprite;
    private final ResourceLocation burnProgressSprite;
 
-   public AbstractFurnaceScreen(T var1, Inventory var2, Component var3, Component var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7) {
-      super((T)var1, new FurnaceRecipeBookComponent(var1, var4), var2, var3);
+   public AbstractFurnaceScreen(
+      T var1,
+      Inventory var2,
+      Component var3,
+      Component var4,
+      ResourceLocation var5,
+      ResourceLocation var6,
+      ResourceLocation var7,
+      List<RecipeBookComponent.TabInfo> var8
+   ) {
+      super((T)var1, new FurnaceRecipeBookComponent(var1, var4, var8), var2, var3);
       this.texture = var5;
       this.litProgressSprite = var6;
       this.burnProgressSprite = var7;

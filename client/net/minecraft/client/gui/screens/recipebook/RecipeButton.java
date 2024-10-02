@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -14,7 +13,9 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class RecipeButton extends AbstractWidget {
    private static final ResourceLocation SLOT_MANY_CRAFTABLE_SPRITE = ResourceLocation.withDefaultNamespace("recipe_book/slot_many_craftable");
@@ -25,7 +26,7 @@ public class RecipeButton extends AbstractWidget {
    private static final int BACKGROUND_SIZE = 25;
    private static final Component MORE_RECIPES_TOOLTIP = Component.translatable("gui.recipebook.moreRecipes");
    private RecipeCollection collection;
-   private List<RecipeHolder<?>> recipes = List.of();
+   private List<RecipeButton.ResolvedEntry> selectedEntries = List.of();
    private final SlotSelectTime slotSelectTime;
    private float animationTime;
 
@@ -34,16 +35,14 @@ public class RecipeButton extends AbstractWidget {
       this.slotSelectTime = var1;
    }
 
-   public void init(RecipeCollection var1, boolean var2, RecipeBookPage var3) {
+   public void init(RecipeCollection var1, boolean var2, RecipeBookPage var3, SlotDisplay.ResolutionContext var4) {
       this.collection = var1;
-      this.recipes = var1.getFittingRecipes(var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
-
-      for (RecipeHolder var5 : this.recipes) {
-         if (var3.getRecipeBook().willHighlight(var5)) {
-            var3.recipesShown(this.recipes);
-            this.animationTime = 15.0F;
-            break;
-         }
+      List var5 = var1.getSelectedRecipes(var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
+      this.selectedEntries = var5.stream().map(var1x -> new RecipeButton.ResolvedEntry(var1x.id(), var1x.resultItems(var4))).toList();
+      List var6 = var5.stream().map(RecipeDisplayEntry::id).filter(var3.getRecipeBook()::willHighlight).toList();
+      if (!var6.isEmpty()) {
+         var6.forEach(var3::recipeShown);
+         this.animationTime = 15.0F;
       }
    }
 
@@ -77,7 +76,7 @@ public class RecipeButton extends AbstractWidget {
       }
 
       var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
-      ItemStack var9 = this.getResultItem();
+      ItemStack var9 = this.getDisplayStack();
       int var8 = 4;
       if (this.collection.hasSingleResultItem() && this.hasMultipleRecipes()) {
          var1.renderItem(var9, this.getX() + var8 + 1, this.getY() + var8 + 1, 0, 10);
@@ -91,35 +90,38 @@ public class RecipeButton extends AbstractWidget {
    }
 
    private boolean hasMultipleRecipes() {
-      return this.recipes.size() > 1;
+      return this.selectedEntries.size() > 1;
    }
 
    public boolean isOnlyOption() {
-      return this.recipes.size() == 1;
+      return this.selectedEntries.size() == 1;
    }
 
-   public RecipeHolder<?> getRecipe() {
-      int var1 = this.slotSelectTime.currentIndex() % this.recipes.size();
-      return this.recipes.get(var1);
+   public RecipeDisplayId getCurrentRecipe() {
+      int var1 = this.slotSelectTime.currentIndex() % this.selectedEntries.size();
+      return this.selectedEntries.get(var1).id;
    }
 
-   public ItemStack getResultItem() {
-      return this.getRecipe().value().getResultItem(this.collection.registryAccess());
+   public ItemStack getDisplayStack() {
+      int var1 = this.slotSelectTime.currentIndex();
+      int var2 = this.selectedEntries.size();
+      int var3 = var1 / var2;
+      int var4 = var1 - var2 * var3;
+      return this.selectedEntries.get(var4).selectItem(var3);
    }
 
-   public List<Component> getTooltipText() {
-      ArrayList var1 = Lists.newArrayList(Screen.getTooltipFromItem(Minecraft.getInstance(), this.getResultItem()));
+   public List<Component> getTooltipText(ItemStack var1) {
+      ArrayList var2 = new ArrayList<>(Screen.getTooltipFromItem(Minecraft.getInstance(), var1));
       if (this.hasMultipleRecipes()) {
-         var1.add(MORE_RECIPES_TOOLTIP);
+         var2.add(MORE_RECIPES_TOOLTIP);
       }
 
-      return var1;
+      return var2;
    }
 
    @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      ItemStack var2 = this.getResultItem();
-      var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", var2.getHoverName()));
+      var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", this.getDisplayStack().getHoverName()));
       if (this.hasMultipleRecipes()) {
          var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));
       } else {
@@ -136,4 +138,17 @@ public class RecipeButton extends AbstractWidget {
    protected boolean isValidClickButton(int var1) {
       return var1 == 0 || var1 == 1;
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

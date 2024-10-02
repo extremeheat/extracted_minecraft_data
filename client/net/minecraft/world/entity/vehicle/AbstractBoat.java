@@ -32,6 +32,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -208,13 +209,18 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    @Override
+   public void cancelLerp() {
+      this.lerpSteps = 0;
+   }
+
+   @Override
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.lerpX = var1;
       this.lerpY = var3;
       this.lerpZ = var5;
       this.lerpYRot = (double)var7;
       this.lerpXRot = (double)var8;
-      this.lerpSteps = 10;
+      this.lerpSteps = var9;
    }
 
    @Override
@@ -288,6 +294,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       }
 
       this.applyEffectsFromBlocks();
+      this.applyEffectsFromBlocks();
       this.tickBubbleColumn();
 
       for (int var1 = 0; var1 <= 1; var1++) {
@@ -326,7 +333,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
                   && this.hasEnoughSpaceFor(var11)
                   && var11 instanceof LivingEntity
                   && !(var11 instanceof WaterAnimal)
-                  && !(var11 instanceof Player)) {
+                  && !(var11 instanceof Player)
+                  && !(var11 instanceof Creaking)) {
                   var11.startRiding(this);
                } else {
                   this.push(var11);
@@ -389,11 +397,6 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    private void tickLerp() {
-      if (this.isControlledByLocalInstance()) {
-         this.lerpSteps = 0;
-         this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
-      }
-
       if (this.lerpSteps > 0) {
          this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
          this.lerpSteps--;

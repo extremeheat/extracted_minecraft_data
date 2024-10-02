@@ -49,12 +49,11 @@ public class AnvilMenu extends ItemCombinerMenu {
    }
 
    public AnvilMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
-      super(MenuType.ANVIL, var1, var2, var3);
+      super(MenuType.ANVIL, var1, var2, var3, createInputSlotDefinitions());
       this.addDataSlot(this.cost);
    }
 
-   @Override
-   protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
+   private static ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
       return ItemCombinerMenuSlotDefinition.create().withSlot(0, 27, 47, var0 -> true).withSlot(1, 76, 47, var0 -> true).withResultSlot(2, 134, 47).build();
    }
 

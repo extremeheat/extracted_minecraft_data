@@ -27,7 +27,9 @@ public interface RecipeCraftingHolder {
    }
 
    default boolean setRecipeUsed(ServerPlayer var1, RecipeHolder<?> var2) {
-      if (!var2.value().isSpecial() && var1.serverLevel().getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING) && !var1.getRecipeBook().contains(var2)) {
+      if (!var2.value().isSpecial()
+         && var1.serverLevel().getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING)
+         && !var1.getRecipeBook().contains(var2.id())) {
          return false;
       } else {
          this.setRecipeUsed(var2);

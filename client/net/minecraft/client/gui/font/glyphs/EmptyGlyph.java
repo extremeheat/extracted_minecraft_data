@@ -13,6 +13,6 @@ public class EmptyGlyph extends BakedGlyph {
    }
 
    @Override
-   public void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, float var6, float var7, float var8, float var9, int var10) {
+   public void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, int var7) {
    }
 }

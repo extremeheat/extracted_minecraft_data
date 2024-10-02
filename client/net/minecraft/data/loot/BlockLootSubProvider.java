@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.CaveVines;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
+import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.PinkPetalsBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -451,6 +452,23 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                                  )
                         )
                         .apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true))
+                  )
+               )
+         );
+   }
+
+   protected LootTable.Builder createMossyCarpetBlockDrops(Block var1) {
+      return LootTable.lootTable()
+         .withPool(
+            LootPool.lootPool()
+               .add(
+                  (LootPoolEntryContainer.Builder<?>)this.applyExplosionDecay(
+                     var1,
+                     LootItem.lootTableItem(var1)
+                        .when(
+                           LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1)
+                              .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MossyCarpetBlock.BASE, true))
+                        )
                   )
                )
          );

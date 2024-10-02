@@ -107,7 +107,7 @@ public class TeleportCommand {
                                                             ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                             Vec3Argument.getCoordinates(var0x, "location"),
                                                             null,
-                                                            new TeleportCommand.LookAtEntity(
+                                                            new LookAt.LookAtEntity(
                                                                EntityArgument.getEntity(var0x, "facingEntity"), EntityAnchorArgument.Anchor.FEET
                                                             )
                                                          )
@@ -121,7 +121,7 @@ public class TeleportCommand {
                                                                ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                                Vec3Argument.getCoordinates(var0x, "location"),
                                                                null,
-                                                               new TeleportCommand.LookAtEntity(
+                                                               new LookAt.LookAtEntity(
                                                                   EntityArgument.getEntity(var0x, "facingEntity"),
                                                                   EntityAnchorArgument.getAnchor(var0x, "facingAnchor")
                                                                )
@@ -139,7 +139,7 @@ public class TeleportCommand {
                                                 ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                 Vec3Argument.getCoordinates(var0x, "location"),
                                                 null,
-                                                new TeleportCommand.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation"))
+                                                new LookAt.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation"))
                                              )
                                        )
                                  )
@@ -180,12 +180,7 @@ public class TeleportCommand {
    }
 
    private static int teleportToPos(
-      CommandSourceStack var0,
-      Collection<? extends Entity> var1,
-      ServerLevel var2,
-      Coordinates var3,
-      @Nullable Coordinates var4,
-      @Nullable TeleportCommand.LookAt var5
+      CommandSourceStack var0, Collection<? extends Entity> var1, ServerLevel var2, Coordinates var3, @Nullable Coordinates var4, @Nullable LookAt var5
    ) throws CommandSyntaxException {
       Vec3 var6 = var3.getPosition(var0);
       Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
@@ -269,7 +264,7 @@ public class TeleportCommand {
       Set<Relative> var9,
       float var10,
       float var11,
-      @Nullable TeleportCommand.LookAt var12
+      @Nullable LookAt var12
    ) throws CommandSyntaxException {
       BlockPos var13 = BlockPos.containing(var3, var5, var7);
       if (!Level.isInSpawnableBounds(var13)) {
@@ -298,35 +293,4 @@ public class TeleportCommand {
          }
       }
    }
-
-   @FunctionalInterface
-   interface LookAt {
-      void perform(CommandSourceStack var1, Entity var2);
-   }
-
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
-
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

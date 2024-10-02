@@ -97,6 +97,7 @@ public class BlockTypes {
       Registry.register(var0, "end_portal_frame", EndPortalFrameBlock.CODEC);
       Registry.register(var0, "end_rod", EndRodBlock.CODEC);
       Registry.register(var0, "farm", FarmBlock.CODEC);
+      Registry.register(var0, "bonemealable_feature_placer", BonemealableFeaturePlacerBlock.CODEC);
       Registry.register(var0, "fence", FenceBlock.CODEC);
       Registry.register(var0, "fence_gate", FenceGateBlock.CODEC);
       Registry.register(var0, "fire", FireBlock.CODEC);
@@ -112,6 +113,7 @@ public class BlockTypes {
       Registry.register(var0, "grass", GrassBlock.CODEC);
       Registry.register(var0, "grindstone", GrindstoneBlock.CODEC);
       Registry.register(var0, "half_transparent", HalfTransparentBlock.CODEC);
+      Registry.register(var0, "hanging_moss", HangingMossBlock.CODEC);
       Registry.register(var0, "hanging_roots", HangingRootsBlock.CODEC);
       Registry.register(var0, "hay", HayBlock.CODEC);
       Registry.register(var0, "heavy_core", HeavyCoreBlock.CODEC);
@@ -142,7 +144,7 @@ public class BlockTypes {
       Registry.register(var0, "mangrove_leaves", MangroveLeavesBlock.CODEC);
       Registry.register(var0, "mangrove_propagule", MangrovePropaguleBlock.CODEC);
       Registry.register(var0, "mangrove_roots", MangroveRootsBlock.CODEC);
-      Registry.register(var0, "moss", MossBlock.CODEC);
+      Registry.register(var0, "mossy_carpet", MossyCarpetBlock.CODEC);
       Registry.register(var0, "moving_piston", MovingPistonBlock.CODEC);
       Registry.register(var0, "mud", MudBlock.CODEC);
       Registry.register(var0, "mushroom", MushroomBlock.CODEC);
@@ -201,6 +203,7 @@ public class BlockTypes {
       Registry.register(var0, "soul_fire", SoulFireBlock.CODEC);
       Registry.register(var0, "soul_sand", SoulSandBlock.CODEC);
       Registry.register(var0, "spawner", SpawnerBlock.CODEC);
+      Registry.register(var0, "creaking_heart", CreakingHeartBlock.CODEC);
       Registry.register(var0, "sponge", SpongeBlock.CODEC);
       Registry.register(var0, "spore_blossom", SporeBlossomBlock.CODEC);
       Registry.register(var0, "stained_glass_pane", StainedGlassPaneBlock.CODEC);

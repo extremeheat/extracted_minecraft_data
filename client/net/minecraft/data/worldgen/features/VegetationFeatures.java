@@ -11,9 +11,12 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.data.worldgen.placement.TreePlacements;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.valueproviders.BiasedToBottomInt;
+import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PinkPetalsBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
@@ -29,12 +32,14 @@ import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureCo
 import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleRandomFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatchConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.DualNoiseProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.NoiseProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.NoiseThresholdProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
+import net.minecraft.world.level.levelgen.placement.CaveSurface;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluids;
 
@@ -66,6 +71,9 @@ public class VegetationFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> FLOWER_CHERRY = FeatureUtils.createKey("flower_cherry");
    public static final ResourceKey<ConfiguredFeature<?, ?>> FOREST_FLOWERS = FeatureUtils.createKey("forest_flowers");
    public static final ResourceKey<ConfiguredFeature<?, ?>> DARK_FOREST_VEGETATION = FeatureUtils.createKey("dark_forest_vegetation");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> PALE_GARDEN_VEGETATION = FeatureUtils.createKey("pale_garden_vegetation");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> PALE_MOSS_VEGETATION = FeatureUtils.createKey("pale_moss_vegetation");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> PALE_MOSS_PATCH_BONEMEAL = FeatureUtils.createKey("pale_moss_patch_bonemeal");
    public static final ResourceKey<ConfiguredFeature<?, ?>> TREES_FLOWER_FOREST = FeatureUtils.createKey("trees_flower_forest");
    public static final ResourceKey<ConfiguredFeature<?, ?>> MEADOW_TREES = FeatureUtils.createKey("meadow_trees");
    public static final ResourceKey<ConfiguredFeature<?, ?>> TREES_TAIGA = FeatureUtils.createKey("trees_taiga");
@@ -101,30 +109,32 @@ public class VegetationFeatures {
       Holder.Reference var6 = var1.getOrThrow(PATCH_GRASS_JUNGLE);
       HolderGetter var7 = var0.lookup(Registries.PLACED_FEATURE);
       Holder.Reference var8 = var7.getOrThrow(TreePlacements.DARK_OAK_CHECKED);
-      Holder.Reference var9 = var7.getOrThrow(TreePlacements.BIRCH_CHECKED);
-      Holder.Reference var10 = var7.getOrThrow(TreePlacements.FANCY_OAK_CHECKED);
-      Holder.Reference var11 = var7.getOrThrow(TreePlacements.BIRCH_BEES_002);
-      Holder.Reference var12 = var7.getOrThrow(TreePlacements.FANCY_OAK_BEES_002);
-      Holder.Reference var13 = var7.getOrThrow(TreePlacements.FANCY_OAK_BEES);
-      Holder.Reference var14 = var7.getOrThrow(TreePlacements.PINE_CHECKED);
-      Holder.Reference var15 = var7.getOrThrow(TreePlacements.SPRUCE_CHECKED);
-      Holder.Reference var16 = var7.getOrThrow(TreePlacements.PINE_ON_SNOW);
-      Holder.Reference var17 = var7.getOrThrow(TreePlacements.ACACIA_CHECKED);
-      Holder.Reference var18 = var7.getOrThrow(TreePlacements.SUPER_BIRCH_BEES_0002);
-      Holder.Reference var19 = var7.getOrThrow(TreePlacements.BIRCH_BEES_0002_PLACED);
-      Holder.Reference var20 = var7.getOrThrow(TreePlacements.FANCY_OAK_BEES_0002);
-      Holder.Reference var21 = var7.getOrThrow(TreePlacements.JUNGLE_BUSH);
-      Holder.Reference var22 = var7.getOrThrow(TreePlacements.MEGA_SPRUCE_CHECKED);
-      Holder.Reference var23 = var7.getOrThrow(TreePlacements.MEGA_PINE_CHECKED);
-      Holder.Reference var24 = var7.getOrThrow(TreePlacements.MEGA_JUNGLE_TREE_CHECKED);
-      Holder.Reference var25 = var7.getOrThrow(TreePlacements.TALL_MANGROVE_CHECKED);
-      Holder.Reference var26 = var7.getOrThrow(TreePlacements.OAK_CHECKED);
-      Holder.Reference var27 = var7.getOrThrow(TreePlacements.OAK_BEES_002);
-      Holder.Reference var28 = var7.getOrThrow(TreePlacements.SUPER_BIRCH_BEES);
-      Holder.Reference var29 = var7.getOrThrow(TreePlacements.SPRUCE_ON_SNOW);
-      Holder.Reference var30 = var7.getOrThrow(TreePlacements.OAK_BEES_0002);
-      Holder.Reference var31 = var7.getOrThrow(TreePlacements.JUNGLE_TREE_CHECKED);
-      Holder.Reference var32 = var7.getOrThrow(TreePlacements.MANGROVE_CHECKED);
+      Holder.Reference var9 = var7.getOrThrow(TreePlacements.PALE_OAK_CHECKED);
+      Holder.Reference var10 = var7.getOrThrow(TreePlacements.PALE_OAK_CREAKING_CHECKED);
+      Holder.Reference var11 = var7.getOrThrow(TreePlacements.BIRCH_CHECKED);
+      Holder.Reference var12 = var7.getOrThrow(TreePlacements.FANCY_OAK_CHECKED);
+      Holder.Reference var13 = var7.getOrThrow(TreePlacements.BIRCH_BEES_002);
+      Holder.Reference var14 = var7.getOrThrow(TreePlacements.FANCY_OAK_BEES_002);
+      Holder.Reference var15 = var7.getOrThrow(TreePlacements.FANCY_OAK_BEES);
+      Holder.Reference var16 = var7.getOrThrow(TreePlacements.PINE_CHECKED);
+      Holder.Reference var17 = var7.getOrThrow(TreePlacements.SPRUCE_CHECKED);
+      Holder.Reference var18 = var7.getOrThrow(TreePlacements.PINE_ON_SNOW);
+      Holder.Reference var19 = var7.getOrThrow(TreePlacements.ACACIA_CHECKED);
+      Holder.Reference var20 = var7.getOrThrow(TreePlacements.SUPER_BIRCH_BEES_0002);
+      Holder.Reference var21 = var7.getOrThrow(TreePlacements.BIRCH_BEES_0002_PLACED);
+      Holder.Reference var22 = var7.getOrThrow(TreePlacements.FANCY_OAK_BEES_0002);
+      Holder.Reference var23 = var7.getOrThrow(TreePlacements.JUNGLE_BUSH);
+      Holder.Reference var24 = var7.getOrThrow(TreePlacements.MEGA_SPRUCE_CHECKED);
+      Holder.Reference var25 = var7.getOrThrow(TreePlacements.MEGA_PINE_CHECKED);
+      Holder.Reference var26 = var7.getOrThrow(TreePlacements.MEGA_JUNGLE_TREE_CHECKED);
+      Holder.Reference var27 = var7.getOrThrow(TreePlacements.TALL_MANGROVE_CHECKED);
+      Holder.Reference var28 = var7.getOrThrow(TreePlacements.OAK_CHECKED);
+      Holder.Reference var29 = var7.getOrThrow(TreePlacements.OAK_BEES_002);
+      Holder.Reference var30 = var7.getOrThrow(TreePlacements.SUPER_BIRCH_BEES);
+      Holder.Reference var31 = var7.getOrThrow(TreePlacements.SPRUCE_ON_SNOW);
+      Holder.Reference var32 = var7.getOrThrow(TreePlacements.OAK_BEES_0002);
+      Holder.Reference var33 = var7.getOrThrow(TreePlacements.JUNGLE_TREE_CHECKED);
+      Holder.Reference var34 = var7.getOrThrow(TreePlacements.MANGROVE_CHECKED);
       FeatureUtils.register(var0, BAMBOO_NO_PODZOL, Feature.BAMBOO, new ProbabilityFeatureConfiguration(0.0F));
       FeatureUtils.register(var0, BAMBOO_SOME_PODZOL, Feature.BAMBOO, new ProbabilityFeatureConfiguration(0.2F));
       FeatureUtils.register(var0, VINES, Feature.VINES);
@@ -401,12 +411,12 @@ public class VegetationFeatures {
             )
          )
       );
-      SimpleWeightedRandomList.Builder var33 = SimpleWeightedRandomList.builder();
+      SimpleWeightedRandomList.Builder var35 = SimpleWeightedRandomList.builder();
 
-      for (int var34 = 1; var34 <= 4; var34++) {
-         for (Direction var36 : Direction.Plane.HORIZONTAL) {
-            var33.add(
-               Blocks.PINK_PETALS.defaultBlockState().setValue(PinkPetalsBlock.AMOUNT, Integer.valueOf(var34)).setValue(PinkPetalsBlock.FACING, var36), 1
+      for (int var36 = 1; var36 <= 4; var36++) {
+         for (Direction var38 : Direction.Plane.HORIZONTAL) {
+            var35.add(
+               Blocks.PINK_PETALS.defaultBlockState().setValue(PinkPetalsBlock.AMOUNT, Integer.valueOf(var36)).setValue(PinkPetalsBlock.FACING, var38), 1
             );
          }
       }
@@ -416,7 +426,7 @@ public class VegetationFeatures {
          FLOWER_CHERRY,
          Feature.FLOWER,
          new RandomPatchConfiguration(
-            96, 6, 2, PlacementUtils.onlyWhenEmpty(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(new WeightedStateProvider(var33)))
+            96, 6, 2, PlacementUtils.onlyWhenEmpty(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(new WeightedStateProvider(var35)))
          )
       );
       FeatureUtils.register(
@@ -455,41 +465,77 @@ public class VegetationFeatures {
                new WeightedPlacedFeature(PlacementUtils.inlinePlaced(var2), 0.025F),
                new WeightedPlacedFeature(PlacementUtils.inlinePlaced(var3), 0.05F),
                new WeightedPlacedFeature(var8, 0.6666667F),
-               new WeightedPlacedFeature(var9, 0.2F),
-               new WeightedPlacedFeature(var10, 0.1F)
+               new WeightedPlacedFeature(var11, 0.2F),
+               new WeightedPlacedFeature(var12, 0.1F)
             ),
-            var26
+            var28
+         )
+      );
+      FeatureUtils.register(
+         var0,
+         PALE_GARDEN_VEGETATION,
+         Feature.RANDOM_SELECTOR,
+         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var10, 0.2F), new WeightedPlacedFeature(var9, 0.8F)), var9)
+      );
+      FeatureUtils.register(
+         var0,
+         PALE_MOSS_VEGETATION,
+         Feature.SIMPLE_BLOCK,
+         new SimpleBlockConfiguration(
+            new WeightedStateProvider(
+               SimpleWeightedRandomList.<BlockState>builder()
+                  .add(Blocks.PALE_MOSS_CARPET.defaultBlockState(), 25)
+                  .add(Blocks.SHORT_GRASS.defaultBlockState(), 50)
+                  .add(Blocks.TALL_GRASS.defaultBlockState(), 10)
+            )
+         )
+      );
+      FeatureUtils.register(
+         var0,
+         PALE_MOSS_PATCH_BONEMEAL,
+         Feature.VEGETATION_PATCH,
+         new VegetationPatchConfiguration(
+            BlockTags.MOSS_REPLACEABLE,
+            BlockStateProvider.simple(Blocks.PALE_MOSS_BLOCK),
+            PlacementUtils.inlinePlaced(var1.getOrThrow(PALE_MOSS_VEGETATION)),
+            CaveSurface.FLOOR,
+            ConstantInt.of(1),
+            0.0F,
+            5,
+            0.6F,
+            UniformInt.of(1, 2),
+            0.75F
          )
       );
       FeatureUtils.register(
          var0,
          TREES_FLOWER_FOREST,
          Feature.RANDOM_SELECTOR,
-         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var11, 0.2F), new WeightedPlacedFeature(var12, 0.1F)), var27)
+         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var13, 0.2F), new WeightedPlacedFeature(var14, 0.1F)), var29)
       );
-      FeatureUtils.register(var0, MEADOW_TREES, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var13, 0.5F)), var28));
+      FeatureUtils.register(var0, MEADOW_TREES, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var15, 0.5F)), var30));
       FeatureUtils.register(
-         var0, TREES_TAIGA, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var14, 0.33333334F)), var15)
-      );
-      FeatureUtils.register(
-         var0, TREES_GROVE, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var16, 0.33333334F)), var29)
+         var0, TREES_TAIGA, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var16, 0.33333334F)), var17)
       );
       FeatureUtils.register(
-         var0, TREES_SAVANNA, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var17, 0.8F)), var26)
+         var0, TREES_GROVE, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var18, 0.33333334F)), var31)
       );
-      FeatureUtils.register(var0, BIRCH_TALL, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var18, 0.5F)), var19));
+      FeatureUtils.register(
+         var0, TREES_SAVANNA, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var19, 0.8F)), var28)
+      );
+      FeatureUtils.register(var0, BIRCH_TALL, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var20, 0.5F)), var21));
       FeatureUtils.register(
          var0,
          TREES_WINDSWEPT_HILLS,
          Feature.RANDOM_SELECTOR,
-         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var15, 0.666F), new WeightedPlacedFeature(var10, 0.1F)), var26)
+         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var17, 0.666F), new WeightedPlacedFeature(var12, 0.1F)), var28)
       );
-      FeatureUtils.register(var0, TREES_WATER, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var10, 0.1F)), var26));
+      FeatureUtils.register(var0, TREES_WATER, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var12, 0.1F)), var28));
       FeatureUtils.register(
          var0,
          TREES_BIRCH_AND_OAK,
          Feature.RANDOM_SELECTOR,
-         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var19, 0.2F), new WeightedPlacedFeature(var20, 0.1F)), var30)
+         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var21, 0.2F), new WeightedPlacedFeature(var22, 0.1F)), var32)
       );
       FeatureUtils.register(
          var0,
@@ -501,13 +547,13 @@ public class VegetationFeatures {
          var0,
          TREES_SPARSE_JUNGLE,
          Feature.RANDOM_SELECTOR,
-         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var10, 0.1F), new WeightedPlacedFeature(var21, 0.5F)), var31)
+         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var12, 0.1F), new WeightedPlacedFeature(var23, 0.5F)), var33)
       );
       FeatureUtils.register(
          var0,
          TREES_OLD_GROWTH_SPRUCE_TAIGA,
          Feature.RANDOM_SELECTOR,
-         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var22, 0.33333334F), new WeightedPlacedFeature(var14, 0.33333334F)), var15)
+         new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var24, 0.33333334F), new WeightedPlacedFeature(var16, 0.33333334F)), var17)
       );
       FeatureUtils.register(
          var0,
@@ -515,9 +561,9 @@ public class VegetationFeatures {
          Feature.RANDOM_SELECTOR,
          new RandomFeatureConfiguration(
             List.of(
-               new WeightedPlacedFeature(var22, 0.025641026F), new WeightedPlacedFeature(var23, 0.30769232F), new WeightedPlacedFeature(var14, 0.33333334F)
+               new WeightedPlacedFeature(var24, 0.025641026F), new WeightedPlacedFeature(var25, 0.30769232F), new WeightedPlacedFeature(var16, 0.33333334F)
             ),
-            var15
+            var17
          )
       );
       FeatureUtils.register(
@@ -525,7 +571,7 @@ public class VegetationFeatures {
          TREES_JUNGLE,
          Feature.RANDOM_SELECTOR,
          new RandomFeatureConfiguration(
-            List.of(new WeightedPlacedFeature(var10, 0.1F), new WeightedPlacedFeature(var21, 0.5F), new WeightedPlacedFeature(var24, 0.33333334F)), var31
+            List.of(new WeightedPlacedFeature(var12, 0.1F), new WeightedPlacedFeature(var23, 0.5F), new WeightedPlacedFeature(var26, 0.33333334F)), var33
          )
       );
       FeatureUtils.register(
@@ -533,7 +579,7 @@ public class VegetationFeatures {
          BAMBOO_VEGETATION,
          Feature.RANDOM_SELECTOR,
          new RandomFeatureConfiguration(
-            List.of(new WeightedPlacedFeature(var10, 0.05F), new WeightedPlacedFeature(var21, 0.15F), new WeightedPlacedFeature(var24, 0.7F)),
+            List.of(new WeightedPlacedFeature(var12, 0.05F), new WeightedPlacedFeature(var23, 0.15F), new WeightedPlacedFeature(var26, 0.7F)),
             PlacementUtils.inlinePlaced(var6)
          )
       );
@@ -544,7 +590,7 @@ public class VegetationFeatures {
          new RandomBooleanFeatureConfiguration(PlacementUtils.inlinePlaced(var3), PlacementUtils.inlinePlaced(var2))
       );
       FeatureUtils.register(
-         var0, MANGROVE_VEGETATION, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var25, 0.85F)), var32)
+         var0, MANGROVE_VEGETATION, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var27, 0.85F)), var34)
       );
    }
 }

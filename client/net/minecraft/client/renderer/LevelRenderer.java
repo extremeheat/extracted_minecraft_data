@@ -872,17 +872,24 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private void renderBlockOutline(Camera var1, MultiBufferSource.BufferSource var2, PoseStack var3, boolean var4) {
       if (this.minecraft.hitResult instanceof BlockHitResult var5) {
          if (var5.getType() != HitResult.Type.MISS) {
-            BlockPos var11 = var5.getBlockPos();
-            BlockState var7 = this.level.getBlockState(var11);
-            if (!var7.isAir() && this.level.getWorldBorder().isWithinBounds(var11)) {
+            BlockPos var13 = var5.getBlockPos();
+            BlockState var7 = this.level.getBlockState(var13);
+            if (!var7.isAir() && this.level.getWorldBorder().isWithinBounds(var13)) {
                boolean var8 = ItemBlockRenderTypes.getChunkRenderType(var7).sortOnUpload();
                if (var8 != var4) {
                   return;
                }
 
-               VertexConsumer var9 = var2.getBuffer(RenderType.lines());
-               Vec3 var10 = var1.getPosition();
-               this.renderHitOutline(var3, var9, var1.getEntity(), var10.x, var10.y, var10.z, var11, var7);
+               Vec3 var9 = var1.getPosition();
+               Boolean var10 = this.minecraft.options.highContrastBlockOutline().get();
+               if (var10) {
+                  VertexConsumer var11 = var2.getBuffer(RenderType.secondaryBlockOutline());
+                  this.renderHitOutline(var3, var11, var1.getEntity(), var9.x, var9.y, var9.z, var13, var7, -16777216);
+               }
+
+               VertexConsumer var14 = var2.getBuffer(RenderType.lines());
+               int var12 = var10 ? -11010079 : ARGB.color(102, -16777216);
+               this.renderHitOutline(var3, var14, var1.getEntity(), var9.x, var9.y, var9.z, var13, var7, var12);
                var2.endLastBatch();
             }
          }
@@ -1129,7 +1136,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return true;
    }
 
-   private void renderHitOutline(PoseStack var1, VertexConsumer var2, Entity var3, double var4, double var6, double var8, BlockPos var10, BlockState var11) {
+   private void renderHitOutline(
+      PoseStack var1, VertexConsumer var2, Entity var3, double var4, double var6, double var8, BlockPos var10, BlockState var11, int var12
+   ) {
       ShapeRenderer.renderShape(
          var1,
          var2,
@@ -1137,10 +1146,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          (double)var10.getX() - var4,
          (double)var10.getY() - var6,
          (double)var10.getZ() - var8,
-         0.0F,
-         0.0F,
-         0.0F,
-         0.4F
+         var12
       );
    }
 

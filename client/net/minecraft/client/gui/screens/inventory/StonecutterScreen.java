@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
@@ -11,8 +10,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.SelectableRecipe;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> {
    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller");
@@ -69,23 +68,23 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var4 = this.leftPos + 52;
          int var5 = this.topPos + 14;
          int var6 = this.startIndex + 12;
-         List var7 = this.menu.getRecipes();
+         SelectableRecipe.SingleInputSet var7 = this.menu.getVisibleRecipes();
 
-         for (int var8 = this.startIndex; var8 < var6 && var8 < this.menu.getNumRecipes(); var8++) {
+         for (int var8 = this.startIndex; var8 < var6 && var8 < var7.size(); var8++) {
             int var9 = var8 - this.startIndex;
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               var1.renderTooltip(
-                  this.font, ((StonecutterRecipe)((RecipeHolder)var7.get(var8)).value()).getResultItem(this.minecraft.level.registryAccess()), var2, var3
-               );
+               SlotDisplay.ResolutionContext var12 = SlotDisplay.ResolutionContext.forLevel(this.minecraft.level);
+               SlotDisplay var13 = ((SelectableRecipe.SingleInputEntry)var7.entries().get(var8)).recipe().optionDisplay();
+               var1.renderTooltip(this.font, var13.resolveForFirstStack(var12), var2, var3);
             }
          }
       }
    }
 
    private void renderButtons(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
-      for (int var7 = this.startIndex; var7 < var6 && var7 < this.menu.getNumRecipes(); var7++) {
+      for (int var7 = this.startIndex; var7 < var6 && var7 < this.menu.getNumberOfVisibleRecipes(); var7++) {
          int var8 = var7 - this.startIndex;
          int var9 = var4 + var8 % 4 * 16;
          int var10 = var8 / 4;
@@ -104,14 +103,16 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
-      List var5 = this.menu.getRecipes();
+      SelectableRecipe.SingleInputSet var5 = this.menu.getVisibleRecipes();
+      SlotDisplay.ResolutionContext var6 = SlotDisplay.ResolutionContext.forLevel(this.minecraft.level);
 
-      for (int var6 = this.startIndex; var6 < var4 && var6 < this.menu.getNumRecipes(); var6++) {
-         int var7 = var6 - this.startIndex;
-         int var8 = var2 + var7 % 4 * 16;
-         int var9 = var7 / 4;
-         int var10 = var3 + var9 * 18 + 2;
-         var1.renderItem(((StonecutterRecipe)((RecipeHolder)var5.get(var6)).value()).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
+      for (int var7 = this.startIndex; var7 < var4 && var7 < var5.size(); var7++) {
+         int var8 = var7 - this.startIndex;
+         int var9 = var2 + var8 % 4 * 16;
+         int var10 = var8 / 4;
+         int var11 = var3 + var10 * 18 + 2;
+         SlotDisplay var12 = ((SelectableRecipe.SingleInputEntry)var5.entries().get(var7)).recipe().optionDisplay();
+         var1.renderItem(var12.resolveForFirstStack(var6), var9, var11);
       }
    }
 
@@ -175,11 +176,11 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    private boolean isScrollBarActive() {
-      return this.displayRecipes && this.menu.getNumRecipes() > 12;
+      return this.displayRecipes && this.menu.getNumberOfVisibleRecipes() > 12;
    }
 
    protected int getOffscreenRows() {
-      return (this.menu.getNumRecipes() + 4 - 1) / 4 - 3;
+      return (this.menu.getNumberOfVisibleRecipes() + 4 - 1) / 4 - 3;
    }
 
    private void containerChanged() {

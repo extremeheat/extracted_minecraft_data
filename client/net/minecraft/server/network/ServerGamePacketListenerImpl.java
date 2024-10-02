@@ -170,6 +170,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
@@ -499,7 +500,10 @@ public class ServerGamePacketListenerImpl
    @Override
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.server.getRecipeManager().byKey(var1.getRecipe()).ifPresent(this.player.getRecipeBook()::removeHighlight);
+      RecipeManager.ServerDisplayInfo var2 = this.server.getRecipeManager().getRecipeFromDisplay(var1.recipe());
+      if (var2 != null) {
+         this.player.getRecipeBook().removeHighlight(var2.parent().id());
+      }
    }
 
    @Override
@@ -1631,28 +1635,28 @@ public class ServerGamePacketListenerImpl
    public void handlePlaceRecipe(ServerboundPlaceRecipePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
-      if (!this.player.isSpectator() && this.player.containerMenu.containerId == var1.getContainerId()) {
+      if (!this.player.isSpectator() && this.player.containerMenu.containerId == var1.containerId()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
             LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
-         } else if (this.player.getRecipeBook().contains(var1.getRecipe())) {
-            if (this.player.containerMenu instanceof RecipeBookMenu var2) {
-               this.server
-                  .getRecipeManager()
-                  .byKey(var1.getRecipe())
-                  .ifPresent(
-                     var3 -> {
-                        if (var3.value().placementInfo().isImpossibleToPlace()) {
-                           LOGGER.debug("Player {} tried to place impossible recipe {}", this.player, var3.id());
-                        } else {
-                           RecipeBookMenu.PostPlaceAction var4 = var2.handlePlacement(
-                              var1.isUseMaxItems(), this.player.isCreative(), (RecipeHolder<?>)var3, this.player.getInventory()
-                           );
-                           if (var4 == RecipeBookMenu.PostPlaceAction.PLACE_GHOST_RECIPE) {
-                              this.player.connection.send(new ClientboundPlaceGhostRecipePacket(this.player.containerMenu.containerId, (RecipeHolder<?>)var3));
-                           }
-                        }
+         } else {
+            RecipeManager.ServerDisplayInfo var2 = this.server.getRecipeManager().getRecipeFromDisplay(var1.recipe());
+            if (var2 != null) {
+               RecipeHolder var3 = var2.parent();
+               if (this.player.getRecipeBook().contains(var3.id())) {
+                  if (this.player.containerMenu instanceof RecipeBookMenu var4) {
+                     if (var3.value().placementInfo().isImpossibleToPlace()) {
+                        LOGGER.debug("Player {} tried to place impossible recipe {}", this.player, var3.id().location());
+                        return;
                      }
-                  );
+
+                     RecipeBookMenu.PostPlaceAction var6 = var4.handlePlacement(
+                        var1.useMaxItems(), this.player.isCreative(), var3, this.player.serverLevel(), this.player.getInventory()
+                     );
+                     if (var6 == RecipeBookMenu.PostPlaceAction.PLACE_GHOST_RECIPE) {
+                        this.player.connection.send(new ClientboundPlaceGhostRecipePacket(this.player.containerMenu.containerId, var2.display().display()));
+                     }
+                  }
+               }
             }
          }
       }

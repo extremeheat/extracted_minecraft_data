@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -14,7 +13,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -143,18 +141,13 @@ public class JigsawPlacement {
    private static Optional<BlockPos> getRandomNamedJigsaw(
       StructurePoolElement var0, ResourceLocation var1, BlockPos var2, Rotation var3, StructureTemplateManager var4, WorldgenRandom var5
    ) {
-      List var6 = var0.getShuffledJigsawBlocks(var4, var2, var3, var5);
-      Optional var7 = Optional.empty();
-
-      for (StructureTemplate.StructureBlockInfo var9 : var6) {
-         ResourceLocation var10 = ResourceLocation.tryParse(Objects.requireNonNull(var9.nbt(), () -> var9 + " nbt was null").getString("name"));
-         if (var1.equals(var10)) {
-            var7 = Optional.of(var9.pos());
-            break;
+      for (StructureTemplate.JigsawBlockInfo var8 : var0.getShuffledJigsawBlocks(var4, var2, var3, var5)) {
+         if (var1.equals(var8.name())) {
+            return Optional.of(var8.info().pos());
          }
       }
 
-      return var7;
+      return Optional.empty();
    }
 
    private static void addPieces(
@@ -275,147 +268,149 @@ public class JigsawPlacement {
          BoundingBox var15 = var1.getBoundingBox();
          int var16 = var15.minY();
 
-         label134:
-         for (StructureTemplate.StructureBlockInfo var18 : var9.getShuffledJigsawBlocks(this.structureTemplateManager, var10, var11, this.random)) {
-            Direction var19 = JigsawBlock.getFrontFacing(var18.state());
-            BlockPos var20 = var18.pos();
-            BlockPos var21 = var20.relative(var19);
-            int var22 = var20.getY() - var16;
-            int var23 = -2147483648;
-            ResourceKey var24 = readPoolKey(var18, var7);
-            Optional var25 = this.pools.get(var24);
-            if (var25.isEmpty()) {
-               JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var24.location());
+         label129:
+         for (StructureTemplate.JigsawBlockInfo var18 : var9.getShuffledJigsawBlocks(this.structureTemplateManager, var10, var11, this.random)) {
+            StructureTemplate.StructureBlockInfo var19 = var18.info();
+            Direction var20 = JigsawBlock.getFrontFacing(var19.state());
+            BlockPos var21 = var19.pos();
+            BlockPos var22 = var21.relative(var20);
+            int var23 = var21.getY() - var16;
+            int var24 = -2147483648;
+            ResourceKey var25 = readPoolKey(var18, var7);
+            Optional var26 = this.pools.get(var25);
+            if (var26.isEmpty()) {
+               JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.location());
             } else {
-               Holder var26 = (Holder)var25.get();
-               if (((StructureTemplatePool)var26.value()).size() == 0 && !var26.is(Pools.EMPTY)) {
-                  JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var24.location());
+               Holder var27 = (Holder)var26.get();
+               if (((StructureTemplatePool)var27.value()).size() == 0 && !var27.is(Pools.EMPTY)) {
+                  JigsawPlacement.LOGGER.warn("Empty or non-existent pool: {}", var25.location());
                } else {
-                  Holder var27 = ((StructureTemplatePool)var26.value()).getFallback();
-                  if (((StructureTemplatePool)var27.value()).size() == 0 && !var27.is(Pools.EMPTY)) {
+                  Holder var28 = ((StructureTemplatePool)var27.value()).getFallback();
+                  if (((StructureTemplatePool)var28.value()).size() == 0 && !var28.is(Pools.EMPTY)) {
                      JigsawPlacement.LOGGER
-                        .warn("Empty or non-existent fallback pool: {}", var27.unwrapKey().map(var0 -> var0.location().toString()).orElse("<unregistered>"));
+                        .warn("Empty or non-existent fallback pool: {}", var28.unwrapKey().map(var0 -> var0.location().toString()).orElse("<unregistered>"));
                   } else {
-                     boolean var29 = var15.isInside(var21);
-                     MutableObject var28;
-                     if (var29) {
-                        var28 = var14;
+                     boolean var30 = var15.isInside(var22);
+                     MutableObject var29;
+                     if (var30) {
+                        var29 = var14;
                         if (var14.getValue() == null) {
                            var14.setValue(Shapes.create(AABB.of(var15)));
                         }
                      } else {
-                        var28 = var2;
+                        var29 = var2;
                      }
 
-                     ArrayList var30 = Lists.newArrayList();
+                     ArrayList var31 = Lists.newArrayList();
                      if (var3 != this.maxDepth) {
-                        var30.addAll(((StructureTemplatePool)var26.value()).getShuffledTemplates(this.random));
+                        var31.addAll(((StructureTemplatePool)var27.value()).getShuffledTemplates(this.random));
                      }
 
-                     var30.addAll(((StructureTemplatePool)var27.value()).getShuffledTemplates(this.random));
-                     int var31 = var18.nbt() != null ? var18.nbt().getInt("placement_priority") : 0;
+                     var31.addAll(((StructureTemplatePool)var28.value()).getShuffledTemplates(this.random));
+                     int var32 = var18.placementPriority();
 
-                     for (StructurePoolElement var33 : var30) {
-                        if (var33 == EmptyPoolElement.INSTANCE) {
+                     for (StructurePoolElement var34 : var31) {
+                        if (var34 == EmptyPoolElement.INSTANCE) {
                            break;
                         }
 
-                        for (Rotation var35 : Rotation.getShuffled(this.random)) {
-                           List var36 = var33.getShuffledJigsawBlocks(this.structureTemplateManager, BlockPos.ZERO, var35, this.random);
-                           BoundingBox var37 = var33.getBoundingBox(this.structureTemplateManager, BlockPos.ZERO, var35);
-                           int var38;
-                           if (var4 && var37.getYSpan() <= 16) {
-                              var38 = var36.stream()
+                        for (Rotation var36 : Rotation.getShuffled(this.random)) {
+                           List var37 = var34.getShuffledJigsawBlocks(this.structureTemplateManager, BlockPos.ZERO, var36, this.random);
+                           BoundingBox var38 = var34.getBoundingBox(this.structureTemplateManager, BlockPos.ZERO, var36);
+                           int var39;
+                           if (var4 && var38.getYSpan() <= 16) {
+                              var39 = var37.stream()
                                  .mapToInt(
                                     var3x -> {
-                                       if (!var37.isInside(var3x.pos().relative(JigsawBlock.getFrontFacing(var3x.state())))) {
+                                       StructureTemplate.StructureBlockInfo var4x = var3x.info();
+                                       if (!var38.isInside(var4x.pos().relative(JigsawBlock.getFrontFacing(var4x.state())))) {
                                           return 0;
                                        } else {
-                                          ResourceKey var4x = readPoolKey(var3x, var7);
-                                          Optional var5x = this.pools.get(var4x);
-                                          Optional var6x = var5x.map(var0 -> ((StructureTemplatePool)var0.value()).getFallback());
-                                          int var7x = var5x.<Integer>map(
-                                                var1xx -> ((StructureTemplatePool)var1xx.value()).getMaxSize(this.structureTemplateManager)
-                                             )
-                                             .orElse(0);
+                                          ResourceKey var5x = readPoolKey(var3x, var7);
+                                          Optional var6x = this.pools.get(var5x);
+                                          Optional var7x = var6x.map(var0 -> ((StructureTemplatePool)var0.value()).getFallback());
                                           int var8x = var6x.<Integer>map(
                                                 var1xx -> ((StructureTemplatePool)var1xx.value()).getMaxSize(this.structureTemplateManager)
                                              )
                                              .orElse(0);
-                                          return Math.max(var7x, var8x);
+                                          int var9x = var7x.<Integer>map(
+                                                var1xx -> ((StructureTemplatePool)var1xx.value()).getMaxSize(this.structureTemplateManager)
+                                             )
+                                             .orElse(0);
+                                          return Math.max(var8x, var9x);
                                        }
                                     }
                                  )
                                  .max()
                                  .orElse(0);
                            } else {
-                              var38 = 0;
+                              var39 = 0;
                            }
 
-                           for (StructureTemplate.StructureBlockInfo var40 : var36) {
-                              if (JigsawBlock.canAttach(var18, var40)) {
-                                 BlockPos var41 = var40.pos();
-                                 BlockPos var42 = var21.subtract(var41);
-                                 BoundingBox var43 = var33.getBoundingBox(this.structureTemplateManager, var42, var35);
-                                 int var44 = var43.minY();
-                                 StructureTemplatePool.Projection var45 = var33.getProjection();
-                                 boolean var46 = var45 == StructureTemplatePool.Projection.RIGID;
-                                 int var47 = var41.getY();
-                                 int var48 = var22 - var47 + JigsawBlock.getFrontFacing(var18.state()).getStepY();
-                                 int var49;
-                                 if (var13 && var46) {
-                                    var49 = var16 + var48;
+                           for (StructureTemplate.JigsawBlockInfo var41 : var37) {
+                              if (JigsawBlock.canAttach(var18, var41)) {
+                                 BlockPos var42 = var41.info().pos();
+                                 BlockPos var43 = var22.subtract(var42);
+                                 BoundingBox var44 = var34.getBoundingBox(this.structureTemplateManager, var43, var36);
+                                 int var45 = var44.minY();
+                                 StructureTemplatePool.Projection var46 = var34.getProjection();
+                                 boolean var47 = var46 == StructureTemplatePool.Projection.RIGID;
+                                 int var48 = var42.getY();
+                                 int var49 = var23 - var48 + JigsawBlock.getFrontFacing(var19.state()).getStepY();
+                                 int var50;
+                                 if (var13 && var47) {
+                                    var50 = var16 + var49;
                                  } else {
-                                    if (var23 == -2147483648) {
-                                       var23 = this.chunkGenerator.getFirstFreeHeight(var20.getX(), var20.getZ(), Heightmap.Types.WORLD_SURFACE_WG, var5, var6);
+                                    if (var24 == -2147483648) {
+                                       var24 = this.chunkGenerator.getFirstFreeHeight(var21.getX(), var21.getZ(), Heightmap.Types.WORLD_SURFACE_WG, var5, var6);
                                     }
 
-                                    var49 = var23 - var47;
+                                    var50 = var24 - var48;
                                  }
 
-                                 int var50 = var49 - var44;
-                                 BoundingBox var51 = var43.moved(0, var50, 0);
-                                 BlockPos var52 = var42.offset(0, var50, 0);
-                                 if (var38 > 0) {
-                                    int var53 = Math.max(var38 + 1, var51.maxY() - var51.minY());
-                                    var51.encapsulate(new BlockPos(var51.minX(), var51.minY() + var53, var51.minZ()));
+                                 int var51 = var50 - var45;
+                                 BoundingBox var52 = var44.moved(0, var51, 0);
+                                 BlockPos var53 = var43.offset(0, var51, 0);
+                                 if (var39 > 0) {
+                                    int var54 = Math.max(var39 + 1, var52.maxY() - var52.minY());
+                                    var52.encapsulate(new BlockPos(var52.minX(), var52.minY() + var54, var52.minZ()));
                                  }
 
-                                 if (!Shapes.joinIsNotEmpty((VoxelShape)var28.getValue(), Shapes.create(AABB.of(var51).deflate(0.25)), BooleanOp.ONLY_SECOND)) {
-                                    var28.setValue(Shapes.joinUnoptimized((VoxelShape)var28.getValue(), Shapes.create(AABB.of(var51)), BooleanOp.ONLY_FIRST));
-                                    int var58 = var1.getGroundLevelDelta();
-                                    int var54;
-                                    if (var46) {
-                                       var54 = var58 - var48;
+                                 if (!Shapes.joinIsNotEmpty((VoxelShape)var29.getValue(), Shapes.create(AABB.of(var52).deflate(0.25)), BooleanOp.ONLY_SECOND)) {
+                                    var29.setValue(Shapes.joinUnoptimized((VoxelShape)var29.getValue(), Shapes.create(AABB.of(var52)), BooleanOp.ONLY_FIRST));
+                                    int var59 = var1.getGroundLevelDelta();
+                                    int var55;
+                                    if (var47) {
+                                       var55 = var59 - var49;
                                     } else {
-                                       var54 = var33.getGroundLevelDelta();
+                                       var55 = var34.getGroundLevelDelta();
                                     }
 
-                                    PoolElementStructurePiece var55 = new PoolElementStructurePiece(
-                                       this.structureTemplateManager, var33, var52, var54, var35, var51, var8
+                                    PoolElementStructurePiece var56 = new PoolElementStructurePiece(
+                                       this.structureTemplateManager, var34, var53, var55, var36, var52, var8
                                     );
-                                    int var56;
+                                    int var57;
                                     if (var13) {
-                                       var56 = var16 + var22;
-                                    } else if (var46) {
-                                       var56 = var49 + var47;
+                                       var57 = var16 + var23;
+                                    } else if (var47) {
+                                       var57 = var50 + var48;
                                     } else {
-                                       if (var23 == -2147483648) {
-                                          var23 = this.chunkGenerator
-                                             .getFirstFreeHeight(var20.getX(), var20.getZ(), Heightmap.Types.WORLD_SURFACE_WG, var5, var6);
+                                       if (var24 == -2147483648) {
+                                          var24 = this.chunkGenerator
+                                             .getFirstFreeHeight(var21.getX(), var21.getZ(), Heightmap.Types.WORLD_SURFACE_WG, var5, var6);
                                        }
 
-                                       var56 = var23 + var48 / 2;
+                                       var57 = var24 + var49 / 2;
                                     }
 
-                                    var1.addJunction(new JigsawJunction(var21.getX(), var56 - var22 + var58, var21.getZ(), var48, var45));
-                                    var55.addJunction(new JigsawJunction(var20.getX(), var56 - var47 + var54, var20.getZ(), -var48, var12));
-                                    this.pieces.add(var55);
+                                    var1.addJunction(new JigsawJunction(var22.getX(), var57 - var23 + var59, var22.getZ(), var49, var46));
+                                    var56.addJunction(new JigsawJunction(var21.getX(), var57 - var48 + var55, var21.getZ(), -var49, var12));
+                                    this.pieces.add(var56);
                                     if (var3 + 1 <= this.maxDepth) {
-                                       JigsawPlacement.PieceState var57 = new JigsawPlacement.PieceState(var55, var28, var3 + 1);
-                                       this.placing.add(var57, var31);
+                                       JigsawPlacement.PieceState var58 = new JigsawPlacement.PieceState(var56, var29, var3 + 1);
+                                       this.placing.add(var58, var32);
                                     }
-                                    continue label134;
+                                    continue label129;
                                  }
                               }
                            }
@@ -427,10 +422,8 @@ public class JigsawPlacement {
          }
       }
 
-      private static ResourceKey<StructureTemplatePool> readPoolKey(StructureTemplate.StructureBlockInfo var0, PoolAliasLookup var1) {
-         CompoundTag var2 = Objects.requireNonNull(var0.nbt(), () -> var0 + " nbt was null");
-         ResourceKey var3 = Pools.parseKey(var2.getString("pool"));
-         return var1.lookup(var3);
+      private static ResourceKey<StructureTemplatePool> readPoolKey(StructureTemplate.JigsawBlockInfo var0, PoolAliasLookup var1) {
+         return var1.lookup(Pools.createKey(var0.pool()));
       }
    }
 }

@@ -8,10 +8,13 @@ import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 
 public class SmithingTransformRecipeBuilder {
@@ -41,10 +44,10 @@ public class SmithingTransformRecipeBuilder {
    }
 
    public void save(RecipeOutput var1, String var2) {
-      this.save(var1, ResourceLocation.parse(var2));
+      this.save(var1, ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var2)));
    }
 
-   public void save(RecipeOutput var1, ResourceLocation var2) {
+   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
       this.ensureValid(var2);
       Advancement.Builder var3 = var1.advancement()
          .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
@@ -54,12 +57,12 @@ public class SmithingTransformRecipeBuilder {
       SmithingTransformRecipe var4 = new SmithingTransformRecipe(
          Optional.of(this.template), Optional.of(this.base), Optional.of(this.addition), new ItemStack(this.result)
       );
-      var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
-   private void ensureValid(ResourceLocation var1) {
+   private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + var1.location());
       }
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Predicate;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -14,25 +15,30 @@ public class MeleeAttack {
       super();
    }
 
-   public static OneShot<Mob> create(int var0) {
+   public static <T extends Mob> OneShot<T> create(int var0) {
+      return create(var0x -> true, var0);
+   }
+
+   public static <T extends Mob> OneShot<T> create(Predicate<T> var0, int var1) {
       return BehaviorBuilder.create(
-         var1 -> var1.group(
-                  var1.registered(MemoryModuleType.LOOK_TARGET),
-                  var1.present(MemoryModuleType.ATTACK_TARGET),
-                  var1.absent(MemoryModuleType.ATTACK_COOLING_DOWN),
-                  var1.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+         var2 -> var2.group(
+                  var2.registered(MemoryModuleType.LOOK_TARGET),
+                  var2.present(MemoryModuleType.ATTACK_TARGET),
+                  var2.absent(MemoryModuleType.ATTACK_COOLING_DOWN),
+                  var2.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
                )
                .apply(
-                  var1,
-                  (var2, var3, var4, var5) -> (var6, var7, var8) -> {
-                        LivingEntity var10 = var1.get(var3);
-                        if (!isHoldingUsableProjectileWeapon(var7)
-                           && var7.isWithinMeleeAttackRange(var10)
-                           && var1.<NearestVisibleLivingEntities>get(var5).contains(var10)) {
-                           var2.set(new EntityTracker(var10, true));
-                           var7.swing(InteractionHand.MAIN_HAND);
-                           var7.doHurtTarget(var6, var10);
-                           var4.setWithExpiry(true, (long)var0);
+                  var2,
+                  (var3, var4, var5, var6) -> (var7, var8, var9) -> {
+                        LivingEntity var11 = var2.get(var4);
+                        if (var0.test(var8)
+                           && !isHoldingUsableProjectileWeapon(var8)
+                           && var8.isWithinMeleeAttackRange(var11)
+                           && var2.<NearestVisibleLivingEntities>get(var6).contains(var11)) {
+                           var3.set(new EntityTracker(var11, true));
+                           var8.swing(InteractionHand.MAIN_HAND);
+                           var8.doHurtTarget(var7, var11);
+                           var5.setWithExpiry(true, (long)var1);
                            return true;
                         } else {
                            return false;

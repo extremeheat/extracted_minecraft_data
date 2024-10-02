@@ -14,21 +14,13 @@ public class ShapeRenderer {
       super();
    }
 
-   public static void renderShape(
-      PoseStack var0, VertexConsumer var1, VoxelShape var2, double var3, double var5, double var7, float var9, float var10, float var11, float var12
-   ) {
-      PoseStack.Pose var13 = var0.last();
-      var2.forAllEdges(
-         (var12x, var14, var16, var18, var20, var22) -> {
-            Vector3f var24 = new Vector3f((float)(var18 - var12x), (float)(var20 - var14), (float)(var22 - var16)).normalize();
-            var1.addVertex(var13, (float)(var12x + var3), (float)(var14 + var5), (float)(var16 + var7))
-               .setColor(var9, var10, var11, var12)
-               .setNormal(var13, var24);
-            var1.addVertex(var13, (float)(var18 + var3), (float)(var20 + var5), (float)(var22 + var7))
-               .setColor(var9, var10, var11, var12)
-               .setNormal(var13, var24);
-         }
-      );
+   public static void renderShape(PoseStack var0, VertexConsumer var1, VoxelShape var2, double var3, double var5, double var7, int var9) {
+      PoseStack.Pose var10 = var0.last();
+      var2.forAllEdges((var9x, var11, var13, var15, var17, var19) -> {
+         Vector3f var21 = new Vector3f((float)(var15 - var9x), (float)(var17 - var11), (float)(var19 - var13)).normalize();
+         var1.addVertex(var10, (float)(var9x + var3), (float)(var11 + var5), (float)(var13 + var7)).setColor(var9).setNormal(var10, var21);
+         var1.addVertex(var10, (float)(var15 + var3), (float)(var17 + var5), (float)(var19 + var7)).setColor(var9).setNormal(var10, var21);
+      });
    }
 
    public static void renderLineBox(PoseStack var0, VertexConsumer var1, AABB var2, float var3, float var4, float var5, float var6) {

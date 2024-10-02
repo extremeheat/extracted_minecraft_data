@@ -37,6 +37,7 @@ import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -215,7 +216,7 @@ public class Gui {
          } else {
             this.scopeScale = 0.5F;
             ItemStack var4 = this.minecraft.player.getInventory().getArmor(3);
-            if (var4.is(Blocks.CARVED_PUMPKIN.asItem())) {
+            if (var4.is(ItemTags.GAZE_DISGUISE_EQUIPMENT)) {
                this.renderTextureOverlay(var1, PUMPKIN_BLUR_LOCATION, 1.0F);
             }
          }

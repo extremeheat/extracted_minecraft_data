@@ -2,9 +2,10 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 
 public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTrigger.TriggerInstance> {
    public RecipeCraftedTrigger() {
@@ -16,7 +17,7 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
       return RecipeCraftedTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, ResourceLocation var2, List<ItemStack> var3) {
+   public void trigger(ServerPlayer var1, ResourceKey<Recipe<?>> var2, List<ItemStack> var3) {
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 

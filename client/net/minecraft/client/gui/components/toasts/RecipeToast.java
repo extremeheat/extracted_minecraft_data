@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -8,22 +8,22 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class RecipeToast implements Toast {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/recipe");
    private static final long DISPLAY_TIME = 5000L;
    private static final Component TITLE_TEXT = Component.translatable("recipe.toast.title");
    private static final Component DESCRIPTION_TEXT = Component.translatable("recipe.toast.description");
-   private final List<RecipeToast.RecipeDisplayItems> recipeItems = Lists.newArrayList();
+   private final List<RecipeToast.Entry> recipeItems = new ArrayList<>();
    private long lastChanged;
    private boolean changed;
    private Toast.Visibility wantedVisibility = Toast.Visibility.HIDE;
    private int displayedRecipeIndex;
 
-   public RecipeToast(ItemStack var1, ItemStack var2) {
+   private RecipeToast() {
       super();
-      this.recipeItems.add(new RecipeToast.RecipeDisplayItems(var1, var2));
    }
 
    @Override
@@ -56,7 +56,7 @@ public class RecipeToast implements Toast {
       var1.blitSprite(RenderType::guiTextured, BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       var1.drawString(var2, TITLE_TEXT, 30, 7, -11534256, false);
       var1.drawString(var2, DESCRIPTION_TEXT, 30, 18, -16777216, false);
-      RecipeToast.RecipeDisplayItems var5 = this.recipeItems.get(this.displayedRecipeIndex);
+      RecipeToast.Entry var5 = this.recipeItems.get(this.displayedRecipeIndex);
       var1.pose().pushPose();
       var1.pose().scale(0.6F, 0.6F, 1.0F);
       var1.renderFakeItem(var5.categoryItem(), 3, 3);
@@ -65,19 +65,21 @@ public class RecipeToast implements Toast {
    }
 
    private void addItem(ItemStack var1, ItemStack var2) {
-      this.recipeItems.add(new RecipeToast.RecipeDisplayItems(var1, var2));
+      this.recipeItems.add(new RecipeToast.Entry(var1, var2));
       this.changed = true;
    }
 
-   public static void addOrUpdate(ToastManager var0, RecipeHolder<?> var1) {
+   public static void addOrUpdate(ToastManager var0, RecipeDisplay var1) {
       RecipeToast var2 = var0.getToast(RecipeToast.class, NO_TOKEN);
-      ItemStack var3 = var1.value().getCategoryIconItem();
-      ItemStack var4 = var1.value().getResultItem(var0.getMinecraft().level.registryAccess());
       if (var2 == null) {
-         var0.addToast(new RecipeToast(var3, var4));
-      } else {
-         var2.addItem(var3, var4);
+         var2 = new RecipeToast();
+         var0.addToast(var2);
       }
+
+      SlotDisplay.ResolutionContext var3 = SlotDisplay.ResolutionContext.forLevel(var0.getMinecraft().level);
+      ItemStack var4 = var1.craftingStation().resolveForFirstStack(var3);
+      ItemStack var5 = var1.result().resolveForFirstStack(var3);
+      var2.addItem(var4, var5);
    }
 
 // $VF: Couldn't be decompiled

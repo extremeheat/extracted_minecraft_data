@@ -59,6 +59,7 @@ public class EntityEvent {
    public static final byte SNIFFER_DIGGING_SOUND = 63;
    public static final byte ARMADILLO_PEEK = 64;
    public static final byte BODY_BREAK = 65;
+   public static final byte SHAKE = 66;
 
    public EntityEvent() {
       super();

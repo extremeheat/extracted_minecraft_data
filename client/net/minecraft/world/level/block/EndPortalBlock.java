@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.EndPlatformFeature;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -67,7 +67,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
    }
 
    @Override
-   public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.END ? Level.OVERWORLD : Level.END;
       ServerLevel var5 = var1.getServer().getLevel(var4);
       if (var5 == null) {
@@ -89,14 +89,14 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
             var9 = 0.0F;
             var10 = Relative.union(Relative.DELTA, Relative.ROTATION);
             if (var2 instanceof ServerPlayer var11) {
-               return var11.findRespawnPositionAndUseSpawnBlock(false, DimensionTransition.DO_NOTHING);
+               return var11.findRespawnPositionAndUseSpawnBlock(false, TeleportTransition.DO_NOTHING);
             }
 
             var8 = var2.adjustSpawnLocation(var5, var7).getBottomCenter();
          }
 
-         return new DimensionTransition(
-            var5, var8, Vec3.ZERO, var9, 0.0F, var10, DimensionTransition.PLAY_PORTAL_SOUND.then(DimensionTransition.PLACE_PORTAL_TICKET)
+         return new TeleportTransition(
+            var5, var8, Vec3.ZERO, var9, 0.0F, var10, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET)
          );
       }
    }

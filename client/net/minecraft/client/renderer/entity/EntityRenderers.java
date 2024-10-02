@@ -86,6 +86,7 @@ public class EntityRenderers {
       register(EntityType.ACACIA_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.ACACIA_BOAT));
       register(EntityType.CHERRY_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.CHERRY_BOAT));
       register(EntityType.DARK_OAK_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.DARK_OAK_BOAT));
+      register(EntityType.PALE_OAK_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.PALE_OAK_BOAT));
       register(EntityType.MANGROVE_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.MANGROVE_BOAT));
       register(EntityType.BAMBOO_RAFT, var0 -> new RaftRenderer(var0, ModelLayers.BAMBOO_RAFT));
       register(EntityType.BOGGED, BoggedRenderer::new);
@@ -101,6 +102,7 @@ public class EntityRenderers {
       register(EntityType.ACACIA_CHEST_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.ACACIA_CHEST_BOAT));
       register(EntityType.CHERRY_CHEST_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.CHERRY_CHEST_BOAT));
       register(EntityType.DARK_OAK_CHEST_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.DARK_OAK_CHEST_BOAT));
+      register(EntityType.PALE_OAK_CHEST_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.PALE_OAK_CHEST_BOAT));
       register(EntityType.MANGROVE_CHEST_BOAT, var0 -> new BoatRenderer(var0, ModelLayers.MANGROVE_CHEST_BOAT));
       register(EntityType.BAMBOO_CHEST_RAFT, var0 -> new RaftRenderer(var0, ModelLayers.BAMBOO_CHEST_RAFT));
       register(EntityType.CHEST_MINECART, var0 -> new MinecartRenderer(var0, ModelLayers.CHEST_MINECART));
@@ -108,6 +110,8 @@ public class EntityRenderers {
       register(EntityType.COD, CodRenderer::new);
       register(EntityType.COMMAND_BLOCK_MINECART, var0 -> new MinecartRenderer(var0, ModelLayers.COMMAND_BLOCK_MINECART));
       register(EntityType.COW, CowRenderer::new);
+      register(EntityType.CREAKING, CreakingRenderer::new);
+      register(EntityType.CREAKING_TRANSIENT, CreakingRenderer::new);
       register(EntityType.CREEPER, CreeperRenderer::new);
       register(EntityType.DOLPHIN, DolphinRenderer::new);
       register(EntityType.DONKEY, var0 -> new DonkeyRenderer<>(var0, 0.87F, ModelLayers.DONKEY, ModelLayers.DONKEY_BABY, false));

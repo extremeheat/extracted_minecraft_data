@@ -32,8 +32,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.portal.PortalShape;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -122,7 +122,7 @@ public class NetherPortalBlock extends Block implements Portal {
 
    @Nullable
    @Override
-   public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
       ServerLevel var5 = var1.getServer().getLevel(var4);
       if (var5 == null) {
@@ -137,17 +137,17 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    @Nullable
-   private DimensionTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
+   private TeleportTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
       Optional var7 = var1.getPortalForcer().findClosestPortalPosition(var4, var5, var6);
       BlockUtil.FoundRectangle var8;
-      DimensionTransition.PostDimensionTransition var9;
+      TeleportTransition.PostTeleportTransition var9;
       if (var7.isPresent()) {
          BlockPos var10 = (BlockPos)var7.get();
          BlockState var11 = var1.getBlockState(var10);
          var8 = BlockUtil.getLargestRectangleAround(
             var10, var11.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, var2x -> var1.getBlockState(var2x) == var11
          );
-         var9 = DimensionTransition.PLAY_PORTAL_SOUND.then(var1x -> var1x.placePortalTicket(var10));
+         var9 = TeleportTransition.PLAY_PORTAL_SOUND.then(var1x -> var1x.placePortalTicket(var10));
       } else {
          Direction.Axis var12 = var2.level().getBlockState(var3).getOptionalValue(AXIS).orElse(Direction.Axis.X);
          Optional var13 = var1.getPortalForcer().createPortal(var4, var12);
@@ -157,14 +157,14 @@ public class NetherPortalBlock extends Block implements Portal {
          }
 
          var8 = (BlockUtil.FoundRectangle)var13.get();
-         var9 = DimensionTransition.PLAY_PORTAL_SOUND.then(DimensionTransition.PLACE_PORTAL_TICKET);
+         var9 = TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET);
       }
 
       return getDimensionTransitionFromExit(var2, var3, var8, var1, var9);
    }
 
-   private static DimensionTransition getDimensionTransitionFromExit(
-      Entity var0, BlockPos var1, BlockUtil.FoundRectangle var2, ServerLevel var3, DimensionTransition.PostDimensionTransition var4
+   private static TeleportTransition getDimensionTransitionFromExit(
+      Entity var0, BlockPos var1, BlockUtil.FoundRectangle var2, ServerLevel var3, TeleportTransition.PostTeleportTransition var4
    ) {
       BlockState var7 = var0.level().getBlockState(var1);
       Direction.Axis var5;
@@ -183,8 +183,8 @@ public class NetherPortalBlock extends Block implements Portal {
       return createDimensionTransition(var3, var2, var5, var6, var0, var4);
    }
 
-   private static DimensionTransition createDimensionTransition(
-      ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, DimensionTransition.PostDimensionTransition var5
+   private static TeleportTransition createDimensionTransition(
+      ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, TeleportTransition.PostTeleportTransition var5
    ) {
       BlockPos var6 = var1.minCorner;
       BlockState var7 = var0.getBlockState(var6);
@@ -199,7 +199,7 @@ public class NetherPortalBlock extends Block implements Portal {
       boolean var21 = var8 == Direction.Axis.X;
       Vec3 var22 = new Vec3((double)var6.getX() + (var21 ? var15 : var19), (double)var6.getY() + var17, (double)var6.getZ() + (var21 ? var19 : var15));
       Vec3 var23 = PortalShape.findCollisionFreePosition(var22, var0, var4, var13);
-      return new DimensionTransition(var0, var23, Vec3.ZERO, (float)var14, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), var5);
+      return new TeleportTransition(var0, var23, Vec3.ZERO, (float)var14, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), var5);
    }
 
    @Override

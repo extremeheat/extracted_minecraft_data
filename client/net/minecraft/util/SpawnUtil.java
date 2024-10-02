@@ -4,6 +4,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -83,6 +84,9 @@ public class SpawnUtil {
             ? (var4.isAir() || var4.liquid()) && (var2.isSolid() || var2.is(Blocks.POWDER_SNOW))
             : false;
       SpawnUtil.Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty()
+            && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
+      SpawnUtil.Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty()
+            && !var2.is(BlockTags.LEAVES)
             && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
 
       boolean canSpawnOn(ServerLevel var1, BlockPos var2, BlockState var3, BlockPos var4, BlockState var5);

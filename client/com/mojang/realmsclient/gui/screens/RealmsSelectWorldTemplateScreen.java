@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -32,7 +33,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.realms.RealmsObjectSelectionList;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonLinks;
@@ -346,13 +346,13 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
    }
 
-   class WorldTemplateList extends RealmsObjectSelectionList<RealmsSelectWorldTemplateScreen.Entry> {
+   class WorldTemplateList extends ObjectSelectionList<RealmsSelectWorldTemplateScreen.Entry> {
       public WorldTemplateList(final RealmsSelectWorldTemplateScreen param1) {
          this(var1, Collections.emptyList());
       }
 
       public WorldTemplateList(final Iterable<WorldTemplate> param1, final Iterable nullx) {
-         super(var1.width, var1.height - 33 - var1.getHeaderHeight(), var1.getHeaderHeight(), 46);
+         super(Minecraft.getInstance(), var1.width, var1.height - 33 - var1.getHeaderHeight(), var1.getHeaderHeight(), 46);
          this.this$0 = var1;
          nullx.forEach(this::addEntry);
       }
@@ -375,11 +375,6 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          super.setSelected(var1);
          this.this$0.selectedTemplate = var1 == null ? null : var1.template;
          this.this$0.updateButtonStates();
-      }
-
-      @Override
-      public int getMaxPosition() {
-         return this.getItemCount() * 46;
       }
 
       @Override

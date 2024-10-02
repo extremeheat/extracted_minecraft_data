@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class GhostSlots {
    private final Reference2ObjectMap<Slot, GhostSlots.GhostSlot> ingredients = new Reference2ObjectArrayMap();
@@ -25,12 +26,19 @@ public class GhostSlots {
       this.ingredients.clear();
    }
 
-   public void addResult(ItemStack var1, Slot var2) {
-      this.ingredients.put(var2, new GhostSlots.GhostSlot(List.of(var1), true));
+   private void setSlot(Slot var1, SlotDisplay.ResolutionContext var2, SlotDisplay var3, boolean var4) {
+      List var5 = var3.resolveForStacks(var2);
+      if (!var5.isEmpty()) {
+         this.ingredients.put(var1, new GhostSlots.GhostSlot(var5, var4));
+      }
    }
 
-   public void addIngredient(List<ItemStack> var1, Slot var2) {
-      this.ingredients.put(var2, new GhostSlots.GhostSlot(var1, false));
+   protected void setInput(Slot var1, SlotDisplay.ResolutionContext var2, SlotDisplay var3) {
+      this.setSlot(var1, var2, var3, false);
+   }
+
+   protected void setResult(Slot var1, SlotDisplay.ResolutionContext var2, SlotDisplay var3) {
+      this.setSlot(var1, var2, var3, true);
    }
 
    public void render(GuiGraphics var1, Minecraft var2, boolean var3) {

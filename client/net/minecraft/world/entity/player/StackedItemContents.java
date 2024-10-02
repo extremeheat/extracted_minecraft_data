@@ -44,7 +44,15 @@ public class StackedItemContents {
    }
 
    public boolean canCraft(Recipe<?> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
-      return this.raw.tryPick(var1.placementInfo().stackedRecipeContents(), var2, var3);
+      return this.canCraft(var1.placementInfo().unpackedIngredients(), var2, var3);
+   }
+
+   public boolean canCraft(List<StackedContents.IngredientInfo<Holder<Item>>> var1, @Nullable StackedContents.Output<Holder<Item>> var2) {
+      return this.canCraft(var1, 1, var2);
+   }
+
+   private boolean canCraft(List<StackedContents.IngredientInfo<Holder<Item>>> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
+      return this.raw.tryPick(var1, var2, var3);
    }
 
    public int getBiggestCraftableStack(Recipe<?> var1, @Nullable StackedContents.Output<Holder<Item>> var2) {
@@ -52,7 +60,7 @@ public class StackedItemContents {
    }
 
    public int getBiggestCraftableStack(Recipe<?> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
-      return this.raw.tryPickAll(var1.placementInfo().stackedRecipeContents(), var2, var3);
+      return this.raw.tryPickAll(var1.placementInfo().unpackedIngredients(), var2, var3);
    }
 
    public void clear() {

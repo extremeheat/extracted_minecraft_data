@@ -462,7 +462,7 @@ public final class ItemStack implements DataComponentHolder {
 
    public void hurtAndBreak(int var1, ServerLevel var2, @Nullable ServerPlayer var3, Consumer<Item> var4) {
       int var5 = this.processDurabilityChange(var1, var2, var3);
-      if (var5 > 0) {
+      if (var5 != 0) {
          this.applyDamage(this.getDamageValue() + var5, var3, var4);
       }
    }
@@ -493,7 +493,7 @@ public final class ItemStack implements DataComponentHolder {
    public void hurtWithoutBreaking(int var1, Player var2) {
       if (var2 instanceof ServerPlayer var3) {
          int var4 = this.processDurabilityChange(var1, var3.serverLevel(), var3);
-         if (var4 <= 0) {
+         if (var4 == 0) {
             return;
          }
 

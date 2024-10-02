@@ -72,7 +72,7 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WritableBookContent;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Portal;
@@ -188,28 +188,26 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public void tick() {
       this.dropSpamThrottler.tick();
-      if (this.level().hasChunkAt(this.getBlockX(), this.getBlockZ())) {
-         super.tick();
-         this.sendShiftKeyState();
-         if (!this.lastSentInput.equals(this.input.keyPresses)) {
-            this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
-            this.lastSentInput = this.input.keyPresses;
-         }
+      super.tick();
+      this.sendShiftKeyState();
+      if (!this.lastSentInput.equals(this.input.keyPresses)) {
+         this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
+         this.lastSentInput = this.input.keyPresses;
+      }
 
-         if (this.isPassenger()) {
-            this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
-            Entity var1 = this.getRootVehicle();
-            if (var1 != this && var1.isControlledByLocalInstance()) {
-               this.connection.send(new ServerboundMoveVehiclePacket(var1));
-               this.sendIsSprintingIfNeeded();
-            }
-         } else {
-            this.sendPosition();
+      if (this.isPassenger()) {
+         this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
+         Entity var1 = this.getRootVehicle();
+         if (var1 != this && var1.isControlledByLocalInstance()) {
+            this.connection.send(new ServerboundMoveVehiclePacket(var1));
+            this.sendIsSprintingIfNeeded();
          }
+      } else {
+         this.sendPosition();
+      }
 
-         for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
-            var2.tick();
-         }
+      for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
+         var2.tick();
       }
    }
 
@@ -377,7 +375,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.recipeBook;
    }
 
-   public void removeRecipeHighlight(RecipeHolder<?> var1) {
+   public void removeRecipeHighlight(RecipeDisplayId var1) {
       if (this.recipeBook.willHighlight(var1)) {
          this.recipeBook.removeHighlight(var1);
          this.connection.send(new ServerboundRecipeBookSeenRecipePacket(var1));

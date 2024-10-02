@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,7 +34,7 @@ public class KnowledgeBookItem extends Item {
             RecipeManager var6 = var1.getServer().getRecipeManager();
             ArrayList var7 = new ArrayList(var5.size());
 
-            for (ResourceLocation var9 : var5) {
+            for (ResourceKey var9 : var5) {
                Optional var10 = var6.byKey(var9);
                if (!var10.isPresent()) {
                   LOGGER.error("Invalid recipe: {}", var9);

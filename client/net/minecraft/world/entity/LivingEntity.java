@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
@@ -180,6 +181,14 @@ public abstract class LivingEntity extends Entity implements Attackable {
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
    public static final String ATTRIBUTES_FIELD = "attributes";
+   public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM = var0 -> {
+      if (var0 instanceof Player var1) {
+         ItemStack var2 = var1.getItemBySlot(EquipmentSlot.HEAD);
+         return !var2.is(ItemTags.GAZE_DISGUISE_EQUIPMENT);
+      } else {
+         return true;
+      }
+   };
    private final AttributeMap attributes;
    private final CombatTracker combatTracker = new CombatTracker(this);
    private final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
@@ -1569,6 +1578,26 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return !this.isRemoved() && this.getHealth() > 0.0F;
    }
 
+   public boolean isLookingAtMe(LivingEntity var1, double var2, boolean var4, boolean var5, Predicate<LivingEntity> var6, DoubleSupplier... var7) {
+      if (!var6.test(var1)) {
+         return false;
+      } else {
+         Vec3 var8 = var1.getViewVector(1.0F).normalize();
+
+         for (DoubleSupplier var12 : var7) {
+            Vec3 var13 = new Vec3(this.getX() - var1.getX(), var12.getAsDouble() - var1.getEyeY(), this.getZ() - var1.getZ());
+            double var14 = var13.length();
+            var13 = var13.normalize();
+            double var16 = var8.dot(var13);
+            if (var16 > 1.0 - var2 / (var4 ? var14 : 1.0)) {
+               return var1.hasLineOfSight(this, var5 ? ClipContext.Block.VISUAL : ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var12);
+            }
+         }
+
+         return false;
+      }
+   }
+
    @Override
    public int getMaxFallDistance() {
       return this.getComfortableFallDistance(0.0F);
@@ -2634,11 +2663,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.noJumpDelay--;
       }
 
-      if (this.isControlledByLocalInstance()) {
-         this.lerpSteps = 0;
-         this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
-      }
-
       if (this.lerpSteps > 0) {
          this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
          this.lerpSteps--;
@@ -2722,10 +2746,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.resetFallDistance();
       }
 
-      label115: {
+      label112: {
          if (this.getControllingPassenger() instanceof Player var15 && this.isAlive()) {
             this.travelRidden(var15, var10);
-            break label115;
+            break label112;
          }
 
          this.travel(var10);
@@ -2890,6 +2914,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    @Override
+   public void cancelLerp() {
+      this.lerpSteps = 0;
+   }
+
+   @Override
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.lerpX = var1;
       this.lerpY = var3;
@@ -2948,14 +2977,16 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public boolean hasLineOfSight(Entity var1) {
+      return this.hasLineOfSight(var1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var1::getEyeY);
+   }
+
+   public boolean hasLineOfSight(Entity var1, ClipContext.Block var2, ClipContext.Fluid var3, DoubleSupplier var4) {
       if (var1.level() != this.level()) {
          return false;
       } else {
-         Vec3 var2 = new Vec3(this.getX(), this.getEyeY(), this.getZ());
-         Vec3 var3 = new Vec3(var1.getX(), var1.getEyeY(), var1.getZ());
-         return var3.distanceTo(var2) > 128.0
-            ? false
-            : this.level().clip(new ClipContext(var2, var3, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this)).getType() == HitResult.Type.MISS;
+         Vec3 var5 = new Vec3(this.getX(), this.getEyeY(), this.getZ());
+         Vec3 var6 = new Vec3(var1.getX(), var4.getAsDouble(), var1.getZ());
+         return var6.distanceTo(var5) > 128.0 ? false : this.level().clip(new ClipContext(var5, var6, var2, var3, this)).getType() == HitResult.Type.MISS;
       }
    }
 

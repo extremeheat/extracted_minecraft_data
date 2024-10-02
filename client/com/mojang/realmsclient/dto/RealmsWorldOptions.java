@@ -89,23 +89,23 @@ public class RealmsWorldOptions extends ValueObject {
       this.empty = var1;
    }
 
-   public static RealmsWorldOptions parse(JsonObject var0) {
-      RealmsWorldOptions var1 = new RealmsWorldOptions(
+   public static RealmsWorldOptions parse(JsonObject var0, RealmsSettings var1) {
+      RealmsWorldOptions var2 = new RealmsWorldOptions(
          JsonUtils.getBooleanOr("pvp", var0, true),
          JsonUtils.getBooleanOr("spawnMonsters", var0, true),
          JsonUtils.getIntOr("spawnProtection", var0, 0),
          JsonUtils.getBooleanOr("commandBlocks", var0, false),
          JsonUtils.getIntOr("difficulty", var0, 2),
          JsonUtils.getIntOr("gameMode", var0, 0),
-         JsonUtils.getBooleanOr("hardcore", var0, false),
+         var1.hardcore(),
          JsonUtils.getBooleanOr("forceGameMode", var0, false),
          JsonUtils.getRequiredStringOr("slotName", var0, ""),
          JsonUtils.getRequiredStringOr("version", var0, ""),
          RealmsServer.getCompatibility(JsonUtils.getRequiredStringOr("compatibility", var0, RealmsServer.Compatibility.UNVERIFIABLE.name()))
       );
-      var1.templateId = JsonUtils.getLongOr("worldTemplateId", var0, -1L);
-      var1.templateImage = JsonUtils.getStringOr("worldTemplateImage", var0, DEFAULT_TEMPLATE_IMAGE);
-      return var1;
+      var2.templateId = JsonUtils.getLongOr("worldTemplateId", var0, -1L);
+      var2.templateImage = JsonUtils.getStringOr("worldTemplateImage", var0, DEFAULT_TEMPLATE_IMAGE);
+      return var2;
    }
 
    public String getSlotName(int var1) {

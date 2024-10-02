@@ -31,6 +31,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.CHERRY_LEAVES, var2);
       var0.put(Blocks.BIRCH_LEAVES, var2);
       var0.put(Blocks.DARK_OAK_LEAVES, var2);
+      var0.put(Blocks.PALE_OAK_LEAVES, var2);
       var0.put(Blocks.AZALEA_LEAVES, var2);
       var0.put(Blocks.FLOWERING_AZALEA_LEAVES, var2);
       var0.put(Blocks.MANGROVE_ROOTS, var2);
@@ -43,6 +44,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.ACACIA_SAPLING, var3);
       var0.put(Blocks.CHERRY_SAPLING, var3);
       var0.put(Blocks.DARK_OAK_SAPLING, var3);
+      var0.put(Blocks.PALE_OAK_SAPLING, var3);
       var0.put(Blocks.GLASS, var3);
       var0.put(Blocks.WHITE_BED, var3);
       var0.put(Blocks.ORANGE_BED, var3);
@@ -110,6 +112,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.ACACIA_TRAPDOOR, var3);
       var0.put(Blocks.CHERRY_TRAPDOOR, var3);
       var0.put(Blocks.DARK_OAK_TRAPDOOR, var3);
+      var0.put(Blocks.PALE_OAK_TRAPDOOR, var3);
       var0.put(Blocks.CRIMSON_TRAPDOOR, var3);
       var0.put(Blocks.WARPED_TRAPDOOR, var3);
       var0.put(Blocks.MANGROVE_TRAPDOOR, var3);
@@ -127,6 +130,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.PUMPKIN_STEM, var3);
       var0.put(Blocks.MELON_STEM, var3);
       var0.put(Blocks.VINE, var3);
+      var0.put(Blocks.PALE_MOSS_CARPET, var3);
+      var0.put(Blocks.PALE_HANGING_MOSS, var3);
       var0.put(Blocks.GLOW_LICHEN, var3);
       var0.put(Blocks.LILY_PAD, var3);
       var0.put(Blocks.NETHER_WART, var3);
@@ -141,6 +146,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_ACACIA_SAPLING, var3);
       var0.put(Blocks.POTTED_CHERRY_SAPLING, var3);
       var0.put(Blocks.POTTED_DARK_OAK_SAPLING, var3);
+      var0.put(Blocks.POTTED_PALE_OAK_SAPLING, var3);
       var0.put(Blocks.POTTED_MANGROVE_PROPAGULE, var3);
       var0.put(Blocks.POTTED_FERN, var3);
       var0.put(Blocks.POTTED_DANDELION, var3);
@@ -180,6 +186,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.ACACIA_DOOR, var3);
       var0.put(Blocks.CHERRY_DOOR, var3);
       var0.put(Blocks.DARK_OAK_DOOR, var3);
+      var0.put(Blocks.PALE_OAK_DOOR, var3);
       var0.put(Blocks.MANGROVE_DOOR, var3);
       var0.put(Blocks.BAMBOO_DOOR, var3);
       var0.put(Blocks.COPPER_DOOR, var3);

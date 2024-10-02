@@ -40,6 +40,8 @@ public class RealmsServer extends ValueObject {
    public boolean expiredTrial;
    public int daysLeft;
    public RealmsServer.WorldType worldType;
+   public boolean isHardcore;
+   public int gameMode;
    public int activeSlot;
    @Nullable
    public String minigameName;
@@ -97,6 +99,8 @@ public class RealmsServer extends ValueObject {
          var1.expired = JsonUtils.getBooleanOr("expired", var0, false);
          var1.expiredTrial = JsonUtils.getBooleanOr("expiredTrial", var0, false);
          var1.worldType = getWorldType(JsonUtils.getStringOr("worldType", var0, RealmsServer.WorldType.NORMAL.name()));
+         var1.isHardcore = JsonUtils.getBooleanOr("isHardcore", var0, false);
+         var1.gameMode = JsonUtils.getIntOr("gameMode", var0, -1);
          var1.ownerUUID = JsonUtils.getUuidOr("ownerUUID", var0, Util.NIL_UUID);
          if (var0.get("slots") != null && var0.get("slots").isJsonArray()) {
             var1.slots = parseSlots(var0.get("slots").getAsJsonArray());
@@ -155,13 +159,13 @@ public class RealmsServer extends ValueObject {
       for (JsonElement var3 : var0) {
          try {
             JsonObject var5 = var3.getAsJsonObject();
-            JsonParser var6 = new JsonParser();
-            JsonElement var7 = var6.parse(var5.get("options").getAsString());
+            JsonElement var6 = JsonParser.parseString(var5.get("options").getAsString());
+            RealmsSettings var7 = parseSettings(var5.get("settings"));
             RealmsWorldOptions var4;
-            if (var7 == null) {
+            if (var6 == null) {
                var4 = RealmsWorldOptions.createDefaults();
             } else {
-               var4 = RealmsWorldOptions.parse(var7.getAsJsonObject());
+               var4 = RealmsWorldOptions.parse(var6.getAsJsonObject(), var7);
             }
 
             int var8 = JsonUtils.getIntOr("slotId", var5, -1);
@@ -177,6 +181,24 @@ public class RealmsServer extends ValueObject {
       }
 
       return var1;
+   }
+
+   private static RealmsSettings parseSettings(JsonElement var0) {
+      boolean var1 = false;
+      if (var0.isJsonArray()) {
+         for (JsonElement var3 : var0.getAsJsonArray()) {
+            JsonObject var4 = var3.getAsJsonObject();
+            var1 = readBoolean(var4, "hardcore", var1);
+         }
+      }
+
+      return new RealmsSettings(var1);
+   }
+
+   private static boolean readBoolean(JsonObject var0, String var1, boolean var2) {
+      JsonElement var3 = var0.get("name");
+      JsonElement var4 = var0.get("value");
+      return var3 != null && var4 != null && var3.getAsString().equals(var1) ? var4.getAsBoolean() : var2;
    }
 
    private static Map<Integer, RealmsWorldOptions> createEmptySlots() {
@@ -273,6 +295,8 @@ public class RealmsServer extends ValueObject {
       var1.expiredTrial = this.expiredTrial;
       var1.daysLeft = this.daysLeft;
       var1.worldType = this.worldType;
+      var1.isHardcore = this.isHardcore;
+      var1.gameMode = this.gameMode;
       var1.ownerUUID = this.ownerUUID;
       var1.minigameName = this.minigameName;
       var1.activeSlot = this.activeSlot;

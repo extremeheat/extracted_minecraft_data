@@ -2,51 +2,52 @@ package net.minecraft.recipebook;
 
 import java.util.Iterator;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 
 public interface PlaceRecipeHelper {
-   static <T> void placeRecipe(int var0, int var1, RecipeHolder<?> var2, Iterable<T> var3, PlaceRecipeHelper.Output<T> var4) {
-      int var5 = var0;
-      int var6 = var1;
-      if (var2.value() instanceof ShapedRecipe var8) {
-         var5 = var8.getWidth();
-         var6 = var8.getHeight();
+   static <T> void placeRecipe(int var0, int var1, Recipe<?> var2, Iterable<T> var3, PlaceRecipeHelper.Output<T> var4) {
+      if (var2 instanceof ShapedRecipe var5) {
+         placeRecipe(var0, var1, var5.getWidth(), var5.getHeight(), var3, var4);
+      } else {
+         placeRecipe(var0, var1, var0, var1, var3, var4);
       }
+   }
 
-      Iterator var16 = var3.iterator();
-      int var9 = 0;
+   static <T> void placeRecipe(int var0, int var1, int var2, int var3, Iterable<T> var4, PlaceRecipeHelper.Output<T> var5) {
+      Iterator var6 = var4.iterator();
+      int var7 = 0;
 
-      for (int var10 = 0; var10 < var1; var10++) {
-         boolean var11 = (float)var6 < (float)var1 / 2.0F;
-         int var12 = Mth.floor((float)var1 / 2.0F - (float)var6 / 2.0F);
-         if (var11 && var12 > var10) {
-            var9 += var0;
-            var10++;
+      for (int var8 = 0; var8 < var1; var8++) {
+         boolean var9 = (float)var3 < (float)var1 / 2.0F;
+         int var10 = Mth.floor((float)var1 / 2.0F - (float)var3 / 2.0F);
+         if (var9 && var10 > var8) {
+            var7 += var0;
+            var8++;
          }
 
-         for (int var13 = 0; var13 < var0; var13++) {
-            if (!var16.hasNext()) {
+         for (int var11 = 0; var11 < var0; var11++) {
+            if (!var6.hasNext()) {
                return;
             }
 
-            var11 = (float)var5 < (float)var0 / 2.0F;
-            var12 = Mth.floor((float)var0 / 2.0F - (float)var5 / 2.0F);
-            int var14 = var5;
-            boolean var15 = var13 < var5;
-            if (var11) {
-               var14 = var12 + var5;
-               var15 = var12 <= var13 && var13 < var12 + var5;
+            var9 = (float)var2 < (float)var0 / 2.0F;
+            var10 = Mth.floor((float)var0 / 2.0F - (float)var2 / 2.0F);
+            int var12 = var2;
+            boolean var13 = var11 < var2;
+            if (var9) {
+               var12 = var10 + var2;
+               var13 = var10 <= var11 && var11 < var10 + var2;
             }
 
-            if (var15) {
-               var4.addItemToSlot(var16.next(), var9, var13, var10);
-            } else if (var14 == var13) {
-               var9 += var0 - var13;
+            if (var13) {
+               var5.addItemToSlot(var6.next(), var7, var11, var8);
+            } else if (var12 == var11) {
+               var7 += var0 - var11;
                break;
             }
 
-            var9++;
+            var7++;
          }
       }
    }

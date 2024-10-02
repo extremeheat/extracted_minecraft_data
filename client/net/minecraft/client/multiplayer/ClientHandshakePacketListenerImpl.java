@@ -248,6 +248,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
       var2.setDetail("Server type", () -> this.serverData != null ? this.serverData.type().toString() : "<unknown>");
       var2.setDetail("Login phase", () -> this.state.get().toString());
+      var2.setDetail("Is Local", () -> String.valueOf(this.connection.isMemoryConnection()));
    }
 
    static enum State {

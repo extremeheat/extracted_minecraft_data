@@ -68,17 +68,7 @@ public class FireworkRocketRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   @Override
-   public ItemStack getResultItem(HolderLookup.Provider var1) {
-      return new ItemStack(Items.FIREWORK_ROCKET);
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<FireworkRocketRecipe> getSerializer() {
       return RecipeSerializer.FIREWORK_ROCKET;
    }
 }

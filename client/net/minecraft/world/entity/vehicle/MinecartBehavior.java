@@ -15,6 +15,9 @@ public abstract class MinecartBehavior {
       this.minecart = var1;
    }
 
+   public void cancelLerp() {
+   }
+
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.setPos(var1, var3, var5);
       this.setYRot(var7 % 360.0F);

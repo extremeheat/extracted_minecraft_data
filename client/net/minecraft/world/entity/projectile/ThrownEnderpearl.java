@@ -15,7 +15,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.monster.Endermite;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,7 +22,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -60,14 +59,14 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    private void deregisterFromCurrentOwner() {
-      if (this.getOwner() instanceof ServerPlayer var2) {
-         var2.deregisterEnderPearl(this);
+      if (this.getOwner() instanceof ServerPlayer var1) {
+         var1.deregisterEnderPearl(this);
       }
    }
 
    private void registerToCurrentOwner() {
-      if (this.getOwner() instanceof ServerPlayer var2) {
-         var2.registerEnderPearl(this);
+      if (this.getOwner() instanceof ServerPlayer var1) {
+         var1.registerEnderPearl(this);
       }
    }
 
@@ -146,9 +145,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                      }
                   }
 
-                  Player var13 = var11.changeDimension(
-                     new DimensionTransition(
-                        var8, var10, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.ROTATION, Relative.DELTA), DimensionTransition.DO_NOTHING
+                  ServerPlayer var13 = var11.teleport(
+                     new TeleportTransition(
+                        var8, var10, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.ROTATION, Relative.DELTA), TeleportTransition.DO_NOTHING
                      )
                   );
                   if (var13 != null) {
@@ -160,8 +159,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                   this.playSound(var8, var10);
                }
             } else {
-               Entity var14 = var9.changeDimension(
-                  new DimensionTransition(var8, var10, var9.getDeltaMovement(), var9.getYRot(), var9.getXRot(), DimensionTransition.DO_NOTHING)
+               Entity var14 = var9.teleport(
+                  new TeleportTransition(var8, var10, var9.getDeltaMovement(), var9.getYRot(), var9.getXRot(), TeleportTransition.DO_NOTHING)
                );
                if (var14 != null) {
                   var14.resetFallDistance();
@@ -192,22 +191,24 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       int var1;
       int var2;
       Entity var3;
-      label26: {
+      label30: {
          var1 = SectionPos.blockToSectionCoord(this.position().x());
          var2 = SectionPos.blockToSectionCoord(this.position().z());
          var3 = this.getOwner();
          if (var3 instanceof ServerPlayer var4 && !var3.isAlive() && var4.serverLevel().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
             this.discard();
-            break label26;
+            break label30;
          }
 
          super.tick();
       }
 
-      BlockPos var6 = BlockPos.containing(this.position());
-      if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var6.getX()) || var2 != SectionPos.blockToSectionCoord(var6.getZ()))
-         && var3 instanceof ServerPlayer var5) {
-         this.ticketTimer = var5.registerAndUpdateEnderPearlTicket(this);
+      if (this.isAlive()) {
+         BlockPos var6 = BlockPos.containing(this.position());
+         if ((--this.ticketTimer <= 0L || var1 != SectionPos.blockToSectionCoord(var6.getX()) || var2 != SectionPos.blockToSectionCoord(var6.getZ()))
+            && var3 instanceof ServerPlayer var5) {
+            this.ticketTimer = var5.registerAndUpdateEnderPearlTicket(this);
+         }
       }
    }
 
@@ -217,8 +218,8 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    @Nullable
    @Override
-   public Entity changeDimension(DimensionTransition var1) {
-      Entity var2 = super.changeDimension(var1);
+   public Entity teleport(TeleportTransition var1) {
+      Entity var2 = super.teleport(var1);
       if (var2 != null) {
          var2.placePortalTicket(BlockPos.containing(var2.position()));
       }
@@ -227,10 +228,10 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    @Override
-   public boolean canChangeDimensions(Level var1, Level var2) {
+   public boolean canTeleport(Level var1, Level var2) {
       return var1.dimension() == Level.END && var2.dimension() == Level.OVERWORLD && this.getOwner() instanceof ServerPlayer var3
-         ? super.canChangeDimensions(var1, var2) && var3.seenCredits
-         : super.canChangeDimensions(var1, var2);
+         ? super.canTeleport(var1, var2) && var3.seenCredits
+         : super.canTeleport(var1, var2);
    }
 
    @Override
@@ -242,11 +243,11 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    @Override
-   public void remove(Entity.RemovalReason var1) {
+   public void onRemoval(Entity.RemovalReason var1) {
       if (var1 != Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
          this.deregisterFromCurrentOwner();
       }
 
-      super.remove(var1);
+      super.onRemoval(var1);
    }
 }

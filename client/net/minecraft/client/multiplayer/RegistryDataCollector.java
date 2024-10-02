@@ -1,11 +1,17 @@
 package net.minecraft.client.multiplayer;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -79,10 +85,48 @@ public class RegistryDataCollector {
       }
 
       List var9 = TagLoader.buildUpdatedLookups(var6, var8);
-      RegistryAccess.Frozen var10 = RegistryDataLoader.load(var7, var1, var9, RegistryDataLoader.SYNCHRONIZED_REGISTRIES).freeze();
+
+      RegistryAccess.Frozen var10;
+      try {
+         var10 = RegistryDataLoader.load(var7, var1, var9, RegistryDataLoader.SYNCHRONIZED_REGISTRIES).freeze();
+      } catch (Exception var13) {
+         CrashReport var12 = CrashReport.forThrowable(var13, "Network Registry Load");
+         addCrashDetails(var12, var7, var8);
+         throw new ReportedException(var12);
+      }
+
       RegistryAccess.Frozen var4 = var5.replaceFrom(ClientRegistryLayer.REMOTE, var10).compositeAccess();
       var8.forEach(Registry.PendingTags::apply);
       return var4;
+   }
+
+   private static void addCrashDetails(
+      CrashReport var0, Map<ResourceKey<? extends Registry<?>>, RegistryDataLoader.NetworkedRegistryData> var1, List<Registry.PendingTags<?>> var2
+   ) {
+      CrashReportCategory var3 = var0.addCategory("Received Elements and Tags");
+      var3.setDetail(
+         "Dynamic Registries",
+         () -> var1.entrySet()
+               .stream()
+               .sorted(Comparator.comparing(var0xx -> ((ResourceKey)var0xx.getKey()).location()))
+               .map(
+                  var0xx -> String.format(
+                        Locale.ROOT,
+                        "\n\t\t%s: elements=%d tags=%d",
+                        ((ResourceKey)var0xx.getKey()).location(),
+                        ((RegistryDataLoader.NetworkedRegistryData)var0xx.getValue()).elements().size(),
+                        ((RegistryDataLoader.NetworkedRegistryData)var0xx.getValue()).tags().size()
+                     )
+               )
+               .collect(Collectors.joining())
+      );
+      var3.setDetail(
+         "Static Registries",
+         () -> var2.stream()
+               .sorted(Comparator.comparing(var0xx -> var0xx.key().location()))
+               .map(var0xx -> String.format(Locale.ROOT, "\n\t\t%s: tags=%d", var0xx.key().location(), var0xx.size()))
+               .collect(Collectors.joining())
+      );
    }
 
    private void loadOnlyTags(RegistryDataCollector.TagCollector var1, RegistryAccess.Frozen var2, boolean var3) {

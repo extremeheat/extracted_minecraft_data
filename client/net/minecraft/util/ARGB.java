@@ -46,11 +46,25 @@ public class ARGB {
    }
 
    public static int scaleRGB(int var0, float var1) {
-      return color(alpha(var0), (int)((float)red(var0) * var1), (int)((float)green(var0) * var1), (int)((float)blue(var0) * var1));
+      return scaleRGB(var0, var1, var1, var1);
+   }
+
+   public static int scaleRGB(int var0, float var1, float var2, float var3) {
+      return color(
+         alpha(var0),
+         Math.clamp((long)((int)((float)red(var0) * var1)), 0, 255),
+         Math.clamp((long)((int)((float)green(var0) * var2)), 0, 255),
+         Math.clamp((long)((int)((float)blue(var0) * var3)), 0, 255)
+      );
    }
 
    public static int scaleRGB(int var0, int var1) {
-      return color(alpha(var0), red(var0) * var1 / 255, green(var0) * var1 / 255, blue(var0) * var1 / 255);
+      return color(
+         alpha(var0),
+         Math.clamp((long)red(var0) * (long)var1 / 255L, 0, 255),
+         Math.clamp((long)green(var0) * (long)var1 / 255L, 0, 255),
+         Math.clamp((long)blue(var0) * (long)var1 / 255L, 0, 255)
+      );
    }
 
    public static int greyscale(int var0) {

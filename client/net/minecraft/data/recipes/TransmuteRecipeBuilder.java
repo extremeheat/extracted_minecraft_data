@@ -10,9 +10,10 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.TransmuteRecipe;
 
 public class TransmuteRecipeBuilder implements RecipeBuilder {
@@ -52,7 +53,7 @@ public class TransmuteRecipeBuilder implements RecipeBuilder {
    }
 
    @Override
-   public void save(RecipeOutput var1, ResourceLocation var2) {
+   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
       this.ensureValid(var2);
       Advancement.Builder var3 = var1.advancement()
          .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
@@ -62,12 +63,12 @@ public class TransmuteRecipeBuilder implements RecipeBuilder {
       TransmuteRecipe var4 = new TransmuteRecipe(
          Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.input, this.material, this.result
       );
-      var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
-   private void ensureValid(ResourceLocation var1) {
+   private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + var1.location());
       }
    }
 }

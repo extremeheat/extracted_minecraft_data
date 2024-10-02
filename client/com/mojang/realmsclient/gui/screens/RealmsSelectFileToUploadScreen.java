@@ -9,13 +9,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsLabel;
-import net.minecraft.realms.RealmsObjectSelectionList;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -142,7 +142,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
 
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
-         RealmsSelectFileToUploadScreen.this.worldSelectionList.selectItem(RealmsSelectFileToUploadScreen.this.levelList.indexOf(this.levelSummary));
+         RealmsSelectFileToUploadScreen.this.worldSelectionList.setSelectedIndex(RealmsSelectFileToUploadScreen.this.levelList.indexOf(this.levelSummary));
          return super.mouseClicked(var1, var3, var5);
       }
 
@@ -170,9 +170,10 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       }
    }
 
-   class WorldSelectionList extends RealmsObjectSelectionList<RealmsSelectFileToUploadScreen.Entry> {
+   class WorldSelectionList extends ObjectSelectionList<RealmsSelectFileToUploadScreen.Entry> {
       public WorldSelectionList() {
          super(
+            Minecraft.getInstance(),
             RealmsSelectFileToUploadScreen.this.width,
             RealmsSelectFileToUploadScreen.this.height - 40 - RealmsSelectFileToUploadScreen.row(0),
             RealmsSelectFileToUploadScreen.row(0),
@@ -184,17 +185,17 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          this.addEntry(RealmsSelectFileToUploadScreen.this.new Entry(var1));
       }
 
-      @Override
-      public int getMaxPosition() {
-         return RealmsSelectFileToUploadScreen.this.levelList.size() * 36;
-      }
-
       public void setSelected(@Nullable RealmsSelectFileToUploadScreen.Entry var1) {
          super.setSelected(var1);
          RealmsSelectFileToUploadScreen.this.selectedWorld = this.children().indexOf(var1);
          RealmsSelectFileToUploadScreen.this.uploadButton.active = RealmsSelectFileToUploadScreen.this.selectedWorld >= 0
             && RealmsSelectFileToUploadScreen.this.selectedWorld < this.getItemCount()
             && !RealmsSelectFileToUploadScreen.this.levelList.get(RealmsSelectFileToUploadScreen.this.selectedWorld).isHardcore();
+      }
+
+      @Override
+      public int getRowWidth() {
+         return (int)((double)this.width * 0.6);
       }
    }
 }

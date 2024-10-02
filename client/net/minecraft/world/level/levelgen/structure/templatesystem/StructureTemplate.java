@@ -38,10 +38,12 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.FluidState;
@@ -172,6 +174,29 @@ public class StructureTemplate {
 
    public List<StructureTemplate.StructureBlockInfo> filterBlocks(BlockPos var1, StructurePlaceSettings var2, Block var3) {
       return this.filterBlocks(var1, var2, var3, true);
+   }
+
+   public List<StructureTemplate.JigsawBlockInfo> getJigsaws(BlockPos var1, Rotation var2) {
+      if (this.palettes.isEmpty()) {
+         return new ArrayList<>();
+      } else {
+         StructurePlaceSettings var3 = new StructurePlaceSettings().setRotation(var2);
+         List var4 = var3.getRandomPalette(this.palettes, var1).jigsaws();
+         ArrayList var5 = new ArrayList(var4.size());
+
+         for (StructureTemplate.JigsawBlockInfo var7 : var4) {
+            StructureTemplate.StructureBlockInfo var8 = var7.info;
+            var5.add(
+               var7.withInfo(
+                  new StructureTemplate.StructureBlockInfo(
+                     calculateRelativePosition(var3, var8.pos()).offset(var1), var8.state.rotate(var3.getRotation()), var8.nbt
+                  )
+               )
+            );
+         }
+
+         return var5;
+      }
    }
 
    public ObjectArrayList<StructureTemplate.StructureBlockInfo> filterBlocks(BlockPos var1, StructurePlaceSettings var2, Block var3, boolean var4) {
@@ -703,13 +728,44 @@ public class StructureTemplate {
       return var2;
    }
 
+   public static JigsawBlockEntity.JointType getJointType(CompoundTag var0, BlockState var1) {
+      return JigsawBlockEntity.JointType.CODEC
+         .byName(
+            var0.getString("joint"),
+            () -> JigsawBlock.getFrontFacing(var1).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE
+         );
+   }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
+
    public static final class Palette {
       private final List<StructureTemplate.StructureBlockInfo> blocks;
       private final Map<Block, List<StructureTemplate.StructureBlockInfo>> cache = Maps.newHashMap();
+      @Nullable
+      private List<StructureTemplate.JigsawBlockInfo> cachedJigsaws;
 
       Palette(List<StructureTemplate.StructureBlockInfo> var1) {
          super();
          this.blocks = var1;
+      }
+
+      public List<StructureTemplate.JigsawBlockInfo> jigsaws() {
+         if (this.cachedJigsaws == null) {
+            this.cachedJigsaws = this.blocks(Blocks.JIGSAW).stream().map(StructureTemplate.JigsawBlockInfo::of).toList();
+         }
+
+         return this.cachedJigsaws;
       }
 
       public List<StructureTemplate.StructureBlockInfo> blocks() {

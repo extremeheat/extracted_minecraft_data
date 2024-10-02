@@ -56,6 +56,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -118,8 +119,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.portal.PortalShape;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -359,6 +360,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void onClientRemoval() {
+   }
+
+   public void onRemoval(Entity.RemovalReason var1) {
    }
 
    public void setPose(Pose var1) {
@@ -1493,7 +1497,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.setOldPos(this.position);
    }
 
-   protected void setOldRot() {
+   public void setOldRot() {
       this.setOldRot(this.getYRot(), this.getXRot());
    }
 
@@ -2064,9 +2068,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public boolean startRiding(Entity var1, boolean var2) {
       if (var1 == this.vehicle) {
          return false;
-      } else if (!var1.couldAcceptPassenger()) {
-         return false;
-      } else {
+      } else if (var1.couldAcceptPassenger() && var1.type.canSerialize()) {
          for (Entity var3 = var1; var3.vehicle != null; var3 = var3.vehicle) {
             if (var3.vehicle == this) {
                return false;
@@ -2088,6 +2090,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          } else {
             return false;
          }
+      } else {
+         return false;
       }
    }
 
@@ -2155,6 +2159,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    protected boolean couldAcceptPassenger() {
       return true;
+   }
+
+   public void cancelLerp() {
    }
 
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
@@ -2233,11 +2240,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                ProfilerFiller var5 = Profiler.get();
                var5.push("portal");
                this.setPortalCooldown();
-               DimensionTransition var3 = this.portalProcess.getPortalDestination(var1, this);
+               TeleportTransition var3 = this.portalProcess.getPortalDestination(var1, this);
                if (var3 != null) {
                   ServerLevel var4 = var3.newLevel();
-                  if (var1.getServer().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canChangeDimensions(var1, var4))) {
-                     this.changeDimension(var3);
+                  if (var1.getServer().isLevelEnabled(var4) && (var4.dimension() == var1.dimension() || this.canTeleport(var1, var4))) {
+                     this.teleport(var3);
                   }
                }
 
@@ -2627,52 +2634,102 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    @Nullable
-   public Entity changeDimension(DimensionTransition var1) {
+   public Entity teleport(TeleportTransition var1) {
       if (this.level() instanceof ServerLevel var2 && !this.isRemoved()) {
-         ServerLevel var13 = var1.newLevel();
-         List var4 = this.getPassengers();
-         this.unRide();
-         ArrayList var5 = new ArrayList();
-
-         for (Entity var7 : var4) {
-            float var8 = var7.getYRot() - this.getYRot();
-            float var9 = var7.getXRot() - this.getXRot();
-            float var10 = var1.yRot() + (var1.relatives().contains(Relative.Y_ROT) ? 0.0F : var8);
-            float var11 = var1.xRot() + (var1.relatives().contains(Relative.X_ROT) ? 0.0F : var9);
-            Entity var12 = var7.changeDimension(var1.withRotation(var10, var11));
-            if (var12 != null) {
-               var5.add(var12);
-            }
+         ServerLevel var5 = var1.newLevel();
+         boolean var4 = var5.dimension() != var2.dimension();
+         if (!var1.asPassenger()) {
+            this.stopRiding();
          }
 
-         ProfilerFiller var14 = Profiler.get();
-         var14.push("changeDimension");
-         Entity var15 = var13.dimension() == var2.dimension() ? this : this.getType().create(var13, EntitySpawnReason.DIMENSION_TRAVEL);
-         if (var15 != null) {
-            if (this != var15) {
-               var15.restoreFrom(this);
-               this.removeAfterChangingDimensions();
-            }
-
-            var15.teleportSetPosition(PositionMoveRotation.of(var1), var1.relatives());
-            if (this != var15) {
-               var13.addDuringTeleport(var15);
-            }
-
-            for (Entity var17 : var5) {
-               var17.startRiding(var15, true);
-            }
-
-            var2.resetEmptyTime();
-            var13.resetEmptyTime();
-            var1.postDimensionTransition().onTransition(var15);
+         if (var4) {
+            return this.teleportCrossDimension(var5, var1);
          }
 
-         var14.pop();
-         return var15;
+         return this.teleportSameDimension(var2, var1);
       }
 
       return null;
+   }
+
+   private Entity teleportSameDimension(ServerLevel var1, TeleportTransition var2) {
+      for (Entity var4 : this.getPassengers()) {
+         var4.teleport(this.calculatePassengerTransition(var2, var4));
+      }
+
+      ProfilerFiller var5 = Profiler.get();
+      var5.push("teleportSameDimension");
+      this.teleportSetPosition(PositionMoveRotation.of(var2), var2.relatives());
+      if (!var2.asPassenger()) {
+         this.sendTeleportTransitionToRidingPlayers(var2);
+      }
+
+      var2.postTeleportTransition().onTransition(this);
+      var5.pop();
+      return this;
+   }
+
+   private Entity teleportCrossDimension(ServerLevel var1, TeleportTransition var2) {
+      List var3 = this.getPassengers();
+      ArrayList var4 = new ArrayList(var3.size());
+      this.ejectPassengers();
+
+      for (Entity var6 : var3) {
+         Entity var7 = var6.teleport(this.calculatePassengerTransition(var2, var6));
+         if (var7 != null) {
+            var4.add(var7);
+         }
+      }
+
+      ProfilerFiller var9 = Profiler.get();
+      var9.push("teleportCrossDimension");
+      Entity var10 = this.getType().create(var1, EntitySpawnReason.DIMENSION_TRAVEL);
+      if (var10 == null) {
+         var9.pop();
+         return null;
+      } else {
+         var10.restoreFrom(this);
+         this.removeAfterChangingDimensions();
+         var10.teleportSetPosition(PositionMoveRotation.of(var2), var2.relatives());
+         var1.addDuringTeleport(var10);
+
+         for (Entity var8 : var4) {
+            var8.startRiding(var10, true);
+         }
+
+         var1.resetEmptyTime();
+         var2.postTeleportTransition().onTransition(var10);
+         var9.pop();
+         return var10;
+      }
+   }
+
+   private TeleportTransition calculatePassengerTransition(TeleportTransition var1, Entity var2) {
+      float var3 = var1.yRot() + (var1.relatives().contains(Relative.Y_ROT) ? 0.0F : var2.getYRot() - this.getYRot());
+      float var4 = var1.xRot() + (var1.relatives().contains(Relative.X_ROT) ? 0.0F : var2.getXRot() - this.getXRot());
+      Vec3 var5 = var2.position().subtract(this.position());
+      Vec3 var6 = var1.position()
+         .add(
+            var1.relatives().contains(Relative.X) ? 0.0 : var5.x(),
+            var1.relatives().contains(Relative.Y) ? 0.0 : var5.y(),
+            var1.relatives().contains(Relative.Z) ? 0.0 : var5.z()
+         );
+      return var1.withPosition(var6).withRotation(var3, var4).transitionAsPassenger();
+   }
+
+   private void sendTeleportTransitionToRidingPlayers(TeleportTransition var1) {
+      LivingEntity var2 = this.getControllingPassenger();
+
+      for (Entity var4 : this.getIndirectPassengers()) {
+         if (var4 instanceof ServerPlayer) {
+            ServerPlayer var5 = (ServerPlayer)var4;
+            if (var2 != null && var5.getId() == var2.getId()) {
+               var5.connection.send(ClientboundTeleportEntityPacket.teleport(this.getId(), PositionMoveRotation.of(var1), var1.relatives(), this.onGround));
+            } else {
+               var5.connection.send(ClientboundTeleportEntityPacket.teleport(this.getId(), PositionMoveRotation.of(this), Set.of(), this.onGround));
+            }
+         }
+      }
    }
 
    public void teleportSetPosition(PositionMoveRotation var1, Set<Relative> var2) {
@@ -2686,6 +2743,13 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.setOldPosAndRot();
       this.setDeltaMovement(var4.deltaMovement());
       this.blocksInside.clear();
+   }
+
+   public void forceSetRotation(float var1, float var2) {
+      this.setYRot(var1);
+      this.setYHeadRot(var1);
+      this.setXRot(var2);
+      this.setOldRot();
    }
 
    public void placePortalTicket(BlockPos var1) {
@@ -2709,7 +2773,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return (var1 || !this.isPassenger()) && this.isAlive();
    }
 
-   public boolean canChangeDimensions(Level var1, Level var2) {
+   public boolean canTeleport(Level var1, Level var2) {
       if (var1.dimension() == Level.END && var2.dimension() == Level.OVERWORLD) {
          for (Entity var4 : this.getPassengers()) {
             if (var4 instanceof ServerPlayer var5 && !var5.seenCredits) {
@@ -2817,9 +2881,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<Relative> var8, float var9, float var10, boolean var11) {
       float var12 = Mth.clamp(var10, -90.0F, 90.0F);
-      Entity var13 = this.changeDimension(
-         new DimensionTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var9, var12, var8, DimensionTransition.DO_NOTHING)
-      );
+      Entity var13 = this.teleport(new TeleportTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var9, var12, var8, TeleportTransition.DO_NOTHING));
       return var13 != null;
    }
 
@@ -3481,6 +3543,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
       this.getPassengers().forEach(Entity::stopRiding);
       this.levelCallback.onRemove(var1);
+      this.onRemoval(var1);
    }
 
    protected void unsetRemoved() {

@@ -11,6 +11,10 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
 
 public class ShapedRecipe implements CraftingRecipe {
@@ -36,23 +40,18 @@ public class ShapedRecipe implements CraftingRecipe {
    }
 
    @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<? extends ShapedRecipe> getSerializer() {
       return RecipeSerializer.SHAPED_RECIPE;
    }
 
    @Override
-   public String getGroup() {
+   public String group() {
       return this.group;
    }
 
    @Override
    public CraftingBookCategory category() {
       return this.category;
-   }
-
-   @Override
-   public ItemStack getResultItem(HolderLookup.Provider var1) {
-      return this.result;
    }
 
    @VisibleForTesting
@@ -74,17 +73,12 @@ public class ShapedRecipe implements CraftingRecipe {
       return this.showNotification;
    }
 
-   @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= this.pattern.width() && var2 >= this.pattern.height();
-   }
-
    public boolean matches(CraftingInput var1, Level var2) {
       return this.pattern.matches(var1);
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      return this.getResultItem(var2).copy();
+      return this.result.copy();
    }
 
    public int getWidth() {
@@ -93,6 +87,19 @@ public class ShapedRecipe implements CraftingRecipe {
 
    public int getHeight() {
       return this.pattern.height();
+   }
+
+   @Override
+   public List<RecipeDisplay> display() {
+      return List.of(
+         new ShapedCraftingRecipeDisplay(
+            this.pattern.width(),
+            this.pattern.height(),
+            this.pattern.ingredients().stream().map(var0 -> var0.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE)).toList(),
+            new SlotDisplay.ItemStackSlotDisplay(this.result),
+            new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)
+         )
+      );
    }
 
    public static class Serializer implements RecipeSerializer<ShapedRecipe> {

@@ -66,12 +66,7 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<FireworkStarFadeRecipe> getSerializer() {
       return RecipeSerializer.FIREWORK_STAR_FADE;
    }
 }

@@ -538,38 +538,63 @@ public class OverworldBiomes {
       return biome(true, var4, var2 ? 0.4F : 0.8F, var2 ? 4020182 : 4159204, 329011, null, null, var3, var5, NORMAL_MUSIC);
    }
 
-   public static Biome darkForest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var2);
-      BiomeDefaultFeatures.commonSpawns(var2);
-      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
-      globalOverworldGeneration(var3);
-      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.DARK_FOREST_VEGETATION);
-      BiomeDefaultFeatures.addForestFlowers(var3);
-      BiomeDefaultFeatures.addDefaultOres(var3);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
-      BiomeDefaultFeatures.addDefaultFlowers(var3);
-      BiomeDefaultFeatures.addForestGrass(var3);
-      BiomeDefaultFeatures.addDefaultMushrooms(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
-      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FOREST);
+   public static Biome darkForest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      if (!var2) {
+         BiomeDefaultFeatures.farmAnimals(var3);
+      }
+
+      BiomeDefaultFeatures.commonSpawns(var3);
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var4);
+      var4.addFeature(
+         GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? VegetationPlacements.PALE_GARDEN_VEGETATION : VegetationPlacements.DARK_FOREST_VEGETATION
+      );
+      if (!var2) {
+         BiomeDefaultFeatures.addForestFlowers(var4);
+      }
+
+      BiomeDefaultFeatures.addDefaultOres(var4);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var4);
+      if (!var2) {
+         BiomeDefaultFeatures.addDefaultFlowers(var4);
+      }
+
+      BiomeDefaultFeatures.addForestGrass(var4);
+      if (!var2) {
+         BiomeDefaultFeatures.addDefaultMushrooms(var4);
+      }
+
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      Music var5 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FOREST);
       return new Biome.BiomeBuilder()
          .hasPrecipitation(true)
          .temperature(0.7F)
          .downfall(0.8F)
          .specialEffects(
-            new BiomeSpecialEffects.Builder()
-               .waterColor(4159204)
-               .waterFogColor(329011)
-               .fogColor(12638463)
-               .skyColor(calculateSkyColor(0.7F))
-               .grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST)
-               .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
-               .backgroundMusic(var4)
-               .build()
+            var2
+               ? new BiomeSpecialEffects.Builder()
+                  .waterColor(7768221)
+                  .waterFogColor(5597568)
+                  .fogColor(8484720)
+                  .skyColor(12171705)
+                  .grassColorOverride(7832178)
+                  .foliageColorOverride(8883574)
+                  .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
+                  .backgroundMusic(var5)
+                  .build()
+               : new BiomeSpecialEffects.Builder()
+                  .waterColor(4159204)
+                  .waterFogColor(329011)
+                  .fogColor(12638463)
+                  .skyColor(calculateSkyColor(0.7F))
+                  .grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST)
+                  .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
+                  .backgroundMusic(var5)
+                  .build()
          )
-         .mobSpawnSettings(var2.build())
-         .generationSettings(var3.build())
+         .mobSpawnSettings(var3.build())
+         .generationSettings(var4.build())
          .build();
    }
 

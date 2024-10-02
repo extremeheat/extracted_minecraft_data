@@ -56,13 +56,17 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       }
    }
 
-   public int getRowWidth() {
-      return 220;
-   }
-
    @Nullable
    public E getSelected() {
       return this.selected;
+   }
+
+   public void setSelectedIndex(int var1) {
+      if (var1 == -1) {
+         this.setSelected(null);
+      } else if (this.getItemCount() != 0) {
+         this.setSelected(this.getEntry(var1));
+      }
    }
 
    public void setSelected(@Nullable E var1) {
@@ -88,7 +92,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.selected = null;
    }
 
-   protected void replaceEntries(Collection<E> var1) {
+   public void replaceEntries(Collection<E> var1) {
       this.clearEntries();
       this.children.addAll(var1);
    }
@@ -450,12 +454,16 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return this.getRealRowLeft() + this.getRowWidth();
    }
 
-   protected int getRowTop(int var1) {
+   public int getRowTop(int var1) {
       return this.getY() + 4 - (int)this.getScrollAmount() + var1 * this.itemHeight + this.headerHeight;
    }
 
-   protected int getRowBottom(int var1) {
+   public int getRowBottom(int var1) {
       return this.getRowTop(var1) + this.itemHeight;
+   }
+
+   public int getRowWidth() {
+      return 220;
    }
 
    @Override

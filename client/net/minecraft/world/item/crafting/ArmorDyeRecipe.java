@@ -67,12 +67,7 @@ public class ArmorDyeRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<ArmorDyeRecipe> getSerializer() {
       return RecipeSerializer.ARMOR_DYE;
    }
 }

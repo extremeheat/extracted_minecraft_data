@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,8 +23,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.crafting.CampfireCookingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -93,9 +93,8 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var3.getBlockEntity(var4) instanceof CampfireBlockEntity var9) {
          ItemStack var10 = var5.getItemInHand(var6);
-         Optional var11 = var9.getCookableRecipe(var10);
-         if (var11.isPresent()) {
-            if (!var3.isClientSide && var9.placeFood(var5, var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime())) {
+         if (var3.recipeAccess().propertySet(RecipePropertySet.CAMPFIRE_INPUT).test(var10)) {
+            if (var3 instanceof ServerLevel var11 && var9.placeFood(var11, var5, var10)) {
                var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
                return InteractionResult.SUCCESS_SERVER;
             }
@@ -319,12 +318,17 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    @Nullable
    @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      if (var1.isClientSide) {
-         return var2.getValue(LIT) ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
+      if (var1 instanceof ServerLevel var4) {
+         if (var2.getValue(LIT)) {
+            RecipeManager.CachedCheck var5 = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);
+            return createTickerHelper(
+               var3, BlockEntityType.CAMPFIRE, (var2x, var3x, var4x, var5x) -> CampfireBlockEntity.cookTick(var4, var3x, var4x, var5x, var5)
+            );
+         } else {
+            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
+         }
       } else {
-         return var2.getValue(LIT)
-            ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cookTick)
-            : createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
+         return var2.getValue(LIT) ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
       }
    }
 

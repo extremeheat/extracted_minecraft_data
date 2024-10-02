@@ -206,13 +206,12 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
          var3.scale(0.025F, -0.025F, 0.025F);
          Matrix4f var9 = var3.last().pose();
-         float var10 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-         int var11 = (int)(var10 * 255.0F) << 24;
-         Font var12 = this.getFont();
-         float var13 = (float)(-var12.width(var2) / 2);
-         var12.drawInBatch(var2, var13, (float)var8, -2130706433, false, var9, var4, var7 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var11, var5);
+         Font var10 = this.getFont();
+         float var11 = (float)(-var10.width(var2)) / 2.0F;
+         int var12 = (int)(Minecraft.getInstance().options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
+         var10.drawInBatch(var2, var11, (float)var8, -2130706433, false, var9, var4, var7 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var12, var5);
          if (var7) {
-            var12.drawInBatch(var2, var13, (float)var8, -1, false, var9, var4, Font.DisplayMode.NORMAL, 0, LightTexture.lightCoordsWithEmission(var5, 2));
+            var10.drawInBatch(var2, var11, (float)var8, -1, false, var9, var4, Font.DisplayMode.NORMAL, 0, LightTexture.lightCoordsWithEmission(var5, 2));
          }
 
          var3.popPose();

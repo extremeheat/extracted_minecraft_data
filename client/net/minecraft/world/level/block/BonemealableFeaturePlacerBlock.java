@@ -1,26 +1,33 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.features.CaveFeatures;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
-public class MossBlock extends Block implements BonemealableBlock {
-   public static final MapCodec<MossBlock> CODEC = simpleCodec(MossBlock::new);
+public class BonemealableFeaturePlacerBlock extends Block implements BonemealableBlock {
+   public static final MapCodec<BonemealableFeaturePlacerBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter(var0x -> var0x.feature), propertiesCodec())
+            .apply(var0, BonemealableFeaturePlacerBlock::new)
+   );
+   private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 
    @Override
-   public MapCodec<MossBlock> codec() {
+   public MapCodec<BonemealableFeaturePlacerBlock> codec() {
       return CODEC;
    }
 
-   public MossBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public BonemealableFeaturePlacerBlock(ResourceKey<ConfiguredFeature<?, ?>> var1, BlockBehaviour.Properties var2) {
+      super(var2);
+      this.feature = var1;
    }
 
    @Override
@@ -37,7 +44,7 @@ public class MossBlock extends Block implements BonemealableBlock {
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       var1.registryAccess()
          .lookup(Registries.CONFIGURED_FEATURE)
-         .flatMap(var0 -> var0.get(CaveFeatures.MOSS_PATCH_BONEMEAL))
+         .flatMap(var1x -> var1x.get(this.feature))
          .ifPresent(var3x -> var3x.value().place(var1, var1.getChunkSource().getGenerator(), var2, var3.above()));
    }
 

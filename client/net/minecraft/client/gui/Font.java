@@ -107,7 +107,7 @@ public class Font {
 
    public void drawInBatch8xOutline(FormattedCharSequence var1, float var2, float var3, int var4, int var5, Matrix4f var6, MultiBufferSource var7, int var8) {
       int var9 = adjustColor(var5);
-      Font.StringRenderOutput var10 = new Font.StringRenderOutput(var7, 0.0F, 0.0F, var9, false, var6, Font.DisplayMode.NORMAL, var8);
+      Font.StringRenderOutput var10 = new Font.StringRenderOutput(this, var7, 0.0F, 0.0F, var9, false, var6, Font.DisplayMode.NORMAL, var8);
 
       for (int var11 = -1; var11 <= 1; var11++) {
          for (int var12 = -1; var12 <= 1; var12++) {
@@ -128,9 +128,9 @@ public class Font {
          }
       }
 
-      Font.StringRenderOutput var16 = new Font.StringRenderOutput(var7, var2, var3, adjustColor(var4), false, var6, Font.DisplayMode.POLYGON_OFFSET, var8);
+      Font.StringRenderOutput var16 = new Font.StringRenderOutput(this, var7, var2, var3, adjustColor(var4), false, var6, Font.DisplayMode.POLYGON_OFFSET, var8);
       var1.accept(var16);
-      var16.finish(0, var2);
+      var16.finish();
    }
 
    private static int adjustColor(int var0) {
@@ -191,9 +191,9 @@ public class Font {
    private float renderText(
       String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
    ) {
-      Font.StringRenderOutput var11 = new Font.StringRenderOutput(var7, var2, var3, var4, var5, var6, var8, var10);
+      Font.StringRenderOutput var11 = new Font.StringRenderOutput(this, var7, var2, var3, var4, var9, var5, var6, var8, var10);
       StringDecomposer.iterateFormatted(var1, Style.EMPTY, var11);
-      return var11.finish(var9, var2);
+      return var11.finish();
    }
 
    private float renderText(
@@ -208,29 +208,15 @@ public class Font {
       int var9,
       int var10
    ) {
-      Font.StringRenderOutput var11 = new Font.StringRenderOutput(var7, var2, var3, var4, var5, var6, var8, var10);
+      Font.StringRenderOutput var11 = new Font.StringRenderOutput(this, var7, var2, var3, var4, var9, var5, var6, var8, var10);
       var1.accept(var11);
-      return var11.finish(var9, var2);
+      return var11.finish();
    }
 
-   void renderChar(
-      BakedGlyph var1,
-      boolean var2,
-      boolean var3,
-      float var4,
-      float var5,
-      float var6,
-      Matrix4f var7,
-      VertexConsumer var8,
-      float var9,
-      float var10,
-      float var11,
-      float var12,
-      int var13
-   ) {
-      var1.render(var3, var5, var6, var7, var8, var9, var10, var11, var12, var13);
+   void renderChar(BakedGlyph var1, boolean var2, boolean var3, float var4, float var5, float var6, Matrix4f var7, VertexConsumer var8, int var9, int var10) {
+      var1.render(var3, var5, var6, var7, var8, var9, var10);
       if (var2) {
-         var1.render(var3, var5 + var4, var6, var7, var8, var9, var10, var11, var12, var13);
+         var1.render(var3, var5 + var4, var6, var7, var8, var9, var10);
       }
    }
 
@@ -291,10 +277,8 @@ public class Font {
       final MultiBufferSource bufferSource;
       private final boolean dropShadow;
       private final float dimFactor;
-      private final float r;
-      private final float g;
-      private final float b;
-      private final float a;
+      private final int color;
+      private final int backgroundColor;
       private final Matrix4f pose;
       private final Font.DisplayMode mode;
       private final int packedLightCoords;
@@ -312,6 +296,7 @@ public class Font {
       }
 
       public StringRenderOutput(
+         final Font param1,
          final MultiBufferSource nullx,
          final float nullxx,
          final float nullxxx,
@@ -321,89 +306,79 @@ public class Font {
          final Font.DisplayMode nullxxxxxxx,
          final int nullxxxxxxxx
       ) {
+         this(var1, nullx, nullxx, nullxxx, nullxxxx, 0, nullxxxxx, nullxxxxxx, nullxxxxxxx, nullxxxxxxxx);
+      }
+
+      public StringRenderOutput(
+         final Font param1,
+         final MultiBufferSource nullx,
+         final float nullxx,
+         final float nullxxx,
+         final int nullxxxx,
+         final int nullxxxxx,
+         final boolean nullxxxxxx,
+         final Matrix4f nullxxxxxxx,
+         final Font.DisplayMode nullxxxxxxxx,
+         final int nullxxxxxxxxx
+      ) {
          super();
+         this.this$0 = var1;
          this.bufferSource = nullx;
          this.x = nullxx;
          this.y = nullxxx;
-         this.dropShadow = nullxxxxx;
-         this.dimFactor = nullxxxxx ? 0.25F : 1.0F;
-         this.r = (float)(nullxxxx >> 16 & 0xFF) / 255.0F * this.dimFactor;
-         this.g = (float)(nullxxxx >> 8 & 0xFF) / 255.0F * this.dimFactor;
-         this.b = (float)(nullxxxx & 0xFF) / 255.0F * this.dimFactor;
-         this.a = (float)(nullxxxx >> 24 & 0xFF) / 255.0F;
-         this.pose = nullxxxxxx;
-         this.mode = nullxxxxxxx;
-         this.packedLightCoords = nullxxxxxxxx;
+         this.dropShadow = nullxxxxxx;
+         this.dimFactor = nullxxxxxx ? 0.25F : 1.0F;
+         this.color = ARGB.scaleRGB(nullxxxx, this.dimFactor);
+         this.backgroundColor = nullxxxxx;
+         this.pose = nullxxxxxxx;
+         this.mode = nullxxxxxxxx;
+         this.packedLightCoords = nullxxxxxxxxx;
       }
 
       @Override
       public boolean accept(int var1, Style var2, int var3) {
-         FontSet var4 = Font.this.getFontSet(var2.getFont());
-         GlyphInfo var5 = var4.getGlyphInfo(var3, Font.this.filterFishyGlyphs);
+         FontSet var4 = this.this$0.getFontSet(var2.getFont());
+         GlyphInfo var5 = var4.getGlyphInfo(var3, this.this$0.filterFishyGlyphs);
          BakedGlyph var6 = var2.isObfuscated() && var3 != 32 ? var4.getRandomGlyph(var5) : var4.getGlyph(var3);
          boolean var7 = var2.isBold();
-         float var11 = this.a;
-         TextColor var12 = var2.getColor();
-         float var8;
-         float var9;
-         float var10;
-         if (var12 != null) {
-            int var13 = var12.getValue();
-            var8 = (float)(var13 >> 16 & 0xFF) / 255.0F * this.dimFactor;
-            var9 = (float)(var13 >> 8 & 0xFF) / 255.0F * this.dimFactor;
-            var10 = (float)(var13 & 0xFF) / 255.0F * this.dimFactor;
-         } else {
-            var8 = this.r;
-            var9 = this.g;
-            var10 = this.b;
+         TextColor var8 = var2.getColor();
+         int var9 = var8 != null ? ARGB.color(ARGB.alpha(this.color), ARGB.scaleRGB(var8.getValue(), this.dimFactor)) : this.color;
+         float var10 = var5.getAdvance(var7);
+         float var11 = var1 == 0 ? this.x - 1.0F : this.x;
+         if (this.backgroundColor != 0) {
+            BakedGlyph.Effect var12 = new BakedGlyph.Effect(var11, this.y + 9.0F, this.x + var10, this.y - 1.0F, -0.01F, this.backgroundColor);
+            BakedGlyph var13 = this.this$0.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
+            VertexConsumer var14 = this.bufferSource.getBuffer(var13.renderType(this.mode));
+            var13.renderEffect(var12, this.pose, var14, this.packedLightCoords);
          }
 
          if (!(var6 instanceof EmptyGlyph)) {
-            float var16 = var7 ? var5.getBoldOffset() : 0.0F;
-            float var14 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
-            VertexConsumer var15 = this.bufferSource.getBuffer(var6.renderType(this.mode));
-            Font.this.renderChar(
-               var6, var7, var2.isItalic(), var16, this.x + var14, this.y + var14, this.pose, var15, var8, var9, var10, var11, this.packedLightCoords
-            );
+            float var15 = var7 ? var5.getBoldOffset() : 0.0F;
+            float var17 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
+            VertexConsumer var18 = this.bufferSource.getBuffer(var6.renderType(this.mode));
+            this.this$0.renderChar(var6, var7, var2.isItalic(), var15, this.x + var17, this.y + var17, this.pose, var18, var9, this.packedLightCoords);
          }
 
-         float var17 = var5.getAdvance(var7);
-         float var18 = this.dropShadow ? 1.0F : 0.0F;
+         float var16 = this.dropShadow ? 1.0F : 0.0F;
          if (var2.isStrikethrough()) {
-            this.addEffect(
-               new BakedGlyph.Effect(
-                  this.x + var18 - 1.0F, this.y + var18 + 4.5F, this.x + var18 + var17, this.y + var18 + 4.5F - 1.0F, 0.01F, var8, var9, var10, var11
-               )
-            );
+            this.addEffect(new BakedGlyph.Effect(var11 + var16, this.y + var16 + 4.5F, this.x + var16 + var10, this.y + var16 + 4.5F - 1.0F, 0.01F, var9));
          }
 
          if (var2.isUnderlined()) {
-            this.addEffect(
-               new BakedGlyph.Effect(
-                  this.x + var18 - 1.0F, this.y + var18 + 9.0F, this.x + var18 + var17, this.y + var18 + 9.0F - 1.0F, 0.01F, var8, var9, var10, var11
-               )
-            );
+            this.addEffect(new BakedGlyph.Effect(var11 + var16, this.y + var16 + 9.0F, this.x + var16 + var10, this.y + var16 + 9.0F - 1.0F, 0.01F, var9));
          }
 
-         this.x += var17;
+         this.x += var10;
          return true;
       }
 
-      public float finish(int var1, float var2) {
-         if (var1 != 0) {
-            float var3 = (float)(var1 >> 24 & 0xFF) / 255.0F;
-            float var4 = (float)(var1 >> 16 & 0xFF) / 255.0F;
-            float var5 = (float)(var1 >> 8 & 0xFF) / 255.0F;
-            float var6 = (float)(var1 & 0xFF) / 255.0F;
-            this.addEffect(new BakedGlyph.Effect(var2 - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, 0.01F, var4, var5, var6, var3));
-         }
-
+      public float finish() {
          if (this.effects != null) {
-            BakedGlyph var7 = Font.this.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
-            VertexConsumer var8 = this.bufferSource.getBuffer(var7.renderType(this.mode));
+            BakedGlyph var1 = this.this$0.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
+            VertexConsumer var2 = this.bufferSource.getBuffer(var1.renderType(this.mode));
 
-            for (BakedGlyph.Effect var10 : this.effects) {
-               var7.renderEffect(var10, this.pose, var8, this.packedLightCoords);
+            for (BakedGlyph.Effect var4 : this.effects) {
+               var1.renderEffect(var4, this.pose, var2, this.packedLightCoords);
             }
          }
 

@@ -73,12 +73,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<ShieldDecorationRecipe> getSerializer() {
       return RecipeSerializer.SHIELD_DECORATION;
    }
 }

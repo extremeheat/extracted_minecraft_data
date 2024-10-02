@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.ping.ClientPongPacketListener;
 
-public interface ClientGamePacketListener extends ClientPongPacketListener, ClientCommonPacketListener {
+public interface ClientGamePacketListener extends ClientCommonPacketListener, ClientPongPacketListener {
    @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
@@ -22,7 +22,11 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleAwardStats(ClientboundAwardStatsPacket var1);
 
-   void handleAddOrRemoveRecipes(ClientboundRecipePacket var1);
+   void handleRecipeBookAdd(ClientboundRecipeBookAddPacket var1);
+
+   void handleRecipeBookRemove(ClientboundRecipeBookRemovePacket var1);
+
+   void handleRecipeBookSettings(ClientboundRecipeBookSettingsPacket var1);
 
    void handleBlockDestruction(ClientboundBlockDestructionPacket var1);
 
@@ -82,6 +86,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleMovePlayer(ClientboundPlayerPositionPacket var1);
 
+   void handleRotatePlayer(ClientboundPlayerRotationPacket var1);
+
    void handleParticleEvent(ClientboundLevelParticlesPacket var1);
 
    void handlePlayerAbilities(ClientboundPlayerAbilitiesPacket var1);
@@ -127,6 +133,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleSoundEntityEvent(ClientboundSoundEntityPacket var1);
 
    void handleTakeItemEntity(ClientboundTakeItemEntityPacket var1);
+
+   void handleEntityPositionSync(ClientboundEntityPositionSyncPacket var1);
 
    void handleTeleportEntity(ClientboundTeleportEntityPacket var1);
 

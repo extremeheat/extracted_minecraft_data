@@ -12,11 +12,12 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.ItemLike;
 
@@ -92,7 +93,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    }
 
    @Override
-   public void save(RecipeOutput var1, ResourceLocation var2) {
+   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
       this.ensureValid(var2);
       Advancement.Builder var3 = var1.advancement()
          .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
@@ -102,12 +103,12 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
       ShapelessRecipe var4 = new ShapelessRecipe(
          Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), this.result, this.ingredients
       );
-      var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
-   private void ensureValid(ResourceLocation var1) {
+   private void ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + var1.location());
       }
    }
 }

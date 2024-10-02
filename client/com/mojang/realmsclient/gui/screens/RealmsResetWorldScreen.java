@@ -1,6 +1,7 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.client.worldupload.RealmsCreateWorldFlow;
 import com.mojang.realmsclient.dto.RealmsServer;
@@ -224,6 +225,8 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       if (var1 != null) {
          this.runResetTasks(new ResettingTemplateWorldTask(var1, this.serverData.id, this.resetTaskTitle, this.resetWorldRunnable));
       }
+
+      RealmsMainScreen.refreshServerList();
    }
 
    private void runResetTasks(LongRunningTask var1) {

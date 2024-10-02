@@ -397,6 +397,7 @@ public class Climate {
 //   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    static class SpawnFinder {
+      private static final long MAX_RADIUS = 2048L;
       Climate.SpawnFinder.Result result;
 
       SpawnFinder(List<Climate.ParameterPoint> var1, Climate.Sampler var2) {
@@ -428,18 +429,17 @@ public class Climate {
       }
 
       private static Climate.SpawnFinder.Result getSpawnPositionAndFitness(List<Climate.ParameterPoint> var0, Climate.Sampler var1, int var2, int var3) {
-         double var4 = Mth.square(2500.0);
-         byte var6 = 2;
-         long var7 = (long)((double)Mth.square(10000.0F) * Math.pow((double)(Mth.square((long)var2) + Mth.square((long)var3)) / var4, 2.0));
-         Climate.TargetPoint var9 = var1.sample(QuartPos.fromBlock(var2), 0, QuartPos.fromBlock(var3));
-         Climate.TargetPoint var10 = new Climate.TargetPoint(var9.temperature(), var9.humidity(), var9.continentalness(), var9.erosion(), 0L, var9.weirdness());
-         long var11 = 9223372036854775807L;
+         Climate.TargetPoint var4 = var1.sample(QuartPos.fromBlock(var2), 0, QuartPos.fromBlock(var3));
+         Climate.TargetPoint var5 = new Climate.TargetPoint(var4.temperature(), var4.humidity(), var4.continentalness(), var4.erosion(), 0L, var4.weirdness());
+         long var6 = 9223372036854775807L;
 
-         for (Climate.ParameterPoint var14 : var0) {
-            var11 = Math.min(var11, var14.fitness(var10));
+         for (Climate.ParameterPoint var9 : var0) {
+            var6 = Math.min(var6, var9.fitness(var5));
          }
 
-         return new Climate.SpawnFinder.Result(new BlockPos(var2, 0, var3), var7 + var11);
+         long var12 = Mth.square((long)var2) + Mth.square((long)var3);
+         long var10 = var6 * Mth.square(2048L) + var12;
+         return new Climate.SpawnFinder.Result(new BlockPos(var2, 0, var3), var10);
       }
 
 // $VF: Couldn't be decompiled

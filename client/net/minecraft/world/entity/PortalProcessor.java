@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Portal;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 
 public class PortalProcessor {
    private final Portal portal;
@@ -30,7 +30,7 @@ public class PortalProcessor {
    }
 
    @Nullable
-   public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2) {
+   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2) {
       return this.portal.getPortalDestination(var1, var2, this.entryPosition);
    }
 

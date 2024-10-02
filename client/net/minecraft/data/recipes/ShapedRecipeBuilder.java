@@ -13,11 +13,12 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.ItemLike;
@@ -99,7 +100,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    }
 
    @Override
-   public void save(RecipeOutput var1, ResourceLocation var2) {
+   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
       ShapedRecipePattern var3 = this.ensureValid(var2);
       Advancement.Builder var4 = var1.advancement()
          .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
@@ -113,12 +114,12 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
          new ItemStack(this.result, this.count),
          this.showNotification
       );
-      var1.accept(var2, var5, var4.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
+      var1.accept(var2, var5, var4.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
-   private ShapedRecipePattern ensureValid(ResourceLocation var1) {
+   private ShapedRecipePattern ensureValid(ResourceKey<Recipe<?>> var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + var1.location());
       } else {
          return ShapedRecipePattern.of(this.key, this.rows);
       }

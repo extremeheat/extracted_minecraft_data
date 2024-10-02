@@ -73,14 +73,16 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       return ItemStack.EMPTY;
    }
 
+   @Override
    public NonNullList<ItemStack> getRemainingItems(CraftingInput var1) {
       NonNullList var2 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
       for (int var3 = 0; var3 < var2.size(); var3++) {
          ItemStack var4 = var1.getItem(var3);
          if (!var4.isEmpty()) {
-            if (var4.getItem().hasCraftingRemainingItem()) {
-               var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));
+            ItemStack var5 = var4.getItem().getCraftingRemainder();
+            if (!var5.isEmpty()) {
+               var2.set(var3, var5);
             } else if (!var4.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).layers().isEmpty()) {
                var2.set(var3, var4.copyWithCount(1));
             }
@@ -91,12 +93,7 @@ public class BannerDuplicateRecipe extends CustomRecipe {
    }
 
    @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<BannerDuplicateRecipe> getSerializer() {
       return RecipeSerializer.BANNER_DUPLICATE;
-   }
-
-   @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
    }
 }

@@ -64,12 +64,7 @@ public class MapCloningRecipe extends CustomRecipe {
    }
 
    @Override
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= 3 && var2 >= 3;
-   }
-
-   @Override
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<MapCloningRecipe> getSerializer() {
       return RecipeSerializer.MAP_CLONING;
    }
 }

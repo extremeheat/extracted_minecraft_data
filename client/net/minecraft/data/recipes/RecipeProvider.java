@@ -31,6 +31,7 @@ import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -150,7 +151,7 @@ public abstract class RecipeProvider {
          .save(this.output, getItemName(var3) + "_smithing");
    }
 
-   protected void trimSmithing(Item var1, ResourceLocation var2) {
+   protected void trimSmithing(Item var1, ResourceKey<Recipe<?>> var2) {
       SmithingTrimRecipeBuilder.smithingTrim(Ingredient.of(var1), this.tag(ItemTags.TRIMMABLE_ARMOR), this.tag(ItemTags.TRIM_MATERIALS), RecipeCategory.MISC)
          .unlocks("has_smithing_trim_template", this.has(var1))
          .save(this.output, var2);
@@ -459,7 +460,11 @@ public abstract class RecipeProvider {
    private void nineBlockStorageRecipes(
       RecipeCategory var1, ItemLike var2, RecipeCategory var3, ItemLike var4, String var5, @Nullable String var6, String var7, @Nullable String var8
    ) {
-      this.shapeless(var1, var2, 9).requires(var4).group(var8).unlockedBy(getHasName(var4), this.has(var4)).save(this.output, ResourceLocation.parse(var7));
+      this.shapeless(var1, var2, 9)
+         .requires(var4)
+         .group(var8)
+         .unlockedBy(getHasName(var4), this.has(var4))
+         .save(this.output, ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var7)));
       this.shaped(var3, var4)
          .define('#', var2)
          .pattern("###")
@@ -467,7 +472,7 @@ public abstract class RecipeProvider {
          .pattern("###")
          .group(var6)
          .unlockedBy(getHasName(var2), this.has(var2))
-         .save(this.output, ResourceLocation.parse(var5));
+         .save(this.output, ResourceKey.create(Registries.RECIPE, ResourceLocation.parse(var5)));
    }
 
    protected void copySmithingTemplate(ItemLike var1, ItemLike var2) {
@@ -700,7 +705,7 @@ public abstract class RecipeProvider {
                   final ArrayList var6 = new ArrayList();
                   RecipeOutput var7 = new RecipeOutput() {
                      @Override
-                     public void accept(ResourceLocation var1x, Recipe<?> var2x, @Nullable AdvancementHolder var3x) {
+                     public void accept(ResourceKey<Recipe<?>> var1x, Recipe<?> var2x, @Nullable AdvancementHolder var3x) {
                         if (!var5.add(var1x)) {
                            throw new IllegalStateException("Duplicate recipe " + var1x);
                         } else {
@@ -724,8 +729,8 @@ public abstract class RecipeProvider {
                         this.saveAdvancement(var1x);
                      }
 
-                     private void saveRecipe(ResourceLocation var1x, Recipe<?> var2x) {
-                        var6.add(DataProvider.saveStable(var1, var2, Recipe.CODEC, var2x, var3.json(var1x)));
+                     private void saveRecipe(ResourceKey<Recipe<?>> var1x, Recipe<?> var2x) {
+                        var6.add(DataProvider.saveStable(var1, var2, Recipe.CODEC, var2x, var3.json(var1x.location())));
                      }
 
                      private void saveAdvancement(AdvancementHolder var1x) {

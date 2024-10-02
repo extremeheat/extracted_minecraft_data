@@ -67,6 +67,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerCombatEndPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatEnterPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundServerDataPacket;
@@ -148,6 +149,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.ServerItemCooldowns;
 import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -165,7 +167,7 @@ import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
@@ -218,7 +220,7 @@ public class ServerPlayer extends Player {
    private Entity camera;
    private boolean isChangingDimension;
    public boolean seenCredits;
-   private final ServerRecipeBook recipeBook = new ServerRecipeBook();
+   private final ServerRecipeBook recipeBook;
    @Nullable
    private Vec3 levitationStartPos;
    private int levitationStartTime;
@@ -324,6 +326,7 @@ public class ServerPlayer extends Player {
       super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3);
       this.textFilter = var1.createTextFilterForPlayer(this);
       this.gameMode = var1.createGameModeForPlayer(this);
+      this.recipeBook = new ServerRecipeBook((var1x, var2x) -> var1.getRecipeManager().listDisplaysForRecipe(var1x, var2x));
       this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
@@ -417,7 +420,7 @@ public class ServerPlayer extends Player {
 
       this.seenCredits = var1.getBoolean("seenCredits");
       if (var1.contains("recipeBook", 10)) {
-         this.recipeBook.fromNbt(var1.getCompound("recipeBook"), this.server.getRecipeManager());
+         this.recipeBook.fromNbt(var1.getCompound("recipeBook"), var1x -> this.server.getRecipeManager().byKey(var1x).isPresent());
       }
 
       if (this.isSleeping()) {
@@ -505,32 +508,34 @@ public class ServerPlayer extends Player {
          Entity var4 = EntityType.loadEntityRecursive(
             var8.getCompound("Entity"), var2, EntitySpawnReason.LOAD, var1x -> !var2.addWithUUID(var1x) ? null : var1x
          );
-         if (var4 != null) {
-            UUID var5;
-            if (var8.hasUUID("Attach")) {
-               var5 = var8.getUUID("Attach");
-            } else {
-               var5 = null;
-            }
+         if (var4 == null) {
+            return;
+         }
 
-            if (var4.getUUID().equals(var5)) {
-               this.startRiding(var4, true);
-            } else {
-               for (Entity var7 : var4.getIndirectPassengers()) {
-                  if (var7.getUUID().equals(var5)) {
-                     this.startRiding(var7, true);
-                     break;
-                  }
+         UUID var5;
+         if (var8.hasUUID("Attach")) {
+            var5 = var8.getUUID("Attach");
+         } else {
+            var5 = null;
+         }
+
+         if (var4.getUUID().equals(var5)) {
+            this.startRiding(var4, true);
+         } else {
+            for (Entity var7 : var4.getIndirectPassengers()) {
+               if (var7.getUUID().equals(var5)) {
+                  this.startRiding(var7, true);
+                  break;
                }
             }
+         }
 
-            if (!this.isPassenger()) {
-               LOGGER.warn("Couldn't reattach entity to player");
-               var4.discard();
+         if (!this.isPassenger()) {
+            LOGGER.warn("Couldn't reattach entity to player");
+            var4.discard();
 
-               for (Entity var10 : var4.getIndirectPassengers()) {
-                  var10.discard();
-               }
+            for (Entity var10 : var4.getIndirectPassengers()) {
+               var10.discard();
             }
          }
       }
@@ -964,7 +969,7 @@ public class ServerPlayer extends Player {
       return this.server.isPvpAllowed();
    }
 
-   public DimensionTransition findRespawnPositionAndUseSpawnBlock(boolean var1, DimensionTransition.PostDimensionTransition var2) {
+   public TeleportTransition findRespawnPositionAndUseSpawnBlock(boolean var1, TeleportTransition.PostTeleportTransition var2) {
       BlockPos var3 = this.getRespawnPosition();
       float var4 = this.getRespawnAngle();
       boolean var5 = this.isRespawnForced();
@@ -973,12 +978,12 @@ public class ServerPlayer extends Player {
          Optional var7 = findRespawnAndUseSpawnBlock(var6, var3, var4, var5, var1);
          if (var7.isPresent()) {
             ServerPlayer.RespawnPosAngle var8 = (ServerPlayer.RespawnPosAngle)var7.get();
-            return new DimensionTransition(var6, var8.position(), Vec3.ZERO, var8.yaw(), 0.0F, var2);
+            return new TeleportTransition(var6, var8.position(), Vec3.ZERO, var8.yaw(), 0.0F, var2);
          } else {
-            return DimensionTransition.missingRespawnBlock(this.server.overworld(), this, var2);
+            return TeleportTransition.missingRespawnBlock(this.server.overworld(), this, var2);
          }
       } else {
-         return new DimensionTransition(this.server.overworld(), this, var2);
+         return new TeleportTransition(this.server.overworld(), this, var2);
       }
    }
 
@@ -1018,7 +1023,7 @@ public class ServerPlayer extends Player {
    }
 
    @Nullable
-   public Player changeDimension(DimensionTransition var1) {
+   public ServerPlayer teleport(TeleportTransition var1) {
       if (this.isRemoved()) {
          return null;
       } else {
@@ -1029,11 +1034,14 @@ public class ServerPlayer extends Player {
          ServerLevel var2 = var1.newLevel();
          ServerLevel var3 = this.serverLevel();
          ResourceKey var4 = var3.dimension();
-         this.stopRiding();
+         if (!var1.asPassenger()) {
+            this.stopRiding();
+         }
+
          if (var2.dimension() == var4) {
             this.connection.teleport(PositionMoveRotation.of(var1), var1.relatives());
             this.connection.resetPosition();
-            var1.postDimensionTransition().onTransition(this);
+            var1.postTeleportTransition().onTransition(this);
             return this;
          } else {
             this.isChangingDimension = true;
@@ -1063,13 +1071,18 @@ public class ServerPlayer extends Player {
             var6.sendLevelInfo(this, var2);
             var6.sendAllPlayerInfo(this);
             var6.sendActivePlayerEffects(this);
-            var1.postDimensionTransition().onTransition(this);
+            var1.postTeleportTransition().onTransition(this);
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
             this.lastSentFood = -1;
             return this;
          }
       }
+   }
+
+   @Override
+   public void forceSetRotation(float var1, float var2) {
+      this.connection.send(new ClientboundPlayerRotationPacket(var1, var2));
    }
 
    private void triggerDimensionChangeTriggers(ServerLevel var1) {
@@ -1428,8 +1441,8 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   public void awardRecipesByKey(List<ResourceLocation> var1) {
-      List var2 = var1.stream().flatMap(var1x -> this.server.getRecipeManager().byKey(var1x).stream()).collect(Collectors.toList());
+   public void awardRecipesByKey(List<ResourceKey<Recipe<?>>> var1) {
+      List var2 = var1.stream().flatMap(var1x -> this.server.getRecipeManager().byKey((ResourceKey<Recipe<?>>)var1x).stream()).collect(Collectors.toList());
       this.awardRecipes(var2);
    }
 

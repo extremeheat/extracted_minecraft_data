@@ -319,6 +319,11 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    @Override
+   public void cancelLerp() {
+      this.behavior.cancelLerp();
+   }
+
+   @Override
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.behavior.lerpTo(var1, var3, var5, var7, var8, var9);
    }

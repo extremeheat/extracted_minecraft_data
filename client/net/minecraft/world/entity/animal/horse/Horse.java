@@ -204,6 +204,11 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
       return true;
    }
 
+   @Override
+   protected void hurtArmor(DamageSource var1, float var2) {
+      this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.BODY});
+   }
+
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {

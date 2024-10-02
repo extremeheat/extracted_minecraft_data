@@ -1,43 +1,39 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.stats.RecipeBook;
 import net.minecraft.world.entity.player.StackedItemContents;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class RecipeCollection {
-   private final RegistryAccess registryAccess;
-   private final List<RecipeHolder<?>> recipes;
+   private final List<RecipeDisplayEntry> entries;
    private final boolean singleResultItem;
-   private final Set<RecipeHolder<?>> craftable = Sets.newHashSet();
-   private final Set<RecipeHolder<?>> fitsDimensions = Sets.newHashSet();
-   private final Set<RecipeHolder<?>> known = Sets.newHashSet();
+   private final Set<RecipeDisplayId> craftable = new HashSet<>();
+   private final Set<RecipeDisplayId> selected = new HashSet<>();
 
-   public RecipeCollection(RegistryAccess var1, List<RecipeHolder<?>> var2) {
+   public RecipeCollection(List<RecipeDisplayEntry> var1) {
       super();
-      this.registryAccess = var1;
-      this.recipes = ImmutableList.copyOf(var2);
-      if (var2.size() <= 1) {
+      this.entries = var1;
+      if (var1.size() <= 1) {
          this.singleResultItem = true;
       } else {
-         this.singleResultItem = allRecipesHaveSameResult(var1, var2);
+         this.singleResultItem = allRecipesHaveSameResult(this.entries);
       }
    }
 
-   private static boolean allRecipesHaveSameResult(RegistryAccess var0, List<RecipeHolder<?>> var1) {
-      int var2 = var1.size();
-      ItemStack var3 = ((RecipeHolder)var1.get(0)).value().getResultItem(var0);
+   private static boolean allRecipesHaveSameResult(List<RecipeDisplayEntry> var0) {
+      int var1 = var0.size();
+      SlotDisplay var2 = ((RecipeDisplayEntry)var0.getFirst()).display().result();
 
-      for (int var4 = 1; var4 < var2; var4++) {
-         ItemStack var5 = ((RecipeHolder)var1.get(var4)).value().getResultItem(var0);
-         if (!ItemStack.isSameItemSameComponents(var3, var5)) {
+      for (int var3 = 1; var3 < var1; var3++) {
+         SlotDisplay var4 = ((RecipeDisplayEntry)var0.get(var3)).display().result();
+         if (!var4.equals(var2)) {
             return false;
          }
       }
@@ -45,40 +41,24 @@ public class RecipeCollection {
       return true;
    }
 
-   public RegistryAccess registryAccess() {
-      return this.registryAccess;
-   }
+   public void selectRecipes(StackedItemContents var1, Predicate<RecipeDisplay> var2) {
+      for (RecipeDisplayEntry var4 : this.entries) {
+         boolean var5 = var2.test(var4.display());
+         if (var5) {
+            this.selected.add(var4.id());
+         } else {
+            this.selected.remove(var4.id());
+         }
 
-   public boolean hasKnownRecipes() {
-      return !this.known.isEmpty();
-   }
-
-   public void updateKnownRecipes(RecipeBook var1) {
-      for (RecipeHolder var3 : this.recipes) {
-         if (var1.contains(var3)) {
-            this.known.add(var3);
+         if (var5 && var4.canCraft(var1)) {
+            this.craftable.add(var4.id());
+         } else {
+            this.craftable.remove(var4.id());
          }
       }
    }
 
-   public void selectMatchingRecipes(StackedItemContents var1, int var2, int var3, RecipeBook var4) {
-      for (RecipeHolder var6 : this.recipes) {
-         boolean var7 = var6.value().canCraftInDimensions(var2, var3) && var4.contains(var6);
-         if (var7) {
-            this.fitsDimensions.add(var6);
-         } else {
-            this.fitsDimensions.remove(var6);
-         }
-
-         if (var7 && var1.canCraft(var6.value(), null)) {
-            this.craftable.add(var6);
-         } else {
-            this.craftable.remove(var6);
-         }
-      }
-   }
-
-   public boolean isCraftable(RecipeHolder<?> var1) {
+   public boolean isCraftable(RecipeDisplayId var1) {
       return this.craftable.contains(var1);
    }
 
@@ -86,24 +66,24 @@ public class RecipeCollection {
       return !this.craftable.isEmpty();
    }
 
-   public boolean hasFitting() {
-      return !this.fitsDimensions.isEmpty();
+   public boolean hasAnySelected() {
+      return !this.selected.isEmpty();
    }
 
-   public List<RecipeHolder<?>> getRecipes() {
-      return this.recipes;
+   public List<RecipeDisplayEntry> getRecipes() {
+      return this.entries;
    }
 
-   public List<RecipeHolder<?>> getFittingRecipes(RecipeCollection.CraftableStatus var1) {
+   public List<RecipeDisplayEntry> getSelectedRecipes(RecipeCollection.CraftableStatus var1) {
       Predicate var2 = switch (var1) {
-         case ANY -> this.fitsDimensions::contains;
+         case ANY -> this.selected::contains;
          case CRAFTABLE -> this.craftable::contains;
-         case NOT_CRAFTABLE -> var1x -> this.fitsDimensions.contains(var1x) && !this.craftable.contains(var1x);
+         case NOT_CRAFTABLE -> var1x -> this.selected.contains(var1x) && !this.craftable.contains(var1x);
       };
       ArrayList var3 = new ArrayList();
 
-      for (RecipeHolder var5 : this.recipes) {
-         if (var2.test(var5)) {
+      for (RecipeDisplayEntry var5 : this.entries) {
+         if (var2.test(var5.id())) {
             var3.add(var5);
          }
       }

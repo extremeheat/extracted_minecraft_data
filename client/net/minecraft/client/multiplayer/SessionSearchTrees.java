@@ -22,6 +22,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.level.Level;
 
 public class SessionSearchTrees {
    private static final SessionSearchTrees.Key RECIPE_COLLECTIONS = new SessionSearchTrees.Key();
@@ -53,24 +55,29 @@ public class SessionSearchTrees {
          .filter(var0x -> !var0x.isEmpty());
    }
 
-   public void updateRecipes(ClientRecipeBook var1, RegistryAccess.Frozen var2) {
+   public void updateRecipes(ClientRecipeBook var1, Level var2) {
       this.register(
          RECIPE_COLLECTIONS,
          () -> {
             List var3 = var1.getCollections();
-            Registry var4 = var2.lookupOrThrow(Registries.ITEM);
-            Item.TooltipContext var5 = Item.TooltipContext.of(var2);
-            TooltipFlag.Default var6 = TooltipFlag.Default.NORMAL;
-            CompletableFuture var7 = this.recipeSearch;
+            RegistryAccess var4 = var2.registryAccess();
+            Registry var5 = var4.lookupOrThrow(Registries.ITEM);
+            Item.TooltipContext var6 = Item.TooltipContext.of(var4);
+            SlotDisplay.ResolutionContext var7 = SlotDisplay.ResolutionContext.forLevel(var2);
+            TooltipFlag.Default var8 = TooltipFlag.Default.NORMAL;
+            CompletableFuture var9 = this.recipeSearch;
             this.recipeSearch = CompletableFuture.supplyAsync(
                () -> new FullTextSearchTree<>(
-                     var3xx -> getTooltipLines(var3xx.getRecipes().stream().map(var1xxxx -> var1xxxx.value().getResultItem(var2)), var5, var6),
-                     var2xxx -> var2xxx.getRecipes().stream().map(var2xxxx -> var4.getKey(var2xxxx.value().getResultItem(var2).getItem())),
+                     var3xx -> getTooltipLines(var3xx.getRecipes().stream().flatMap(var1xxxx -> var1xxxx.resultItems(var7).stream()), var6, var8),
+                     var2xxx -> var2xxx.getRecipes()
+                           .stream()
+                           .flatMap(var1xxxx -> var1xxxx.resultItems(var7).stream())
+                           .map(var1xxxx -> var5.getKey(var1xxxx.getItem())),
                      var3
                   ),
                Util.backgroundExecutor()
             );
-            var7.cancel(true);
+            var9.cancel(true);
          }
       );
    }

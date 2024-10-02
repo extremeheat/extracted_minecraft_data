@@ -182,6 +182,19 @@ public class CreativeModeTabs {
                var1.accept(Items.CHERRY_TRAPDOOR);
                var1.accept(Items.CHERRY_PRESSURE_PLATE);
                var1.accept(Items.CHERRY_BUTTON);
+               var1.accept(Items.PALE_OAK_LOG);
+               var1.accept(Items.PALE_OAK_WOOD);
+               var1.accept(Items.STRIPPED_PALE_OAK_LOG);
+               var1.accept(Items.STRIPPED_PALE_OAK_WOOD);
+               var1.accept(Items.PALE_OAK_PLANKS);
+               var1.accept(Items.PALE_OAK_STAIRS);
+               var1.accept(Items.PALE_OAK_SLAB);
+               var1.accept(Items.PALE_OAK_FENCE);
+               var1.accept(Items.PALE_OAK_FENCE_GATE);
+               var1.accept(Items.PALE_OAK_DOOR);
+               var1.accept(Items.PALE_OAK_TRAPDOOR);
+               var1.accept(Items.PALE_OAK_PRESSURE_PLATE);
+               var1.accept(Items.PALE_OAK_BUTTON);
                var1.accept(Items.BAMBOO_BLOCK);
                var1.accept(Items.STRIPPED_BAMBOO_BLOCK);
                var1.accept(Items.BAMBOO_PLANKS);
@@ -720,6 +733,9 @@ public class CreativeModeTabs {
                var1.accept(Items.SNOW);
                var1.accept(Items.MOSS_BLOCK);
                var1.accept(Items.MOSS_CARPET);
+               var1.accept(Items.PALE_MOSS_BLOCK);
+               var1.accept(Items.PALE_MOSS_CARPET);
+               var1.accept(Items.PALE_HANGING_MOSS);
                var1.accept(Items.STONE);
                var1.accept(Items.DEEPSLATE);
                var1.accept(Items.GRANITE);
@@ -782,6 +798,7 @@ public class CreativeModeTabs {
                var1.accept(Items.MANGROVE_ROOTS);
                var1.accept(Items.MUDDY_MANGROVE_ROOTS);
                var1.accept(Items.CHERRY_LOG);
+               var1.accept(Items.PALE_OAK_LOG);
                var1.accept(Items.MUSHROOM_STEM);
                var1.accept(Items.CRIMSON_STEM);
                var1.accept(Items.WARPED_STEM);
@@ -793,6 +810,7 @@ public class CreativeModeTabs {
                var1.accept(Items.DARK_OAK_LEAVES);
                var1.accept(Items.MANGROVE_LEAVES);
                var1.accept(Items.CHERRY_LEAVES);
+               var1.accept(Items.PALE_OAK_LEAVES);
                var1.accept(Items.AZALEA_LEAVES);
                var1.accept(Items.FLOWERING_AZALEA_LEAVES);
                var1.accept(Items.BROWN_MUSHROOM_BLOCK);
@@ -808,6 +826,7 @@ public class CreativeModeTabs {
                var1.accept(Items.DARK_OAK_SAPLING);
                var1.accept(Items.MANGROVE_PROPAGULE);
                var1.accept(Items.CHERRY_SAPLING);
+               var1.accept(Items.PALE_OAK_SAPLING);
                var1.accept(Items.AZALEA);
                var1.accept(Items.FLOWERING_AZALEA);
                var1.accept(Items.BROWN_MUSHROOM);
@@ -1030,6 +1049,8 @@ public class CreativeModeTabs {
                   var1.accept(Items.MANGROVE_HANGING_SIGN);
                   var1.accept(Items.CHERRY_SIGN);
                   var1.accept(Items.CHERRY_HANGING_SIGN);
+                  var1.accept(Items.PALE_OAK_SIGN);
+                  var1.accept(Items.PALE_OAK_HANGING_SIGN);
                   var1.accept(Items.BAMBOO_SIGN);
                   var1.accept(Items.BAMBOO_HANGING_SIGN);
                   var1.accept(Items.CRIMSON_SIGN);
@@ -1337,6 +1358,8 @@ public class CreativeModeTabs {
                   var1.accept(Items.MANGROVE_CHEST_BOAT);
                   var1.accept(Items.CHERRY_BOAT);
                   var1.accept(Items.CHERRY_CHEST_BOAT);
+                  var1.accept(Items.PALE_OAK_BOAT);
+                  var1.accept(Items.PALE_OAK_CHEST_BOAT);
                   var1.accept(Items.BAMBOO_RAFT);
                   var1.accept(Items.BAMBOO_CHEST_RAFT);
                   var1.accept(Items.RAIL);
@@ -1680,6 +1703,7 @@ public class CreativeModeTabs {
             .displayItems((var0x, var1) -> {
                var1.accept(Items.SPAWNER);
                var1.accept(Items.TRIAL_SPAWNER);
+               var1.accept(Items.CREAKING_HEART);
                var1.accept(Items.ALLAY_SPAWN_EGG);
                var1.accept(Items.ARMADILLO_SPAWN_EGG);
                var1.accept(Items.AXOLOTL_SPAWN_EGG);
@@ -1694,6 +1718,7 @@ public class CreativeModeTabs {
                var1.accept(Items.CHICKEN_SPAWN_EGG);
                var1.accept(Items.COD_SPAWN_EGG);
                var1.accept(Items.COW_SPAWN_EGG);
+               var1.accept(Items.CREAKING_SPAWN_EGG);
                var1.accept(Items.CREEPER_SPAWN_EGG);
                var1.accept(Items.DOLPHIN_SPAWN_EGG);
                var1.accept(Items.DONKEY_SPAWN_EGG);

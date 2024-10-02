@@ -66,6 +66,7 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
@@ -653,7 +654,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "pot_crafted_using_only_sherds",
             RecipeCraftedTrigger.TriggerInstance.craftedItem(
-               ResourceLocation.withDefaultNamespace("decorated_pot"),
+               ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("decorated_pot")),
                List.of(
                   ItemPredicate.Builder.item().of(var4, ItemTags.DECORATED_POT_SHERDS),
                   ItemPredicate.Builder.item().of(var4, ItemTags.DECORATED_POT_SHERDS),
@@ -863,7 +864,10 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("crafter_crafted_crafter", RecipeCraftedTrigger.TriggerInstance.crafterCraftedItem(ResourceLocation.withDefaultNamespace("crafter")))
+         .addCriterion(
+            "crafter_crafted_crafter",
+            RecipeCraftedTrigger.TriggerInstance.crafterCraftedItem(ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace("crafter")))
+         )
          .save(var2, "adventure/crafters_crafting_crafters");
       Advancement.Builder.advancement()
          .parent(var19)
@@ -1001,7 +1005,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       var0.requirements(AdvancementRequirements.Strategy.OR);
       VanillaRecipeProvider.smithingTrims()
          .map(VanillaRecipeProvider.TrimTemplate::id)
-         .forEach(var1 -> var0.addCriterion("armor_trimmed_" + var1, RecipeCraftedTrigger.TriggerInstance.craftedItem(var1)));
+         .forEach(var1 -> var0.addCriterion("armor_trimmed_" + var1, RecipeCraftedTrigger.TriggerInstance.craftedItem((ResourceKey<Recipe<?>>)var1)));
       return var0;
    }
 

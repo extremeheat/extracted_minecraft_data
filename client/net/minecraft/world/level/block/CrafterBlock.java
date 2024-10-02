@@ -184,11 +184,11 @@ public class CrafterBlock extends BaseEntityBlock {
       }
    }
 
-   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(Level var0, CraftingInput var1) {
+   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(ServerLevel var0, CraftingInput var1) {
       return RECIPE_CACHE.get(var0, var1);
    }
 
-   private void dispenseItem(ServerLevel var1, BlockPos var2, CrafterBlockEntity var3, ItemStack var4, BlockState var5, RecipeHolder<CraftingRecipe> var6) {
+   private void dispenseItem(ServerLevel var1, BlockPos var2, CrafterBlockEntity var3, ItemStack var4, BlockState var5, RecipeHolder<?> var6) {
       Direction var7 = var5.getValue(ORIENTATION).front();
       Container var8 = HopperBlockEntity.getContainerAt(var1, var2.relative(var7));
       ItemStack var9 = var4.copy();

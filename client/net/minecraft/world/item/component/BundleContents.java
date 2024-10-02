@@ -195,7 +195,7 @@ public final class BundleContents implements TooltipComponent {
          return BundleContents.canItemBeInBundle(var3) ? this.tryInsert(var1.safeTake(var3.getCount(), var4, var2)) : 0;
       }
 
-      public void setSelectedItem(int var1) {
+      public void toggleSelectedItem(int var1) {
          this.selectedItem = this.selectedItem != var1 && var1 < this.items.size() ? var1 : -1;
       }
 
@@ -207,7 +207,7 @@ public final class BundleContents implements TooltipComponent {
             int var1 = this.selectedItem != -1 && this.selectedItem < this.items.size() ? this.selectedItem : 0;
             ItemStack var2 = this.items.remove(var1).copy();
             this.weight = this.weight.subtract(BundleContents.getWeight(var2).multiplyBy(Fraction.getFraction(var2.getCount(), 1)));
-            this.setSelectedItem(-1);
+            this.toggleSelectedItem(-1);
             return var2;
          }
       }

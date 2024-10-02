@@ -314,6 +314,8 @@ import net.minecraft.util.datafix.schemas.V3825;
 import net.minecraft.util.datafix.schemas.V3938;
 import net.minecraft.util.datafix.schemas.V4059;
 import net.minecraft.util.datafix.schemas.V4067;
+import net.minecraft.util.datafix.schemas.V4070;
+import net.minecraft.util.datafix.schemas.V4071;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -1360,6 +1362,11 @@ public class DataFixers {
       Schema var242 = var0.addSchema(4068, SAME_NAMESPACED);
       var0.addFixer(new LockComponentPredicateFix(var242));
       var0.addFixer(new ContainerBlockEntityLockPredicateFix(var242));
+      Schema var243 = var0.addSchema(4070, V4070::new);
+      var0.addFixer(new AddNewChoices(var243, "Added Pale Oak Boat and Pale Oak Chest Boat", References.ENTITY));
+      Schema var244 = var0.addSchema(4071, V4071::new);
+      var0.addFixer(new AddNewChoices(var244, "Added Creaking", References.ENTITY));
+      var0.addFixer(new AddNewChoices(var244, "Added Creaking Heart", References.BLOCK_ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

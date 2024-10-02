@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 
@@ -25,6 +26,8 @@ public class SimpleBlockFeature extends Feature<SimpleBlockConfiguration> {
             }
 
             DoublePlantBlock.placeAt(var3, var5, var4, 2);
+         } else if (var5.getBlock() instanceof MossyCarpetBlock) {
+            MossyCarpetBlock.placeAt(var3, var4, var3.getRandom(), 2);
          } else {
             var3.setBlock(var4, var5, 2);
          }

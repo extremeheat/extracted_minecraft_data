@@ -83,6 +83,8 @@ public class RealmsCreateWorldFlow {
                   } else {
                      var0.forceSetScreen(var1);
                   }
+
+                  RealmsMainScreen.refreshServerList();
                }
 
                return null;
