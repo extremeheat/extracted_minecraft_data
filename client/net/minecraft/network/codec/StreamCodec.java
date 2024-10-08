@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.datafixers.util.Function5;
 import com.mojang.datafixers.util.Function6;
 import com.mojang.datafixers.util.Function7;
+import com.mojang.datafixers.util.Function8;
 import io.netty.buffer.ByteBuf;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -319,6 +320,53 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             var8.encode((B)var1x, (V)var9.apply(var2x));
             var10.encode((B)var1x, (V)var11.apply(var2x));
             var12.encode((B)var1x, (V)var13.apply(var2x));
+         }
+      };
+   }
+
+   static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> StreamCodec<B, C> composite(
+      final StreamCodec<? super B, T1> var0,
+      final Function<C, T1> var1,
+      final StreamCodec<? super B, T2> var2,
+      final Function<C, T2> var3,
+      final StreamCodec<? super B, T3> var4,
+      final Function<C, T3> var5,
+      final StreamCodec<? super B, T4> var6,
+      final Function<C, T4> var7,
+      final StreamCodec<? super B, T5> var8,
+      final Function<C, T5> var9,
+      final StreamCodec<? super B, T6> var10,
+      final Function<C, T6> var11,
+      final StreamCodec<? super B, T7> var12,
+      final Function<C, T7> var13,
+      final StreamCodec<? super B, T8> var14,
+      final Function<C, T8> var15,
+      final Function8<T1, T2, T3, T4, T5, T6, T7, T8, C> var16
+   ) {
+      return new StreamCodec<B, C>() {
+         @Override
+         public C decode(B var1x) {
+            Object var2x = var0.decode((B)var1x);
+            Object var3x = var2.decode((B)var1x);
+            Object var4x = var4.decode((B)var1x);
+            Object var5x = var6.decode((B)var1x);
+            Object var6x = var8.decode((B)var1x);
+            Object var7x = var10.decode((B)var1x);
+            Object var8x = var12.decode((B)var1x);
+            Object var9x = var14.decode((B)var1x);
+            return (C)var16.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x);
+         }
+
+         @Override
+         public void encode(B var1x, C var2x) {
+            var0.encode((B)var1x, (V)var1.apply(var2x));
+            var2.encode((B)var1x, (V)var3.apply(var2x));
+            var4.encode((B)var1x, (V)var5.apply(var2x));
+            var6.encode((B)var1x, (V)var7.apply(var2x));
+            var8.encode((B)var1x, (V)var9.apply(var2x));
+            var10.encode((B)var1x, (V)var11.apply(var2x));
+            var12.encode((B)var1x, (V)var13.apply(var2x));
+            var14.encode((B)var1x, (V)var15.apply(var2x));
          }
       };
    }

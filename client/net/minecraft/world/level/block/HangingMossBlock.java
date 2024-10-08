@@ -73,9 +73,18 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
    protected BlockState updateShape(
       BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
    ) {
-      return !this.canStayAtPosition(var2, var4)
-         ? Blocks.AIR.defaultBlockState()
-         : var1.setValue(TIP, Boolean.valueOf(!var2.getBlockState(var4.below()).is(this)));
+      if (!this.canStayAtPosition(var2, var4)) {
+         var3.scheduleTick(var4, this, 1);
+      }
+
+      return var1.setValue(TIP, Boolean.valueOf(!var2.getBlockState(var4.below()).is(this)));
+   }
+
+   @Override
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+      if (!this.canStayAtPosition(var2, var3)) {
+         var2.destroyBlock(var3, true);
+      }
    }
 
    @Override

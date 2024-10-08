@@ -12,10 +12,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class RecipeButton extends AbstractWidget {
    private static final ResourceLocation SLOT_MANY_CRAFTABLE_SPRITE = ResourceLocation.withDefaultNamespace("recipe_book/slot_many_craftable");
@@ -35,7 +35,7 @@ public class RecipeButton extends AbstractWidget {
       this.slotSelectTime = var1;
    }
 
-   public void init(RecipeCollection var1, boolean var2, RecipeBookPage var3, SlotDisplay.ResolutionContext var4) {
+   public void init(RecipeCollection var1, boolean var2, RecipeBookPage var3, ContextMap var4) {
       this.collection = var1;
       List var5 = var1.getSelectedRecipes(var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
       this.selectedEntries = var5.stream().map(var1x -> new RecipeButton.ResolvedEntry(var1x.id(), var1x.resultItems(var4))).toList();

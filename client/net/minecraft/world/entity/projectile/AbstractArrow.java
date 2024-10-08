@@ -193,11 +193,14 @@ public abstract class AbstractArrow extends Projectile {
          }
 
          this.inGroundTime++;
+         if (this.isAlive()) {
+            this.applyEffectsFromBlocks();
+         }
       } else {
          this.inGroundTime = 0;
          Vec3 var10 = this.position();
          if (this.isInWater()) {
-            this.addBubblePatricles(var10);
+            this.addBubbleParticles(var10);
          }
 
          if (this.isCritArrow()) {
@@ -276,7 +279,7 @@ public abstract class AbstractArrow extends Projectile {
       this.setDeltaMovement(var1.scale((double)var2));
    }
 
-   private void addBubblePatricles(Vec3 var1) {
+   private void addBubbleParticles(Vec3 var1) {
       Vec3 var2 = this.getDeltaMovement();
 
       for (int var3 = 0; var3 < 4; var3++) {

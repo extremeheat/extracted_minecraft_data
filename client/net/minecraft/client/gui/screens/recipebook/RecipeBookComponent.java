@@ -32,15 +32,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.item.crafting.ExtendedRecipeBookCategory;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements Renderable, GuiEventListener, NarratableEntry {
    public static final WidgetSprites RECIPE_BUTTON_SPRITES = new WidgetSprites(
@@ -245,7 +246,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       int var5 = 0;
 
       for (RecipeBookTabButton var7 : this.tabButtons) {
-         RecipeBookCategory var8 = var7.getCategory();
+         ExtendedRecipeBookCategory var8 = var7.getCategory();
          if (var8 instanceof SearchRecipeBookCategory) {
             var7.visible = true;
             var7.setPosition(var2, var3 + 27 * var5++);
@@ -509,11 +510,11 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
    public void fillGhostRecipe(RecipeDisplay var1) {
       this.ghostSlots.clear();
-      SlotDisplay.ResolutionContext var2 = SlotDisplay.ResolutionContext.forLevel(Objects.requireNonNull(this.minecraft.level));
+      ContextMap var2 = SlotDisplayContext.fromLevel(Objects.requireNonNull(this.minecraft.level));
       this.fillGhostRecipe(this.ghostSlots, var1, var2);
    }
 
-   protected abstract void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, SlotDisplay.ResolutionContext var3);
+   protected abstract void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, ContextMap var3);
 
    protected void sendUpdateSettings() {
       if (this.minecraft.getConnection() != null) {

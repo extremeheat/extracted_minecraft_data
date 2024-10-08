@@ -61,7 +61,7 @@ public class PostPass {
             for (PostChainConfig.Uniform var10 : this.uniforms) {
                Uniform var7x = this.shader.getUniform(var10.name());
                if (var7x != null) {
-                  storeUniform(var7x, var10.values());
+                  var7x.setFromConfig(var10.values(), var10.values().size());
                }
             }
 
@@ -85,23 +85,20 @@ public class PostPass {
             for (PostPass.Input var12 : this.inputs) {
                var12.cleanup(var2);
             }
+
+            this.restoreDefaultUniforms();
          });
       }
    }
 
-   private static void storeUniform(Uniform var0, List<Float> var1) {
-      switch (var1.size()) {
-         case 1:
-            var0.set((Float)var1.getFirst());
-            break;
-         case 2:
-            var0.set((Float)var1.get(0), (Float)var1.get(1));
-            break;
-         case 3:
-            var0.set((Float)var1.get(0), (Float)var1.get(1), (Float)var1.get(2));
-            break;
-         case 4:
-            var0.set((Float)var1.get(0), (Float)var1.get(1), (Float)var1.get(2), (Float)var1.get(3));
+   private void restoreDefaultUniforms() {
+      for (PostChainConfig.Uniform var2 : this.uniforms) {
+         String var3 = var2.name();
+         Uniform var4 = this.shader.getUniform(var3);
+         ShaderProgramConfig.Uniform var5 = this.shader.getUniformConfig(var3);
+         if (var4 != null && var5 != null && !var2.values().equals(var5.values())) {
+            var4.setFromConfig(var5);
+         }
       }
    }
 

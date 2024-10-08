@@ -871,10 +871,9 @@ public class ServerGamePacketListenerImpl
                            var28 = 1;
                         }
 
-                        if (!this.player.isChangingDimension()
-                           && (!this.player.serverLevel().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !var27)) {
+                        if (this.shouldCheckPlayerMovement(var27)) {
                            float var29 = var27 ? 300.0F : 100.0F;
-                           if (var25 - var23 > (double)(var29 * (float)var28) && !this.isSingleplayerOwner()) {
+                           if (var25 - var23 > (double)(var29 * (float)var28)) {
                               LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var17, var19, var21});
                               this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
                               return;
@@ -954,6 +953,17 @@ public class ServerGamePacketListenerImpl
                }
             }
          }
+      }
+   }
+
+   private boolean shouldCheckPlayerMovement(boolean var1) {
+      if (this.isSingleplayerOwner()) {
+         return false;
+      } else if (this.player.isChangingDimension()) {
+         return false;
+      } else {
+         GameRules var2 = this.player.serverLevel().getGameRules();
+         return var2.getBoolean(GameRules.RULE_DISABLE_PLAYER_MOVEMENT_CHECK) ? false : !var1 || !var2.getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK);
       }
    }
 
@@ -1684,28 +1694,29 @@ public class ServerGamePacketListenerImpl
       if (this.player.gameMode.isCreative()) {
          boolean var2 = var1.slotNum() < 0;
          ItemStack var3 = var1.itemStack();
+         ItemStack var4 = var3.copy();
          if (!var3.isItemEnabled(this.player.level().enabledFeatures())) {
             return;
          }
 
-         CustomData var4 = var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-         if (var4.contains("x") && var4.contains("y") && var4.contains("z")) {
-            BlockPos var5 = BlockEntity.getPosFromTag(var4.getUnsafe());
-            if (this.player.level().isLoaded(var5)) {
-               BlockEntity var6 = this.player.level().getBlockEntity(var5);
-               if (var6 != null) {
-                  var6.saveToItem(var3, this.player.level().registryAccess());
+         CustomData var5 = var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         if (var5.contains("x") && var5.contains("y") && var5.contains("z")) {
+            BlockPos var6 = BlockEntity.getPosFromTag(var5.getUnsafe());
+            if (this.player.level().isLoaded(var6)) {
+               BlockEntity var7 = this.player.level().getBlockEntity(var6);
+               if (var7 != null) {
+                  var7.saveToItem(var3, this.player.level().registryAccess());
                }
             }
          }
 
-         boolean var7 = var1.slotNum() >= 1 && var1.slotNum() <= 45;
-         boolean var8 = var3.isEmpty() || var3.getCount() <= var3.getMaxStackSize();
-         if (var7 && var8) {
+         boolean var8 = var1.slotNum() >= 1 && var1.slotNum() <= 45;
+         boolean var9 = var3.isEmpty() || var3.getCount() <= var3.getMaxStackSize();
+         if (var8 && var9) {
             this.player.inventoryMenu.getSlot(var1.slotNum()).setByPlayer(var3);
-            this.player.inventoryMenu.setRemoteSlot(var1.slotNum(), var3);
+            this.player.inventoryMenu.setRemoteSlot(var1.slotNum(), var4);
             this.player.inventoryMenu.broadcastChanges();
-         } else if (var2 && var8) {
+         } else if (var2 && var9) {
             if (this.dropSpamThrottler.isUnderThreshold()) {
                this.dropSpamThrottler.increment();
                this.player.drop(var3, true);

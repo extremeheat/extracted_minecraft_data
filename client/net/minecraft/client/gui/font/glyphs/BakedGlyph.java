@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.GlyphRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Style;
 import org.joml.Matrix4f;
 
 public class BakedGlyph {
@@ -30,7 +31,19 @@ public class BakedGlyph {
       this.down = var9;
    }
 
-   public void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, int var7) {
+   public void renderChar(BakedGlyph.GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4) {
+      Style var5 = var1.style();
+      boolean var6 = var5.isItalic();
+      float var7 = var1.x();
+      float var8 = var1.y();
+      int var9 = var1.color();
+      this.render(var6, var7, var8, var2, var3, var9, var4);
+      if (var5.isBold()) {
+         this.render(var6, var7 + var1.boldOffset(), var8, var2, var3, var9, var4);
+      }
+   }
+
+   private void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, int var7) {
       float var8 = var2 + this.left;
       float var9 = var2 + this.right;
       float var10 = var3 + this.up;
@@ -54,22 +67,29 @@ public class BakedGlyph {
       return this.renderTypes.select(var1);
    }
 
-   public static class Effect {
-      protected final float x0;
-      protected final float y0;
-      protected final float x1;
-      protected final float y1;
-      protected final float depth;
-      protected final int color;
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
-      public Effect(float var1, float var2, float var3, float var4, float var5, int var6) {
-         super();
-         this.x0 = var1;
-         this.y0 = var2;
-         this.x1 = var3;
-         this.y1 = var4;
-         this.depth = var5;
-         this.color = var6;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

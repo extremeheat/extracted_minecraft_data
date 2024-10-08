@@ -76,7 +76,7 @@ public class ServerRecipeBook extends RecipeBook {
       }
 
       if (!var3.isEmpty()) {
-         var2.connection.send(new ClientboundRecipeBookAddPacket(var3));
+         var2.connection.send(new ClientboundRecipeBookAddPacket(var3, false));
       }
 
       return var3.size();
@@ -153,7 +153,7 @@ public class ServerRecipeBook extends RecipeBook {
          this.displayResolver.displaysForRecipe(var4, var3 -> var2.add(new ClientboundRecipeBookAddPacket.Entry(var3, false, this.highlight.contains(var4))));
       }
 
-      var1.connection.send(new ClientboundRecipeBookAddPacket(var2));
+      var1.connection.send(new ClientboundRecipeBookAddPacket(var2, true));
    }
 
    public void copyOverData(ServerRecipeBook var1) {

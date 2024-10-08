@@ -17,5 +17,6 @@ public class WinterDropBiomeTagsProvider extends TagsProvider<Biome> {
    protected void addTags(HolderLookup.Provider var1) {
       this.tag(BiomeTags.IS_FOREST).add(WinterDropBiomes.PALE_GARDEN);
       this.tag(BiomeTags.STRONGHOLD_BIASED_TO).add(WinterDropBiomes.PALE_GARDEN);
+      this.tag(BiomeTags.IS_OVERWORLD).add(WinterDropBiomes.PALE_GARDEN);
    }
 }

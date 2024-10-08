@@ -13,6 +13,6 @@ public class EmptyGlyph extends BakedGlyph {
    }
 
    @Override
-   public void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, int var7) {
+   public void renderChar(BakedGlyph.GlyphInstance var1, Matrix4f var2, VertexConsumer var3, int var4) {
    }
 }

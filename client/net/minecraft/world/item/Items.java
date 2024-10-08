@@ -388,7 +388,13 @@ public class Items {
    public static final Item CRIMSON_FENCE = registerBlock(Blocks.CRIMSON_FENCE);
    public static final Item WARPED_FENCE = registerBlock(Blocks.WARPED_FENCE);
    public static final Item PUMPKIN = registerBlock(Blocks.PUMPKIN);
-   public static final Item CARVED_PUMPKIN = registerBlock(Blocks.CARVED_PUMPKIN, var0 -> var0.equippableUnswappable(EquipmentSlot.HEAD));
+   public static final Item CARVED_PUMPKIN = registerBlock(
+      Blocks.CARVED_PUMPKIN,
+      var0 -> var0.component(
+            DataComponents.EQUIPPABLE,
+            Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(ResourceLocation.withDefaultNamespace("misc/pumpkinblur")).build()
+         )
+   );
    public static final Item JACK_O_LANTERN = registerBlock(Blocks.JACK_O_LANTERN);
    public static final Item NETHERRACK = registerBlock(Blocks.NETHERRACK);
    public static final Item SOUL_SAND = registerBlock(Blocks.SOUL_SAND);

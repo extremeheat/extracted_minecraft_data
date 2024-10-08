@@ -8,6 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.Recipe;
 
 public class StackedItemContents {
@@ -44,7 +45,8 @@ public class StackedItemContents {
    }
 
    public boolean canCraft(Recipe<?> var1, int var2, @Nullable StackedContents.Output<Holder<Item>> var3) {
-      return this.canCraft(var1.placementInfo().unpackedIngredients(), var2, var3);
+      PlacementInfo var4 = var1.placementInfo();
+      return var4.isImpossibleToPlace() ? false : this.canCraft(var4.unpackedIngredients(), var2, var3);
    }
 
    public boolean canCraft(List<StackedContents.IngredientInfo<Holder<Item>>> var1, @Nullable StackedContents.Output<Holder<Item>> var2) {

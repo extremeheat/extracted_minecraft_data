@@ -17,26 +17,25 @@ public class RepairItemRecipe extends CustomRecipe {
    }
 
    @Nullable
-   private Pair<ItemStack, ItemStack> getItemsToCombine(CraftingInput var1) {
-      ItemStack var2 = null;
-      ItemStack var3 = null;
+   private static Pair<ItemStack, ItemStack> getItemsToCombine(CraftingInput var0) {
+      if (var0.ingredientCount() != 2) {
+         return null;
+      } else {
+         ItemStack var1 = null;
 
-      for (int var4 = 0; var4 < var1.size(); var4++) {
-         ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty()) {
-            if (var2 == null) {
-               var2 = var5;
-            } else {
-               if (var3 != null) {
-                  return null;
+         for (int var2 = 0; var2 < var0.size(); var2++) {
+            ItemStack var3 = var0.getItem(var2);
+            if (!var3.isEmpty()) {
+               if (var1 != null) {
+                  return canCombine(var1, var3) ? Pair.of(var1, var3) : null;
                }
 
-               var3 = var5;
+               var1 = var3;
             }
          }
-      }
 
-      return var2 != null && var3 != null && canCombine(var2, var3) ? Pair.of(var2, var3) : null;
+         return null;
+      }
    }
 
    private static boolean canCombine(ItemStack var0, ItemStack var1) {
@@ -50,11 +49,11 @@ public class RepairItemRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      return this.getItemsToCombine(var1) != null;
+      return getItemsToCombine(var1) != null;
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      Pair var3 = this.getItemsToCombine(var1);
+      Pair var3 = getItemsToCombine(var1);
       if (var3 == null) {
          return ItemStack.EMPTY;
       } else {

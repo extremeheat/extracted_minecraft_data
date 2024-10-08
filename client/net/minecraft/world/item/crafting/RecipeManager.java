@@ -34,6 +34,22 @@ import org.slf4j.Logger;
 
 public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> implements RecipeAccess {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Map<ResourceKey<RecipePropertySet>, RecipeManager.IngredientExtractor> RECIPE_PROPERTY_SETS = Map.of(
+      RecipePropertySet.SMITHING_ADDITION,
+      var0 -> var0 instanceof SmithingRecipe var1 ? var1.additionIngredient() : Optional.empty(),
+      RecipePropertySet.SMITHING_BASE,
+      var0 -> var0 instanceof SmithingRecipe var1 ? var1.baseIngredient() : Optional.empty(),
+      RecipePropertySet.SMITHING_TEMPLATE,
+      var0 -> var0 instanceof SmithingRecipe var1 ? var1.templateIngredient() : Optional.empty(),
+      RecipePropertySet.FURNACE_INPUT,
+      forSingleInput(RecipeType.SMELTING),
+      RecipePropertySet.BLAST_FURNACE_INPUT,
+      forSingleInput(RecipeType.BLASTING),
+      RecipePropertySet.SMOKER_INPUT,
+      forSingleInput(RecipeType.SMOKING),
+      RecipePropertySet.CAMPFIRE_INPUT,
+      forSingleInput(RecipeType.CAMPFIRE_COOKING)
+   );
    private final HolderLookup.Provider registries;
    private RecipeMap recipes = RecipeMap.EMPTY;
    private Map<ResourceKey<RecipePropertySet>, RecipePropertySet> propertySets = Map.of();
@@ -67,63 +83,25 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
 
    public void finalizeRecipeLoading(FeatureFlagSet var1) {
       ArrayList var2 = new ArrayList();
-      ArrayList var3 = new ArrayList();
-      ArrayList var4 = new ArrayList();
-      ArrayList var5 = new ArrayList();
-      ArrayList var6 = new ArrayList();
-      ArrayList var7 = new ArrayList();
-      ArrayList var8 = new ArrayList();
-      ArrayList var9 = new ArrayList();
-      this.recipes.values().forEach(var9x -> {
-         Recipe var10 = var9x.value();
-         if (!var10.isSpecial() && var10.placementInfo().isImpossibleToPlace()) {
-            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var9x.id().location());
+      List var3 = RECIPE_PROPERTY_SETS.entrySet().stream().map(var0 -> new RecipeManager.IngredientCollector(var0.getKey(), var0.getValue())).toList();
+      this.recipes.values().forEach(var3x -> {
+         Recipe var4 = var3x.value();
+         if (!var4.isSpecial() && var4.placementInfo().isImpossibleToPlace()) {
+            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var3x.id().location());
          } else {
-            if (var10 instanceof SmithingRecipe var11) {
-               var11.additionIngredient().ifPresent(var4::add);
-               var11.baseIngredient().ifPresent(var3::add);
-               var11.templateIngredient().ifPresent(var2::add);
-            }
-
-            if (var10 instanceof AbstractCookingRecipe var13) {
-               if (var13.getType() == RecipeType.SMELTING) {
-                  var5.add(var13.input());
-               } else if (var13.getType() == RecipeType.BLASTING) {
-                  var6.add(var13.input());
-               } else if (var13.getType() == RecipeType.SMOKING) {
-                  var7.add(var13.input());
-               } else if (var13.getType() == RecipeType.CAMPFIRE_COOKING) {
-                  var8.add(var13.input());
-               }
-            }
-
-            if (var10 instanceof StonecutterRecipe var14 && isIngredientEnabled(var1, var14.input()) && var14.resultDisplay().isEnabled(var1)) {
-               var9.add(new SelectableRecipe.SingleInputEntry(var14.input(), new SelectableRecipe(var14.resultDisplay(), Optional.of(var9x))));
+            var3.forEach(var1xx -> var1xx.accept(var4));
+            if (var4 instanceof StonecutterRecipe var5 && isIngredientEnabled(var1, var5.input()) && var5.resultDisplay().isEnabled(var1)) {
+               var2.add(new SelectableRecipe.SingleInputEntry(var5.input(), new SelectableRecipe(var5.resultDisplay(), Optional.of(var3x))));
             }
          }
       });
-      this.propertySets = Map.of(
-         RecipePropertySet.SMITHING_ADDITION,
-         RecipePropertySet.create(filterDisabled(var1, var4)),
-         RecipePropertySet.SMITHING_BASE,
-         RecipePropertySet.create(filterDisabled(var1, var3)),
-         RecipePropertySet.SMITHING_TEMPLATE,
-         RecipePropertySet.create(filterDisabled(var1, var2)),
-         RecipePropertySet.FURNACE_INPUT,
-         RecipePropertySet.create(filterDisabled(var1, var5)),
-         RecipePropertySet.BLAST_FURNACE_INPUT,
-         RecipePropertySet.create(filterDisabled(var1, var6)),
-         RecipePropertySet.SMOKER_INPUT,
-         RecipePropertySet.create(filterDisabled(var1, var7)),
-         RecipePropertySet.CAMPFIRE_INPUT,
-         RecipePropertySet.create(filterDisabled(var1, var8))
-      );
-      this.stonecutterRecipes = new SelectableRecipe.SingleInputSet<>(var9);
+      this.propertySets = var3.stream().collect(Collectors.toUnmodifiableMap(var0 -> var0.key, var1x -> var1x.asPropertySet(var1)));
+      this.stonecutterRecipes = new SelectableRecipe.SingleInputSet<>(var2);
       this.allDisplays = unpackRecipeInfo(this.recipes.values(), var1);
       this.recipeToDisplay = this.allDisplays.stream().collect(Collectors.groupingBy(var0 -> var0.parent.id(), IdentityHashMap::new, Collectors.toList()));
    }
 
-   private static List<Ingredient> filterDisabled(FeatureFlagSet var0, List<Ingredient> var1) {
+   static List<Ingredient> filterDisabled(FeatureFlagSet var0, List<Ingredient> var1) {
       var1.removeIf(var1x -> !isIngredientEnabled(var0, var1x));
       return var1;
    }
@@ -187,7 +165,10 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
    }
 
    public void listDisplaysForRecipe(ResourceKey<Recipe<?>> var1, Consumer<RecipeDisplayEntry> var2) {
-      this.recipeToDisplay.get(var1).forEach(var1x -> var2.accept(var1x.display));
+      List var3 = this.recipeToDisplay.get(var1);
+      if (var3 != null) {
+         var3.forEach(var1x -> var2.accept(var1x.display));
+      }
    }
 
    @VisibleForTesting
@@ -249,8 +230,37 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       return var2;
    }
 
+   private static RecipeManager.IngredientExtractor forSingleInput(RecipeType<? extends SingleItemRecipe> var0) {
+      return var1 -> var1.getType() == var0 && var1 instanceof SingleItemRecipe var2 ? Optional.of(var2.input()) : Optional.empty();
+   }
+
    public interface CachedCheck<I extends RecipeInput, T extends Recipe<I>> {
       Optional<RecipeHolder<T>> getRecipeFor(I var1, ServerLevel var2);
+   }
+
+   public static class IngredientCollector implements Consumer<Recipe<?>> {
+      final ResourceKey<RecipePropertySet> key;
+      private final RecipeManager.IngredientExtractor extractor;
+      private final List<Ingredient> ingredients = new ArrayList<>();
+
+      protected IngredientCollector(ResourceKey<RecipePropertySet> var1, RecipeManager.IngredientExtractor var2) {
+         super();
+         this.key = var1;
+         this.extractor = var2;
+      }
+
+      public void accept(Recipe<?> var1) {
+         this.extractor.apply(var1).ifPresent(this.ingredients::add);
+      }
+
+      public RecipePropertySet asPropertySet(FeatureFlagSet var1) {
+         return RecipePropertySet.create(RecipeManager.filterDisabled(var1, this.ingredients));
+      }
+   }
+
+   @FunctionalInterface
+   public interface IngredientExtractor {
+      Optional<Ingredient> apply(Recipe<?> var1);
    }
 
 // $VF: Couldn't be decompiled

@@ -44,50 +44,54 @@ public class FireworkStarRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      boolean var3 = false;
-      boolean var4 = false;
-      boolean var5 = false;
-      boolean var6 = false;
-      boolean var7 = false;
+      if (var1.ingredientCount() < 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         boolean var4 = false;
+         boolean var5 = false;
+         boolean var6 = false;
+         boolean var7 = false;
 
-      for (int var8 = 0; var8 < var1.size(); var8++) {
-         ItemStack var9 = var1.getItem(var8);
-         if (!var9.isEmpty()) {
-            if (SHAPE_BY_ITEM.containsKey(var9.getItem())) {
-               if (var5) {
-                  return false;
+         for (int var8 = 0; var8 < var1.size(); var8++) {
+            ItemStack var9 = var1.getItem(var8);
+            if (!var9.isEmpty()) {
+               if (SHAPE_BY_ITEM.containsKey(var9.getItem())) {
+                  if (var5) {
+                     return false;
+                  }
+
+                  var5 = true;
+               } else if (TWINKLE_INGREDIENT.test(var9)) {
+                  if (var7) {
+                     return false;
+                  }
+
+                  var7 = true;
+               } else if (TRAIL_INGREDIENT.test(var9)) {
+                  if (var6) {
+                     return false;
+                  }
+
+                  var6 = true;
+               } else if (GUNPOWDER_INGREDIENT.test(var9)) {
+                  if (var3) {
+                     return false;
+                  }
+
+                  var3 = true;
+               } else {
+                  if (!(var9.getItem() instanceof DyeItem)) {
+                     return false;
+                  }
+
+                  var4 = true;
                }
-
-               var5 = true;
-            } else if (TWINKLE_INGREDIENT.test(var9)) {
-               if (var7) {
-                  return false;
-               }
-
-               var7 = true;
-            } else if (TRAIL_INGREDIENT.test(var9)) {
-               if (var6) {
-                  return false;
-               }
-
-               var6 = true;
-            } else if (GUNPOWDER_INGREDIENT.test(var9)) {
-               if (var3) {
-                  return false;
-               }
-
-               var3 = true;
-            } else {
-               if (!(var9.getItem() instanceof DyeItem)) {
-                  return false;
-               }
-
-               var4 = true;
             }
          }
-      }
 
-      return var3 && var4;
+         return var3 && var4;
+      }
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
@@ -106,15 +110,15 @@ public class FireworkStarRecipe extends CustomRecipe {
                var4 = true;
             } else if (TRAIL_INGREDIENT.test(var8)) {
                var5 = true;
-            } else if (var8.getItem() instanceof DyeItem) {
-               var6.add(((DyeItem)var8.getItem()).getDyeColor().getFireworkColor());
+            } else if (var8.getItem() instanceof DyeItem var10) {
+               var6.add(var10.getDyeColor().getFireworkColor());
             }
          }
       }
 
-      ItemStack var10 = new ItemStack(Items.FIREWORK_STAR);
-      var10.set(DataComponents.FIREWORK_EXPLOSION, new FireworkExplosion(var3, var6, IntList.of(), var5, var4));
-      return var10;
+      ItemStack var12 = new ItemStack(Items.FIREWORK_STAR);
+      var12.set(DataComponents.FIREWORK_EXPLOSION, new FireworkExplosion(var3, var6, IntList.of(), var5, var4));
+      return var12;
    }
 
    @Override

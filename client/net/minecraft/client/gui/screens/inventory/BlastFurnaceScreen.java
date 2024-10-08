@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.BlastFurnaceMenu;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.BasicRecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
 
 public class BlastFurnaceScreen extends AbstractFurnaceScreen<BlastFurnaceMenu> {
    private static final ResourceLocation LIT_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("container/blast_furnace/lit_progress");
@@ -17,8 +17,8 @@ public class BlastFurnaceScreen extends AbstractFurnaceScreen<BlastFurnaceMenu> 
    private static final Component FILTER_NAME = Component.translatable("gui.recipebook.toggleRecipes.blastable");
    private static final List<RecipeBookComponent.TabInfo> TABS = List.of(
       new RecipeBookComponent.TabInfo(SearchRecipeBookCategory.BLAST_FURNACE),
-      new RecipeBookComponent.TabInfo(Items.REDSTONE_ORE, BasicRecipeBookCategory.BLAST_FURNACE_BLOCKS),
-      new RecipeBookComponent.TabInfo(Items.IRON_SHOVEL, Items.GOLDEN_LEGGINGS, BasicRecipeBookCategory.BLAST_FURNACE_MISC)
+      new RecipeBookComponent.TabInfo(Items.REDSTONE_ORE, RecipeBookCategories.BLAST_FURNACE_BLOCKS),
+      new RecipeBookComponent.TabInfo(Items.IRON_SHOVEL, Items.GOLDEN_LEGGINGS, RecipeBookCategories.BLAST_FURNACE_MISC)
    );
 
    public BlastFurnaceScreen(BlastFurnaceMenu var1, Inventory var2, Component var3) {

@@ -36,8 +36,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -48,6 +48,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PlayerRideableJumping;
@@ -55,6 +56,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.border.WorldBorder;
@@ -102,13 +104,13 @@ public class Gui {
    private static final ResourceLocation FOOD_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_half");
    private static final ResourceLocation FOOD_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/food_full");
    private static final ResourceLocation AIR_SPRITE = ResourceLocation.withDefaultNamespace("hud/air");
-   private static final ResourceLocation AIR_BURSTING_SPRITE = ResourceLocation.withDefaultNamespace("hud/air_bursting");
+   private static final ResourceLocation AIR_POPPING_SPRITE = ResourceLocation.withDefaultNamespace("hud/air_bursting");
+   private static final ResourceLocation AIR_EMPTY_SPRITE = ResourceLocation.withDefaultNamespace("hud/air_empty");
    private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_container");
    private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_full");
    private static final ResourceLocation HEART_VEHICLE_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/vehicle_half");
    private static final ResourceLocation VIGNETTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/vignette.png");
    public static final ResourceLocation NAUSEA_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/nausea.png");
-   private static final ResourceLocation PUMPKIN_BLUR_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/pumpkinblur.png");
    private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/spyglass_scope.png");
    private static final ResourceLocation POWDER_SNOW_OUTLINE_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/powder_snow_outline.png");
    private static final Comparator<PlayerScoreEntry> SCORE_DISPLAY_ORDER = Comparator.comparing(PlayerScoreEntry::value)
@@ -123,6 +125,17 @@ public class Gui {
    private static final float PORTAL_OVERLAY_ALPHA_MIN = 0.2F;
    private static final int HEART_SIZE = 9;
    private static final int HEART_SEPARATION = 8;
+   private static final int NUM_AIR_BUBBLES = 10;
+   private static final int AIR_BUBBLE_SIZE = 9;
+   private static final int AIR_BUBBLE_SEPERATION = 8;
+   private static final int AIR_BUBBLE_POPPING_DURATION = 2;
+   private static final int EMPTY_AIR_BUBBLE_DELAY_DURATION = 4;
+   private static final float AIR_BUBBLE_POP_SOUND_VOLUME_BASE = 0.5F;
+   private static final float AIR_BUBBLE_POP_SOUND_VOLUME_INCREMENT = 0.1F;
+   private static final float AIR_BUBBLE_POP_SOUND_PITCH_BASE = 1.0F;
+   private static final float AIR_BUBBLE_POP_SOUND_PITCH_INCREMENT = 0.1F;
+   private static final int NUM_AIR_BUBBLE_POPPED_BEFORE_SOUND_VOLUME_INCREASE = 3;
+   private static final int NUM_AIR_BUBBLE_POPPED_BEFORE_SOUND_PITCH_INCREASE = 5;
    private static final float AUTOSAVE_FADE_SPEED_FACTOR = 0.2F;
    private static final int SAVING_INDICATOR_WIDTH_PADDING_RIGHT = 5;
    private static final int SAVING_INDICATOR_HEIGHT_PADDING_BOTTOM = 5;
@@ -155,6 +168,7 @@ public class Gui {
    private int displayHealth;
    private long lastHealthTime;
    private long healthBlinkTime;
+   private int lastBubblePopSoundPlayed;
    private float autosaveIndicatorValue;
    private float lastAutosaveIndicatorValue;
    private final LayeredDraw layers = new LayeredDraw();
@@ -215,9 +229,13 @@ public class Gui {
             this.renderSpyglassOverlay(var1, this.scopeScale);
          } else {
             this.scopeScale = 0.5F;
-            ItemStack var4 = this.minecraft.player.getInventory().getArmor(3);
-            if (var4.is(ItemTags.GAZE_DISGUISE_EQUIPMENT)) {
-               this.renderTextureOverlay(var1, PUMPKIN_BLUR_LOCATION, 1.0F);
+
+            for (EquipmentSlot var7 : EquipmentSlot.values()) {
+               ItemStack var8 = this.minecraft.player.getItemBySlot(var7);
+               Equippable var9 = var8.get(DataComponents.EQUIPPABLE);
+               if (var9 != null && var9.slot() == var7 && var9.cameraOverlay().isPresent()) {
+                  this.renderTextureOverlay(var1, var9.cameraOverlay().get().withPath(var0 -> "textures/" + var0 + ".png"), 1.0F);
+               }
             }
          }
       }
@@ -226,17 +244,17 @@ public class Gui {
          this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, this.minecraft.player.getPercentFrozen());
       }
 
-      float var7 = Mth.lerp(
+      float var10 = Mth.lerp(
          var2.getGameTimeDeltaPartialTick(false), this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity
       );
-      if (var7 > 0.0F) {
+      if (var10 > 0.0F) {
          if (!this.minecraft.player.hasEffect(MobEffects.CONFUSION)) {
-            this.renderPortalOverlay(var1, var7);
+            this.renderPortalOverlay(var1, var10);
          } else {
-            float var5 = this.minecraft.options.screenEffectScale().get().floatValue();
-            if (var5 < 1.0F) {
-               float var6 = var7 * (1.0F - var5);
-               this.renderConfusionOverlay(var1, var6);
+            float var11 = this.minecraft.options.screenEffectScale().get().floatValue();
+            if (var11 < 1.0F) {
+               float var12 = var10 * (1.0F - var11);
+               this.renderConfusionOverlay(var1, var12);
             }
          }
       }
@@ -803,23 +821,7 @@ public class Gui {
          }
 
          Profiler.get().popPush("air");
-         int var19 = var2.getMaxAirSupply();
-         int var20 = Math.min(var2.getAirSupply(), var19);
-         if (var2.isEyeInFluid(FluidTags.WATER) || var20 < var19) {
-            int var21 = this.getVisibleVehicleHeartRows(var18) - 1;
-            var15 -= var21 * 10;
-            int var22 = Mth.ceil((double)(var20 - 2) * 10.0 / (double)var19);
-            int var23 = Mth.ceil((double)var20 * 10.0 / (double)var19) - var22;
-
-            for (int var24 = 0; var24 < var22 + var23; var24++) {
-               if (var24 < var22) {
-                  var1.blitSprite(RenderType::guiTextured, AIR_SPRITE, var9 - var24 * 8 - 9, var15, 9, 9);
-               } else {
-                  var1.blitSprite(RenderType::guiTextured, AIR_BURSTING_SPRITE, var9 - var24 * 8 - 9, var15, 9, 9);
-               }
-            }
-         }
-
+         this.renderAirBubbles(var1, var2, var18, var15, var9);
          Profiler.get().pop();
       }
    }
@@ -891,6 +893,57 @@ public class Gui {
 
    private void renderHeart(GuiGraphics var1, Gui.HeartType var2, int var3, int var4, boolean var5, boolean var6, boolean var7) {
       var1.blitSprite(RenderType::guiTextured, var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
+   }
+
+   private void renderAirBubbles(GuiGraphics var1, Player var2, int var3, int var4, int var5) {
+      int var6 = var2.getMaxAirSupply();
+      int var7 = Math.clamp((long)var2.getAirSupply(), 0, var6);
+      boolean var8 = var2.isEyeInFluid(FluidTags.WATER);
+      if (var8 || var7 < var6) {
+         var4 = this.getAirBubbleYLine(var3, var4);
+         int var9 = getCurrentAirSupplyBubble(var7, var6, -2);
+         int var10 = getCurrentAirSupplyBubble(var7, var6, 0);
+         int var11 = 10 - getCurrentAirSupplyBubble(var7, var6, getEmptyBubbleDelayDuration(var7, var8));
+         boolean var12 = var9 != var10;
+         if (!var8) {
+            this.lastBubblePopSoundPlayed = 0;
+         }
+
+         for (int var13 = 1; var13 <= 10; var13++) {
+            int var14 = var5 - (var13 - 1) * 8 - 9;
+            if (var13 <= var9) {
+               var1.blitSprite(RenderType::guiTextured, AIR_SPRITE, var14, var4, 9, 9);
+            } else if (var12 && var13 == var10 && var8) {
+               var1.blitSprite(RenderType::guiTextured, AIR_POPPING_SPRITE, var14, var4, 9, 9);
+               this.playAirBubblePoppedSound(var13, var2, var11);
+            } else if (var13 > 10 - var11) {
+               int var15 = var11 == 10 && this.tickCount % 2 == 0 ? this.random.nextInt(2) : 0;
+               var1.blitSprite(RenderType::guiTextured, AIR_EMPTY_SPRITE, var14, var4 + var15, 9, 9);
+            }
+         }
+      }
+   }
+
+   private int getAirBubbleYLine(int var1, int var2) {
+      int var3 = this.getVisibleVehicleHeartRows(var1) - 1;
+      return var2 - var3 * 10;
+   }
+
+   private static int getCurrentAirSupplyBubble(int var0, int var1, int var2) {
+      return Mth.ceil((float)((var0 + var2) * 10) / (float)var1);
+   }
+
+   private static int getEmptyBubbleDelayDuration(int var0, boolean var1) {
+      return var0 != 0 && var1 ? 4 : 0;
+   }
+
+   private void playAirBubblePoppedSound(int var1, Player var2, int var3) {
+      if (this.lastBubblePopSoundPlayed != var1) {
+         float var4 = 0.5F + 0.1F * (float)Math.max(0, var3 - 3 + 1);
+         float var5 = 1.0F + 0.1F * (float)Math.max(0, var3 - 5 + 1);
+         var2.playSound(SoundEvents.BUBBLE_POP, var4, var5);
+         this.lastBubblePopSoundPlayed = var1;
+      }
    }
 
    private void renderFood(GuiGraphics var1, Player var2, int var3, int var4) {

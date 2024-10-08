@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.FurnaceMenu;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.BasicRecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
 
 public class FurnaceScreen extends AbstractFurnaceScreen<FurnaceMenu> {
    private static final ResourceLocation LIT_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("container/furnace/lit_progress");
@@ -17,9 +17,9 @@ public class FurnaceScreen extends AbstractFurnaceScreen<FurnaceMenu> {
    private static final Component FILTER_NAME = Component.translatable("gui.recipebook.toggleRecipes.smeltable");
    private static final List<RecipeBookComponent.TabInfo> TABS = List.of(
       new RecipeBookComponent.TabInfo(SearchRecipeBookCategory.FURNACE),
-      new RecipeBookComponent.TabInfo(Items.PORKCHOP, BasicRecipeBookCategory.FURNACE_FOOD),
-      new RecipeBookComponent.TabInfo(Items.STONE, BasicRecipeBookCategory.FURNACE_BLOCKS),
-      new RecipeBookComponent.TabInfo(Items.LAVA_BUCKET, Items.EMERALD, BasicRecipeBookCategory.FURNACE_MISC)
+      new RecipeBookComponent.TabInfo(Items.PORKCHOP, RecipeBookCategories.FURNACE_FOOD),
+      new RecipeBookComponent.TabInfo(Items.STONE, RecipeBookCategories.FURNACE_BLOCKS),
+      new RecipeBookComponent.TabInfo(Items.LAVA_BUCKET, Items.EMERALD, RecipeBookCategories.FURNACE_MISC)
    );
 
    public FurnaceScreen(FurnaceMenu var1, Inventory var2, Component var3) {

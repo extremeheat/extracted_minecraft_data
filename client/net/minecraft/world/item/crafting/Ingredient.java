@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -98,9 +97,21 @@ public final class Ingredient implements Predicate<ItemStack> {
    public SlotDisplay display() {
       return (SlotDisplay)this.values
          .unwrap()
-         .map(
-            SlotDisplay.TagSlotDisplay::new,
-            var0 -> new SlotDisplay.Composite(var0.stream().map(SlotDisplay.ItemSlotDisplay::new).collect(Collectors.toUnmodifiableList()))
-         );
+         .map(SlotDisplay.TagSlotDisplay::new, var0 -> new SlotDisplay.Composite(var0.stream().map(Ingredient::displayForSingleItem).toList()));
+   }
+
+   public static SlotDisplay optionalIngredientToDisplay(Optional<Ingredient> var0) {
+      return var0.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE);
+   }
+
+   private static SlotDisplay displayForSingleItem(Holder<Item> var0) {
+      SlotDisplay.ItemSlotDisplay var1 = new SlotDisplay.ItemSlotDisplay((Holder<Item>)var0);
+      ItemStack var2 = var0.value().getCraftingRemainder();
+      if (!var2.isEmpty()) {
+         SlotDisplay.ItemStackSlotDisplay var3 = new SlotDisplay.ItemStackSlotDisplay(var2);
+         return new SlotDisplay.WithRemainder(var1, var3);
+      } else {
+         return var1;
+      }
    }
 }

@@ -184,7 +184,7 @@ public class TeleportCommand {
    ) throws CommandSyntaxException {
       Vec3 var6 = var3.getPosition(var0);
       Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
-      Set var8 = getRelatives(var3, var4);
+      Set var8 = getRelatives(var3, var4, var0.getEntity().level().dimension() == var2.dimension());
 
       for (Entity var10 : var1) {
          if (var4 == null) {
@@ -217,37 +217,43 @@ public class TeleportCommand {
       return var1.size();
    }
 
-   private static Set<Relative> getRelatives(Coordinates var0, @Nullable Coordinates var1) {
-      EnumSet var2 = EnumSet.noneOf(Relative.class);
+   private static Set<Relative> getRelatives(Coordinates var0, @Nullable Coordinates var1, boolean var2) {
+      EnumSet var3 = EnumSet.noneOf(Relative.class);
       if (var0.isXRelative()) {
-         var2.add(Relative.DELTA_X);
-         var2.add(Relative.X);
+         var3.add(Relative.DELTA_X);
+         if (var2) {
+            var3.add(Relative.X);
+         }
       }
 
       if (var0.isYRelative()) {
-         var2.add(Relative.DELTA_Y);
-         var2.add(Relative.Y);
+         var3.add(Relative.DELTA_Y);
+         if (var2) {
+            var3.add(Relative.Y);
+         }
       }
 
       if (var0.isZRelative()) {
-         var2.add(Relative.DELTA_Z);
-         var2.add(Relative.Z);
+         var3.add(Relative.DELTA_Z);
+         if (var2) {
+            var3.add(Relative.Z);
+         }
       }
 
       if (var1 == null) {
-         var2.add(Relative.X_ROT);
-         var2.add(Relative.Y_ROT);
+         var3.add(Relative.X_ROT);
+         var3.add(Relative.Y_ROT);
       } else {
          if (var1.isXRelative()) {
-            var2.add(Relative.X_ROT);
+            var3.add(Relative.X_ROT);
          }
 
          if (var1.isYRelative()) {
-            var2.add(Relative.Y_ROT);
+            var3.add(Relative.Y_ROT);
          }
       }
 
-      return var2;
+      return var3;
    }
 
    private static String formatDouble(double var0) {

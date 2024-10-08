@@ -5,6 +5,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
+import java.util.List;
+import net.minecraft.client.renderer.ShaderProgramConfig;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -56,6 +59,29 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
 
    public static void uploadInteger(int var0, int var1) {
       RenderSystem.glUniform1i(var0, var1);
+   }
+
+   public void setFromConfig(ShaderProgramConfig.Uniform var1) {
+      this.setFromConfig(var1.values(), var1.count());
+   }
+
+   public void setFromConfig(List<Float> var1, int var2) {
+      float[] var3 = new float[Math.max(var2, 16)];
+      if (var1.size() == 1) {
+         Arrays.fill(var3, ((Float)var1.getFirst()).floatValue());
+      } else {
+         for (int var4 = 0; var4 < var1.size(); var4++) {
+            var3[var4] = (Float)var1.get(var4);
+         }
+      }
+
+      if (this.type <= 3) {
+         this.setSafe((int)var3[0], (int)var3[1], (int)var3[2], (int)var3[3]);
+      } else if (this.type <= 7) {
+         this.setSafe(var3[0], var3[1], var3[2], var3[3]);
+      } else {
+         this.set(Arrays.copyOfRange(var3, 0, var2));
+      }
    }
 
    @Override

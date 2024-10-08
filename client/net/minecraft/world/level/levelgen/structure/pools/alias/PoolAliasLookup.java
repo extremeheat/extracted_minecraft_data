@@ -23,7 +23,7 @@ public interface PoolAliasLookup {
          Builder var5 = ImmutableMap.builder();
          var0.forEach(var2x -> var2x.forEachResolved(var4, var5::put));
          ImmutableMap var6 = var5.build();
-         return var1x -> Objects.requireNonNull(var6.getOrDefault(var1x, var1x), () -> "alias " + var1x + " was mapped to null value");
+         return var1x -> Objects.requireNonNull(var6.getOrDefault(var1x, var1x), () -> "alias " + var1x.location() + " was mapped to null value");
       }
    }
 }

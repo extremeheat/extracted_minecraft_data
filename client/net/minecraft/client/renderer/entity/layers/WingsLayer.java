@@ -7,7 +7,6 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
@@ -40,7 +39,7 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
          var1.pushPose();
          var1.translate(0.0F, 0.0F, 0.125F);
          var10.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WINGS, var11, var10, var7, RenderType::armorCutoutNoCull, var1, var2, var3, var9);
+         this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WINGS, var11, var10, var7, var1, var2, var3, var9);
          var1.popPose();
       }
    }

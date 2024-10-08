@@ -7,9 +7,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class RecipeToast implements Toast {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/recipe");
@@ -76,7 +77,7 @@ public class RecipeToast implements Toast {
          var0.addToast(var2);
       }
 
-      SlotDisplay.ResolutionContext var3 = SlotDisplay.ResolutionContext.forLevel(var0.getMinecraft().level);
+      ContextMap var3 = SlotDisplayContext.fromLevel(var0.getMinecraft().level);
       ItemStack var4 = var1.craftingStation().resolveForFirstStack(var3);
       ItemStack var5 = var1.result().resolveForFirstStack(var3);
       var2.addItem(var4, var5);

@@ -261,7 +261,6 @@ public class WorldOpenFlows {
          return;
       } catch (OutOfMemoryError var11) {
          MemoryReserve.release();
-         System.gc();
          String var6 = "Ran out of memory trying to read level data of world folder \"" + var1.getLevelId() + "\"";
          LOGGER.error(LogUtils.FATAL_MARKER, var6);
          OutOfMemoryError var7 = new OutOfMemoryError("Ran out of memory reading level data");

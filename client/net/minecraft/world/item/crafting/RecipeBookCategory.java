@@ -1,4 +1,7 @@
 package net.minecraft.world.item.crafting;
 
-public interface RecipeBookCategory {
+public class RecipeBookCategory implements ExtendedRecipeBookCategory {
+   public RecipeBookCategory() {
+      super();
+   }
 }

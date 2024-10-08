@@ -12,7 +12,7 @@ public class TippedArrowRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.width() == 3 && var1.height() == 3) {
+      if (var1.width() == 3 && var1.height() == 3 && var1.ingredientCount() == 9) {
          for (int var3 = 0; var3 < var1.height(); var3++) {
             for (int var4 = 0; var4 < var1.width(); var4++) {
                ItemStack var5 = var1.getItem(var4, var3);

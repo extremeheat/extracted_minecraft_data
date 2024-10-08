@@ -38,7 +38,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Vector3f;
 
 public class RedStoneWireBlock extends Block {
    public static final MapCodec<RedStoneWireBlock> CODEC = simpleCodec(RedStoneWireBlock::new);
@@ -81,13 +80,13 @@ public class RedStoneWireBlock extends Block {
       )
    );
    private static final Map<BlockState, VoxelShape> SHAPES_CACHE = Maps.newHashMap();
-   private static final Vector3f[] COLORS = Util.make(new Vector3f[16], var0 -> {
+   private static final int[] COLORS = Util.make(new int[16], var0 -> {
       for (int var1 = 0; var1 <= 15; var1++) {
          float var2 = (float)var1 / 15.0F;
          float var3 = var2 * 0.6F + (var2 > 0.0F ? 0.4F : 0.3F);
          float var4 = Mth.clamp(var2 * var2 * 0.7F - 0.5F, 0.0F, 1.0F);
          float var5 = Mth.clamp(var2 * var2 * 0.6F - 0.7F, 0.0F, 1.0F);
-         var0[var1] = new Vector3f(var3, var4, var5);
+         var0[var1] = ARGB.colorFromFloat(1.0F, var3, var4, var5);
       }
    });
    private static final float PARTICLE_DENSITY = 0.2F;
@@ -409,20 +408,19 @@ public class RedStoneWireBlock extends Block {
    }
 
    public static int getColorForPower(int var0) {
-      Vector3f var1 = COLORS[var0];
-      return ARGB.colorFromFloat(0.0F, var1.x(), var1.y(), var1.z());
+      return COLORS[var0];
    }
 
-   private void spawnParticlesAlongLine(Level var1, RandomSource var2, BlockPos var3, Vector3f var4, Direction var5, Direction var6, float var7, float var8) {
-      float var9 = var8 - var7;
-      if (!(var2.nextFloat() >= 0.2F * var9)) {
-         float var10 = 0.4375F;
-         float var11 = var7 + var9 * var2.nextFloat();
-         double var12 = 0.5 + (double)(0.4375F * (float)var5.getStepX()) + (double)(var11 * (float)var6.getStepX());
-         double var14 = 0.5 + (double)(0.4375F * (float)var5.getStepY()) + (double)(var11 * (float)var6.getStepY());
-         double var16 = 0.5 + (double)(0.4375F * (float)var5.getStepZ()) + (double)(var11 * (float)var6.getStepZ());
-         var1.addParticle(
-            new DustParticleOptions(var4, 1.0F), (double)var3.getX() + var12, (double)var3.getY() + var14, (double)var3.getZ() + var16, 0.0, 0.0, 0.0
+   private static void spawnParticlesAlongLine(Level var0, RandomSource var1, BlockPos var2, int var3, Direction var4, Direction var5, float var6, float var7) {
+      float var8 = var7 - var6;
+      if (!(var1.nextFloat() >= 0.2F * var8)) {
+         float var9 = 0.4375F;
+         float var10 = var6 + var8 * var1.nextFloat();
+         double var11 = 0.5 + (double)(0.4375F * (float)var4.getStepX()) + (double)(var10 * (float)var5.getStepX());
+         double var13 = 0.5 + (double)(0.4375F * (float)var4.getStepY()) + (double)(var10 * (float)var5.getStepY());
+         double var15 = 0.5 + (double)(0.4375F * (float)var4.getStepZ()) + (double)(var10 * (float)var5.getStepZ());
+         var0.addParticle(
+            new DustParticleOptions(var3, 1.0F), (double)var2.getX() + var11, (double)var2.getY() + var13, (double)var2.getZ() + var15, 0.0, 0.0, 0.0
          );
       }
    }
@@ -435,13 +433,13 @@ public class RedStoneWireBlock extends Block {
             RedstoneSide var8 = var1.getValue(PROPERTY_BY_DIRECTION.get(var7));
             switch (var8) {
                case UP:
-                  this.spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], var7, Direction.UP, -0.5F, 0.5F);
+                  spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], var7, Direction.UP, -0.5F, 0.5F);
                case SIDE:
-                  this.spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], Direction.DOWN, var7, 0.0F, 0.5F);
+                  spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], Direction.DOWN, var7, 0.0F, 0.5F);
                   break;
                case NONE:
                default:
-                  this.spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], Direction.DOWN, var7, 0.0F, 0.3F);
+                  spawnParticlesAlongLine(var2, var4, var3, COLORS[var5], Direction.DOWN, var7, 0.0F, 0.3F);
             }
          }
       }

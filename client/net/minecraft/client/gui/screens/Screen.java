@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -426,15 +425,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.repositionElements();
    }
 
-   public static void wrapScreenError(Runnable var0, String var1, String var2) {
-      try {
-         var0.run();
-      } catch (Throwable var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, var1);
-         CrashReportCategory var5 = var4.addCategory("Affected screen");
-         var5.setDetail("Screen name", () -> var2);
-         throw new ReportedException(var4);
-      }
+   public void fillCrashDetails(CrashReport var1) {
+      CrashReportCategory var2 = var1.addCategory("Affected screen", 1);
+      var2.setDetail("Screen name", () -> this.getClass().getCanonicalName());
    }
 
    protected boolean isValidCharacterForName(String var1, char var2, int var3) {

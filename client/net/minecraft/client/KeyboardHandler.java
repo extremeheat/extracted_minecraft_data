@@ -419,43 +419,51 @@ public class KeyboardHandler {
          }
 
          if (var8 != null) {
-            boolean[] var14 = new boolean[]{false};
-            Screen.wrapScreenError(() -> {
-               if (var5 == 1 || var5 == 2) {
+            try {
+               if (var5 != 1 && var5 != 2) {
+                  if (var5 == 0 && var8.keyReleased(var3, var4, var6)) {
+                     return;
+                  }
+               } else {
                   var8.afterKeyboardAction();
-                  var14[0] = var8.keyPressed(var3, var4, var6);
-               } else if (var5 == 0) {
-                  var14[0] = var8.keyReleased(var3, var4, var6);
+                  if (var8.keyPressed(var3, var4, var6)) {
+                     return;
+                  }
                }
-            }, "keyPressed event handler", var8.getClass().getCanonicalName());
-            if (var14[0]) {
-               return;
+            } catch (Throwable var14) {
+               CrashReport var17 = CrashReport.forThrowable(var14, "keyPressed event handler");
+               var8.fillCrashDetails(var17);
+               CrashReportCategory var11 = var17.addCategory("Key");
+               var11.setDetail("Key", var3);
+               var11.setDetail("Scancode", var4);
+               var11.setDetail("Mods", var6);
+               throw new ReportedException(var17);
             }
          }
 
          InputConstants.Key var15;
-         boolean var17;
+         boolean var18;
          boolean var10000;
-         label180: {
+         label197: {
             var15 = InputConstants.getKey(var3, var4);
-            var17 = this.minecraft.screen == null;
-            label141:
-            if (!var17) {
+            var18 = this.minecraft.screen == null;
+            label153:
+            if (!var18) {
                if (this.minecraft.screen instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
-                  break label141;
+                  break label153;
                }
 
                var10000 = false;
-               break label180;
+               break label197;
             }
 
             var10000 = true;
          }
 
-         boolean var11 = var10000;
+         boolean var19 = var10000;
          if (var5 == 0) {
             KeyMapping.set(var15, false);
-            if (var11 && var3 == 292) {
+            if (var19 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
                } else {
@@ -463,19 +471,19 @@ public class KeyboardHandler {
                }
             }
          } else {
-            boolean var18 = false;
-            if (var11) {
+            boolean var20 = false;
+            if (var19) {
                if (var3 == 293 && this.minecraft.gameRenderer != null) {
                   this.minecraft.gameRenderer.togglePostEffect();
                }
 
                if (var3 == 256) {
                   this.minecraft.pauseGame(var7);
-                  var18 |= var7;
+                  var20 |= var7;
                }
 
-               var18 |= var7 && this.handleDebugKeys(var3);
-               this.handledDebugKey |= var18;
+               var20 |= var7 && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var20;
                if (var3 == 290) {
                   this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
                }
@@ -485,8 +493,8 @@ public class KeyboardHandler {
                }
             }
 
-            if (var17) {
-               if (var18) {
+            if (var18) {
+               if (var20) {
                   KeyMapping.set(var15, false);
                } else {
                   KeyMapping.set(var15, true);
@@ -501,12 +509,20 @@ public class KeyboardHandler {
       if (var1 == this.minecraft.getWindow().getWindow()) {
          Screen var5 = this.minecraft.screen;
          if (var5 != null && this.minecraft.getOverlay() == null) {
-            if (Character.charCount(var3) == 1) {
-               Screen.wrapScreenError(() -> var5.charTyped((char)var3, var4), "charTyped event handler", var5.getClass().getCanonicalName());
-            } else {
-               for (char var9 : Character.toChars(var3)) {
-                  Screen.wrapScreenError(() -> var5.charTyped(var9, var4), "charTyped event handler", var5.getClass().getCanonicalName());
+            try {
+               if (Character.isBmpCodePoint(var3)) {
+                  var5.charTyped((char)var3, var4);
+               } else if (Character.isValidCodePoint(var3)) {
+                  var5.charTyped(Character.highSurrogate(var3), var4);
+                  var5.charTyped(Character.lowSurrogate(var3), var4);
                }
+            } catch (Throwable var9) {
+               CrashReport var7 = CrashReport.forThrowable(var9, "charTyped event handler");
+               var5.fillCrashDetails(var7);
+               CrashReportCategory var8 = var7.addCategory("Key");
+               var8.setDetail("Codepoint", var3);
+               var8.setDetail("Mods", var4);
+               throw new ReportedException(var7);
             }
          }
       }

@@ -60,6 +60,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
@@ -272,6 +274,7 @@ public class BuiltInRegistries {
    );
    public static final Registry<RecipeDisplay.Type<?>> RECIPE_DISPLAY = registerSimple(Registries.RECIPE_DISPLAY, RecipeDisplays::bootstrap);
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
+   public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
    public static final Registry<? extends Registry<?>> REGISTRY = WRITABLE_REGISTRY;
 
    public BuiltInRegistries() {
@@ -299,7 +302,7 @@ public class BuiltInRegistries {
    private static <T, R extends WritableRegistry<T>> R internalRegister(
       ResourceKey<? extends Registry<T>> var0, R var1, BuiltInRegistries.RegistryBootstrap<T> var2
    ) {
-      Bootstrap.checkBootstrapCalled(() -> "registry " + var0);
+      Bootstrap.checkBootstrapCalled(() -> "registry " + var0.location());
       ResourceLocation var3 = var0.location();
       LOADERS.put(var3, () -> var2.run(var1));
       WRITABLE_REGISTRY.register(var0, var1, RegistrationInfo.BUILT_IN);

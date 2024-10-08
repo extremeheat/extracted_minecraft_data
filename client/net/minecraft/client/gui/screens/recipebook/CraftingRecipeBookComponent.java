@@ -6,15 +6,15 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
 import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractCraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.BasicRecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCraftingMenu> {
    private static final WidgetSprites FILTER_BUTTON_SPRITES = new WidgetSprites(
@@ -26,10 +26,10 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
    private static final Component ONLY_CRAFTABLES_TOOLTIP = Component.translatable("gui.recipebook.toggleRecipes.craftable");
    private static final List<RecipeBookComponent.TabInfo> TABS = List.of(
       new RecipeBookComponent.TabInfo(SearchRecipeBookCategory.CRAFTING),
-      new RecipeBookComponent.TabInfo(Items.IRON_AXE, Items.GOLDEN_SWORD, BasicRecipeBookCategory.CRAFTING_EQUIPMENT),
-      new RecipeBookComponent.TabInfo(Items.BRICKS, BasicRecipeBookCategory.CRAFTING_BUILDING_BLOCKS),
-      new RecipeBookComponent.TabInfo(Items.LAVA_BUCKET, Items.APPLE, BasicRecipeBookCategory.CRAFTING_MISC),
-      new RecipeBookComponent.TabInfo(Items.REDSTONE, BasicRecipeBookCategory.CRAFTING_REDSTONE)
+      new RecipeBookComponent.TabInfo(Items.IRON_AXE, Items.GOLDEN_SWORD, RecipeBookCategories.CRAFTING_EQUIPMENT),
+      new RecipeBookComponent.TabInfo(Items.BRICKS, RecipeBookCategories.CRAFTING_BUILDING_BLOCKS),
+      new RecipeBookComponent.TabInfo(Items.LAVA_BUCKET, Items.APPLE, RecipeBookCategories.CRAFTING_MISC),
+      new RecipeBookComponent.TabInfo(Items.REDSTONE, RecipeBookCategories.CRAFTING_REDSTONE)
    );
 
    public CraftingRecipeBookComponent(AbstractCraftingMenu var1) {
@@ -54,7 +54,7 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
    }
 
    @Override
-   protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, SlotDisplay.ResolutionContext var3) {
+   protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, ContextMap var3) {
       var1.setResult(this.menu.getResultSlot(), var3, ((RecipeDisplay)var2).result());
       Objects.requireNonNull(var2);
       switch (var2) {

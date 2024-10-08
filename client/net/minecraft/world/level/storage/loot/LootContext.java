@@ -11,10 +11,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -31,21 +31,21 @@ public class LootContext {
       this.lootDataResolver = var3;
    }
 
-   public boolean hasParam(LootContextParam<?> var1) {
-      return this.params.hasParam(var1);
+   public boolean hasParameter(ContextKey<?> var1) {
+      return this.params.contextMap().has(var1);
    }
 
-   public <T> T getParam(LootContextParam<T> var1) {
-      return this.params.getParameter(var1);
+   public <T> T getParameter(ContextKey<T> var1) {
+      return this.params.contextMap().getOrThrow(var1);
+   }
+
+   @Nullable
+   public <T> T getOptionalParameter(ContextKey<T> var1) {
+      return this.params.contextMap().getOptional(var1);
    }
 
    public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
       this.params.addDynamicDrops(var1, var2);
-   }
-
-   @Nullable
-   public <T> T getParamOrNull(LootContextParam<T> var1) {
-      return this.params.getParamOrNull(var1);
    }
 
    public boolean hasVisitedElement(LootContext.VisitedEntry<?> var1) {
@@ -131,14 +131,14 @@ public class LootContext {
 
       public static final StringRepresentable.EnumCodec<LootContext.EntityTarget> CODEC = StringRepresentable.fromEnum(LootContext.EntityTarget::values);
       private final String name;
-      private final LootContextParam<? extends Entity> param;
+      private final ContextKey<? extends Entity> param;
 
-      private EntityTarget(final String nullxx, final LootContextParam<? extends Entity> nullxxx) {
+      private EntityTarget(final String nullxx, final ContextKey<? extends Entity> nullxxx) {
          this.name = nullxx;
          this.param = nullxxx;
       }
 
-      public LootContextParam<? extends Entity> getParam() {
+      public ContextKey<? extends Entity> getParam() {
          return this.param;
       }
 

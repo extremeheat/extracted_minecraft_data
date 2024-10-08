@@ -12,7 +12,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ public class CompiledShaderProgram implements AutoCloseable {
    private final IntList samplerLocations = new IntArrayList();
    private final List<Uniform> uniforms = new ArrayList<>();
    private final Map<String, Uniform> uniformsByName = new HashMap<>();
+   private final Map<String, ShaderProgramConfig.Uniform> uniformConfigs = new HashMap<>();
    private final int programId;
    @Nullable
    public Uniform MODEL_VIEW_MATRIX;
@@ -98,6 +98,7 @@ public class CompiledShaderProgram implements AutoCloseable {
             var7.setLocation(var6);
             this.uniforms.add(var7);
             this.uniformsByName.put(var5, var7);
+            this.uniformConfigs.put(var5, var4);
          }
       }
 
@@ -177,6 +178,11 @@ public class CompiledShaderProgram implements AutoCloseable {
       return this.uniformsByName.get(var1);
    }
 
+   @Nullable
+   public ShaderProgramConfig.Uniform getUniformConfig(String var1) {
+      return this.uniformConfigs.get(var1);
+   }
+
    public AbstractUniform safeGetUniform(String var1) {
       Uniform var2 = this.getUniform(var1);
       return (AbstractUniform)(var2 == null ? DUMMY_UNIFORM : var2);
@@ -187,34 +193,12 @@ public class CompiledShaderProgram implements AutoCloseable {
    }
 
    private Uniform parseUniformNode(ShaderProgramConfig.Uniform var1) {
-      String var2 = var1.name();
-      int var3 = Uniform.getTypeFromString(var1.type());
-      int var4 = var1.count();
-      float[] var5 = new float[Math.max(var4, 16)];
-      int var6 = 0;
-
-      for (float var8 : var1.values()) {
-         var5[var6++] = var8;
-      }
-
-      if (var4 > 1 && var1.values().size() == 1) {
-         while (var6 < var4) {
-            var5[var6] = var5[0];
-            var6++;
-         }
-      }
-
-      int var9 = var4 > 1 && var4 <= 4 && var3 < 8 ? var4 - 1 : 0;
-      Uniform var10 = new Uniform(var2, var3 + var9, var4);
-      if (var3 <= 3) {
-         var10.setSafe((int)var5[0], (int)var5[1], (int)var5[2], (int)var5[3]);
-      } else if (var3 <= 7) {
-         var10.setSafe(var5[0], var5[1], var5[2], var5[3]);
-      } else {
-         var10.set(Arrays.copyOfRange(var5, 0, var4));
-      }
-
-      return var10;
+      int var2 = Uniform.getTypeFromString(var1.type());
+      int var3 = var1.count();
+      int var4 = var3 > 1 && var3 <= 4 && var2 < 8 ? var3 - 1 : 0;
+      Uniform var5 = new Uniform(var1.name(), var2 + var4, var3);
+      var5.setFromConfig(var1);
+      return var5;
    }
 
    public void setDefaultUniforms(VertexFormat.Mode var1, Matrix4f var2, Matrix4f var3, Window var4) {

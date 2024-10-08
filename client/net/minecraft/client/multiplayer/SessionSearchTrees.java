@@ -19,10 +19,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.Level;
 
 public class SessionSearchTrees {
@@ -63,7 +64,7 @@ public class SessionSearchTrees {
             RegistryAccess var4 = var2.registryAccess();
             Registry var5 = var4.lookupOrThrow(Registries.ITEM);
             Item.TooltipContext var6 = Item.TooltipContext.of(var4);
-            SlotDisplay.ResolutionContext var7 = SlotDisplay.ResolutionContext.forLevel(var2);
+            ContextMap var7 = SlotDisplayContext.fromLevel(var2);
             TooltipFlag.Default var8 = TooltipFlag.Default.NORMAL;
             CompletableFuture var9 = this.recipeSearch;
             this.recipeSearch = CompletableFuture.supplyAsync(

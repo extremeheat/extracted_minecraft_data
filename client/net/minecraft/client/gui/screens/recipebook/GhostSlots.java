@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
@@ -26,18 +27,18 @@ public class GhostSlots {
       this.ingredients.clear();
    }
 
-   private void setSlot(Slot var1, SlotDisplay.ResolutionContext var2, SlotDisplay var3, boolean var4) {
+   private void setSlot(Slot var1, ContextMap var2, SlotDisplay var3, boolean var4) {
       List var5 = var3.resolveForStacks(var2);
       if (!var5.isEmpty()) {
          this.ingredients.put(var1, new GhostSlots.GhostSlot(var5, var4));
       }
    }
 
-   protected void setInput(Slot var1, SlotDisplay.ResolutionContext var2, SlotDisplay var3) {
+   protected void setInput(Slot var1, ContextMap var2, SlotDisplay var3) {
       this.setSlot(var1, var2, var3, false);
    }
 
-   protected void setResult(Slot var1, SlotDisplay.ResolutionContext var2, SlotDisplay var3) {
+   protected void setResult(Slot var1, ContextMap var2, SlotDisplay var3) {
       this.setSlot(var1, var2, var3, true);
    }
 

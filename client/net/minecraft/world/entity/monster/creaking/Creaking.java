@@ -233,7 +233,10 @@ public class Creaking extends Monster {
          Predicate var2 = this.isActive() ? LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM : var0 -> true;
 
          for (Player var4 : var1) {
-            if (this.isLookingAtMe(var4, 0.5, false, true, var2, new DoubleSupplier[]{this::getEyeY, this::getY, () -> (this.getEyeY() + this.getY()) / 2.0})) {
+            if (!var4.isCreative()
+               && this.isLookingAtMe(var4, 0.5, false, true, var2, new DoubleSupplier[]{this::getEyeY, this::getY, () -> (this.getEyeY() + this.getY()) / 2.0})
+               )
+             {
                if (this.isActive()) {
                   return false;
                }
@@ -242,6 +245,7 @@ public class Creaking extends Monster {
                   this.gameEvent(GameEvent.ENTITY_ACTION);
                   this.makeSound(SoundEvents.CREAKING_ACTIVATE);
                   this.setIsActive(true);
+                  this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, var4);
                   return false;
                }
             }

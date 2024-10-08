@@ -881,6 +881,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void emergencySaveAndCrash(CrashReport var1) {
+      MemoryReserve.release();
       CrashReport var2 = this.fillReport(var1);
       this.emergencySave();
       crash(this, this.gameDirectory, var2);
@@ -1359,13 +1360,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void emergencySave() {
-      try {
-         MemoryReserve.release();
-      } catch (Throwable var3) {
-      }
+      MemoryReserve.release();
 
       try {
-         System.gc();
          if (this.isLocalServer && this.singleplayerServer != null) {
             this.singleplayerServer.halt(true);
          }
@@ -1685,7 +1682,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       if (this.screen != null) {
-         Screen.wrapScreenError(() -> this.screen.tick(), "Ticking screen", this.screen.getClass().getCanonicalName());
+         try {
+            this.screen.tick();
+         } catch (Throwable var5) {
+            CrashReport var9 = CrashReport.forThrowable(var5, "Ticking screen");
+            this.screen.fillCrashDetails(var9);
+            throw new ReportedException(var9);
+         }
       }
 
       if (!this.getDebugOverlay().showDebugScreen()) {
@@ -1727,9 +1730,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       if (this.level != null) {
          if (!this.pause) {
             if (!this.options.joinedFirstServer && this.isMultiplayerServer()) {
-               MutableComponent var6 = Component.translatable("tutorial.socialInteractions.title");
-               MutableComponent var8 = Component.translatable("tutorial.socialInteractions.description", Tutorial.key("socialInteractions"));
-               this.socialInteractionsToast = new TutorialToast(TutorialToast.Icons.SOCIAL_INTERACTIONS, var6, var8, true, 8000);
+               MutableComponent var7 = Component.translatable("tutorial.socialInteractions.title");
+               MutableComponent var10 = Component.translatable("tutorial.socialInteractions.description", Tutorial.key("socialInteractions"));
+               this.socialInteractionsToast = new TutorialToast(TutorialToast.Icons.SOCIAL_INTERACTIONS, var7, var10, true, 8000);
                this.toastManager.addToast(this.socialInteractionsToast);
                this.options.joinedFirstServer = true;
                this.options.save();
@@ -1739,16 +1742,16 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
             try {
                this.level.tick(() -> true);
-            } catch (Throwable var5) {
-               CrashReport var9 = CrashReport.forThrowable(var5, "Exception in world tick");
+            } catch (Throwable var6) {
+               CrashReport var11 = CrashReport.forThrowable(var6, "Exception in world tick");
                if (this.level == null) {
-                  CrashReportCategory var4 = var9.addCategory("Affected level");
+                  CrashReportCategory var4 = var11.addCategory("Affected level");
                   var4.setDetail("Problem", "Level is null!");
                } else {
-                  this.level.fillReportDetails(var9);
+                  this.level.fillReportDetails(var11);
                }
 
-               throw new ReportedException(var9);
+               throw new ReportedException(var11);
             }
          }
 
@@ -1762,9 +1765,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.particleEngine.tick();
          }
 
-         ClientPacketListener var7 = this.getConnection();
-         if (var7 != null && !this.pause) {
-            var7.send(ServerboundClientTickEndPacket.INSTANCE);
+         ClientPacketListener var8 = this.getConnection();
+         if (var8 != null && !this.pause) {
+            var8.send(ServerboundClientTickEndPacket.INSTANCE);
          }
       } else if (this.pendingConnection != null) {
          var1.popPush("pendingConnection");
@@ -2244,17 +2247,23 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public CrashReport fillReport(CrashReport var1) {
       SystemReport var2 = var1.getSystemReport();
-      fillSystemReport(var2, this, this.languageManager, this.launchedVersion, this.options);
-      this.fillUptime(var1.addCategory("Uptime"));
-      if (this.level != null) {
-         this.level.fillReportDetails(var1);
+
+      try {
+         fillSystemReport(var2, this, this.languageManager, this.launchedVersion, this.options);
+         this.fillUptime(var1.addCategory("Uptime"));
+         if (this.level != null) {
+            this.level.fillReportDetails(var1);
+         }
+
+         if (this.singleplayerServer != null) {
+            this.singleplayerServer.fillSystemReport(var2);
+         }
+
+         this.reloadStateTracker.fillCrashReport(var1);
+      } catch (Throwable var4) {
+         LOGGER.error("Failed to collect details", var4);
       }
 
-      if (this.singleplayerServer != null) {
-         this.singleplayerServer.fillSystemReport(var2);
-      }
-
-      this.reloadStateTracker.fillCrashReport(var1);
       return var1;
    }
 

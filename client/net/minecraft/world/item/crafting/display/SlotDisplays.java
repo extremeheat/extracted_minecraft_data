@@ -14,6 +14,7 @@ public class SlotDisplays {
       Registry.register(var0, "item_stack", SlotDisplay.ItemStackSlotDisplay.TYPE);
       Registry.register(var0, "tag", SlotDisplay.TagSlotDisplay.TYPE);
       Registry.register(var0, "smithing_trim", SlotDisplay.SmithingTrimDemoSlotDisplay.TYPE);
+      Registry.register(var0, "with_remainder", SlotDisplay.WithRemainder.TYPE);
       return Registry.register(var0, "composite", SlotDisplay.Composite.TYPE);
    }
 }

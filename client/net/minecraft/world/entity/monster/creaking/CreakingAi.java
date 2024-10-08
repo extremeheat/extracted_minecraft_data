@@ -59,8 +59,7 @@ public class CreakingAi {
          10,
          ImmutableList.of(
             StartAttacking.create(
-               (var0x, var1) -> var1.isActive() && var1.canMove(),
-               (var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER)
+               (var0x, var1) -> var1.isActive(), (var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER)
             ),
             SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)),
             new RunOne(

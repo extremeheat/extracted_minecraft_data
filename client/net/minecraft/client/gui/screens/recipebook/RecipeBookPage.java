@@ -15,9 +15,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
@@ -82,7 +83,7 @@ public class RecipeBookPage {
 
    private void updateButtonsForPage() {
       int var1 = 20 * this.currentPage;
-      SlotDisplay.ResolutionContext var2 = SlotDisplay.ResolutionContext.forLevel(this.minecraft.level);
+      ContextMap var2 = SlotDisplayContext.fromLevel(this.minecraft.level);
 
       for (int var3 = 0; var3 < this.buttons.size(); var3++) {
          RecipeButton var4 = this.buttons.get(var3);
@@ -167,7 +168,7 @@ public class RecipeBookPage {
          this.updateButtonsForPage();
          return true;
       } else {
-         SlotDisplay.ResolutionContext var10 = SlotDisplay.ResolutionContext.forLevel(this.minecraft.level);
+         ContextMap var10 = SlotDisplayContext.fromLevel(this.minecraft.level);
 
          for (RecipeButton var12 : this.buttons) {
             if (var12.mouseClicked(var1, var3, var5)) {

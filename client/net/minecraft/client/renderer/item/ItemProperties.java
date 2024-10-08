@@ -32,8 +32,8 @@ public class ItemProperties {
    private static final Map<ResourceLocation, ItemPropertyFunction> GENERIC_PROPERTIES = Maps.newHashMap();
    private static final ResourceLocation DAMAGED = ResourceLocation.withDefaultNamespace("damaged");
    private static final ResourceLocation DAMAGE = ResourceLocation.withDefaultNamespace("damage");
-   private static final ClampedItemPropertyFunction PROPERTY_DAMAGED = (var0x, var1, var2, var3) -> var0x.isDamaged() ? 1.0F : 0.0F;
-   private static final ClampedItemPropertyFunction PROPERTY_DAMAGE = (var0x, var1, var2, var3) -> Mth.clamp(
+   private static final ClampedItemPropertyFunction PROPERTY_DAMAGED = (var0x, var1, var2x, var3) -> var0x.isDamaged() ? 1.0F : 0.0F;
+   private static final ClampedItemPropertyFunction PROPERTY_DAMAGE = (var0x, var1, var2x, var3) -> Mth.clamp(
          (float)var0x.getDamageValue() / (float)var0x.getMaxDamage(), 0.0F, 1.0F
       );
    private static final Map<Item, Map<ResourceLocation, ItemPropertyFunction>> PROPERTIES = Maps.newHashMap();
@@ -84,37 +84,42 @@ public class ItemProperties {
 
    static {
       registerGeneric(
-         ResourceLocation.withDefaultNamespace("lefthanded"), (var0x, var1, var2, var3) -> var2 != null && var2.getMainArm() != HumanoidArm.RIGHT ? 1.0F : 0.0F
+         ResourceLocation.withDefaultNamespace("lefthanded"),
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.getMainArm() != HumanoidArm.RIGHT ? 1.0F : 0.0F
       );
       registerGeneric(
          ResourceLocation.withDefaultNamespace("cooldown"),
-         (var0x, var1, var2, var3) -> var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0x, 0.0F) : 0.0F
+         (var0x, var1, var2x, var3) -> var2x instanceof Player ? ((Player)var2x).getCooldowns().getCooldownPercent(var0x, 0.0F) : 0.0F
       );
-      ClampedItemPropertyFunction var0 = (var0x, var1, var2, var3) -> {
+      ClampedItemPropertyFunction var0 = (var0x, var1, var2x, var3) -> {
          ArmorTrim var4 = var0x.get(DataComponents.TRIM);
          return var4 != null ? var4.material().value().itemModelIndex() : -1.0F / 0.0F;
       };
       registerGeneric(ItemModelGenerators.TRIM_TYPE_PREDICATE_ID, var0);
-      registerGeneric(ResourceLocation.withDefaultNamespace("broken"), (var0x, var1, var2, var3) -> var0x.nextDamageWillBreak() ? 1.0F : 0.0F);
-      registerCustomModelData((var0x, var1, var2, var3) -> (float)var0x.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value());
-      register(Items.BOW, ResourceLocation.withDefaultNamespace("pull"), (var0x, var1, var2, var3) -> {
-         if (var2 == null) {
+      registerGeneric(ResourceLocation.withDefaultNamespace("broken"), (var0x, var1, var2x, var3) -> var0x.nextDamageWillBreak() ? 1.0F : 0.0F);
+      registerCustomModelData((var0x, var1, var2x, var3) -> (float)var0x.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value());
+      register(Items.BOW, ResourceLocation.withDefaultNamespace("pull"), (var0x, var1, var2x, var3) -> {
+         if (var2x == null) {
             return 0.0F;
          } else {
-            return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / 20.0F;
+            return var2x.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration(var2x) - var2x.getUseItemRemainingTicks()) / 20.0F;
          }
       });
       register(
          Items.BRUSH,
          ResourceLocation.withDefaultNamespace("brushing"),
-         (var0x, var1, var2, var3) -> var2 != null && var2.getUseItem() == var0x ? (float)(var2.getUseItemRemainingTicks() % 10) / 10.0F : 0.0F
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.getUseItem() == var0x ? (float)(var2x.getUseItemRemainingTicks() % 10) / 10.0F : 0.0F
       );
       register(
          Items.BOW,
          ResourceLocation.withDefaultNamespace("pulling"),
-         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.isUsingItem() && var2x.getUseItem() == var0x ? 1.0F : 0.0F
       );
-      register(Items.BUNDLE, ResourceLocation.withDefaultNamespace("filled"), (var0x, var1, var2, var3) -> BundleItem.getFullnessDisplay(var0x));
+
+      for (BundleItem var2 : BundleItem.getAllBundleItemColors()) {
+         register(var2.asItem(), ResourceLocation.withDefaultNamespace("filled"), (var0x, var1, var2x, var3) -> BundleItem.getFullnessDisplay(var0x));
+      }
+
       register(Items.CLOCK, ResourceLocation.withDefaultNamespace("time"), new ClampedItemPropertyFunction() {
          private double rotation;
          private double rota;
@@ -159,62 +164,62 @@ public class ItemProperties {
             return this.rotation;
          }
       });
-      register(Items.COMPASS, ResourceLocation.withDefaultNamespace("angle"), new CompassItemPropertyFunction((var0x, var1, var2) -> {
+      register(Items.COMPASS, ResourceLocation.withDefaultNamespace("angle"), new CompassItemPropertyFunction((var0x, var1, var2x) -> {
          LodestoneTracker var3 = var1.get(DataComponents.LODESTONE_TRACKER);
          return var3 != null ? var3.target().orElse(null) : CompassItem.getSpawnPosition(var0x);
       }));
       register(
          Items.RECOVERY_COMPASS,
          ResourceLocation.withDefaultNamespace("angle"),
-         new CompassItemPropertyFunction((var0x, var1, var2) -> var2 instanceof Player var3 ? var3.getLastDeathLocation().orElse(null) : null)
+         new CompassItemPropertyFunction((var0x, var1, var2x) -> var2x instanceof Player var3 ? var3.getLastDeathLocation().orElse(null) : null)
       );
       register(
          Items.CROSSBOW,
          ResourceLocation.withDefaultNamespace("pull"),
-         (var0x, var1, var2, var3) -> {
-            if (var2 == null) {
+         (var0x, var1, var2x, var3) -> {
+            if (var2x == null) {
                return 0.0F;
             } else {
                return CrossbowItem.isCharged(var0x)
                   ? 0.0F
-                  : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2);
+                  : (float)(var0x.getUseDuration(var2x) - var2x.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2x);
             }
          }
       );
       register(
          Items.CROSSBOW,
          ResourceLocation.withDefaultNamespace("pulling"),
-         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x && !CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.isUsingItem() && var2x.getUseItem() == var0x && !CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F
       );
-      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("charged"), (var0x, var1, var2, var3) -> CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F);
-      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("firework"), (var0x, var1, var2, var3) -> {
+      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("charged"), (var0x, var1, var2x, var3) -> CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F);
+      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("firework"), (var0x, var1, var2x, var3) -> {
          ChargedProjectiles var4 = var0x.get(DataComponents.CHARGED_PROJECTILES);
          return var4 != null && var4.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
       });
-      register(Items.FISHING_ROD, ResourceLocation.withDefaultNamespace("cast"), (var0x, var1, var2, var3) -> {
-         if (var2 == null) {
+      register(Items.FISHING_ROD, ResourceLocation.withDefaultNamespace("cast"), (var0x, var1, var2x, var3) -> {
+         if (var2x == null) {
             return 0.0F;
          } else {
-            boolean var4 = var2.getMainHandItem() == var0x;
-            boolean var5 = var2.getOffhandItem() == var0x;
-            if (var2.getMainHandItem().getItem() instanceof FishingRodItem) {
+            boolean var4 = var2x.getMainHandItem() == var0x;
+            boolean var5 = var2x.getOffhandItem() == var0x;
+            if (var2x.getMainHandItem().getItem() instanceof FishingRodItem) {
                var5 = false;
             }
 
-            return (var4 || var5) && var2 instanceof Player && ((Player)var2).fishing != null ? 1.0F : 0.0F;
+            return (var4 || var5) && var2x instanceof Player && ((Player)var2x).fishing != null ? 1.0F : 0.0F;
          }
       });
       register(
          Items.SHIELD,
          ResourceLocation.withDefaultNamespace("blocking"),
-         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.isUsingItem() && var2x.getUseItem() == var0x ? 1.0F : 0.0F
       );
       register(
          Items.TRIDENT,
          ResourceLocation.withDefaultNamespace("throwing"),
-         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.isUsingItem() && var2x.getUseItem() == var0x ? 1.0F : 0.0F
       );
-      register(Items.LIGHT, ResourceLocation.withDefaultNamespace("level"), (var0x, var1, var2, var3) -> {
+      register(Items.LIGHT, ResourceLocation.withDefaultNamespace("level"), (var0x, var1, var2x, var3) -> {
          BlockItemStateProperties var4 = var0x.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
          Integer var5 = var4.get(LightBlock.LEVEL);
          return var5 != null ? (float)var5.intValue() / 16.0F : 1.0F;
@@ -222,9 +227,9 @@ public class ItemProperties {
       register(
          Items.GOAT_HORN,
          ResourceLocation.withDefaultNamespace("tooting"),
-         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
+         (var0x, var1, var2x, var3) -> var2x != null && var2x.isUsingItem() && var2x.getUseItem() == var0x ? 1.0F : 0.0F
       );
-      register(Items.BEE_NEST, ResourceLocation.withDefaultNamespace("honey_level"), (var0x, var1, var2, var3) -> (float)honeyLevelProperty(var0x));
-      register(Items.BEEHIVE, ResourceLocation.withDefaultNamespace("honey_level"), (var0x, var1, var2, var3) -> (float)honeyLevelProperty(var0x));
+      register(Items.BEE_NEST, ResourceLocation.withDefaultNamespace("honey_level"), (var0x, var1, var2x, var3) -> (float)honeyLevelProperty(var0x));
+      register(Items.BEEHIVE, ResourceLocation.withDefaultNamespace("honey_level"), (var0x, var1, var2x, var3) -> (float)honeyLevelProperty(var0x));
    }
 }

@@ -14,7 +14,7 @@ import java.util.Set;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.gui.screens.recipebook.SearchRecipeBookCategory;
 import net.minecraft.stats.RecipeBook;
-import net.minecraft.world.item.crafting.BasicRecipeBookCategory;
+import net.minecraft.world.item.crafting.ExtendedRecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -22,7 +22,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 public class ClientRecipeBook extends RecipeBook {
    private final Map<RecipeDisplayId, RecipeDisplayEntry> known = new HashMap<>();
    private final Set<RecipeDisplayId> highlight = new HashSet<>();
-   private Map<RecipeBookCategory, List<RecipeCollection>> collectionsByTab = Map.of();
+   private Map<ExtendedRecipeBookCategory, List<RecipeCollection>> collectionsByTab = Map.of();
    private List<RecipeCollection> allCollections = List.of();
 
    public ClientRecipeBook() {
@@ -36,6 +36,11 @@ public class ClientRecipeBook extends RecipeBook {
    public void remove(RecipeDisplayId var1) {
       this.known.remove(var1);
       this.highlight.remove(var1);
+   }
+
+   public void clear() {
+      this.known.clear();
+      this.highlight.clear();
    }
 
    public boolean willHighlight(RecipeDisplayId var1) {
@@ -67,12 +72,12 @@ public class ClientRecipeBook extends RecipeBook {
       this.allCollections = var3.build();
    }
 
-   private static Map<BasicRecipeBookCategory, List<List<RecipeDisplayEntry>>> categorizeAndGroupRecipes(Iterable<RecipeDisplayEntry> var0) {
+   private static Map<RecipeBookCategory, List<List<RecipeDisplayEntry>>> categorizeAndGroupRecipes(Iterable<RecipeDisplayEntry> var0) {
       HashMap var1 = new HashMap();
       HashBasedTable var2 = HashBasedTable.create();
 
       for (RecipeDisplayEntry var4 : var0) {
-         BasicRecipeBookCategory var5 = var4.category();
+         RecipeBookCategory var5 = var4.category();
          OptionalInt var6 = var4.group();
          if (var6.isEmpty()) {
             var1.computeIfAbsent(var5, var0x -> new ArrayList<>()).add(List.of(var4));
@@ -95,7 +100,7 @@ public class ClientRecipeBook extends RecipeBook {
       return this.allCollections;
    }
 
-   public List<RecipeCollection> getCollection(RecipeBookCategory var1) {
+   public List<RecipeCollection> getCollection(ExtendedRecipeBookCategory var1) {
       return this.collectionsByTab.getOrDefault(var1, Collections.emptyList());
    }
 }

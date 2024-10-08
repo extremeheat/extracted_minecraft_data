@@ -4190,7 +4190,7 @@ public class BlockModelGenerators {
          ResourceLocation var5 = BlockModelGenerators.TintState.NOT_TINTED.getCross().createWithSuffix(var1, var3, var4, this.modelOutput);
          return Variant.variant().with(VariantProperties.MODEL, var5);
       });
-      this.createSimpleFlatItemModel(var1, "_tip");
+      this.createSimpleFlatItemModel(var1);
       this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(var2));
    }
 

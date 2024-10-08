@@ -187,7 +187,6 @@ public class LevelStorageSource {
                return this.readLevelSummary(var4, var2x);
             } catch (OutOfMemoryError var12) {
                MemoryReserve.release();
-               System.gc();
                String var4x = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
                LOGGER.error(LogUtils.FATAL_MARKER, var4x);
                OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");

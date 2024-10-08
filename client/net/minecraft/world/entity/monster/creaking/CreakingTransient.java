@@ -45,17 +45,20 @@ public class CreakingTransient extends Creaking {
          return super.hurtServer(var1, var2, var3);
       } else if (var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return super.hurtServer(var1, var2, var3);
-      } else if (!this.isInvulnerableTo(var1, var2) && this.invulnerabilityAnimationRemainingTicks <= 0 && var2.getEntity() instanceof Player) {
+      } else if (!this.isInvulnerableTo(var1, var2) && this.invulnerabilityAnimationRemainingTicks <= 0) {
          this.invulnerabilityAnimationRemainingTicks = 8;
          this.level().broadcastEntityEvent(this, (byte)66);
          if (this.level().getBlockEntity(this.homePos) instanceof CreakingHeartBlockEntity var4 && var4.isProtector(this)) {
-            var4.creakingHurt();
+            if (var2.getEntity() instanceof Player) {
+               var4.creakingHurt();
+            }
+
             this.playHurtSound(var2);
          }
 
          return true;
       } else {
-         return true;
+         return false;
       }
    }
 
@@ -174,6 +177,8 @@ public class CreakingTransient extends Creaking {
    }
 
    class HomeNodeEvaluator extends WalkNodeEvaluator {
+      private static final int MAX_DISTANCE_TO_HOME_SQ = 1024;
+
       HomeNodeEvaluator() {
          super();
       }

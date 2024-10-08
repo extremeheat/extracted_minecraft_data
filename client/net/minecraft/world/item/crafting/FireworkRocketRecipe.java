@@ -19,29 +19,33 @@ public class FireworkRocketRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      boolean var3 = false;
-      int var4 = 0;
+      if (var1.ingredientCount() < 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         int var4 = 0;
 
-      for (int var5 = 0; var5 < var1.size(); var5++) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (PAPER_INGREDIENT.test(var6)) {
-               if (var3) {
+         for (int var5 = 0; var5 < var1.size(); var5++) {
+            ItemStack var6 = var1.getItem(var5);
+            if (!var6.isEmpty()) {
+               if (PAPER_INGREDIENT.test(var6)) {
+                  if (var3) {
+                     return false;
+                  }
+
+                  var3 = true;
+               } else if (GUNPOWDER_INGREDIENT.test(var6)) {
+                  if (++var4 > 3) {
+                     return false;
+                  }
+               } else if (!STAR_INGREDIENT.test(var6)) {
                   return false;
                }
-
-               var3 = true;
-            } else if (GUNPOWDER_INGREDIENT.test(var6)) {
-               if (++var4 > 3) {
-                  return false;
-               }
-            } else if (!STAR_INGREDIENT.test(var6)) {
-               return false;
             }
          }
-      }
 
-      return var3 && var4 >= 1;
+         return var3 && var4 >= 1;
+      }
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {

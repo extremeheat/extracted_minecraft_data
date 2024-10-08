@@ -19,7 +19,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.creaking.CreakingTransient;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -27,8 +29,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class CreakingHeartBlockEntity extends BlockEntity {
    private static final int PLAYER_DETECTION_RANGE = 32;
-   public static final int DISTANCE_TO_HOME_SQ = 1024;
-   private static final int DISTANCE_CREAKING_TOO_FAR_SQ = 1156;
+   public static final int CREAKING_ROAMING_RADIUS = 32;
+   private static final int DISTANCE_CREAKING_TOO_FAR = 34;
    private static final int SPAWN_RANGE_XZ = 16;
    private static final int SPAWN_RANGE_Y = 8;
    private static final int ATTEMPTS_PER_SPAWN = 5;
@@ -43,29 +45,36 @@ public class CreakingHeartBlockEntity extends BlockEntity {
    private int emitter;
    @Nullable
    private Vec3 emitterTarget;
+   private int outputSignal;
 
    public CreakingHeartBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CREAKING_HEART, var1, var2);
    }
 
    public static void serverTick(Level var0, BlockPos var1, BlockState var2, CreakingHeartBlockEntity var3) {
+      int var4 = var3.computeAnalogOutputSignal();
+      if (var3.outputSignal != var4) {
+         var3.outputSignal = var4;
+         var0.updateNeighbourForOutputSignal(var1, Blocks.CREAKING_HEART);
+      }
+
       if (var3.emitter > 0) {
          if (var3.emitter > 50) {
             var3.emitParticles((ServerLevel)var0, 1, true);
             var3.emitParticles((ServerLevel)var0, 1, false);
          }
 
-         if (var3.emitter % 10 == 0 && var0 instanceof ServerLevel var4 && var3.emitterTarget != null) {
+         if (var3.emitter % 10 == 0 && var0 instanceof ServerLevel var5 && var3.emitterTarget != null) {
             if (var3.creaking != null) {
                var3.emitterTarget = var3.creaking.getBoundingBox().getCenter();
             }
 
-            Vec3 var5 = Vec3.atCenterOf(var1);
-            float var6 = 0.2F + 0.8F * (float)(100 - var3.emitter) / 100.0F;
-            Vec3 var7 = var5.subtract(var3.emitterTarget).scale((double)var6).add(var3.emitterTarget);
-            BlockPos var8 = BlockPos.containing(var7);
-            float var9 = (float)var3.emitter / 2.0F / 100.0F + 0.5F;
-            var4.playSound(null, var8, SoundEvents.CREAKING_HEART_HURT, SoundSource.BLOCKS, var9, 1.0F);
+            Vec3 var6 = Vec3.atCenterOf(var1);
+            float var7 = 0.2F + 0.8F * (float)(100 - var3.emitter) / 100.0F;
+            Vec3 var8 = var6.subtract(var3.emitterTarget).scale((double)var7).add(var3.emitterTarget);
+            BlockPos var9 = BlockPos.containing(var8);
+            float var10 = (float)var3.emitter / 2.0F / 100.0F + 0.5F;
+            var5.playSound(null, var9, SoundEvents.CREAKING_HEART_HURT, SoundSource.BLOCKS, var10, 1.0F);
          }
 
          var3.emitter--;
@@ -74,7 +83,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
       if (var3.ticker-- < 0) {
          var3.ticker = 20;
          if (var3.creaking != null) {
-            if (CreakingHeartBlock.canSummonCreaking(var0) && !(var3.creaking.distanceToSqr(Vec3.atBottomCenterOf(var1)) > 1156.0)) {
+            if (CreakingHeartBlock.canSummonCreaking(var0) && !(var3.distanceToCreaking() > 34.0)) {
                if (var3.creaking.isRemoved()) {
                   var3.creaking = null;
                }
@@ -100,8 +109,12 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
             if (var2.getValue(CreakingHeartBlock.CREAKING) == CreakingHeartBlock.CreakingHeartState.ACTIVE) {
                if (var0.getDifficulty() != Difficulty.PEACEFUL) {
-                  Player var10 = var0.getNearestPlayer((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 32.0, false);
-                  if (var10 != null) {
+                  if (var0 instanceof ServerLevel var11 && !var11.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     return;
+                  }
+
+                  Player var12 = var0.getNearestPlayer((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 32.0, false);
+                  if (var12 != null) {
                      var3.creaking = spawnProtector((ServerLevel)var0, var3);
                      if (var3.creaking != null) {
                         var3.creaking.makeSound(SoundEvents.CREAKING_SPAWN);
@@ -112,6 +125,10 @@ public class CreakingHeartBlockEntity extends BlockEntity {
             }
          }
       }
+   }
+
+   private double distanceToCreaking() {
+      return this.creaking == null ? 0.0 : Math.sqrt(this.creaking.distanceToSqr(Vec3.atBottomCenterOf(this.getBlockPos())));
    }
 
    @Nullable
@@ -186,5 +203,19 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
    public boolean isProtector(Creaking var1) {
       return this.creaking == var1;
+   }
+
+   public int getAnalogOutputSignal() {
+      return this.outputSignal;
+   }
+
+   public int computeAnalogOutputSignal() {
+      if (this.creaking == null) {
+         return 0;
+      } else {
+         double var1 = this.distanceToCreaking();
+         double var3 = Math.clamp(var1, 0.0, 32.0) / 32.0;
+         return 15 - (int)Math.floor(var3 * 15.0);
+      }
    }
 }

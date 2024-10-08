@@ -5,7 +5,6 @@ import net.minecraft.client.model.LlamaModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LlamaRenderState;
 import net.minecraft.core.component.DataComponents;
@@ -40,6 +39,6 @@ public class LlamaDecorLayer extends RenderLayer<LlamaRenderState, LlamaModel> {
    private void renderEquipment(PoseStack var1, MultiBufferSource var2, LlamaRenderState var3, ItemStack var4, ResourceLocation var5, int var6) {
       LlamaModel var7 = var3.isBaby ? this.babyModel : this.adultModel;
       var7.setupAnim(var3);
-      this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.LLAMA_BODY, var5, var7, var4, RenderType::entityCutoutNoCull, var1, var2, var6);
+      this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.LLAMA_BODY, var5, var7, var4, var1, var2, var6);
    }
 }

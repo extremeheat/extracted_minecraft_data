@@ -16,6 +16,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
@@ -47,7 +48,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       this.isFurnaceMenu = var2;
    }
 
-   public void init(RecipeCollection var1, SlotDisplay.ResolutionContext var2, boolean var3, int var4, int var5, int var6, int var7, float var8) {
+   public void init(RecipeCollection var1, ContextMap var2, boolean var3, int var4, int var5, int var6, int var7, float var8) {
       this.collection = var1;
       List var9 = var1.getSelectedRecipes(RecipeCollection.CraftableStatus.CRAFTABLE);
       List var10 = var3 ? Collections.emptyList() : var1.getSelectedRecipes(RecipeCollection.CraftableStatus.NOT_CRAFTABLE);
@@ -170,17 +171,12 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       private static final int GRID_HEIGHT = 3;
 
       public OverlayCraftingRecipeButton(
-         final int nullx,
-         final int nullxx,
-         final RecipeDisplayId nullxxx,
-         final RecipeDisplay nullxxxx,
-         final SlotDisplay.ResolutionContext nullxxxxx,
-         final boolean nullxxxxxx
+         final int nullx, final int nullxx, final RecipeDisplayId nullxxx, final RecipeDisplay nullxxxx, final ContextMap nullxxxxx, final boolean nullxxxxxx
       ) {
          super(nullx, nullxx, nullxxx, nullxxxxxx, calculateIngredientsPositions(nullxxxx, nullxxxxx));
       }
 
-      private static List<OverlayRecipeComponent.OverlayRecipeButton.Pos> calculateIngredientsPositions(RecipeDisplay var0, SlotDisplay.ResolutionContext var1) {
+      private static List<OverlayRecipeComponent.OverlayRecipeButton.Pos> calculateIngredientsPositions(RecipeDisplay var0, ContextMap var1) {
          ArrayList var2 = new ArrayList();
          Objects.requireNonNull(var0);
          switch (var0) {
@@ -293,17 +289,12 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       );
 
       public OverlaySmeltingRecipeButton(
-         final int nullx,
-         final int nullxx,
-         final RecipeDisplayId nullxxx,
-         final RecipeDisplay nullxxxx,
-         final SlotDisplay.ResolutionContext nullxxxxx,
-         final boolean nullxxxxxx
+         final int nullx, final int nullxx, final RecipeDisplayId nullxxx, final RecipeDisplay nullxxxx, final ContextMap nullxxxxx, final boolean nullxxxxxx
       ) {
          super(nullx, nullxx, nullxxx, nullxxxxxx, calculateIngredientsPositions(nullxxxx, nullxxxxx));
       }
 
-      private static List<OverlayRecipeComponent.OverlayRecipeButton.Pos> calculateIngredientsPositions(RecipeDisplay var0, SlotDisplay.ResolutionContext var1) {
+      private static List<OverlayRecipeComponent.OverlayRecipeButton.Pos> calculateIngredientsPositions(RecipeDisplay var0, ContextMap var1) {
          if (var0 instanceof FurnaceRecipeDisplay var2) {
             List var3 = var2.ingredient().resolveForStacks(var1);
             if (!var3.isEmpty()) {

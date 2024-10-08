@@ -75,7 +75,7 @@ public class LootTableProvider implements DataProvider {
       var3.listElements()
          .forEach(
             var1x -> ((LootTable)var1x.value())
-                  .validate(var7.setParams(((LootTable)var1x.value()).getParamSet()).enterElement("{" + var1x.key().location() + "}", var1x.key()))
+                  .validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement("{" + var1x.key().location() + "}", var1x.key()))
          );
       Multimap var11 = var5.get();
       if (!var11.isEmpty()) {

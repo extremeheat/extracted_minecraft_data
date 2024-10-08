@@ -41,17 +41,8 @@ public class EquipmentLayerRenderer {
       });
    }
 
-   public void renderLayers(
-      EquipmentModel.LayerType var1,
-      ResourceLocation var2,
-      Model var3,
-      ItemStack var4,
-      Function<ResourceLocation, RenderType> var5,
-      PoseStack var6,
-      MultiBufferSource var7,
-      int var8
-   ) {
-      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, var8, null);
+   public void renderLayers(EquipmentModel.LayerType var1, ResourceLocation var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7) {
+      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, null);
    }
 
    public void renderLayers(
@@ -59,34 +50,33 @@ public class EquipmentLayerRenderer {
       ResourceLocation var2,
       Model var3,
       ItemStack var4,
-      Function<ResourceLocation, RenderType> var5,
-      PoseStack var6,
-      MultiBufferSource var7,
-      int var8,
-      @Nullable ResourceLocation var9
+      PoseStack var5,
+      MultiBufferSource var6,
+      int var7,
+      @Nullable ResourceLocation var8
    ) {
-      List var10 = this.equipmentModels.get(var2).getLayers(var1);
-      if (!var10.isEmpty()) {
-         int var11 = var4.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var4, 0) : 0;
-         boolean var12 = var4.hasFoil();
+      List var9 = this.equipmentModels.get(var2).getLayers(var1);
+      if (!var9.isEmpty()) {
+         int var10 = var4.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var4, 0) : 0;
+         boolean var11 = var4.hasFoil();
 
-         for (EquipmentModel.Layer var14 : var10) {
-            int var15 = getColorForLayer(var14, var11);
-            if (var15 != 0) {
-               ResourceLocation var16 = var14.usePlayerTexture() && var9 != null
-                  ? var9
-                  : this.layerTextureLookup.apply(new EquipmentLayerRenderer.LayerTextureKey(var1, var14));
-               VertexConsumer var17 = ItemRenderer.getArmorFoilBuffer(var7, (RenderType)var5.apply(var16), var12);
-               var3.renderToBuffer(var6, var17, var8, OverlayTexture.NO_OVERLAY, var15);
-               var12 = false;
+         for (EquipmentModel.Layer var13 : var9) {
+            int var14 = getColorForLayer(var13, var10);
+            if (var14 != 0) {
+               ResourceLocation var15 = var13.usePlayerTexture() && var8 != null
+                  ? var8
+                  : this.layerTextureLookup.apply(new EquipmentLayerRenderer.LayerTextureKey(var1, var13));
+               VertexConsumer var16 = ItemRenderer.getArmorFoilBuffer(var6, RenderType.armorCutoutNoCull(var15), var11);
+               var3.renderToBuffer(var5, var16, var7, OverlayTexture.NO_OVERLAY, var14);
+               var11 = false;
             }
          }
 
-         ArmorTrim var18 = var4.get(DataComponents.TRIM);
-         if (var18 != null) {
-            TextureAtlasSprite var19 = this.trimSpriteLookup.apply(new EquipmentLayerRenderer.TrimSpriteKey(var18, var1, var2));
-            VertexConsumer var20 = var19.wrap(var7.getBuffer(Sheets.armorTrimsSheet(var18.pattern().value().decal())));
-            var3.renderToBuffer(var6, var20, var8, OverlayTexture.NO_OVERLAY);
+         ArmorTrim var17 = var4.get(DataComponents.TRIM);
+         if (var17 != null) {
+            TextureAtlasSprite var18 = this.trimSpriteLookup.apply(new EquipmentLayerRenderer.TrimSpriteKey(var17, var1, var2));
+            VertexConsumer var19 = var18.wrap(var6.getBuffer(Sheets.armorTrimsSheet(var17.pattern().value().decal())));
+            var3.renderToBuffer(var5, var19, var7, OverlayTexture.NO_OVERLAY);
          }
       }
    }

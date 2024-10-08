@@ -36,23 +36,24 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    public ItemStack assemble(SmithingRecipeInput var1, HolderLookup.Provider var2) {
-      ItemStack var3 = var1.base();
-      if (Ingredient.testOptionalIngredient(this.base, var3)) {
-         Optional var4 = TrimMaterials.getFromIngredient(var2, var1.addition());
-         Optional var5 = TrimPatterns.getFromTemplate(var2, var1.template());
-         if (var4.isPresent() && var5.isPresent()) {
-            ArmorTrim var6 = var3.get(DataComponents.TRIM);
-            if (var6 != null && var6.hasPatternAndMaterial((Holder<TrimPattern>)var5.get(), (Holder<TrimMaterial>)var4.get())) {
-               return ItemStack.EMPTY;
-            }
+      return applyTrim(var2, var1.base(), var1.addition(), var1.template());
+   }
 
-            ItemStack var7 = var3.copyWithCount(1);
+   public static ItemStack applyTrim(HolderLookup.Provider var0, ItemStack var1, ItemStack var2, ItemStack var3) {
+      Optional var4 = TrimMaterials.getFromIngredient(var0, var2);
+      Optional var5 = TrimPatterns.getFromTemplate(var0, var3);
+      if (var4.isPresent() && var5.isPresent()) {
+         ArmorTrim var6 = var1.get(DataComponents.TRIM);
+         if (var6 != null && var6.hasPatternAndMaterial((Holder<TrimPattern>)var5.get(), (Holder<TrimMaterial>)var4.get())) {
+            return ItemStack.EMPTY;
+         } else {
+            ItemStack var7 = var1.copyWithCount(1);
             var7.set(DataComponents.TRIM, new ArmorTrim((Holder<TrimMaterial>)var4.get(), (Holder<TrimPattern>)var5.get()));
             return var7;
          }
+      } else {
+         return ItemStack.EMPTY;
       }
-
-      return ItemStack.EMPTY;
    }
 
    @Override
@@ -86,7 +87,14 @@ public class SmithingTrimRecipe implements SmithingRecipe {
 
    @Override
    public List<RecipeDisplay> display() {
-      return List.of(new SmithingRecipeDisplay(SlotDisplay.SmithingTrimDemoSlotDisplay.INSTANCE, new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)));
+      SlotDisplay var1 = Ingredient.optionalIngredientToDisplay(this.base);
+      SlotDisplay var2 = Ingredient.optionalIngredientToDisplay(this.addition);
+      SlotDisplay var3 = Ingredient.optionalIngredientToDisplay(this.template);
+      return List.of(
+         new SmithingRecipeDisplay(
+            var3, var1, var2, new SlotDisplay.SmithingTrimDemoSlotDisplay(var1, var2, var3), new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)
+         )
+      );
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTrimRecipe> {

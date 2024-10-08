@@ -4,12 +4,12 @@ import java.util.List;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurnaceMenu> {
    private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(
@@ -39,7 +39,7 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
    }
 
    @Override
-   protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, SlotDisplay.ResolutionContext var3) {
+   protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, ContextMap var3) {
       var1.setResult(this.menu.getResultSlot(), var3, var2.result());
       if (var2 instanceof FurnaceRecipeDisplay var4) {
          var1.setInput(this.menu.slots.get(0), var3, var4.ingredient());

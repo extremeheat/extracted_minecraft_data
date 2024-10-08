@@ -8,10 +8,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
 import net.minecraft.world.item.crafting.SelectableRecipe;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> {
    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller");
@@ -75,7 +77,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               SlotDisplay.ResolutionContext var12 = SlotDisplay.ResolutionContext.forLevel(this.minecraft.level);
+               ContextMap var12 = SlotDisplayContext.fromLevel(this.minecraft.level);
                SlotDisplay var13 = ((SelectableRecipe.SingleInputEntry)var7.entries().get(var8)).recipe().optionDisplay();
                var1.renderTooltip(this.font, var13.resolveForFirstStack(var12), var2, var3);
             }
@@ -104,7 +106,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
    private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
       SelectableRecipe.SingleInputSet var5 = this.menu.getVisibleRecipes();
-      SlotDisplay.ResolutionContext var6 = SlotDisplay.ResolutionContext.forLevel(this.minecraft.level);
+      ContextMap var6 = SlotDisplayContext.fromLevel(this.minecraft.level);
 
       for (int var7 = this.startIndex; var7 < var4 && var7 < var5.size(); var7++) {
          int var8 = var7 - this.startIndex;

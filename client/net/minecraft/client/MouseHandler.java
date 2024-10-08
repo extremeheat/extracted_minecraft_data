@@ -8,6 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
@@ -70,7 +73,7 @@ public class MouseHandler {
                return;
             }
 
-            this.activeButton = var7;
+            this.activeButton = var3;
             this.mousePressedTime = Blaze3D.getTime();
          } else if (this.activeButton != -1) {
             if (this.minecraft.options.touchscreen().get() && --this.clickDepth > 0) {
@@ -80,44 +83,64 @@ public class MouseHandler {
             this.activeButton = -1;
          }
 
-         boolean[] var8 = new boolean[]{false};
          if (this.minecraft.getOverlay() == null) {
             if (this.minecraft.screen == null) {
                if (!this.mouseGrabbed && var6) {
                   this.grabMouse();
                }
             } else {
-               double var9 = this.xpos * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
-               double var11 = this.ypos * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight();
-               Screen var13 = this.minecraft.screen;
+               double var8 = this.xpos * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
+               double var10 = this.ypos * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight();
+               Screen var12 = this.minecraft.screen;
                if (var6) {
-                  var13.afterMouseAction();
-                  Screen.wrapScreenError(
-                     () -> var8[0] = var13.mouseClicked(var9, var11, var7), "mouseClicked event handler", var13.getClass().getCanonicalName()
-                  );
+                  var12.afterMouseAction();
+
+                  try {
+                     if (var12.mouseClicked(var8, var10, var7)) {
+                        return;
+                     }
+                  } catch (Throwable var17) {
+                     CrashReport var14 = CrashReport.forThrowable(var17, "mouseClicked event handler");
+                     var12.fillCrashDetails(var14);
+                     CrashReportCategory var15 = var14.addCategory("Mouse");
+                     var15.setDetail("Scaled X", var8);
+                     var15.setDetail("Scaled Y", var10);
+                     var15.setDetail("Button", var3);
+                     throw new ReportedException(var14);
+                  }
                } else {
-                  Screen.wrapScreenError(
-                     () -> var8[0] = var13.mouseReleased(var9, var11, var7), "mouseReleased event handler", var13.getClass().getCanonicalName()
-                  );
+                  try {
+                     if (var12.mouseReleased(var8, var10, var7)) {
+                        return;
+                     }
+                  } catch (Throwable var16) {
+                     CrashReport var18 = CrashReport.forThrowable(var16, "mouseReleased event handler");
+                     var12.fillCrashDetails(var18);
+                     CrashReportCategory var19 = var18.addCategory("Mouse");
+                     var19.setDetail("Scaled X", var8);
+                     var19.setDetail("Scaled Y", var10);
+                     var19.setDetail("Button", var3);
+                     throw new ReportedException(var18);
+                  }
                }
             }
          }
 
-         if (!var8[0] && this.minecraft.screen == null && this.minecraft.getOverlay() == null) {
-            if (var7 == 0) {
+         if (this.minecraft.screen == null && this.minecraft.getOverlay() == null) {
+            if (var3 == 0) {
                this.isLeftPressed = var6;
-            } else if (var7 == 2) {
+            } else if (var3 == 2) {
                this.isMiddlePressed = var6;
-            } else if (var7 == 1) {
+            } else if (var3 == 1) {
                this.isRightPressed = var6;
             }
 
-            KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(var7), var6);
+            KeyMapping.set(InputConstants.Type.MOUSE.getOrCreate(var3), var6);
             if (var6) {
-               if (this.minecraft.player.isSpectator() && var7 == 2) {
+               if (this.minecraft.player.isSpectator() && var3 == 2) {
                   this.minecraft.gui.getSpectatorGui().onMouseMiddleClick();
                } else {
-                  KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(var7));
+                  KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(var3));
                }
             }
          }
@@ -232,15 +255,34 @@ public class MouseHandler {
          if (var5 != null && this.minecraft.getOverlay() == null && var6) {
             double var7 = this.xpos * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
             double var9 = this.ypos * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight();
-            Screen.wrapScreenError(() -> var5.mouseMoved(var7, var9), "mouseMoved event handler", var5.getClass().getCanonicalName());
+
+            try {
+               var5.mouseMoved(var7, var9);
+            } catch (Throwable var19) {
+               CrashReport var12 = CrashReport.forThrowable(var19, "mouseMoved event handler");
+               var5.fillCrashDetails(var12);
+               CrashReportCategory var13 = var12.addCategory("Mouse");
+               var13.setDetail("Scaled X", var7);
+               var13.setDetail("Scaled Y", var9);
+               throw new ReportedException(var12);
+            }
+
             if (this.activeButton != -1 && this.mousePressedTime > 0.0) {
                double var11 = this.accumulatedDX * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
-               double var13 = this.accumulatedDY
+               double var20 = this.accumulatedDY
                   * (double)this.minecraft.getWindow().getGuiScaledHeight()
                   / (double)this.minecraft.getWindow().getScreenHeight();
-               Screen.wrapScreenError(
-                  () -> var5.mouseDragged(var7, var9, this.activeButton, var11, var13), "mouseDragged event handler", var5.getClass().getCanonicalName()
-               );
+
+               try {
+                  var5.mouseDragged(var7, var9, this.activeButton, var11, var20);
+               } catch (Throwable var18) {
+                  CrashReport var16 = CrashReport.forThrowable(var18, "mouseDragged event handler");
+                  var5.fillCrashDetails(var16);
+                  CrashReportCategory var17 = var16.addCategory("Mouse");
+                  var17.setDetail("Scaled X", var7);
+                  var17.setDetail("Scaled Y", var9);
+                  throw new ReportedException(var16);
+               }
             }
 
             var5.afterMouseMove();

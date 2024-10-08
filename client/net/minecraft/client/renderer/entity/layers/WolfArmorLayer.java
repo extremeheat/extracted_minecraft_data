@@ -46,7 +46,7 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
          WolfModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
          ResourceLocation var10 = var8.model().get();
          var9.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WOLF_BODY, var10, var9, var7, RenderType::entityCutoutNoCull, var1, var2, var3);
+         this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WOLF_BODY, var10, var9, var7, var1, var2, var3);
          this.maybeRenderCracks(var1, var2, var3, var7, var9);
       }
    }

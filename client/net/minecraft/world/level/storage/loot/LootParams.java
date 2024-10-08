@@ -1,25 +1,23 @@
 package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.context.ContextKey;
+import net.minecraft.util.context.ContextKeySet;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 
 public class LootParams {
    private final ServerLevel level;
-   private final Map<LootContextParam<?>, Object> params;
+   private final ContextMap params;
    private final Map<ResourceLocation, LootParams.DynamicDrop> dynamicDrops;
    private final float luck;
 
-   public LootParams(ServerLevel var1, Map<LootContextParam<?>, Object> var2, Map<ResourceLocation, LootParams.DynamicDrop> var3, float var4) {
+   public LootParams(ServerLevel var1, ContextMap var2, Map<ResourceLocation, LootParams.DynamicDrop> var3, float var4) {
       super();
       this.level = var1;
       this.params = var2;
@@ -31,27 +29,8 @@ public class LootParams {
       return this.level;
    }
 
-   public boolean hasParam(LootContextParam<?> var1) {
-      return this.params.containsKey(var1);
-   }
-
-   public <T> T getParameter(LootContextParam<T> var1) {
-      Object var2 = this.params.get(var1);
-      if (var2 == null) {
-         throw new NoSuchElementException(var1.getName().toString());
-      } else {
-         return (T)var2;
-      }
-   }
-
-   @Nullable
-   public <T> T getOptionalParameter(LootContextParam<T> var1) {
-      return (T)this.params.get(var1);
-   }
-
-   @Nullable
-   public <T> T getParamOrNull(LootContextParam<T> var1) {
-      return (T)this.params.get(var1);
+   public ContextMap contextMap() {
+      return this.params;
    }
 
    public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
@@ -67,7 +46,7 @@ public class LootParams {
 
    public static class Builder {
       private final ServerLevel level;
-      private final Map<LootContextParam<?>, Object> params = Maps.newIdentityHashMap();
+      private final ContextMap.Builder params = new ContextMap.Builder();
       private final Map<ResourceLocation, LootParams.DynamicDrop> dynamicDrops = Maps.newHashMap();
       private float luck;
 
@@ -80,33 +59,23 @@ public class LootParams {
          return this.level;
       }
 
-      public <T> LootParams.Builder withParameter(LootContextParam<T> var1, T var2) {
-         this.params.put(var1, var2);
+      public <T> LootParams.Builder withParameter(ContextKey<T> var1, T var2) {
+         this.params.withParameter(var1, var2);
          return this;
       }
 
-      public <T> LootParams.Builder withOptionalParameter(LootContextParam<T> var1, @Nullable T var2) {
-         if (var2 == null) {
-            this.params.remove(var1);
-         } else {
-            this.params.put(var1, var2);
-         }
-
+      public <T> LootParams.Builder withOptionalParameter(ContextKey<T> var1, @Nullable T var2) {
+         this.params.withOptionalParameter(var1, var2);
          return this;
       }
 
-      public <T> T getParameter(LootContextParam<T> var1) {
-         Object var2 = this.params.get(var1);
-         if (var2 == null) {
-            throw new NoSuchElementException(var1.getName().toString());
-         } else {
-            return (T)var2;
-         }
+      public <T> T getParameter(ContextKey<T> var1) {
+         return this.params.getParameter(var1);
       }
 
       @Nullable
-      public <T> T getOptionalParameter(LootContextParam<T> var1) {
-         return (T)this.params.get(var1);
+      public <T> T getOptionalParameter(ContextKey<T> var1) {
+         return this.params.getOptionalParameter(var1);
       }
 
       public LootParams.Builder withDynamicDrop(ResourceLocation var1, LootParams.DynamicDrop var2) {
@@ -123,18 +92,9 @@ public class LootParams {
          return this;
       }
 
-      public LootParams create(LootContextParamSet var1) {
-         SetView var2 = Sets.difference(this.params.keySet(), var1.getAllowed());
-         if (!var2.isEmpty()) {
-            throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + var2);
-         } else {
-            SetView var3 = Sets.difference(var1.getRequired(), this.params.keySet());
-            if (!var3.isEmpty()) {
-               throw new IllegalArgumentException("Missing required parameters: " + var3);
-            } else {
-               return new LootParams(this.level, this.params, this.dynamicDrops, this.luck);
-            }
-         }
+      public LootParams create(ContextKeySet var1) {
+         ContextMap var2 = this.params.create(var1);
+         return new LootParams(this.level, var2, this.dynamicDrops, this.luck);
       }
    }
 

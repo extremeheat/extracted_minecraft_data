@@ -264,7 +264,7 @@ public class Blocks {
       "pale_oak_sapling",
       var0 -> new SaplingBlock(TreeGrower.PALE_OAK, var0),
       BlockBehaviour.Properties.of()
-         .mapColor(MapColor.PLANT)
+         .mapColor(MapColor.QUARTZ)
          .noCollission()
          .randomTicks()
          .instabreak()
@@ -6509,7 +6509,7 @@ public class Blocks {
       "pale_moss_block",
       var0 -> new BonemealableFeaturePlacerBlock(VegetationFeatures.PALE_MOSS_PATCH_BONEMEAL, var0),
       BlockBehaviour.Properties.of()
-         .mapColor(MapColor.COLOR_GRAY)
+         .mapColor(MapColor.COLOR_LIGHT_GRAY)
          .strength(0.1F)
          .sound(SoundType.MOSS)
          .pushReaction(PushReaction.DESTROY)

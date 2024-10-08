@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.core.component.DataComponents;
@@ -56,7 +55,7 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
          this.setPartVisibility((A)var6, var4);
          ResourceLocation var8 = var7.model().orElseThrow();
          EquipmentModel.LayerType var9 = this.usesInnerModel(var4) ? EquipmentModel.LayerType.HUMANOID_LEGGINGS : EquipmentModel.LayerType.HUMANOID;
-         this.equipmentRenderer.renderLayers(var9, var8, var6, var3, RenderType::armorCutoutNoCull, var1, var2, var5);
+         this.equipmentRenderer.renderLayers(var9, var8, var6, var3, var1, var2, var5);
       }
    }
 

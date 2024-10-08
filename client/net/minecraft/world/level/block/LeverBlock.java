@@ -134,7 +134,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       double var6 = (double)var2.getX() + 0.5 + 0.1 * (double)var4.getStepX() + 0.2 * (double)var5.getStepX();
       double var8 = (double)var2.getY() + 0.5 + 0.1 * (double)var4.getStepY() + 0.2 * (double)var5.getStepY();
       double var10 = (double)var2.getZ() + 0.5 + 0.1 * (double)var4.getStepZ() + 0.2 * (double)var5.getStepZ();
-      var1.addParticle(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, var3), var6, var8, var10, 0.0, 0.0, 0.0);
+      var1.addParticle(new DustParticleOptions(16711680, var3), var6, var8, var10, 0.0, 0.0, 0.0);
    }
 
    @Override
