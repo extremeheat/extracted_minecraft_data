@@ -57,6 +57,7 @@ public record InclusiveRange<T extends Comparable<T>>(T minInclusive, T maxInclu
       return var1.minInclusive().compareTo(this.minInclusive) >= 0 && var1.maxInclusive.compareTo(this.maxInclusive) <= 0;
    }
 
+   @Override
    public String toString() {
       return "[" + this.minInclusive + ", " + this.maxInclusive + "]";
    }

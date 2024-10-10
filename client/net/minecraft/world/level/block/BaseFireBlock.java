@@ -129,15 +129,15 @@ public abstract class BaseFireBlock extends Block {
    @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var4.fireImmune()) {
-         if (var4.getRemainingFireTicks() >= 0) {
-            if (var4 instanceof ServerPlayer) {
-               int var5 = var2.getRandom().nextInt(1, 3);
-               var4.setRemainingFireTicks(var4.getRemainingFireTicks() + var5);
-            }
-
-            var4.igniteForSeconds(8.0F);
-         } else {
+         if (var4.getRemainingFireTicks() < 0) {
             var4.setRemainingFireTicks(var4.getRemainingFireTicks() + 1);
+         } else if (var4 instanceof ServerPlayer) {
+            int var5 = var2.getRandom().nextInt(1, 3);
+            var4.setRemainingFireTicks(var4.getRemainingFireTicks() + var5);
+         }
+
+         if (var4.getRemainingFireTicks() >= 0) {
+            var4.igniteForSeconds(8.0F);
          }
       }
 

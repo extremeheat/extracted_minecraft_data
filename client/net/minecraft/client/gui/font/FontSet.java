@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -21,8 +22,10 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import org.slf4j.Logger;
 
 public class FontSet implements AutoCloseable {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final RandomSource RANDOM = RandomSource.create();
    private static final float LARGE_FORWARD_ADVANCE = 32.0F;
    private final TextureManager textureManager;
@@ -145,6 +148,7 @@ public class FontSet implements AutoCloseable {
          }
       }
 
+      LOGGER.warn("Couldn't find glyph for character {} (\\u{})", Character.toString(var1), String.format("%04x", var1));
       return this.missingGlyph;
    }
 
@@ -185,7 +189,7 @@ public class FontSet implements AutoCloseable {
 
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
+// java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "varName" is null
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)

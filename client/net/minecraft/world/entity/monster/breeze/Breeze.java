@@ -136,6 +136,10 @@ public class Breeze extends Monster {
          this.slide.stop();
       }
 
+      if (var1 == Pose.STANDING) {
+         this.idle.startIfStopped(this.tickCount);
+      }
+
       this.soundTick = this.soundTick == 0 ? this.random.nextIntBetweenInclusive(1, 80) : this.soundTick - 1;
       if (this.soundTick == 0) {
          this.playWhirlSound();

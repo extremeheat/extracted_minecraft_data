@@ -55,7 +55,7 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
       Crackiness.Level var6 = Crackiness.WOLF_ARMOR.byDamage(var4);
       if (var6 != Crackiness.Level.NONE) {
          ResourceLocation var7 = ARMOR_CRACK_LOCATIONS.get(var6);
-         VertexConsumer var8 = var2.getBuffer(RenderType.entityTranslucent(var7));
+         VertexConsumer var8 = var2.getBuffer(RenderType.armorTranslucent(var7));
          var5.renderToBuffer(var1, var8, var3, OverlayTexture.NO_OVERLAY);
       }
    }

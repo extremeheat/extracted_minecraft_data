@@ -184,13 +184,13 @@ public class TeleportCommand {
    ) throws CommandSyntaxException {
       Vec3 var6 = var3.getPosition(var0);
       Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
-      Set var8 = getRelatives(var3, var4, var0.getEntity().level().dimension() == var2.dimension());
 
-      for (Entity var10 : var1) {
-         if (var4 == null) {
-            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var10.getYRot(), var10.getXRot(), var5);
+      for (Entity var9 : var1) {
+         Set var10 = getRelatives(var3, var4, var9.level().dimension() == var2.dimension());
+         if (var7 == null) {
+            performTeleport(var0, var9, var2, var6.x, var6.y, var6.z, var10, var9.getYRot(), var9.getXRot(), var5);
          } else {
-            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var7.y, var7.x, var5);
+            performTeleport(var0, var9, var2, var6.x, var6.y, var6.z, var10, var7.y, var7.x, var5);
          }
       }
 
@@ -240,17 +240,12 @@ public class TeleportCommand {
          }
       }
 
-      if (var1 == null) {
+      if (var1 == null || var1.isXRelative()) {
          var3.add(Relative.X_ROT);
-         var3.add(Relative.Y_ROT);
-      } else {
-         if (var1.isXRelative()) {
-            var3.add(Relative.X_ROT);
-         }
+      }
 
-         if (var1.isYRelative()) {
-            var3.add(Relative.Y_ROT);
-         }
+      if (var1 == null || var1.isYRelative()) {
+         var3.add(Relative.Y_ROT);
       }
 
       return var3;

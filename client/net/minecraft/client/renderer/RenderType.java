@@ -71,6 +71,20 @@ public abstract class RenderType extends RenderStateShard {
    private static final Function<ResourceLocation, RenderType> ARMOR_CUTOUT_NO_CULL = Util.memoize(
       var0 -> createArmorCutoutNoCull("armor_cutout_no_cull", var0, false)
    );
+   private static final Function<ResourceLocation, RenderType> ARMOR_TRANSLUCENT = Util.memoize(
+      var0 -> {
+         RenderType.CompositeState var1 = RenderType.CompositeState.builder()
+            .setShaderState(RENDERTYPE_ARMOR_TRANSLUCENT_SHADER)
+            .setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false))
+            .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+            .setCullState(NO_CULL)
+            .setLightmapState(LIGHTMAP)
+            .setOverlayState(OVERLAY)
+            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+            .createCompositeState(true);
+         return create("armor_translucent", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true, var1);
+      }
+   );
    private static final Function<ResourceLocation, RenderType> ENTITY_SOLID = Util.memoize(
       var0 -> {
          RenderType.CompositeState var1 = RenderType.CompositeState.builder()
@@ -918,6 +932,10 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType createArmorDecalCutoutNoCull(ResourceLocation var0) {
       return createArmorCutoutNoCull("armor_decal_cutout_no_cull", var0, true);
+   }
+
+   public static RenderType armorTranslucent(ResourceLocation var0) {
+      return ARMOR_TRANSLUCENT.apply(var0);
    }
 
    public static RenderType entitySolid(ResourceLocation var0) {

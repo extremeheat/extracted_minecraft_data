@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -11,7 +12,6 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +71,7 @@ public class PostPass {
             RenderSystem.depthFunc(519);
             RenderSystem.setShader(this.shader);
             RenderSystem.backupProjectionMatrix();
-            RenderSystem.setProjectionMatrix(var3, VertexSorting.ORTHOGRAPHIC_Z);
+            RenderSystem.setProjectionMatrix(var3, ProjectionType.ORTHOGRAPHIC);
             BufferBuilder var9 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
             var9.addVertex(0.0F, 0.0F, 500.0F);
             var9.addVertex((float)var4x.width, 0.0F, 500.0F);
@@ -117,7 +117,7 @@ public class PostPass {
 
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
+// java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "varName" is null
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
@@ -130,7 +130,7 @@ public class PostPass {
 
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
+// java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "varName" is null
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)

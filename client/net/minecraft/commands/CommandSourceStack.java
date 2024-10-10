@@ -526,7 +526,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    @Override
    public Stream<ResourceLocation> getAvailableSounds() {
-      return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::getLocation);
+      return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::location);
    }
 
    @Override

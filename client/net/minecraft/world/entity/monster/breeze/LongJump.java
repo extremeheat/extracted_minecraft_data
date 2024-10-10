@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -197,15 +199,18 @@ public class LongJump extends Behavior<Breeze> {
 
    private static boolean canJumpFromCurrentPosition(ServerLevel var0, Breeze var1) {
       BlockPos var2 = var1.blockPosition();
-
-      for (int var3 = 1; var3 <= 4; var3++) {
-         BlockPos var4 = var2.relative(Direction.UP, var3);
-         if (!var0.getBlockState(var4).isAir() && !var0.getFluidState(var4).is(FluidTags.WATER)) {
-            return false;
+      if (var0.getBlockState(var2).is(Blocks.HONEY_BLOCK)) {
+         return false;
+      } else {
+         for (int var3 = 1; var3 <= 4; var3++) {
+            BlockPos var4 = var2.relative(Direction.UP, var3);
+            if (!var0.getBlockState(var4).isAir() && !var0.getFluidState(var4).is(FluidTags.WATER)) {
+               return false;
+            }
          }
-      }
 
-      return true;
+         return true;
+      }
    }
 
    private static Optional<Vec3> calculateOptimalJumpVector(Breeze var0, RandomSource var1, Vec3 var2) {
@@ -213,6 +218,11 @@ public class LongJump extends Behavior<Breeze> {
          float var6 = 0.058333334F * (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE);
          Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, var6, var5, false);
          if (var7.isPresent()) {
+            if (var0.hasEffect(MobEffects.JUMP)) {
+               double var8 = ((Vec3)var7.get()).normalize().y * (double)var0.getJumpBoostPower();
+               return var7.map(var2x -> var2x.add(0.0, var8, 0.0));
+            }
+
             return var7;
          }
       }

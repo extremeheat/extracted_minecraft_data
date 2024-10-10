@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -14,7 +15,7 @@ public class AnimalArmorItem extends Item {
       this.bodyType = var2;
    }
 
-   public AnimalArmorItem(ArmorMaterial var1, AnimalArmorItem.BodyType var2, SoundEvent var3, boolean var4, Item.Properties var5) {
+   public AnimalArmorItem(ArmorMaterial var1, AnimalArmorItem.BodyType var2, Holder<SoundEvent> var3, boolean var4, Item.Properties var5) {
       super(var1.animalProperties(var5, var3, var4, var2.allowedEntities));
       this.bodyType = var2;
    }

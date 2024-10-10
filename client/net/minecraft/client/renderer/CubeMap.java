@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.client.Minecraft;
@@ -31,7 +31,7 @@ public class CubeMap {
       Tesselator var5 = Tesselator.getInstance();
       Matrix4f var6 = new Matrix4f().setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
       RenderSystem.backupProjectionMatrix();
-      RenderSystem.setProjectionMatrix(var6, VertexSorting.DISTANCE_TO_ORIGIN);
+      RenderSystem.setProjectionMatrix(var6, ProjectionType.PERSPECTIVE);
       Matrix4fStack var7 = RenderSystem.getModelViewStack();
       var7.pushMatrix();
       var7.rotationX(3.1415927F);

@@ -1,6 +1,6 @@
 package net.minecraft.world.level;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -175,7 +175,7 @@ public interface BlockGetter extends LevelHeightAccessor {
       if (var3.lengthSqr() < (double)Mth.square(0.99999F)) {
          return var4;
       } else {
-         ObjectOpenHashSet var5 = new ObjectOpenHashSet();
+         ObjectLinkedOpenHashSet var5 = new ObjectLinkedOpenHashSet();
 
          for (BlockPos var7 : var4) {
             var5.add(var7.immutable());

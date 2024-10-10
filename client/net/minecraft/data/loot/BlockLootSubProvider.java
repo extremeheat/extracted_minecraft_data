@@ -434,6 +434,11 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.hasShears()).add(LootItem.lootTableItem(var1)));
    }
 
+   protected LootTable.Builder createShearsOrSilkTouchOnlyDrop(ItemLike var1) {
+      return LootTable.lootTable()
+         .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(this.hasShearsOrSilkTouch()).add(LootItem.lootTableItem(var1)));
+   }
+
    protected LootTable.Builder createMultifaceBlockDrops(Block var1, LootItemCondition.Builder var2) {
       return LootTable.lootTable()
          .withPool(

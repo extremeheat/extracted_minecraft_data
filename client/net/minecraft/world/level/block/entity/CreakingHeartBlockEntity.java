@@ -142,7 +142,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
       } else {
          CreakingTransient var4 = (CreakingTransient)var3.get();
          var0.gameEvent(var4, GameEvent.ENTITY_PLACE, var4.position());
-         var4.spawnAnim();
+         var0.broadcastEntityEvent(var4, (byte)60);
          var4.bindToCreakingHeart(var2);
          return var4;
       }

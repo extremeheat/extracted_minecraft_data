@@ -97,13 +97,10 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
-   public static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = BuiltInRegistries.ITEM
-      .holderByNameCodec()
-      .validate(var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
    public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(
       () -> RecordCodecBuilder.create(
             var0 -> var0.group(
-                     ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                     Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
                      ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
                      DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                   )
@@ -113,7 +110,7 @@ public final class ItemStack implements DataComponentHolder {
    public static final Codec<ItemStack> SINGLE_ITEM_CODEC = Codec.lazyInitialized(
       () -> RecordCodecBuilder.create(
             var0 -> var0.group(
-                     ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                     Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
                      DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                   )
                   .apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))
@@ -123,7 +120,7 @@ public final class ItemStack implements DataComponentHolder {
    public static final Codec<ItemStack> STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
    public static final Codec<ItemStack> OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC)
       .xmap(var0 -> var0.orElse(ItemStack.EMPTY), var0 -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
-   public static final Codec<ItemStack> SIMPLE_ITEM_CODEC = ITEM_NON_AIR_CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
+   public static final Codec<ItemStack> SIMPLE_ITEM_CODEC = Item.CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
       private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
 

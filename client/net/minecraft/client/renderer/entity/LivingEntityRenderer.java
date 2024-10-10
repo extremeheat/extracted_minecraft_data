@@ -258,8 +258,14 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.yRot *= -1.0F;
       }
 
-      var2.walkAnimationPos = var1.walkAnimation.position(var3);
-      var2.walkAnimationSpeed = var1.walkAnimation.speed(var3);
+      if (!var1.isPassenger() && var1.isAlive()) {
+         var2.walkAnimationPos = var1.walkAnimation.position(var3);
+         var2.walkAnimationSpeed = var1.walkAnimation.speed(var3);
+      } else {
+         var2.walkAnimationPos = 0.0F;
+         var2.walkAnimationSpeed = 0.0F;
+      }
+
       if (var1.getVehicle() instanceof LivingEntity var5) {
          var2.wornHeadAnimationPos = var5.walkAnimation.position(var3);
       } else {

@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.TeleportTransition;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -117,56 +116,48 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             );
       }
 
-      if (this.level() instanceof ServerLevel var8 && !this.isRemoved()) {
-         Entity var9 = this.getOwner();
-         if (var9 != null && isAllowedToTeleportOwner(var9, var8)) {
-            if (var9.isPassenger()) {
-               var9.unRide();
+      if (this.level() instanceof ServerLevel var7 && !this.isRemoved()) {
+         Entity var8 = this.getOwner();
+         if (var8 != null && isAllowedToTeleportOwner(var8, var7)) {
+            if (var8.isPassenger()) {
+               var8.unRide();
             }
 
-            Vec3 var4;
-            if (this.getDeltaMovement().lengthSqr() > 0.0) {
-               AABB var5 = var9.getBoundingBox();
-               Vec3 var6 = new Vec3(var5.getXsize(), var5.getYsize(), var5.getZsize()).scale(0.5000099999997474);
-               Vec3 var7 = new Vec3(Math.signum(this.getDeltaMovement().x), Math.signum(this.getDeltaMovement().y), Math.signum(this.getDeltaMovement().z));
-               var4 = var7.multiply(var6).add(0.0, var5.getYsize() * 0.5, 0.0);
-            } else {
-               var4 = Vec3.ZERO;
-            }
-
-            Vec3 var10 = this.position().subtract(var4);
-            if (var9 instanceof ServerPlayer var11) {
-               if (var11.connection.isAcceptingMessages()) {
-                  if (this.random.nextFloat() < 0.05F && var8.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                     Endermite var12 = EntityType.ENDERMITE.create(var8, EntitySpawnReason.TRIGGERED);
-                     if (var12 != null) {
-                        var12.moveTo(var9.getX(), var9.getY(), var9.getZ(), var9.getYRot(), var9.getXRot());
-                        var8.addFreshEntity(var12);
+            Vec3 var4 = this.oldPosition();
+            if (var8 instanceof ServerPlayer var5) {
+               if (var5.connection.isAcceptingMessages()) {
+                  if (this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                     Endermite var6 = EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
+                     if (var6 != null) {
+                        var6.moveTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());
+                        var7.addFreshEntity(var6);
                      }
                   }
 
-                  ServerPlayer var13 = var11.teleport(
-                     new TeleportTransition(
-                        var8, var10, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.ROTATION, Relative.DELTA), TeleportTransition.DO_NOTHING
-                     )
-                  );
-                  if (var13 != null) {
-                     var13.resetFallDistance();
-                     var13.resetCurrentImpulseContext();
-                     var13.hurtServer(var11.serverLevel(), this.damageSources().enderPearl(), 5.0F);
+                  if (this.isOnPortalCooldown()) {
+                     var8.setPortalCooldown();
                   }
 
-                  this.playSound(var8, var10);
+                  ServerPlayer var9 = var5.teleport(
+                     new TeleportTransition(var7, var4, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.ROTATION, Relative.DELTA), TeleportTransition.DO_NOTHING)
+                  );
+                  if (var9 != null) {
+                     var9.resetFallDistance();
+                     var9.resetCurrentImpulseContext();
+                     var9.hurtServer(var5.serverLevel(), this.damageSources().enderPearl(), 5.0F);
+                  }
+
+                  this.playSound(var7, var4);
                }
             } else {
-               Entity var14 = var9.teleport(
-                  new TeleportTransition(var8, var10, var9.getDeltaMovement(), var9.getYRot(), var9.getXRot(), TeleportTransition.DO_NOTHING)
+               Entity var10 = var8.teleport(
+                  new TeleportTransition(var7, var4, var8.getDeltaMovement(), var8.getYRot(), var8.getXRot(), TeleportTransition.DO_NOTHING)
                );
-               if (var14 != null) {
-                  var14.resetFallDistance();
+               if (var10 != null) {
+                  var10.resetFallDistance();
                }
 
-               this.playSound(var8, var10);
+               this.playSound(var7, var4);
             }
 
             this.discard();

@@ -68,6 +68,11 @@ public class ThrownTrident extends AbstractArrow {
 
             this.discard();
          } else {
+            if (!(var1 instanceof Player) && this.position().distanceTo(var1.getEyePosition()) < (double)var1.getBbWidth() + 1.0) {
+               this.discard();
+               return;
+            }
+
             this.setNoPhysics(true);
             Vec3 var6 = var1.getEyePosition().subtract(this.position());
             this.setPosRaw(this.getX(), this.getY() + var6.y * 0.015 * (double)var2, this.getZ());

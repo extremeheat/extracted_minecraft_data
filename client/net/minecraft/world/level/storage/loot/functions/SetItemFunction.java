@@ -4,8 +4,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -13,9 +11,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetItemFunction extends LootItemConditionalFunction {
    public static final MapCodec<SetItemFunction> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> commonFields(var0)
-            .and(RegistryFixedCodec.create(Registries.ITEM).fieldOf("item").forGetter(var0x -> var0x.item))
-            .apply(var0, SetItemFunction::new)
+      var0 -> commonFields(var0).and(Item.CODEC.fieldOf("item").forGetter(var0x -> var0x.item)).apply(var0, SetItemFunction::new)
    );
    private final Holder<Item> item;
 

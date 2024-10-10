@@ -1,6 +1,7 @@
 package net.minecraft.world.entity;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
@@ -10,20 +11,20 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
 import it.unimi.dsi.fastutil.floats.FloatArraySet;
 import it.unimi.dsi.fastutil.floats.FloatArrays;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -196,6 +197,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public double yOld;
    public double zOld;
    public boolean noPhysics;
+   private boolean wasOnFire;
    protected final RandomSource random = RandomSource.create();
    public int tickCount;
    private int remainingFireTicks = -this.getFireImmuneTicks();
@@ -247,7 +249,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    private boolean hasVisualFire;
    @Nullable
    private BlockState inBlockState = null;
-   private final Map<BlockPos, BlockState> blocksInside = new HashMap<>();
+   private final List<Entity.Movement> movementThisTick = new ArrayList<>();
+   private final Set<BlockState> blocksInside = new ReferenceArraySet();
+   private final LongSet visitedBlocks = new LongOpenHashSet();
 
    public Entity(EntityType<?> var1, Level var2) {
       super();
@@ -621,6 +625,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (this.noPhysics) {
          this.setPos(this.getX() + var2.x, this.getY() + var2.y, this.getZ() + var2.z);
       } else {
+         this.wasOnFire = this.isOnFire();
          if (var1 == MoverType.PISTON) {
             var2 = this.limitPistonMovement(var2);
             if (var2.equals(Vec3.ZERO)) {
@@ -742,31 +747,23 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public void applyEffectsFromBlocks(Vec3 var1, Vec3 var2) {
       if (this.isAffectedByBlocks()) {
-         boolean var3 = this.isOnFire();
          if (this.onGround()) {
-            BlockPos var4 = this.getOnPosLegacy();
-            BlockState var5 = this.level().getBlockState(var4);
-            var5.getBlock().stepOn(this.level(), var4, var5, this);
+            BlockPos var3 = this.getOnPosLegacy();
+            BlockState var4 = this.level().getBlockState(var3);
+            var4.getBlock().stepOn(this.level(), var3, var4, this);
          }
 
-         this.collectBlockCollidedWith(this.blocksInside, var1, var2);
-         boolean var7 = false;
-
-         for (Entry var6 : this.blocksInside.entrySet()) {
-            ((BlockState)var6.getValue()).entityInside(this.level(), (BlockPos)var6.getKey(), this);
-            this.onInsideBlock((BlockState)var6.getValue());
-            if (((BlockState)var6.getValue()).is(BlockTags.FIRE) || ((BlockState)var6.getValue()).is(Blocks.LAVA)) {
-               var7 = true;
-            }
-         }
-
+         this.movementThisTick.add(new Entity.Movement(var1, var2));
+         this.checkInsideBlocks(this.movementThisTick, this.blocksInside);
+         boolean var5 = Iterables.any(this.blocksInside, var0 -> var0.is(BlockTags.FIRE) || var0.is(Blocks.LAVA));
+         this.movementThisTick.clear();
          this.blocksInside.clear();
-         if (!var7) {
+         if (!var5) {
             if (this.remainingFireTicks <= 0) {
                this.setRemainingFireTicks(-this.getFireImmuneTicks());
             }
 
-            if (var3 && (this.isInPowderSnow || this.isInWaterRainOrBubble())) {
+            if (this.wasOnFire && (this.isInPowderSnow || this.isInWaterRainOrBubble())) {
                this.playEntityOnFireExtinguishedSound();
             }
          }
@@ -815,7 +812,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void extinguishFire() {
-      if (!this.level().isClientSide && this.isOnFire()) {
+      if (!this.level().isClientSide && this.wasOnFire) {
          this.playEntityOnFireExtinguishedSound();
       }
 
@@ -1047,33 +1044,48 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    public void recordMovementThroughBlocks(Vec3 var1, Vec3 var2) {
-      this.collectBlockCollidedWith(this.blocksInside, var1, var2);
+      this.movementThisTick.add(new Entity.Movement(var1, var2));
    }
 
-   private void collectBlockCollidedWith(Map<BlockPos, BlockState> var1, Vec3 var2, Vec3 var3) {
-      AABB var4 = this.getBoundingBox().deflate(9.999999747378752E-6);
+   private void checkInsideBlocks(List<Entity.Movement> var1, Set<BlockState> var2) {
+      if (this.isAffectedByBlocks()) {
+         AABB var3 = this.getBoundingBox().deflate(9.999999747378752E-6);
+         LongSet var4 = this.visitedBlocks;
 
-      for (BlockPos var6 : BlockGetter.boxTraverseBlocks(var2, var3, var4)) {
-         if (!this.isAlive()) {
-            return;
-         }
+         for (Entity.Movement var6 : var1) {
+            Vec3 var7 = var6.from();
+            Vec3 var8 = var6.to();
 
-         BlockState var7 = this.level().getBlockState(var6);
-         if (!var7.isAir() && !var1.containsKey(var6)) {
-            try {
-               VoxelShape var8 = var7.getEntityInsideCollisionShape(this.level(), var6);
-               if (var8 == Shapes.block() || this.collidedWithShapeMovingFrom(var2, var3, var6, var8)) {
-                  var1.put(var6.immutable(), var7);
+            for (BlockPos var10 : BlockGetter.boxTraverseBlocks(var7, var8, var3)) {
+               if (!this.isAlive()) {
+                  return;
                }
-            } catch (Throwable var12) {
-               CrashReport var9 = CrashReport.forThrowable(var12, "Colliding entity with block");
-               CrashReportCategory var10 = var9.addCategory("Block being collided with");
-               CrashReportCategory.populateBlockDetails(var10, this.level(), var6, var7);
-               CrashReportCategory var11 = var9.addCategory("Entity being checked for collision");
-               this.fillCrashReportCategory(var11);
-               throw new ReportedException(var9);
+
+               BlockState var11 = this.level().getBlockState(var10);
+               if (!var11.isAir() && var4.add(var10.asLong())) {
+                  try {
+                     VoxelShape var12 = var11.getEntityInsideCollisionShape(this.level(), var10);
+                     if (var12 != Shapes.block() && !this.collidedWithShapeMovingFrom(var7, var8, var10, var12)) {
+                        continue;
+                     }
+
+                     var11.entityInside(this.level(), var10, this);
+                     this.onInsideBlock(var11);
+                  } catch (Throwable var16) {
+                     CrashReport var13 = CrashReport.forThrowable(var16, "Colliding entity with block");
+                     CrashReportCategory var14 = var13.addCategory("Block being collided with");
+                     CrashReportCategory.populateBlockDetails(var14, this.level(), var10, var11);
+                     CrashReportCategory var15 = var13.addCategory("Entity being checked for collision");
+                     this.fillCrashReportCategory(var15);
+                     throw new ReportedException(var13);
+                  }
+
+                  var2.add(var11);
+               }
             }
          }
+
+         var4.clear();
       }
    }
 
@@ -2742,7 +2754,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.reapplyPosition();
       this.setOldPosAndRot();
       this.setDeltaMovement(var4.deltaMovement());
-      this.blocksInside.clear();
+      this.movementThisTick.clear();
    }
 
    public void forceSetRotation(float var1, float var2) {
@@ -3168,6 +3180,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    public boolean isControlledByLocalInstance() {
       return this.getControllingPassenger() instanceof Player var1 ? var1.isLocalPlayer() : this.isEffectiveAi();
+   }
+
+   public boolean isControlledByClient() {
+      LivingEntity var1 = this.getControllingPassenger();
+      return var1 != null && var1.isControlledByClient();
    }
 
    public boolean isEffectiveAi() {
@@ -3625,6 +3642,19 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public interface MoveFunction {
       void accept(Entity var1, double var2, double var4, double var6);
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "varName" is null
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
    public static enum MovementEmission {
       NONE(false, false),

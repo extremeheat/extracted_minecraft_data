@@ -454,6 +454,7 @@ public class ServerGamePacketListenerImpl
             }
 
             this.player.serverLevel().getChunkSource().move(this.player);
+            var2.recordMovementThroughBlocks(new Vec3(var4, var6, var8), var2.position());
             Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
             this.handlePlayerKnownMovement(var34);
             this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
@@ -928,10 +929,7 @@ public class ServerGamePacketListenerImpl
                         Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                         this.player.setOnGroundWithMovement(var1.isOnGround(), var1.horizontalCollision(), var35);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
-                        if (!this.player.isSpectator()) {
-                           this.player.recordMovementThroughBlocks(new Vec3(var11, var13, var15), this.player.position());
-                        }
-
+                        this.player.recordMovementThroughBlocks(new Vec3(var11, var13, var15), this.player.position());
                         this.handlePlayerKnownMovement(var35);
                         if (var44) {
                            this.player.resetFallDistance();
@@ -1856,8 +1854,11 @@ public class ServerGamePacketListenerImpl
    }
 
    private void handlePlayerKnownMovement(Vec3 var1) {
+      if (var1.lengthSqr() > 9.999999747378752E-6) {
+         this.player.resetLastActionTime();
+      }
+
       this.player.setKnownMovement(var1);
-      this.player.resetLastActionTime();
       this.receivedMovementThisTick = true;
    }
 

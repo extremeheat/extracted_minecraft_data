@@ -106,6 +106,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -1299,13 +1300,14 @@ public abstract class LivingEntity extends Entity implements Attackable {
          var3 = true;
       }
 
-      if (!var1.is(DamageTypeTags.BYPASSES_SHIELD) && this.isBlocking() && !var3) {
-         Vec3 var7 = var1.getSourcePosition();
-         if (var7 != null) {
-            Vec3 var5 = this.calculateViewVector(0.0F, this.getYHeadRot());
-            Vec3 var6 = var7.vectorTo(this.position());
-            var6 = new Vec3(var6.x, 0.0, var6.z).normalize();
-            return var6.dot(var5) < 0.0;
+      ItemStack var8 = this.getItemBlockingWith();
+      if (!var1.is(DamageTypeTags.BYPASSES_SHIELD) && var8 != null && var8.getItem() instanceof ShieldItem && !var3) {
+         Vec3 var5 = var1.getSourcePosition();
+         if (var5 != null) {
+            Vec3 var6 = this.calculateViewVector(0.0F, this.getYHeadRot());
+            Vec3 var7 = var5.vectorTo(this.position());
+            var7 = new Vec3(var7.x, 0.0, var7.z).normalize();
+            return var7.dot(var6) < 0.0;
          }
       }
 
@@ -1897,12 +1899,16 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   private void makePoofParticles() {
+   public void makePoofParticles() {
       for (int var1 = 0; var1 < 20; var1++) {
          double var2 = this.random.nextGaussian() * 0.02;
          double var4 = this.random.nextGaussian() * 0.02;
          double var6 = this.random.nextGaussian() * 0.02;
-         this.level().addParticle(ParticleTypes.POOF, this.getRandomX(1.0), this.getRandomY(), this.getRandomZ(1.0), var2, var4, var6);
+         double var8 = 10.0;
+         this.level()
+            .addParticle(
+               ParticleTypes.POOF, this.getRandomX(1.0) - var2 * 10.0, this.getRandomY() - var4 * 10.0, this.getRandomZ(1.0) - var6 * 10.0, var2, var4, var6
+            );
       }
    }
 
@@ -3619,7 +3625,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
+// java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "varName" is null
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
 //   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)

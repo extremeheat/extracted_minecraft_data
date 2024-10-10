@@ -18,7 +18,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
@@ -324,16 +323,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void spawnAnim() {
       if (this.level().isClientSide) {
-         for (int var1 = 0; var1 < 20; var1++) {
-            double var2 = this.random.nextGaussian() * 0.02;
-            double var4 = this.random.nextGaussian() * 0.02;
-            double var6 = this.random.nextGaussian() * 0.02;
-            double var8 = 10.0;
-            this.level()
-               .addParticle(
-                  ParticleTypes.POOF, this.getX(1.0) - var2 * 10.0, this.getRandomY() - var4 * 10.0, this.getRandomZ(1.0) - var6 * 10.0, var2, var4, var6
-               );
-         }
+         this.makePoofParticles();
       } else {
          this.level().broadcastEntityEvent(this, (byte)20);
       }

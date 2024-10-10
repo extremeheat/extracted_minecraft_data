@@ -10,7 +10,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.BreezeRenderState;
-import net.minecraft.util.Mth;
 
 public class BreezeModel extends EntityModel<BreezeRenderState> {
    private static final float WIND_TOP_SPEED = 0.6F;
@@ -106,15 +105,7 @@ public class BreezeModel extends EntityModel<BreezeRenderState> {
 
    public void setupAnim(BreezeRenderState var1) {
       super.setupAnim(var1);
-      float var2 = var1.ageInTicks * 3.1415927F * -0.1F;
-      this.windTop.x = Mth.cos(var2) * 1.0F * 0.6F;
-      this.windTop.z = Mth.sin(var2) * 1.0F * 0.6F;
-      this.windMid.x = Mth.sin(var2) * 0.5F * 0.8F;
-      this.windMid.z = Mth.cos(var2) * 0.8F;
-      this.windBottom.x = Mth.cos(var2) * -0.25F * 1.0F;
-      this.windBottom.z = Mth.sin(var2) * -0.25F * 1.0F;
-      this.head.y = 4.0F + Mth.cos(var2) / 4.0F;
-      this.rods.yRot = var1.ageInTicks * 3.1415927F * 0.1F;
+      this.animate(var1.idle, BreezeAnimation.IDLE, var1.ageInTicks);
       this.animate(var1.shoot, BreezeAnimation.SHOOT, var1.ageInTicks);
       this.animate(var1.slide, BreezeAnimation.SLIDE, var1.ageInTicks);
       this.animate(var1.slideBack, BreezeAnimation.SLIDE_BACK, var1.ageInTicks);

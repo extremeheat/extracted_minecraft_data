@@ -896,10 +896,10 @@ public class RealmsMainScreen extends RealmsScreen {
          return var1 + var2 - RealmsMainScreen.this.font.width(var3) - 20;
       }
 
-      protected void renderGameMode(RealmsServer var1, GuiGraphics var2, int var3, int var4, int var5) {
+      protected int renderGameMode(RealmsServer var1, GuiGraphics var2, int var3, int var4, int var5) {
          boolean var6 = var1.isHardcore;
          int var7 = var1.gameMode;
-         int var8 = 0;
+         int var8 = var3;
          if (GameType.isValidId(var7)) {
             Component var9 = RealmsMainScreen.getGameModeComponent(var7, var6);
             var8 = this.gameModeTextX(var3, var4, var9);
@@ -907,8 +907,11 @@ public class RealmsMainScreen extends RealmsScreen {
          }
 
          if (var6) {
-            var2.blitSprite(RenderType::guiTextured, RealmsMainScreen.HARDCORE_MODE_SPRITE, var8 - 10, this.secondLineY(var5), 8, 8);
+            var8 -= 10;
+            var2.blitSprite(RenderType::guiTextured, RealmsMainScreen.HARDCORE_MODE_SPRITE, var8, this.secondLineY(var5), 8, 8);
          }
+
+         return var8;
       }
 
       protected int firstLineY(int var1) {
@@ -1098,11 +1101,12 @@ public class RealmsMainScreen extends RealmsScreen {
             var1.drawString(RealmsMainScreen.this.font, var13, var14, var12, -8355712, false);
          }
 
+         int var15 = var4;
          if (!this.server.isMinigameActive()) {
-            this.renderGameMode(this.server, var1, var4, var5, var12);
+            var15 = this.renderGameMode(this.server, var1, var4, var5, var12);
          }
 
-         var1.drawString(RealmsMainScreen.this.font, this.server.getDescription(), var11, this.secondLineY(var12), -8355712, false);
+         this.renderClampedString(var1, this.server.getDescription(), var11, this.secondLineY(var12), var15, -8355712);
          this.renderThirdLine(var1, var3, var4, this.server);
          this.renderStatusLights(this.server, var1, var4 + var5, var3, var7, var8);
          this.tooltip.refreshTooltipForNextRenderPass(var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
@@ -1241,11 +1245,11 @@ public class RealmsMainScreen extends RealmsScreen {
          String var8 = this.serverData.getMinigameName();
          boolean var9 = this.serverData.isMinigameActive();
          if (var9 && var8 != null) {
-            MutableComponent var10 = Component.literal(var8).withStyle(ChatFormatting.GRAY);
-            var1.drawString(RealmsMainScreen.this.font, Component.translatable("mco.selectServer.minigameName", var10).withColor(-171), var5, var7, -1, false);
+            MutableComponent var11 = Component.literal(var8).withStyle(ChatFormatting.GRAY);
+            var1.drawString(RealmsMainScreen.this.font, Component.translatable("mco.selectServer.minigameName", var11).withColor(-171), var5, var7, -1, false);
          } else {
-            var1.drawString(RealmsMainScreen.this.font, this.serverData.getDescription(), var5, this.secondLineY(var6), -8355712, false);
-            this.renderGameMode(this.serverData, var1, var3, var4, var6);
+            int var10 = this.renderGameMode(this.serverData, var1, var3, var4, var6);
+            this.renderClampedString(var1, this.serverData.getDescription(), var5, this.secondLineY(var6), var10, -8355712);
          }
       }
 

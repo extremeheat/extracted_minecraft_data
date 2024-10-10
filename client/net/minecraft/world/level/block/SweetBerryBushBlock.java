@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -81,7 +80,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
       if (var4 instanceof LivingEntity && var4.getType() != EntityType.FOX && var4.getType() != EntityType.BEE) {
          var4.makeStuckInBlock(var1, new Vec3(0.800000011920929, 0.75, 0.800000011920929));
          if (var2 instanceof ServerLevel var5 && var1.getValue(AGE) != 0) {
-            Vec3 var6 = var4 instanceof ServerPlayer ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
+            Vec3 var6 = var4.isControlledByClient() ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
             if (var6.horizontalDistanceSqr() > 0.0) {
                double var7 = Math.abs(var6.x());
                double var9 = Math.abs(var6.z());
