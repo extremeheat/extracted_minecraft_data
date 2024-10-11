@@ -973,7 +973,22 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    @Override
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
       if (this.getGameRules().getBoolean(GameRules.RULE_GLOBAL_SOUND_EVENTS)) {
-         this.server.getPlayerList().broadcastAll(new ClientboundLevelEventPacket(var1, var2, var3, true));
+         this.server.getPlayerList().getPlayers().forEach(var4 -> {
+            Vec3 var5;
+            if (var4.level() == this) {
+               Vec3 var6 = Vec3.atCenterOf(var2);
+               if (var4.distanceToSqr(var6) < (double)Mth.square(32)) {
+                  var5 = var6;
+               } else {
+                  Vec3 var7 = var6.subtract(var4.position()).normalize();
+                  var5 = var4.position().add(var7.scale(32.0));
+               }
+            } else {
+               var5 = var4.position();
+            }
+
+            var4.connection.send(new ClientboundLevelEventPacket(var1, BlockPos.containing(var5), var3, true));
+         });
       } else {
          this.levelEvent(null, var1, var2, var3);
       }

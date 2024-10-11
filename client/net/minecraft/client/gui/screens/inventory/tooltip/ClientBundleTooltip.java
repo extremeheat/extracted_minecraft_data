@@ -19,6 +19,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final ResourceLocation PROGRESSBAR_FULL_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/bundle_progressbar_full");
    private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/slot_highlight_back");
    private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/slot_highlight_front");
+   private static final ResourceLocation SLOT_BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("container/bundle/slot_background");
    private static final int SLOT_MARGIN = 4;
    private static final int SLOT_SIZE = 24;
    private static final int GRID_WIDTH = 96;
@@ -137,6 +138,8 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       ItemStack var10 = (ItemStack)var4.get(var8);
       if (var9) {
          var7.blitSprite(RenderType::guiTextured, SLOT_HIGHLIGHT_BACK_SPRITE, var2, var3, 24, 24);
+      } else {
+         var7.blitSprite(RenderType::guiTextured, SLOT_BACKGROUND_SPRITE, var2, var3, 24, 24);
       }
 
       var7.renderItem(var10, var2 + 4, var3 + 4, var5);

@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -152,7 +153,7 @@ public class ServerList {
    private static boolean set(ServerData var0, List<ServerData> var1) {
       for (int var2 = 0; var2 < var1.size(); var2++) {
          ServerData var3 = (ServerData)var1.get(var2);
-         if (var3.name.equals(var0.name) && var3.ip.equals(var0.ip)) {
+         if (Objects.equals(var3.name, var0.name) && var3.ip.equals(var0.ip)) {
             var1.set(var2, var0);
             return true;
          }

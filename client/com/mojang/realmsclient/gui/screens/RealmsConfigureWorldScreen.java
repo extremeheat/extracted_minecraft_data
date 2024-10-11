@@ -14,6 +14,7 @@ import com.mojang.realmsclient.util.task.OpenServerTask;
 import com.mojang.realmsclient.util.task.SwitchMinigameTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
@@ -216,7 +217,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       if (this.serverData == null) {
          var1.drawCenteredString(this.font, this.title, this.width / 2, 17, -1);
       } else {
-         String var5 = this.serverData.getName();
+         String var5 = Objects.requireNonNullElse(this.serverData.getName(), "");
          int var6 = this.font.width(var5);
          int var7 = this.serverData.state == RealmsServer.State.CLOSED ? -6250336 : 8388479;
          int var8 = this.font.width(this.title);
@@ -416,7 +417,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    public void saveSettings(String var1, String var2) {
-      String var3 = StringUtil.isBlank(var2) ? null : var2;
+      String var3 = StringUtil.isBlank(var2) ? "" : var2;
       RealmsClient var4 = RealmsClient.create();
 
       try {

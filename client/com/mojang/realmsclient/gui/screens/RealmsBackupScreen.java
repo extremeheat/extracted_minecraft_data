@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -143,7 +144,10 @@ public class RealmsBackupScreen extends RealmsScreen {
                            new DownloadTask(
                               this.serverData.id,
                               this.slotId,
-                              this.serverData.name + " (" + this.serverData.slots.get(this.serverData.activeSlot).getSlotName(this.serverData.activeSlot) + ")",
+                              Objects.requireNonNullElse(this.serverData.name, "")
+                                 + " ("
+                                 + this.serverData.slots.get(this.serverData.activeSlot).getSlotName(this.serverData.activeSlot)
+                                 + ")",
                               this
                            )
                         )

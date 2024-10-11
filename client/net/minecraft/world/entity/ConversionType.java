@@ -27,12 +27,18 @@ public enum ConversionType {
             var4.startRiding(var2);
          }
 
+         Entity var9 = var1.getVehicle();
+         if (var9 != null) {
+            var1.stopRiding();
+            var2.startRiding(var9);
+         }
+
          if (var3.keepEquipment()) {
-            for (EquipmentSlot var10 : EquipmentSlot.VALUES) {
-               ItemStack var7 = var1.getItemBySlot(var10);
-               if (!var7.isEmpty()) {
-                  var2.setItemSlot(var10, var7.copyAndClear());
-                  var2.setDropChance(var10, var1.getEquipmentDropChance(var10));
+            for (EquipmentSlot var7 : EquipmentSlot.VALUES) {
+               ItemStack var8 = var1.getItemBySlot(var7);
+               if (!var8.isEmpty()) {
+                  var2.setItemSlot(var7, var8.copyAndClear());
+                  var2.setDropChance(var7, var1.getEquipmentDropChance(var7));
                }
             }
          }
@@ -44,9 +50,9 @@ public enum ConversionType {
          var2.yBodyRot = var1.yBodyRot;
          var2.setOnGround(var1.onGround());
          var1.getSleepingPos().ifPresent(var2::setSleepingPos);
-         Entity var9 = var1.getLeashHolder();
-         if (var9 != null) {
-            var2.setLeashedTo(var9, true);
+         Entity var11 = var1.getLeashHolder();
+         if (var11 != null) {
+            var2.setLeashedTo(var11, true);
          }
 
          this.convertCommon(var1, var2, var3);

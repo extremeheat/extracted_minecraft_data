@@ -16,6 +16,7 @@ import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
@@ -110,6 +111,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    private static final int CHUNK_SAVED_PER_TICK = 200;
    private static final int CHUNK_SAVED_EAGERLY_PER_TICK = 20;
    private static final int EAGER_CHUNK_SAVE_COOLDOWN_IN_MILLIS = 10000;
+   private static final int MAX_ACTIVE_CHUNK_WRITES = 128;
    public static final int MIN_VIEW_DISTANCE = 2;
    public static final int MAX_VIEW_DISTANCE = 32;
    public static final int FORCED_TICKET_LEVEL = ChunkLevel.byStatus(FullChunkStatus.ENTITY_TICKING);
@@ -137,7 +139,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    private final Int2ObjectMap<ChunkMap.TrackedEntity> entityMap = new Int2ObjectOpenHashMap();
    private final Long2ByteMap chunkTypeCache = new Long2ByteOpenHashMap();
    private final Long2LongMap nextChunkSaveTime = new Long2LongOpenHashMap();
+   private final LongSet chunksToEagerlySave = new LongLinkedOpenHashSet();
    private final Queue<Runnable> unloadQueue = Queues.newConcurrentLinkedQueue();
+   private final AtomicInteger activeChunkWrites = new AtomicInteger();
    private int serverViewDistance;
    private final WorldGenContext worldGenContext;
 
@@ -183,7 +187,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          new RegionStorageInfo(var2.getLevelId(), var1.dimension(), "poi"), var14.resolve("poi"), var3, var13, var15, var1.getServer(), var1
       );
       this.setServerViewDistance(var12);
-      this.worldGenContext = new WorldGenContext(var1, var8, var4, this.lightEngine, var6);
+      this.worldGenContext = new WorldGenContext(var1, var8, var4, this.lightEngine, var6, this::setChunkUnsaved);
+   }
+
+   private void setChunkUnsaved(ChunkPos var1) {
+      this.chunksToEagerlySave.add(var1.toLong());
    }
 
    protected ChunkGenerator generator() {
@@ -405,6 +413,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          this.processUnloads(() -> true);
          this.flushWorker();
       } else {
+         this.nextChunkSaveTime.clear();
          long var6 = Util.getMillis();
          ObjectIterator var4 = this.visibleChunkMap.values().iterator();
 
@@ -453,21 +462,29 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
       int var4 = Math.max(0, this.unloadQueue.size() - 2000);
 
-      Runnable var12;
-      while ((var4 > 0 || var1.getAsBoolean()) && (var12 = this.unloadQueue.poll()) != null) {
+      Runnable var6;
+      while ((var4 > 0 || var1.getAsBoolean()) && (var6 = this.unloadQueue.poll()) != null) {
          var4--;
-         var12.run();
+         var6.run();
       }
 
-      long var13 = Util.getMillis();
-      int var7 = 0;
-      LongIterator var8 = this.distanceManager.getTickingChunks().iterator();
+      this.saveChunksEagerly(var1);
+   }
 
-      while (var7 < 20 && var1.getAsBoolean() && var8.hasNext()) {
-         long var9 = var8.nextLong();
-         ChunkHolder var11 = (ChunkHolder)this.visibleChunkMap.get(var9);
-         if (var11 != null && this.saveChunkIfNeeded(var11, var13)) {
-            var7++;
+   private void saveChunksEagerly(BooleanSupplier var1) {
+      long var2 = Util.getMillis();
+      int var4 = 0;
+      LongIterator var5 = this.chunksToEagerlySave.iterator();
+
+      while (var4 < 20 && this.activeChunkWrites.get() < 128 && var1.getAsBoolean() && var5.hasNext()) {
+         long var6 = var5.nextLong();
+         ChunkHolder var8 = (ChunkHolder)this.visibleChunkMap.get(var6);
+         ChunkAccess var9 = var8 != null ? var8.getLatestChunk() : null;
+         if (var9 == null || !var9.isUnsaved()) {
+            var5.remove();
+         } else if (this.saveChunkIfNeeded(var8, var2)) {
+            var4++;
+            var5.remove();
          }
       }
    }
@@ -702,10 +719,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    private boolean save(ChunkAccess var1) {
       this.poiManager.flush(var1.getPos());
-      if (!var1.isUnsaved()) {
+      if (!var1.tryMarkSaved()) {
          return false;
       } else {
-         var1.setUnsaved(false);
          ChunkPos var2 = var1.getPos();
 
          try {
@@ -721,10 +737,15 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             }
 
             Profiler.get().incrementCounter("chunkSave");
+            this.activeChunkWrites.incrementAndGet();
             SerializableChunkData var4 = SerializableChunkData.copyOf(this.level, var1);
             CompletableFuture var5 = CompletableFuture.supplyAsync(var4::write, Util.backgroundExecutor());
-            this.write(var2, var5::join).exceptionally(var2x -> {
-               this.level.getServer().reportChunkSaveFailure(var2x, this.storageInfo(), var2);
+            this.write(var2, var5::join).handle((var2x, var3x) -> {
+               if (var3x != null) {
+                  this.level.getServer().reportChunkSaveFailure(var3x, this.storageInfo(), var2);
+               }
+
+               this.activeChunkWrites.decrementAndGet();
                return null;
             });
             this.markPosition(var2, var3.getChunkType());

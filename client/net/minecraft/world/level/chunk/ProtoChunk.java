@@ -220,7 +220,7 @@ public class ProtoChunk extends ChunkAccess {
          this.setBelowZeroRetrogen(null);
       }
 
-      this.setUnsaved(true);
+      this.markUnsaved();
    }
 
    @Override

@@ -724,7 +724,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public void blockEntityChanged(BlockPos var1) {
       if (this.hasChunkAt(var1)) {
-         this.getChunkAt(var1).setUnsaved(true);
+         this.getChunkAt(var1).markUnsaved();
       }
    }
 

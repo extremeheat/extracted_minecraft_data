@@ -138,7 +138,7 @@ public class ChunkHolder extends GenerationChunkHolder {
       if (var3 == null) {
          return false;
       } else {
-         var3.setUnsaved(true);
+         var3.markUnsaved();
          LevelChunk var4 = this.getTickingChunk();
          if (var4 == null) {
             return false;

@@ -176,15 +176,15 @@ public interface BlockGetter extends LevelHeightAccessor {
          return var4;
       } else {
          ObjectLinkedOpenHashSet var5 = new ObjectLinkedOpenHashSet();
+         Vec3 var6 = var3.normalize().scale(1.0E-7);
+         Vec3 var7 = var2.getMinPosition().add(var6);
+         Vec3 var8 = var2.getMinPosition().subtract(var3).subtract(var6);
+         addCollisionsAlongTravel(var5, var8, var7, var2);
 
-         for (BlockPos var7 : var4) {
-            var5.add(var7.immutable());
+         for (BlockPos var10 : var4) {
+            var5.add(var10.immutable());
          }
 
-         Vec3 var9 = var3.normalize().scale(1.0E-7);
-         Vec3 var10 = var2.getMinPosition().add(var9);
-         Vec3 var8 = var2.getMinPosition().subtract(var3).subtract(var9);
-         addCollisionsAlongTravel(var5, var8, var10, var2);
          return var5;
       }
    }

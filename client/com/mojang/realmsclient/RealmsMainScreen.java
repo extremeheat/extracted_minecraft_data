@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -709,7 +710,13 @@ public class RealmsMainScreen extends RealmsScreen {
          var1.blitSprite(RenderType::guiTextured, RealmsMainScreen.NEW_REALM_SPRITE, var4 - 5, var3 + var6 / 2 - 10, 40, 20);
          int var11 = var3 + var6 / 2 - 9 / 2;
          var1.drawString(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, var4 + 40 - 2, var11 - 5, 8388479);
-         var1.drawString(RealmsMainScreen.this.font, Component.translatable("mco.snapshot.description", this.parent.name), var4 + 40 - 2, var11 + 5, -8355712);
+         var1.drawString(
+            RealmsMainScreen.this.font,
+            Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server")),
+            var4 + 40 - 2,
+            var11 + 5,
+            -8355712
+         );
          this.tooltip.refreshTooltipForNextRenderPass(var9, this.isFocused(), new ScreenRectangle(var4, var3, var5, var6));
       }
 
@@ -747,7 +754,10 @@ public class RealmsMainScreen extends RealmsScreen {
       @Override
       public Component getNarration() {
          return Component.translatable(
-            "gui.narrate.button", CommonComponents.joinForNarration(START_SNAPSHOT_REALM, Component.translatable("mco.snapshot.description", this.parent.name))
+            "gui.narrate.button",
+            CommonComponents.joinForNarration(
+               START_SNAPSHOT_REALM, Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server"))
+            )
          );
       }
    }
@@ -878,13 +888,15 @@ public class RealmsMainScreen extends RealmsScreen {
          }
       }
 
-      protected void renderClampedString(GuiGraphics var1, String var2, int var3, int var4, int var5, int var6) {
-         int var7 = var5 - var3;
-         if (RealmsMainScreen.this.font.width(var2) > var7) {
-            String var8 = RealmsMainScreen.this.font.plainSubstrByWidth(var2, var7 - RealmsMainScreen.this.font.width("... "));
-            var1.drawString(RealmsMainScreen.this.font, var8 + "...", var3, var4, var6, false);
-         } else {
-            var1.drawString(RealmsMainScreen.this.font, var2, var3, var4, var6, false);
+      protected void renderClampedString(GuiGraphics var1, @Nullable String var2, int var3, int var4, int var5, int var6) {
+         if (var2 != null) {
+            int var7 = var5 - var3;
+            if (RealmsMainScreen.this.font.width(var2) > var7) {
+               String var8 = RealmsMainScreen.this.font.plainSubstrByWidth(var2, var7 - RealmsMainScreen.this.font.width("... "));
+               var1.drawString(RealmsMainScreen.this.font, var8 + "...", var3, var4, var6, false);
+            } else {
+               var1.drawString(RealmsMainScreen.this.font, var2, var3, var4, var6, false);
+            }
          }
       }
 
@@ -1114,7 +1126,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       @Override
       public Component getNarration() {
-         return Component.literal(this.server.name);
+         return Component.literal(Objects.requireNonNullElse(this.server.name, "unknown server"));
       }
    }
 
@@ -1329,7 +1341,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public Component getNarration() {
          return (Component)(this.serverData.state == RealmsServer.State.UNINITIALIZED
             ? RealmsMainScreen.UNITIALIZED_WORLD_NARRATION
-            : Component.translatable("narrator.select", this.serverData.name));
+            : Component.translatable("narrator.select", Objects.requireNonNullElse(this.serverData.name, "unknown server")));
       }
 
       public RealmsServer getServer() {

@@ -165,8 +165,13 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    @Override
-   public void setUnsaved(boolean var1) {
-      this.wrapped.setUnsaved(var1);
+   public void markUnsaved() {
+      this.wrapped.markUnsaved();
+   }
+
+   @Override
+   public boolean tryMarkSaved() {
+      return this.wrapped.tryMarkSaved();
    }
 
    @Override

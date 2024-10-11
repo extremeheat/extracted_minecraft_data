@@ -157,6 +157,7 @@ public class ChunkStatusTasks {
          var4x.setLoaded(true);
          var4x.registerAllBlockEntitiesAfterLevelLoad();
          var4x.registerTickContainerInLevel(var5x);
+         var4x.setUnsavedListener(var0.unsavedListener());
          return var4x;
       }, var0.mainThreadExecutor());
    }

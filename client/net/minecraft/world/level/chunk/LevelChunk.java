@@ -85,6 +85,8 @@ public class LevelChunk extends ChunkAccess {
    private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
    private final LevelChunkTicks<Block> blockTicks;
    private final LevelChunkTicks<Fluid> fluidTicks;
+   private LevelChunk.UnsavedListener unsavedListener = var0 -> {
+   };
 
    public LevelChunk(Level var1, ChunkPos var2) {
       this(var1, var2, UpgradeData.EMPTY, new LevelChunkTicks<>(), new LevelChunkTicks<>(), 0L, null, null, null);
@@ -150,7 +152,23 @@ public class LevelChunk extends ChunkAccess {
 
       this.skyLightSources = var2.skyLightSources;
       this.setLightCorrect(var2.isLightCorrect());
-      this.unsaved = true;
+      this.markUnsaved();
+   }
+
+   public void setUnsavedListener(LevelChunk.UnsavedListener var1) {
+      this.unsavedListener = var1;
+      if (this.isUnsaved()) {
+         var1.setUnsaved(this.chunkPos);
+      }
+   }
+
+   @Override
+   public void markUnsaved() {
+      boolean var1 = this.isUnsaved();
+      super.markUnsaved();
+      if (!var1) {
+         this.unsavedListener.setUnsaved(this.chunkPos);
+      }
    }
 
    @Override
@@ -308,7 +326,7 @@ public class LevelChunk extends ChunkAccess {
                   }
                }
 
-               this.unsaved = true;
+               this.markUnsaved();
                return var10;
             }
          }
@@ -784,5 +802,10 @@ public class LevelChunk extends ChunkAccess {
       public String toString() {
          return this.ticker + " <wrapped>";
       }
+   }
+
+   @FunctionalInterface
+   public interface UnsavedListener {
+      void setUnsaved(ChunkPos var1);
    }
 }
