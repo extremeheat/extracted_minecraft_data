@@ -227,19 +227,7 @@ public class GuiGraphics {
    public int drawString(Font var1, @Nullable String var2, int var3, int var4, int var5, boolean var6) {
       return var2 == null
          ? 0
-         : var1.drawInBatch(
-            var2,
-            (float)var3,
-            (float)var4,
-            var5,
-            var6,
-            this.pose.last().pose(),
-            this.bufferSource,
-            Font.DisplayMode.NORMAL,
-            0,
-            15728880,
-            var1.isBidirectional()
-         );
+         : var1.drawInBatch(var2, (float)var3, (float)var4, var5, var6, this.pose.last().pose(), this.bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
    }
 
    public int drawString(Font var1, FormattedCharSequence var2, int var3, int var4, int var5) {
@@ -827,8 +815,10 @@ public class GuiGraphics {
    private void renderItemCount(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
       if (var2.getCount() != 1 || var5 != null) {
          String var6 = var5 == null ? String.valueOf(var2.getCount()) : var5;
+         this.pose.pushPose();
          this.pose.translate(0.0F, 0.0F, 200.0F);
          this.drawString(var1, var6, var3 + 19 - 2 - var1.width(var6), var4 + 6 + 3, -1, true);
+         this.pose.popPose();
       }
    }
 

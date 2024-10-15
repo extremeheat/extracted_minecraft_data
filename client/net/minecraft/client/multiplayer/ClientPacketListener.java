@@ -1598,8 +1598,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private void refreshRecipeBook(ClientRecipeBook var1) {
       var1.rebuildCollections();
       this.searchTrees.updateRecipes(var1, this.level);
-      if (this.minecraft.screen instanceof RecipeUpdateListener) {
-         ((RecipeUpdateListener)this.minecraft.screen).recipesUpdated();
+      if (this.minecraft.screen instanceof RecipeUpdateListener var2) {
+         var2.recipesUpdated();
       }
    }
 

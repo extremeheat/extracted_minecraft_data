@@ -160,11 +160,6 @@ public abstract class AbstractArrow extends Projectile {
    @Override
    public void tick() {
       boolean var1 = !this.isNoPhysics();
-      if (var1 && !this.isInGround()) {
-         this.applyGravity();
-      }
-
-      this.applyInertia();
       Vec3 var2 = this.getDeltaMovement();
       if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
          double var3 = var2.horizontalDistance();
@@ -250,6 +245,11 @@ public abstract class AbstractArrow extends Projectile {
          } else {
             this.setPos(var10.add(var2));
             this.applyEffectsFromBlocks();
+         }
+
+         this.applyInertia();
+         if (var1) {
+            this.applyGravity();
          }
 
          super.tick();

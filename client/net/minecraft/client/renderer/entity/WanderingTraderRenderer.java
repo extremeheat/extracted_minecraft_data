@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.CrossedArmsItemLayer;
@@ -20,11 +19,6 @@ public class WanderingTraderRenderer extends MobRenderer<WanderingTrader, Villag
 
    public ResourceLocation getTextureLocation(VillagerRenderState var1) {
       return VILLAGER_BASE_SKIN;
-   }
-
-   protected void scale(VillagerRenderState var1, PoseStack var2) {
-      float var3 = 0.9375F;
-      var2.scale(0.9375F, 0.9375F, 0.9375F);
    }
 
    public VillagerRenderState createRenderState() {

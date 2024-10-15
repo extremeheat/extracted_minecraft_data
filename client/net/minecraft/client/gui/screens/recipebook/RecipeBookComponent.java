@@ -149,8 +149,9 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
 
       this.selectedTab.setStateTriggered(true);
-      this.updateCollections(false, var1);
+      this.selectMatchingRecipes();
       this.updateTabs(var1);
+      this.updateCollections(false, var1);
    }
 
    private int getYOrigin() {
@@ -216,11 +217,18 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       }
    }
 
+   private void selectMatchingRecipes() {
+      for (RecipeBookComponent.TabInfo var2 : this.tabInfos) {
+         for (RecipeCollection var4 : this.book.getCollection(var2.category())) {
+            this.selectMatchingRecipes(var4, this.stackedContents);
+         }
+      }
+   }
+
    protected abstract void selectMatchingRecipes(RecipeCollection var1, StackedItemContents var2);
 
    private void updateCollections(boolean var1, boolean var2) {
       List var3 = this.book.getCollection(this.selectedTab.getCategory());
-      var3.forEach(var1x -> this.selectMatchingRecipes(var1x, this.stackedContents));
       ArrayList var4 = Lists.newArrayList(var3);
       var4.removeIf(var0 -> !var0.hasAnySelected());
       String var5 = this.searchBox.getValue();
@@ -498,6 +506,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    }
 
    public void recipesUpdated() {
+      this.selectMatchingRecipes();
       this.updateTabs(this.isFiltering());
       if (this.isVisible()) {
          this.updateCollections(false, this.isFiltering());

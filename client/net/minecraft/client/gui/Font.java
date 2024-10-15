@@ -66,11 +66,21 @@ public class Font {
    public int drawInBatch(
       String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
    ) {
-      return this.drawInBatch(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, this.isBidirectional());
+      if (this.isBidirectional()) {
+         var1 = this.bidirectionalShaping(var1);
+      }
+
+      return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
    }
 
    public int drawInBatch(
-      String var1,
+      Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
+   ) {
+      return this.drawInBatch(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
+   }
+
+   public int drawInBatch(
+      Component var1,
       float var2,
       float var3,
       int var4,
@@ -82,13 +92,7 @@ public class Font {
       int var10,
       boolean var11
    ) {
-      return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-   }
-
-   public int drawInBatch(
-      Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
-   ) {
-      return this.drawInBatch(var1.getVisualOrderText(), var2, var3, var4, var5, var6, var7, var8, var9, var10);
+      return this.drawInternal(var1.getVisualOrderText(), var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
    }
 
    public int drawInBatch(
@@ -103,7 +107,7 @@ public class Font {
       int var9,
       int var10
    ) {
-      return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
+      return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, true);
    }
 
    public void drawInBatch8xOutline(FormattedCharSequence var1, float var2, float var3, int var4, int var5, Matrix4f var6, MultiBufferSource var7, int var8) {
@@ -152,18 +156,14 @@ public class Font {
       int var10,
       boolean var11
    ) {
-      if (var11) {
-         var1 = this.bidirectionalShaping(var1);
-      }
-
       var4 = adjustColor(var4);
       Matrix4f var12 = new Matrix4f(var6);
       if (var5) {
-         this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10);
+         this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10, var11);
          var12.translate(SHADOW_OFFSET);
       }
 
-      var2 = this.renderText(var1, var2, var3, var4, false, var12, var7, var8, var9, var10);
+      var2 = this.renderText(var1, var2, var3, var4, false, var12, var7, var8, var9, var10, var11);
       return (int)var2 + (var5 ? 1 : 0);
    }
 
@@ -177,25 +177,36 @@ public class Font {
       MultiBufferSource var7,
       Font.DisplayMode var8,
       int var9,
-      int var10
+      int var10,
+      boolean var11
    ) {
       var4 = adjustColor(var4);
-      Matrix4f var11 = new Matrix4f(var6);
+      Matrix4f var12 = new Matrix4f(var6);
       if (var5) {
-         this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10);
-         var11.translate(SHADOW_OFFSET);
+         this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10, var11);
+         var12.translate(SHADOW_OFFSET);
       }
 
-      var2 = this.renderText(var1, var2, var3, var4, false, var11, var7, var8, var9, var10);
+      var2 = this.renderText(var1, var2, var3, var4, false, var12, var7, var8, var9, var10, var11);
       return (int)var2 + (var5 ? 1 : 0);
    }
 
    private float renderText(
-      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
+      String var1,
+      float var2,
+      float var3,
+      int var4,
+      boolean var5,
+      Matrix4f var6,
+      MultiBufferSource var7,
+      Font.DisplayMode var8,
+      int var9,
+      int var10,
+      boolean var11
    ) {
-      Font.StringRenderOutput var11 = new Font.StringRenderOutput(this, var7, var2, var3, var4, var9, var5, var6, var8, var10);
-      StringDecomposer.iterateFormatted(var1, Style.EMPTY, var11);
-      return var11.finish(var2);
+      Font.StringRenderOutput var12 = new Font.StringRenderOutput(this, var7, var2, var3, var4, var9, var5, var6, var8, var10, var11);
+      StringDecomposer.iterateFormatted(var1, Style.EMPTY, var12);
+      return var12.finish(var2);
    }
 
    private float renderText(
@@ -208,11 +219,12 @@ public class Font {
       MultiBufferSource var7,
       Font.DisplayMode var8,
       int var9,
-      int var10
+      int var10,
+      boolean var11
    ) {
-      Font.StringRenderOutput var11 = new Font.StringRenderOutput(this, var7, var2, var3, var4, var9, var5, var6, var8, var10);
-      var1.accept(var11);
-      return var11.finish(var2);
+      Font.StringRenderOutput var12 = new Font.StringRenderOutput(this, var7, var2, var3, var4, var9, var5, var6, var8, var10, var11);
+      var1.accept(var12);
+      return var12.finish(var2);
    }
 
    public int width(String var1) {
@@ -277,6 +289,7 @@ public class Font {
       private final Matrix4f pose;
       private final Font.DisplayMode mode;
       private final int packedLightCoords;
+      private final boolean inverseDepth;
       float x;
       float y;
       private final List<BakedGlyph.GlyphInstance> glyphInstances;
@@ -302,7 +315,7 @@ public class Font {
          final Font.DisplayMode nullxxxxxxx,
          final int nullxxxxxxxx
       ) {
-         this(var1, nullx, nullxx, nullxxx, nullxxxx, 0, nullxxxxx, nullxxxxxx, nullxxxxxxx, nullxxxxxxxx);
+         this(var1, nullx, nullxx, nullxxx, nullxxxx, 0, nullxxxxx, nullxxxxxx, nullxxxxxxx, nullxxxxxxxx, true);
       }
 
       public StringRenderOutput(
@@ -315,7 +328,8 @@ public class Font {
          final boolean nullxxxxxx,
          final Matrix4f nullxxxxxxx,
          final Font.DisplayMode nullxxxxxxxx,
-         final int nullxxxxxxxxx
+         final int nullxxxxxxxxx,
+         final boolean nullxxxxxxxxxx
       ) {
          super();
          this.this$0 = var1;
@@ -330,6 +344,7 @@ public class Font {
          this.pose = nullxxxxxxx;
          this.mode = nullxxxxxxxx;
          this.packedLightCoords = nullxxxxxxxxx;
+         this.inverseDepth = nullxxxxxxxxxx;
       }
 
       @Override
@@ -350,11 +365,19 @@ public class Font {
 
          float var14 = this.dropShadow ? 1.0F : 0.0F;
          if (var2.isStrikethrough()) {
-            this.addEffect(new BakedGlyph.Effect(var11 + var14, this.y + var14 + 4.5F, this.x + var14 + var10, this.y + var14 + 4.5F - 1.0F, 0.01F, var9));
+            this.addEffect(
+               new BakedGlyph.Effect(
+                  var11 + var14, this.y + var14 + 4.5F, this.x + var14 + var10, this.y + var14 + 4.5F - 1.0F, this.getOverTextEffectDepth(), var9
+               )
+            );
          }
 
          if (var2.isUnderlined()) {
-            this.addEffect(new BakedGlyph.Effect(var11 + var14, this.y + var14 + 9.0F, this.x + var14 + var10, this.y + var14 + 9.0F - 1.0F, 0.01F, var9));
+            this.addEffect(
+               new BakedGlyph.Effect(
+                  var11 + var14, this.y + var14 + 9.0F, this.x + var14 + var10, this.y + var14 + 9.0F - 1.0F, this.getOverTextEffectDepth(), var9
+               )
+            );
          }
 
          this.x += var10;
@@ -364,7 +387,9 @@ public class Font {
       float finish(float var1) {
          BakedGlyph var2 = null;
          if (this.backgroundColor != 0) {
-            BakedGlyph.Effect var3 = new BakedGlyph.Effect(var1 - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, -0.01F, this.backgroundColor);
+            BakedGlyph.Effect var3 = new BakedGlyph.Effect(
+               var1 - 1.0F, this.y + 9.0F, this.x, this.y - 1.0F, this.getUnderTextEffectDepth(), this.backgroundColor
+            );
             var2 = this.this$0.getFontSet(Style.DEFAULT_FONT).whiteGlyph();
             VertexConsumer var4 = this.bufferSource.getBuffer(var2.renderType(this.mode));
             var2.renderEffect(var3, this.pose, var4, this.packedLightCoords);
@@ -392,6 +417,14 @@ public class Font {
             VertexConsumer var4 = this.bufferSource.getBuffer(var3.renderType(this.mode));
             var3.renderChar(var2, this.pose, var4, this.packedLightCoords);
          }
+      }
+
+      private float getOverTextEffectDepth() {
+         return this.inverseDepth ? 0.01F : -0.01F;
+      }
+
+      private float getUnderTextEffectDepth() {
+         return this.inverseDepth ? -0.01F : 0.01F;
       }
    }
 }
