@@ -25,7 +25,6 @@ public record ModelResourceLocation(ResourceLocation id, String variant) {
       return this.variant;
    }
 
-   @Override
    public String toString() {
       return this.id + "#" + this.variant;
    }

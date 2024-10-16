@@ -142,7 +142,7 @@ public abstract class AbstractArrow extends Projectile {
 
    @Override
    public void lerpMotion(double var1, double var3, double var5) {
-      super.lerpMotion(var1, var3, var5);
+      this.setDeltaMovement(var1, var3, var5);
       this.life = 0;
       if (this.isInGround() && Mth.lengthSquared(var1, var3, var5) > 0.0) {
          this.setInGround(false);
@@ -161,23 +161,15 @@ public abstract class AbstractArrow extends Projectile {
    public void tick() {
       boolean var1 = !this.isNoPhysics();
       Vec3 var2 = this.getDeltaMovement();
-      if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
-         double var3 = var2.horizontalDistance();
-         this.setYRot((float)(Mth.atan2(var2.x, var2.z) * 57.2957763671875));
-         this.setXRot((float)(Mth.atan2(var2.y, var3) * 57.2957763671875));
-         this.yRotO = this.getYRot();
-         this.xRotO = this.getXRot();
-      }
-
-      BlockPos var9 = this.blockPosition();
-      BlockState var4 = this.level().getBlockState(var9);
+      BlockPos var3 = this.blockPosition();
+      BlockState var4 = this.level().getBlockState(var3);
       if (!var4.isAir() && var1) {
-         VoxelShape var5 = var4.getCollisionShape(this.level(), var9);
+         VoxelShape var5 = var4.getCollisionShape(this.level(), var3);
          if (!var5.isEmpty()) {
             Vec3 var6 = this.position();
 
             for (AABB var8 : var5.toAabbs()) {
-               if (var8.move(var9).contains(var6)) {
+               if (var8.move(var3).contains(var6)) {
                   this.setInGround(true);
                   break;
                }
@@ -208,19 +200,19 @@ public abstract class AbstractArrow extends Projectile {
          }
       } else {
          this.inGroundTime = 0;
-         Vec3 var10 = this.position();
+         Vec3 var9 = this.position();
          if (this.isInWater()) {
-            this.addBubbleParticles(var10);
+            this.addBubbleParticles(var9);
          }
 
          if (this.isCritArrow()) {
-            for (int var11 = 0; var11 < 4; var11++) {
+            for (int var10 = 0; var10 < 4; var10++) {
                this.level()
                   .addParticle(
                      ParticleTypes.CRIT,
-                     var10.x + var2.x * (double)var11 / 4.0,
-                     var10.y + var2.y * (double)var11 / 4.0,
-                     var10.z + var2.z * (double)var11 / 4.0,
+                     var9.x + var2.x * (double)var10 / 4.0,
+                     var9.y + var2.y * (double)var10 / 4.0,
+                     var9.z + var2.z * (double)var10 / 4.0,
                      -var2.x,
                      -var2.y + 0.2,
                      -var2.z
@@ -228,22 +220,22 @@ public abstract class AbstractArrow extends Projectile {
             }
          }
 
-         float var12;
+         float var11;
          if (!var1) {
-            var12 = (float)(Mth.atan2(-var2.x, -var2.z) * 57.2957763671875);
+            var11 = (float)(Mth.atan2(-var2.x, -var2.z) * 57.2957763671875);
          } else {
-            var12 = (float)(Mth.atan2(var2.x, var2.z) * 57.2957763671875);
+            var11 = (float)(Mth.atan2(var2.x, var2.z) * 57.2957763671875);
          }
 
-         float var13 = (float)(Mth.atan2(var2.y, var2.horizontalDistance()) * 57.2957763671875);
-         this.setXRot(lerpRotation(this.getXRot(), var13));
-         this.setYRot(lerpRotation(this.getYRot(), var12));
+         float var12 = (float)(Mth.atan2(var2.y, var2.horizontalDistance()) * 57.2957763671875);
+         this.setXRot(lerpRotation(this.getXRot(), var12));
+         this.setYRot(lerpRotation(this.getYRot(), var11));
          if (var1) {
-            BlockHitResult var14 = this.level()
-               .clipIncludingBorder(new ClipContext(var10, var10.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-            this.stepMoveAndHit(var14);
+            BlockHitResult var13 = this.level()
+               .clipIncludingBorder(new ClipContext(var9, var9.add(var2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            this.stepMoveAndHit(var13);
          } else {
-            this.setPos(var10.add(var2));
+            this.setPos(var9.add(var2));
             this.applyEffectsFromBlocks();
          }
 

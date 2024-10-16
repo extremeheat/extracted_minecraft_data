@@ -95,8 +95,7 @@ public class ComponentSerialization {
       T[] var0, Function<T, MapCodec<? extends E>> var1, Function<E, T> var2, String var3
    ) {
       ComponentSerialization.FuzzyCodec var4 = new ComponentSerialization.FuzzyCodec<>(
-         Stream.of(var0).<MapCodec<? extends Object>>map(var1).toList(),
-         var2x -> (MapEncoder<? extends Object>)var1.apply((StringRepresentable)var2.apply(var2x))
+         Stream.of(var0).map(var1).toList(), var2x -> (MapEncoder<? extends Object>)var1.apply((StringRepresentable)var2.apply(var2x))
       );
       Codec var5 = StringRepresentable.fromValues(() -> var0);
       MapCodec var6 = var5.dispatchMap(var3, var2, var1);

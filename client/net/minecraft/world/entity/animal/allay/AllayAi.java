@@ -136,7 +136,7 @@ public class AllayAi {
    private static boolean shouldDepositItemsAtLikedNoteblock(LivingEntity var0, Brain<?> var1, GlobalPos var2) {
       Optional var3 = var1.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS);
       Level var4 = var0.level();
-      return var4.dimension() == var2.dimension() && var4.getBlockState(var2.pos()).is(Blocks.NOTE_BLOCK) && var3.isPresent();
+      return var2.isCloseEnough(var4.dimension(), var0.blockPosition(), 1024) && var4.getBlockState(var2.pos()).is(Blocks.NOTE_BLOCK) && var3.isPresent();
    }
 
    private static Optional<PositionTracker> getLikedPlayerPositionTracker(LivingEntity var0) {

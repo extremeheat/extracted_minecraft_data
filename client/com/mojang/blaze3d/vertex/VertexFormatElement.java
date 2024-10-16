@@ -48,7 +48,6 @@ public record VertexFormatElement(int id, int index, VertexFormatElement.Type ty
       return var1 == 0 || var2 == VertexFormatElement.Usage.UV;
    }
 
-   @Override
    public String toString() {
       return this.count + "," + this.usage + "," + this.type + " (" + this.id + ")";
    }

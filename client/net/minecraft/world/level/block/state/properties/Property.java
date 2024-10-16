@@ -109,7 +109,6 @@ public abstract class Property<T extends Comparable<T>> {
          }
       }
 
-      @Override
       public String toString() {
          return this.property.getName() + "=" + this.property.getName(this.value);
       }

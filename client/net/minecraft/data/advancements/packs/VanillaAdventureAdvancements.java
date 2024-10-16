@@ -1021,7 +1021,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       var2.forEach(var1x -> var1.addCriterion((String)var1x.getFirst(), (Criterion<?>)var1x.getSecond()));
       String var3 = "has_sherd";
       var1.addCriterion("has_sherd", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(var0, ItemTags.DECORATED_POT_SHERDS)));
-      var1.requirements(new AdvancementRequirements(List.of(var2.stream().<String>map(Pair::getFirst).toList(), List.of("has_sherd"))));
+      var1.requirements(new AdvancementRequirements(List.of(var2.stream().map(Pair::getFirst).toList(), List.of("has_sherd"))));
       return var1;
    }
 
