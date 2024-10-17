@@ -2080,7 +2080,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public boolean startRiding(Entity var1, boolean var2) {
       if (var1 == this.vehicle) {
          return false;
-      } else if (var1.couldAcceptPassenger() && var1.type.canSerialize()) {
+      } else if (!var1.couldAcceptPassenger()) {
+         return false;
+      } else if (!this.level().isClientSide() && !var1.type.canSerialize()) {
+         return false;
+      } else {
          for (Entity var3 = var1; var3.vehicle != null; var3 = var3.vehicle) {
             if (var3.vehicle == this) {
                return false;
@@ -2102,8 +2106,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          } else {
             return false;
          }
-      } else {
-         return false;
       }
    }
 

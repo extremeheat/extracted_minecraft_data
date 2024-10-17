@@ -240,7 +240,7 @@ public abstract class AbstractArrow extends Projectile {
          }
 
          this.applyInertia();
-         if (var1) {
+         if (var1 && !this.isInGround()) {
             this.applyGravity();
          }
 
