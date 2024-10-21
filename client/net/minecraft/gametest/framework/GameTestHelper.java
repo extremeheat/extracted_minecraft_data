@@ -23,6 +23,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -694,7 +695,8 @@ public class GameTestHelper {
       BlockPos var3 = this.absolutePos(var1);
       BlockEntity var4 = this.getLevel().getBlockEntity(var3);
       if (!(var4 instanceof BaseContainerBlockEntity)) {
-         throw new GameTestAssertException("Expected a container at " + var1 + ", found " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var4.getType()));
+         ResourceLocation var5 = var4 != null ? BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var4.getType()) : null;
+         throw new GameTestAssertException("Expected a container at " + var1 + ", found " + var5);
       } else if (((BaseContainerBlockEntity)var4).countItem(var2) != 1) {
          throw new GameTestAssertException("Container should contain: " + var2);
       }

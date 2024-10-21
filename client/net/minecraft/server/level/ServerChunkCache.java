@@ -538,6 +538,12 @@ public class ServerChunkCache extends ChunkSource {
       this.distanceManager.removeTicketsOnClosing();
    }
 
+   public void onChunkReadyToSend(ChunkHolder var1) {
+      if (var1.hasChangesToBroadcast()) {
+         this.chunkHoldersToBroadcast.add(var1);
+      }
+   }
+
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
 // java.lang.NullPointerException
