@@ -13,6 +13,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -54,18 +55,20 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      BlockState var7 = super.updateShape(var1, var2, var3, var4, var5, var6);
-      if (!var7.isAir()) {
-         var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      BlockState var9 = super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      if (!var9.isAir()) {
+         var3.scheduleTick(var4, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return var7;
+      return var9;
    }
 
    @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return true;
+      return var1.getBlockState(var2.above()).is(Blocks.WATER);
    }
 
    @Override
@@ -83,10 +86,8 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
       BlockState var5 = Blocks.TALL_SEAGRASS.defaultBlockState();
       BlockState var6 = var5.setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.UPPER);
       BlockPos var7 = var3.above();
-      if (var1.getBlockState(var7).is(Blocks.WATER)) {
-         var1.setBlock(var3, var5, 2);
-         var1.setBlock(var7, var6, 2);
-      }
+      var1.setBlock(var3, var5, 2);
+      var1.setBlock(var7, var6, 2);
    }
 
    @Override

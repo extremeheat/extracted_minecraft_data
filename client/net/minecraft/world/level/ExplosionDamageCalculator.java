@@ -28,11 +28,11 @@ public class ExplosionDamageCalculator {
       return 1.0F;
    }
 
-   public float getEntityDamageAmount(Explosion var1, Entity var2) {
-      float var3 = var1.radius() * 2.0F;
-      Vec3 var4 = var1.center();
-      double var5 = Math.sqrt(var2.distanceToSqr(var4)) / (double)var3;
-      double var7 = (1.0 - var5) * (double)Explosion.getSeenPercent(var4, var2);
-      return (float)((var7 * var7 + var7) / 2.0 * 7.0 * (double)var3 + 1.0);
+   public float getEntityDamageAmount(Explosion var1, Entity var2, float var3) {
+      float var4 = var1.radius() * 2.0F;
+      Vec3 var5 = var1.center();
+      double var6 = Math.sqrt(var2.distanceToSqr(var5)) / (double)var4;
+      double var8 = (1.0 - var6) * (double)var3;
+      return (float)((var8 * var8 + var8) / 2.0 * 7.0 * (double)var4 + 1.0);
    }
 }

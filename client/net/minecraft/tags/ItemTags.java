@@ -24,6 +24,7 @@ public final class ItemTags {
    public static final TagKey<Item> LOGS_THAT_BURN = bind("logs_that_burn");
    public static final TagKey<Item> LOGS = bind("logs");
    public static final TagKey<Item> DARK_OAK_LOGS = bind("dark_oak_logs");
+   public static final TagKey<Item> PALE_OAK_LOGS = bind("pale_oak_logs");
    public static final TagKey<Item> OAK_LOGS = bind("oak_logs");
    public static final TagKey<Item> BIRCH_LOGS = bind("birch_logs");
    public static final TagKey<Item> ACACIA_LOGS = bind("acacia_logs");
@@ -53,6 +54,10 @@ public final class ItemTags {
    public static final TagKey<Item> PIGLIN_REPELLENTS = bind("piglin_repellents");
    public static final TagKey<Item> PIGLIN_LOVED = bind("piglin_loved");
    public static final TagKey<Item> IGNORED_BY_PIGLIN_BABIES = bind("ignored_by_piglin_babies");
+   public static final TagKey<Item> PIGLIN_SAFE_ARMOR = bind("piglin_safe_armor");
+   public static final TagKey<Item> DUPLICATES_ALLAYS = bind("duplicates_allays");
+   public static final TagKey<Item> BREWING_FUEL = bind("brewing_fuel");
+   public static final TagKey<Item> SHULKER_BOXES = bind("shulker_boxes");
    public static final TagKey<Item> MEAT = bind("meat");
    public static final TagKey<Item> SNIFFER_FOOD = bind("sniffer_food");
    public static final TagKey<Item> PIGLIN_FOOD = bind("piglin_food");
@@ -74,6 +79,7 @@ public final class ItemTags {
    public static final TagKey<Item> LLAMA_TEMPT_ITEMS = bind("llama_tempt_items");
    public static final TagKey<Item> OCELOT_FOOD = bind("ocelot_food");
    public static final TagKey<Item> PANDA_FOOD = bind("panda_food");
+   public static final TagKey<Item> PANDA_EATS_FROM_GROUND = bind("panda_eats_from_ground");
    public static final TagKey<Item> PIG_FOOD = bind("pig_food");
    public static final TagKey<Item> RABBIT_FOOD = bind("rabbit_food");
    public static final TagKey<Item> STRIDER_FOOD = bind("strider_food");
@@ -106,7 +112,20 @@ public final class ItemTags {
    public static final TagKey<Item> LECTERN_BOOKS = bind("lectern_books");
    public static final TagKey<Item> BOOKSHELF_BOOKS = bind("bookshelf_books");
    public static final TagKey<Item> BEACON_PAYMENT_ITEMS = bind("beacon_payment_items");
+   public static final TagKey<Item> WOODEN_TOOL_MATERIALS = bind("wooden_tool_materials");
    public static final TagKey<Item> STONE_TOOL_MATERIALS = bind("stone_tool_materials");
+   public static final TagKey<Item> IRON_TOOL_MATERIALS = bind("iron_tool_materials");
+   public static final TagKey<Item> GOLD_TOOL_MATERIALS = bind("gold_tool_materials");
+   public static final TagKey<Item> DIAMOND_TOOL_MATERIALS = bind("diamond_tool_materials");
+   public static final TagKey<Item> NETHERITE_TOOL_MATERIALS = bind("netherite_tool_materials");
+   public static final TagKey<Item> REPAIRS_LEATHER_ARMOR = bind("repairs_leather_armor");
+   public static final TagKey<Item> REPAIRS_CHAIN_ARMOR = bind("repairs_chain_armor");
+   public static final TagKey<Item> REPAIRS_IRON_ARMOR = bind("repairs_iron_armor");
+   public static final TagKey<Item> REPAIRS_GOLD_ARMOR = bind("repairs_gold_armor");
+   public static final TagKey<Item> REPAIRS_DIAMOND_ARMOR = bind("repairs_diamond_armor");
+   public static final TagKey<Item> REPAIRS_NETHERITE_ARMOR = bind("repairs_netherite_armor");
+   public static final TagKey<Item> REPAIRS_TURTLE_HELMET = bind("repairs_turtle_helmet");
+   public static final TagKey<Item> REPAIRS_WOLF_ARMOR = bind("repairs_wolf_armor");
    public static final TagKey<Item> STONE_CRAFTING_MATERIALS = bind("stone_crafting_materials");
    public static final TagKey<Item> FREEZE_IMMUNE_WEARABLES = bind("freeze_immune_wearables");
    public static final TagKey<Item> DAMPENS_VIBRATIONS = bind("dampens_vibrations");
@@ -132,7 +151,10 @@ public final class ItemTags {
    public static final TagKey<Item> SHOVELS = bind("shovels");
    public static final TagKey<Item> BREAKS_DECORATED_POTS = bind("breaks_decorated_pots");
    public static final TagKey<Item> VILLAGER_PLANTABLE_SEEDS = bind("villager_plantable_seeds");
+   public static final TagKey<Item> VILLAGER_PICKS_UP = bind("villager_picks_up");
    public static final TagKey<Item> DYEABLE = bind("dyeable");
+   public static final TagKey<Item> FURNACE_MINECART_FUEL = bind("furnace_minecart_fuel");
+   public static final TagKey<Item> BUNDLES = bind("bundles");
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");
@@ -152,6 +174,8 @@ public final class ItemTags {
    public static final TagKey<Item> CROSSBOW_ENCHANTABLE = bind("enchantable/crossbow");
    public static final TagKey<Item> VANISHING_ENCHANTABLE = bind("enchantable/vanishing");
    public static final TagKey<Item> MACE_ENCHANTABLE = bind("enchantable/mace");
+   public static final TagKey<Item> MAP_INVISIBILITY_EQUIPMENT = bind("map_invisibility_equipment");
+   public static final TagKey<Item> GAZE_DISGUISE_EQUIPMENT = bind("gaze_disguise_equipment");
 
    private ItemTags() {
       super();

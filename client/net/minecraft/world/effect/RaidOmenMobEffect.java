@@ -17,13 +17,12 @@ class RaidOmenMobEffect extends MobEffect {
    }
 
    @Override
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
-      if (var1 instanceof ServerPlayer var3 && !var1.isSpectator()) {
-         ServerLevel var4 = var3.serverLevel();
-         BlockPos var5 = var3.getRaidOmenPosition();
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
+      if (var2 instanceof ServerPlayer var4 && !var2.isSpectator()) {
+         BlockPos var5 = var4.getRaidOmenPosition();
          if (var5 != null) {
-            var4.getRaids().createOrExtendRaid(var3, var5);
-            var3.clearRaidOmenPosition();
+            var1.getRaids().createOrExtendRaid(var4, var5);
+            var4.clearRaidOmenPosition();
             return false;
          }
       }

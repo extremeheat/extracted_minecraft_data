@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -206,8 +207,8 @@ public class SocialInteractionsScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderBackground(var1, var2, var3, var4);
       int var5 = this.marginX() + 3;
-      var1.blitSprite(BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
-      var1.blitSprite(SEARCH_SPRITE, var5 + 10, 76, 12, 12);
+      var1.blitSprite(RenderType::guiTextured, BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
+      var1.blitSprite(RenderType::guiTextured, SEARCH_SPRITE, var5 + 10, 76, 12, 12);
    }
 
    @Override

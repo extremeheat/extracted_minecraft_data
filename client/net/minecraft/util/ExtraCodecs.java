@@ -87,7 +87,7 @@ public class ExtraCodecs {
             .apply(var0, AxisAngle4f::new)
    );
    public static final Codec<Quaternionf> QUATERNIONF = Codec.withAlternative(QUATERNIONF_COMPONENTS, AXISANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new));
-   public static Codec<Matrix4f> MATRIX4F = Codec.FLOAT.listOf().comapFlatMap(var0 -> Util.fixedSize(var0, 16).map(var0x -> {
+   public static final Codec<Matrix4f> MATRIX4F = Codec.FLOAT.listOf().comapFlatMap(var0 -> Util.fixedSize(var0, 16).map(var0x -> {
          Matrix4f var1 = new Matrix4f();
 
          for (int var2 = 0; var2 < var0x.size(); var2++) {
@@ -104,8 +104,11 @@ public class ExtraCodecs {
 
       return var1;
    });
+   public static final Codec<Integer> RGB_COLOR_CODEC = Codec.withAlternative(
+      Codec.INT, VECTOR3F, var0 -> ARGB.colorFromFloat(1.0F, var0.x(), var0.y(), var0.z())
+   );
    public static final Codec<Integer> ARGB_COLOR_CODEC = Codec.withAlternative(
-      Codec.INT, VECTOR4F, var0 -> FastColor.ARGB32.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z())
+      Codec.INT, VECTOR4F, var0 -> ARGB.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z())
    );
    public static final Codec<Integer> UNSIGNED_BYTE = Codec.BYTE
       .flatComapMap(
@@ -114,6 +117,7 @@ public class ExtraCodecs {
       );
    public static final Codec<Integer> NON_NEGATIVE_INT = intRangeWithMessage(0, 2147483647, var0 -> "Value must be non-negative: " + var0);
    public static final Codec<Integer> POSITIVE_INT = intRangeWithMessage(1, 2147483647, var0 -> "Value must be positive: " + var0);
+   public static final Codec<Float> NON_NEGATIVE_FLOAT = floatRangeMinInclusiveWithMessage(0.0F, 3.4028235E38F, var0 -> "Value must be non-negative: " + var0);
    public static final Codec<Float> POSITIVE_FLOAT = floatRangeMinExclusiveWithMessage(0.0F, 3.4028235E38F, var0 -> "Value must be positive: " + var0);
    public static final Codec<Pattern> PATTERN = Codec.STRING.comapFlatMap(var0 -> {
       try {
@@ -190,7 +194,7 @@ public class ExtraCodecs {
       int[] var1 = var0.codePoints().toArray();
       return var1.length != 1 ? DataResult.error(() -> "Expected one codepoint, got: " + var0) : DataResult.success(var1[0]);
    }, Character::toString);
-   public static Codec<String> RESOURCE_PATH_CODEC = Codec.STRING
+   public static final Codec<String> RESOURCE_PATH_CODEC = Codec.STRING
       .validate(
          var0 -> !ResourceLocation.isValidPath(var0)
                ? DataResult.error(() -> "Invalid string to use as a resource path element: " + var0)
@@ -329,6 +333,11 @@ public class ExtraCodecs {
       return intRangeWithMessage(var0, var1, var2 -> "Value must be within range [" + var0 + ";" + var1 + "]: " + var2);
    }
 
+   private static Codec<Float> floatRangeMinInclusiveWithMessage(float var0, float var1, Function<Float, String> var2) {
+      return Codec.FLOAT
+         .validate(var3 -> var3.compareTo(var0) >= 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> (String)var2.apply(var3)));
+   }
+
    private static Codec<Float> floatRangeMinExclusiveWithMessage(float var0, float var1, Function<Float, String> var2) {
       return Codec.FLOAT
          .validate(var3 -> var3.compareTo(var0) > 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> (String)var2.apply(var3)));
@@ -342,6 +351,10 @@ public class ExtraCodecs {
       return var0.validate(
          var0x -> var0x.unwrap().right().filter(List::isEmpty).isPresent() ? DataResult.error(() -> "List must have contents") : DataResult.success(var0x)
       );
+   }
+
+   public static <M extends Map<?, ?>> Codec<M> nonEmptyMap(Codec<M> var0) {
+      return var0.validate(var0x -> var0x.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(var0x));
    }
 
    public static <E> MapCodec<E> retrieveContext(final Function<DynamicOps<?>, DataResult<E>> var0) {

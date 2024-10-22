@@ -40,10 +40,10 @@ import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.network.protocol.login.ClientLoginPacketListener;
 import net.minecraft.network.protocol.login.ClientboundCustomQueryPacket;
-import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraft.network.protocol.login.ClientboundHelloPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginCompressionPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
+import net.minecraft.network.protocol.login.ClientboundLoginFinishedPacket;
 import net.minecraft.network.protocol.login.ServerboundCustomQueryAnswerPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
@@ -126,7 +126,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       }
 
       if (var1.shouldAuthenticate()) {
-         Util.ioPool().submit(() -> {
+         Util.ioPool().execute(() -> {
             Component var5x = this.authenticateServer(var4);
             if (var5x != null) {
                if (this.serverData == null || !this.serverData.isLan()) {
@@ -172,7 +172,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    }
 
    @Override
-   public void handleGameProfile(ClientboundGameProfilePacket var1) {
+   public void handleLoginFinished(ClientboundLoginFinishedPacket var1) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
       GameProfile var2 = var1.gameProfile();
       this.connection
@@ -191,7 +191,6 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                   this.parent,
                   this.cookies,
                   null,
-                  var1.strictErrorHandling(),
                   Map.of(),
                   ServerLinks.EMPTY
                )
@@ -249,6 +248,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
       var2.setDetail("Server type", () -> this.serverData != null ? this.serverData.type().toString() : "<unknown>");
       var2.setDetail("Login phase", () -> this.state.get().toString());
+      var2.setDetail("Is Local", () -> String.valueOf(this.connection.isMemoryConnection()));
    }
 
    static enum State {

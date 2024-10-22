@@ -8,12 +8,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -32,6 +34,7 @@ public class PiglinBrute extends AbstractPiglin {
    private static final int MAX_HEALTH = 50;
    private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.35F;
    private static final int ATTACK_DAMAGE = 7;
+   private static final double TARGETING_RANGE = 12.0;
    protected static final ImmutableList<SensorType<? extends Sensor<? super PiglinBrute>>> SENSOR_TYPES = ImmutableList.of(
       SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY, SensorType.PIGLIN_BRUTE_SPECIFIC_SENSOR
    );
@@ -68,12 +71,13 @@ public class PiglinBrute extends AbstractPiglin {
       return Monster.createMonsterAttributes()
          .add(Attributes.MAX_HEALTH, 50.0)
          .add(Attributes.MOVEMENT_SPEED, 0.3499999940395355)
-         .add(Attributes.ATTACK_DAMAGE, 7.0);
+         .add(Attributes.ATTACK_DAMAGE, 7.0)
+         .add(Attributes.FOLLOW_RANGE, 12.0);
    }
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       PiglinBruteAi.initMemories(this);
       this.populateDefaultEquipmentSlots(var1.getRandom(), var2);
       return super.finalizeSpawn(var1, var2, var3, var4);
@@ -105,18 +109,19 @@ public class PiglinBrute extends AbstractPiglin {
    }
 
    @Override
-   public boolean wantsToPickUp(ItemStack var1) {
-      return var1.is(Items.GOLDEN_AXE) ? super.wantsToPickUp(var1) : false;
+   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
+      return var2.is(Items.GOLDEN_AXE) ? super.wantsToPickUp(var1, var2) : false;
    }
 
    @Override
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("piglinBruteBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("piglinBruteBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
       PiglinBruteAi.updateActivity(this);
       PiglinBruteAi.maybePlayActivitySound(this);
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -125,17 +130,13 @@ public class PiglinBrute extends AbstractPiglin {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      boolean var3 = super.hurt(var1, var2);
-      if (this.level().isClientSide) {
-         return false;
-      } else {
-         if (var3 && var1.getEntity() instanceof LivingEntity) {
-            PiglinBruteAi.wasHurtBy(this, (LivingEntity)var1.getEntity());
-         }
-
-         return var3;
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      boolean var4 = super.hurtServer(var1, var2, var3);
+      if (var4 && var2.getEntity() instanceof LivingEntity var5) {
+         PiglinBruteAi.wasHurtBy(var1, this, var5);
       }
+
+      return var4;
    }
 
    @Override

@@ -11,14 +11,21 @@ public interface CommandBuildContext extends HolderLookup.Provider {
    static CommandBuildContext simple(final HolderLookup.Provider var0, final FeatureFlagSet var1) {
       return new CommandBuildContext() {
          @Override
-         public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
-            return var0.listRegistries();
+         public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
+            return var0.listRegistryKeys();
          }
 
          @Override
          public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1x) {
             return var0.lookup(var1x).map(var1xxx -> var1xxx.filterFeatures(var1));
          }
+
+         @Override
+         public FeatureFlagSet enabledFeatures() {
+            return var1;
+         }
       };
    }
+
+   FeatureFlagSet enabledFeatures();
 }

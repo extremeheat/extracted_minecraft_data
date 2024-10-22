@@ -25,14 +25,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.animal.WolfVariants;
 import net.minecraft.world.entity.decoration.PaintingVariants;
+import net.minecraft.world.item.Instruments;
 import net.minecraft.world.item.JukeboxSongs;
-import net.minecraft.world.item.armortrim.TrimMaterials;
-import net.minecraft.world.item.armortrim.TrimPatterns;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
+import net.minecraft.world.item.equipment.trim.TrimMaterials;
+import net.minecraft.world.item.equipment.trim.TrimPatterns;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterLists;
 import net.minecraft.world.level.block.entity.BannerPatterns;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerConfigs;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
@@ -60,13 +62,15 @@ public class VanillaRegistries {
       .add(Registries.CHAT_TYPE, ChatType::bootstrap)
       .add(Registries.TRIM_PATTERN, TrimPatterns::bootstrap)
       .add(Registries.TRIM_MATERIAL, TrimMaterials::bootstrap)
+      .add(Registries.TRIAL_SPAWNER_CONFIG, TrialSpawnerConfigs::bootstrap)
       .add(Registries.WOLF_VARIANT, WolfVariants::bootstrap)
       .add(Registries.PAINTING_VARIANT, PaintingVariants::bootstrap)
       .add(Registries.DAMAGE_TYPE, DamageTypes::bootstrap)
       .add(Registries.BANNER_PATTERN, BannerPatterns::bootstrap)
       .add(Registries.ENCHANTMENT, Enchantments::bootstrap)
       .add(Registries.ENCHANTMENT_PROVIDER, VanillaEnchantmentProviders::bootstrap)
-      .add(Registries.JUKEBOX_SONG, JukeboxSongs::bootstrap);
+      .add(Registries.JUKEBOX_SONG, JukeboxSongs::bootstrap)
+      .add(Registries.INSTRUMENT, Instruments::bootstrap);
 
    public VanillaRegistries() {
       super();

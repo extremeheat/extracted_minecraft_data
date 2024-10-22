@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import java.util.List;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 
@@ -28,7 +27,8 @@ public class TippedArrowItem extends ArrowItem {
    }
 
    @Override
-   public String getDescriptionId(ItemStack var1) {
-      return Potion.getName(var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion(), this.getDescriptionId() + ".effect.");
+   public Component getName(ItemStack var1) {
+      PotionContents var2 = var1.get(DataComponents.POTION_CONTENTS);
+      return var2 != null ? var2.getName(this.descriptionId + ".effect.") : super.getName(var1);
    }
 }

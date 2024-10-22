@@ -49,7 +49,7 @@ public class ItemModelGenerator {
       var4.put(Direction.SOUTH, new BlockElementFace(null, var1, var2, new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0)));
       var4.put(Direction.NORTH, new BlockElementFace(null, var1, var2, new BlockFaceUV(new float[]{16.0F, 0.0F, 0.0F, 16.0F}, 0)));
       ArrayList var5 = Lists.newArrayList();
-      var5.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var4, null, true));
+      var5.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var4));
       var5.addAll(this.createSideElements(var3, var2, var1));
       return var5;
    }
@@ -126,16 +126,16 @@ public class ItemModelGenerator {
          var23.put(var22.getDirection(), new BlockElementFace(null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
          switch (var22) {
             case UP:
-               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23, null, true));
+               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23));
                break;
             case DOWN:
-               var6.add(new BlockElement(new Vector3f(var9, var12, 7.5F), new Vector3f(var11, var12, 8.5F), var23, null, true));
+               var6.add(new BlockElement(new Vector3f(var9, var12, 7.5F), new Vector3f(var11, var12, 8.5F), var23));
                break;
             case LEFT:
-               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var9, var12, 8.5F), var23, null, true));
+               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var9, var12, 8.5F), var23));
                break;
             case RIGHT:
-               var6.add(new BlockElement(new Vector3f(var11, var10, 7.5F), new Vector3f(var11, var12, 8.5F), var23, null, true));
+               var6.add(new BlockElement(new Vector3f(var11, var10, 7.5F), new Vector3f(var11, var12, 8.5F), var23));
          }
       }
 

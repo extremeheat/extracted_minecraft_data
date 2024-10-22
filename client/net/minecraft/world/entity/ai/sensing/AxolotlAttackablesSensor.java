@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.sensing;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -12,11 +13,11 @@ public class AxolotlAttackablesSensor extends NearestVisibleLivingEntitySensor {
    }
 
    @Override
-   protected boolean isMatchingEntity(LivingEntity var1, LivingEntity var2) {
-      return this.isClose(var1, var2)
-         && var2.isInWaterOrBubble()
-         && (this.isHostileTarget(var2) || this.isHuntTarget(var1, var2))
-         && Sensor.isEntityAttackable(var1, var2);
+   protected boolean isMatchingEntity(ServerLevel var1, LivingEntity var2, LivingEntity var3) {
+      return this.isClose(var2, var3)
+         && var3.isInWaterOrBubble()
+         && (this.isHostileTarget(var3) || this.isHuntTarget(var2, var3))
+         && Sensor.isEntityAttackable(var1, var2, var3);
    }
 
    private boolean isHuntTarget(LivingEntity var1, LivingEntity var2) {

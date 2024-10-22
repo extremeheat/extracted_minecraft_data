@@ -121,7 +121,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    void playSound(BlockState var1, SoundEvent var2) {
-      Vec3i var3 = var1.getValue(BarrelBlock.FACING).getNormal();
+      Vec3i var3 = var1.getValue(BarrelBlock.FACING).getUnitVec3i();
       double var4 = (double)this.worldPosition.getX() + 0.5 + (double)var3.getX() / 2.0;
       double var6 = (double)this.worldPosition.getY() + 0.5 + (double)var3.getY() / 2.0;
       double var8 = (double)this.worldPosition.getZ() + 0.5 + (double)var3.getZ() / 2.0;

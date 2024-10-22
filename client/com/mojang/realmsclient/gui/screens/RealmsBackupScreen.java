@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -96,32 +97,33 @@ public class RealmsBackupScreen extends RealmsScreen {
 
    private void fetchRealmsBackups() {
       (new Thread("Realms-fetch-backups") {
-         @Override
-         public void run() {
-            RealmsClient var1 = RealmsClient.create();
+            @Override
+            public void run() {
+               RealmsClient var1 = RealmsClient.create();
 
-            try {
-               List var2 = var1.backupsFor(RealmsBackupScreen.this.serverData.id).backups;
-               RealmsBackupScreen.this.minecraft.execute(() -> {
-                  RealmsBackupScreen.this.backups = var2;
-                  RealmsBackupScreen.this.noBackups = RealmsBackupScreen.this.backups.isEmpty();
-                  if (!RealmsBackupScreen.this.noBackups && RealmsBackupScreen.this.downloadButton != null) {
-                     RealmsBackupScreen.this.downloadButton.active = true;
-                  }
+               try {
+                  List var2 = var1.backupsFor(RealmsBackupScreen.this.serverData.id).backups;
+                  RealmsBackupScreen.this.minecraft
+                     .execute(
+                        () -> {
+                           RealmsBackupScreen.this.backups = var2;
+                           RealmsBackupScreen.this.noBackups = RealmsBackupScreen.this.backups.isEmpty();
+                           if (!RealmsBackupScreen.this.noBackups && RealmsBackupScreen.this.downloadButton != null) {
+                              RealmsBackupScreen.this.downloadButton.active = true;
+                           }
 
-                  if (RealmsBackupScreen.this.backupList != null) {
-                     RealmsBackupScreen.this.backupList.children().clear();
-
-                     for (Backup var3x : RealmsBackupScreen.this.backups) {
-                        RealmsBackupScreen.this.backupList.addEntry(var3x);
-                     }
-                  }
-               });
-            } catch (RealmsServiceException var3) {
-               RealmsBackupScreen.LOGGER.error("Couldn't request backups", var3);
+                           if (RealmsBackupScreen.this.backupList != null) {
+                              RealmsBackupScreen.this.backupList
+                                 .replaceEntries(RealmsBackupScreen.this.backups.stream().map(var1xx -> RealmsBackupScreen.this.new Entry(var1xx)).toList());
+                           }
+                        }
+                     );
+               } catch (RealmsServiceException var3) {
+                  RealmsBackupScreen.LOGGER.error("Couldn't request backups", var3);
+               }
             }
-         }
-      }).start();
+         })
+         .start();
    }
 
    @Override
@@ -142,7 +144,10 @@ public class RealmsBackupScreen extends RealmsScreen {
                            new DownloadTask(
                               this.serverData.id,
                               this.slotId,
-                              this.serverData.name + " (" + this.serverData.slots.get(this.serverData.activeSlot).getSlotName(this.serverData.activeSlot) + ")",
+                              Objects.requireNonNullElse(this.serverData.name, "")
+                                 + " ("
+                                 + this.serverData.slots.get(this.serverData.activeSlot).getSlotName(this.serverData.activeSlot)
+                                 + ")",
                               this
                            )
                         )
@@ -162,15 +167,6 @@ public class RealmsBackupScreen extends RealmsScreen {
             RealmsBackupScreen.this.layout.getHeaderHeight(),
             36
          );
-      }
-
-      public void addEntry(Backup var1) {
-         this.addEntry(RealmsBackupScreen.this.new Entry(var1));
-      }
-
-      @Override
-      public int getMaxPosition() {
-         return this.getItemCount() * 36 + this.headerHeight;
       }
 
       @Override

@@ -1,13 +1,12 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractScrollWidget extends AbstractWidget implements Renderable, GuiEventListener {
+public abstract class AbstractScrollWidget extends AbstractWidget {
    private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(
       ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted")
    );
@@ -148,16 +147,14 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
 
    protected void renderBorder(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       ResourceLocation var6 = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
-      var1.blitSprite(var6, var2, var3, var4, var5);
+      var1.blitSprite(RenderType::guiTextured, var6, var2, var3, var4, var5);
    }
 
    private void renderScrollBar(GuiGraphics var1) {
       int var2 = this.getScrollBarHeight();
       int var3 = this.getX() + this.width;
       int var4 = Math.max(this.getY(), (int)this.scrollAmount * (this.height - var2) / this.getMaxScrollAmount() + this.getY());
-      RenderSystem.enableBlend();
-      var1.blitSprite(SCROLLER_SPRITE, var3, var4, 8, var2);
-      RenderSystem.disableBlend();
+      var1.blitSprite(RenderType::guiTextured, SCROLLER_SPRITE, var3, var4, 8, var2);
    }
 
    protected boolean withinContentAreaTopBottom(int var1, int var2) {

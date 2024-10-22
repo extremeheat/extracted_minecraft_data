@@ -8,7 +8,7 @@ public interface SpectatorMenuItem {
 
    Component getName();
 
-   void renderIcon(GuiGraphics var1, float var2, int var3);
+   void renderIcon(GuiGraphics var1, float var2, float var3);
 
    boolean isEnabled();
 }

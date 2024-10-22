@@ -21,7 +21,7 @@ import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
 
 public class PalettedPermutations implements SpriteSource {
@@ -77,26 +77,26 @@ public class PalettedPermutations implements SpriteSource {
 
          for (int var3 = 0; var3 < var0.length; var3++) {
             int var4 = var0[var3];
-            if (FastColor.ABGR32.alpha(var4) != 0) {
-               var2.put(FastColor.ABGR32.transparent(var4), var1[var3]);
+            if (ARGB.alpha(var4) != 0) {
+               var2.put(ARGB.transparent(var4), var1[var3]);
             }
          }
 
          return var1x -> {
-            int var2x = FastColor.ABGR32.alpha(var1x);
+            int var2x = ARGB.alpha(var1x);
             if (var2x == 0) {
                return var1x;
             } else {
-               int var3x = FastColor.ABGR32.transparent(var1x);
-               int var4x = var2.getOrDefault(var3x, FastColor.ABGR32.opaque(var3x));
-               int var5 = FastColor.ABGR32.alpha(var4x);
-               return FastColor.ABGR32.color(var2x * var5 / 255, var4x);
+               int var3x = ARGB.transparent(var1x);
+               int var4x = var2.getOrDefault(var3x, ARGB.opaque(var3x));
+               int var5 = ARGB.alpha(var4x);
+               return ARGB.color(var2x * var5 / 255, var4x);
             }
          };
       }
    }
 
-   public static int[] loadPaletteEntryFromImage(ResourceManager var0, ResourceLocation var1) {
+   private static int[] loadPaletteEntryFromImage(ResourceManager var0, ResourceLocation var1) {
       Optional var2 = var0.getResource(TEXTURE_ID_CONVERTER.idToFile(var1));
       if (var2.isEmpty()) {
          LOGGER.error("Failed to load palette image {}", var1);
@@ -108,7 +108,7 @@ public class PalettedPermutations implements SpriteSource {
                InputStream var3 = ((Resource)var2.get()).open();
                NativeImage var4 = NativeImage.read(var3);
             ) {
-               var5 = var4.getPixelsRGBA();
+               var5 = var4.getPixels();
             }
 
             return var5;

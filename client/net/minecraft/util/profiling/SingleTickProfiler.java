@@ -46,6 +46,6 @@ public class SingleTickProfiler {
    }
 
    public static ProfilerFiller decorateFiller(ProfilerFiller var0, @Nullable SingleTickProfiler var1) {
-      return var1 != null ? ProfilerFiller.tee(var1.startTick(), var0) : var0;
+      return var1 != null ? ProfilerFiller.combine(var1.startTick(), var0) : var0;
    }
 }

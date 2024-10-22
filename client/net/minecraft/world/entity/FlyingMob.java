@@ -42,8 +42,6 @@ public abstract class FlyingMob extends Mob {
             this.setDeltaMovement(this.getDeltaMovement().scale((double)var2));
          }
       }
-
-      this.calculateEntityAnimation(false);
    }
 
    @Override

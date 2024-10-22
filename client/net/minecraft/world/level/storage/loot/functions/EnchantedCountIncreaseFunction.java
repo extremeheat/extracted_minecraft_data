@@ -10,6 +10,7 @@ import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +18,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
@@ -53,7 +53,7 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
    }
 
    @Override
-   public Set<LootContextParam<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getReferencedContextParams() {
       return Sets.union(ImmutableSet.of(LootContextParams.ATTACKING_ENTITY), this.value.getReferencedContextParams());
    }
 
@@ -63,7 +63,7 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
 
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      Entity var3 = var2.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
+      Entity var3 = var2.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
       if (var3 instanceof LivingEntity var4) {
          int var5 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, var4);
          if (var5 == 0) {

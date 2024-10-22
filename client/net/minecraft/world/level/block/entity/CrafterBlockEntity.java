@@ -11,7 +11,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.CrafterMenu;
@@ -200,7 +200,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    @Override
-   public void fillStackedContents(StackedContents var1) {
+   public void fillStackedContents(StackedItemContents var1) {
       for (ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }

@@ -68,17 +68,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             return Pair.of(InventoryMenu.BLOCK_ATLAS, EnchantmentMenu.EMPTY_SLOT_LAPIS_LAZULI);
          }
       });
-
-      for (int var4 = 0; var4 < 3; var4++) {
-         for (int var5 = 0; var5 < 9; var5++) {
-            this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
-         }
-      }
-
-      for (int var6 = 0; var6 < 9; var6++) {
-         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var2, 8, 84);
       this.addDataSlot(DataSlot.shared(this.costs, 0));
       this.addDataSlot(DataSlot.shared(this.costs, 1));
       this.addDataSlot(DataSlot.shared(this.costs, 2));
@@ -97,7 +87,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          ItemStack var2 = var1.getItem(0);
          if (!var2.isEmpty() && var2.isEnchantable()) {
             this.access.execute((var2x, var3x) -> {
-               IdMap var4 = var2x.registryAccess().registryOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
+               IdMap var4 = var2x.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
                int var5 = 0;
 
                for (BlockPos var7 : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
@@ -193,7 +183,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
 
    private List<EnchantmentInstance> getEnchantmentList(RegistryAccess var1, ItemStack var2, int var3, int var4) {
       this.random.setSeed((long)(this.enchantmentSeed.get() + var3));
-      Optional var5 = var1.registryOrThrow(Registries.ENCHANTMENT).getTag(EnchantmentTags.IN_ENCHANTING_TABLE);
+      Optional var5 = var1.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE);
       if (var5.isEmpty()) {
          return List.of();
       } else {

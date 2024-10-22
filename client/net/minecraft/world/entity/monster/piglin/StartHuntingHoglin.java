@@ -23,9 +23,9 @@ public class StartHuntingHoglin {
                      if (!var4x.isBaby()
                         && !var0.<List>tryGet(var4).map(var0xxx -> var0xxx.stream().anyMatch(StartHuntingHoglin::hasHuntedRecently)).isPresent()) {
                         Hoglin var7 = var0.get(var1);
-                        PiglinAi.setAngerTarget(var4x, var7);
+                        PiglinAi.setAngerTarget(var3x, var4x, var7);
                         PiglinAi.dontKillAnyMoreHoglinsForAWhile(var4x);
-                        PiglinAi.broadcastAngerTarget(var4x, var7);
+                        PiglinAi.broadcastAngerTarget(var3x, var4x, var7);
                         var0.<List>tryGet(var4).ifPresent(var0xxx -> var0xxx.forEach(PiglinAi::dontKillAnyMoreHoglinsForAWhile));
                         return true;
                      } else {

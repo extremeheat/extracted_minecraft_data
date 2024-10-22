@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import org.slf4j.Logger;
 
 public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnlistManager.Preparations> {
@@ -95,17 +96,15 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
       ArrayList var3 = Lists.newArrayList();
       ArrayList var4 = Lists.newArrayList();
       ArrayList var5 = Lists.newArrayList();
-      var2.startTick();
       JsonObject var6 = parseJson(var1, var2);
       if (var6 != null) {
-         var2.push("compile_regex");
-         compilePatterns(var6.getAsJsonArray("renderer"), var3);
-         compilePatterns(var6.getAsJsonArray("version"), var4);
-         compilePatterns(var6.getAsJsonArray("vendor"), var5);
-         var2.pop();
+         try (Zone var7 = var2.zone("compile_regex")) {
+            compilePatterns(var6.getAsJsonArray("renderer"), var3);
+            compilePatterns(var6.getAsJsonArray("version"), var4);
+            compilePatterns(var6.getAsJsonArray("vendor"), var5);
+         }
       }
 
-      var2.endTick();
       return new GpuWarnlistManager.Preparations(var3, var4, var5);
    }
 
@@ -119,17 +118,20 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
 
    @Nullable
    private static JsonObject parseJson(ResourceManager var0, ProfilerFiller var1) {
-      var1.push("parse_json");
-      JsonObject var2 = null;
+      try {
+         JsonObject var4;
+         try (
+            Zone var2 = var1.zone("parse_json");
+            BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
+         ) {
+            var4 = JsonParser.parseReader(var3).getAsJsonObject();
+         }
 
-      try (BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION)) {
-         var2 = JsonParser.parseReader(var3).getAsJsonObject();
-      } catch (JsonSyntaxException | IOException var8) {
+         return var4;
+      } catch (JsonSyntaxException | IOException var10) {
          LOGGER.warn("Failed to load GPU warnlist");
+         return null;
       }
-
-      var1.pop();
-      return var2;
    }
 
    protected static final class Preparations {

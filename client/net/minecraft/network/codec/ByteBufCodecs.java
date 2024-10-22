@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -38,6 +39,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -61,6 +63,7 @@ public interface ByteBufCodecs {
          var1.writeByte(var2);
       }
    };
+   StreamCodec<ByteBuf, Float> ROTATION_BYTE = BYTE.map(Mth::unpackDegrees, Mth::packDegrees);
    StreamCodec<ByteBuf, Short> SHORT = new StreamCodec<ByteBuf, Short>() {
       public Short decode(ByteBuf var1) {
          return var1.readShort();
@@ -95,6 +98,18 @@ public interface ByteBufCodecs {
 
       public void encode(ByteBuf var1, Integer var2) {
          VarInt.write(var1, var2);
+      }
+   };
+   StreamCodec<ByteBuf, OptionalInt> OPTIONAL_VAR_INT = VAR_INT.map(
+      var0 -> var0 == 0 ? OptionalInt.empty() : OptionalInt.of(var0 - 1), var0 -> var0.isPresent() ? var0.getAsInt() + 1 : 0
+   );
+   StreamCodec<ByteBuf, Long> LONG = new StreamCodec<ByteBuf, Long>() {
+      public Long decode(ByteBuf var1) {
+         return var1.readLong();
+      }
+
+      public void encode(ByteBuf var1, Long var2) {
+         var1.writeLong(var2);
       }
    };
    StreamCodec<ByteBuf, Long> VAR_LONG = new StreamCodec<ByteBuf, Long>() {
@@ -163,6 +178,15 @@ public interface ByteBufCodecs {
 
       public void encode(ByteBuf var1, Quaternionf var2) {
          FriendlyByteBuf.writeQuaternion(var1, var2);
+      }
+   };
+   StreamCodec<ByteBuf, Integer> CONTAINER_ID = new StreamCodec<ByteBuf, Integer>() {
+      public Integer decode(ByteBuf var1) {
+         return FriendlyByteBuf.readContainerId(var1);
+      }
+
+      public void encode(ByteBuf var1, Integer var2) {
+         FriendlyByteBuf.writeContainerId(var1, var2);
       }
    };
    StreamCodec<ByteBuf, PropertyMap> GAME_PROFILE_PROPERTIES = new StreamCodec<ByteBuf, PropertyMap>() {
@@ -461,7 +485,7 @@ public interface ByteBufCodecs {
    ) {
       return new StreamCodec<RegistryFriendlyByteBuf, R>() {
          private IdMap<R> getRegistryOrThrow(RegistryFriendlyByteBuf var1x) {
-            return (IdMap<R>)var1.apply(var1x.registryAccess().registryOrThrow(var0));
+            return (IdMap<R>)var1.apply(var1x.registryAccess().lookupOrThrow(var0));
          }
 
          public R decode(RegistryFriendlyByteBuf var1x) {
@@ -491,7 +515,7 @@ public interface ByteBufCodecs {
          private static final int DIRECT_HOLDER_ID = 0;
 
          private IdMap<Holder<T>> getRegistryOrThrow(RegistryFriendlyByteBuf var1x) {
-            return var1x.registryAccess().<T>registryOrThrow(var0).asHolderIdMap();
+            return var1x.registryAccess().<T>lookupOrThrow(var0).asHolderIdMap();
          }
 
          public Holder<T> decode(RegistryFriendlyByteBuf var1x) {
@@ -521,8 +545,8 @@ public interface ByteBufCodecs {
          public HolderSet<T> decode(RegistryFriendlyByteBuf var1) {
             int var2 = VarInt.read(var1) - 1;
             if (var2 == -1) {
-               Registry var5 = var1.registryAccess().registryOrThrow(var0);
-               return var5.getTag(TagKey.create(var0, ResourceLocation.STREAM_CODEC.decode(var1))).orElseThrow();
+               Registry var5 = var1.registryAccess().lookupOrThrow(var0);
+               return var5.get(TagKey.create(var0, ResourceLocation.STREAM_CODEC.decode(var1))).orElseThrow();
             } else {
                ArrayList var3 = new ArrayList(Math.min(var2, 65536));
 

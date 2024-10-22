@@ -34,7 +34,8 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
 
    @Override
    public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
-      AdvancementHolder var3 = Advancement.Builder.advancement()
+      HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.ENTITY_TYPE);
+      AdvancementHolder var4 = Advancement.Builder.advancement()
          .display(
             Blocks.END_STONE,
             Component.translatable("advancements.end.root.title"),
@@ -47,8 +48,8 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("entered_end", ChangeDimensionTrigger.TriggerInstance.changedDimensionTo(Level.END))
          .save(var2, "end/root");
-      AdvancementHolder var4 = Advancement.Builder.advancement()
-         .parent(var3)
+      AdvancementHolder var5 = Advancement.Builder.advancement()
+         .parent(var4)
          .display(
             Blocks.DRAGON_HEAD,
             Component.translatable("advancements.end.kill_dragon.title"),
@@ -59,10 +60,10 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("killed_dragon", KilledTrigger.TriggerInstance.playerKilledEntity(EntityPredicate.Builder.entity().of(EntityType.ENDER_DRAGON)))
+         .addCriterion("killed_dragon", KilledTrigger.TriggerInstance.playerKilledEntity(EntityPredicate.Builder.entity().of(var3, EntityType.ENDER_DRAGON)))
          .save(var2, "end/kill_dragon");
-      AdvancementHolder var5 = Advancement.Builder.advancement()
-         .parent(var4)
+      AdvancementHolder var6 = Advancement.Builder.advancement()
+         .parent(var5)
          .display(
             Items.ENDER_PEARL,
             Component.translatable("advancements.end.enter_end_gateway.title"),
@@ -76,7 +77,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          .addCriterion("entered_end_gateway", EnterBlockTrigger.TriggerInstance.entersBlock(Blocks.END_GATEWAY))
          .save(var2, "end/enter_end_gateway");
       Advancement.Builder.advancement()
-         .parent(var4)
+         .parent(var5)
          .display(
             Items.END_CRYSTAL,
             Component.translatable("advancements.end.respawn_dragon.title"),
@@ -87,10 +88,12 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("summoned_dragon", SummonedEntityTrigger.TriggerInstance.summonedEntity(EntityPredicate.Builder.entity().of(EntityType.ENDER_DRAGON)))
+         .addCriterion(
+            "summoned_dragon", SummonedEntityTrigger.TriggerInstance.summonedEntity(EntityPredicate.Builder.entity().of(var3, EntityType.ENDER_DRAGON))
+         )
          .save(var2, "end/respawn_dragon");
-      AdvancementHolder var6 = Advancement.Builder.advancement()
-         .parent(var5)
+      AdvancementHolder var7 = Advancement.Builder.advancement()
+         .parent(var6)
          .display(
             Blocks.PURPUR_BLOCK,
             Component.translatable("advancements.end.find_end_city.title"),
@@ -109,7 +112,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          )
          .save(var2, "end/find_end_city");
       Advancement.Builder.advancement()
-         .parent(var4)
+         .parent(var5)
          .display(
             Items.DRAGON_BREATH,
             Component.translatable("advancements.end.dragon_breath.title"),
@@ -123,7 +126,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          .addCriterion("dragon_breath", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DRAGON_BREATH))
          .save(var2, "end/dragon_breath");
       Advancement.Builder.advancement()
-         .parent(var6)
+         .parent(var7)
          .display(
             Items.SHULKER_SHELL,
             Component.translatable("advancements.end.levitate.title"),
@@ -138,7 +141,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          .addCriterion("levitated", LevitationTrigger.TriggerInstance.levitated(DistancePredicate.vertical(MinMaxBounds.Doubles.atLeast(50.0))))
          .save(var2, "end/levitate");
       Advancement.Builder.advancement()
-         .parent(var6)
+         .parent(var7)
          .display(
             Items.ELYTRA,
             Component.translatable("advancements.end.elytra.title"),
@@ -152,7 +155,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          .addCriterion("elytra", InventoryChangeTrigger.TriggerInstance.hasItems(Items.ELYTRA))
          .save(var2, "end/elytra");
       Advancement.Builder.advancement()
-         .parent(var4)
+         .parent(var5)
          .display(
             Blocks.DRAGON_EGG,
             Component.translatable("advancements.end.dragon_egg.title"),

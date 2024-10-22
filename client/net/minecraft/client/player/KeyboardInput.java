@@ -1,8 +1,9 @@
 package net.minecraft.client.player;
 
 import net.minecraft.client.Options;
+import net.minecraft.world.entity.player.Input;
 
-public class KeyboardInput extends Input {
+public class KeyboardInput extends ClientInput {
    private final Options options;
 
    public KeyboardInput(Options var1) {
@@ -20,14 +21,17 @@ public class KeyboardInput extends Input {
 
    @Override
    public void tick(boolean var1, float var2) {
-      this.up = this.options.keyUp.isDown();
-      this.down = this.options.keyDown.isDown();
-      this.left = this.options.keyLeft.isDown();
-      this.right = this.options.keyRight.isDown();
-      this.forwardImpulse = calculateImpulse(this.up, this.down);
-      this.leftImpulse = calculateImpulse(this.left, this.right);
-      this.jumping = this.options.keyJump.isDown();
-      this.shiftKeyDown = this.options.keyShift.isDown();
+      this.keyPresses = new Input(
+         this.options.keyUp.isDown(),
+         this.options.keyDown.isDown(),
+         this.options.keyLeft.isDown(),
+         this.options.keyRight.isDown(),
+         this.options.keyJump.isDown(),
+         this.options.keyShift.isDown(),
+         this.options.keySprint.isDown()
+      );
+      this.forwardImpulse = calculateImpulse(this.keyPresses.forward(), this.keyPresses.backward());
+      this.leftImpulse = calculateImpulse(this.keyPresses.left(), this.keyPresses.right());
       if (var1) {
          this.leftImpulse *= var2;
          this.forwardImpulse *= var2;

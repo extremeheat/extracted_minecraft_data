@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractWindCharge extends AbstractHurtingProjectile implements ItemSupplier {
    public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(
-      true, false, Optional.empty(), BuiltInRegistries.BLOCK.getTag(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity())
+      true, false, Optional.empty(), BuiltInRegistries.BLOCK.get(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity())
    );
    public static final double JUMP_SCALE = 0.25;
 
@@ -79,16 +79,16 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
-         LivingEntity var2 = this.getOwner() instanceof LivingEntity var3 ? var3 : null;
-         Entity var6 = var1.getEntity();
-         if (var2 != null) {
-            var2.setLastHurtMob(var6);
+      if (this.level() instanceof ServerLevel var2) {
+         LivingEntity var7 = this.getOwner() instanceof LivingEntity var4 ? var4 : null;
+         Entity var8 = var1.getEntity();
+         if (var7 != null) {
+            var7.setLastHurtMob(var8);
          }
 
-         DamageSource var7 = this.damageSources().windCharge(this, var2);
-         if (var6.hurt(var7, 1.0F) && var6 instanceof LivingEntity var5) {
-            EnchantmentHelper.doPostAttackEffects((ServerLevel)this.level(), var5, var7);
+         DamageSource var9 = this.damageSources().windCharge(this, var7);
+         if (var8.hurtServer(var2, var9, 1.0F) && var8 instanceof LivingEntity var6) {
+            EnchantmentHelper.doPostAttackEffects(var2, var6, var9);
          }
 
          this.explode(this.position());
@@ -105,7 +105,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
       if (!this.level().isClientSide) {
-         Vec3i var2 = var1.getDirection().getNormal();
+         Vec3i var2 = var1.getDirection().getUnitVec3i();
          Vec3 var3 = Vec3.atLowerCornerOf(var2).multiply(0.25, 0.25, 0.25);
          Vec3 var4 = var1.getLocation().add(var3);
          this.explode(var4);
@@ -149,16 +149,11 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    @Override
    public void tick() {
-      if (!this.level().isClientSide && this.getBlockY() > this.level().getMaxBuildHeight() + 30) {
+      if (!this.level().isClientSide && this.getBlockY() > this.level().getMaxY() + 30) {
          this.explode(this.position());
          this.discard();
       } else {
          super.tick();
       }
-   }
-
-   @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      return false;
    }
 }

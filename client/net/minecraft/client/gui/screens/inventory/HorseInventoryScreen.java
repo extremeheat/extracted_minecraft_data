@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -29,20 +30,20 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(HORSE_INVENTORY_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, HORSE_INVENTORY_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (this.inventoryColumns > 0) {
-         var1.blitSprite(CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
+         var1.blitSprite(RenderType::guiTextured, CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
       }
 
       if (this.horse.isSaddleable()) {
-         var1.blitSprite(SADDLE_SLOT_SPRITE, var5 + 7, var6 + 35 - 18, 18, 18);
+         var1.blitSprite(RenderType::guiTextured, SADDLE_SLOT_SPRITE, var5 + 7, var6 + 35 - 18, 18, 18);
       }
 
       if (this.horse.canUseSlot(EquipmentSlot.BODY)) {
          if (this.horse instanceof Llama) {
-            var1.blitSprite(LLAMA_ARMOR_SLOT_SPRITE, var5 + 7, var6 + 35, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, LLAMA_ARMOR_SLOT_SPRITE, var5 + 7, var6 + 35, 18, 18);
          } else {
-            var1.blitSprite(ARMOR_SLOT_SPRITE, var5 + 7, var6 + 35, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, ARMOR_SLOT_SPRITE, var5 + 7, var6 + 35, 18, 18);
          }
       }
 

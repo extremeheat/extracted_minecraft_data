@@ -11,7 +11,6 @@ import net.minecraft.tags.StructureTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
@@ -61,7 +60,7 @@ public class EnderEyeItem extends Item {
             var2.globalLevelEvent(1038, var7.offset(1, 0, 1), 0);
          }
 
-         return InteractionResult.CONSUME;
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -71,35 +70,35 @@ public class EnderEyeItem extends Item {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.NONE);
       if (var5.getType() == HitResult.Type.BLOCK && var1.getBlockState(var5.getBlockPos()).is(Blocks.END_PORTAL_FRAME)) {
-         return InteractionResultHolder.pass(var4);
+         return InteractionResult.PASS;
       } else {
          var2.startUsingItem(var3);
          if (var1 instanceof ServerLevel var6) {
             BlockPos var7 = var6.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, var2.blockPosition(), 100, false);
-            if (var7 != null) {
-               EyeOfEnder var8 = new EyeOfEnder(var1, var2.getX(), var2.getY(0.5), var2.getZ());
-               var8.setItem(var4);
-               var8.signalTo(var7);
-               var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of(var2));
-               var1.addFreshEntity(var8);
-               if (var2 instanceof ServerPlayer var9) {
-                  CriteriaTriggers.USED_ENDER_EYE.trigger(var9, var7);
-               }
-
-               float var10 = Mth.lerp(var1.random.nextFloat(), 0.33F, 0.5F);
-               var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
-               var4.consume(1, var2);
-               var2.awardStat(Stats.ITEM_USED.get(this));
-               var2.swing(var3, true);
-               return InteractionResultHolder.success(var4);
+            if (var7 == null) {
+               return InteractionResult.CONSUME;
             }
+
+            EyeOfEnder var8 = new EyeOfEnder(var1, var2.getX(), var2.getY(0.5), var2.getZ());
+            var8.setItem(var4);
+            var8.signalTo(var7);
+            var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of(var2));
+            var1.addFreshEntity(var8);
+            if (var2 instanceof ServerPlayer var9) {
+               CriteriaTriggers.USED_ENDER_EYE.trigger(var9, var7);
+            }
+
+            float var10 = Mth.lerp(var1.random.nextFloat(), 0.33F, 0.5F);
+            var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
+            var4.consume(1, var2);
+            var2.awardStat(Stats.ITEM_USED.get(this));
          }
 
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.SUCCESS_SERVER;
       }
    }
 }

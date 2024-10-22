@@ -40,7 +40,7 @@ public class WorldCreationUiState {
    private WorldCreationUiState.WorldTypeEntry worldType;
    private final List<WorldCreationUiState.WorldTypeEntry> normalPresetList = new ArrayList<>();
    private final List<WorldCreationUiState.WorldTypeEntry> altPresetList = new ArrayList<>();
-   private GameRules gameRules = new GameRules();
+   private GameRules gameRules;
 
    public WorldCreationUiState(Path var1, WorldCreationContext var2, Optional<ResourceKey<WorldPreset>> var3, OptionalLong var4) {
       super();
@@ -52,6 +52,15 @@ public class WorldCreationUiState {
       this.generateStructures = var2.options().generateStructures();
       this.bonusChest = var2.options().generateBonusChest();
       this.targetFolder = this.findResultFolder(this.name);
+      this.gameMode = var2.initialWorldCreationOptions().selectedGameMode();
+      this.gameRules = new GameRules(var2.dataConfiguration().enabledFeatures());
+      var2.initialWorldCreationOptions()
+         .disabledGameRules()
+         .forEach(var1x -> this.gameRules.getRule((GameRules.Key<GameRules.BooleanValue>)var1x).set(false, null));
+      Optional.ofNullable(var2.initialWorldCreationOptions().flatLevelPreset())
+         .flatMap(var1x -> var2.worldgenLoadContext().lookup(Registries.FLAT_LEVEL_GENERATOR_PRESET).flatMap(var1xx -> var1xx.get(var1x)))
+         .map(var0 -> var0.value().settings())
+         .ifPresent(var1x -> this.updateDimensions(PresetEditor.flatWorldConfigurator(var1x)));
    }
 
    public void addListener(Consumer<WorldCreationUiState> var1) {
@@ -191,7 +200,8 @@ public class WorldCreationUiState {
             this.settings.selectedDimensions(),
             this.settings.worldgenRegistries(),
             this.settings.dataPackResources(),
-            var1
+            var1,
+            this.settings.initialWorldCreationOptions()
          );
          return true;
       } else {
@@ -230,24 +240,32 @@ public class WorldCreationUiState {
    }
 
    private void updatePresetLists() {
-      Registry var1 = this.getSettings().worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET);
+      Registry var1 = this.getSettings().worldgenLoadContext().lookupOrThrow(Registries.WORLD_PRESET);
       this.normalPresetList.clear();
       this.normalPresetList
-         .addAll(getNonEmptyList(var1, WorldPresetTags.NORMAL).orElseGet(() -> var1.holders().map(WorldCreationUiState.WorldTypeEntry::new).toList()));
+         .addAll(getNonEmptyList(var1, WorldPresetTags.NORMAL).orElseGet(() -> var1.listElements().map(WorldCreationUiState.WorldTypeEntry::new).toList()));
       this.altPresetList.clear();
       this.altPresetList.addAll(getNonEmptyList(var1, WorldPresetTags.EXTENDED).orElse(this.normalPresetList));
       Holder var2 = this.worldType.preset();
       if (var2 != null) {
-         this.worldType = findPreset(this.getSettings(), var2.unwrapKey()).map(WorldCreationUiState.WorldTypeEntry::new).orElse(this.normalPresetList.get(0));
+         WorldCreationUiState.WorldTypeEntry var3 = findPreset(this.getSettings(), var2.unwrapKey())
+            .map(WorldCreationUiState.WorldTypeEntry::new)
+            .orElse((WorldCreationUiState.WorldTypeEntry)this.normalPresetList.getFirst());
+         boolean var4 = PresetEditor.EDITORS.get(var2.unwrapKey()) != null;
+         if (var4) {
+            this.worldType = var3;
+         } else {
+            this.setWorldType(var3);
+         }
       }
    }
 
    private static Optional<Holder<WorldPreset>> findPreset(WorldCreationContext var0, Optional<ResourceKey<WorldPreset>> var1) {
-      return var1.flatMap(var1x -> var0.worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET).getHolder((ResourceKey<WorldPreset>)var1x));
+      return var1.flatMap(var1x -> var0.worldgenLoadContext().lookupOrThrow(Registries.WORLD_PRESET).get((ResourceKey<WorldPreset>)var1x));
    }
 
    private static Optional<List<WorldCreationUiState.WorldTypeEntry>> getNonEmptyList(Registry<WorldPreset> var0, TagKey<WorldPreset> var1) {
-      return var0.getTag(var1).map(var0x -> var0x.stream().map(WorldCreationUiState.WorldTypeEntry::new).toList()).filter(var0x -> !var0x.isEmpty());
+      return var0.get(var1).map(var0x -> var0x.stream().map(WorldCreationUiState.WorldTypeEntry::new).toList()).filter(var0x -> !var0x.isEmpty());
    }
 
    public void setGameRules(GameRules var1) {

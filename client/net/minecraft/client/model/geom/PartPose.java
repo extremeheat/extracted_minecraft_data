@@ -1,33 +1,13 @@
 package net.minecraft.client.model.geom;
 
-public class PartPose {
-   public static final PartPose ZERO = offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
-   public final float x;
-   public final float y;
-   public final float z;
-   public final float xRot;
-   public final float yRot;
-   public final float zRot;
-
-   private PartPose(float var1, float var2, float var3, float var4, float var5, float var6) {
-      super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.xRot = var4;
-      this.yRot = var5;
-      this.zRot = var6;
-   }
-
-   public static PartPose offset(float var0, float var1, float var2) {
-      return offsetAndRotation(var0, var1, var2, 0.0F, 0.0F, 0.0F);
-   }
-
-   public static PartPose rotation(float var0, float var1, float var2) {
-      return offsetAndRotation(0.0F, 0.0F, 0.0F, var0, var1, var2);
-   }
-
-   public static PartPose offsetAndRotation(float var0, float var1, float var2, float var3, float var4, float var5) {
-      return new PartPose(var0, var1, var2, var3, var4, var5);
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

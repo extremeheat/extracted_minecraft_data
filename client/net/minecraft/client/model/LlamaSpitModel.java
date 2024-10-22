@@ -6,15 +6,13 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 
-public class LlamaSpitModel<T extends Entity> extends HierarchicalModel<T> {
+public class LlamaSpitModel extends EntityModel<EntityRenderState> {
    private static final String MAIN = "main";
-   private final ModelPart root;
 
    public LlamaSpitModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -35,14 +33,5 @@ public class LlamaSpitModel<T extends Entity> extends HierarchicalModel<T> {
          PartPose.ZERO
       );
       return LayerDefinition.create(var0, 64, 32);
-   }
-
-   @Override
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -103,6 +104,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    @Override
    public void tick() {
       super.tick();
+      HitResult var1;
       if (this.isAttachedToEntity()) {
          if (this.attachedToEntity == null) {
             this.entityData.get(DATA_ATTACHED_TO_TARGET).ifPresent(var1x -> {
@@ -114,42 +116,45 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
          }
 
          if (this.attachedToEntity != null) {
-            Vec3 var1;
+            Vec3 var2;
             if (this.attachedToEntity.isFallFlying()) {
-               Vec3 var2 = this.attachedToEntity.getLookAngle();
-               double var3 = 1.5;
-               double var5 = 0.1;
-               Vec3 var7 = this.attachedToEntity.getDeltaMovement();
+               Vec3 var3 = this.attachedToEntity.getLookAngle();
+               double var4 = 1.5;
+               double var6 = 0.1;
+               Vec3 var8 = this.attachedToEntity.getDeltaMovement();
                this.attachedToEntity
                   .setDeltaMovement(
-                     var7.add(
-                        var2.x * 0.1 + (var2.x * 1.5 - var7.x) * 0.5,
-                        var2.y * 0.1 + (var2.y * 1.5 - var7.y) * 0.5,
-                        var2.z * 0.1 + (var2.z * 1.5 - var7.z) * 0.5
+                     var8.add(
+                        var3.x * 0.1 + (var3.x * 1.5 - var8.x) * 0.5,
+                        var3.y * 0.1 + (var3.y * 1.5 - var8.y) * 0.5,
+                        var3.z * 0.1 + (var3.z * 1.5 - var8.z) * 0.5
                      )
                   );
-               var1 = this.attachedToEntity.getHandHoldingItemAngle(Items.FIREWORK_ROCKET);
+               var2 = this.attachedToEntity.getHandHoldingItemAngle(Items.FIREWORK_ROCKET);
             } else {
-               var1 = Vec3.ZERO;
+               var2 = Vec3.ZERO;
             }
 
-            this.setPos(this.attachedToEntity.getX() + var1.x, this.attachedToEntity.getY() + var1.y, this.attachedToEntity.getZ() + var1.z);
+            this.setPos(this.attachedToEntity.getX() + var2.x, this.attachedToEntity.getY() + var2.y, this.attachedToEntity.getZ() + var2.z);
             this.setDeltaMovement(this.attachedToEntity.getDeltaMovement());
          }
+
+         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       } else {
          if (!this.isShotAtAngle()) {
-            double var8 = this.horizontalCollision ? 1.0 : 1.15;
-            this.setDeltaMovement(this.getDeltaMovement().multiply(var8, 1.0, var8).add(0.0, 0.04, 0.0));
+            double var9 = this.horizontalCollision ? 1.0 : 1.15;
+            this.setDeltaMovement(this.getDeltaMovement().multiply(var9, 1.0, var9).add(0.0, 0.04, 0.0));
          }
 
-         Vec3 var9 = this.getDeltaMovement();
-         this.move(MoverType.SELF, var9);
-         this.setDeltaMovement(var9);
+         Vec3 var10 = this.getDeltaMovement();
+         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+         this.move(MoverType.SELF, var10);
+         this.applyEffectsFromBlocks();
+         this.setDeltaMovement(var10);
       }
 
-      HitResult var10 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-      if (!this.noPhysics) {
-         this.hitTargetOrDeflectSelf(var10);
+      if (!this.noPhysics && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
+         this.hitTargetOrDeflectSelf(var1);
          this.hasImpulse = true;
       }
 
@@ -172,23 +177,23 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
             );
       }
 
-      if (!this.level().isClientSide && this.life > this.lifetime) {
-         this.explode();
+      if (this.life > this.lifetime && this.level() instanceof ServerLevel var11) {
+         this.explode(var11);
       }
    }
 
-   private void explode() {
-      this.level().broadcastEntityEvent(this, (byte)17);
+   private void explode(ServerLevel var1) {
+      var1.broadcastEntityEvent(this, (byte)17);
       this.gameEvent(GameEvent.EXPLODE, this.getOwner());
-      this.dealExplosionDamage();
+      this.dealExplosionDamage(var1);
       this.discard();
    }
 
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
-         this.explode();
+      if (this.level() instanceof ServerLevel var2) {
+         this.explode(var2);
       }
    }
 
@@ -196,8 +201,8 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    protected void onHitBlock(BlockHitResult var1) {
       BlockPos var2 = new BlockPos(var1.getBlockPos());
       this.level().getBlockState(var2).entityInside(this.level(), var2, this);
-      if (!this.level().isClientSide() && this.hasExplosion()) {
-         this.explode();
+      if (this.level() instanceof ServerLevel var3 && this.hasExplosion()) {
+         this.explode(var3);
       }
 
       super.onHitBlock(var1);
@@ -207,37 +212,37 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       return !this.getExplosions().isEmpty();
    }
 
-   private void dealExplosionDamage() {
-      float var1 = 0.0F;
-      List var2 = this.getExplosions();
-      if (!var2.isEmpty()) {
-         var1 = 5.0F + (float)(var2.size() * 2);
+   private void dealExplosionDamage(ServerLevel var1) {
+      float var2 = 0.0F;
+      List var3 = this.getExplosions();
+      if (!var3.isEmpty()) {
+         var2 = 5.0F + (float)(var3.size() * 2);
       }
 
-      if (var1 > 0.0F) {
+      if (var2 > 0.0F) {
          if (this.attachedToEntity != null) {
-            this.attachedToEntity.hurt(this.damageSources().fireworks(this, this.getOwner()), 5.0F + (float)(var2.size() * 2));
+            this.attachedToEntity.hurtServer(var1, this.damageSources().fireworks(this, this.getOwner()), 5.0F + (float)(var3.size() * 2));
          }
 
-         double var3 = 5.0;
-         Vec3 var5 = this.position();
+         double var4 = 5.0;
+         Vec3 var6 = this.position();
 
-         for (LivingEntity var8 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
-            if (var8 != this.attachedToEntity && !(this.distanceToSqr(var8) > 25.0)) {
-               boolean var9 = false;
+         for (LivingEntity var9 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
+            if (var9 != this.attachedToEntity && !(this.distanceToSqr(var9) > 25.0)) {
+               boolean var10 = false;
 
-               for (int var10 = 0; var10 < 2; var10++) {
-                  Vec3 var11 = new Vec3(var8.getX(), var8.getY(0.5 * (double)var10), var8.getZ());
-                  BlockHitResult var12 = this.level().clip(new ClipContext(var5, var11, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-                  if (var12.getType() == HitResult.Type.MISS) {
-                     var9 = true;
+               for (int var11 = 0; var11 < 2; var11++) {
+                  Vec3 var12 = new Vec3(var9.getX(), var9.getY(0.5 * (double)var11), var9.getZ());
+                  BlockHitResult var13 = this.level().clip(new ClipContext(var6, var12, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+                  if (var13.getType() == HitResult.Type.MISS) {
+                     var10 = true;
                      break;
                   }
                }
 
-               if (var9) {
-                  float var13 = var1 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var8)) / 5.0);
-                  var8.hurt(this.damageSources().fireworks(this, this.getOwner()), var13);
+               if (var10) {
+                  float var14 = var2 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var9)) / 5.0);
+                  var9.hurtServer(var1, this.damageSources().fireworks(this, this.getOwner()), var14);
                }
             }
          }

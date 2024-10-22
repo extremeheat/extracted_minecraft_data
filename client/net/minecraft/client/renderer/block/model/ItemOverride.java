@@ -11,26 +11,15 @@ import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
-public class ItemOverride {
-   private final ResourceLocation model;
-   private final List<ItemOverride.Predicate> predicates;
-
-   public ItemOverride(ResourceLocation var1, List<ItemOverride.Predicate> var2) {
+public record ItemOverride(ResourceLocation model, List<ItemOverride.Predicate> predicates) {
+   public ItemOverride(ResourceLocation model, List<ItemOverride.Predicate> predicates) {
       super();
-      this.model = var1;
-      this.predicates = ImmutableList.copyOf(var2);
-   }
-
-   public ResourceLocation getModel() {
-      return this.model;
-   }
-
-   public Stream<ItemOverride.Predicate> getPredicates() {
-      return this.predicates.stream();
+      predicates = List.copyOf(predicates);
+      this.model = model;
+      this.predicates = predicates;
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemOverride> {
@@ -60,22 +49,16 @@ public class ItemOverride {
       }
    }
 
-   public static class Predicate {
-      private final ResourceLocation property;
-      private final float value;
-
-      public Predicate(ResourceLocation var1, float var2) {
-         super();
-         this.property = var1;
-         this.value = var2;
-      }
-
-      public ResourceLocation getProperty() {
-         return this.property;
-      }
-
-      public float getValue() {
-         return this.value;
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

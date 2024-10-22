@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -25,6 +24,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
+import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -43,12 +43,16 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.CubicSampler;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -58,17 +62,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -98,13 +102,14 @@ public class ClientLevel extends Level {
    private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager<>(Entity.class, new ClientLevel.EntityCallbacks());
    private final ClientPacketListener connection;
    private final LevelRenderer levelRenderer;
+   private final LevelEventHandler levelEventHandler;
    private final ClientLevel.ClientLevelData clientLevelData;
    private final DimensionSpecialEffects effects;
    private final TickRateManager tickRateManager;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
-   private static final long CLOUD_COLOR = 16777215L;
+   private static final int CLOUD_COLOR = -1;
    private int skyFlashTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = Util.make(new Object2ObjectArrayMap(3), var1x -> {
       var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache(var1xx -> this.calculateBlockTint(var1xx, BiomeColors.GRASS_COLOR_RESOLVER)));
@@ -115,6 +120,8 @@ public class ClientLevel extends Level {
    private final Deque<Runnable> lightUpdateQueue = Queues.newArrayDeque();
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
+   private final int seaLevel;
+   private boolean tickDayTime;
    private static final Set<Item> MARKER_PARTICLE_ITEMS = Set.of(Items.BARRIER, Items.LIGHT);
 
    public void handleBlockChangedAck(int var1) {
@@ -164,17 +171,19 @@ public class ClientLevel extends Level {
       Holder<DimensionType> var4,
       int var5,
       int var6,
-      Supplier<ProfilerFiller> var7,
-      LevelRenderer var8,
-      boolean var9,
-      long var10
+      LevelRenderer var7,
+      boolean var8,
+      long var9,
+      int var11
    ) {
-      super(var2, var3, var1.registryAccess(), var4, var7, true, var9, var10, 1000000);
+      super(var2, var3, var1.registryAccess(), var4, true, var8, var9, 1000000);
       this.connection = var1;
       this.chunkSource = new ClientChunkCache(this, var5);
       this.tickRateManager = new TickRateManager();
       this.clientLevelData = var2;
-      this.levelRenderer = var8;
+      this.levelRenderer = var7;
+      this.seaLevel = var11;
+      this.levelEventHandler = new LevelEventHandler(this.minecraft, this, var7);
       this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
       this.setDefaultSpawnPos(new BlockPos(8, 64, 8), 0.0F);
       this.serverSimulationDistance = var6;
@@ -200,16 +209,13 @@ public class ClientLevel extends Level {
       }
    }
 
-   public boolean isLightUpdateQueueEmpty() {
-      return this.lightUpdateQueue.isEmpty();
-   }
-
    public DimensionSpecialEffects effects() {
       return this.effects;
    }
 
    public void tick(BooleanSupplier var1) {
       this.getWorldBorder().tick();
+      this.updateSkyBrightness();
       if (this.tickRateManager().runsNormally()) {
          this.tickTime();
       }
@@ -218,31 +224,22 @@ public class ClientLevel extends Level {
          this.setSkyFlashTime(this.skyFlashTime - 1);
       }
 
-      this.getProfiler().push("blocks");
-      this.chunkSource.tick(var1, true);
-      this.getProfiler().pop();
+      try (Zone var2 = Profiler.get().zone("blocks")) {
+         this.chunkSource.tick(var1, true);
+      }
    }
 
    private void tickTime() {
-      this.setGameTime(this.levelData.getGameTime() + 1L);
-      if (this.levelData.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-         this.setDayTime(this.levelData.getDayTime() + 1L);
+      this.clientLevelData.setGameTime(this.clientLevelData.getGameTime() + 1L);
+      if (this.tickDayTime) {
+         this.clientLevelData.setDayTime(this.clientLevelData.getDayTime() + 1L);
       }
    }
 
-   public void setGameTime(long var1) {
+   public void setTimeFromServer(long var1, long var3, boolean var5) {
       this.clientLevelData.setGameTime(var1);
-   }
-
-   public void setDayTime(long var1) {
-      if (var1 < 0L) {
-         var1 = -var1;
-         this.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, null);
-      } else {
-         this.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(true, null);
-      }
-
-      this.clientLevelData.setDayTime(var1);
+      this.clientLevelData.setDayTime(var3);
+      this.tickDayTime = var5;
    }
 
    public Iterable<Entity> entitiesForRendering() {
@@ -250,7 +247,7 @@ public class ClientLevel extends Level {
    }
 
    public void tickEntities() {
-      ProfilerFiller var1 = this.getProfiler();
+      ProfilerFiller var1 = Profiler.get();
       var1.push("entities");
       this.tickingEntities.forEach(var1x -> {
          if (!var1x.isRemoved() && !var1x.isPassenger() && !this.tickRateManager.isEntityFrozen(var1x)) {
@@ -261,6 +258,10 @@ public class ClientLevel extends Level {
       this.tickBlockEntities();
    }
 
+   public boolean isTickingEntity(Entity var1) {
+      return this.tickingEntities.contains(var1);
+   }
+
    @Override
    public boolean shouldTickDeath(Entity var1) {
       return var1.chunkPosition().getChessboardDistance(this.minecraft.player.chunkPosition()) <= this.serverSimulationDistance;
@@ -269,9 +270,9 @@ public class ClientLevel extends Level {
    public void tickNonPassenger(Entity var1) {
       var1.setOldPosAndRot();
       var1.tickCount++;
-      this.getProfiler().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
+      Profiler.get().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
       var1.tick();
-      this.getProfiler().pop();
+      Profiler.get().pop();
 
       for (Entity var3 : var1.getPassengers()) {
          this.tickPassenger(var1, var3);
@@ -302,6 +303,10 @@ public class ClientLevel extends Level {
       this.tintCaches.forEach((var1x, var2) -> var2.invalidateForChunk(var1.x, var1.z));
       this.entityStorage.startTicking(var1);
       this.levelRenderer.onChunkLoaded(var1);
+   }
+
+   public void onSectionBecomingNonEmpty(long var1) {
+      this.levelRenderer.onSectionBecomingNonEmpty(var1);
    }
 
    public void clearTintCaches() {
@@ -519,8 +524,8 @@ public class ClientLevel extends Level {
    }
 
    @Override
-   public RecipeManager getRecipeManager() {
-      return this.connection.getRecipeManager();
+   public RecipeAccess recipeAccess() {
+      return this.connection.recipes();
    }
 
    @Override
@@ -580,6 +585,10 @@ public class ClientLevel extends Level {
       this.levelRenderer.setSectionDirtyWithNeighbors(var1, var2, var3);
    }
 
+   public void setSectionRangeDirty(int var1, int var2, int var3, int var4, int var5, int var6) {
+      this.levelRenderer.setSectionRangeDirty(var1, var2, var3, var4, var5, var6);
+   }
+
    @Override
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {
       this.levelRenderer.destroyBlockProgress(var1, var2, var3);
@@ -587,13 +596,13 @@ public class ClientLevel extends Level {
 
    @Override
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
-      this.levelRenderer.globalLevelEvent(var1, var2, var3);
+      this.levelEventHandler.globalLevelEvent(var1, var2, var3);
    }
 
    @Override
    public void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4) {
       try {
-         this.levelRenderer.levelEvent(var2, var3, var4);
+         this.levelEventHandler.levelEvent(var2, var3, var4);
       } catch (Throwable var8) {
          CrashReport var6 = CrashReport.forThrowable(var8, "Playing level event");
          CrashReportCategory var7 = var6.addCategory("Level event being played");
@@ -632,7 +641,7 @@ public class ClientLevel extends Level {
 
    @Override
    public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
-      return this.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
+      return this.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
    }
 
    public float getSkyDarken(float var1) {
@@ -645,81 +654,61 @@ public class ClientLevel extends Level {
       return var3 * 0.8F + 0.2F;
    }
 
-   public Vec3 getSkyColor(Vec3 var1, float var2) {
+   public int getSkyColor(Vec3 var1, float var2) {
       float var3 = this.getTimeOfDay(var2);
       Vec3 var4 = var1.subtract(2.0, 2.0, 2.0).scale(0.25);
-      BiomeManager var5 = this.getBiomeManager();
-      Vec3 var6 = CubicSampler.gaussianSampleVec3(
-         var4, (var1x, var2x, var3x) -> Vec3.fromRGB24(var5.getNoiseBiomeAtQuart(var1x, var2x, var3x).value().getSkyColor())
+      Vec3 var5 = CubicSampler.gaussianSampleVec3(
+         var4, (var1x, var2x, var3x) -> Vec3.fromRGB24(this.getBiomeManager().getNoiseBiomeAtQuart(var1x, var2x, var3x).value().getSkyColor())
       );
-      float var7 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
-      var7 = Mth.clamp(var7, 0.0F, 1.0F);
-      float var8 = (float)var6.x * var7;
-      float var9 = (float)var6.y * var7;
-      float var10 = (float)var6.z * var7;
-      float var11 = this.getRainLevel(var2);
-      if (var11 > 0.0F) {
-         float var12 = (var8 * 0.3F + var9 * 0.59F + var10 * 0.11F) * 0.6F;
-         float var13 = 1.0F - var11 * 0.75F;
-         var8 = var8 * var13 + var12 * (1.0F - var13);
-         var9 = var9 * var13 + var12 * (1.0F - var13);
-         var10 = var10 * var13 + var12 * (1.0F - var13);
+      float var6 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
+      var6 = Mth.clamp(var6, 0.0F, 1.0F);
+      var5 = var5.scale((double)var6);
+      int var7 = ARGB.color(var5);
+      float var8 = this.getRainLevel(var2);
+      if (var8 > 0.0F) {
+         float var9 = 0.6F;
+         float var10 = var8 * 0.75F;
+         int var11 = ARGB.scaleRGB(ARGB.greyscale(var7), 0.6F);
+         var7 = ARGB.lerp(var10, var7, var11);
       }
 
-      float var16 = this.getThunderLevel(var2);
-      if (var16 > 0.0F) {
-         float var17 = (var8 * 0.3F + var9 * 0.59F + var10 * 0.11F) * 0.2F;
-         float var14 = 1.0F - var16 * 0.75F;
-         var8 = var8 * var14 + var17 * (1.0F - var14);
-         var9 = var9 * var14 + var17 * (1.0F - var14);
-         var10 = var10 * var14 + var17 * (1.0F - var14);
+      float var15 = this.getThunderLevel(var2);
+      if (var15 > 0.0F) {
+         float var16 = 0.2F;
+         float var18 = var15 * 0.75F;
+         int var12 = ARGB.scaleRGB(ARGB.greyscale(var7), 0.2F);
+         var7 = ARGB.lerp(var18, var7, var12);
       }
 
-      int var18 = this.getSkyFlashTime();
-      if (var18 > 0) {
-         float var19 = (float)var18 - var2;
-         if (var19 > 1.0F) {
-            var19 = 1.0F;
-         }
-
+      int var17 = this.getSkyFlashTime();
+      if (var17 > 0) {
+         float var19 = Math.min((float)var17 - var2, 1.0F);
          var19 *= 0.45F;
-         var8 = var8 * (1.0F - var19) + 0.8F * var19;
-         var9 = var9 * (1.0F - var19) + 0.8F * var19;
-         var10 = var10 * (1.0F - var19) + 1.0F * var19;
+         var7 = ARGB.lerp(var19, var7, ARGB.color(204, 204, 255));
       }
 
-      return new Vec3((double)var8, (double)var9, (double)var10);
+      return var7;
    }
 
-   public Vec3 getCloudColor(float var1) {
-      float var2 = this.getTimeOfDay(var1);
-      float var3 = Mth.cos(var2 * 6.2831855F) * 2.0F + 0.5F;
-      var3 = Mth.clamp(var3, 0.0F, 1.0F);
-      float var4 = 1.0F;
-      float var5 = 1.0F;
-      float var6 = 1.0F;
-      float var7 = this.getRainLevel(var1);
-      if (var7 > 0.0F) {
-         float var8 = (var4 * 0.3F + var5 * 0.59F + var6 * 0.11F) * 0.6F;
-         float var9 = 1.0F - var7 * 0.95F;
-         var4 = var4 * var9 + var8 * (1.0F - var9);
-         var5 = var5 * var9 + var8 * (1.0F - var9);
-         var6 = var6 * var9 + var8 * (1.0F - var9);
+   public int getCloudColor(float var1) {
+      int var2 = -1;
+      float var3 = this.getRainLevel(var1);
+      if (var3 > 0.0F) {
+         int var4 = ARGB.scaleRGB(ARGB.greyscale(var2), 0.6F);
+         var2 = ARGB.lerp(var3 * 0.95F, var2, var4);
       }
 
-      var4 *= var3 * 0.9F + 0.1F;
-      var5 *= var3 * 0.9F + 0.1F;
-      var6 *= var3 * 0.85F + 0.15F;
-      float var15 = this.getThunderLevel(var1);
-      if (var15 > 0.0F) {
-         float var16 = (var4 * 0.3F + var5 * 0.59F + var6 * 0.11F) * 0.2F;
-         float var10 = 1.0F - var15 * 0.95F;
-         var4 = var4 * var10 + var16 * (1.0F - var10);
-         var5 = var5 * var10 + var16 * (1.0F - var10);
-         var6 = var6 * var10 + var16 * (1.0F - var10);
+      float var9 = this.getTimeOfDay(var1);
+      float var5 = Mth.cos(var9 * 6.2831855F) * 2.0F + 0.5F;
+      var5 = Mth.clamp(var5, 0.0F, 1.0F);
+      var2 = ARGB.multiply(var2, ARGB.colorFromFloat(1.0F, var5 * 0.9F + 0.1F, var5 * 0.9F + 0.1F, var5 * 0.85F + 0.15F));
+      float var6 = this.getThunderLevel(var1);
+      if (var6 > 0.0F) {
+         int var7 = ARGB.scaleRGB(ARGB.greyscale(var2), 0.2F);
+         var2 = ARGB.lerp(var6 * 0.95F, var2, var7);
       }
 
-      return new Vec3((double)var4, (double)var5, (double)var6);
+      return var2;
    }
 
    public float getStarBrightness(float var1) {
@@ -849,9 +838,35 @@ public class ClientLevel extends Level {
       return this.connection.potionBrewing();
    }
 
+   @Override
+   public FuelValues fuelValues() {
+      return this.connection.fuelValues();
+   }
+
+   @Override
+   public void explode(
+      @Nullable Entity var1,
+      @Nullable DamageSource var2,
+      @Nullable ExplosionDamageCalculator var3,
+      double var4,
+      double var6,
+      double var8,
+      float var10,
+      boolean var11,
+      Level.ExplosionInteraction var12,
+      ParticleOptions var13,
+      ParticleOptions var14,
+      Holder<SoundEvent> var15
+   ) {
+   }
+
+   @Override
+   public int getSeaLevel() {
+      return this.seaLevel;
+   }
+
    public static class ClientLevelData implements WritableLevelData {
       private final boolean hardcore;
-      private final GameRules gameRules;
       private final boolean isFlat;
       private BlockPos spawnPos;
       private float spawnAngle;
@@ -866,7 +881,6 @@ public class ClientLevel extends Level {
          this.difficulty = var1;
          this.hardcore = var2;
          this.isFlat = var3;
-         this.gameRules = new GameRules();
       }
 
       @Override
@@ -924,11 +938,6 @@ public class ClientLevel extends Level {
       }
 
       @Override
-      public GameRules getGameRules() {
-         return this.gameRules;
-      }
-
-      @Override
       public Difficulty getDifficulty() {
          return this.difficulty;
       }
@@ -952,7 +961,7 @@ public class ClientLevel extends Level {
       }
 
       public double getHorizonHeight(LevelHeightAccessor var1) {
-         return this.isFlat ? (double)var1.getMinBuildHeight() : 63.0;
+         return this.isFlat ? (double)var1.getMinY() : 63.0;
       }
 
       public float getClearColorScale() {

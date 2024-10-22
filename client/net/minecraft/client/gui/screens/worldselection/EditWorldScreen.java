@@ -44,6 +44,7 @@ public class EditWorldScreen extends Screen {
    private static final Component OPTIMIZE_BUTTON = Component.translatable("selectWorld.edit.optimize");
    private static final Component OPTIMIZE_TITLE = Component.translatable("optimizeWorld.confirm.title");
    private static final Component OPTIMIIZE_DESCRIPTION = Component.translatable("optimizeWorld.confirm.description");
+   private static final Component OPTIMIIZE_CONFIRMATION = Component.translatable("optimizeWorld.confirm.proceed");
    private static final Component SAVE_BUTTON = Component.translatable("selectWorld.edit.save");
    private static final int DEFAULT_WIDTH = 200;
    private static final int VERTICAL_SPACING = 4;
@@ -98,7 +99,7 @@ public class EditWorldScreen extends Screen {
             }
 
             var1.setScreen(OptimizeWorldScreen.create(var1, this.callback, var1.getFixerUpper(), var2, var4x));
-         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, true))).width(200).build());
+         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, OPTIMIIZE_CONFIRMATION, true))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(var6);
       this.layout.visitWidgets(var1x -> {
@@ -151,12 +152,12 @@ public class EditWorldScreen extends Screen {
       if (var3 != null) {
          MutableComponent var7 = Component.translatable("selectWorld.edit.backupFailed");
          MutableComponent var8 = Component.literal(var3.getMessage());
-         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var7, var8));
+         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var7, var8));
          return false;
       } else {
          MutableComponent var4 = Component.translatable("selectWorld.edit.backupCreated", var0.getLevelId());
          MutableComponent var5 = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)var1 / 1048576.0));
-         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
+         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
          return true;
       }
    }

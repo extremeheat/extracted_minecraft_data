@@ -7,6 +7,8 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.vehicle.Minecart;
+import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
@@ -51,22 +53,35 @@ public class Camera {
       this.entity = var2;
       this.detached = var3;
       this.partialTickTime = var5;
-      this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
-      this.setPosition(
-         Mth.lerp((double)var5, var2.xo, var2.getX()),
-         Mth.lerp((double)var5, var2.yo, var2.getY()) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight),
-         Mth.lerp((double)var5, var2.zo, var2.getZ())
-      );
+      if (var2.isPassenger()
+         && var2.getVehicle() instanceof Minecart var6
+         && var6.getBehavior() instanceof NewMinecartBehavior var7
+         && var7.cartHasPosRotLerp()) {
+         Vec3 var13 = var6.getPassengerRidingPosition(var2)
+            .subtract(var6.position())
+            .subtract(var2.getVehicleAttachmentPoint(var6))
+            .add(new Vec3(0.0, (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), 0.0));
+         this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
+         this.setPosition(var7.getCartLerpPosition(var5).add(var13));
+      } else {
+         this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
+         this.setPosition(
+            Mth.lerp((double)var5, var2.xo, var2.getX()),
+            Mth.lerp((double)var5, var2.yo, var2.getY()) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight),
+            Mth.lerp((double)var5, var2.zo, var2.getZ())
+         );
+      }
+
       if (var3) {
          if (var4) {
             this.setRotation(this.yRot + 180.0F, -this.xRot);
          }
 
-         float var6 = var2 instanceof LivingEntity var7 ? var7.getScale() : 1.0F;
-         this.move(-this.getMaxZoom(4.0F * var6), 0.0F, 0.0F);
+         float var9 = var2 instanceof LivingEntity var11 ? var11.getScale() : 1.0F;
+         this.move(-this.getMaxZoom(4.0F * var9), 0.0F, 0.0F);
       } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
-         Direction var8 = ((LivingEntity)var2).getBedOrientation();
-         this.setRotation(var8 != null ? var8.toYRot() - 180.0F : 0.0F, 0.0F);
+         Direction var10 = ((LivingEntity)var2).getBedOrientation();
+         this.setRotation(var10 != null ? var10.toYRot() - 180.0F : 0.0F, 0.0F);
          this.move(0.0F, 0.3F, 0.0F);
       }
    }

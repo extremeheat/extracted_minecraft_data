@@ -1,6 +1,5 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,6 +11,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -20,7 +20,6 @@ import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
@@ -65,8 +64,8 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
    }
 
    @Override
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(LootContextParams.ORIGIN);
+   public Set<ContextKey<?>> getReferencedContextParams() {
+      return Set.of(LootContextParams.ORIGIN);
    }
 
    @Override
@@ -74,7 +73,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
       if (!var1.is(Items.MAP)) {
          return var1;
       } else {
-         Vec3 var3 = var2.getParamOrNull(LootContextParams.ORIGIN);
+         Vec3 var3 = var2.getOptionalParameter(LootContextParams.ORIGIN);
          if (var3 != null) {
             ServerLevel var4 = var2.getLevel();
             BlockPos var5 = var4.findNearestMapStructure(this.destination, BlockPos.containing(var3), this.searchRadius, this.skipKnownStructures);

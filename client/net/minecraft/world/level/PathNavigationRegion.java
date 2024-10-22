@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -24,7 +23,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class PathNavigationRegion implements BlockGetter, CollisionGetter {
+public class PathNavigationRegion implements CollisionGetter {
    protected final int centerX;
    protected final int centerZ;
    protected final ChunkAccess[][] chunks;
@@ -35,7 +34,7 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
    public PathNavigationRegion(Level var1, BlockPos var2, BlockPos var3) {
       super();
       this.level = var1;
-      this.plains = Suppliers.memoize(() -> var1.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS));
+      this.plains = Suppliers.memoize(() -> var1.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS));
       this.centerX = SectionPos.blockToSectionCoord(var2.getX());
       this.centerZ = SectionPos.blockToSectionCoord(var2.getZ());
       int var4 = SectionPos.blockToSectionCoord(var3.getX());
@@ -119,16 +118,12 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
    }
 
    @Override
-   public int getMinBuildHeight() {
-      return this.level.getMinBuildHeight();
+   public int getMinY() {
+      return this.level.getMinY();
    }
 
    @Override
    public int getHeight() {
       return this.level.getHeight();
-   }
-
-   public ProfilerFiller getProfiler() {
-      return this.level.getProfiler();
    }
 }

@@ -1,14 +1,16 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -49,7 +52,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       RailShape var5 = var1.is(this) ? var1.getValue(this.getShapeProperty()) : null;
-      return var5 != null && var5.isAscending() ? HALF_BLOCK_AABB : FLAT_AABB;
+      return var5 != null && var5.isSlope() ? HALF_BLOCK_AABB : FLAT_AABB;
    }
 
    @Override
@@ -67,14 +70,14 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    protected BlockState updateState(BlockState var1, Level var2, BlockPos var3, boolean var4) {
       var1 = this.updateDir(var2, var3, var1, true);
       if (this.isStraight) {
-         var2.neighborChanged(var1, var3, this, var3, var4);
+         var2.neighborChanged(var1, var3, this, null, var4);
       }
 
       return var1;
    }
 
    @Override
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide && var2.getBlockState(var3).is(this)) {
          RailShape var7 = var1.getValue(this.getShapeProperty());
          if (shouldBeRemoved(var3, var2, var7)) {
@@ -121,7 +124,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5) {
          super.onRemove(var1, var2, var3, var4, var5);
-         if (var1.getValue(this.getShapeProperty()).isAscending()) {
+         if (var1.getValue(this.getShapeProperty()).isSlope()) {
             var2.updateNeighborsAt(var3.above(), this);
          }
 
@@ -145,12 +148,14 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    public abstract Property<RailShape> getShapeProperty();
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
       if (var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override

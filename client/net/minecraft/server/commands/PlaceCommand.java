@@ -295,14 +295,7 @@ public class PlaceCommand {
                      var3.structureManager(),
                      var5,
                      var3.getRandom(),
-                     new BoundingBox(
-                        var3x.getMinBlockX(),
-                        var3.getMinBuildHeight(),
-                        var3x.getMinBlockZ(),
-                        var3x.getMaxBlockX(),
-                        var3.getMaxBuildHeight(),
-                        var3x.getMaxBlockZ()
-                     ),
+                     new BoundingBox(var3x.getMinBlockX(), var3.getMinY(), var3x.getMinBlockZ(), var3x.getMaxBlockX(), var3.getMaxY() + 1, var3x.getMaxBlockZ()),
                      var3x
                   )
             );

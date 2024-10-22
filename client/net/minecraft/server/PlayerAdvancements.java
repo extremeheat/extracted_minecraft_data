@@ -189,7 +189,7 @@ public class PlayerAdvancements {
          if (!var5 && var4.isDone()) {
             var1.value().rewards().grant(this.player);
             var1.value().display().ifPresent(var2x -> {
-               if (var2x.shouldAnnounceChat() && this.player.level().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
+               if (var2x.shouldAnnounceChat() && this.player.serverLevel().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
                   this.playerList.broadcastSystemMessage(var2x.getType().createAnnouncement(var1, this.player), false);
                }
             });

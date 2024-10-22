@@ -332,6 +332,10 @@ public class SurfaceRules {
          return this.surfaceSecondary;
       }
 
+      public int getSeaLevel() {
+         return this.system.getSeaLevel();
+      }
+
       private static int blockCoordToSurfaceCell(int var0) {
          return var0 >> 4;
       }
@@ -425,7 +429,11 @@ public class SurfaceRules {
 
          @Override
          protected boolean compute() {
-            return this.context.biome.get().value().coldEnoughToSnow(this.context.pos.set(this.context.blockX, this.context.blockY, this.context.blockZ));
+            return this.context
+               .biome
+               .get()
+               .value()
+               .coldEnoughToSnow(this.context.pos.set(this.context.blockX, this.context.blockY, this.context.blockZ), this.context.getSeaLevel());
          }
       }
    }

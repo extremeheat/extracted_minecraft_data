@@ -10,10 +10,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -62,7 +62,7 @@ public class WitherSkeleton extends AbstractSkeleton {
       super.dropCustomDeathLoot(var1, var2, var3);
       if (var2.getEntity() instanceof Creeper var5 && var5.canDropMobsSkull()) {
          var5.increaseDroppedSkulls();
-         this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
+         this.spawnAtLocation(var1, Items.WITHER_SKELETON_SKULL);
       }
    }
 
@@ -77,7 +77,7 @@ public class WitherSkeleton extends AbstractSkeleton {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
       this.reassessWeaponGoal();
@@ -85,12 +85,12 @@ public class WitherSkeleton extends AbstractSkeleton {
    }
 
    @Override
-   public boolean doHurtTarget(Entity var1) {
-      if (!super.doHurtTarget(var1)) {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      if (!super.doHurtTarget(var1, var2)) {
          return false;
       } else {
-         if (var1 instanceof LivingEntity) {
-            ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.WITHER, 200), this);
+         if (var2 instanceof LivingEntity) {
+            ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.WITHER, 200), this);
          }
 
          return true;

@@ -15,10 +15,10 @@ public class StandingAndWallBlockItem extends BlockItem {
    protected final Block wallBlock;
    private final Direction attachmentDirection;
 
-   public StandingAndWallBlockItem(Block var1, Block var2, Item.Properties var3, Direction var4) {
-      super(var1, var3);
+   public StandingAndWallBlockItem(Block var1, Block var2, Direction var3, Item.Properties var4) {
+      super(var1, var4);
       this.wallBlock = var2;
-      this.attachmentDirection = var4;
+      this.attachmentDirection = var3;
    }
 
    protected boolean canPlace(LevelReader var1, BlockState var2, BlockPos var3) {

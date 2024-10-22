@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,9 +13,9 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SmithingMenu;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.equipment.Equippable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -108,17 +110,14 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    private void updateArmorStandPreview(ItemStack var1) {
       if (this.armorStandPreview != null) {
-         for (EquipmentSlot var5 : EquipmentSlot.values()) {
-            this.armorStandPreview.setItemSlot(var5, ItemStack.EMPTY);
+         for (EquipmentSlot var3 : EquipmentSlot.VALUES) {
+            this.armorStandPreview.setItemSlot(var3, ItemStack.EMPTY);
          }
 
          if (!var1.isEmpty()) {
-            ItemStack var6 = var1.copy();
-            if (var1.getItem() instanceof ArmorItem var7) {
-               this.armorStandPreview.setItemSlot(var7.getEquipmentSlot(), var6);
-            } else {
-               this.armorStandPreview.setItemSlot(EquipmentSlot.OFFHAND, var6);
-            }
+            Equippable var4 = var1.get(DataComponents.EQUIPPABLE);
+            EquipmentSlot var5 = var4 != null ? var4.slot() : EquipmentSlot.OFFHAND;
+            this.armorStandPreview.setItemSlot(var5, var1.copy());
          }
       }
    }
@@ -126,7 +125,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    @Override
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if (this.hasRecipeError()) {
-         var1.blitSprite(ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
+         var1.blitSprite(RenderType::guiTextured, ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
       }
    }
 
@@ -156,9 +155,6 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    }
 
    private boolean hasRecipeError() {
-      return this.menu.getSlot(0).hasItem()
-         && this.menu.getSlot(1).hasItem()
-         && this.menu.getSlot(2).hasItem()
-         && !this.menu.getSlot(this.menu.getResultSlot()).hasItem();
+      return this.menu.hasRecipeError();
    }
 }

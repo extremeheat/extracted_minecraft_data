@@ -144,7 +144,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
             )
             .build();
          this.resetButton = Button.builder(RESET_BUTTON_TITLE, var2 -> {
-            KeyBindsList.this.minecraft.options.setKey(nullx, nullx.getDefaultKey());
+            nullx.setKey(nullx.getDefaultKey());
             KeyBindsList.this.resetMappingAndUpdateButtons();
          }).bounds(0, 0, 50, 20).createNarration(var1 -> Component.translatable("narrator.controls.reset", nullxx)).build();
          this.refreshEntry();

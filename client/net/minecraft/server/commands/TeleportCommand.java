@@ -19,7 +19,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.commands.arguments.coordinates.RotationArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +26,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -53,7 +52,7 @@ public class TeleportCommand {
                                  Collections.singleton(((CommandSourceStack)var0x.getSource()).getEntityOrException()),
                                  ((CommandSourceStack)var0x.getSource()).getLevel(),
                                  Vec3Argument.getCoordinates(var0x, "location"),
-                                 WorldCoordinates.current(),
+                                 null,
                                  null
                               )
                         )
@@ -108,7 +107,7 @@ public class TeleportCommand {
                                                             ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                             Vec3Argument.getCoordinates(var0x, "location"),
                                                             null,
-                                                            new TeleportCommand.LookAtEntity(
+                                                            new LookAt.LookAtEntity(
                                                                EntityArgument.getEntity(var0x, "facingEntity"), EntityAnchorArgument.Anchor.FEET
                                                             )
                                                          )
@@ -122,7 +121,7 @@ public class TeleportCommand {
                                                                ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                                Vec3Argument.getCoordinates(var0x, "location"),
                                                                null,
-                                                               new TeleportCommand.LookAtEntity(
+                                                               new LookAt.LookAtEntity(
                                                                   EntityArgument.getEntity(var0x, "facingEntity"),
                                                                   EntityAnchorArgument.getAnchor(var0x, "facingAnchor")
                                                                )
@@ -140,7 +139,7 @@ public class TeleportCommand {
                                                 ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                 Vec3Argument.getCoordinates(var0x, "location"),
                                                 null,
-                                                new TeleportCommand.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation"))
+                                                new LookAt.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation"))
                                              )
                                        )
                                  )
@@ -164,16 +163,7 @@ public class TeleportCommand {
    private static int teleportToEntity(CommandSourceStack var0, Collection<? extends Entity> var1, Entity var2) throws CommandSyntaxException {
       for (Entity var4 : var1) {
          performTeleport(
-            var0,
-            var4,
-            (ServerLevel)var2.level(),
-            var2.getX(),
-            var2.getY(),
-            var2.getZ(),
-            EnumSet.noneOf(RelativeMovement.class),
-            var2.getYRot(),
-            var2.getXRot(),
-            null
+            var0, var4, (ServerLevel)var2.level(), var2.getX(), var2.getY(), var2.getZ(), EnumSet.noneOf(Relative.class), var2.getYRot(), var2.getXRot(), null
          );
       }
 
@@ -190,46 +180,17 @@ public class TeleportCommand {
    }
 
    private static int teleportToPos(
-      CommandSourceStack var0,
-      Collection<? extends Entity> var1,
-      ServerLevel var2,
-      Coordinates var3,
-      @Nullable Coordinates var4,
-      @Nullable TeleportCommand.LookAt var5
+      CommandSourceStack var0, Collection<? extends Entity> var1, ServerLevel var2, Coordinates var3, @Nullable Coordinates var4, @Nullable LookAt var5
    ) throws CommandSyntaxException {
       Vec3 var6 = var3.getPosition(var0);
       Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
-      EnumSet var8 = EnumSet.noneOf(RelativeMovement.class);
-      if (var3.isXRelative()) {
-         var8.add(RelativeMovement.X);
-      }
 
-      if (var3.isYRelative()) {
-         var8.add(RelativeMovement.Y);
-      }
-
-      if (var3.isZRelative()) {
-         var8.add(RelativeMovement.Z);
-      }
-
-      if (var4 == null) {
-         var8.add(RelativeMovement.X_ROT);
-         var8.add(RelativeMovement.Y_ROT);
-      } else {
-         if (var4.isXRelative()) {
-            var8.add(RelativeMovement.X_ROT);
-         }
-
-         if (var4.isYRelative()) {
-            var8.add(RelativeMovement.Y_ROT);
-         }
-      }
-
-      for (Entity var10 : var1) {
-         if (var4 == null) {
-            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var10.getYRot(), var10.getXRot(), var5);
+      for (Entity var9 : var1) {
+         Set var10 = getRelatives(var3, var4, var9.level().dimension() == var2.dimension());
+         if (var7 == null) {
+            performTeleport(var0, var9, var2, var6.x, var6.y, var6.z, var10, var9.getYRot(), var9.getXRot(), var5);
          } else {
-            performTeleport(var0, var10, var2, var6.x, var6.y, var6.z, var8, var7.y, var7.x, var5);
+            performTeleport(var0, var9, var2, var6.x, var6.y, var6.z, var10, var7.y, var7.x, var5);
          }
       }
 
@@ -256,6 +217,40 @@ public class TeleportCommand {
       return var1.size();
    }
 
+   private static Set<Relative> getRelatives(Coordinates var0, @Nullable Coordinates var1, boolean var2) {
+      EnumSet var3 = EnumSet.noneOf(Relative.class);
+      if (var0.isXRelative()) {
+         var3.add(Relative.DELTA_X);
+         if (var2) {
+            var3.add(Relative.X);
+         }
+      }
+
+      if (var0.isYRelative()) {
+         var3.add(Relative.DELTA_Y);
+         if (var2) {
+            var3.add(Relative.Y);
+         }
+      }
+
+      if (var0.isZRelative()) {
+         var3.add(Relative.DELTA_Z);
+         if (var2) {
+            var3.add(Relative.Z);
+         }
+      }
+
+      if (var1 == null || var1.isXRelative()) {
+         var3.add(Relative.X_ROT);
+      }
+
+      if (var1 == null || var1.isYRelative()) {
+         var3.add(Relative.Y_ROT);
+      }
+
+      return var3;
+   }
+
    private static String formatDouble(double var0) {
       return String.format(Locale.ROOT, "%f", var0);
    }
@@ -267,62 +262,36 @@ public class TeleportCommand {
       double var3,
       double var5,
       double var7,
-      Set<RelativeMovement> var9,
+      Set<Relative> var9,
       float var10,
       float var11,
-      @Nullable TeleportCommand.LookAt var12
+      @Nullable LookAt var12
    ) throws CommandSyntaxException {
       BlockPos var13 = BlockPos.containing(var3, var5, var7);
       if (!Level.isInSpawnableBounds(var13)) {
          throw INVALID_POSITION.create();
       } else {
-         float var14 = Mth.wrapDegrees(var10);
-         float var15 = Mth.wrapDegrees(var11);
-         if (var1.teleportTo(var2, var3, var5, var7, var9, var14, var15)) {
+         double var14 = var9.contains(Relative.X) ? var3 - var1.getX() : var3;
+         double var16 = var9.contains(Relative.Y) ? var5 - var1.getY() : var5;
+         double var18 = var9.contains(Relative.Z) ? var7 - var1.getZ() : var7;
+         float var20 = var9.contains(Relative.Y_ROT) ? var10 - var1.getYRot() : var10;
+         float var21 = var9.contains(Relative.X_ROT) ? var11 - var1.getXRot() : var11;
+         float var22 = Mth.wrapDegrees(var20);
+         float var23 = Mth.wrapDegrees(var21);
+         if (var1.teleportTo(var2, var14, var16, var18, var9, var22, var23, true)) {
             if (var12 != null) {
                var12.perform(var0, var1);
             }
 
-            if (!(var1 instanceof LivingEntity var16) || !var16.isFallFlying()) {
+            if (!(var1 instanceof LivingEntity var24) || !var24.isFallFlying()) {
                var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0, 0.0, 1.0));
                var1.setOnGround(true);
             }
 
-            if (var1 instanceof PathfinderMob var17) {
-               var17.getNavigation().stop();
+            if (var1 instanceof PathfinderMob var25) {
+               var25.getNavigation().stop();
             }
          }
       }
    }
-
-   @FunctionalInterface
-   interface LookAt {
-      void perform(CommandSourceStack var1, Entity var2);
-   }
-
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
-
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.NullPointerException
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
-//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

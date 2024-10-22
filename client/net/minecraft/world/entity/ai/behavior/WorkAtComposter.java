@@ -30,7 +30,7 @@ public class WorkAtComposter extends WorkAtPoi {
          GlobalPos var4 = (GlobalPos)var3.get();
          BlockState var5 = var1.getBlockState(var4.pos());
          if (var5.is(Blocks.COMPOSTER)) {
-            this.makeBread(var2);
+            this.makeBread(var1, var2);
             this.compostItems(var1, var2, var4, var5);
          }
       }
@@ -78,19 +78,19 @@ public class WorkAtComposter extends WorkAtPoi {
       var1.levelEvent(1500, var3, var4 != var2 ? 1 : 0);
    }
 
-   private void makeBread(Villager var1) {
-      SimpleContainer var2 = var1.getInventory();
-      if (var2.countItem(Items.BREAD) <= 36) {
-         int var3 = var2.countItem(Items.WHEAT);
-         byte var4 = 3;
+   private void makeBread(ServerLevel var1, Villager var2) {
+      SimpleContainer var3 = var2.getInventory();
+      if (var3.countItem(Items.BREAD) <= 36) {
+         int var4 = var3.countItem(Items.WHEAT);
          byte var5 = 3;
-         int var6 = Math.min(3, var3 / 3);
-         if (var6 != 0) {
-            int var7 = var6 * 3;
-            var2.removeItemType(Items.WHEAT, var7);
-            ItemStack var8 = var2.addItem(new ItemStack(Items.BREAD, var6));
-            if (!var8.isEmpty()) {
-               var1.spawnAtLocation(var8, 0.5F);
+         byte var6 = 3;
+         int var7 = Math.min(3, var4 / 3);
+         if (var7 != 0) {
+            int var8 = var7 * 3;
+            var3.removeItemType(Items.WHEAT, var8);
+            ItemStack var9 = var3.addItem(new ItemStack(Items.BREAD, var7));
+            if (!var9.isEmpty()) {
+               var2.spawnAtLocation(var1, var9, 0.5F);
             }
          }
       }

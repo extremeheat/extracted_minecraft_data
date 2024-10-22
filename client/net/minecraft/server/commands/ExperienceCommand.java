@@ -35,13 +35,13 @@ public class ExperienceCommand {
                   .then(
                      Commands.literal("add")
                         .then(
-                           Commands.argument("targets", EntityArgument.players())
+                           Commands.argument("target", EntityArgument.players())
                               .then(
                                  ((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer())
                                           .executes(
                                              var0x -> addExperience(
                                                    (CommandSourceStack)var0x.getSource(),
-                                                   EntityArgument.getPlayers(var0x, "targets"),
+                                                   EntityArgument.getPlayers(var0x, "target"),
                                                    IntegerArgumentType.getInteger(var0x, "amount"),
                                                    ExperienceCommand.Type.POINTS
                                                 )
@@ -51,7 +51,7 @@ public class ExperienceCommand {
                                              .executes(
                                                 var0x -> addExperience(
                                                       (CommandSourceStack)var0x.getSource(),
-                                                      EntityArgument.getPlayers(var0x, "targets"),
+                                                      EntityArgument.getPlayers(var0x, "target"),
                                                       IntegerArgumentType.getInteger(var0x, "amount"),
                                                       ExperienceCommand.Type.POINTS
                                                    )
@@ -62,7 +62,7 @@ public class ExperienceCommand {
                                           .executes(
                                              var0x -> addExperience(
                                                    (CommandSourceStack)var0x.getSource(),
-                                                   EntityArgument.getPlayers(var0x, "targets"),
+                                                   EntityArgument.getPlayers(var0x, "target"),
                                                    IntegerArgumentType.getInteger(var0x, "amount"),
                                                    ExperienceCommand.Type.LEVELS
                                                 )
@@ -74,13 +74,13 @@ public class ExperienceCommand {
                .then(
                   Commands.literal("set")
                      .then(
-                        Commands.argument("targets", EntityArgument.players())
+                        Commands.argument("target", EntityArgument.players())
                            .then(
                               ((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer(0))
                                        .executes(
                                           var0x -> setExperience(
                                                 (CommandSourceStack)var0x.getSource(),
-                                                EntityArgument.getPlayers(var0x, "targets"),
+                                                EntityArgument.getPlayers(var0x, "target"),
                                                 IntegerArgumentType.getInteger(var0x, "amount"),
                                                 ExperienceCommand.Type.POINTS
                                              )
@@ -90,7 +90,7 @@ public class ExperienceCommand {
                                           .executes(
                                              var0x -> setExperience(
                                                    (CommandSourceStack)var0x.getSource(),
-                                                   EntityArgument.getPlayers(var0x, "targets"),
+                                                   EntityArgument.getPlayers(var0x, "target"),
                                                    IntegerArgumentType.getInteger(var0x, "amount"),
                                                    ExperienceCommand.Type.POINTS
                                                 )
@@ -101,7 +101,7 @@ public class ExperienceCommand {
                                        .executes(
                                           var0x -> setExperience(
                                                 (CommandSourceStack)var0x.getSource(),
-                                                EntityArgument.getPlayers(var0x, "targets"),
+                                                EntityArgument.getPlayers(var0x, "target"),
                                                 IntegerArgumentType.getInteger(var0x, "amount"),
                                                 ExperienceCommand.Type.LEVELS
                                              )
@@ -113,12 +113,12 @@ public class ExperienceCommand {
             .then(
                Commands.literal("query")
                   .then(
-                     ((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.player())
+                     ((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.player())
                            .then(
                               Commands.literal("points")
                                  .executes(
                                     var0x -> queryExperience(
-                                          (CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "targets"), ExperienceCommand.Type.POINTS
+                                          (CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target"), ExperienceCommand.Type.POINTS
                                        )
                                  )
                            ))
@@ -126,7 +126,7 @@ public class ExperienceCommand {
                            Commands.literal("levels")
                               .executes(
                                  var0x -> queryExperience(
-                                       (CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "targets"), ExperienceCommand.Type.LEVELS
+                                       (CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target"), ExperienceCommand.Type.LEVELS
                                     )
                               )
                         )

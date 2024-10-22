@@ -1,42 +1,13 @@
 package net.minecraft.client.model.geom;
 
-import net.minecraft.resources.ResourceLocation;
-
-public final class ModelLayerLocation {
-   private final ResourceLocation model;
-   private final String layer;
-
-   public ModelLayerLocation(ResourceLocation var1, String var2) {
-      super();
-      this.model = var1;
-      this.layer = var2;
-   }
-
-   public ResourceLocation getModel() {
-      return this.model;
-   }
-
-   public String getLayer() {
-      return this.layer;
-   }
-
-   @Override
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return !(var1 instanceof ModelLayerLocation var2) ? false : this.model.equals(var2.model) && this.layer.equals(var2.layer);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int var1 = this.model.hashCode();
-      return 31 * var1 + this.layer.hashCode();
-   }
-
-   @Override
-   public String toString() {
-      return this.model + "#" + this.layer;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)

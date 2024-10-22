@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -75,7 +76,7 @@ public class CrafterBlock extends BaseEntityBlock {
    }
 
    @Override
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3);
       boolean var8 = var1.getValue(TRIGGERED);
       BlockEntity var9 = var2.getBlockEntity(var3);
@@ -142,16 +143,11 @@ public class CrafterBlock extends BaseEntityBlock {
 
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof CrafterBlockEntity) {
-            var4.openMenu((CrafterBlockEntity)var6);
-         }
-
-         return InteractionResult.CONSUME;
+      if (!var2.isClientSide && var2.getBlockEntity(var3) instanceof CrafterBlockEntity var6) {
+         var4.openMenu(var6);
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected void dispenseFrom(BlockState var1, ServerLevel var2, BlockPos var3) {
@@ -188,11 +184,11 @@ public class CrafterBlock extends BaseEntityBlock {
       }
    }
 
-   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(Level var0, CraftingInput var1) {
+   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(ServerLevel var0, CraftingInput var1) {
       return RECIPE_CACHE.get(var0, var1);
    }
 
-   private void dispenseItem(ServerLevel var1, BlockPos var2, CrafterBlockEntity var3, ItemStack var4, BlockState var5, RecipeHolder<CraftingRecipe> var6) {
+   private void dispenseItem(ServerLevel var1, BlockPos var2, CrafterBlockEntity var3, ItemStack var4, BlockState var5, RecipeHolder<?> var6) {
       Direction var7 = var5.getValue(ORIENTATION).front();
       Container var8 = HopperBlockEntity.getContainerAt(var1, var2.relative(var7));
       ItemStack var9 = var4.copy();

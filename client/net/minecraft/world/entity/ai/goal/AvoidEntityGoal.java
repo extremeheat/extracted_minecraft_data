@@ -42,7 +42,7 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
       this.predicateOnAvoidEntity = var9;
       this.pathNav = var1.getNavigation();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)var4).selector(var9.and(var3));
+      this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)var4).selector((var2x, var3x) -> var9.test(var2x) && var3.test(var2x));
    }
 
    public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6, Predicate<LivingEntity> var8) {
@@ -51,8 +51,7 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
 
    @Override
    public boolean canUse() {
-      this.toAvoid = this.mob
-         .level()
+      this.toAvoid = getServerLevel(this.mob)
          .getNearestEntity(
             this.mob
                .level()

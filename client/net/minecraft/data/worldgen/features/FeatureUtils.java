@@ -37,7 +37,7 @@ public class FeatureUtils {
    private static BlockPredicate simplePatchPredicate(List<Block> var0) {
       BlockPredicate var1;
       if (!var0.isEmpty()) {
-         var1 = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks(Direction.DOWN.getNormal(), var0));
+         var1 = BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.matchesBlocks(Direction.DOWN.getUnitVec3i(), var0));
       } else {
          var1 = BlockPredicate.ONLY_IN_AIR_PREDICATE;
       }

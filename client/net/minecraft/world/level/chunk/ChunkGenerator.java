@@ -111,15 +111,13 @@ public abstract class ChunkGenerator {
    }
 
    public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
-      return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("init_biomes", () -> {
+      return CompletableFuture.supplyAsync(() -> {
          var4.fillBiomesFromNoise(this.biomeSource, var1.sampler());
          return var4;
-      }), Util.backgroundExecutor());
+      }, Util.backgroundExecutor().forName("init_biomes"));
    }
 
-   public abstract void applyCarvers(
-      WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7, GenerationStep.Carving var8
-   );
+   public abstract void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7);
 
    @Nullable
    public Pair<BlockPos, Holder<Structure>> findNearestMapStructure(ServerLevel var1, HolderSet<Structure> var2, BlockPos var3, int var4, boolean var5) {
@@ -287,9 +285,9 @@ public abstract class ChunkGenerator {
    public void applyBiomeDecoration(WorldGenLevel var1, ChunkAccess var2, StructureManager var3) {
       ChunkPos var4 = var2.getPos();
       if (!SharedConstants.debugVoidTerrain(var4)) {
-         SectionPos var5 = SectionPos.of(var4, var1.getMinSection());
+         SectionPos var5 = SectionPos.of(var4, var1.getMinSectionY());
          BlockPos var6 = var5.origin();
-         Registry var7 = var1.registryAccess().registryOrThrow(Registries.STRUCTURE);
+         Registry var7 = var1.registryAccess().lookupOrThrow(Registries.STRUCTURE);
          Map var8 = var7.stream().collect(Collectors.groupingBy(var0 -> var0.step().ordinal()));
          List var9 = this.featuresPerStep.get();
          WorldgenRandom var10 = new WorldgenRandom(new XoroshiroRandomSource(RandomSupport.generateUniqueSeed()));
@@ -306,7 +304,7 @@ public abstract class ChunkGenerator {
          int var14 = var9.size();
 
          try {
-            Registry var15 = var1.registryAccess().registryOrThrow(Registries.PLACED_FEATURE);
+            Registry var15 = var1.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
             int var32 = Math.max(GenerationStep.Decoration.values().length, var14);
 
             for (int var17 = 0; var17 < var32; var17++) {
@@ -378,8 +376,8 @@ public abstract class ChunkGenerator {
       int var2 = var1.getMinBlockX();
       int var3 = var1.getMinBlockZ();
       LevelHeightAccessor var4 = var0.getHeightAccessorForGeneration();
-      int var5 = var4.getMinBuildHeight() + 1;
-      int var6 = var4.getMaxBuildHeight() - 1;
+      int var5 = var4.getMinY() + 1;
+      int var6 = var4.getMaxY();
       return new BoundingBox(var2, var5, var3, var2 + 15, var6, var3 + 15);
    }
 
@@ -528,7 +526,7 @@ public abstract class ChunkGenerator {
                } catch (Exception var21) {
                   CrashReport var18 = CrashReport.forThrowable(var21, "Generating structure reference");
                   CrashReportCategory var19 = var18.addCategory("Structure");
-                  Optional var20 = var1.registryAccess().registry(Registries.STRUCTURE);
+                  Optional var20 = var1.registryAccess().lookup(Registries.STRUCTURE);
                   var19.setDetail("Id", () -> var20.<String>map(var1xx -> var1xx.getKey(var16.getStructure()).toString()).orElse("UNKNOWN"));
                   var19.setDetail("Name", () -> BuiltInRegistries.STRUCTURE_TYPE.getKey(var16.getStructure().type()).toString());
                   var19.setDetail("Class", () -> var16.getStructure().getClass().getCanonicalName());

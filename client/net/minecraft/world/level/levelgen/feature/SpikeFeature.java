@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -69,7 +70,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       int var5 = var4.getRadius();
 
       for (BlockPos var7 : BlockPos.betweenClosed(
-         new BlockPos(var4.getCenterX() - var5, var1.getMinBuildHeight(), var4.getCenterZ() - var5),
+         new BlockPos(var4.getCenterX() - var5, var1.getMinY(), var4.getCenterZ() - var5),
          new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5)
       )) {
          if (var7.distToLowCornerSqr((double)var4.getCenterX(), (double)var7.getY(), (double)var4.getCenterZ()) <= (double)(var5 * var5 + 1)
@@ -108,7 +109,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
          }
       }
 
-      EndCrystal var20 = EntityType.END_CRYSTAL.create(var1.getLevel());
+      EndCrystal var20 = EntityType.END_CRYSTAL.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
       if (var20 != null) {
          var20.setBeamTarget(var3.getCrystalBeamTarget());
          var20.setInvulnerable(var3.isCrystalInvulnerable());

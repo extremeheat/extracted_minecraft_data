@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -112,7 +113,9 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.blitSprite(this.menu.getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE, this.leftPos + 59, this.topPos + 20, 110, 16);
+      var1.blitSprite(
+         RenderType::guiTextured, this.menu.getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE, this.leftPos + 59, this.topPos + 20, 110, 16
+      );
    }
 
    @Override
@@ -123,7 +126,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    @Override
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if ((this.menu.getSlot(0).hasItem() || this.menu.getSlot(1).hasItem()) && !this.menu.getSlot(this.menu.getResultSlot()).hasItem()) {
-         var1.blitSprite(ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
+         var1.blitSprite(RenderType::guiTextured, ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
       }
    }
 

@@ -1,11 +1,14 @@
 package net.minecraft.world.inventory;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 
 public class ResultSlot extends Slot {
    private final CraftingContainer craftSlots;
@@ -56,6 +59,25 @@ public class ResultSlot extends Slot {
       this.removeCount = 0;
    }
 
+   private static NonNullList<ItemStack> copyAllInputItems(CraftingInput var0) {
+      NonNullList var1 = NonNullList.withSize(var0.size(), ItemStack.EMPTY);
+
+      for (int var2 = 0; var2 < var1.size(); var2++) {
+         var1.set(var2, var0.getItem(var2));
+      }
+
+      return var1;
+   }
+
+   private NonNullList<ItemStack> getRemainingItems(CraftingInput var1, Level var2) {
+      return var2 instanceof ServerLevel var3
+         ? var3.recipeAccess()
+            .getRecipeFor(RecipeType.CRAFTING, var1, var3)
+            .map(var1x -> var1x.value().getRemainingItems(var1))
+            .orElseGet(() -> copyAllInputItems(var1))
+         : CraftingRecipe.defaultCraftingReminder(var1);
+   }
+
    @Override
    public void onTake(Player var1, ItemStack var2) {
       this.checkTakeAchievements(var2);
@@ -63,7 +85,7 @@ public class ResultSlot extends Slot {
       CraftingInput var4 = var3.input();
       int var5 = var3.left();
       int var6 = var3.top();
-      NonNullList var7 = var1.level().getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, var4, var1.level());
+      NonNullList var7 = this.getRemainingItems(var4, var1.level());
 
       for (int var8 = 0; var8 < var4.height(); var8++) {
          for (int var9 = 0; var9 < var4.width(); var9++) {

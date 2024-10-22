@@ -13,7 +13,7 @@ public class StopHoldingItemIfNoLongerAdmiring {
    public static BehaviorControl<Piglin> create() {
       return BehaviorBuilder.create(var0 -> var0.group(var0.absent(MemoryModuleType.ADMIRING_ITEM)).apply(var0, var0x -> (var0xx, var1, var2) -> {
                if (!var1.getOffhandItem().isEmpty() && !var1.getOffhandItem().is(Items.SHIELD)) {
-                  PiglinAi.stopHoldingOffHandItem(var1, true);
+                  PiglinAi.stopHoldingOffHandItem(var0xx, var1, true);
                   return true;
                } else {
                   return false;

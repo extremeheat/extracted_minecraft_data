@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.SquidModel;
+import net.minecraft.client.renderer.entity.state.SquidRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -9,11 +10,12 @@ import net.minecraft.world.entity.GlowSquid;
 public class GlowSquidRenderer extends SquidRenderer<GlowSquid> {
    private static final ResourceLocation GLOW_SQUID_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/squid/glow_squid.png");
 
-   public GlowSquidRenderer(EntityRendererProvider.Context var1, SquidModel<GlowSquid> var2) {
-      super(var1, var2);
+   public GlowSquidRenderer(EntityRendererProvider.Context var1, SquidModel var2, SquidModel var3) {
+      super(var1, var2, var3);
    }
 
-   public ResourceLocation getTextureLocation(GlowSquid var1) {
+   @Override
+   public ResourceLocation getTextureLocation(SquidRenderState var1) {
       return GLOW_SQUID_LOCATION;
    }
 

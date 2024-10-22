@@ -37,7 +37,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          var0.ambientOcclusion(),
          var0.framerateLimit(),
          var0.enableVsync(),
-         var0.bobView(),
+         var0.inactivityFpsLimit(),
          var0.guiScale(),
          var0.attackIndicator(),
          var0.gamma(),
@@ -52,7 +52,8 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          var0.showAutosaveIndicator(),
          var0.glintSpeed(),
          var0.glintStrength(),
-         var0.menuBackgroundBlurriness()
+         var0.menuBackgroundBlurriness(),
+         var0.bobView()
       };
    }
 

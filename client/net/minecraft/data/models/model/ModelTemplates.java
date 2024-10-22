@@ -90,6 +90,7 @@ public class ModelTemplates {
    public static final ModelTemplate RAIL_RAISED_NE = create("template_rail_raised_ne", "_raised_ne", TextureSlot.RAIL);
    public static final ModelTemplate RAIL_RAISED_SW = create("template_rail_raised_sw", "_raised_sw", TextureSlot.RAIL);
    public static final ModelTemplate CARPET = create("carpet", TextureSlot.WOOL);
+   public static final ModelTemplate MOSSY_CARPET_SIDE = create("mossy_carpet_side", TextureSlot.SIDE);
    public static final ModelTemplate FLOWERBED_1 = create("flowerbed_1", "_1", TextureSlot.FLOWERBED, TextureSlot.STEM);
    public static final ModelTemplate FLOWERBED_2 = create("flowerbed_2", "_2", TextureSlot.FLOWERBED, TextureSlot.STEM);
    public static final ModelTemplate FLOWERBED_3 = create("flowerbed_3", "_3", TextureSlot.FLOWERBED, TextureSlot.STEM);
@@ -137,7 +138,11 @@ public class ModelTemplates {
    public static final ModelTemplate LANTERN = create("template_lantern", TextureSlot.LANTERN);
    public static final ModelTemplate HANGING_LANTERN = create("template_hanging_lantern", "_hanging", TextureSlot.LANTERN);
    public static final ModelTemplate TORCH = create("template_torch", TextureSlot.TORCH);
+   public static final ModelTemplate TORCH_UNLIT = create("template_torch_unlit", TextureSlot.TORCH);
    public static final ModelTemplate WALL_TORCH = create("template_torch_wall", TextureSlot.TORCH);
+   public static final ModelTemplate WALL_TORCH_UNLIT = create("template_torch_wall_unlit", TextureSlot.TORCH);
+   public static final ModelTemplate REDSTONE_TORCH = create("template_redstone_torch", TextureSlot.TORCH);
+   public static final ModelTemplate REDSTONE_WALL_TORCH = create("template_redstone_torch_wall", TextureSlot.TORCH);
    public static final ModelTemplate PISTON = create("template_piston", TextureSlot.PLATFORM, TextureSlot.BOTTOM, TextureSlot.SIDE);
    public static final ModelTemplate PISTON_HEAD = create("template_piston_head", TextureSlot.PLATFORM, TextureSlot.SIDE, TextureSlot.UNSTICKY);
    public static final ModelTemplate PISTON_HEAD_SHORT = create("template_piston_head_short", TextureSlot.PLATFORM, TextureSlot.SIDE, TextureSlot.UNSTICKY);

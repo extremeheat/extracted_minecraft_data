@@ -3,6 +3,7 @@ package net.minecraft.world.level.chunk;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -94,6 +95,19 @@ public class UpgradeData {
       );
    }
 
+   private UpgradeData(UpgradeData var1) {
+      super();
+      this.sides.addAll(var1.sides);
+      this.neighborBlockTicks.addAll(var1.neighborBlockTicks);
+      this.neighborFluidTicks.addAll(var1.neighborFluidTicks);
+      this.index = new int[var1.index.length][];
+
+      for (int var2 = 0; var2 < var1.index.length; var2++) {
+         int[] var3 = var1.index[var2];
+         this.index[var2] = var3 != null ? IntArrays.copy(var3) : null;
+      }
+   }
+
    private static <T> void loadTicks(CompoundTag var0, String var1, Function<String, Optional<T>> var2, List<SavedTick<T>> var3) {
       if (var0.contains(var1, 9)) {
          for (Tag var6 : var0.getList(var1, 10)) {
@@ -140,7 +154,7 @@ public class UpgradeData {
          Direction[] var16 = Direction.values();
          BlockPos.MutableBlockPos var17 = new BlockPos.MutableBlockPos();
 
-         for (BlockPos var19 : BlockPos.betweenClosed(var12, var2.getMinBuildHeight(), var14, var13, var2.getMaxBuildHeight() - 1, var15)) {
+         for (BlockPos var19 : BlockPos.betweenClosed(var12, var2.getMinY(), var14, var13, var2.getMaxY(), var15)) {
             BlockState var20 = var2.getBlockState(var19);
             BlockState var21 = var20;
 
@@ -250,6 +264,10 @@ public class UpgradeData {
       return var1;
    }
 
+   public UpgradeData copy() {
+      return this == EMPTY ? EMPTY : new UpgradeData(this);
+   }
+
    public interface BlockFixer {
       BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6);
 
@@ -291,24 +309,28 @@ public class UpgradeData {
          Blocks.CHERRY_SIGN,
          Blocks.JUNGLE_SIGN,
          Blocks.DARK_OAK_SIGN,
+         Blocks.PALE_OAK_SIGN,
          Blocks.OAK_WALL_SIGN,
          Blocks.SPRUCE_WALL_SIGN,
          Blocks.BIRCH_WALL_SIGN,
          Blocks.ACACIA_WALL_SIGN,
          Blocks.JUNGLE_WALL_SIGN,
          Blocks.DARK_OAK_WALL_SIGN,
+         Blocks.PALE_OAK_WALL_SIGN,
          Blocks.OAK_HANGING_SIGN,
          Blocks.SPRUCE_HANGING_SIGN,
          Blocks.BIRCH_HANGING_SIGN,
          Blocks.ACACIA_HANGING_SIGN,
          Blocks.JUNGLE_HANGING_SIGN,
          Blocks.DARK_OAK_HANGING_SIGN,
+         Blocks.PALE_OAK_HANGING_SIGN,
          Blocks.OAK_WALL_HANGING_SIGN,
          Blocks.SPRUCE_WALL_HANGING_SIGN,
          Blocks.BIRCH_WALL_HANGING_SIGN,
          Blocks.ACACIA_WALL_HANGING_SIGN,
          Blocks.JUNGLE_WALL_HANGING_SIGN,
-         Blocks.DARK_OAK_WALL_HANGING_SIGN
+         Blocks.DARK_OAK_WALL_HANGING_SIGN,
+         Blocks.PALE_OAK_WALL_HANGING_SIGN
       ) {
          @Override
          public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
@@ -318,7 +340,7 @@ public class UpgradeData {
       DEFAULT {
          @Override
          public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-            return var1.updateShape(var2, var4.getBlockState(var6), var4, var5, var6);
+            return var1.updateShape(var4, var4, var5, var2, var6, var4.getBlockState(var6), var4.getRandom());
          }
       },
       CHEST(Blocks.CHEST, Blocks.TRAPPED_CHEST) {
@@ -352,6 +374,7 @@ public class UpgradeData {
          Blocks.ACACIA_LEAVES,
          Blocks.CHERRY_LEAVES,
          Blocks.BIRCH_LEAVES,
+         Blocks.PALE_OAK_LEAVES,
          Blocks.DARK_OAK_LEAVES,
          Blocks.JUNGLE_LEAVES,
          Blocks.OAK_LEAVES,
@@ -361,7 +384,7 @@ public class UpgradeData {
 
          @Override
          public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-            BlockState var7 = var1.updateShape(var2, var4.getBlockState(var6), var4, var5, var6);
+            BlockState var7 = var1.updateShape(var4, var4, var5, var2, var6, var4.getBlockState(var6), var4.getRandom());
             if (var1 != var7) {
                int var8 = var7.getValue(BlockStateProperties.DISTANCE);
                List var9 = this.queue.get();

@@ -18,9 +18,9 @@ public class ServerboundMoveVehiclePacket implements Packet<ServerGamePacketList
 
    public ServerboundMoveVehiclePacket(Entity var1) {
       super();
-      this.x = var1.getX();
-      this.y = var1.getY();
-      this.z = var1.getZ();
+      this.x = var1.lerpTargetX();
+      this.y = var1.lerpTargetY();
+      this.z = var1.lerpTargetZ();
       this.yRot = var1.getYRot();
       this.xRot = var1.getXRot();
    }

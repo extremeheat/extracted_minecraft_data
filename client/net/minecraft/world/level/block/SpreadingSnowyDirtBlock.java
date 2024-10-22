@@ -24,8 +24,8 @@ public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
       } else if (var4.getFluidState().getAmount() == 8) {
          return false;
       } else {
-         int var5 = LightEngine.getLightBlockInto(var1, var0, var2, var4, var3, Direction.UP, var4.getLightBlock(var1, var3));
-         return var5 < var1.getMaxLightLevel();
+         int var5 = LightEngine.getLightBlockInto(var0, var4, Direction.UP, var4.getLightBlock());
+         return var5 < 15;
       }
    }
 

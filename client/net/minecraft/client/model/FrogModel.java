@@ -8,35 +8,24 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.animal.frog.Frog;
+import net.minecraft.client.renderer.entity.state.FrogRenderState;
 
-public class FrogModel<T extends Frog> extends HierarchicalModel<T> {
+public class FrogModel extends EntityModel<FrogRenderState> {
    private static final float MAX_WALK_ANIMATION_SPEED = 1.5F;
    private static final float MAX_SWIM_ANIMATION_SPEED = 1.0F;
    private static final float WALK_ANIMATION_SCALE_FACTOR = 2.5F;
-   private final ModelPart root;
-   private final ModelPart body;
-   private final ModelPart head;
-   private final ModelPart eyes;
-   private final ModelPart tongue;
-   private final ModelPart leftArm;
-   private final ModelPart rightArm;
-   private final ModelPart leftLeg;
-   private final ModelPart rightLeg;
-   private final ModelPart croakingBody;
+   private final ModelPart body = this.root.getChild("body");
+   private final ModelPart head = this.body.getChild("head");
+   private final ModelPart eyes = this.head.getChild("eyes");
+   private final ModelPart tongue = this.body.getChild("tongue");
+   private final ModelPart leftArm = this.body.getChild("left_arm");
+   private final ModelPart rightArm = this.body.getChild("right_arm");
+   private final ModelPart leftLeg = this.root.getChild("left_leg");
+   private final ModelPart rightLeg = this.root.getChild("right_leg");
+   private final ModelPart croakingBody = this.body.getChild("croaking_body");
 
    public FrogModel(ModelPart var1) {
-      super();
-      this.root = var1.getChild("root");
-      this.body = this.root.getChild("body");
-      this.head = this.body.getChild("head");
-      this.eyes = this.head.getChild("eyes");
-      this.tongue = this.body.getChild("tongue");
-      this.leftArm = this.body.getChild("left_arm");
-      this.rightArm = this.body.getChild("right_arm");
-      this.leftLeg = this.root.getChild("left_leg");
-      this.rightLeg = this.root.getChild("right_leg");
-      this.croakingBody = this.body.getChild("croaking_body");
+      super(var1.getChild("root"));
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -95,23 +84,18 @@ public class FrogModel<T extends Frog> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 48, 48);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
-      this.animate(var1.jumpAnimationState, FrogAnimation.FROG_JUMP, var4);
-      this.animate(var1.croakAnimationState, FrogAnimation.FROG_CROAK, var4);
-      this.animate(var1.tongueAnimationState, FrogAnimation.FROG_TONGUE, var4);
-      if (var1.isInWaterOrBubble()) {
-         this.animateWalk(FrogAnimation.FROG_SWIM, var2, var3, 1.0F, 2.5F);
+   public void setupAnim(FrogRenderState var1) {
+      super.setupAnim(var1);
+      this.animate(var1.jumpAnimationState, FrogAnimation.FROG_JUMP, var1.ageInTicks);
+      this.animate(var1.croakAnimationState, FrogAnimation.FROG_CROAK, var1.ageInTicks);
+      this.animate(var1.tongueAnimationState, FrogAnimation.FROG_TONGUE, var1.ageInTicks);
+      if (var1.isSwimming) {
+         this.animateWalk(FrogAnimation.FROG_SWIM, var1.walkAnimationPos, var1.walkAnimationSpeed, 1.0F, 2.5F);
       } else {
-         this.animateWalk(FrogAnimation.FROG_WALK, var2, var3, 1.5F, 2.5F);
+         this.animateWalk(FrogAnimation.FROG_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 1.5F, 2.5F);
       }
 
-      this.animate(var1.swimIdleAnimationState, FrogAnimation.FROG_IDLE_WATER, var4);
+      this.animate(var1.swimIdleAnimationState, FrogAnimation.FROG_IDLE_WATER, var1.ageInTicks);
       this.croakingBody.visible = var1.croakAnimationState.isStarted();
-   }
-
-   @Override
-   public ModelPart root() {
-      return this.root;
    }
 }

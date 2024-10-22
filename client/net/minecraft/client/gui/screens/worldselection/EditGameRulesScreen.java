@@ -234,7 +234,7 @@ public class EditGameRulesScreen extends Screen {
             24
          );
          final HashMap var3 = Maps.newHashMap();
-         GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+         nullx.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             @Override
             public void visitBoolean(GameRules.Key<GameRules.BooleanValue> var1, GameRules.Type<GameRules.BooleanValue> var2) {
                this.addEntry(var1, (var1x, var2x, var3xx, var4) -> EditGameRulesScreen.this.new BooleanRuleEntry(var1x, var2x, var3xx, var4));

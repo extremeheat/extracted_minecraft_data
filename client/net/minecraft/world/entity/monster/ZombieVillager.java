@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
@@ -25,13 +26,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
-import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerDataHolder;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -158,7 +159,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
                this.startConverting(var1.getUUID(), this.random.nextInt(2401) + 3600);
             }
 
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else {
             return InteractionResult.CONSUME;
          }
@@ -212,9 +213,8 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    private void finishConversion(ServerLevel var1) {
-      Villager var2 = this.convertTo(EntityType.VILLAGER, false);
-      if (var2 != null) {
-         for (EquipmentSlot var4 : this.dropPreservedEquipment(var0 -> !EnchantmentHelper.has(var0, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE))) {
+      this.convertTo(EntityType.VILLAGER, ConversionParams.single(this, false, false), var2 -> {
+         for (EquipmentSlot var4 : this.dropPreservedEquipment(var1, var0 -> !EnchantmentHelper.has(var0, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE))) {
             SlotAccess var5 = var2.getSlot(var4.getIndex() + 300);
             var5.set(this.getItemBySlot(var4));
          }
@@ -229,7 +229,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          }
 
          var2.setVillagerXp(this.villagerXp);
-         var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), MobSpawnType.CONVERSION, null);
+         var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), EntitySpawnReason.CONVERSION, null);
          var2.refreshBrain(var1);
          if (this.conversionStarter != null) {
             Player var6 = var1.getPlayerByUUID(this.conversionStarter);
@@ -243,7 +243,12 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          if (!this.isSilent()) {
             var1.levelEvent(null, 1027, this.blockPosition(), 0);
          }
-      }
+      });
+   }
+
+   @VisibleForTesting
+   public void setVillagerConversionTime(int var1) {
+      this.villagerConversionTime = var1;
    }
 
    private int getConversionProgress() {
@@ -313,7 +318,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }

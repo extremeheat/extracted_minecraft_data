@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
@@ -35,7 +34,7 @@ public class CollisionBoxRenderer implements DebugRenderer.SimpleDebugRenderer {
       VertexConsumer var14 = var2.getBuffer(RenderType.lines());
 
       for (VoxelShape var13 : this.shapes) {
-         LevelRenderer.renderVoxelShape(var1, var14, var13, -var3, -var5, -var7, 1.0F, 1.0F, 1.0F, 1.0F, true);
+         DebugRenderer.renderVoxelShape(var1, var14, var13, -var3, -var5, -var7, 1.0F, 1.0F, 1.0F, 1.0F, true);
       }
    }
 }

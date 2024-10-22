@@ -75,7 +75,7 @@ public class ServerData {
          }
       }
 
-      if (var0.contains("acceptTextures", 1)) {
+      if (var0.contains("acceptTextures", 99)) {
          if (var0.getBoolean("acceptTextures")) {
             var1.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
          } else {

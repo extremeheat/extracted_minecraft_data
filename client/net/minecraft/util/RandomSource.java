@@ -56,6 +56,10 @@ public interface RandomSource {
       return var1 + var3 * (this.nextDouble() - this.nextDouble());
    }
 
+   default float triangle(float var1, float var2) {
+      return var1 + var2 * (this.nextFloat() - this.nextFloat());
+   }
+
    default void consumeCount(int var1) {
       for (int var2 = 0; var2 < var1; var2++) {
          this.nextInt();

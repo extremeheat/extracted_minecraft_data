@@ -6,14 +6,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.monster.AbstractIllager;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -34,7 +37,7 @@ public class TraderLlama extends Llama {
    @Nullable
    @Override
    protected Llama makeNewLlama() {
-      return EntityType.TRADER_LLAMA.create(this.level());
+      return EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -56,6 +59,9 @@ public class TraderLlama extends Llama {
       super.registerGoals();
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
       this.targetSelector.addGoal(1, new TraderLlama.TraderLlamaDefendWanderingTraderGoal(this));
+      this.targetSelector
+         .addGoal(2, new NearestAttackableTargetGoal<>(this, Zombie.class, true, (var0, var1) -> var0.getType() != EntityType.ZOMBIFIED_PIGLIN));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, AbstractIllager.class, true));
    }
 
    public void setDespawnDelay(int var1) {
@@ -102,8 +108,8 @@ public class TraderLlama extends Llama {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
-      if (var3 == MobSpawnType.EVENT) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      if (var3 == EntitySpawnReason.EVENT) {
          this.setAge(0);
       }
 

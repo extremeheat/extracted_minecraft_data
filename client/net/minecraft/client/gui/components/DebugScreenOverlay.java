@@ -31,9 +31,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.debugchart.BandwidthDebugChart;
 import net.minecraft.client.gui.components.debugchart.FpsDebugChart;
 import net.minecraft.client.gui.components.debugchart.PingDebugChart;
+import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,6 +41,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerTickRateManager;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -48,6 +49,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
@@ -107,6 +111,7 @@ public class DebugScreenOverlay {
    private final TpsDebugChart tpsChart;
    private final PingDebugChart pingChart;
    private final BandwidthDebugChart bandwidthChart;
+   private final ProfilerPieChart profilerPieChart;
 
    public DebugScreenOverlay(Minecraft var1) {
       super();
@@ -117,6 +122,7 @@ public class DebugScreenOverlay {
       this.tpsChart = new TpsDebugChart(this.font, this.tickTimeLogger, () -> var1.level.tickRateManager().millisecondsPerTick());
       this.pingChart = new PingDebugChart(this.font, this.pingLogger);
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
+      this.profilerPieChart = new ProfilerPieChart(this.font);
    }
 
    public void clearChunkCache() {
@@ -125,35 +131,43 @@ public class DebugScreenOverlay {
    }
 
    public void render(GuiGraphics var1) {
-      this.minecraft.getProfiler().push("debug");
-      Entity var2 = this.minecraft.getCameraEntity();
-      this.block = var2.pick(20.0, 0.0F, false);
-      this.liquid = var2.pick(20.0, 0.0F, true);
-      var1.drawManaged(() -> {
-         this.drawGameInformation(var1);
-         this.drawSystemInformation(var1);
-         if (this.renderFpsCharts) {
-            int var2x = var1.guiWidth();
-            int var3 = var2x / 2;
-            this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var3));
-            if (this.tickTimeLogger.size() > 0) {
-               int var4 = this.tpsChart.getWidth(var3);
-               this.tpsChart.drawChart(var1, var2x - var4, var4);
-            }
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("debug");
+      Entity var3 = this.minecraft.getCameraEntity();
+      this.block = var3.pick(20.0, 0.0F, false);
+      this.liquid = var3.pick(20.0, 0.0F, true);
+      this.drawGameInformation(var1);
+      this.drawSystemInformation(var1);
+      this.profilerPieChart.setBottomOffset(10);
+      if (this.renderFpsCharts) {
+         int var4 = var1.guiWidth();
+         int var5 = var4 / 2;
+         this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var5));
+         if (this.tickTimeLogger.size() > 0) {
+            int var6 = this.tpsChart.getWidth(var5);
+            this.tpsChart.drawChart(var1, var4 - var6, var6);
          }
 
-         if (this.renderNetworkCharts) {
-            int var5 = var1.guiWidth();
-            int var6 = var5 / 2;
-            if (!this.minecraft.isLocalServer()) {
-               this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var6));
-            }
+         this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
+      }
 
-            int var7 = this.pingChart.getWidth(var6);
-            this.pingChart.drawChart(var1, var5 - var7, var7);
+      if (this.renderNetworkCharts) {
+         int var9 = var1.guiWidth();
+         int var11 = var9 / 2;
+         if (!this.minecraft.isLocalServer()) {
+            this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var11));
          }
-      });
-      this.minecraft.getProfiler().pop();
+
+         int var12 = this.pingChart.getWidth(var11);
+         this.pingChart.drawChart(var1, var9 - var12, var12);
+         this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
+      }
+
+      try (Zone var10 = var2.zone("profilerPie")) {
+         this.profilerPieChart.render(var1);
+      }
+
+      var2.pop();
    }
 
    protected void drawGameInformation(GuiGraphics var1) {
@@ -361,7 +375,7 @@ public class DebugScreenOverlay {
             }
 
             var16.add(var23.toString());
-            if (var28.getY() >= this.minecraft.level.getMinBuildHeight() && var28.getY() < this.minecraft.level.getMaxBuildHeight()) {
+            if (this.minecraft.level.isInsideBuildHeight(var28.getY())) {
                var16.add("Biome: " + printBiome(this.minecraft.level.getBiome(var28)));
                if (var22 != null) {
                   float var38 = var14.getMoonBrightness();
@@ -412,9 +426,9 @@ public class DebugScreenOverlay {
             }
          }
 
-         PostChain var33 = this.minecraft.gameRenderer.currentEffect();
+         ResourceLocation var33 = this.minecraft.gameRenderer.currentPostEffect();
          if (var33 != null) {
-            var16.add("Shader: " + var33.getName());
+            var16.add("Post: " + var33);
          }
 
          var16.add(
@@ -613,6 +627,10 @@ public class DebugScreenOverlay {
 
    public LocalSampleLogger getBandwidthLogger() {
       return this.bandwidthLogger;
+   }
+
+   public ProfilerPieChart getProfilerPieChart() {
+      return this.profilerPieChart;
    }
 
    public void logRemoteSample(long[] var1, RemoteDebugSampleType var2) {

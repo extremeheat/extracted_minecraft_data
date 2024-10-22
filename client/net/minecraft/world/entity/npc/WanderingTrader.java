@@ -40,13 +40,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class WanderingTrader extends AbstractVillager {
+public class WanderingTrader extends AbstractVillager implements Consumable.OverrideConsumeSound {
    private static final int NUMBER_OF_TRADE_OFFERS = 5;
    @Nullable
    private BlockPos wanderTarget;
@@ -121,7 +122,7 @@ public class WanderingTrader extends AbstractVillager {
             this.openTradingScreen(var1, this.getDisplayName(), 1);
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -205,7 +206,7 @@ public class WanderingTrader extends AbstractVillager {
    }
 
    @Override
-   protected SoundEvent getDrinkingSound(ItemStack var1) {
+   public SoundEvent getConsumeSound(ItemStack var1) {
       return var1.is(Items.MILK_BUCKET) ? SoundEvents.WANDERING_TRADER_DRINK_MILK : SoundEvents.WANDERING_TRADER_DRINK_POTION;
    }
 

@@ -75,7 +75,7 @@ public class StructureManager {
 
       while (var4.hasNext()) {
          long var5 = (Long)var4.next();
-         SectionPos var7 = SectionPos.of(new ChunkPos(var5), this.level.getMinSection());
+         SectionPos var7 = SectionPos.of(new ChunkPos(var5), this.level.getMinSectionY());
          StructureStart var8 = this.getStartForStructure(var7, var1, this.level.getChunk(var7.x(), var7.z(), ChunkStatus.STRUCTURE_STARTS));
          if (var8 != null && var8.isValid()) {
             var3.accept(var8);
@@ -119,9 +119,9 @@ public class StructureManager {
    }
 
    public StructureStart getStructureWithPieceAt(BlockPos var1, Predicate<Holder<Structure>> var2) {
-      Registry var3 = this.registryAccess().registryOrThrow(Registries.STRUCTURE);
+      Registry var3 = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
 
-      for (StructureStart var5 : this.startsForStructure(new ChunkPos(var1), var2x -> var3.getHolder(var3.getId(var2x)).map(var2::test).orElse(false))) {
+      for (StructureStart var5 : this.startsForStructure(new ChunkPos(var1), var2x -> var3.get(var3.getId(var2x)).map(var2::test).orElse(false))) {
          if (this.structureHasPieceAt(var1, var5)) {
             return var5;
          }

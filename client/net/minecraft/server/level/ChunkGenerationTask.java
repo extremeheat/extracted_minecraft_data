@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.util.StaticCache2D;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkDependencies;
@@ -110,13 +112,16 @@ public class ChunkGenerationTask {
    }
 
    private void scheduleLayer(ChunkStatus var1, boolean var2) {
-      int var3 = this.getRadiusForLayer(var1, var2);
+      try (Zone var3 = Profiler.get().zone("scheduleLayer")) {
+         var3.addText(var1::getName);
+         int var4 = this.getRadiusForLayer(var1, var2);
 
-      for (int var4 = this.pos.x - var3; var4 <= this.pos.x + var3; var4++) {
-         for (int var5 = this.pos.z - var3; var5 <= this.pos.z + var3; var5++) {
-            GenerationChunkHolder var6 = this.cache.get(var4, var5);
-            if (this.markedForCancellation || !this.scheduleChunkInLayer(var1, var2, var6)) {
-               return;
+         for (int var5 = this.pos.x - var4; var5 <= this.pos.x + var4; var5++) {
+            for (int var6 = this.pos.z - var4; var6 <= this.pos.z + var4; var6++) {
+               GenerationChunkHolder var7 = this.cache.get(var5, var6);
+               if (this.markedForCancellation || !this.scheduleChunkInLayer(var1, var2, var7)) {
+                  return;
+               }
             }
          }
       }

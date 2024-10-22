@@ -91,7 +91,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
                BlockPos var8 = var3.relative(var7);
                BlockState var9 = var2.getBlockState(var8.below());
                if (var2.getBlockState(var8).isAir() && (var9.is(Blocks.FARMLAND) || var9.is(BlockTags.DIRT))) {
-                  Registry var10 = var2.registryAccess().registryOrThrow(Registries.BLOCK);
+                  Registry var10 = var2.registryAccess().lookupOrThrow(Registries.BLOCK);
                   Optional var11 = var10.getOptional(this.fruit);
                   Optional var12 = var10.getOptional(this.attachedStem);
                   if (var11.isPresent() && var12.isPresent()) {
@@ -106,7 +106,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      return new ItemStack((ItemLike)DataFixUtils.orElse(var1.registryAccess().registryOrThrow(Registries.ITEM).getOptional(this.seed), this));
+      return new ItemStack((ItemLike)DataFixUtils.orElse(var1.registryAccess().lookupOrThrow(Registries.ITEM).getOptional(this.seed), this));
    }
 
    @Override

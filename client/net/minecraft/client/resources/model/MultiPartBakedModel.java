@@ -1,43 +1,32 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.tuple.Pair;
 
-public class MultiPartBakedModel implements BakedModel {
-   private final List<Pair<Predicate<BlockState>, BakedModel>> selectors;
-   protected final boolean hasAmbientOcclusion;
-   protected final boolean isGui3d;
-   protected final boolean usesBlockLight;
-   protected final TextureAtlasSprite particleIcon;
-   protected final ItemTransforms transforms;
-   protected final ItemOverrides overrides;
+public class MultiPartBakedModel extends DelegateBakedModel {
+   private final List<MultiPartBakedModel.Selector> selectors;
    private final Map<BlockState, BitSet> selectorCache = new Reference2ObjectOpenHashMap();
 
-   public MultiPartBakedModel(List<Pair<Predicate<BlockState>, BakedModel>> var1) {
-      super();
+   private static BakedModel getFirstModel(List<MultiPartBakedModel.Selector> var0) {
+      if (var0.isEmpty()) {
+         throw new IllegalArgumentException("Model must have at least one selector");
+      } else {
+         return ((MultiPartBakedModel.Selector)var0.getFirst()).model();
+      }
+   }
+
+   public MultiPartBakedModel(List<MultiPartBakedModel.Selector> var1) {
+      super(getFirstModel(var1));
       this.selectors = var1;
-      BakedModel var2 = (BakedModel)((Pair)var1.iterator().next()).getRight();
-      this.hasAmbientOcclusion = var2.useAmbientOcclusion();
-      this.isGui3d = var2.isGui3d();
-      this.usesBlockLight = var2.usesBlockLight();
-      this.particleIcon = var2.getParticleIcon();
-      this.transforms = var2.getTransforms();
-      this.overrides = var2.getOverrides();
    }
 
    @Override
@@ -50,8 +39,7 @@ public class MultiPartBakedModel implements BakedModel {
             var4 = new BitSet();
 
             for (int var5 = 0; var5 < this.selectors.size(); var5++) {
-               Pair var6 = this.selectors.get(var5);
-               if (((Predicate)var6.getLeft()).test(var1)) {
+               if (this.selectors.get(var5).condition.test(var1)) {
                   var4.set(var5);
                }
             }
@@ -59,12 +47,13 @@ public class MultiPartBakedModel implements BakedModel {
             this.selectorCache.put(var1, var4);
          }
 
-         ArrayList var9 = Lists.newArrayList();
-         long var10 = var3.nextLong();
+         ArrayList var9 = new ArrayList();
+         long var6 = var3.nextLong();
 
          for (int var8 = 0; var8 < var4.length(); var8++) {
             if (var4.get(var8)) {
-               var9.addAll(((BakedModel)this.selectors.get(var8).getRight()).getQuads(var1, var2, RandomSource.create(var10)));
+               var3.setSeed(var6);
+               var9.addAll(this.selectors.get(var8).model.getQuads(var1, var2, var3));
             }
          }
 
@@ -72,54 +61,16 @@ public class MultiPartBakedModel implements BakedModel {
       }
    }
 
-   @Override
-   public boolean useAmbientOcclusion() {
-      return this.hasAmbientOcclusion;
-   }
-
-   @Override
-   public boolean isGui3d() {
-      return this.isGui3d;
-   }
-
-   @Override
-   public boolean usesBlockLight() {
-      return this.usesBlockLight;
-   }
-
-   @Override
-   public boolean isCustomRenderer() {
-      return false;
-   }
-
-   @Override
-   public TextureAtlasSprite getParticleIcon() {
-      return this.particleIcon;
-   }
-
-   @Override
-   public ItemTransforms getTransforms() {
-      return this.transforms;
-   }
-
-   @Override
-   public ItemOverrides getOverrides() {
-      return this.overrides;
-   }
-
-   public static class Builder {
-      private final List<Pair<Predicate<BlockState>, BakedModel>> selectors = Lists.newArrayList();
-
-      public Builder() {
-         super();
-      }
-
-      public void add(Predicate<BlockState> var1, BakedModel var2) {
-         this.selectors.add(Pair.of(var1, var2));
-      }
-
-      public BakedModel build() {
-         return new MultiPartBakedModel(this.selectors);
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

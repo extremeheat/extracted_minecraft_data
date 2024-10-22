@@ -29,7 +29,7 @@ public interface CaveVines {
          BlockState var5 = var1.setValue(BERRIES, Boolean.valueOf(false));
          var2.setBlock(var3, var5, 2);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var5));
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }

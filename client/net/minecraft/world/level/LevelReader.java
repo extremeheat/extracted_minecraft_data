@@ -64,13 +64,12 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
 
    boolean isClientSide();
 
-   @Deprecated
    int getSeaLevel();
 
    DimensionType dimensionType();
 
    @Override
-   default int getMinBuildHeight() {
+   default int getMinY() {
       return this.dimensionType().minY();
    }
 
@@ -97,7 +96,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
          } else {
             for (BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
                BlockState var3 = this.getBlockState(var4);
-               if (var3.getLightBlock(this, var4) > 0 && !var3.liquid()) {
+               if (var3.getLightBlock() > 0 && !var3.liquid()) {
                   return false;
                }
             }
@@ -188,7 +187,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
 
    @Deprecated
    default boolean hasChunksAt(int var1, int var2, int var3, int var4, int var5, int var6) {
-      return var5 >= this.getMinBuildHeight() && var2 < this.getMaxBuildHeight() ? this.hasChunksAt(var1, var3, var4, var6) : false;
+      return var5 >= this.getMinY() && var2 <= this.getMaxY() ? this.hasChunksAt(var1, var3, var4, var6) : false;
    }
 
    @Deprecated
@@ -214,7 +213,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
    FeatureFlagSet enabledFeatures();
 
    default <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<? extends T>> var1) {
-      Registry var2 = this.registryAccess().registryOrThrow(var1);
-      return var2.asLookup().filterFeatures(this.enabledFeatures());
+      Registry var2 = this.registryAccess().lookupOrThrow(var1);
+      return var2.filterFeatures(this.enabledFeatures());
    }
 }

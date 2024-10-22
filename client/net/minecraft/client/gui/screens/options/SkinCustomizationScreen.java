@@ -19,9 +19,7 @@ public class SkinCustomizationScreen extends OptionsSubScreen {
       ArrayList var1 = new ArrayList();
 
       for (PlayerModelPart var5 : PlayerModelPart.values()) {
-         var1.add(
-            CycleButton.onOffBuilder(this.options.isModelPartEnabled(var5)).create(var5.getName(), (var2, var3) -> this.options.toggleModelPart(var5, var3))
-         );
+         var1.add(CycleButton.onOffBuilder(this.options.isModelPartEnabled(var5)).create(var5.getName(), (var2, var3) -> this.options.setModelPart(var5, var3)));
       }
 
       var1.add(this.options.mainHand().createButton(this.options));

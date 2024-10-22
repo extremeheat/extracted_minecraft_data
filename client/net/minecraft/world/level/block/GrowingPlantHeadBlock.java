@@ -6,8 +6,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -31,8 +31,8 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
    protected abstract MapCodec<? extends GrowingPlantHeadBlock> codec();
 
    @Override
-   public BlockState getStateForPlacement(LevelAccessor var1) {
-      return this.defaultBlockState().setValue(AGE, Integer.valueOf(var1.getRandom().nextInt(25)));
+   public BlockState getStateForPlacement(RandomSource var1) {
+      return this.defaultBlockState().setValue(AGE, Integer.valueOf(var1.nextInt(25)));
    }
 
    @Override
@@ -67,17 +67,19 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == this.growthDirection.getOpposite() && !var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, this, 1);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (var5 == this.growthDirection.getOpposite() && !var1.canSurvive(var2, var4)) {
+         var3.scheduleTick(var4, this, 1);
       }
 
-      if (var2 != this.growthDirection || !var3.is(this) && !var3.is(this.getBodyBlock())) {
+      if (var5 != this.growthDirection || !var7.is(this) && !var7.is(this.getBodyBlock())) {
          if (this.scheduleFluidTicks) {
-            var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+            var3.scheduleTick(var4, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
          return this.updateBodyAfterConvertedFromHead(var1, this.getBodyBlock().defaultBlockState());
       }

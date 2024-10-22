@@ -2,6 +2,7 @@ package net.minecraft.world.level.block.state.properties;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
+import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.entity.vault.VaultState;
 
@@ -24,6 +25,7 @@ public class BlockStateProperties {
    public static final BooleanProperty INVERTED = BooleanProperty.create("inverted");
    public static final BooleanProperty IN_WALL = BooleanProperty.create("in_wall");
    public static final BooleanProperty LIT = BooleanProperty.create("lit");
+   public static final BooleanProperty TIP = BooleanProperty.create("tip");
    public static final BooleanProperty LOCKED = BooleanProperty.create("locked");
    public static final BooleanProperty OCCUPIED = BooleanProperty.create("occupied");
    public static final BooleanProperty OPEN = BooleanProperty.create("open");
@@ -47,11 +49,11 @@ public class BlockStateProperties {
    public static final BooleanProperty EAST = BooleanProperty.create("east");
    public static final BooleanProperty SOUTH = BooleanProperty.create("south");
    public static final BooleanProperty WEST = BooleanProperty.create("west");
-   public static final DirectionProperty FACING = DirectionProperty.create(
-      "facing", Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN
+   public static final EnumProperty<Direction> FACING = EnumProperty.create(
+      "facing", Direction.class, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN
    );
-   public static final DirectionProperty FACING_HOPPER = DirectionProperty.create("facing", var0 -> var0 != Direction.UP);
-   public static final DirectionProperty HORIZONTAL_FACING = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
+   public static final EnumProperty<Direction> FACING_HOPPER = EnumProperty.create("facing", Direction.class, var0 -> var0 != Direction.UP);
+   public static final EnumProperty<Direction> HORIZONTAL_FACING = EnumProperty.create("facing", Direction.class, Direction.Plane.HORIZONTAL);
    public static final IntegerProperty FLOWER_AMOUNT = IntegerProperty.create("flower_amount", 1, 4);
    public static final EnumProperty<FrontAndTop> ORIENTATION = EnumProperty.create("orientation", FrontAndTop.class);
    public static final EnumProperty<AttachFace> ATTACH_FACE = EnumProperty.create("face", AttachFace.class);
@@ -128,7 +130,7 @@ public class BlockStateProperties {
    public static final EnumProperty<StructureMode> STRUCTUREBLOCK_MODE = EnumProperty.create("mode", StructureMode.class);
    public static final EnumProperty<BambooLeaves> BAMBOO_LEAVES = EnumProperty.create("leaves", BambooLeaves.class);
    public static final EnumProperty<Tilt> TILT = EnumProperty.create("tilt", Tilt.class);
-   public static final DirectionProperty VERTICAL_DIRECTION = DirectionProperty.create("vertical_direction", Direction.UP, Direction.DOWN);
+   public static final EnumProperty<Direction> VERTICAL_DIRECTION = EnumProperty.create("vertical_direction", Direction.class, Direction.UP, Direction.DOWN);
    public static final EnumProperty<DripstoneThickness> DRIPSTONE_THICKNESS = EnumProperty.create("thickness", DripstoneThickness.class);
    public static final EnumProperty<SculkSensorPhase> SCULK_SENSOR_PHASE = EnumProperty.create("sculk_sensor_phase", SculkSensorPhase.class);
    public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_0_OCCUPIED = BooleanProperty.create("slot_0_occupied");
@@ -142,6 +144,9 @@ public class BlockStateProperties {
    public static final BooleanProperty CRAFTING = BooleanProperty.create("crafting");
    public static final EnumProperty<TrialSpawnerState> TRIAL_SPAWNER_STATE = EnumProperty.create("trial_spawner_state", TrialSpawnerState.class);
    public static final EnumProperty<VaultState> VAULT_STATE = EnumProperty.create("vault_state", VaultState.class);
+   public static final EnumProperty<CreakingHeartBlock.CreakingHeartState> CREAKING = EnumProperty.create(
+      "creaking", CreakingHeartBlock.CreakingHeartState.class
+   );
    public static final BooleanProperty OMINOUS = BooleanProperty.create("ominous");
 
    public BlockStateProperties() {

@@ -43,7 +43,7 @@ public class ChunkGenerationEvent extends Event {
    public ChunkGenerationEvent(ChunkPos var1, ResourceKey<Level> var2, String var3) {
       super();
       this.targetStatus = var3;
-      this.level = var2.toString();
+      this.level = var2.location().toString();
       this.chunkPosX = var1.x;
       this.chunkPosZ = var1.z;
       this.worldPosX = var1.getMinBlockX();

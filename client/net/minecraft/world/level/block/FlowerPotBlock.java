@@ -8,16 +8,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -53,19 +53,19 @@ public class FlowerPotBlock extends Block {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       BlockState var8 = (var1.getItem() instanceof BlockItem var9 ? POTTED_BY_CONTENT.getOrDefault(var9.getBlock(), Blocks.AIR) : Blocks.AIR)
          .defaultBlockState();
       if (var8.isAir()) {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else if (!this.isEmpty()) {
-         return ItemInteractionResult.CONSUME;
+         return InteractionResult.CONSUME;
       } else {
          var3.setBlock(var4, var8, 3);
          var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
          var5.awardStat(Stats.POT_FLOWER);
          var1.consume(1, var5);
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -81,7 +81,7 @@ public class FlowerPotBlock extends Block {
 
          var2.setBlock(var3, Blocks.FLOWER_POT.defaultBlockState(), 3);
          var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -95,8 +95,12 @@ public class FlowerPotBlock extends Block {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2 == Direction.DOWN && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      return var5 == Direction.DOWN && !var1.canSurvive(var2, var4)
+         ? Blocks.AIR.defaultBlockState()
+         : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    public Block getPotted() {

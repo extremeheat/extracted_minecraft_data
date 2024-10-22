@@ -24,15 +24,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowParentGoal;
@@ -51,14 +50,12 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LlamaSpit;
-import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -78,6 +75,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    public Llama(EntityType<? extends Llama> var1, Level var2) {
       super(var1, var2);
+      this.getNavigation().setRequiredPathLength(40.0F);
    }
 
    public boolean isTraderLlama() {
@@ -129,7 +127,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return createBaseChestedHorseAttributes().add(Attributes.FOLLOW_RANGE, 40.0);
+      return createBaseChestedHorseAttributes();
    }
 
    @Override
@@ -220,7 +218,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.setRandomStrength(var5);
       Llama.Variant var6;
@@ -287,24 +285,8 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   public boolean isBodyArmorItem(ItemStack var1) {
-      return var1.is(ItemTags.WOOL_CARPETS);
-   }
-
-   @Override
    public boolean isSaddleable() {
       return false;
-   }
-
-   @Nullable
-   private static DyeColor getDyeColor(ItemStack var0) {
-      Block var1 = Block.byItem(var0.getItem());
-      return var1 instanceof WoolCarpetBlock ? ((WoolCarpetBlock)var1).getColor() : null;
-   }
-
-   @Nullable
-   public DyeColor getSwag() {
-      return getDyeColor(this.getItemBySlot(EquipmentSlot.BODY));
    }
 
    @Override
@@ -337,7 +319,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Nullable
    protected Llama makeNewLlama() {
-      return EntityType.LLAMA.create(this.level());
+      return EntityType.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
    private void spit(LivingEntity var1) {
@@ -346,7 +328,10 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       double var5 = var1.getY(0.3333333333333333) - var2.getY();
       double var7 = var1.getZ() - this.getZ();
       double var9 = Math.sqrt(var3 * var3 + var7 * var7) * 0.20000000298023224;
-      var2.shoot(var3, var5 + var9, var7, 1.5F, 10.0F);
+      if (this.level() instanceof ServerLevel var11) {
+         Projectile.spawnProjectileUsingShoot(var2, var11, ItemStack.EMPTY, var3, var5 + var9, var7, 1.5F, 10.0F);
+      }
+
       if (!this.isSilent()) {
          this.level()
             .playSound(
@@ -361,7 +346,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
             );
       }
 
-      this.level().addFreshEntity(var2);
       this.didSpit = true;
    }
 
@@ -421,9 +405,9 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   protected void followMommy() {
+   protected void followMommy(ServerLevel var1) {
       if (!this.inCaravan() && this.isBaby()) {
-         super.followMommy();
+         super.followMommy(var1);
       }
    }
 
@@ -454,7 +438,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    static class LlamaAttackWolfGoal extends NearestAttackableTargetGoal<Wolf> {
       public LlamaAttackWolfGoal(Llama var1) {
-         super(var1, Wolf.class, 16, false, true, var0 -> !((Wolf)var0).isTame());
+         super(var1, Wolf.class, 16, false, true, (var0, var1x) -> !((Wolf)var0).isTame());
       }
 
       @Override

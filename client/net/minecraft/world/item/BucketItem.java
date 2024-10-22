@@ -12,7 +12,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -37,19 +37,19 @@ public class BucketItem extends Item implements DispensibleContainerItem {
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, this.content == Fluids.EMPTY ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE);
       if (var5.getType() == HitResult.Type.MISS) {
-         return InteractionResultHolder.pass(var4);
+         return InteractionResult.PASS;
       } else if (var5.getType() != HitResult.Type.BLOCK) {
-         return InteractionResultHolder.pass(var4);
+         return InteractionResult.PASS;
       } else {
          BlockPos var6 = var5.getBlockPos();
          Direction var7 = var5.getDirection();
          BlockPos var8 = var6.relative(var7);
          if (!var1.mayInteract(var2, var6) || !var2.mayUseItemAt(var8, var7, var4)) {
-            return InteractionResultHolder.fail(var4);
+            return InteractionResult.FAIL;
          } else if (this.content == Fluids.EMPTY) {
             BlockState var13 = var1.getBlockState(var6);
             if (var13.getBlock() instanceof BucketPickup var14) {
@@ -63,11 +63,11 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                      CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var16);
                   }
 
-                  return InteractionResultHolder.sidedSuccess(var12, var1.isClientSide());
+                  return InteractionResult.SUCCESS.heldItemTransformedTo(var12);
                }
             }
 
-            return InteractionResultHolder.fail(var4);
+            return InteractionResult.FAIL;
          } else {
             BlockState var9 = var1.getBlockState(var6);
             BlockPos var10 = var9.getBlock() instanceof LiquidBlockContainer && this.content == Fluids.WATER ? var6 : var8;
@@ -79,9 +79,9 @@ public class BucketItem extends Item implements DispensibleContainerItem {
 
                var2.awardStat(Stats.ITEM_USED.get(this));
                ItemStack var11 = ItemUtils.createFilledResult(var4, var2, getEmptySuccessItem(var4, var2));
-               return InteractionResultHolder.sidedSuccess(var11, var1.isClientSide());
+               return InteractionResult.SUCCESS.heldItemTransformedTo(var11);
             } else {
-               return InteractionResultHolder.fail(var4);
+               return InteractionResult.FAIL;
             }
          }
       }

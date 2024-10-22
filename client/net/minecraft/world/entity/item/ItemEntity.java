@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -13,23 +12,24 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemEntity extends Entity implements TraceableEntity {
@@ -149,6 +149,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
          if (!this.onGround() || this.getDeltaMovement().horizontalDistanceSqr() > 9.999999747378752E-6 || (this.tickCount + this.getId()) % 4 == 0) {
             this.move(MoverType.SELF, this.getDeltaMovement());
+            this.applyEffectsFromBlocks();
             float var2 = 0.98F;
             if (this.onGround()) {
                var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
@@ -195,13 +196,16 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    private void setUnderwaterMovement() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x * 0.9900000095367432, var1.y + (double)(var1.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var1.z * 0.9900000095367432);
+      this.setFluidMovement(0.9900000095367432);
    }
 
    private void setUnderLavaMovement() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x * 0.949999988079071, var1.y + (double)(var1.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var1.z * 0.949999988079071);
+      this.setFluidMovement(0.949999988079071);
+   }
+
+   private void setFluidMovement(double var1) {
+      Vec3 var3 = this.getDeltaMovement();
+      this.setDeltaMovement(var3.x * var1, var3.y + (double)(var3.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var3.z * var1);
    }
 
    private void mergeWithNeighbours() {
@@ -262,23 +266,31 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Override
    public boolean fireImmune() {
-      return this.getItem().has(DataComponents.FIRE_RESISTANT) || super.fireImmune();
+      return !this.getItem().canBeHurtBy(this.damageSources().inFire()) || super.fireImmune();
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   protected boolean shouldPlayLavaHurtSound() {
+      return this.health <= 0 ? true : this.tickCount % 10 == 0;
+   }
+
+   @Override
+   public final boolean hurtClient(DamageSource var1) {
+      return this.isInvulnerableToBase(var1) ? false : this.getItem().canBeHurtBy(var1);
+   }
+
+   @Override
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableToBase(var2)) {
          return false;
-      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
+      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
-      } else if (!this.getItem().canBeHurtBy(var1)) {
+      } else if (!this.getItem().canBeHurtBy(var2)) {
          return false;
-      } else if (this.level().isClientSide) {
-         return true;
       } else {
          this.markHurt();
-         this.health = (int)((float)this.health - var2);
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+         this.health = (int)((float)this.health - var3);
+         this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
          if (this.health <= 0) {
             this.getItem().onDestroyed(this);
             this.discard();
@@ -286,6 +298,11 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
          return true;
       }
+   }
+
+   @Override
+   public boolean ignoreExplosion(Explosion var1) {
+      return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
    }
 
    @Override
@@ -357,7 +374,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    @Override
    public Component getName() {
       Component var1 = this.getCustomName();
-      return (Component)(var1 != null ? var1 : Component.translatable(this.getItem().getDescriptionId()));
+      return var1 != null ? var1 : this.getItem().getItemName();
    }
 
    @Override
@@ -367,8 +384,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Nullable
    @Override
-   public Entity changeDimension(DimensionTransition var1) {
-      Entity var2 = super.changeDimension(var1);
+   public Entity teleport(TeleportTransition var1) {
+      Entity var2 = super.teleport(var1);
       if (!this.level().isClientSide && var2 instanceof ItemEntity var3) {
          var3.mergeWithNeighbours();
       }
@@ -438,8 +455,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.age = 5999;
    }
 
-   public float getSpin(float var1) {
-      return ((float)this.getAge() + var1) / 20.0F + this.bobOffs;
+   public static float getSpin(float var0, float var1) {
+      return var0 / 20.0F + var1;
    }
 
    public ItemEntity copy() {
@@ -453,7 +470,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    @Override
    public float getVisualRotationYInDegrees() {
-      return 180.0F - this.getSpin(0.5F) / 6.2831855F * 360.0F;
+      return 180.0F - getSpin((float)this.getAge() + 0.5F, this.bobOffs) / 6.2831855F * 360.0F;
    }
 
    @Override

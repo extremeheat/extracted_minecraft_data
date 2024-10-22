@@ -77,7 +77,7 @@ public class RamTarget extends Behavior<Goat> {
       if (!var5.isEmpty()) {
          LivingEntity var7 = (LivingEntity)var5.get(0);
          DamageSource var8 = var1.damageSources().noAggroMobAttack(var2);
-         if (var7.hurt(var8, (float)var2.getAttributeValue(Attributes.ATTACK_DAMAGE))) {
+         if (var7.hurtServer(var1, var8, (float)var2.getAttributeValue(Attributes.ATTACK_DAMAGE))) {
             EnchantmentHelper.doPostAttackEffects(var1, var7, var8);
          }
 

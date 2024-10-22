@@ -261,7 +261,7 @@ public class EntitySelector {
          var8 = var9;
       }
 
-      return Util.allOf((List<? extends Predicate<Entity>>)var8);
+      return Util.allOf((List<? extends Predicate<? super Entity>>)var8);
    }
 
    private <T extends Entity> List<T> sortAndLimit(Vec3 var1, List<T> var2) {

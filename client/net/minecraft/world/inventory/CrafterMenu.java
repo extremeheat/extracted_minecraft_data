@@ -1,12 +1,12 @@
 package net.minecraft.world.inventory;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CrafterBlock;
 
 public class CrafterMenu extends AbstractContainerMenu implements ContainerListener {
@@ -47,16 +47,7 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
          }
       }
 
-      for (int var5 = 0; var5 < 3; var5++) {
-         for (int var7 = 0; var7 < 9; var7++) {
-            this.addSlot(new Slot(var1, var7 + var5 * 9 + 9, 8 + var7 * 18, 84 + var5 * 18));
-         }
-      }
-
-      for (int var6 = 0; var6 < 9; var6++) {
-         this.addSlot(new Slot(var1, var6, 8 + var6 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var1, 8, 84);
       this.addSlot(new NonInteractiveResultSlot(this.resultContainer, 0, 134, 35));
       this.addDataSlots(this.containerData);
       this.refreshRecipeResult();
@@ -114,7 +105,7 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
 
    private void refreshRecipeResult() {
       if (this.player instanceof ServerPlayer var1) {
-         Level var5 = var1.level();
+         ServerLevel var5 = var1.serverLevel();
          CraftingInput var3 = this.container.asCraftInput();
          ItemStack var4 = CrafterBlock.getPotentialResults(var5, var3).map(var2 -> var2.value().assemble(var3, var5.registryAccess())).orElse(ItemStack.EMPTY);
          this.resultContainer.setItem(0, var4);

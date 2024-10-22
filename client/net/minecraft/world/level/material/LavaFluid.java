@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -49,7 +50,7 @@ public abstract class LavaFluid extends FlowingFluid {
    @Override
    public void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
       BlockPos var5 = var2.above();
-      if (var1.getBlockState(var5).isAir() && !var1.getBlockState(var5).isSolidRender(var1, var5)) {
+      if (var1.getBlockState(var5).isAir() && !var1.getBlockState(var5).isSolidRender()) {
          if (var4.nextInt(100) == 0) {
             double var6 = (double)var2.getX() + var4.nextDouble();
             double var8 = (double)var2.getY() + 1.0;
@@ -76,7 +77,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    @Override
-   public void randomTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
+   public void randomTick(ServerLevel var1, BlockPos var2, FluidState var3, RandomSource var4) {
       if (var1.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
          int var5 = var4.nextInt(3);
          if (var5 > 0) {
@@ -124,9 +125,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    private boolean isFlammable(LevelReader var1, BlockPos var2) {
-      return var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && !var1.hasChunkAt(var2)
-         ? false
-         : var1.getBlockState(var2).ignitedByLava();
+      return var1.isInsideBuildHeight(var2.getY()) && !var1.hasChunkAt(var2) ? false : var1.getBlockState(var2).ignitedByLava();
    }
 
    @Nullable
@@ -190,7 +189,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    @Override
-   protected boolean canConvertToSource(Level var1) {
+   protected boolean canConvertToSource(ServerLevel var1) {
       return var1.getGameRules().getBoolean(GameRules.RULE_LAVA_SOURCE_CONVERSION);
    }
 

@@ -20,12 +20,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
    protected AbstractFurnaceBlock(BlockBehaviour.Properties var1) {
@@ -38,12 +38,11 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
 
    @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
+      if (!var2.isClientSide) {
          this.openContainer(var2, var3, var4);
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected abstract void openContainer(Level var1, BlockPos var2, Player var3);
@@ -105,6 +104,8 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
    protected static <T extends BlockEntity> BlockEntityTicker<T> createFurnaceTicker(
       Level var0, BlockEntityType<T> var1, BlockEntityType<? extends AbstractFurnaceBlockEntity> var2
    ) {
-      return var0.isClientSide ? null : createTickerHelper(var1, var2, AbstractFurnaceBlockEntity::serverTick);
+      return var0 instanceof ServerLevel var3
+         ? createTickerHelper(var1, var2, (var1x, var2x, var3x, var4) -> AbstractFurnaceBlockEntity.serverTick(var3, var2x, var3x, var4))
+         : null;
    }
 }

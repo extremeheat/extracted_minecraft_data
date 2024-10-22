@@ -35,7 +35,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
 
    @Override
    public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
-      AdvancementHolder var3 = Advancement.Builder.advancement()
+      HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.ITEM);
+      AdvancementHolder var4 = Advancement.Builder.advancement()
          .display(
             Blocks.GRASS_BLOCK,
             Component.translatable("advancements.story.root.title"),
@@ -48,8 +49,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("crafting_table", InventoryChangeTrigger.TriggerInstance.hasItems(Blocks.CRAFTING_TABLE))
          .save(var2, "story/root");
-      AdvancementHolder var4 = Advancement.Builder.advancement()
-         .parent(var3)
+      AdvancementHolder var5 = Advancement.Builder.advancement()
+         .parent(var4)
          .display(
             Items.WOODEN_PICKAXE,
             Component.translatable("advancements.story.mine_stone.title"),
@@ -60,10 +61,10 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("get_stone", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(ItemTags.STONE_TOOL_MATERIALS)))
+         .addCriterion("get_stone", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(var3, ItemTags.STONE_TOOL_MATERIALS)))
          .save(var2, "story/mine_stone");
-      AdvancementHolder var5 = Advancement.Builder.advancement()
-         .parent(var4)
+      AdvancementHolder var6 = Advancement.Builder.advancement()
+         .parent(var5)
          .display(
             Items.STONE_PICKAXE,
             Component.translatable("advancements.story.upgrade_tools.title"),
@@ -76,8 +77,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("stone_pickaxe", InventoryChangeTrigger.TriggerInstance.hasItems(Items.STONE_PICKAXE))
          .save(var2, "story/upgrade_tools");
-      AdvancementHolder var6 = Advancement.Builder.advancement()
-         .parent(var5)
+      AdvancementHolder var7 = Advancement.Builder.advancement()
+         .parent(var6)
          .display(
             Items.IRON_INGOT,
             Component.translatable("advancements.story.smelt_iron.title"),
@@ -90,8 +91,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("iron", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_INGOT))
          .save(var2, "story/smelt_iron");
-      AdvancementHolder var7 = Advancement.Builder.advancement()
-         .parent(var6)
+      AdvancementHolder var8 = Advancement.Builder.advancement()
+         .parent(var7)
          .display(
             Items.IRON_PICKAXE,
             Component.translatable("advancements.story.iron_tools.title"),
@@ -104,8 +105,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("iron_pickaxe", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_PICKAXE))
          .save(var2, "story/iron_tools");
-      AdvancementHolder var8 = Advancement.Builder.advancement()
-         .parent(var7)
+      AdvancementHolder var9 = Advancement.Builder.advancement()
+         .parent(var8)
          .display(
             Items.DIAMOND,
             Component.translatable("advancements.story.mine_diamond.title"),
@@ -118,8 +119,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("diamond", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND))
          .save(var2, "story/mine_diamond");
-      AdvancementHolder var9 = Advancement.Builder.advancement()
-         .parent(var6)
+      AdvancementHolder var10 = Advancement.Builder.advancement()
+         .parent(var7)
          .display(
             Items.LAVA_BUCKET,
             Component.translatable("advancements.story.lava_bucket.title"),
@@ -132,8 +133,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("lava_bucket", InventoryChangeTrigger.TriggerInstance.hasItems(Items.LAVA_BUCKET))
          .save(var2, "story/lava_bucket");
-      AdvancementHolder var10 = Advancement.Builder.advancement()
-         .parent(var6)
+      AdvancementHolder var11 = Advancement.Builder.advancement()
+         .parent(var7)
          .display(
             Items.IRON_CHESTPLATE,
             Component.translatable("advancements.story.obtain_armor.title"),
@@ -151,7 +152,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          .addCriterion("iron_boots", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_BOOTS))
          .save(var2, "story/obtain_armor");
       Advancement.Builder.advancement()
-         .parent(var8)
+         .parent(var9)
          .display(
             Items.ENCHANTED_BOOK,
             Component.translatable("advancements.story.enchant_item.title"),
@@ -164,8 +165,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("enchanted_item", EnchantedItemTrigger.TriggerInstance.enchantedItem())
          .save(var2, "story/enchant_item");
-      AdvancementHolder var11 = Advancement.Builder.advancement()
-         .parent(var9)
+      AdvancementHolder var12 = Advancement.Builder.advancement()
+         .parent(var10)
          .display(
             Blocks.OBSIDIAN,
             Component.translatable("advancements.story.form_obsidian.title"),
@@ -179,7 +180,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          .addCriterion("obsidian", InventoryChangeTrigger.TriggerInstance.hasItems(Blocks.OBSIDIAN))
          .save(var2, "story/form_obsidian");
       Advancement.Builder.advancement()
-         .parent(var10)
+         .parent(var11)
          .display(
             Items.SHIELD,
             Component.translatable("advancements.story.deflect_arrow.title"),
@@ -200,7 +201,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .save(var2, "story/deflect_arrow");
       Advancement.Builder.advancement()
-         .parent(var8)
+         .parent(var9)
          .display(
             Items.DIAMOND_CHESTPLATE,
             Component.translatable("advancements.story.shiny_gear.title"),
@@ -217,8 +218,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          .addCriterion("diamond_leggings", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND_LEGGINGS))
          .addCriterion("diamond_boots", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND_BOOTS))
          .save(var2, "story/shiny_gear");
-      AdvancementHolder var12 = Advancement.Builder.advancement()
-         .parent(var11)
+      AdvancementHolder var13 = Advancement.Builder.advancement()
+         .parent(var12)
          .display(
             Items.FLINT_AND_STEEL,
             Component.translatable("advancements.story.enter_the_nether.title"),
@@ -232,7 +233,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          .addCriterion("entered_nether", ChangeDimensionTrigger.TriggerInstance.changedDimensionTo(Level.NETHER))
          .save(var2, "story/enter_the_nether");
       Advancement.Builder.advancement()
-         .parent(var12)
+         .parent(var13)
          .display(
             Items.GOLDEN_APPLE,
             Component.translatable("advancements.story.cure_zombie_villager.title"),
@@ -245,8 +246,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("cured_zombie", CuredZombieVillagerTrigger.TriggerInstance.curedZombieVillager())
          .save(var2, "story/cure_zombie_villager");
-      AdvancementHolder var13 = Advancement.Builder.advancement()
-         .parent(var12)
+      AdvancementHolder var14 = Advancement.Builder.advancement()
+         .parent(var13)
          .display(
             Items.ENDER_EYE,
             Component.translatable("advancements.story.follow_ender_eye.title"),
@@ -265,7 +266,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .save(var2, "story/follow_ender_eye");
       Advancement.Builder.advancement()
-         .parent(var13)
+         .parent(var14)
          .display(
             Blocks.END_STONE,
             Component.translatable("advancements.story.enter_the_end.title"),

@@ -1,8 +1,8 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.EnumSet;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -23,7 +23,7 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
       this(var1, var2, 10, var3, false, null);
    }
 
-   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3, Predicate<LivingEntity> var4) {
+   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3, TargetingConditions.Selector var4) {
       this(var1, var2, 10, var3, false, var4);
    }
 
@@ -31,7 +31,7 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
       this(var1, var2, 10, var3, var4, null);
    }
 
-   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, int var3, boolean var4, boolean var5, @Nullable Predicate<LivingEntity> var6) {
+   public NearestAttackableTargetGoal(Mob var1, Class<T> var2, int var3, boolean var4, boolean var5, @Nullable TargetingConditions.Selector var6) {
       super(var1, var4, var5);
       this.targetType = var2;
       this.randomInterval = reducedTickDelay(var3);
@@ -50,23 +50,22 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
    }
 
    protected AABB getTargetSearchArea(double var1) {
-      return this.mob.getBoundingBox().inflate(var1, 4.0, var1);
+      return this.mob.getBoundingBox().inflate(var1, var1, var1);
    }
 
    protected void findTarget() {
+      ServerLevel var1 = getServerLevel(this.mob);
       if (this.targetType != Player.class && this.targetType != ServerPlayer.class) {
-         this.target = this.mob
-            .level()
-            .getNearestEntity(
-               this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), var0 -> true),
-               this.targetConditions,
-               this.mob,
-               this.mob.getX(),
-               this.mob.getEyeY(),
-               this.mob.getZ()
-            );
+         this.target = var1.getNearestEntity(
+            this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), var0 -> true),
+            this.getTargetConditions(),
+            this.mob,
+            this.mob.getX(),
+            this.mob.getEyeY(),
+            this.mob.getZ()
+         );
       } else {
-         this.target = this.mob.level().getNearestPlayer(this.targetConditions, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+         this.target = var1.getNearestPlayer(this.getTargetConditions(), this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
       }
    }
 
@@ -78,5 +77,9 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
 
    public void setTarget(@Nullable LivingEntity var1) {
       this.target = var1;
+   }
+
+   private TargetingConditions getTargetConditions() {
+      return this.targetConditions.range(this.getFollowDistance());
    }
 }

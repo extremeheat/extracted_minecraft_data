@@ -82,7 +82,7 @@ public class DownloadedPackSource implements AutoCloseable {
          throw new UncheckedIOException("Failed to open download queue in directory " + var2, var5);
       }
 
-      Executor var4 = var1::tell;
+      Executor var4 = var1::schedule;
       this.manager = new ServerPackManager(this.createDownloader(this.downloadQueue, var4, var3.user, var3.proxy), new PackLoadFeedback() {
          @Override
          public void reportUpdate(UUID var1, PackLoadFeedback.Update var2) {
@@ -107,7 +107,7 @@ public class DownloadedPackSource implements AutoCloseable {
          private OptionalLong totalBytes = OptionalLong.empty();
 
          private void updateToast() {
-            SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToasts(), this.toastId, this.title, this.message);
+            SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId, this.title, this.message);
          }
 
          private void updateProgress(long var1x) {
@@ -156,7 +156,7 @@ public class DownloadedPackSource implements AutoCloseable {
                   this.message = null;
                   this.updateToast();
                } else {
-                  SystemToast.forceHide(DownloadedPackSource.this.minecraft.getToasts(), this.toastId);
+                  SystemToast.forceHide(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId);
                }
             }
          }

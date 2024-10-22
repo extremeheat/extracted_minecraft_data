@@ -22,7 +22,7 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
       WorldGenLevel var3 = var1.level();
       RandomSource var4 = var1.random();
       Block var5 = var2.targetState.getBlock();
-      BlockPos var6 = findTarget(var3, var1.origin().mutable().clamp(Direction.Axis.Y, var3.getMinBuildHeight() + 1, var3.getMaxBuildHeight() - 1), var5);
+      BlockPos var6 = findTarget(var3, var1.origin().mutable().clamp(Direction.Axis.Y, var3.getMinY() + 1, var3.getMaxY()), var5);
       if (var6 == null) {
          return false;
       } else {
@@ -50,7 +50,7 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
 
    @Nullable
    private static BlockPos findTarget(LevelAccessor var0, BlockPos.MutableBlockPos var1, Block var2) {
-      while (var1.getY() > var0.getMinBuildHeight() + 1) {
+      while (var1.getY() > var0.getMinY() + 1) {
          BlockState var3 = var0.getBlockState(var1);
          if (var3.is(var2)) {
             return var1;

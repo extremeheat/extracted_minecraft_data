@@ -3,7 +3,7 @@ package com.mojang.blaze3d.vertex;
 import java.nio.ByteOrder;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.lwjgl.system.MemoryUtil;
 
@@ -124,7 +124,7 @@ public class BufferBuilder implements VertexConsumer {
    }
 
    private static void putRgba(long var0, int var2) {
-      int var3 = FastColor.ABGR32.fromArgb32(var2);
+      int var3 = ARGB.toABGR(var2);
       MemoryUtil.memPutInt(var0, IS_LITTLE_ENDIAN ? var3 : Integer.reverseBytes(var3));
    }
 

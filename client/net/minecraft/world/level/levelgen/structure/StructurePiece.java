@@ -54,6 +54,7 @@ public abstract class StructurePiece {
       .add(Blocks.OAK_FENCE)
       .add(Blocks.SPRUCE_FENCE)
       .add(Blocks.DARK_OAK_FENCE)
+      .add(Blocks.PALE_OAK_FENCE)
       .add(Blocks.ACACIA_FENCE)
       .add(Blocks.BIRCH_FENCE)
       .add(Blocks.JUNGLE_FENCE)
@@ -346,7 +347,7 @@ public abstract class StructurePiece {
    protected void fillColumnDown(WorldGenLevel var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
       BlockPos.MutableBlockPos var7 = this.getWorldPos(var3, var4, var5);
       if (var6.isInside(var7)) {
-         while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
+         while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinY() + 1) {
             var1.setBlock(var7, var2, 2);
             var7.move(Direction.DOWN);
          }
@@ -371,7 +372,7 @@ public abstract class StructurePiece {
             return var2;
          }
 
-         if (var7.isSolidRender(var0, var6)) {
+         if (var7.isSolidRender()) {
             if (var3 != null) {
                var3 = null;
                break;
@@ -386,17 +387,17 @@ public abstract class StructurePiece {
       } else {
          Direction var8 = var2.getValue(HorizontalDirectionalBlock.FACING);
          BlockPos var9 = var1.relative(var8);
-         if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (var0.getBlockState(var9).isSolidRender()) {
             var8 = var8.getOpposite();
             var9 = var1.relative(var8);
          }
 
-         if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (var0.getBlockState(var9).isSolidRender()) {
             var8 = var8.getClockWise();
             var9 = var1.relative(var8);
          }
 
-         if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (var0.getBlockState(var9).isSolidRender()) {
             var8 = var8.getOpposite();
             var9 = var1.relative(var8);
          }

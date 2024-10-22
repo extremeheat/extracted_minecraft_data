@@ -6,19 +6,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -26,9 +24,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,36 +47,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootTable;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
    private static final EntityDataAccessor<Byte> DATA_WOOL_ID = SynchedEntityData.defineId(Sheep.class, EntityDataSerializers.BYTE);
-   private static final Map<DyeColor, ItemLike> ITEM_BY_DYE = Util.make(Maps.newEnumMap(DyeColor.class), var0 -> {
-      var0.put(DyeColor.WHITE, Blocks.WHITE_WOOL);
-      var0.put(DyeColor.ORANGE, Blocks.ORANGE_WOOL);
-      var0.put(DyeColor.MAGENTA, Blocks.MAGENTA_WOOL);
-      var0.put(DyeColor.LIGHT_BLUE, Blocks.LIGHT_BLUE_WOOL);
-      var0.put(DyeColor.YELLOW, Blocks.YELLOW_WOOL);
-      var0.put(DyeColor.LIME, Blocks.LIME_WOOL);
-      var0.put(DyeColor.PINK, Blocks.PINK_WOOL);
-      var0.put(DyeColor.GRAY, Blocks.GRAY_WOOL);
-      var0.put(DyeColor.LIGHT_GRAY, Blocks.LIGHT_GRAY_WOOL);
-      var0.put(DyeColor.CYAN, Blocks.CYAN_WOOL);
-      var0.put(DyeColor.PURPLE, Blocks.PURPLE_WOOL);
-      var0.put(DyeColor.BLUE, Blocks.BLUE_WOOL);
-      var0.put(DyeColor.BROWN, Blocks.BROWN_WOOL);
-      var0.put(DyeColor.GREEN, Blocks.GREEN_WOOL);
-      var0.put(DyeColor.RED, Blocks.RED_WOOL);
-      var0.put(DyeColor.BLACK, Blocks.BLACK_WOOL);
-   });
    private static final Map<DyeColor, Integer> COLOR_BY_DYE = Maps.newEnumMap(
       Arrays.stream(DyeColor.values()).collect(Collectors.toMap(var0 -> (DyeColor)var0, Sheep::createSheepColor))
    );
@@ -92,12 +68,7 @@ public class Sheep extends Animal implements Shearable {
       } else {
          int var1 = var0.getTextureDiffuseColor();
          float var2 = 0.75F;
-         return FastColor.ARGB32.color(
-            255,
-            Mth.floor((float)FastColor.ARGB32.red(var1) * 0.75F),
-            Mth.floor((float)FastColor.ARGB32.green(var1) * 0.75F),
-            Mth.floor((float)FastColor.ARGB32.blue(var1) * 0.75F)
-         );
+         return ARGB.color(255, Mth.floor((float)ARGB.red(var1) * 0.75F), Mth.floor((float)ARGB.green(var1) * 0.75F), Mth.floor((float)ARGB.blue(var1) * 0.75F));
       }
    }
 
@@ -129,9 +100,9 @@ public class Sheep extends Animal implements Shearable {
    }
 
    @Override
-   protected void customServerAiStep() {
+   protected void customServerAiStep(ServerLevel var1) {
       this.eatAnimationTick = this.eatBlockGoal.getEatAnimationTick();
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -144,39 +115,13 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 8.0).add(Attributes.MOVEMENT_SPEED, 0.23000000417232513);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 8.0).add(Attributes.MOVEMENT_SPEED, 0.23000000417232513);
    }
 
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_WOOL_ID, (byte)0);
-   }
-
-   @Override
-   public ResourceKey<LootTable> getDefaultLootTable() {
-      if (this.isSheared()) {
-         return this.getType().getDefaultLootTable();
-      } else {
-         return switch (this.getColor()) {
-            case WHITE -> BuiltInLootTables.SHEEP_WHITE;
-            case ORANGE -> BuiltInLootTables.SHEEP_ORANGE;
-            case MAGENTA -> BuiltInLootTables.SHEEP_MAGENTA;
-            case LIGHT_BLUE -> BuiltInLootTables.SHEEP_LIGHT_BLUE;
-            case YELLOW -> BuiltInLootTables.SHEEP_YELLOW;
-            case LIME -> BuiltInLootTables.SHEEP_LIME;
-            case PINK -> BuiltInLootTables.SHEEP_PINK;
-            case GRAY -> BuiltInLootTables.SHEEP_GRAY;
-            case LIGHT_GRAY -> BuiltInLootTables.SHEEP_LIGHT_GRAY;
-            case CYAN -> BuiltInLootTables.SHEEP_CYAN;
-            case PURPLE -> BuiltInLootTables.SHEEP_PURPLE;
-            case BLUE -> BuiltInLootTables.SHEEP_BLUE;
-            case BROWN -> BuiltInLootTables.SHEEP_BROWN;
-            case GREEN -> BuiltInLootTables.SHEEP_GREEN;
-            case RED -> BuiltInLootTables.SHEEP_RED;
-            case BLACK -> BuiltInLootTables.SHEEP_BLACK;
-         };
-      }
    }
 
    @Override
@@ -211,38 +156,43 @@ public class Sheep extends Animal implements Shearable {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS)) {
-         if (!this.level().isClientSide && this.readyForShearing()) {
-            this.shear(SoundSource.PLAYERS);
+         if (this.level() instanceof ServerLevel var4 && this.readyForShearing()) {
+            this.shear(var4, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
-            return InteractionResult.SUCCESS;
-         } else {
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS_SERVER;
          }
+
+         return InteractionResult.CONSUME;
       } else {
          return super.mobInteract(var1, var2);
       }
    }
 
    @Override
-   public void shear(SoundSource var1) {
-      this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
-      this.setSheared(true);
-      int var2 = 1 + this.random.nextInt(3);
-
-      for (int var3 = 0; var3 < var2; var3++) {
-         ItemEntity var4 = this.spawnAtLocation(ITEM_BY_DYE.get(this.getColor()), 1);
-         if (var4 != null) {
-            var4.setDeltaMovement(
-               var4.getDeltaMovement()
-                  .add(
-                     (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F),
-                     (double)(this.random.nextFloat() * 0.05F),
-                     (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)
-                  )
-            );
+   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
+      var1.playSound(null, this, SoundEvents.SHEEP_SHEAR, var2, 1.0F, 1.0F);
+      this.dropFromShearingLootTable(
+         var1,
+         BuiltInLootTables.SHEAR_SHEEP,
+         var3,
+         (var1x, var2x) -> {
+            for (int var3x = 0; var3x < var2x.getCount(); var3x++) {
+               ItemEntity var4 = this.spawnAtLocation(var1x, var2x.copyWithCount(1), 1.0F);
+               if (var4 != null) {
+                  var4.setDeltaMovement(
+                     var4.getDeltaMovement()
+                        .add(
+                           (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F),
+                           (double)(this.random.nextFloat() * 0.05F),
+                           (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)
+                        )
+                  );
+               }
+            }
          }
-      }
+      );
+      this.setSheared(true);
    }
 
    @Override
@@ -323,9 +273,9 @@ public class Sheep extends Animal implements Shearable {
 
    @Nullable
    public Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Sheep var3 = EntityType.SHEEP.create(var1);
+      Sheep var3 = EntityType.SHEEP.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
-         var3.setColor(this.getOffspringColor(this, (Sheep)var2));
+         var3.setColor(this.getOffspringColor(var1, this, (Sheep)var2));
       }
 
       return var3;
@@ -342,24 +292,23 @@ public class Sheep extends Animal implements Shearable {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setColor(getRandomSheepColor(var1.getRandom()));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   private DyeColor getOffspringColor(Animal var1, Animal var2) {
-      DyeColor var3 = ((Sheep)var1).getColor();
-      DyeColor var4 = ((Sheep)var2).getColor();
-      CraftingInput var5 = makeCraftInput(var3, var4);
-      return this.level()
-         .getRecipeManager()
-         .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
-         .map(var2x -> var2x.value().assemble(var5, this.level().registryAccess()))
+   private DyeColor getOffspringColor(ServerLevel var1, Sheep var2, Sheep var3) {
+      DyeColor var4 = var2.getColor();
+      DyeColor var5 = var3.getColor();
+      CraftingInput var6 = makeCraftInput(var4, var5);
+      return var1.recipeAccess()
+         .getRecipeFor(RecipeType.CRAFTING, var6, var1)
+         .map(var2x -> var2x.value().assemble(var6, var1.registryAccess()))
          .map(ItemStack::getItem)
          .filter(DyeItem.class::isInstance)
          .map(DyeItem.class::cast)
          .map(DyeItem::getDyeColor)
-         .orElseGet(() -> this.level().random.nextBoolean() ? var3 : var4);
+         .orElseGet(() -> var1.random.nextBoolean() ? var4 : var5);
    }
 
    private static CraftingInput makeCraftInput(DyeColor var0, DyeColor var1) {

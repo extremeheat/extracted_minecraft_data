@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -51,16 +51,16 @@ public class RedStoneOreBlock extends Block {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var3.isClientSide) {
          spawnParticles(var3, var4);
       } else {
          interact(var2, var3, var4);
       }
 
-      return var1.getItem() instanceof BlockItem && new BlockPlaceContext(var5, var6, var1, var7).canPlace()
-         ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
-         : ItemInteractionResult.SUCCESS;
+      return (InteractionResult)(var1.getItem() instanceof BlockItem && new BlockPlaceContext(var5, var6, var1, var7).canPlace()
+         ? InteractionResult.PASS
+         : InteractionResult.SUCCESS);
    }
 
    private static void interact(BlockState var0, Level var1, BlockPos var2) {
@@ -103,7 +103,7 @@ public class RedStoneOreBlock extends Block {
 
       for (Direction var8 : Direction.values()) {
          BlockPos var9 = var1.relative(var8);
-         if (!var0.getBlockState(var9).isSolidRender(var0, var9)) {
+         if (!var0.getBlockState(var9).isSolidRender()) {
             Direction.Axis var10 = var8.getAxis();
             double var11 = var10 == Direction.Axis.X ? 0.5 + 0.5625 * (double)var8.getStepX() : (double)var4.nextFloat();
             double var13 = var10 == Direction.Axis.Y ? 0.5 + 0.5625 * (double)var8.getStepY() : (double)var4.nextFloat();

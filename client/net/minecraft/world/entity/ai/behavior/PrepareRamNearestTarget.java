@@ -63,7 +63,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
    protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
       Brain var5 = var2.getBrain();
       var5.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-         .flatMap(var2x -> var2x.findClosest(var2xx -> this.ramTargeting.test(var2, var2xx)))
+         .flatMap(var3x -> var3x.findClosest(var3xx -> this.ramTargeting.test(var1, var2, var3xx)))
          .ifPresent(var2x -> this.chooseRamPosition(var2, var2x));
    }
 

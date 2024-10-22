@@ -1,349 +1,309 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Sets.SetView;
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
-import java.io.BufferedReader;
-import java.io.IOException;
+import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.resource.RenderTargetDescriptor;
+import com.mojang.blaze3d.resource.ResourceHandle;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.ChainedJsonException;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceProvider;
-import net.minecraft.util.GsonHelper;
 import org.joml.Matrix4f;
 
-public class PostChain implements AutoCloseable {
-   private static final String MAIN_RENDER_TARGET = "minecraft:main";
-   private final RenderTarget screenTarget;
-   private final ResourceProvider resourceProvider;
-   private final String name;
-   private final List<PostPass> passes = Lists.newArrayList();
-   private final Map<String, RenderTarget> customRenderTargets = Maps.newHashMap();
-   private final List<RenderTarget> fullSizedTargets = Lists.newArrayList();
-   private Matrix4f shaderOrthoMatrix;
-   private int screenWidth;
-   private int screenHeight;
-   private float time;
-   private float lastStamp;
+public class PostChain {
+   public static final ResourceLocation MAIN_TARGET_ID = ResourceLocation.withDefaultNamespace("main");
+   private final List<PostPass> passes;
+   private final Map<ResourceLocation, PostChainConfig.InternalTarget> internalTargets;
+   private final Set<ResourceLocation> externalTargets;
 
-   public PostChain(TextureManager var1, ResourceProvider var2, RenderTarget var3, ResourceLocation var4) throws IOException, JsonSyntaxException {
+   private PostChain(List<PostPass> var1, Map<ResourceLocation, PostChainConfig.InternalTarget> var2, Set<ResourceLocation> var3) {
       super();
-      this.resourceProvider = var2;
-      this.screenTarget = var3;
-      this.time = 0.0F;
-      this.lastStamp = 0.0F;
-      this.screenWidth = var3.viewWidth;
-      this.screenHeight = var3.viewHeight;
-      this.name = var4.toString();
-      this.updateOrthoMatrix();
-      this.load(var1, var4);
+      this.passes = var1;
+      this.internalTargets = var2;
+      this.externalTargets = var3;
    }
 
-   private void load(TextureManager var1, ResourceLocation var2) throws IOException, JsonSyntaxException {
-      Resource var3 = this.resourceProvider.getResourceOrThrow(var2);
+   public static PostChain load(PostChainConfig var0, TextureManager var1, ShaderManager var2, Set<ResourceLocation> var3) throws ShaderManager.CompilationException {
+      Stream var4 = var0.passes().stream().flatMap(var0x -> var0x.inputs().stream()).flatMap(var0x -> var0x.referencedTargets().stream());
+      Set var5 = var4.filter(var1x -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
+      SetView var6 = Sets.difference(var5, var3);
+      if (!var6.isEmpty()) {
+         throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + var6);
+      } else {
+         Builder var7 = ImmutableList.builder();
 
-      try {
-         try (BufferedReader var4 = var3.openAsReader()) {
-            JsonObject var17 = GsonHelper.parse(var4);
-            if (GsonHelper.isArrayNode(var17, "targets")) {
-               JsonArray var6 = var17.getAsJsonArray("targets");
-               int var7 = 0;
-
-               for (JsonElement var9 : var6) {
-                  try {
-                     this.parseTargetNode(var9);
-                  } catch (Exception var14) {
-                     ChainedJsonException var11 = ChainedJsonException.forException(var14);
-                     var11.prependJsonKey("targets[" + var7 + "]");
-                     throw var11;
-                  }
-
-                  var7++;
-               }
-            }
-
-            if (GsonHelper.isArrayNode(var17, "passes")) {
-               JsonArray var18 = var17.getAsJsonArray("passes");
-               int var19 = 0;
-
-               for (JsonElement var21 : var18) {
-                  try {
-                     this.parsePassNode(var1, var21);
-                  } catch (Exception var13) {
-                     ChainedJsonException var22 = ChainedJsonException.forException(var13);
-                     var22.prependJsonKey("passes[" + var19 + "]");
-                     throw var22;
-                  }
-
-                  var19++;
-               }
-            }
+         for (PostChainConfig.Pass var9 : var0.passes()) {
+            var7.add(createPass(var1, var2, var9));
          }
-      } catch (Exception var16) {
-         ChainedJsonException var5 = ChainedJsonException.forException(var16);
-         var5.setFilenameAndFlush(var2.getPath() + " (" + var3.sourcePackId() + ")");
-         throw var5;
+
+         return new PostChain(var7.build(), var0.internalTargets(), var5);
       }
    }
 
-   private void parseTargetNode(JsonElement var1) throws ChainedJsonException {
-      if (GsonHelper.isStringValue(var1)) {
-         this.addTempTarget(var1.getAsString(), this.screenWidth, this.screenHeight);
-      } else {
-         JsonObject var2 = GsonHelper.convertToJsonObject(var1, "target");
-         String var3 = GsonHelper.getAsString(var2, "name");
-         int var4 = GsonHelper.getAsInt(var2, "width", this.screenWidth);
-         int var5 = GsonHelper.getAsInt(var2, "height", this.screenHeight);
-         if (this.customRenderTargets.containsKey(var3)) {
-            throw new ChainedJsonException(var3 + " is already defined");
+   // $VF: Inserted dummy exception handlers to handle obfuscated exceptions
+   private static PostPass createPass(TextureManager var0, ShaderManager var1, PostChainConfig.Pass var2) throws ShaderManager.CompilationException {
+      ResourceLocation var3 = var2.program();
+      CompiledShaderProgram var4 = var1.getProgramForLoading(new ShaderProgram(var3, DefaultVertexFormat.POSITION, ShaderDefines.EMPTY));
+
+      for (PostChainConfig.Uniform var6 : var2.uniforms()) {
+         String var7 = var6.name();
+         if (var4.getUniform(var7) == null) {
+            throw new ShaderManager.CompilationException("Uniform '" + var7 + "' does not exist for " + var3);
          }
-
-         this.addTempTarget(var3, var4, var5);
       }
-   }
 
-   private void parsePassNode(TextureManager var1, JsonElement var2) throws IOException {
-      JsonObject var3 = GsonHelper.convertToJsonObject(var2, "pass");
-      String var4 = GsonHelper.getAsString(var3, "name");
-      String var5 = GsonHelper.getAsString(var3, "intarget");
-      String var6 = GsonHelper.getAsString(var3, "outtarget");
-      RenderTarget var7 = this.getRenderTarget(var5);
-      RenderTarget var8 = this.getRenderTarget(var6);
-      boolean var9 = GsonHelper.getAsBoolean(var3, "use_linear_filter", false);
-      if (var7 == null) {
-         throw new ChainedJsonException("Input target '" + var5 + "' does not exist");
-      } else if (var8 == null) {
-         throw new ChainedJsonException("Output target '" + var6 + "' does not exist");
-      } else {
-         PostPass var10 = this.addPass(var4, var7, var8, var9);
-         JsonArray var11 = GsonHelper.getAsJsonArray(var3, "auxtargets", null);
-         if (var11 != null) {
-            int var12 = 0;
+      String var32 = var3.toString();
+      PostPass var33 = new PostPass(var32, var4, var2.outputTarget(), var2.uniforms());
 
-            for (JsonElement var14 : var11) {
+      for (Object var8 : var2.inputs()) {
+         Objects.requireNonNull(var8);
+         Throwable var45;
+         switch (var8) {
+            case PostChainConfig.TextureInput var11:
+               PostChainConfig.TextureInput var53 = var11;
+
                try {
-                  JsonObject var15 = GsonHelper.convertToJsonObject(var14, "auxtarget");
-                  String var32 = GsonHelper.getAsString(var15, "name");
-                  String var17 = GsonHelper.getAsString(var15, "id");
-                  boolean var18;
-                  String var19;
-                  if (var17.endsWith(":depth")) {
-                     var18 = true;
-                     var19 = var17.substring(0, var17.lastIndexOf(58));
-                  } else {
-                     var18 = false;
-                     var19 = var17;
-                  }
-
-                  RenderTarget var20 = this.getRenderTarget(var19);
-                  if (var20 == null) {
-                     if (var18) {
-                        throw new ChainedJsonException("Render target '" + var19 + "' can't be used as depth buffer");
-                     }
-
-                     ResourceLocation var21 = ResourceLocation.withDefaultNamespace("textures/effect/" + var19 + ".png");
-                     this.resourceProvider
-                        .getResource(var21)
-                        .orElseThrow(() -> new ChainedJsonException("Render target or texture '" + var19 + "' does not exist"));
-                     RenderSystem.setShaderTexture(0, var21);
-                     var1.bindForSetup(var21);
-                     AbstractTexture var22 = var1.getTexture(var21);
-                     int var23 = GsonHelper.getAsInt(var15, "width");
-                     int var24 = GsonHelper.getAsInt(var15, "height");
-                     boolean var25 = GsonHelper.getAsBoolean(var15, "bilinear");
-                     if (var25) {
-                        RenderSystem.texParameter(3553, 10241, 9729);
-                        RenderSystem.texParameter(3553, 10240, 9729);
-                     } else {
-                        RenderSystem.texParameter(3553, 10241, 9728);
-                        RenderSystem.texParameter(3553, 10240, 9728);
-                     }
-
-                     var10.addAuxAsset(var32, var22::getId, var23, var24);
-                  } else if (var18) {
-                     var10.addAuxAsset(var32, var20::getDepthTextureId, var20.width, var20.height);
-                  } else {
-                     var10.addAuxAsset(var32, var20::getColorTextureId, var20.width, var20.height);
-                  }
-               } catch (Exception var27) {
-                  ChainedJsonException var16 = ChainedJsonException.forException(var27);
-                  var16.prependJsonKey("auxtargets[" + var12 + "]");
-                  throw var16;
+                  var54 = var53.samplerName();
+               } catch (Throwable var31) {
+                  var45 = var31;
+                  boolean var66 = false;
+                  break;
                }
 
-               var12++;
-            }
-         }
+               String var36 = var54;
+               PostChainConfig.TextureInput var55 = var11;
 
-         JsonArray var28 = GsonHelper.getAsJsonArray(var3, "uniforms", null);
-         if (var28 != null) {
-            int var29 = 0;
-
-            for (JsonElement var31 : var28) {
                try {
-                  this.parseUniformNode(var31);
-               } catch (Exception var26) {
-                  ChainedJsonException var33 = ChainedJsonException.forException(var26);
-                  var33.prependJsonKey("uniforms[" + var29 + "]");
-                  throw var33;
+                  var56 = var55.location();
+               } catch (Throwable var30) {
+                  var45 = var30;
+                  boolean var67 = false;
+                  break;
                }
 
-               var29++;
-            }
-         }
-      }
-   }
+               ResourceLocation var37 = var56;
+               PostChainConfig.TextureInput var57 = var11;
 
-   private void parseUniformNode(JsonElement var1) throws ChainedJsonException {
-      JsonObject var2 = GsonHelper.convertToJsonObject(var1, "uniform");
-      String var3 = GsonHelper.getAsString(var2, "name");
-      Uniform var4 = this.passes.get(this.passes.size() - 1).getEffect().getUniform(var3);
-      if (var4 == null) {
-         throw new ChainedJsonException("Uniform '" + var3 + "' does not exist");
-      } else {
-         float[] var5 = new float[4];
-         int var6 = 0;
+               try {
+                  var58 = var57.width();
+               } catch (Throwable var29) {
+                  var45 = var29;
+                  boolean var68 = false;
+                  break;
+               }
 
-         for (JsonElement var9 : GsonHelper.getAsJsonArray(var2, "values")) {
-            try {
-               var5[var6] = GsonHelper.convertToFloat(var9, "value");
-            } catch (Exception var12) {
-               ChainedJsonException var11 = ChainedJsonException.forException(var12);
-               var11.prependJsonKey("values[" + var6 + "]");
-               throw var11;
-            }
+               int var38 = var58;
+               PostChainConfig.TextureInput var59 = var11;
 
-            var6++;
-         }
+               try {
+                  var60 = var59.height();
+               } catch (Throwable var28) {
+                  var45 = var28;
+                  boolean var69 = false;
+                  break;
+               }
 
-         switch (var6) {
-            case 0:
+               int var39 = var60;
+               PostChainConfig.TextureInput var61 = var11;
+
+               try {
+                  var62 = var61.bilinear();
+               } catch (Throwable var27) {
+                  var45 = var27;
+                  boolean var70 = false;
+                  break;
+               }
+
+               boolean var40 = var62;
+               AbstractTexture var41 = var0.getTexture(var37.withPath(var0x -> "textures/effect/" + var0x + ".png"));
+               var41.setFilter(var40, false);
+               var33.addInput(new PostPass.TextureInput(var36, var41, var38, var39));
+               continue;
+            case PostChainConfig.TargetInput var17:
+               PostChainConfig.TargetInput var10000 = var17;
+
+               try {
+                  var46 = var10000.samplerName();
+               } catch (Throwable var26) {
+                  var45 = var26;
+                  boolean var10001 = false;
+                  break;
+               }
+
+               String var22 = var46;
+               PostChainConfig.TargetInput var47 = var17;
+
+               try {
+                  var48 = var47.targetId();
+               } catch (Throwable var25) {
+                  var45 = var25;
+                  boolean var63 = false;
+                  break;
+               }
+
+               ResourceLocation var42 = var48;
+               PostChainConfig.TargetInput var49 = var17;
+
+               try {
+                  var50 = var49.useDepthBuffer();
+               } catch (Throwable var24) {
+                  var45 = var24;
+                  boolean var64 = false;
+                  break;
+               }
+
+               boolean var43 = var50;
+               PostChainConfig.TargetInput var51 = var17;
+
+               try {
+                  var52 = var51.bilinear();
+               } catch (Throwable var23) {
+                  var45 = var23;
+                  boolean var65 = false;
+                  break;
+               }
+
+               boolean var44 = var52;
+               var33.addInput(new PostPass.TargetInput(var22, var42, var43, var44));
+               continue;
             default:
-               break;
-            case 1:
-               var4.set(var5[0]);
-               break;
-            case 2:
-               var4.set(var5[0], var5[1]);
-               break;
-            case 3:
-               var4.set(var5[0], var5[1], var5[2]);
-               break;
-            case 4:
-               var4.set(var5[0], var5[1], var5[2], var5[3]);
-         }
-      }
-   }
-
-   public RenderTarget getTempTarget(String var1) {
-      return this.customRenderTargets.get(var1);
-   }
-
-   public void addTempTarget(String var1, int var2, int var3) {
-      TextureTarget var4 = new TextureTarget(var2, var3, true, Minecraft.ON_OSX);
-      var4.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-      this.customRenderTargets.put(var1, var4);
-      if (var2 == this.screenWidth && var3 == this.screenHeight) {
-         this.fullSizedTargets.add(var4);
-      }
-   }
-
-   @Override
-   public void close() {
-      for (RenderTarget var2 : this.customRenderTargets.values()) {
-         var2.destroyBuffers();
-      }
-
-      for (PostPass var4 : this.passes) {
-         var4.close();
-      }
-
-      this.passes.clear();
-   }
-
-   public PostPass addPass(String var1, RenderTarget var2, RenderTarget var3, boolean var4) throws IOException {
-      PostPass var5 = new PostPass(this.resourceProvider, var1, var2, var3, var4);
-      this.passes.add(this.passes.size(), var5);
-      return var5;
-   }
-
-   private void updateOrthoMatrix() {
-      this.shaderOrthoMatrix = new Matrix4f().setOrtho(0.0F, (float)this.screenTarget.width, 0.0F, (float)this.screenTarget.height, 0.1F, 1000.0F);
-   }
-
-   public void resize(int var1, int var2) {
-      this.screenWidth = this.screenTarget.width;
-      this.screenHeight = this.screenTarget.height;
-      this.updateOrthoMatrix();
-
-      for (PostPass var4 : this.passes) {
-         var4.setOrthoMatrix(this.shaderOrthoMatrix);
-      }
-
-      for (RenderTarget var6 : this.fullSizedTargets) {
-         var6.resize(var1, var2, Minecraft.ON_OSX);
-      }
-   }
-
-   private void setFilterMode(int var1) {
-      this.screenTarget.setFilterMode(var1);
-
-      for (RenderTarget var3 : this.customRenderTargets.values()) {
-         var3.setFilterMode(var1);
-      }
-   }
-
-   public void process(float var1) {
-      this.time += var1;
-
-      while (this.time > 20.0F) {
-         this.time -= 20.0F;
-      }
-
-      int var2 = 9728;
-
-      for (PostPass var4 : this.passes) {
-         int var5 = var4.getFilterMode();
-         if (var2 != var5) {
-            this.setFilterMode(var5);
-            var2 = var5;
+               throw new MatchException(null, null);
          }
 
-         var4.process(this.time / 20.0F);
+         Throwable var35 = var45;
+         throw new MatchException(var35.toString(), var35);
       }
 
-      this.setFilterMode(9728);
+      return var33;
+   }
+
+   // $VF: Inserted dummy exception handlers to handle obfuscated exceptions
+   public void addToFrame(FrameGraphBuilder var1, int var2, int var3, PostChain.TargetBundle var4) {
+      Matrix4f var5 = new Matrix4f().setOrtho(0.0F, (float)var2, 0.0F, (float)var3, 0.1F, 1000.0F);
+      HashMap var6 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
+
+      for (ResourceLocation var8 : this.externalTargets) {
+         var6.put(var8, var4.getOrThrow(var8));
+      }
+
+      for (Entry var23 : this.internalTargets.entrySet()) {
+         ResourceLocation var9 = (ResourceLocation)var23.getKey();
+         PostChainConfig.InternalTarget var35;
+         Objects.requireNonNull(var35);
+         Object var11 = var35;
+
+         var35 = (PostChainConfig.InternalTarget)var23.getValue();
+         RenderTargetDescriptor var10 = switch (var11) {
+            case PostChainConfig.FixedSizedTarget var13 -> {
+               PostChainConfig.FixedSizedTarget var29 = var13;
+
+               int var26;
+               label56: {
+                  label76: {
+                     try {
+                        var31 = var29.width();
+                     } catch (Throwable var18) {
+                        var30 = var18;
+                        boolean var10001 = false;
+                        break label76;
+                     }
+
+                     var26 = var31;
+                     PostChainConfig.FixedSizedTarget var32 = var13;
+
+                     try {
+                        var33 = var32.height();
+                        break label56;
+                     } catch (Throwable var17) {
+                        var30 = var17;
+                        boolean var34 = false;
+                     }
+                  }
+
+                  Throwable var20 = var30;
+                  throw new MatchException(var20.toString(), var20);
+               }
+
+               int var27 = var33;
+               yield new RenderTargetDescriptor(var26, var27, true);
+            }
+            case PostChainConfig.FullScreenTarget var16 -> new RenderTargetDescriptor(var2, var3, true);
+            default -> throw new MatchException(null, null);
+         };
+         var6.put(var9, var1.createInternal(var9.toString(), var10));
+      }
+
+      for (PostPass var24 : this.passes) {
+         var24.addToFrame(var1, var6, var5);
+      }
+
+      for (ResourceLocation var25 : this.externalTargets) {
+         var4.replace(var25, (ResourceHandle<RenderTarget>)var6.get(var25));
+      }
+   }
+
+   @Deprecated
+   public void process(RenderTarget var1, GraphicsResourceAllocator var2) {
+      FrameGraphBuilder var3 = new FrameGraphBuilder();
+      PostChain.TargetBundle var4 = PostChain.TargetBundle.of(MAIN_TARGET_ID, var3.importExternal("main", var1));
+      this.addToFrame(var3, var1.width, var1.height, var4);
+      var3.execute(var2);
    }
 
    public void setUniform(String var1, float var2) {
       for (PostPass var4 : this.passes) {
-         var4.getEffect().safeGetUniform(var1).set(var2);
+         var4.getShader().safeGetUniform(var1).set(var2);
       }
    }
 
-   public final String getName() {
-      return this.name;
-   }
+   public interface TargetBundle {
+      static PostChain.TargetBundle of(final ResourceLocation var0, final ResourceHandle<RenderTarget> var1) {
+         return new PostChain.TargetBundle() {
+            private ResourceHandle<RenderTarget> handle = var1;
 
-   @Nullable
-   private RenderTarget getRenderTarget(@Nullable String var1) {
-      if (var1 == null) {
-         return null;
-      } else {
-         return var1.equals("minecraft:main") ? this.screenTarget : this.customRenderTargets.get(var1);
+            @Override
+            public void replace(ResourceLocation var1x, ResourceHandle<RenderTarget> var2) {
+               if (var1x.equals(var0)) {
+                  this.handle = var2;
+               } else {
+                  throw new IllegalArgumentException("No target with id " + var1x);
+               }
+            }
+
+            @Nullable
+            @Override
+            public ResourceHandle<RenderTarget> get(ResourceLocation var1x) {
+               return var1x.equals(var0) ? this.handle : null;
+            }
+         };
+      }
+
+      void replace(ResourceLocation var1, ResourceHandle<RenderTarget> var2);
+
+      @Nullable
+      ResourceHandle<RenderTarget> get(ResourceLocation var1);
+
+      default ResourceHandle<RenderTarget> getOrThrow(ResourceLocation var1) {
+         ResourceHandle var2 = this.get(var1);
+         if (var2 == null) {
+            throw new IllegalArgumentException("Missing target with id " + var1);
+         } else {
+            return var2;
+         }
       }
    }
 }

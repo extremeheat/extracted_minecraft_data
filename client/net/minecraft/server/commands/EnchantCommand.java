@@ -89,7 +89,7 @@ public class EnchantCommand {
                      var9.enchant(var2, var3);
                      var5++;
                   } else if (var1.size() == 1) {
-                     throw ERROR_INCOMPATIBLE.create(var9.getItem().getName(var9).getString());
+                     throw ERROR_INCOMPATIBLE.create(var9.getHoverName().getString());
                   }
                } else if (var1.size() == 1) {
                   throw ERROR_NO_ITEM.create(var8.getName().getString());

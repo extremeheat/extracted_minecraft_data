@@ -12,8 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.ElderGuardian;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
@@ -1493,11 +1493,11 @@ public class OceanMonumentPieces {
       protected void spawnElder(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5) {
          BlockPos.MutableBlockPos var6 = this.getWorldPos(var3, var4, var5);
          if (var2.isInside(var6)) {
-            ElderGuardian var7 = EntityType.ELDER_GUARDIAN.create(var1.getLevel());
+            ElderGuardian var7 = EntityType.ELDER_GUARDIAN.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var7 != null) {
                var7.heal(var7.getMaxHealth());
                var7.moveTo((double)var6.getX() + 0.5, (double)var6.getY(), (double)var6.getZ() + 0.5, 0.0F, 0.0F);
-               var7.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var7.blockPosition()), MobSpawnType.STRUCTURE, null);
+               var7.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var7.blockPosition()), EntitySpawnReason.STRUCTURE, null);
                var1.addFreshEntityWithPassengers(var7);
             }
          }

@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 
 public class WorldGenAttemptRenderer implements DebugRenderer.SimpleDebugRenderer {
@@ -38,7 +38,7 @@ public class WorldGenAttemptRenderer implements DebugRenderer.SimpleDebugRendere
          BlockPos var11 = this.toRender.get(var10);
          Float var12 = this.scales.get(var10);
          float var13 = var12 / 2.0F;
-         LevelRenderer.addChainedFilledBoxVertices(
+         ShapeRenderer.addChainedFilledBoxVertices(
             var1,
             var9,
             (double)((float)var11.getX() + 0.5F - var13) - var3,

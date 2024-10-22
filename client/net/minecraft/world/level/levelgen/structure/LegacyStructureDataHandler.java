@@ -85,7 +85,6 @@ public class LegacyStructureDataHandler {
          StructureFeatureIndexSavedData var5 = this.indexMap.get(var4);
          if (var5 != null && var5.hasUnhandledIndex(var1)) {
             var5.removeIndex(var1);
-            var5.setDirty();
          }
       }
    }
@@ -199,9 +198,7 @@ public class LegacyStructureDataHandler {
 
             String var14 = var3 + "_index";
             StructureFeatureIndexSavedData var15 = var1.computeIfAbsent(StructureFeatureIndexSavedData.factory(), var14);
-            if (!var15.getAll().isEmpty()) {
-               this.indexMap.put(var3, var15);
-            } else {
+            if (var15.getAll().isEmpty()) {
                StructureFeatureIndexSavedData var16 = new StructureFeatureIndexSavedData();
                this.indexMap.put(var3, var16);
 
@@ -209,8 +206,8 @@ public class LegacyStructureDataHandler {
                   CompoundTag var18 = var4.getCompound(var9);
                   var16.addIndex(ChunkPos.asLong(var18.getInt("ChunkX"), var18.getInt("ChunkZ")));
                }
-
-               var16.setDirty();
+            } else {
+               this.indexMap.put(var3, var15);
             }
          }
       }

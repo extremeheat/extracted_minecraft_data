@@ -1,5 +1,6 @@
 package net.minecraft.world.effect;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 
 class WitherMobEffect extends MobEffect {
@@ -8,8 +9,8 @@ class WitherMobEffect extends MobEffect {
    }
 
    @Override
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
-      var1.hurt(var1.damageSources().wither(), 1.0F);
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
+      var2.hurtServer(var1, var2.damageSources().wither(), 1.0F);
       return true;
    }
 

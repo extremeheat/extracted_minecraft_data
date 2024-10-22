@@ -16,10 +16,10 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -94,19 +94,19 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    @Override
-   protected void customServerAiStep() {
-      AttributeInstance var1 = this.getAttribute(Attributes.MOVEMENT_SPEED);
+   protected void customServerAiStep(ServerLevel var1) {
+      AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (this.isAngry()) {
-         if (!this.isBaby() && !var1.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
-            var1.addTransientModifier(SPEED_MODIFIER_ATTACKING);
+         if (!this.isBaby() && !var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
+            var2.addTransientModifier(SPEED_MODIFIER_ATTACKING);
          }
 
          this.maybePlayFirstAngerSound();
-      } else if (var1.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
-         var1.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
+      } else if (var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
+         var2.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
       }
 
-      this.updatePersistentAnger((ServerLevel)this.level(), true);
+      this.updatePersistentAnger(var1, true);
       if (this.getTarget() != null) {
          this.maybeAlertOthers();
       }
@@ -115,7 +115,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
          this.lastHurtByPlayerTime = this.tickCount;
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    private void maybePlayFirstAngerSound() {
@@ -175,7 +175,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    public static boolean checkZombifiedPiglinSpawnRules(
-      EntityType<ZombifiedPiglin> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
+      EntityType<ZombifiedPiglin> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4
    ) {
       return var1.getDifficulty() != Difficulty.PEACEFUL && !var1.getBlockState(var3.below()).is(Blocks.NETHER_WART_BLOCK);
    }
@@ -244,12 +244,12 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    @Override
-   public boolean isPreventingPlayerRest(Player var1) {
-      return this.isAngryAt(var1);
+   public boolean isPreventingPlayerRest(ServerLevel var1, Player var2) {
+      return this.isAngryAt(var2, var1);
    }
 
    @Override
-   public boolean wantsToPickUp(ItemStack var1) {
-      return this.canHoldItem(var1);
+   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
+      return this.canHoldItem(var2);
    }
 }

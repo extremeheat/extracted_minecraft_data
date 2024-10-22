@@ -4,14 +4,17 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -22,19 +25,13 @@ import net.minecraft.world.level.material.FluidState;
 
 public class MinecartTNT extends AbstractMinecart {
    private static final byte EVENT_PRIME = 10;
+   private static final String TAG_EXPLOSION_POWER = "explosion_power";
+   private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
    private int fuse = -1;
+   private float explosionPowerBase = 4.0F;
 
    public MinecartTNT(EntityType<? extends MinecartTNT> var1, Level var2) {
       super(var1, var2);
-   }
-
-   public MinecartTNT(Level var1, double var2, double var4, double var6) {
-      super(EntityType.TNT_MINECART, var1, var2, var4, var6);
-   }
-
-   @Override
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.TNT;
    }
 
    @Override
@@ -61,20 +58,20 @@ public class MinecartTNT extends AbstractMinecart {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (var1.getDirectEntity() instanceof AbstractArrow var4 && var4.isOnFire()) {
-         DamageSource var5 = this.damageSources().explosion(this, var1.getEntity());
-         this.explode(var5, var4.getDeltaMovement().lengthSqr());
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (var2.getDirectEntity() instanceof AbstractArrow var5 && var5.isOnFire()) {
+         DamageSource var6 = this.damageSources().explosion(this, var2.getEntity());
+         this.explode(var6, var5.getDeltaMovement().lengthSqr());
       }
 
-      return super.hurt(var1, var2);
+      return super.hurtServer(var1, var2, var3);
    }
 
    @Override
-   public void destroy(DamageSource var1) {
-      double var2 = this.getDeltaMovement().horizontalDistanceSqr();
-      if (!damageSourceIgnitesTnt(var1) && !(var2 >= 0.009999999776482582)) {
-         this.destroy(this.getDropItem());
+   public void destroy(ServerLevel var1, DamageSource var2) {
+      double var3 = this.getDeltaMovement().horizontalDistanceSqr();
+      if (!damageSourceIgnitesTnt(var2) && !(var3 >= 0.009999999776482582)) {
+         this.destroy(var1, this.getDropItem());
       } else {
          if (this.fuse < 0) {
             this.primeFuse();
@@ -88,29 +85,29 @@ public class MinecartTNT extends AbstractMinecart {
       return Items.TNT_MINECART;
    }
 
+   @Override
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.TNT_MINECART);
+   }
+
    protected void explode(double var1) {
       this.explode(null, var1);
    }
 
    protected void explode(@Nullable DamageSource var1, double var2) {
-      if (!this.level().isClientSide) {
-         double var4 = Math.sqrt(var2);
-         if (var4 > 5.0) {
-            var4 = 5.0;
-         }
-
-         this.level()
-            .explode(
-               this,
-               var1,
-               null,
-               this.getX(),
-               this.getY(),
-               this.getZ(),
-               (float)(4.0 + this.random.nextDouble() * 1.5 * var4),
-               false,
-               Level.ExplosionInteraction.TNT
-            );
+      if (this.level() instanceof ServerLevel var4) {
+         double var7 = Math.min(Math.sqrt(var2), 5.0);
+         var4.explode(
+            this,
+            var1,
+            null,
+            this.getX(),
+            this.getY(),
+            this.getZ(),
+            (float)((double)this.explosionPowerBase + this.random.nextDouble() * 1.5 * var7),
+            false,
+            Level.ExplosionInteraction.TNT
+         );
          this.discard();
       }
    }
@@ -179,12 +176,19 @@ public class MinecartTNT extends AbstractMinecart {
       if (var1.contains("TNTFuse", 99)) {
          this.fuse = var1.getInt("TNTFuse");
       }
+
+      if (var1.contains("explosion_power", 99)) {
+         this.explosionPowerBase = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
+      }
    }
 
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("TNTFuse", this.fuse);
+      if (this.explosionPowerBase != 4.0F) {
+         var1.putFloat("explosion_power", this.explosionPowerBase);
+      }
    }
 
    @Override

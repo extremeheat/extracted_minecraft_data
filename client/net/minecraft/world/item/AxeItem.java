@@ -29,6 +29,8 @@ public class AxeItem extends DiggerItem {
       .put(Blocks.OAK_LOG, Blocks.STRIPPED_OAK_LOG)
       .put(Blocks.DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD)
       .put(Blocks.DARK_OAK_LOG, Blocks.STRIPPED_DARK_OAK_LOG)
+      .put(Blocks.PALE_OAK_WOOD, Blocks.STRIPPED_PALE_OAK_WOOD)
+      .put(Blocks.PALE_OAK_LOG, Blocks.STRIPPED_PALE_OAK_LOG)
       .put(Blocks.ACACIA_WOOD, Blocks.STRIPPED_ACACIA_WOOD)
       .put(Blocks.ACACIA_LOG, Blocks.STRIPPED_ACACIA_LOG)
       .put(Blocks.CHERRY_WOOD, Blocks.STRIPPED_CHERRY_WOOD)
@@ -48,8 +50,8 @@ public class AxeItem extends DiggerItem {
       .put(Blocks.BAMBOO_BLOCK, Blocks.STRIPPED_BAMBOO_BLOCK)
       .build();
 
-   public AxeItem(Tier var1, Item.Properties var2) {
-      super(var1, BlockTags.MINEABLE_WITH_AXE, var2);
+   public AxeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
+      super(var1, BlockTags.MINEABLE_WITH_AXE, var2, var3, var4);
    }
 
    @Override
@@ -75,7 +77,7 @@ public class AxeItem extends DiggerItem {
                var6.hurtAndBreak(1, var4, LivingEntity.getSlotForHand(var1.getHand()));
             }
 
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return InteractionResult.SUCCESS;
          }
       }
    }

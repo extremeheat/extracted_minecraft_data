@@ -4,7 +4,6 @@ import java.util.Locale;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelHeightAccessor;
 
 public interface LevelData {
@@ -23,8 +22,6 @@ public interface LevelData {
    void setRaining(boolean var1);
 
    boolean isHardcore();
-
-   GameRules getGameRules();
 
    Difficulty getDifficulty();
 

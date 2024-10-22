@@ -35,12 +35,7 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
       StructureTemplate var10 = var8.getOrCreate(var6.overlayStructures.get(var7));
       ChunkPos var11 = new ChunkPos(var4);
       BoundingBox var12 = new BoundingBox(
-         var11.getMinBlockX() - 16,
-         var3.getMinBuildHeight(),
-         var11.getMinBlockZ() - 16,
-         var11.getMaxBlockX() + 16,
-         var3.getMaxBuildHeight(),
-         var11.getMaxBlockZ() + 16
+         var11.getMinBlockX() - 16, var3.getMinY(), var11.getMinBlockZ() - 16, var11.getMaxBlockX() + 16, var3.getMaxY(), var11.getMaxBlockZ() + 16
       );
       StructurePlaceSettings var13 = new StructurePlaceSettings().setRotation(var5).setBoundingBox(var12).setRandom(var2);
       Vec3i var14 = var9.getSize(var5);
@@ -53,7 +48,7 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
          }
       }
 
-      int var19 = Math.max(var16 - 15 - var2.nextInt(10), var3.getMinBuildHeight() + 10);
+      int var19 = Math.max(var16 - 15 - var2.nextInt(10), var3.getMinY() + 10);
       BlockPos var20 = var9.getZeroPositionWithTransform(var15.atY(var19), Mirror.NONE, var5);
       if (countEmptyCorners(var3, var9.getBoundingBox(var13, var20)) > var6.maxEmptyCornersAllowed) {
          return false;

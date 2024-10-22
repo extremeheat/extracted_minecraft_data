@@ -1,12 +1,8 @@
 package net.minecraft.world.entity.ai.village.poi;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.util.VisibleForDebug;
 
 public class PoiRecord {
@@ -15,19 +11,7 @@ public class PoiRecord {
    private int freeTickets;
    private final Runnable setDirty;
 
-   public static Codec<PoiRecord> codec(Runnable var0) {
-      return RecordCodecBuilder.create(
-         var1 -> var1.group(
-                  BlockPos.CODEC.fieldOf("pos").forGetter(var0xx -> var0xx.pos),
-                  RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(var0xx -> var0xx.poiType),
-                  Codec.INT.fieldOf("free_tickets").orElse(0).forGetter(var0xx -> var0xx.freeTickets),
-                  RecordCodecBuilder.point(var0)
-               )
-               .apply(var1, PoiRecord::new)
-      );
-   }
-
-   private PoiRecord(BlockPos var1, Holder<PoiType> var2, int var3, Runnable var4) {
+   PoiRecord(BlockPos var1, Holder<PoiType> var2, int var3, Runnable var4) {
       super();
       this.pos = var1.immutable();
       this.poiType = var2;
@@ -37,6 +21,10 @@ public class PoiRecord {
 
    public PoiRecord(BlockPos var1, Holder<PoiType> var2, Runnable var3) {
       this(var1, var2, ((PoiType)var2.value()).maxTickets(), var3);
+   }
+
+   public PoiRecord.Packed pack() {
+      return new PoiRecord.Packed(this.pos, this.poiType, this.freeTickets);
    }
 
    @Deprecated
@@ -94,4 +82,17 @@ public class PoiRecord {
    public int hashCode() {
       return this.pos.hashCode();
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

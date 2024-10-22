@@ -1,16 +1,17 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.InputType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.CommonInputs;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractSliderButton extends AbstractWidget {
@@ -57,13 +58,16 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
-      var1.setColor(1.0F, 1.0F, 1.0F, this.alpha);
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.enableDepthTest();
-      var1.blitSprite(this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight());
-      var1.blitSprite(this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight());
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blitSprite(RenderType::guiTextured, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      var1.blitSprite(
+         RenderType::guiTextured,
+         this.getHandleSprite(),
+         this.getX() + (int)(this.value * (double)(this.width - 8)),
+         this.getY(),
+         8,
+         this.getHeight(),
+         ARGB.white(this.alpha)
+      );
       int var6 = this.active ? 16777215 : 10526880;
       this.renderScrollingString(var1, var5.font, 2, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
    }

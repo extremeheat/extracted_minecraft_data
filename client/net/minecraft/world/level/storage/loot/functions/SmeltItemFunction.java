@@ -32,11 +32,12 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
       if (var1.isEmpty()) {
          return var1;
       } else {
-         Optional var3 = var2.getLevel().getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(var1), var2.getLevel());
-         if (var3.isPresent()) {
-            ItemStack var4 = ((SmeltingRecipe)((RecipeHolder)var3.get()).value()).getResultItem(var2.getLevel().registryAccess());
-            if (!var4.isEmpty()) {
-               return var4.copyWithCount(var1.getCount());
+         SingleRecipeInput var3 = new SingleRecipeInput(var1);
+         Optional var4 = var2.getLevel().recipeAccess().getRecipeFor(RecipeType.SMELTING, var3, var2.getLevel());
+         if (var4.isPresent()) {
+            ItemStack var5 = ((SmeltingRecipe)((RecipeHolder)var4.get()).value()).assemble(var3, var2.getLevel().registryAccess());
+            if (!var5.isEmpty()) {
+               return var5.copyWithCount(var1.getCount());
             }
          }
 

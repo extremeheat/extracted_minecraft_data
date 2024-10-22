@@ -20,12 +20,13 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.FireBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.slf4j.Logger;
 
 public class Bootstrap {
@@ -74,7 +75,8 @@ public class Bootstrap {
 
    private static void checkGameruleTranslations(final Set<String> var0) {
       final Language var1 = Language.getInstance();
-      GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+      GameRules var2 = new GameRules(FeatureFlags.REGISTRY.allFlags());
+      var2.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
          @Override
          public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
             if (!var1.has(var1x.getDescriptionId())) {
@@ -90,7 +92,7 @@ public class Bootstrap {
       checkTranslations(BuiltInRegistries.ENTITY_TYPE, EntityType::getDescriptionId, var0);
       checkTranslations(BuiltInRegistries.MOB_EFFECT, MobEffect::getDescriptionId, var0);
       checkTranslations(BuiltInRegistries.ITEM, Item::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.BLOCK, Block::getDescriptionId, var0);
+      checkTranslations(BuiltInRegistries.BLOCK, BlockBehaviour::getDescriptionId, var0);
       checkTranslations(BuiltInRegistries.CUSTOM_STAT, var0x -> "stat." + var0x.toString().replace(':', '.'), var0);
       checkGameruleTranslations(var0);
       return var0;

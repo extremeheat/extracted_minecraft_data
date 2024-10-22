@@ -123,17 +123,18 @@ public class RuinedPortalStructure extends Structure {
          return Optional.of(
             new Structure.GenerationStub(
                var19,
-               (Consumer<StructurePiecesBuilder>)(var10x -> {
+               (Consumer<StructurePiecesBuilder>)(var11x -> {
                   if (var20.canBeCold()) {
                      var2.cold = isCold(
                         var19,
                         var1.chunkGenerator()
                            .getBiomeSource()
-                           .getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler())
+                           .getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler()),
+                        var11.getSeaLevel()
                      );
                   }
 
-                  var10x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var20.placement(), var2, var22, var24, var25, var9, var10));
+                  var11x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var20.placement(), var2, var22, var24, var25, var9, var10));
                })
             )
          );
@@ -148,8 +149,8 @@ public class RuinedPortalStructure extends Structure {
       }
    }
 
-   private static boolean isCold(BlockPos var0, Holder<Biome> var1) {
-      return ((Biome)var1.value()).coldEnoughToSnow(var0);
+   private static boolean isCold(BlockPos var0, Holder<Biome> var1, int var2) {
+      return ((Biome)var1.value()).coldEnoughToSnow(var0, var2);
    }
 
    private static int findSuitableY(
@@ -163,7 +164,7 @@ public class RuinedPortalStructure extends Structure {
       LevelHeightAccessor var7,
       RandomState var8
    ) {
-      int var10 = var7.getMinBuildHeight() + 15;
+      int var10 = var7.getMinY() + 15;
       int var9;
       if (var2 == RuinedPortalPiece.VerticalPlacement.IN_NETHER) {
          if (var3) {

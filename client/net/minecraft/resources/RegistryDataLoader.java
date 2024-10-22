@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -19,7 +20,11 @@ import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -33,17 +38,20 @@ import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.tags.TagLoader;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.decoration.PaintingVariant;
+import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.JukeboxSong;
-import net.minecraft.world.item.armortrim.TrimMaterial;
-import net.minecraft.world.item.armortrim.TrimPattern;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerConfig;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -62,6 +70,7 @@ import org.slf4j.Logger;
 
 public class RegistryDataLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Comparator<ResourceKey<?>> ERROR_KEY_COMPARATOR = Comparator.comparing(ResourceKey::registry).thenComparing(ResourceKey::location);
    private static final RegistrationInfo NETWORK_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
    private static final Function<Optional<KnownPack>, RegistrationInfo> REGISTRATION_INFO_CACHE = Util.memoize(var0 -> {
       Lifecycle var1 = var0.map(KnownPack::isVanilla).map(var0x -> Lifecycle.stable()).orElse(Lifecycle.experimental());
@@ -85,6 +94,7 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.TRIAL_SPAWNER_CONFIG, TrialSpawnerConfig.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true),
       new RegistryDataLoader.RegistryData<>(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true),
       new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
@@ -92,7 +102,8 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.INSTRUMENT, Instrument.DIRECT_CODEC)
    );
    public static final List<RegistryDataLoader.RegistryData<?>> DIMENSION_REGISTRIES = List.of(
       new RegistryDataLoader.RegistryData<>(Registries.LEVEL_STEM, LevelStem.CODEC)
@@ -108,27 +119,30 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.INSTRUMENT, Instrument.DIRECT_CODEC)
    );
 
    public RegistryDataLoader() {
       super();
    }
 
-   public static RegistryAccess.Frozen load(ResourceManager var0, RegistryAccess var1, List<RegistryDataLoader.RegistryData<?>> var2) {
+   public static RegistryAccess.Frozen load(ResourceManager var0, List<HolderLookup.RegistryLookup<?>> var1, List<RegistryDataLoader.RegistryData<?>> var2) {
       return load((var1x, var2x) -> var1x.loadFromResources(var0, var2x), var1, var2);
    }
 
    public static RegistryAccess.Frozen load(
-      Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var0,
+      Map<ResourceKey<? extends Registry<?>>, RegistryDataLoader.NetworkedRegistryData> var0,
       ResourceProvider var1,
-      RegistryAccess var2,
+      List<HolderLookup.RegistryLookup<?>> var2,
       List<RegistryDataLoader.RegistryData<?>> var3
    ) {
       return load((var2x, var3x) -> var2x.loadFromNetwork(var0, var1, var3x), var2, var3);
    }
 
-   private static RegistryAccess.Frozen load(RegistryDataLoader.LoadingFunction var0, RegistryAccess var1, List<RegistryDataLoader.RegistryData<?>> var2) {
+   private static RegistryAccess.Frozen load(
+      RegistryDataLoader.LoadingFunction var0, List<HolderLookup.RegistryLookup<?>> var1, List<RegistryDataLoader.RegistryData<?>> var2
+   ) {
       HashMap var3 = new HashMap();
       List var4 = var2.stream().map(var1x -> var1x.create(Lifecycle.stable(), var3)).collect(Collectors.toUnmodifiableList());
       RegistryOps.RegistryInfoLookup var5 = createContext(var1, var4);
@@ -147,16 +161,15 @@ public class RegistryDataLoader {
          }
       });
       if (!var3.isEmpty()) {
-         logErrors(var3);
-         throw new IllegalStateException("Failed to load registries due to above errors");
+         throw logErrors(var3);
       } else {
          return new RegistryAccess.ImmutableRegistryAccess(var4.stream().map(RegistryDataLoader.Loader::registry).toList()).freeze();
       }
    }
 
-   private static RegistryOps.RegistryInfoLookup createContext(RegistryAccess var0, List<RegistryDataLoader.Loader<?>> var1) {
+   private static RegistryOps.RegistryInfoLookup createContext(List<HolderLookup.RegistryLookup<?>> var0, List<RegistryDataLoader.Loader<?>> var1) {
       final HashMap var2 = new HashMap();
-      var0.registries().forEach(var1x -> var2.put(var1x.key(), createInfoForContextRegistry(var1x.value())));
+      var0.forEach(var1x -> var2.put(var1x.key(), createInfoForContextRegistry(var1x)));
       var1.forEach(var1x -> var2.put(var1x.registry.key(), createInfoForNewRegistry(var1x.registry)));
       return new RegistryOps.RegistryInfoLookup() {
          @Override
@@ -167,14 +180,19 @@ public class RegistryDataLoader {
    }
 
    private static <T> RegistryOps.RegistryInfo<T> createInfoForNewRegistry(WritableRegistry<T> var0) {
-      return new RegistryOps.RegistryInfo<>(var0.asLookup(), var0.createRegistrationLookup(), var0.registryLifecycle());
+      return new RegistryOps.RegistryInfo<>(var0, var0.createRegistrationLookup(), var0.registryLifecycle());
    }
 
-   private static <T> RegistryOps.RegistryInfo<T> createInfoForContextRegistry(Registry<T> var0) {
-      return new RegistryOps.RegistryInfo<>(var0.asLookup(), var0.asTagAddingLookup(), var0.registryLifecycle());
+   private static <T> RegistryOps.RegistryInfo<T> createInfoForContextRegistry(HolderLookup.RegistryLookup<T> var0) {
+      return new RegistryOps.RegistryInfo<>(var0, var0, var0.registryLifecycle());
    }
 
-   private static void logErrors(Map<ResourceKey<?>, Exception> var0) {
+   private static ReportedException logErrors(Map<ResourceKey<?>, Exception> var0) {
+      printFullDetailsToLog(var0);
+      return createReportWithBriefInfo(var0);
+   }
+
+   private static void printFullDetailsToLog(Map<ResourceKey<?>, Exception> var0) {
       StringWriter var1 = new StringWriter();
       PrintWriter var2 = new PrintWriter(var1);
       Map var3 = var0.entrySet()
@@ -193,6 +211,30 @@ public class RegistryDataLoader {
       });
       var2.flush();
       LOGGER.error("Registry loading errors:\n{}", var1);
+   }
+
+   private static ReportedException createReportWithBriefInfo(Map<ResourceKey<?>, Exception> var0) {
+      CrashReport var1 = CrashReport.forThrowable(new IllegalStateException("Failed to load registries due to errors"), "Registry Loading");
+      CrashReportCategory var2 = var1.addCategory("Loading info");
+      var2.setDetail(
+         "Errors",
+         () -> {
+            StringBuilder var1x = new StringBuilder();
+            var0.entrySet()
+               .stream()
+               .sorted(Entry.comparingByKey(ERROR_KEY_COMPARATOR))
+               .forEach(
+                  var1xx -> var1x.append("\n\t\t")
+                        .append(((ResourceKey)var1xx.getKey()).registry())
+                        .append("/")
+                        .append(((ResourceKey)var1xx.getKey()).location())
+                        .append(": ")
+                        .append(((Exception)var1xx.getValue()).getMessage())
+               );
+            return var1x.toString();
+         }
+      );
+      return new ReportedException(var1);
    }
 
    private static <E> void loadElementFromResource(
@@ -225,24 +267,26 @@ public class RegistryDataLoader {
             var4.put(var11, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse %s from pack %s", var10, var12.sourcePackId()), var15));
          }
       }
+
+      TagLoader.loadTagsForRegistry(var0, var2);
    }
 
    static <E> void loadContentsFromNetwork(
-      Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var0,
+      Map<ResourceKey<? extends Registry<?>>, RegistryDataLoader.NetworkedRegistryData> var0,
       ResourceProvider var1,
       RegistryOps.RegistryInfoLookup var2,
       WritableRegistry<E> var3,
       Decoder<E> var4,
       Map<ResourceKey<?>, Exception> var5
    ) {
-      List var6 = (List)var0.get(var3.key());
+      RegistryDataLoader.NetworkedRegistryData var6 = (RegistryDataLoader.NetworkedRegistryData)var0.get(var3.key());
       if (var6 != null) {
          RegistryOps var7 = RegistryOps.create(NbtOps.INSTANCE, var2);
          RegistryOps var8 = RegistryOps.create(JsonOps.INSTANCE, var2);
          String var9 = Registries.elementsDirPath(var3.key());
          FileToIdConverter var10 = FileToIdConverter.json(var9);
 
-         for (RegistrySynchronization.PackedRegistryEntry var12 : var6) {
+         for (RegistrySynchronization.PackedRegistryEntry var12 : var6.elements) {
             ResourceKey var13 = ResourceKey.create(var3.key(), var12.id());
             Optional var14 = var12.data();
             if (var14.isPresent()) {
@@ -264,6 +308,8 @@ public class RegistryDataLoader {
                }
             }
          }
+
+         TagLoader.loadTagsFromNetwork(var6.tags, var3);
       }
    }
 
@@ -284,6 +330,19 @@ public class RegistryDataLoader {
    interface LoadingFunction {
       void apply(RegistryDataLoader.Loader<?> var1, RegistryOps.RegistryInfoLookup var2);
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 
 // $VF: Couldn't be decompiled
 // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)

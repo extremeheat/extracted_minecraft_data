@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
@@ -14,6 +13,7 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
@@ -29,6 +29,8 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    public static final int WINDOW_INSIDE_HEIGHT = 113;
    private static final int WINDOW_TITLE_X = 8;
    private static final int WINDOW_TITLE_Y = 6;
+   private static final int BACKGROUND_TEXTURE_WIDTH = 256;
+   private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    public static final int BACKGROUND_TILE_WIDTH = 16;
    public static final int BACKGROUND_TILE_HEIGHT = 16;
    public static final int BACKGROUND_TILE_COUNT_X = 14;
@@ -172,8 +174,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public void renderWindow(GuiGraphics var1, int var2, int var3) {
-      RenderSystem.enableBlend();
-      var1.blit(WINDOW_LOCATION, var2, var3, 0, 0, 252, 140);
+      var1.blit(RenderType::guiTextured, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
          for (AdvancementTab var5 : this.tabs.values()) {
             var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
@@ -191,9 +192,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       if (this.selectedTab != null) {
          var1.pose().pushPose();
          var1.pose().translate((float)(var4 + 9), (float)(var5 + 18), 400.0F);
-         RenderSystem.enableDepthTest();
          this.selectedTab.drawTooltips(var1, var2 - var4 - 9, var3 - var5 - 18, var4, var5);
-         RenderSystem.disableDepthTest();
          var1.pose().popPose();
       }
 

@@ -35,6 +35,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.MultipliedFloats;
 import org.slf4j.Logger;
@@ -66,41 +67,36 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
 
    protected SoundManager.Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
       SoundManager.Preparations var3 = new SoundManager.Preparations();
-      var2.startTick();
-      var2.push("list");
-      var3.listResources(var1);
-      var2.pop();
+
+      try (Zone var4 = var2.zone("list")) {
+         var3.listResources(var1);
+      }
 
       for (String var5 : var1.getNamespaces()) {
-         var2.push(var5);
+         try (Zone var6 = var2.zone(var5)) {
+            for (Resource var9 : var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"))) {
+               var2.push(var9.sourcePackId());
 
-         try {
-            for (Resource var8 : var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"))) {
-               var2.push(var8.sourcePackId());
-
-               try (BufferedReader var9 = var8.openAsReader()) {
+               try (BufferedReader var10 = var9.openAsReader()) {
                   var2.push("parse");
-                  Map var10 = GsonHelper.fromJson(GSON, var9, SOUND_EVENT_REGISTRATION_TYPE);
+                  Map var11 = GsonHelper.fromJson(GSON, var10, SOUND_EVENT_REGISTRATION_TYPE);
                   var2.popPush("register");
 
-                  for (Entry var12 : var10.entrySet()) {
-                     var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
+                  for (Entry var13 : var11.entrySet()) {
+                     var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var13.getKey()), (SoundEventRegistration)var13.getValue());
                   }
 
                   var2.pop();
-               } catch (RuntimeException var15) {
-                  LOGGER.warn("Invalid {} in resourcepack: '{}'", new Object[]{"sounds.json", var8.sourcePackId(), var15});
+               } catch (RuntimeException var19) {
+                  LOGGER.warn("Invalid {} in resourcepack: '{}'", new Object[]{"sounds.json", var9.sourcePackId(), var19});
                }
 
                var2.pop();
             }
-         } catch (IOException var16) {
+         } catch (IOException var21) {
          }
-
-         var2.pop();
       }
 
-      var2.endTick();
       return var3;
    }
 

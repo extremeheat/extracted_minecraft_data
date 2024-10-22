@@ -1,8 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -19,12 +17,12 @@ public class TintedGlassBlock extends TransparentBlock {
    }
 
    @Override
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return false;
    }
 
    @Override
-   protected int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var2.getMaxLightLevel();
+   protected int getLightBlock(BlockState var1) {
+      return 15;
    }
 }

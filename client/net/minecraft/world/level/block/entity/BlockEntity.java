@@ -138,6 +138,7 @@ public abstract class BlockEntity {
    public void saveToItem(ItemStack var1, HolderLookup.Provider var2) {
       CompoundTag var3 = this.saveCustomOnly(var2);
       this.removeComponentsFromTag(var3);
+      var1.clearComponents();
       BlockItem.setBlockEntityData(var1, this.getType(), var3);
       var1.applyComponents(this.collectComponents());
    }

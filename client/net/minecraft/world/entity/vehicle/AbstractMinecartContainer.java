@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -17,6 +18,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractMinecartContainer extends AbstractMinecart implements ContainerEntity {
    private NonNullList<ItemStack> itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
@@ -28,14 +30,10 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
       super(var1, var2);
    }
 
-   protected AbstractMinecartContainer(EntityType<?> var1, double var2, double var4, double var6, Level var8) {
-      super(var1, var8, var2, var4, var6);
-   }
-
    @Override
-   public void destroy(DamageSource var1) {
-      super.destroy(var1);
-      this.chestVehicleDestroyed(var1, this.level(), this);
+   public void destroy(ServerLevel var1, DamageSource var2) {
+      super.destroy(var1, var2);
+      this.chestVehicleDestroyed(var2, var1, this);
    }
 
    @Override
@@ -99,18 +97,18 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    }
 
    @Override
-   protected void applyNaturalSlowdown() {
-      float var1 = 0.98F;
+   protected Vec3 applyNaturalSlowdown(Vec3 var1) {
+      float var2 = 0.98F;
       if (this.lootTable == null) {
-         int var2 = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
-         var1 += (float)var2 * 0.001F;
+         int var3 = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
+         var2 += (float)var3 * 0.001F;
       }
 
       if (this.isInWater()) {
-         var1 *= 0.95F;
+         var2 *= 0.95F;
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var1, 0.0, (double)var1));
+      return var1.multiply((double)var2, 0.0, (double)var2);
    }
 
    @Override
@@ -138,22 +136,22 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
 
    @Nullable
    @Override
-   public ResourceKey<LootTable> getLootTable() {
+   public ResourceKey<LootTable> getContainerLootTable() {
       return this.lootTable;
    }
 
    @Override
-   public void setLootTable(@Nullable ResourceKey<LootTable> var1) {
+   public void setContainerLootTable(@Nullable ResourceKey<LootTable> var1) {
       this.lootTable = var1;
    }
 
    @Override
-   public long getLootTableSeed() {
+   public long getContainerLootTableSeed() {
       return this.lootTableSeed;
    }
 
    @Override
-   public void setLootTableSeed(long var1) {
+   public void setContainerLootTableSeed(long var1) {
       this.lootTableSeed = var1;
    }
 

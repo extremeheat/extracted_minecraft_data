@@ -38,6 +38,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.FileUtil;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -76,7 +77,7 @@ import org.slf4j.Logger;
 public class LevelStorageSource {
    static final Logger LOGGER = LogUtils.getLogger();
    static final DateTimeFormatter FORMATTER = FileNameDateFormatter.create();
-   private static final String TAG_DATA = "Data";
+   public static final String TAG_DATA = "Data";
    private static final PathMatcher NO_SYMLINKS_ALLOWED = var0 -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
    private static final int UNCOMPRESSED_NBT_QUOTA = 104857600;
@@ -132,7 +133,7 @@ public class LevelStorageSource {
    }
 
    public static LevelDataAndDimensions getLevelDataAndDimensions(
-      Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, RegistryAccess.Frozen var3
+      Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, HolderLookup.Provider var3
    ) {
       Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
       Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();
@@ -186,7 +187,6 @@ public class LevelStorageSource {
                return this.readLevelSummary(var4, var2x);
             } catch (OutOfMemoryError var12) {
                MemoryReserve.release();
-               System.gc();
                String var4x = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
                LOGGER.error(LogUtils.FATAL_MARKER, var4x);
                OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");
@@ -204,7 +204,7 @@ public class LevelStorageSource {
 
                throw new ReportedException(var6);
             }
-         }, Util.backgroundExecutor()));
+         }, Util.backgroundExecutor().forName("loadLevelSummaries")));
       }
 
       return Util.sequenceFailFastAndCancel(var2).thenApply(var0 -> var0.stream().filter(Objects::nonNull).sorted().toList());

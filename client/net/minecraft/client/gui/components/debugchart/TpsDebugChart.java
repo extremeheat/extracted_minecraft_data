@@ -10,9 +10,6 @@ import net.minecraft.util.debugchart.SampleStorage;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
 
 public class TpsDebugChart extends AbstractDebugChart {
-   private static final int RED = -65536;
-   private static final int YELLOW = -256;
-   private static final int GREEN = -16711936;
    private static final int TICK_METHOD_COLOR = -6745839;
    private static final int TASK_COLOR = -4548257;
    private static final int OTHER_COLOR = -10547572;
@@ -26,7 +23,7 @@ public class TpsDebugChart extends AbstractDebugChart {
    @Override
    protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
       float var5 = (float)TimeUtil.MILLISECONDS_PER_SECOND / this.msptSupplier.get();
-      this.drawStringWithShade(var1, String.format("%.1f TPS", var5), var2 + 1, var4 - 60 + 1);
+      this.drawStringWithShade(var1, String.format(Locale.ROOT, "%.1f TPS", var5), var2 + 1, var4 - 60 + 1);
    }
 
    @Override

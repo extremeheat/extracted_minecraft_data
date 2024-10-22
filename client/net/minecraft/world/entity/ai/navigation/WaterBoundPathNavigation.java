@@ -44,7 +44,7 @@ public class WaterBoundPathNavigation extends PathNavigation {
 
    @Override
    public boolean isStableDestination(BlockPos var1) {
-      return !this.level.getBlockState(var1).isSolidRender(this.level, var1);
+      return !this.level.getBlockState(var1).isSolidRender();
    }
 
    @Override

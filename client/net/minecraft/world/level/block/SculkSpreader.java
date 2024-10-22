@@ -39,6 +39,7 @@ public class SculkSpreader {
    public static final float MAX_DECAY_FACTOR = 0.5F;
    private static final int MAX_CURSORS = 32;
    public static final int SHRIEKER_PLACEMENT_RATE = 11;
+   public static final int MAX_CURSOR_DISTANCE = 1024;
    final boolean isWorldGeneration;
    private final TagKey<Block> replaceableBlocks;
    private final int growthSpawnCost;
@@ -144,22 +145,24 @@ public class SculkSpreader {
          Object2IntOpenHashMap var7 = new Object2IntOpenHashMap();
 
          for (SculkSpreader.ChargeCursor var9 : this.cursors) {
-            var9.update(var1, var2, var3, this, var4);
-            if (var9.charge <= 0) {
-               var1.levelEvent(3006, var9.getPos(), 0);
-            } else {
-               BlockPos var10 = var9.getPos();
-               var7.computeInt(var10, (var1x, var2x) -> (var2x == null ? 0 : var2x) + var9.charge);
-               SculkSpreader.ChargeCursor var11 = (SculkSpreader.ChargeCursor)var6.get(var10);
-               if (var11 == null) {
-                  var6.put(var10, var9);
-                  var5.add(var9);
-               } else if (!this.isWorldGeneration() && var9.charge + var11.charge <= 1000) {
-                  var11.mergeWith(var9);
+            if (!var9.isPosUnreasonable(var2)) {
+               var9.update(var1, var2, var3, this, var4);
+               if (var9.charge <= 0) {
+                  var1.levelEvent(3006, var9.getPos(), 0);
                } else {
-                  var5.add(var9);
-                  if (var9.charge < var11.charge) {
+                  BlockPos var10 = var9.getPos();
+                  var7.computeInt(var10, (var1x, var2x) -> (var2x == null ? 0 : var2x) + var9.charge);
+                  SculkSpreader.ChargeCursor var11 = (SculkSpreader.ChargeCursor)var6.get(var10);
+                  if (var11 == null) {
                      var6.put(var10, var9);
+                     var5.add(var9);
+                  } else if (!this.isWorldGeneration() && var9.charge + var11.charge <= 1000) {
+                     var11.mergeWith(var9);
+                  } else {
+                     var5.add(var9);
+                     if (var9.charge < var11.charge) {
+                        var6.put(var10, var9);
+                     }
                   }
                }
             }
@@ -228,6 +231,10 @@ public class SculkSpreader {
 
       public BlockPos getPos() {
          return this.pos;
+      }
+
+      boolean isPosUnreasonable(BlockPos var1) {
+         return this.pos.distChessboard(var1) > 1024;
       }
 
       public int getCharge() {

@@ -45,7 +45,7 @@ public abstract class StructurePoolElement {
 
    public abstract Vec3i getSize(StructureTemplateManager var1, Rotation var2);
 
-   public abstract List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(
+   public abstract List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(
       StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4
    );
 

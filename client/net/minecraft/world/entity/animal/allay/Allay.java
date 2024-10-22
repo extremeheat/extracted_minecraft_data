@@ -25,13 +25,17 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.GameEventTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -52,9 +56,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
@@ -76,9 +78,9 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private static final int LIFTING_ITEM_ANIMATION_DURATION = 5;
    private static final float DANCING_LOOP_DURATION = 55.0F;
    private static final float SPINNING_ANIMATION_DURATION = 15.0F;
-   private static final Ingredient DUPLICATION_ITEM = Ingredient.of(Items.AMETHYST_SHARD);
    private static final int DUPLICATION_COOLDOWN_TICKS = 6000;
    private static final int NUM_OF_DUPLICATION_HEARTS = 3;
+   public static final int MAX_NOTEBLOCK_DISTANCE = 1024;
    private static final EntityDataAccessor<Boolean> DATA_DANCING = SynchedEntityData.defineId(Allay.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> DATA_CAN_DUPLICATE = SynchedEntityData.defineId(Allay.class, EntityDataSerializers.BOOLEAN);
    protected static final ImmutableList<SensorType<? extends Sensor<? super Allay>>> SENSOR_TYPES = ImmutableList.of(
@@ -148,8 +150,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
          .add(Attributes.MAX_HEALTH, 20.0)
          .add(Attributes.FLYING_SPEED, 0.10000000149011612)
          .add(Attributes.MOVEMENT_SPEED, 0.10000000149011612)
-         .add(Attributes.ATTACK_DAMAGE, 2.0)
-         .add(Attributes.FOLLOW_RANGE, 48.0);
+         .add(Attributes.ATTACK_DAMAGE, 2.0);
    }
 
    @Override
@@ -158,6 +159,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       var2.setCanOpenDoors(false);
       var2.setCanFloat(true);
       var2.setCanPassDoors(true);
+      var2.setRequiredPathLength(48.0F);
       return var2;
    }
 
@@ -185,20 +187,18 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
          }
       }
-
-      this.calculateEntityAnimation(false);
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (var1.getEntity() instanceof Player var3) {
-         Optional var5 = this.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
-         if (var5.isPresent() && var3.getUUID().equals(var5.get())) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (var2.getEntity() instanceof Player var4) {
+         Optional var6 = this.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
+         if (var6.isPresent() && var4.getUUID().equals(var6.get())) {
             return false;
          }
       }
 
-      return super.hurt(var1, var2);
+      return super.hurtServer(var1, var2, var3);
    }
 
    @Override
@@ -230,14 +230,15 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("allayBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("allayActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("allayBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
+      var2.push("allayActivityUpdate");
       AllayAi.updateActivity(this);
-      this.level().getProfiler().pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    @Override
@@ -299,7 +300,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   public boolean canTakeItem(ItemStack var1) {
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
       return false;
    }
 
@@ -311,7 +312,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       ItemStack var4 = this.getItemInHand(InteractionHand.MAIN_HAND);
-      if (this.isDancing() && this.isDuplicationItem(var3) && this.canDuplicate()) {
+      if (this.isDancing() && var3.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
          this.duplicateAllay();
          this.level().broadcastEntityEvent(this, (byte)18);
          this.level().playSound(var1, this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
@@ -364,12 +365,12 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   public boolean wantsToPickUp(ItemStack var1) {
-      ItemStack var2 = this.getItemInHand(InteractionHand.MAIN_HAND);
-      return !var2.isEmpty()
-         && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
-         && this.inventory.canAddItem(var1)
-         && this.allayConsidersItemEqual(var2, var1);
+   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
+      ItemStack var3 = this.getItemInHand(InteractionHand.MAIN_HAND);
+      return !var3.isEmpty()
+         && var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+         && this.inventory.canAddItem(var2)
+         && this.allayConsidersItemEqual(var3, var2);
    }
 
    private boolean allayConsidersItemEqual(ItemStack var1, ItemStack var2) {
@@ -383,8 +384,8 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   protected void pickUpItem(ItemEntity var1) {
-      InventoryCarrier.pickUpItem(this, this, var1);
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
+      InventoryCarrier.pickUpItem(var1, this, this, var2);
    }
 
    @Override
@@ -441,12 +442,12 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   protected void dropEquipment() {
-      super.dropEquipment();
-      this.inventory.removeAllItems().forEach(this::spawnAtLocation);
-      ItemStack var1 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-      if (!var1.isEmpty() && !EnchantmentHelper.has(var1, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-         this.spawnAtLocation(var1);
+   protected void dropEquipment(ServerLevel var1) {
+      super.dropEquipment(var1);
+      this.inventory.removeAllItems().forEach(var2x -> this.spawnAtLocation(var1, var2x));
+      ItemStack var2 = this.getItemBySlot(EquipmentSlot.MAINHAND);
+      if (!var2.isEmpty() && !EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+         this.spawnAtLocation(var1, var2);
          this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
       }
    }
@@ -500,12 +501,8 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       }
    }
 
-   private boolean isDuplicationItem(ItemStack var1) {
-      return DUPLICATION_ITEM.test(var1);
-   }
-
    private void duplicateAllay() {
-      Allay var1 = EntityType.ALLAY.create(this.level());
+      Allay var1 = EntityType.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
       if (var1 != null) {
          var1.moveTo(this.position());
          var1.setPersistenceRequired();
@@ -623,7 +620,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
                return true;
             } else {
                GlobalPos var6 = (GlobalPos)var5.get();
-               return var6.dimension().equals(var1.dimension()) && var6.pos().equals(var2);
+               return var6.isCloseEnough(var1.dimension(), Allay.this.blockPosition(), 1024) && var6.pos().equals(var2);
             }
          }
       }

@@ -39,6 +39,19 @@ public final class DataComponentPredicate implements Predicate<DataComponentMap>
       return new DataComponentPredicate(ImmutableList.copyOf(var0));
    }
 
+   public static DataComponentPredicate someOf(DataComponentMap var0, DataComponentType<?>... var1) {
+      DataComponentPredicate.Builder var2 = new DataComponentPredicate.Builder();
+
+      for (DataComponentType var6 : var1) {
+         TypedDataComponent var7 = var0.getTyped(var6);
+         if (var7 != null) {
+            var2.expect(var7);
+         }
+      }
+
+      return var2.build();
+   }
+
    @Override
    public boolean equals(Object var1) {
       if (var1 instanceof DataComponentPredicate var2 && this.expectedComponents.equals(var2.expectedComponents)) {
@@ -92,6 +105,10 @@ public final class DataComponentPredicate implements Predicate<DataComponentMap>
 
       Builder() {
          super();
+      }
+
+      public <T> DataComponentPredicate.Builder expect(TypedDataComponent<T> var1) {
+         return this.expect(var1.type(), var1.value());
       }
 
       public <T> DataComponentPredicate.Builder expect(DataComponentType<? super T> var1, T var2) {

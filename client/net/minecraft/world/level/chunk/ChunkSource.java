@@ -37,6 +37,9 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
 
    public abstract void tick(BooleanSupplier var1, boolean var2);
 
+   public void onSectionEmptinessChanged(int var1, int var2, int var3, boolean var4) {
+   }
+
    public abstract String gatherStats();
 
    public abstract int getLoadedChunksCount();
@@ -47,7 +50,7 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
 
    public abstract LevelLightEngine getLightEngine();
 
-   public void setSpawnSettings(boolean var1, boolean var2) {
+   public void setSpawnSettings(boolean var1) {
    }
 
    public void updateChunkForced(ChunkPos var1, boolean var2) {

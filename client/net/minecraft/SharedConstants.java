@@ -12,22 +12,22 @@ public class SharedConstants {
    @Deprecated
    public static final boolean SNAPSHOT = false;
    @Deprecated
-   public static final int WORLD_VERSION = 3955;
+   public static final int WORLD_VERSION = 4080;
    @Deprecated
    public static final String SERIES = "main";
    @Deprecated
-   public static final String VERSION_STRING = "1.21.1";
+   public static final String VERSION_STRING = "1.21.2";
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 767;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 768;
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 204;
-   public static final int SNBT_NAG_VERSION = 3937;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 219;
+   public static final int SNBT_NAG_VERSION = 4053;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = false;
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 34;
+   public static final int RESOURCE_PACK_FORMAT = 42;
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 48;
+   public static final int DATA_PACK_FORMAT = 57;
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
@@ -48,6 +48,7 @@ public class SharedConstants {
    public static final boolean DEBUG_SUPPORT_BLOCKS = false;
    public static final boolean DEBUG_SHAPES = false;
    public static final boolean DEBUG_NEIGHBORSUPDATE = false;
+   public static final boolean DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER = false;
    public static final boolean DEBUG_STRUCTURES = false;
    public static final boolean DEBUG_LIGHT = false;
    public static final boolean DEBUG_SKY_LIGHT_SECTIONS = false;
@@ -68,7 +69,6 @@ public class SharedConstants {
    public static final boolean DEBUG_BEES = false;
    public static final boolean DEBUG_RAIDS = false;
    public static final boolean DEBUG_BLOCK_BREAK = false;
-   public static final boolean DEBUG_RESOURCE_LOAD_TIMES = false;
    public static final boolean DEBUG_MONITOR_TICK_TIMES = false;
    public static final boolean DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN = false;
    public static final boolean DEBUG_DONT_SAVE_WORLD = false;
@@ -101,7 +101,6 @@ public class SharedConstants {
    public static final boolean DEBUG_DISABLE_BLENDING = false;
    public static final boolean DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION = false;
    public static final int DEFAULT_MINECRAFT_PORT = 25565;
-   public static final boolean INGAME_DEBUG_OUTPUT = false;
    public static final boolean DEBUG_SUBTITLES = false;
    public static final int FAKE_MS_LATENCY = 0;
    public static final int FAKE_MS_JITTER = 0;
@@ -165,7 +164,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 767;
+      return 768;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

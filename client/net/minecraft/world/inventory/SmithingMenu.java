@@ -1,12 +1,15 @@
 package net.minecraft.world.inventory;
 
 import java.util.List;
-import java.util.OptionalInt;
-import javax.annotation.Nullable;
+import java.util.Optional;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipeInput;
@@ -25,26 +28,36 @@ public class SmithingMenu extends ItemCombinerMenu {
    private static final int RESULT_SLOT_X_PLACEMENT = 98;
    public static final int SLOT_Y_PLACEMENT = 48;
    private final Level level;
-   @Nullable
-   private RecipeHolder<SmithingRecipe> selectedRecipe;
-   private final List<RecipeHolder<SmithingRecipe>> recipes;
+   private final RecipePropertySet baseItemTest;
+   private final RecipePropertySet templateItemTest;
+   private final RecipePropertySet additionItemTest;
+   private final DataSlot hasRecipeError = DataSlot.standalone();
 
    public SmithingMenu(int var1, Inventory var2) {
       this(var1, var2, ContainerLevelAccess.NULL);
    }
 
    public SmithingMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
-      super(MenuType.SMITHING, var1, var2, var3);
-      this.level = var2.player.level();
-      this.recipes = this.level.getRecipeManager().getAllRecipesFor(RecipeType.SMITHING);
+      this(var1, var2, var3, var2.player.level());
    }
 
-   @Override
-   protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
+   private SmithingMenu(int var1, Inventory var2, ContainerLevelAccess var3, Level var4) {
+      super(MenuType.SMITHING, var1, var2, var3, createInputSlotDefinitions(var4.recipeAccess()));
+      this.level = var4;
+      this.baseItemTest = var4.recipeAccess().propertySet(RecipePropertySet.SMITHING_BASE);
+      this.templateItemTest = var4.recipeAccess().propertySet(RecipePropertySet.SMITHING_TEMPLATE);
+      this.additionItemTest = var4.recipeAccess().propertySet(RecipePropertySet.SMITHING_ADDITION);
+      this.addDataSlot(this.hasRecipeError).set(0);
+   }
+
+   private static ItemCombinerMenuSlotDefinition createInputSlotDefinitions(RecipeAccess var0) {
+      RecipePropertySet var1 = var0.propertySet(RecipePropertySet.SMITHING_BASE);
+      RecipePropertySet var2 = var0.propertySet(RecipePropertySet.SMITHING_TEMPLATE);
+      RecipePropertySet var3 = var0.propertySet(RecipePropertySet.SMITHING_ADDITION);
       return ItemCombinerMenuSlotDefinition.create()
-         .withSlot(0, 8, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isTemplateIngredient(var1)))
-         .withSlot(1, 26, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isBaseIngredient(var1)))
-         .withSlot(2, 44, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isAdditionIngredient(var1)))
+         .withSlot(0, 8, 48, var2::test)
+         .withSlot(1, 26, 48, var1::test)
+         .withSlot(2, 44, 48, var3::test)
          .withResultSlot(3, 98, 48)
          .build();
    }
@@ -52,11 +65,6 @@ public class SmithingMenu extends ItemCombinerMenu {
    @Override
    protected boolean isValidBlock(BlockState var1) {
       return var1.is(Blocks.SMITHING_TABLE);
-   }
-
-   @Override
-   protected boolean mayPickup(Player var1, boolean var2) {
-      return this.selectedRecipe != null && this.selectedRecipe.value().matches(this.createRecipeInput(), this.level);
    }
 
    @Override
@@ -86,35 +94,32 @@ public class SmithingMenu extends ItemCombinerMenu {
    }
 
    @Override
-   public void createResult() {
-      SmithingRecipeInput var1 = this.createRecipeInput();
-      List var2 = this.level.getRecipeManager().getRecipesFor(RecipeType.SMITHING, var1, this.level);
-      if (var2.isEmpty()) {
-         this.resultSlots.setItem(0, ItemStack.EMPTY);
-      } else {
-         RecipeHolder var3 = (RecipeHolder)var2.get(0);
-         ItemStack var4 = ((SmithingRecipe)var3.value()).assemble(var1, this.level.registryAccess());
-         if (var4.isItemEnabled(this.level.enabledFeatures())) {
-            this.selectedRecipe = var3;
-            this.resultSlots.setRecipeUsed(var3);
-            this.resultSlots.setItem(0, var4);
-         }
+   public void slotsChanged(Container var1) {
+      super.slotsChanged(var1);
+      if (this.level instanceof ServerLevel) {
+         boolean var2 = this.getSlot(0).hasItem() && this.getSlot(1).hasItem() && this.getSlot(2).hasItem() && !this.getSlot(this.getResultSlot()).hasItem();
+         this.hasRecipeError.set(var2 ? 1 : 0);
       }
    }
 
    @Override
-   public int getSlotToQuickMoveTo(ItemStack var1) {
-      return this.findSlotToQuickMoveTo(var1).orElse(0);
-   }
-
-   private static OptionalInt findSlotMatchingIngredient(SmithingRecipe var0, ItemStack var1) {
-      if (var0.isTemplateIngredient(var1)) {
-         return OptionalInt.of(0);
-      } else if (var0.isBaseIngredient(var1)) {
-         return OptionalInt.of(1);
+   public void createResult() {
+      SmithingRecipeInput var1 = this.createRecipeInput();
+      Optional var2;
+      if (this.level instanceof ServerLevel var3) {
+         var2 = var3.recipeAccess().getRecipeFor(RecipeType.SMITHING, var1, var3);
       } else {
-         return var0.isAdditionIngredient(var1) ? OptionalInt.of(2) : OptionalInt.empty();
+         var2 = Optional.empty();
       }
+
+      var2.ifPresentOrElse(var2x -> {
+         ItemStack var3x = ((SmithingRecipe)var2x.value()).assemble(var1, this.level.registryAccess());
+         this.resultSlots.setRecipeUsed((RecipeHolder<?>)var2x);
+         this.resultSlots.setItem(0, var3x);
+      }, () -> {
+         this.resultSlots.setRecipeUsed(null);
+         this.resultSlots.setItem(0, ItemStack.EMPTY);
+      });
    }
 
    @Override
@@ -124,14 +129,14 @@ public class SmithingMenu extends ItemCombinerMenu {
 
    @Override
    public boolean canMoveIntoInputSlots(ItemStack var1) {
-      return this.findSlotToQuickMoveTo(var1).isPresent();
+      if (this.templateItemTest.test(var1) && !this.getSlot(0).hasItem()) {
+         return true;
+      } else {
+         return this.baseItemTest.test(var1) && !this.getSlot(1).hasItem() ? true : this.additionItemTest.test(var1) && !this.getSlot(2).hasItem();
+      }
    }
 
-   private OptionalInt findSlotToQuickMoveTo(ItemStack var1) {
-      return this.recipes
-         .stream()
-         .flatMapToInt(var1x -> findSlotMatchingIngredient(var1x.value(), var1).stream())
-         .filter(var1x -> !this.getSlot(var1x).hasItem())
-         .findFirst();
+   public boolean hasRecipeError() {
+      return this.hasRecipeError.get() > 0;
    }
 }

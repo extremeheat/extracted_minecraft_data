@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.MinecartChest;
 import net.minecraft.world.level.BlockGetter;
@@ -309,9 +310,13 @@ public class MineshaftPieces {
          if (var2.isInside(var8) && var1.getBlockState(var8).isAir() && !var1.getBlockState(var8.below()).isAir()) {
             BlockState var9 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, var3.nextBoolean() ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST);
             this.placeBlock(var1, var9, var4, var5, var6, var2);
-            MinecartChest var10 = new MinecartChest(var1.getLevel(), (double)var8.getX() + 0.5, (double)var8.getY() + 0.5, (double)var8.getZ() + 0.5);
-            var10.setLootTable(var7, var3.nextLong());
-            var1.addFreshEntity(var10);
+            MinecartChest var10 = EntityType.CHEST_MINECART.create(var1.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
+            if (var10 != null) {
+               var10.setInitialPos((double)var8.getX() + 0.5, (double)var8.getY() + 0.5, (double)var8.getZ() + 0.5);
+               var10.setLootTable(var7, var3.nextLong());
+               var1.addFreshEntity(var10);
+            }
+
             return true;
          } else {
             return false;
@@ -384,7 +389,7 @@ public class MineshaftPieces {
 
                for (int var26 = 0; var26 <= var12; var26++) {
                   BlockState var27 = this.getBlock(var1, 1, -1, var26, var5);
-                  if (!var27.isAir() && var27.isSolidRender(var1, this.getWorldPos(1, -1, var26))) {
+                  if (!var27.isAir() && var27.isSolidRender()) {
                      float var28 = this.isInterior(var1, 1, 0, var26, var5) ? 0.7F : 0.9F;
                      this.maybeGenerateBlock(var1, var5, var4, var28, 1, 0, var26, var25);
                   }
@@ -411,7 +416,7 @@ public class MineshaftPieces {
          if (var6.isInside(var7)) {
             int var8 = var7.getY();
 
-            while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinBuildHeight() + 1) {
+            while (this.isReplaceableByStructures(var1.getBlockState(var7)) && var7.getY() > var1.getMinY() + 1) {
                var7.move(Direction.DOWN);
             }
 
@@ -441,7 +446,7 @@ public class MineshaftPieces {
                      return;
                   }
 
-                  var10 = var9 <= 20 && var13 && var7.getY() > var1.getMinBuildHeight() + 1;
+                  var10 = var9 <= 20 && var13 && var7.getY() > var1.getMinY() + 1;
                }
 
                if (var11) {
@@ -454,7 +459,7 @@ public class MineshaftPieces {
                      return;
                   }
 
-                  var11 = var9 <= 50 && var15 && var7.getY() < var1.getMaxBuildHeight() - 1;
+                  var11 = var9 <= 50 && var15 && var7.getY() < var1.getMaxY();
                }
             }
          }

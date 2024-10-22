@@ -20,7 +20,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -37,7 +36,7 @@ public class ImposterProtoChunk extends ProtoChunk {
 
    public ImposterProtoChunk(LevelChunk var1, boolean var2) {
       super(
-         var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().registryAccess().registryOrThrow(Registries.BIOME), var1.getBlendingData()
+         var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().registryAccess().lookupOrThrow(Registries.BIOME), var1.getBlendingData()
       );
       this.wrapped = var1;
       this.allowWrites = var2;
@@ -57,11 +56,6 @@ public class ImposterProtoChunk extends ProtoChunk {
    @Override
    public FluidState getFluidState(BlockPos var1) {
       return this.wrapped.getFluidState(var1);
-   }
-
-   @Override
-   public int getMaxLightLevel() {
-      return this.wrapped.getMaxLightLevel();
    }
 
    @Override
@@ -171,8 +165,18 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    @Override
-   public void setUnsaved(boolean var1) {
-      this.wrapped.setUnsaved(var1);
+   public void markUnsaved() {
+      this.wrapped.markUnsaved();
+   }
+
+   @Override
+   public boolean canBeSerialized() {
+      return false;
+   }
+
+   @Override
+   public boolean tryMarkSaved() {
+      return false;
    }
 
    @Override
@@ -225,8 +229,8 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    @Override
-   public ChunkAccess.TicksToSave getTicksForSerialization() {
-      return this.wrapped.getTicksForSerialization();
+   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
+      return this.wrapped.getTicksForSerialization(var1);
    }
 
    @Nullable
@@ -236,23 +240,18 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    @Override
-   public void setBlendingData(BlendingData var1) {
-      this.wrapped.setBlendingData(var1);
-   }
-
-   @Override
-   public CarvingMask getCarvingMask(GenerationStep.Carving var1) {
+   public CarvingMask getCarvingMask() {
       if (this.allowWrites) {
-         return super.getCarvingMask(var1);
+         return super.getCarvingMask();
       } else {
          throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
       }
    }
 
    @Override
-   public CarvingMask getOrCreateCarvingMask(GenerationStep.Carving var1) {
+   public CarvingMask getOrCreateCarvingMask() {
       if (this.allowWrites) {
-         return super.getOrCreateCarvingMask(var1);
+         return super.getOrCreateCarvingMask();
       } else {
          throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
       }

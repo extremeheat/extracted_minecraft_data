@@ -1,8 +1,7 @@
 package net.minecraft.world.ticks;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -98,16 +97,25 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       return this.tickQueue.size() + (this.pendingTicks != null ? this.pendingTicks.size() : 0);
    }
 
-   public ListTag save(long var1, Function<T, String> var3) {
-      ListTag var4 = new ListTag();
+   @Override
+   public List<SavedTick<T>> pack(long var1) {
+      ArrayList var3 = new ArrayList(this.tickQueue.size());
       if (this.pendingTicks != null) {
-         for (SavedTick var6 : this.pendingTicks) {
-            var4.add(var6.save(var3));
-         }
+         var3.addAll(this.pendingTicks);
       }
 
-      for (ScheduledTick var8 : this.tickQueue) {
-         var4.add(SavedTick.saveTick(var8, var3, var1));
+      for (ScheduledTick var5 : this.tickQueue) {
+         var3.add(var5.toSavedTick(var1));
+      }
+
+      return var3;
+   }
+
+   public ListTag save(long var1, Function<T, String> var3) {
+      ListTag var4 = new ListTag();
+
+      for (SavedTick var7 : this.pack(var1)) {
+         var4.add(var7.save(var3));
       }
 
       return var4;
@@ -126,8 +134,6 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    }
 
    public static <T> LevelChunkTicks<T> load(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2) {
-      Builder var3 = ImmutableList.builder();
-      SavedTick.loadTickList(var0, var1, var2, var3::add);
-      return new LevelChunkTicks<>(var3.build());
+      return new LevelChunkTicks<>(SavedTick.loadTickList(var0, var1, var2));
    }
 }

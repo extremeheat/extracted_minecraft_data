@@ -17,8 +17,10 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -278,18 +280,18 @@ public class StatsScreen extends Screen {
 
          for (int var4 = 0; var4 < this.iconSprites.length; var4++) {
             ResourceLocation var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
-            var1.blitSprite(var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 0, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 18, 18);
          }
 
          if (this.sortColumn != null) {
             int var6 = this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
             ResourceLocation var8 = this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
-            var1.blitSprite(var8, var2 + var6, var3 + 1, 0, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, var8, var2 + var6, var3 + 1, 18, 18);
          }
 
          for (int var7 = 0; var7 < this.iconSprites.length; var7++) {
             int var9 = this.headerPressed == var7 ? 1 : 0;
-            var1.blitSprite(this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 0, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 18, 18);
          }
       }
 
@@ -344,7 +346,7 @@ public class StatsScreen extends Screen {
                }
 
                Item var6 = var4.getItem();
-               var1.renderTooltip(StatsScreen.this.font, var6.getDescription(), var2, var3);
+               var1.renderTooltip(StatsScreen.this.font, var6.getName(), var2, var3, var6.components().get(DataComponents.TOOLTIP_STYLE));
             } else {
                Component var10 = null;
                int var7 = var2 - var5;
@@ -392,7 +394,7 @@ public class StatsScreen extends Screen {
 
          @Override
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.blitSprite(StatsScreen.SLOT_SPRITE, var4, var3, 0, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, StatsScreen.SLOT_SPRITE, var4, var3, 18, 18);
             var1.renderFakeItem(this.item.getDefaultInstance(), var4 + 1, var3 + 1);
             if (StatsScreen.this.itemStatsList != null) {
                for (int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); var11++) {
@@ -425,7 +427,7 @@ public class StatsScreen extends Screen {
 
          @Override
          public Component getNarration() {
-            return Component.translatable("narrator.select", this.item.getDescription());
+            return Component.translatable("narrator.select", this.item.getName());
          }
       }
 

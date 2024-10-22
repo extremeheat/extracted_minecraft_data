@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -32,11 +32,11 @@ public class PumpkinBlock extends Block {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (!var1.is(Items.SHEARS)) {
          return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       } else if (var3.isClientSide) {
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          Direction var8 = var7.getDirection();
          Direction var9 = var8.getAxis() == Direction.Axis.Y ? var5.getDirection().getOpposite() : var8;
@@ -56,7 +56,7 @@ public class PumpkinBlock extends Block {
          var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
          var3.gameEvent(var5, GameEvent.SHEAR, var4);
          var5.awardStat(Stats.ITEM_USED.get(Items.SHEARS));
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 }

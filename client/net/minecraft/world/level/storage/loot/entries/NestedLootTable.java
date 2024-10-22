@@ -37,7 +37,7 @@ public class NestedLootTable extends LootPoolSingletonContainer {
 
    @Override
    public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
-      ((LootTable)this.contents.map(var1x -> var2.getResolver().get(Registries.LOOT_TABLE, var1x).map(Holder::value).orElse(LootTable.EMPTY), var0 -> var0))
+      ((LootTable)this.contents.map(var1x -> var2.getResolver().get(var1x).map(Holder::value).orElse(LootTable.EMPTY), var0 -> var0))
          .getRandomItemsRaw(var2, var1);
    }
 
@@ -61,9 +61,9 @@ public class NestedLootTable extends LootPoolSingletonContainer {
       this.contents
          .ifLeft(
             var1x -> var1.resolver()
-                  .get(Registries.LOOT_TABLE, var1x)
+                  .get(var1x)
                   .ifPresentOrElse(
-                     var2x -> var2x.value().validate(var1.enterElement("->{" + var1x.location() + "}", var1x)),
+                     var2x -> ((LootTable)var2x.value()).validate(var1.enterElement("->{" + var1x.location() + "}", var1x)),
                      () -> var1.reportProblem("Unknown loot table called " + var1x.location())
                   )
          )

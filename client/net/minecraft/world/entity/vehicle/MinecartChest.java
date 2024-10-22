@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.vehicle;
 
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -10,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -22,23 +24,19 @@ public class MinecartChest extends AbstractMinecartContainer {
       super(var1, var2);
    }
 
-   public MinecartChest(Level var1, double var2, double var4, double var6) {
-      super(EntityType.CHEST_MINECART, var2, var4, var6, var1);
-   }
-
    @Override
    protected Item getDropItem() {
       return Items.CHEST_MINECART;
    }
 
    @Override
-   public int getContainerSize() {
-      return 27;
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.CHEST_MINECART);
    }
 
    @Override
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.CHEST;
+   public int getContainerSize() {
+      return 27;
    }
 
    @Override
@@ -64,9 +62,9 @@ public class MinecartChest extends AbstractMinecartContainer {
    @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       InteractionResult var3 = this.interactWithContainerVehicle(var1);
-      if (var3.consumesAction()) {
+      if (var3.consumesAction() && var1.level() instanceof ServerLevel var4) {
          this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-         PiglinAi.angerNearbyPiglins(var1, true);
+         PiglinAi.angerNearbyPiglins(var4, var1, true);
       }
 
       return var3;

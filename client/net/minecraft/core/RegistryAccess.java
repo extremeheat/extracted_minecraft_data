@@ -2,7 +2,6 @@ package net.minecraft.core;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Lifecycle;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,28 +14,24 @@ public interface RegistryAccess extends HolderLookup.Provider {
    Logger LOGGER = LogUtils.getLogger();
    RegistryAccess.Frozen EMPTY = new RegistryAccess.ImmutableRegistryAccess(Map.of()).freeze();
 
-   <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> var1);
-
    @Override
-   default <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-      return this.registry(var1).map(Registry::asLookup);
-   }
+   <E> Optional<Registry<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1);
 
-   default <E> Registry<E> registryOrThrow(ResourceKey<? extends Registry<? extends E>> var1) {
-      return this.<E>registry(var1).orElseThrow(() -> new IllegalStateException("Missing registry: " + var1));
+   default <E> Registry<E> lookupOrThrow(ResourceKey<? extends Registry<? extends E>> var1) {
+      return this.<E>lookup(var1).orElseThrow(() -> new IllegalStateException("Missing registry: " + var1));
    }
 
    Stream<RegistryAccess.RegistryEntry<?>> registries();
 
    @Override
-   default Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
-      return this.registries().map(RegistryAccess.RegistryEntry::key);
+   default Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
+      return this.registries().map(var0 -> var0.key);
    }
 
    static RegistryAccess.Frozen fromRegistryOfRegistries(final Registry<? extends Registry<?>> var0) {
       return new RegistryAccess.Frozen() {
          @Override
-         public <T> Optional<Registry<T>> registry(ResourceKey<? extends Registry<? extends T>> var1) {
+         public <T> Optional<Registry<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
             Registry var2 = var0;
             return var2.getOptional(var1);
          }
@@ -63,10 +58,6 @@ public interface RegistryAccess extends HolderLookup.Provider {
       return new 1FrozenAccess(this.registries().map(RegistryAccess.RegistryEntry::freeze));
    }
 
-   default Lifecycle allRegistriesLifecycle() {
-      return this.registries().map(var0 -> var0.value.registryLifecycle()).reduce(Lifecycle.stable(), Lifecycle::add);
-   }
-
    public interface Frozen extends RegistryAccess {
    }
 
@@ -89,7 +80,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
       }
 
       @Override
-      public <E> Optional<Registry<E>> registry(ResourceKey<? extends Registry<? extends E>> var1) {
+      public <E> Optional<Registry<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1) {
          return Optional.ofNullable(this.registries.get(var1)).map(var0 -> (Registry<E>)var0);
       }
 

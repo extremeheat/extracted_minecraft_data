@@ -139,7 +139,7 @@ public class PoweredRailBlock extends BaseRailBlock {
       if (var6 != var5) {
          var2.setBlock(var3, var1.setValue(POWERED, Boolean.valueOf(var6)), 3);
          var2.updateNeighborsAt(var3.below(), this);
-         if (var1.getValue(SHAPE).isAscending()) {
+         if (var1.getValue(SHAPE).isSlope()) {
             var2.updateNeighborsAt(var3.above(), this);
          }
       }

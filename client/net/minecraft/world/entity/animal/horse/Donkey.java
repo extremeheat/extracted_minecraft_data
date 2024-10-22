@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
@@ -59,7 +60,7 @@ public class Donkey extends AbstractChestedHorse {
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       EntityType var3 = var2 instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
-      AbstractHorse var4 = (AbstractHorse)var3.create(var1);
+      AbstractHorse var4 = (AbstractHorse)var3.create(var1, EntitySpawnReason.BREEDING);
       if (var4 != null) {
          this.setOffspringAttributes(var2, var4);
       }

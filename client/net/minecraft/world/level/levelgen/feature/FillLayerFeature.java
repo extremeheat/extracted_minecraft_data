@@ -21,7 +21,7 @@ public class FillLayerFeature extends Feature<LayerConfiguration> {
          for (int var7 = 0; var7 < 16; var7++) {
             int var8 = var2.getX() + var6;
             int var9 = var2.getZ() + var7;
-            int var10 = var4.getMinBuildHeight() + var3.height;
+            int var10 = var4.getMinY() + var3.height;
             var5.set(var8, var10, var9);
             if (var4.getBlockState(var5).isAir()) {
                var4.setBlock(var5, var3.state, 2);

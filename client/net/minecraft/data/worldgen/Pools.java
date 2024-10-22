@@ -15,12 +15,16 @@ public class Pools {
       super();
    }
 
+   public static ResourceKey<StructureTemplatePool> createKey(ResourceLocation var0) {
+      return ResourceKey.create(Registries.TEMPLATE_POOL, var0);
+   }
+
    public static ResourceKey<StructureTemplatePool> createKey(String var0) {
-      return ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.withDefaultNamespace(var0));
+      return createKey(ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static ResourceKey<StructureTemplatePool> parseKey(String var0) {
-      return ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var0));
+      return createKey(ResourceLocation.parse(var0));
    }
 
    public static void register(BootstrapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {

@@ -1,27 +1,31 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
+import java.util.Optional;
+import net.minecraft.world.level.Level;
 
 public interface SmithingRecipe extends Recipe<SmithingRecipeInput> {
    @Override
-   default RecipeType<?> getType() {
+   default RecipeType<SmithingRecipe> getType() {
       return RecipeType.SMITHING;
    }
 
    @Override
-   default boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= 3 && var2 >= 1;
+   RecipeSerializer<? extends SmithingRecipe> getSerializer();
+
+   default boolean matches(SmithingRecipeInput var1, Level var2) {
+      return Ingredient.testOptionalIngredient(this.templateIngredient(), var1.template())
+         && Ingredient.testOptionalIngredient(this.baseIngredient(), var1.base())
+         && Ingredient.testOptionalIngredient(this.additionIngredient(), var1.addition());
    }
+
+   Optional<Ingredient> templateIngredient();
+
+   Optional<Ingredient> baseIngredient();
+
+   Optional<Ingredient> additionIngredient();
 
    @Override
-   default ItemStack getToastSymbol() {
-      return new ItemStack(Blocks.SMITHING_TABLE);
+   default RecipeBookCategory recipeBookCategory() {
+      return RecipeBookCategories.SMITHING;
    }
-
-   boolean isTemplateIngredient(ItemStack var1);
-
-   boolean isBaseIngredient(ItemStack var1);
-
-   boolean isAdditionIngredient(ItemStack var1);
 }

@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffect;
@@ -68,10 +69,11 @@ public class WitherRoseBlock extends FlowerBlock {
 
    @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (!var2.isClientSide && var2.getDifficulty() != Difficulty.PEACEFUL) {
-         if (var4 instanceof LivingEntity var5 && !var5.isInvulnerableTo(var2.damageSources().wither())) {
-            var5.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));
-         }
+      if (var2 instanceof ServerLevel var5
+         && var2.getDifficulty() != Difficulty.PEACEFUL
+         && var4 instanceof LivingEntity var6
+         && !var6.isInvulnerableTo(var5, var2.damageSources().wither())) {
+         var6.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));
       }
    }
 }

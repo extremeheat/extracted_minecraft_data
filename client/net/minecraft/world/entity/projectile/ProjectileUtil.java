@@ -48,7 +48,7 @@ public final class ProjectileUtil {
 
    private static HitResult getHitResult(Vec3 var0, Entity var1, Predicate<Entity> var2, Vec3 var3, Level var4, float var5, ClipContext.Block var6) {
       Vec3 var7 = var0.add(var3);
-      Object var8 = var4.clip(new ClipContext(var0, var7, var6, ClipContext.Fluid.NONE, var1));
+      Object var8 = var4.clipIncludingBorder(new ClipContext(var0, var7, var6, ClipContext.Fluid.NONE, var1));
       if (((HitResult)var8).getType() != HitResult.Type.MISS) {
          var7 = ((HitResult)var8).getLocation();
       }
@@ -106,21 +106,23 @@ public final class ProjectileUtil {
    @Nullable
    public static EntityHitResult getEntityHitResult(Level var0, Entity var1, Vec3 var2, Vec3 var3, AABB var4, Predicate<Entity> var5, float var6) {
       double var7 = 1.7976931348623157E308;
-      Entity var9 = null;
+      Optional var9 = Optional.empty();
+      Entity var10 = null;
 
-      for (Entity var11 : var0.getEntities(var1, var4, var5)) {
-         AABB var12 = var11.getBoundingBox().inflate((double)var6);
-         Optional var13 = var12.clip(var2, var3);
-         if (var13.isPresent()) {
-            double var14 = var2.distanceToSqr((Vec3)var13.get());
-            if (var14 < var7) {
-               var9 = var11;
-               var7 = var14;
+      for (Entity var12 : var0.getEntities(var1, var4, var5)) {
+         AABB var13 = var12.getBoundingBox().inflate((double)var6);
+         Optional var14 = var13.clip(var2, var3);
+         if (var14.isPresent()) {
+            double var15 = var2.distanceToSqr((Vec3)var14.get());
+            if (var15 < var7) {
+               var10 = var12;
+               var7 = var15;
+               var9 = var14;
             }
          }
       }
 
-      return var9 == null ? null : new EntityHitResult(var9);
+      return var10 == null ? null : new EntityHitResult(var10, (Vec3)var9.get());
    }
 
    public static void rotateTowardsMovement(Entity var0, float var1) {

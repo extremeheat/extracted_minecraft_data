@@ -15,7 +15,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -81,10 +82,12 @@ public class TripWireBlock extends Block {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2.getAxis().isHorizontal()
-         ? var1.setValue(PROPERTY_BY_DIRECTION.get(var2), Boolean.valueOf(this.shouldConnectTo(var3, var2)))
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      return var5.getAxis().isHorizontal()
+         ? var1.setValue(PROPERTY_BY_DIRECTION.get(var5), Boolean.valueOf(this.shouldConnectTo(var7, var5)))
+         : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override
@@ -131,10 +134,15 @@ public class TripWireBlock extends Block {
    }
 
    @Override
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
+      return var1.getShape(var2, var3);
+   }
+
+   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide) {
          if (!var1.getValue(POWERED)) {
-            this.checkPressed(var2, var3);
+            this.checkPressed(var2, var3, List.of(var4));
          }
       }
    }
@@ -148,25 +156,30 @@ public class TripWireBlock extends Block {
 
    private void checkPressed(Level var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      boolean var4 = var3.getValue(POWERED);
-      boolean var5 = false;
-      List var6 = var1.getEntities(null, var3.getShape(var1, var2).bounds().move(var2));
-      if (!var6.isEmpty()) {
-         for (Entity var8 : var6) {
+      List var4 = var1.getEntities(null, var3.getShape(var1, var2).bounds().move(var2));
+      this.checkPressed(var1, var2, var4);
+   }
+
+   private void checkPressed(Level var1, BlockPos var2, List<? extends Entity> var3) {
+      BlockState var4 = var1.getBlockState(var2);
+      boolean var5 = var4.getValue(POWERED);
+      boolean var6 = false;
+      if (!var3.isEmpty()) {
+         for (Entity var8 : var3) {
             if (!var8.isIgnoringBlockTriggers()) {
-               var5 = true;
+               var6 = true;
                break;
             }
          }
       }
 
-      if (var5 != var4) {
-         var3 = var3.setValue(POWERED, Boolean.valueOf(var5));
-         var1.setBlock(var2, var3, 3);
-         this.updateSource(var1, var2, var3);
+      if (var6 != var5) {
+         var4 = var4.setValue(POWERED, Boolean.valueOf(var6));
+         var1.setBlock(var2, var4, 3);
+         this.updateSource(var1, var2, var4);
       }
 
-      if (var5) {
+      if (var6) {
          var1.scheduleTick(new BlockPos(var2), this, 10);
       }
    }

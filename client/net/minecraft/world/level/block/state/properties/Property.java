@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -58,11 +58,13 @@ public abstract class Property<T extends Comparable<T>> {
       return this.clazz;
    }
 
-   public abstract Collection<T> getPossibleValues();
+   public abstract List<T> getPossibleValues();
 
    public abstract String getName(T var1);
 
    public abstract Optional<T> getValue(String var1);
+
+   public abstract int getInternalIndex(T var1);
 
    @Override
    public String toString() {

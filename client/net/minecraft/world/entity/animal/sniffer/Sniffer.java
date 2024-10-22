@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.sniffer;
 
 import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -30,14 +29,16 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -56,11 +57,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class Sniffer extends Animal {
@@ -81,7 +77,7 @@ public class Sniffer extends Animal {
    public final AnimationState risingAnimationState = new AnimationState();
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.MAX_HEALTH, 14.0);
+      return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.MAX_HEALTH, 14.0);
    }
 
    public Sniffer(EntityType<? extends Animal> var1, Level var2) {
@@ -266,28 +262,20 @@ public class Sniffer extends Animal {
    }
 
    private void dropSeed() {
-      if (!this.level().isClientSide() && this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
-         ServerLevel var1 = (ServerLevel)this.level();
-         LootTable var2 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.SNIFFER_DIGGING);
-         LootParams var3 = new LootParams.Builder(var1)
-            .withParameter(LootContextParams.ORIGIN, this.getHeadPosition())
-            .withParameter(LootContextParams.THIS_ENTITY, this)
-            .create(LootContextParamSets.GIFT);
-         ObjectArrayList var4 = var2.getRandomItems(var3);
-         BlockPos var5 = this.getHeadBlock();
-
-         for (ItemStack var7 : var4) {
-            ItemEntity var8 = new ItemEntity(var1, (double)var5.getX(), (double)var5.getY(), (double)var5.getZ(), var7);
-            var8.setDefaultPickUpDelay();
-            var1.addFreshEntity(var8);
-         }
-
+      if (this.level() instanceof ServerLevel var1 && this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
+         BlockPos var3 = this.getHeadBlock();
+         this.dropFromGiftLootTable(var1, BuiltInLootTables.SNIFFER_DIGGING, (var2, var3x) -> {
+            ItemEntity var4 = new ItemEntity(this.level(), (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var3x);
+            var4.setDefaultPickUpDelay();
+            var2.addFreshEntity(var4);
+         });
          this.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
+         return;
       }
    }
 
    private Sniffer emitDiggingParticles(AnimationState var1) {
-      boolean var2 = var1.getAccumulatedTime() > 1700L && var1.getAccumulatedTime() < 6000L;
+      boolean var2 = var1.getTimeInMillis((float)this.tickCount) > 1700L && var1.getTimeInMillis((float)this.tickCount) < 6000L;
       if (var2) {
          BlockPos var3 = this.getHeadBlock();
          BlockState var4 = this.level().getBlockState(var3.below());
@@ -368,10 +356,15 @@ public class Sniffer extends Animal {
       boolean var4 = this.isFood(var3);
       InteractionResult var5 = super.mobInteract(var1, var2);
       if (var5.consumesAction() && var4) {
-         this.level().playSound(null, this, this.getEatingSound(var3), SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
+         this.playEatingSound();
       }
 
       return var5;
+   }
+
+   @Override
+   protected void playEatingSound() {
+      this.level().playSound(null, this, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
    }
 
    private void playSearchingSound() {
@@ -383,11 +376,6 @@ public class Sniffer extends Animal {
    @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.SNIFFER_STEP, 0.15F, 1.0F);
-   }
-
-   @Override
-   public SoundEvent getEatingSound(ItemStack var1) {
-      return SoundEvents.SNIFFER_EAT;
    }
 
    @Override
@@ -417,7 +405,7 @@ public class Sniffer extends Animal {
 
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.SNIFFER.create(var1);
+      return EntityType.SNIFFER.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Override
@@ -428,11 +416,6 @@ public class Sniffer extends Animal {
          Set var3 = Set.of(Sniffer.State.IDLING, Sniffer.State.SCENTING, Sniffer.State.FEELING_HAPPY);
          return var3.contains(this.getState()) && var3.contains(var2.getState()) && super.canMate(var1);
       }
-   }
-
-   @Override
-   public AABB getBoundingBoxForCulling() {
-      return super.getBoundingBoxForCulling().inflate(0.6000000238418579);
    }
 
    @Override
@@ -456,13 +439,14 @@ public class Sniffer extends Animal {
    }
 
    @Override
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("snifferBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().popPush("snifferActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("snifferBrain");
+      this.getBrain().tick(var1, this);
+      var2.popPush("snifferActivityUpdate");
       SnifferAi.updateActivity(this);
-      this.level().getProfiler().pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    @Override

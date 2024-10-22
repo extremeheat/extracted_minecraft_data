@@ -1,32 +1,38 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -42,9 +48,17 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -57,6 +71,9 @@ import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class Item implements FeatureElement, ItemLike {
+   public static final Codec<Holder<Item>> CODEC = BuiltInRegistries.ITEM
+      .holderByNameCodec()
+      .validate(var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Map<Block, Item> BY_BLOCK = Maps.newHashMap();
    public static final ResourceLocation BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
@@ -68,8 +85,7 @@ public class Item implements FeatureElement, ItemLike {
    private final DataComponentMap components;
    @Nullable
    private final Item craftingRemainingItem;
-   @Nullable
-   private String descriptionId;
+   protected final String descriptionId;
    private final FeatureFlagSet requiredFeatures;
 
    public static int getId(Item var0) {
@@ -87,7 +103,8 @@ public class Item implements FeatureElement, ItemLike {
 
    public Item(Item.Properties var1) {
       super();
-      this.components = var1.buildAndValidateComponents();
+      this.descriptionId = var1.effectiveDescriptionId();
+      this.components = var1.buildAndValidateComponents(Component.translatable(this.descriptionId), var1.effectiveModel());
       this.craftingRemainingItem = var1.craftingRemainingItem;
       this.requiredFeatures = var1.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
@@ -138,24 +155,20 @@ public class Item implements FeatureElement, ItemLike {
       return var3 != null ? var3.getMiningSpeed(var2) : 1.0F;
    }
 
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      FoodProperties var5 = var4.get(DataComponents.FOOD);
+      Consumable var5 = var4.get(DataComponents.CONSUMABLE);
       if (var5 != null) {
-         if (var2.canEat(var5.canAlwaysEat())) {
-            var2.startUsingItem(var3);
-            return InteractionResultHolder.consume(var4);
-         } else {
-            return InteractionResultHolder.fail(var4);
-         }
+         return var5.startConsuming(var2, var4, var3);
       } else {
-         return InteractionResultHolder.pass(var2.getItemInHand(var3));
+         Equippable var6 = var4.get(DataComponents.EQUIPPABLE);
+         return (InteractionResult)(var6 != null && var6.swappable() ? var6.swapWithEquipmentSlot(var4, var2) : InteractionResult.PASS);
       }
    }
 
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      FoodProperties var4 = var1.get(DataComponents.FOOD);
-      return var4 != null ? var3.eat(var2, var1, var4) : var1;
+      Consumable var4 = var1.get(DataComponents.CONSUMABLE);
+      return var4 != null ? var4.onConsume(var2, var3, var1) : var1;
    }
 
    public boolean isBarVisible(ItemStack var1) {
@@ -182,6 +195,11 @@ public class Item implements FeatureElement, ItemLike {
 
    public float getAttackDamageBonus(Entity var1, float var2, DamageSource var3) {
       return 0.0F;
+   }
+
+   @Nullable
+   public DamageSource getDamageSource(LivingEntity var1) {
+      return null;
    }
 
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
@@ -213,38 +231,13 @@ public class Item implements FeatureElement, ItemLike {
       return InteractionResult.PASS;
    }
 
-   public Component getDescription() {
-      return Component.translatable(this.getDescriptionId());
-   }
-
    @Override
    public String toString() {
       return BuiltInRegistries.ITEM.wrapAsHolder(this).getRegisteredName();
    }
 
-   protected String getOrCreateDescriptionId() {
-      if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("item", BuiltInRegistries.ITEM.getKey(this));
-      }
-
-      return this.descriptionId;
-   }
-
-   public String getDescriptionId() {
-      return this.getOrCreateDescriptionId();
-   }
-
-   public String getDescriptionId(ItemStack var1) {
-      return this.getDescriptionId();
-   }
-
-   @Nullable
-   public final Item getCraftingRemainingItem() {
-      return this.craftingRemainingItem;
-   }
-
-   public boolean hasCraftingRemainingItem() {
-      return this.craftingRemainingItem != null;
+   public final ItemStack getCraftingRemainder() {
+      return this.craftingRemainingItem == null ? ItemStack.EMPTY : new ItemStack(this.craftingRemainingItem);
    }
 
    public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
@@ -257,20 +250,18 @@ public class Item implements FeatureElement, ItemLike {
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
    }
 
-   public boolean isComplex() {
-      return false;
-   }
-
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return var1.has(DataComponents.FOOD) ? UseAnim.EAT : UseAnim.NONE;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      Consumable var2 = var1.get(DataComponents.CONSUMABLE);
+      return var2 != null ? var2.animation() : ItemUseAnimation.NONE;
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      FoodProperties var3 = var1.get(DataComponents.FOOD);
-      return var3 != null ? var3.eatDurationTicks() : 0;
+      Consumable var3 = var1.get(DataComponents.CONSUMABLE);
+      return var3 != null ? var3.consumeTicks() : 0;
    }
 
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+      return false;
    }
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
@@ -280,16 +271,21 @@ public class Item implements FeatureElement, ItemLike {
       return Optional.empty();
    }
 
+   @VisibleForTesting
+   public final String getDescriptionId() {
+      return this.descriptionId;
+   }
+
+   public final Component getName() {
+      return this.components.getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
+   }
+
    public Component getName(ItemStack var1) {
-      return Component.translatable(this.getDescriptionId(var1));
+      return var1.getComponents().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
    }
 
    public boolean isFoil(ItemStack var1) {
       return var1.isEnchanted();
-   }
-
-   public boolean isEnchantable(ItemStack var1) {
-      return var1.getMaxStackSize() == 1 && var1.has(DataComponents.MAX_DAMAGE);
    }
 
    protected static BlockHitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
@@ -298,33 +294,12 @@ public class Item implements FeatureElement, ItemLike {
       return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
    }
 
-   public int getEnchantmentValue() {
-      return 0;
-   }
-
-   public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return false;
-   }
-
-   @Deprecated
-   public ItemAttributeModifiers getDefaultAttributeModifiers() {
-      return ItemAttributeModifiers.EMPTY;
-   }
-
    public boolean useOnRelease(ItemStack var1) {
       return false;
    }
 
    public ItemStack getDefaultInstance() {
       return new ItemStack(this);
-   }
-
-   public SoundEvent getDrinkingSound() {
-      return SoundEvents.GENERIC_DRINK;
-   }
-
-   public SoundEvent getEatingSound() {
-      return SoundEvents.GENERIC_EAT;
    }
 
    public SoundEvent getBreakingSound() {
@@ -341,19 +316,35 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static class Properties {
-      private static final Interner<DataComponentMap> COMPONENT_INTERNER = Interners.newStrongInterner();
-      @Nullable
-      private DataComponentMap.Builder components;
+      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = var0 -> Util.makeDescriptionId("block", var0.location());
+      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = var0 -> Util.makeDescriptionId("item", var0.location());
+      private final DataComponentMap.Builder components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
       @Nullable
       Item craftingRemainingItem;
       FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
+      @Nullable
+      private ResourceKey<Item> id;
+      private DependantName<Item, String> descriptionId = ITEM_DESCRIPTION_ID;
+      private DependantName<Item, ResourceLocation> model = ResourceKey::location;
 
       public Properties() {
          super();
       }
 
       public Item.Properties food(FoodProperties var1) {
-         return this.component(DataComponents.FOOD, var1);
+         return this.food(var1, Consumables.DEFAULT_FOOD);
+      }
+
+      public Item.Properties food(FoodProperties var1, Consumable var2) {
+         return this.component(DataComponents.FOOD, var1).component(DataComponents.CONSUMABLE, var2);
+      }
+
+      public Item.Properties usingConvertsTo(Item var1) {
+         return this.component(DataComponents.USE_REMAINDER, new UseRemainder(new ItemStack(var1)));
+      }
+
+      public Item.Properties useCooldown(float var1) {
+         return this.component(DataComponents.USE_COOLDOWN, new UseCooldown(var1));
       }
 
       public Item.Properties stacksTo(int var1) {
@@ -377,11 +368,32 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Item.Properties fireResistant() {
-         return this.component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
+         return this.component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(DamageTypeTags.IS_FIRE));
       }
 
       public Item.Properties jukeboxPlayable(ResourceKey<JukeboxSong> var1) {
          return this.component(DataComponents.JUKEBOX_PLAYABLE, new JukeboxPlayable(new EitherHolder<>(var1), true));
+      }
+
+      public Item.Properties enchantable(int var1) {
+         return this.component(DataComponents.ENCHANTABLE, new Enchantable(var1));
+      }
+
+      public Item.Properties repairable(Item var1) {
+         return this.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(var1.builtInRegistryHolder())));
+      }
+
+      public Item.Properties repairable(TagKey<Item> var1) {
+         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ITEM);
+         return this.component(DataComponents.REPAIRABLE, new Repairable(var2.getOrThrow(var1)));
+      }
+
+      public Item.Properties equippable(EquipmentSlot var1) {
+         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).build());
+      }
+
+      public Item.Properties equippableUnswappable(EquipmentSlot var1) {
+         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).setSwappable(false).build());
       }
 
       public Item.Properties requiredFeatures(FeatureFlag... var1) {
@@ -389,11 +401,40 @@ public class Item implements FeatureElement, ItemLike {
          return this;
       }
 
-      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
-         if (this.components == null) {
-            this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
-         }
+      public Item.Properties setId(ResourceKey<Item> var1) {
+         this.id = var1;
+         return this;
+      }
 
+      public Item.Properties overrideDescription(String var1) {
+         this.descriptionId = DependantName.fixed(var1);
+         return this;
+      }
+
+      public Item.Properties useBlockDescriptionPrefix() {
+         this.descriptionId = BLOCK_DESCRIPTION_ID;
+         return this;
+      }
+
+      public Item.Properties useItemDescriptionPrefix() {
+         this.descriptionId = ITEM_DESCRIPTION_ID;
+         return this;
+      }
+
+      protected String effectiveDescriptionId() {
+         return this.descriptionId.get(Objects.requireNonNull(this.id, "Item id not set"));
+      }
+
+      public Item.Properties overrideModel(ResourceLocation var1) {
+         this.model = DependantName.fixed(var1);
+         return this;
+      }
+
+      public ResourceLocation effectiveModel() {
+         return this.model.get(Objects.requireNonNull(this.id, "Item id not set"));
+      }
+
+      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
          this.components.set(var1, var2);
          return this;
       }
@@ -402,17 +443,13 @@ public class Item implements FeatureElement, ItemLike {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
       }
 
-      DataComponentMap buildAndValidateComponents() {
-         DataComponentMap var1 = this.buildComponents();
-         if (var1.has(DataComponents.DAMAGE) && var1.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+      DataComponentMap buildAndValidateComponents(Component var1, ResourceLocation var2) {
+         DataComponentMap var3 = this.components.set(DataComponents.ITEM_NAME, var1).set(DataComponents.ITEM_MODEL, var2).build();
+         if (var3.has(DataComponents.DAMAGE) && var3.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
             throw new IllegalStateException("Item cannot have both durability and be stackable");
          } else {
-            return var1;
+            return var3;
          }
-      }
-
-      private DataComponentMap buildComponents() {
-         return this.components == null ? DataComponents.COMMON_ITEM_COMPONENTS : (DataComponentMap)COMPONENT_INTERNER.intern(this.components.build());
       }
    }
 

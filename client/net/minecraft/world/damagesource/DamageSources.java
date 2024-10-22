@@ -29,6 +29,7 @@ public class DamageSources {
    private final DamageSource starve;
    private final DamageSource cactus;
    private final DamageSource fall;
+   private final DamageSource enderPearl;
    private final DamageSource flyIntoWall;
    private final DamageSource fellOutOfWorld;
    private final DamageSource generic;
@@ -44,7 +45,7 @@ public class DamageSources {
 
    public DamageSources(RegistryAccess var1) {
       super();
-      this.damageTypes = var1.registryOrThrow(Registries.DAMAGE_TYPE);
+      this.damageTypes = var1.lookupOrThrow(Registries.DAMAGE_TYPE);
       this.inFire = this.source(DamageTypes.IN_FIRE);
       this.campfire = this.source(DamageTypes.CAMPFIRE);
       this.lightningBolt = this.source(DamageTypes.LIGHTNING_BOLT);
@@ -57,6 +58,7 @@ public class DamageSources {
       this.starve = this.source(DamageTypes.STARVE);
       this.cactus = this.source(DamageTypes.CACTUS);
       this.fall = this.source(DamageTypes.FALL);
+      this.enderPearl = this.source(DamageTypes.ENDER_PEARL);
       this.flyIntoWall = this.source(DamageTypes.FLY_INTO_WALL);
       this.fellOutOfWorld = this.source(DamageTypes.FELL_OUT_OF_WORLD);
       this.generic = this.source(DamageTypes.GENERIC);
@@ -72,15 +74,15 @@ public class DamageSources {
    }
 
    private DamageSource source(ResourceKey<DamageType> var1) {
-      return new DamageSource(this.damageTypes.getHolderOrThrow(var1));
+      return new DamageSource(this.damageTypes.getOrThrow(var1));
    }
 
    private DamageSource source(ResourceKey<DamageType> var1, @Nullable Entity var2) {
-      return new DamageSource(this.damageTypes.getHolderOrThrow(var1), var2);
+      return new DamageSource(this.damageTypes.getOrThrow(var1), var2);
    }
 
    private DamageSource source(ResourceKey<DamageType> var1, @Nullable Entity var2, @Nullable Entity var3) {
-      return new DamageSource(this.damageTypes.getHolderOrThrow(var1), var2, var3);
+      return new DamageSource(this.damageTypes.getOrThrow(var1), var2, var3);
    }
 
    public DamageSource inFire() {
@@ -129,6 +131,10 @@ public class DamageSources {
 
    public DamageSource fall() {
       return this.fall;
+   }
+
+   public DamageSource enderPearl() {
+      return this.enderPearl;
    }
 
    public DamageSource flyIntoWall() {
@@ -256,7 +262,7 @@ public class DamageSources {
    }
 
    public DamageSource badRespawnPointExplosion(Vec3 var1) {
-      return new DamageSource(this.damageTypes.getHolderOrThrow(DamageTypes.BAD_RESPAWN_POINT), var1);
+      return new DamageSource(this.damageTypes.getOrThrow(DamageTypes.BAD_RESPAWN_POINT), var1);
    }
 
    public DamageSource outOfBorder() {
@@ -265,5 +271,9 @@ public class DamageSources {
 
    public DamageSource genericKill() {
       return this.genericKill;
+   }
+
+   public DamageSource mace(Entity var1) {
+      return this.source(DamageTypes.MACE_SMASH, var1);
    }
 }

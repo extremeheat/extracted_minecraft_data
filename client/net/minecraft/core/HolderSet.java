@@ -20,6 +20,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    int size();
 
+   boolean isBound();
+
    Either<TagKey<T>, List<Holder<T>>> unwrap();
 
    Optional<Holder<T>> getRandomElement(RandomSource var1);
@@ -79,6 +81,11 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       @Override
       protected List<Holder<T>> contents() {
          return this.contents;
+      }
+
+      @Override
+      public boolean isBound() {
+         return true;
       }
 
       @Override
@@ -170,7 +177,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    public static class Named<T> extends HolderSet.ListBacked<T> {
       private final HolderOwner<T> owner;
       private final TagKey<T> key;
-      private List<Holder<T>> contents = List.of();
+      @Nullable
+      private List<Holder<T>> contents;
 
       Named(HolderOwner<T> var1, TagKey<T> var2) {
          super();
@@ -188,7 +196,16 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
       @Override
       protected List<Holder<T>> contents() {
-         return this.contents;
+         if (this.contents == null) {
+            throw new IllegalStateException("Trying to access unbound tag '" + this.key + "' from registry " + this.owner);
+         } else {
+            return this.contents;
+         }
+      }
+
+      @Override
+      public boolean isBound() {
+         return this.contents != null;
       }
 
       @Override

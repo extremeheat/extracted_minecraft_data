@@ -10,8 +10,8 @@ import java.util.Collections;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
-import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.commands.arguments.ResourceKeyArgument;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -32,13 +32,12 @@ public class RecipeCommand {
                      .then(
                         ((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players())
                               .then(
-                                 Commands.argument("recipe", ResourceLocationArgument.id())
-                                    .suggests(SuggestionProviders.ALL_RECIPES)
+                                 Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE))
                                     .executes(
                                        var0x -> giveRecipes(
                                              (CommandSourceStack)var0x.getSource(),
                                              EntityArgument.getPlayers(var0x, "targets"),
-                                             Collections.singleton(ResourceLocationArgument.getRecipe(var0x, "recipe"))
+                                             Collections.singleton(ResourceKeyArgument.getRecipe(var0x, "recipe"))
                                           )
                                     )
                               ))
@@ -59,13 +58,12 @@ public class RecipeCommand {
                   .then(
                      ((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players())
                            .then(
-                              Commands.argument("recipe", ResourceLocationArgument.id())
-                                 .suggests(SuggestionProviders.ALL_RECIPES)
+                              Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE))
                                  .executes(
                                     var0x -> takeRecipes(
                                           (CommandSourceStack)var0x.getSource(),
                                           EntityArgument.getPlayers(var0x, "targets"),
-                                          Collections.singleton(ResourceLocationArgument.getRecipe(var0x, "recipe"))
+                                          Collections.singleton(ResourceKeyArgument.getRecipe(var0x, "recipe"))
                                        )
                                  )
                            ))

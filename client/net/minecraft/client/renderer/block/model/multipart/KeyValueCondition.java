@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import net.minecraft.Util;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -43,8 +43,7 @@ public class KeyValueCondition implements Condition {
             if (var5.size() == 1) {
                var6 = this.getBlockStatePredicate(var1, var2, var3);
             } else {
-               List var7 = var5.stream().map(var3x -> this.getBlockStatePredicate(var1, var2, var3x)).collect(Collectors.toList());
-               var6 = var1x -> var7.stream().anyMatch(var1xx -> var1xx.test(var1x));
+               var6 = Util.anyOf(var5.stream().map(var3x -> this.getBlockStatePredicate(var1, var2, var3x)).toList());
             }
 
             return var4 ? var6.negate() : var6;

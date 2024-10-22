@@ -1,16 +1,38 @@
 package net.minecraft.world.level;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.level.chunk.status.ChunkPyramid;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class ChunkPos {
+   public static final Codec<ChunkPos> CODEC = Codec.INT_STREAM
+      .comapFlatMap(var0 -> Util.fixedSize(var0, 2).map(var0x -> new ChunkPos(var0x[0], var0x[1])), var0 -> IntStream.of(var0.x, var0.z))
+      .stable();
+   public static final StreamCodec<ByteBuf, ChunkPos> STREAM_CODEC = new StreamCodec<ByteBuf, ChunkPos>() {
+      public ChunkPos decode(ByteBuf var1) {
+         return FriendlyByteBuf.readChunkPos(var1);
+      }
+
+      public void encode(ByteBuf var1, ChunkPos var2) {
+         FriendlyByteBuf.writeChunkPos(var1, var2);
+      }
+   };
    private static final int SAFETY_MARGIN = 1056;
    public static final long INVALID_CHUNK_POS = asLong(1875066, 1875066);
+   private static final int SAFETY_MARGIN_CHUNKS = (32 + ChunkPyramid.GENERATION_PYRAMID.getStepTo(ChunkStatus.FULL).accumulatedDependencies().size() + 1) * 2;
+   public static final int MAX_COORDINATE_VALUE = SectionPos.blockToSectionCoord(BlockPos.MAX_HORIZONTAL_COORDINATE) - SAFETY_MARGIN_CHUNKS;
    public static final ChunkPos ZERO = new ChunkPos(0, 0);
    private static final long COORD_BITS = 32L;
    private static final long COORD_MASK = 4294967295L;

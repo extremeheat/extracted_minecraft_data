@@ -9,8 +9,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -33,13 +36,13 @@ public abstract class BlockAttachedEntity extends Entity {
 
    @Override
    public void tick() {
-      if (!this.level().isClientSide) {
+      if (this.level() instanceof ServerLevel var1) {
          this.checkBelowWorld();
          if (this.checkInterval++ == 100) {
             this.checkInterval = 0;
             if (!this.isRemoved() && !this.survives()) {
                this.discard();
-               this.dropItem(null);
+               this.dropItem(var1, null);
             }
          }
       }
@@ -55,21 +58,28 @@ public abstract class BlockAttachedEntity extends Entity {
    @Override
    public boolean skipAttackInteraction(Entity var1) {
       if (var1 instanceof Player var2) {
-         return !this.level().mayInteract(var2, this.pos) ? true : this.hurt(this.damageSources().playerAttack(var2), 0.0F);
+         return !this.level().mayInteract(var2, this.pos) ? true : this.hurtOrSimulate(this.damageSources().playerAttack(var2), 0.0F);
       } else {
          return false;
       }
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtClient(DamageSource var1) {
+      return !this.isInvulnerableToBase(var1);
+   }
+
+   @Override
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableToBase(var2)) {
+         return false;
+      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var2.getEntity() instanceof Mob) {
          return false;
       } else {
-         if (!this.isRemoved() && !this.level().isClientSide) {
-            this.kill();
+         if (!this.isRemoved()) {
+            this.kill(var1);
             this.markHurt();
-            this.dropItem(var1.getEntity());
+            this.dropItem(var1, var2.getEntity());
          }
 
          return true;
@@ -77,18 +87,23 @@ public abstract class BlockAttachedEntity extends Entity {
    }
 
    @Override
+   public boolean ignoreExplosion(Explosion var1) {
+      return var1.shouldAffectBlocklikeEntities() ? super.ignoreExplosion(var1) : true;
+   }
+
+   @Override
    public void move(MoverType var1, Vec3 var2) {
-      if (!this.level().isClientSide && !this.isRemoved() && var2.lengthSqr() > 0.0) {
-         this.kill();
-         this.dropItem(null);
+      if (this.level() instanceof ServerLevel var3 && !this.isRemoved() && var2.lengthSqr() > 0.0) {
+         this.kill(var3);
+         this.dropItem(var3, null);
       }
    }
 
    @Override
    public void push(double var1, double var3, double var5) {
-      if (!this.level().isClientSide && !this.isRemoved() && var1 * var1 + var3 * var3 + var5 * var5 > 0.0) {
-         this.kill();
-         this.dropItem(null);
+      if (this.level() instanceof ServerLevel var7 && !this.isRemoved() && var1 * var1 + var3 * var3 + var5 * var5 > 0.0) {
+         this.kill(var7);
+         this.dropItem(var7, null);
       }
    }
 
@@ -110,7 +125,7 @@ public abstract class BlockAttachedEntity extends Entity {
       }
    }
 
-   public abstract void dropItem(@Nullable Entity var1);
+   public abstract void dropItem(ServerLevel var1, @Nullable Entity var2);
 
    @Override
    protected boolean repositionEntityAfterLoad() {

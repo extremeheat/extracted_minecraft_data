@@ -6,9 +6,9 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
-public interface StrictQueue<T, F> {
+public interface StrictQueue<T extends Runnable> {
    @Nullable
-   F pop();
+   Runnable pop();
 
    boolean push(T var1);
 
@@ -16,7 +16,7 @@ public interface StrictQueue<T, F> {
 
    int size();
 
-   public static final class FixedPriorityQueue implements StrictQueue<StrictQueue.IntRunnable, Runnable> {
+   public static final class FixedPriorityQueue implements StrictQueue<StrictQueue.RunnableWithPriority> {
       private final Queue<Runnable>[] queues;
       private final AtomicInteger size = new AtomicInteger();
 
@@ -30,6 +30,7 @@ public interface StrictQueue<T, F> {
       }
 
       @Nullable
+      @Override
       public Runnable pop() {
          for (Queue var4 : this.queues) {
             Runnable var5 = (Runnable)var4.poll();
@@ -42,7 +43,7 @@ public interface StrictQueue<T, F> {
          return null;
       }
 
-      public boolean push(StrictQueue.IntRunnable var1) {
+      public boolean push(StrictQueue.RunnableWithPriority var1) {
          int var2 = var1.priority;
          if (var2 < this.queues.length && var2 >= 0) {
             this.queues[var2].add(var1);
@@ -64,43 +65,23 @@ public interface StrictQueue<T, F> {
       }
    }
 
-   public static final class IntRunnable implements Runnable {
-      final int priority;
-      private final Runnable task;
+   public static final class QueueStrictQueue implements StrictQueue<Runnable> {
+      private final Queue<Runnable> queue;
 
-      public IntRunnable(int var1, Runnable var2) {
-         super();
-         this.priority = var1;
-         this.task = var2;
-      }
-
-      @Override
-      public void run() {
-         this.task.run();
-      }
-
-      public int getPriority() {
-         return this.priority;
-      }
-   }
-
-   public static final class QueueStrictQueue<T> implements StrictQueue<T, T> {
-      private final Queue<T> queue;
-
-      public QueueStrictQueue(Queue<T> var1) {
+      public QueueStrictQueue(Queue<Runnable> var1) {
          super();
          this.queue = var1;
       }
 
       @Nullable
       @Override
-      public T pop() {
+      public Runnable pop() {
          return this.queue.poll();
       }
 
       @Override
-      public boolean push(T var1) {
-         return this.queue.add((T)var1);
+      public boolean push(Runnable var1) {
+         return this.queue.add(var1);
       }
 
       @Override
@@ -113,4 +94,17 @@ public interface StrictQueue<T, F> {
          return this.queue.size();
       }
    }
+
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

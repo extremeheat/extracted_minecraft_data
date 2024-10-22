@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.multiplayer;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -23,6 +22,7 @@ import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -316,7 +316,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
 
          int var20 = var4 + var5 - 10 - 5;
          if (this.statusIcon != null) {
-            var1.blitSprite(this.statusIcon, var20, var3, 10, 8);
+            var1.blitSprite(RenderType::guiTextured, this.statusIcon, var20, var3, 10, 8);
          }
 
          byte[] var13 = this.serverData.getIconBytes();
@@ -347,25 +347,25 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             int var18 = var8 - var3;
             if (this.canJoin()) {
                if (var17 < 32 && var17 > 16) {
-                  var1.blitSprite(ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 > 0) {
                if (var17 < 16 && var18 < 16) {
-                  var1.blitSprite(ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 < this.screen.getServers().size() - 1) {
                if (var17 < 16 && var18 > 16) {
-                  var1.blitSprite(ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blitSprite(ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
+                  var1.blitSprite(RenderType::guiTextured, ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
                }
             }
          }
@@ -411,9 +411,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       }
 
       protected void drawIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
-         RenderSystem.enableBlend();
-         var1.blit(var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
-         RenderSystem.disableBlend();
+         var1.blit(RenderType::guiTextured, var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 
       private boolean canJoin() {

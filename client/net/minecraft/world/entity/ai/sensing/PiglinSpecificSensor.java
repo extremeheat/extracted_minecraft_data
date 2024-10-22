@@ -89,7 +89,7 @@ public class PiglinSpecificSensor extends Sensor<LivingEntity> {
             }
          } else if (var16 instanceof Player) {
             Player var20 = (Player)var16;
-            if (var9.isEmpty() && !PiglinAi.isWearingGold(var20) && var2.canAttack(var16)) {
+            if (var9.isEmpty() && !PiglinAi.isWearingSafeArmor(var20) && var2.canAttack(var16)) {
                var9 = Optional.of(var20);
             }
 

@@ -6,11 +6,11 @@ import java.util.Map;
 import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Crackiness;
-import net.minecraft.world.entity.animal.IronGolem;
 
-public class IronGolemCrackinessLayer extends RenderLayer<IronGolem, IronGolemModel<IronGolem>> {
+public class IronGolemCrackinessLayer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
    private static final Map<Crackiness.Level, ResourceLocation> resourceLocations = ImmutableMap.of(
       Crackiness.Level.LOW,
       ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem_crackiness_low.png"),
@@ -20,16 +20,16 @@ public class IronGolemCrackinessLayer extends RenderLayer<IronGolem, IronGolemMo
       ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem_crackiness_high.png")
    );
 
-   public IronGolemCrackinessLayer(RenderLayerParent<IronGolem, IronGolemModel<IronGolem>> var1) {
+   public IronGolemCrackinessLayer(RenderLayerParent<IronGolemRenderState, IronGolemModel> var1) {
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, IronGolem var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if (!var4.isInvisible()) {
-         Crackiness.Level var11 = var4.getCrackiness();
-         if (var11 != Crackiness.Level.NONE) {
-            ResourceLocation var12 = resourceLocations.get(var11);
-            renderColoredCutoutModel(this.getParentModel(), var12, var1, var2, var3, var4, -1);
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, IronGolemRenderState var4, float var5, float var6) {
+      if (!var4.isInvisible) {
+         Crackiness.Level var7 = var4.crackiness;
+         if (var7 != Crackiness.Level.NONE) {
+            ResourceLocation var8 = resourceLocations.get(var7);
+            renderColoredCutoutModel(this.getParentModel(), var8, var1, var2, var3, var4, -1);
          }
       }
    }

@@ -3,7 +3,7 @@ package net.minecraft.world.item;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -22,12 +22,12 @@ public class SpyglassItem extends Item {
    }
 
    @Override
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.SPYGLASS;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.SPYGLASS;
    }
 
    @Override
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       var2.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
       var2.awardStat(Stats.ITEM_USED.get(this));
       return ItemUtils.startUsingInstantly(var1, var2, var3);
@@ -40,8 +40,9 @@ public class SpyglassItem extends Item {
    }
 
    @Override
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       this.stopUsing(var3);
+      return true;
    }
 
    private void stopUsing(LivingEntity var1) {

@@ -3,6 +3,7 @@ package net.minecraft.realms;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -72,7 +73,7 @@ public class RealmsConnect {
 
                   RealmsConnect.this.connection.send(new ServerboundHelloPacket(var3.getUser().getName(), var3.getUser().getProfileId()));
                   var3.updateReportEnvironment(ReportEnvironment.realm(var1));
-                  var3.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(var1.id), var1.name);
+                  var3.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(var1.id), Objects.requireNonNullElse(var1.name, "unknown"));
                   var3.getDownloadedPackSource().configureForServerControl(RealmsConnect.this.connection, ServerPackManager.PackPromptStatus.ALLOWED);
                } catch (Exception var5x) {
                   var3.getDownloadedPackSource().cleanupAfterDisconnect();

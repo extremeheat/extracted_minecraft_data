@@ -11,15 +11,16 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SignApplicator;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -53,12 +54,14 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    protected abstract MapCodec<? extends SignBlock> codec();
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
       if (var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override
@@ -77,7 +80,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var3.getBlockEntity(var4) instanceof SignBlockEntity var8) {
          SignApplicator var12 = var1.getItem() instanceof SignApplicator var10 ? var10 : null;
          boolean var13 = var12 != null && var5.mayBuild();
@@ -89,18 +92,18 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                   var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
                   var3.gameEvent(GameEvent.BLOCK_CHANGE, var8.getBlockPos(), GameEvent.Context.of(var5, var8.getBlockState()));
                   var1.consume(1, var5);
-                  return ItemInteractionResult.SUCCESS;
+                  return InteractionResult.SUCCESS;
                } else {
-                  return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                  return InteractionResult.TRY_WITH_EMPTY_HAND;
                }
             } else {
-               return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
          } else {
-            return !var13 && !var8.isWaxed() ? ItemInteractionResult.CONSUME : ItemInteractionResult.SUCCESS;
+            return !var13 && !var8.isWaxed() ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
          }
       } else {
-         return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.PASS;
       }
    }
 
@@ -115,12 +118,12 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
          boolean var8 = var6.executeClickCommandsIfPresent(var4, var2, var3, var9);
          if (var6.isWaxed()) {
             var2.playSound(null, var6.getBlockPos(), var6.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else if (var8) {
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else if (!this.otherPlayerIsEditingSign(var4, var6) && var4.mayBuild() && this.hasEditableText(var4, var6, var9)) {
             this.openTextEdit(var4, var6, var9);
-            return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS_SERVER;
          } else {
             return InteractionResult.PASS;
          }

@@ -27,7 +27,7 @@ public class HeightmapPlacement extends PlacementModifier {
       int var4 = var3.getX();
       int var5 = var3.getZ();
       int var6 = var1.getHeight(this.heightmap, var4, var5);
-      return var6 > var1.getMinBuildHeight() ? Stream.of(new BlockPos(var4, var6, var5)) : Stream.of();
+      return var6 > var1.getMinY() ? Stream.of(new BlockPos(var4, var6, var5)) : Stream.of();
    }
 
    @Override

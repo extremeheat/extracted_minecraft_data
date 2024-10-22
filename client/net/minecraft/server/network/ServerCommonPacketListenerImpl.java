@@ -24,6 +24,7 @@ import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.profiling.Profiler;
 import org.slf4j.Logger;
 
 public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {
@@ -68,6 +69,12 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    @Override
+   public void onPacketError(Packet var1, Exception var2) throws ReportedException {
+      ServerCommonPacketListener.super.onPacketError(var1, var2);
+      this.server.reportPacketHandlingException(var2, var1.type());
+   }
+
+   @Override
    public void handleKeepAlive(ServerboundKeepAlivePacket var1) {
       if (this.keepAlivePending && var1.getId() == this.keepAliveChallenge) {
          int var2 = (int)(Util.getMillis() - this.keepAliveTime);
@@ -101,7 +108,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    protected void keepConnectionAlive() {
-      this.server.getProfiler().push("keepAlive");
+      Profiler.get().push("keepAlive");
       long var1 = Util.getMillis();
       if (!this.isSingleplayerOwner() && var1 - this.keepAliveTime >= 15000L) {
          if (this.keepAlivePending) {
@@ -114,7 +121,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
          }
       }
 
-      this.server.getProfiler().pop();
+      Profiler.get().pop();
    }
 
    private boolean checkIfClosed(long var1) {

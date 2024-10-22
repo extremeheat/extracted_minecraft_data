@@ -20,8 +20,8 @@ public class BlastFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
    }
 
    @Override
-   protected int getBurnDuration(ItemStack var1) {
-      return super.getBurnDuration(var1) / 2;
+   protected int getBurnDuration(FuelValues var1, ItemStack var2) {
+      return super.getBurnDuration(var1, var2) / 2;
    }
 
    @Override

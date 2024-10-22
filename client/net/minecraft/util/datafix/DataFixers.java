@@ -29,8 +29,9 @@ import net.minecraft.util.datafix.fixes.AddNewChoices;
 import net.minecraft.util.datafix.fixes.AdvancementsFix;
 import net.minecraft.util.datafix.fixes.AdvancementsRenameFix;
 import net.minecraft.util.datafix.fixes.AreaEffectCloudPotionFix;
+import net.minecraft.util.datafix.fixes.AttributeIdPrefixFix;
 import net.minecraft.util.datafix.fixes.AttributeModifierIdFix;
-import net.minecraft.util.datafix.fixes.AttributesRename;
+import net.minecraft.util.datafix.fixes.AttributesRenameLegacy;
 import net.minecraft.util.datafix.fixes.BannerEntityCustomNameToOverrideComponentFix;
 import net.minecraft.util.datafix.fixes.BannerPatternFormatFix;
 import net.minecraft.util.datafix.fixes.BedItemColorFix;
@@ -54,6 +55,8 @@ import net.minecraft.util.datafix.fixes.BlockNameFlatteningFix;
 import net.minecraft.util.datafix.fixes.BlockPosFormatAndRenamesFix;
 import net.minecraft.util.datafix.fixes.BlockRenameFix;
 import net.minecraft.util.datafix.fixes.BlockStateStructureTemplateFix;
+import net.minecraft.util.datafix.fixes.BoatSplitFix;
+import net.minecraft.util.datafix.fixes.CarvingStepRemoveFix;
 import net.minecraft.util.datafix.fixes.CatTypeFix;
 import net.minecraft.util.datafix.fixes.CauldronRenameFix;
 import net.minecraft.util.datafix.fixes.CavesAndCliffsRenames;
@@ -72,6 +75,7 @@ import net.minecraft.util.datafix.fixes.ChunkStatusFix2;
 import net.minecraft.util.datafix.fixes.ChunkStructuresTemplateRenameFix;
 import net.minecraft.util.datafix.fixes.ChunkToProtochunkFix;
 import net.minecraft.util.datafix.fixes.ColorlessShulkerEntityFix;
+import net.minecraft.util.datafix.fixes.ContainerBlockEntityLockPredicateFix;
 import net.minecraft.util.datafix.fixes.CriteriaRenameFix;
 import net.minecraft.util.datafix.fixes.DecoratedPotFieldRenameFix;
 import net.minecraft.util.datafix.fixes.DropInvalidSignDataFix;
@@ -117,7 +121,9 @@ import net.minecraft.util.datafix.fixes.EntityZombifiedPiglinRenameFix;
 import net.minecraft.util.datafix.fixes.FeatureFlagRemoveFix;
 import net.minecraft.util.datafix.fixes.FilteredBooksFix;
 import net.minecraft.util.datafix.fixes.FilteredSignsFix;
+import net.minecraft.util.datafix.fixes.FireResistantToDamageResistantComponentFix;
 import net.minecraft.util.datafix.fixes.FixProjectileStoredItem;
+import net.minecraft.util.datafix.fixes.FoodToConsumableFix;
 import net.minecraft.util.datafix.fixes.ForcePoiRebuild;
 import net.minecraft.util.datafix.fixes.FurnaceRecipeFix;
 import net.minecraft.util.datafix.fixes.GoatHornIdFix;
@@ -152,6 +158,7 @@ import net.minecraft.util.datafix.fixes.LevelDataGeneratorOptionsFix;
 import net.minecraft.util.datafix.fixes.LevelFlatGeneratorInfoFix;
 import net.minecraft.util.datafix.fixes.LevelLegacyWorldGenSettingsFix;
 import net.minecraft.util.datafix.fixes.LevelUUIDFix;
+import net.minecraft.util.datafix.fixes.LockComponentPredicateFix;
 import net.minecraft.util.datafix.fixes.LodestoneCompassComponentFix;
 import net.minecraft.util.datafix.fixes.MapBannerBlockPosFormatFix;
 import net.minecraft.util.datafix.fixes.MapIdFix;
@@ -165,6 +172,7 @@ import net.minecraft.util.datafix.fixes.NewVillageFix;
 import net.minecraft.util.datafix.fixes.ObjectiveDisplayNameFix;
 import net.minecraft.util.datafix.fixes.ObjectiveRenderTypeFix;
 import net.minecraft.util.datafix.fixes.OminousBannerBlockEntityRenameFix;
+import net.minecraft.util.datafix.fixes.OminousBannerRarityFix;
 import net.minecraft.util.datafix.fixes.OminousBannerRenameFix;
 import net.minecraft.util.datafix.fixes.OptionsAccessibilityOnboardFix;
 import net.minecraft.util.datafix.fixes.OptionsAddTextBackgroundFix;
@@ -210,10 +218,12 @@ import net.minecraft.util.datafix.fixes.TeamDisplayNameFix;
 import net.minecraft.util.datafix.fixes.TippedArrowPotionToItemFix;
 import net.minecraft.util.datafix.fixes.TrappedChestBlockEntityFix;
 import net.minecraft.util.datafix.fixes.TrialSpawnerConfigFix;
+import net.minecraft.util.datafix.fixes.TrialSpawnerConfigInRegistryFix;
 import net.minecraft.util.datafix.fixes.VariantRenameFix;
 import net.minecraft.util.datafix.fixes.VillagerDataFix;
 import net.minecraft.util.datafix.fixes.VillagerFollowRangeFix;
 import net.minecraft.util.datafix.fixes.VillagerRebuildLevelAndXpFix;
+import net.minecraft.util.datafix.fixes.VillagerSetCanPickUpLootFix;
 import net.minecraft.util.datafix.fixes.VillagerTradeFix;
 import net.minecraft.util.datafix.fixes.WallPropertyFix;
 import net.minecraft.util.datafix.fixes.WeaponSmithChestLootTableFix;
@@ -302,6 +312,10 @@ import net.minecraft.util.datafix.schemas.V3818_4;
 import net.minecraft.util.datafix.schemas.V3818_5;
 import net.minecraft.util.datafix.schemas.V3825;
 import net.minecraft.util.datafix.schemas.V3938;
+import net.minecraft.util.datafix.schemas.V4059;
+import net.minecraft.util.datafix.schemas.V4067;
+import net.minecraft.util.datafix.schemas.V4070;
+import net.minecraft.util.datafix.schemas.V4071;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -349,6 +363,7 @@ public class DataFixers {
       var0.addFixer(new EntityEquipmentToArmorAndHandFix(var1, true));
       Schema var2 = var0.addSchema(101, SAME);
       var0.addFixer(new BlockEntitySignTextStrictJsonFix(var2, false));
+      var0.addFixer(new VillagerSetCanPickUpLootFix(var2));
       Schema var3 = var0.addSchema(102, V102::new);
       var0.addFixer(new ItemIdFix(var3, true));
       var0.addFixer(new ItemPotionFix(var3, false));
@@ -445,7 +460,7 @@ public class DataFixers {
             var42,
             false,
             Set.of(
-               "minecraft:note_block",
+               "minecraft:noteblock",
                "minecraft:flower_pot",
                "minecraft:dandelion",
                "minecraft:poppy",
@@ -795,7 +810,7 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var112, "Added Zoglin", References.ENTITY));
       Schema var113 = var0.addSchema(2523, SAME_NAMESPACED);
       var0.addFixer(
-         new AttributesRename(
+         new AttributesRenameLegacy(
             var113,
             "Attribute renames",
             createRenamerNoNamespace(
@@ -1289,7 +1304,7 @@ public class DataFixers {
       var0.addFixer(new BlockPosFormatAndRenamesFix(var217));
       Schema var218 = var0.addSchema(3814, SAME_NAMESPACED);
       var0.addFixer(
-         new AttributesRename(var218, "Rename jump strength attribute", createRenamer("minecraft:horse.jump_strength", "minecraft:generic.jump_strength"))
+         new AttributesRenameLegacy(var218, "Rename jump strength attribute", createRenamer("minecraft:horse.jump_strength", "minecraft:generic.jump_strength"))
       );
       Schema var219 = var0.addSchema(3816, V3816::new);
       var0.addFixer(new AddNewChoices(var219, "Added Bogged", References.ENTITY));
@@ -1329,6 +1344,29 @@ public class DataFixers {
       Schema var234 = var0.addSchema(3945, SAME_NAMESPACED);
       var0.addFixer(new AttributeModifierIdFix(var234));
       var0.addFixer(new JukeboxTicksSinceSongStartedFix(var234));
+      Schema var235 = var0.addSchema(4054, SAME_NAMESPACED);
+      var0.addFixer(new OminousBannerRarityFix(var235));
+      Schema var236 = var0.addSchema(4055, SAME_NAMESPACED);
+      var0.addFixer(new AttributeIdPrefixFix(var236));
+      Schema var237 = var0.addSchema(4057, SAME_NAMESPACED);
+      var0.addFixer(new CarvingStepRemoveFix(var237));
+      Schema var238 = var0.addSchema(4059, V4059::new);
+      var0.addFixer(new FoodToConsumableFix(var238));
+      Schema var239 = var0.addSchema(4061, SAME_NAMESPACED);
+      var0.addFixer(new TrialSpawnerConfigInRegistryFix(var239));
+      Schema var240 = var0.addSchema(4064, SAME_NAMESPACED);
+      var0.addFixer(new FireResistantToDamageResistantComponentFix(var240));
+      Schema var241 = var0.addSchema(4067, V4067::new);
+      var0.addFixer(new BoatSplitFix(var241));
+      var0.addFixer(new FeatureFlagRemoveFix(var241, "Remove Bundle experimental feature flag", Set.of("minecraft:bundle")));
+      Schema var242 = var0.addSchema(4068, SAME_NAMESPACED);
+      var0.addFixer(new LockComponentPredicateFix(var242));
+      var0.addFixer(new ContainerBlockEntityLockPredicateFix(var242));
+      Schema var243 = var0.addSchema(4070, V4070::new);
+      var0.addFixer(new AddNewChoices(var243, "Added Pale Oak Boat and Pale Oak Chest Boat", References.ENTITY));
+      Schema var244 = var0.addSchema(4071, V4071::new);
+      var0.addFixer(new AddNewChoices(var244, "Added Creaking", References.ENTITY));
+      var0.addFixer(new AddNewChoices(var244, "Added Creaking Heart", References.BLOCK_ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

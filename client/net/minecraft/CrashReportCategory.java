@@ -46,10 +46,10 @@ public class CrashReportCategory {
          int var9 = var2 & 15;
          int var10 = var3 & 15;
          int var11 = SectionPos.sectionToBlockCoord(var5);
-         int var12 = var0.getMinBuildHeight();
+         int var12 = var0.getMinY();
          int var13 = SectionPos.sectionToBlockCoord(var7);
          int var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
-         int var15 = var0.getMaxBuildHeight() - 1;
+         int var15 = var0.getMaxY();
          int var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
          var4.append(
             String.format(
@@ -83,10 +83,10 @@ public class CrashReportCategory {
          int var24 = (var20 + 1 << 5) - 1;
          int var25 = (var21 + 1 << 5) - 1;
          int var26 = var20 << 9;
-         int var27 = var0.getMinBuildHeight();
+         int var27 = var0.getMinY();
          int var28 = var21 << 9;
          int var29 = (var20 + 1 << 9) - 1;
-         int var30 = var0.getMaxBuildHeight() - 1;
+         int var30 = var0.getMaxY();
          int var31 = (var21 + 1 << 9) - 1;
          var4.append(
             String.format(

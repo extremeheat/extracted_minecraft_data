@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.util.ARGB;
 
 public class OverlayTexture implements AutoCloseable {
    private static final int SIZE = 16;
@@ -18,10 +19,10 @@ public class OverlayTexture implements AutoCloseable {
       for (int var2 = 0; var2 < 16; var2++) {
          for (int var3 = 0; var3 < 16; var3++) {
             if (var2 < 8) {
-               var1.setPixelRGBA(var3, var2, -1308622593);
+               var1.setPixel(var3, var2, -1291911168);
             } else {
                int var4 = (int)((1.0F - (float)var3 / 15.0F * 0.75F) * 255.0F);
-               var1.setPixelRGBA(var3, var2, var4 << 24 | 16777215);
+               var1.setPixel(var3, var2, ARGB.color(var4, -1));
             }
          }
       }

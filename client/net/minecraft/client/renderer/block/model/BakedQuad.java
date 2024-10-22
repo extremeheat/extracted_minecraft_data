@@ -9,14 +9,16 @@ public class BakedQuad {
    protected final Direction direction;
    protected final TextureAtlasSprite sprite;
    private final boolean shade;
+   private final int lightEmission;
 
-   public BakedQuad(int[] var1, int var2, Direction var3, TextureAtlasSprite var4, boolean var5) {
+   public BakedQuad(int[] var1, int var2, Direction var3, TextureAtlasSprite var4, boolean var5, int var6) {
       super();
       this.vertices = var1;
       this.tintIndex = var2;
       this.direction = var3;
       this.sprite = var4;
       this.shade = var5;
+      this.lightEmission = var6;
    }
 
    public TextureAtlasSprite getSprite() {
@@ -41,5 +43,9 @@ public class BakedQuad {
 
    public boolean isShade() {
       return this.shade;
+   }
+
+   public int getLightEmission() {
+      return this.lightEmission;
    }
 }

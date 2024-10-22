@@ -1,16 +1,17 @@
 package net.minecraft.stats;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import java.util.EnumMap;
 import java.util.Map;
-import net.minecraft.Util;
+import java.util.function.UnaryOperator;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.inventory.RecipeBookType;
 
 public final class RecipeBookSettings {
+   public static final StreamCodec<FriendlyByteBuf, RecipeBookSettings> STREAM_CODEC = StreamCodec.ofMember(RecipeBookSettings::write, RecipeBookSettings::read);
    private static final Map<RecipeBookType, Pair<String, String>> TAG_FIELDS = ImmutableMap.of(
       RecipeBookType.CRAFTING,
       Pair.of("isGuiOpen", "isFilteringCraftable"),
@@ -29,90 +30,93 @@ public final class RecipeBookSettings {
    }
 
    public RecipeBookSettings() {
-      this(Util.make(Maps.newEnumMap(RecipeBookType.class), var0 -> {
-         for (RecipeBookType var4 : RecipeBookType.values()) {
-            var0.put(var4, new RecipeBookSettings.TypeSettings(false, false));
+      this(new EnumMap<>(RecipeBookType.class));
+   }
+
+   private RecipeBookSettings.TypeSettings getSettings(RecipeBookType var1) {
+      return this.states.getOrDefault(var1, RecipeBookSettings.TypeSettings.DEFAULT);
+   }
+
+   private void updateSettings(RecipeBookType var1, UnaryOperator<RecipeBookSettings.TypeSettings> var2) {
+      this.states.compute(var1, (var1x, var2x) -> {
+         if (var2x == null) {
+            var2x = RecipeBookSettings.TypeSettings.DEFAULT;
          }
-      }));
+
+         var2x = var2.apply(var2x);
+         if (var2x.equals(RecipeBookSettings.TypeSettings.DEFAULT)) {
+            var2x = null;
+         }
+
+         return var2x;
+      });
    }
 
    public boolean isOpen(RecipeBookType var1) {
-      return this.states.get(var1).open;
+      return this.getSettings(var1).open;
    }
 
    public void setOpen(RecipeBookType var1, boolean var2) {
-      this.states.get(var1).open = var2;
+      this.updateSettings(var1, var1x -> var1x.setOpen(var2));
    }
 
    public boolean isFiltering(RecipeBookType var1) {
-      return this.states.get(var1).filtering;
+      return this.getSettings(var1).filtering;
    }
 
    public void setFiltering(RecipeBookType var1, boolean var2) {
-      this.states.get(var1).filtering = var2;
+      this.updateSettings(var1, var1x -> var1x.setFiltering(var2));
    }
 
-   public static RecipeBookSettings read(FriendlyByteBuf var0) {
-      EnumMap var1 = Maps.newEnumMap(RecipeBookType.class);
+   private static RecipeBookSettings read(FriendlyByteBuf var0) {
+      EnumMap var1 = new EnumMap<>(RecipeBookType.class);
 
       for (RecipeBookType var5 : RecipeBookType.values()) {
          boolean var6 = var0.readBoolean();
          boolean var7 = var0.readBoolean();
-         var1.put(var5, new RecipeBookSettings.TypeSettings(var6, var7));
+         if (var6 || var7) {
+            var1.put(var5, new RecipeBookSettings.TypeSettings(var6, var7));
+         }
       }
 
       return new RecipeBookSettings(var1);
    }
 
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       for (RecipeBookType var5 : RecipeBookType.values()) {
-         RecipeBookSettings.TypeSettings var6 = this.states.get(var5);
-         if (var6 == null) {
-            var1.writeBoolean(false);
-            var1.writeBoolean(false);
-         } else {
-            var1.writeBoolean(var6.open);
-            var1.writeBoolean(var6.filtering);
-         }
+         RecipeBookSettings.TypeSettings var6 = this.states.getOrDefault(var5, RecipeBookSettings.TypeSettings.DEFAULT);
+         var1.writeBoolean(var6.open);
+         var1.writeBoolean(var6.filtering);
       }
    }
 
    public static RecipeBookSettings read(CompoundTag var0) {
-      EnumMap var1 = Maps.newEnumMap(RecipeBookType.class);
+      EnumMap var1 = new EnumMap<>(RecipeBookType.class);
       TAG_FIELDS.forEach((var2, var3) -> {
          boolean var4 = var0.getBoolean((String)var3.getFirst());
          boolean var5 = var0.getBoolean((String)var3.getSecond());
-         var1.put(var2, new RecipeBookSettings.TypeSettings(var4, var5));
+         if (var4 || var5) {
+            var1.put(var2, new RecipeBookSettings.TypeSettings(var4, var5));
+         }
       });
       return new RecipeBookSettings(var1);
    }
 
    public void write(CompoundTag var1) {
       TAG_FIELDS.forEach((var2, var3) -> {
-         RecipeBookSettings.TypeSettings var4 = this.states.get(var2);
+         RecipeBookSettings.TypeSettings var4 = this.states.getOrDefault(var2, RecipeBookSettings.TypeSettings.DEFAULT);
          var1.putBoolean((String)var3.getFirst(), var4.open);
          var1.putBoolean((String)var3.getSecond(), var4.filtering);
       });
    }
 
    public RecipeBookSettings copy() {
-      EnumMap var1 = Maps.newEnumMap(RecipeBookType.class);
-
-      for (RecipeBookType var5 : RecipeBookType.values()) {
-         RecipeBookSettings.TypeSettings var6 = this.states.get(var5);
-         var1.put(var5, var6.copy());
-      }
-
-      return new RecipeBookSettings(var1);
+      return new RecipeBookSettings(new EnumMap<>(this.states));
    }
 
    public void replaceFrom(RecipeBookSettings var1) {
       this.states.clear();
-
-      for (RecipeBookType var5 : RecipeBookType.values()) {
-         RecipeBookSettings.TypeSettings var6 = var1.states.get(var5);
-         this.states.put(var5, var6.copy());
-      }
+      this.states.putAll(var1.states);
    }
 
    @Override
@@ -125,38 +129,16 @@ public final class RecipeBookSettings {
       return this.states.hashCode();
    }
 
-   static final class TypeSettings {
-      boolean open;
-      boolean filtering;
-
-      public TypeSettings(boolean var1, boolean var2) {
-         super();
-         this.open = var1;
-         this.filtering = var2;
-      }
-
-      public RecipeBookSettings.TypeSettings copy() {
-         return new RecipeBookSettings.TypeSettings(this.open, this.filtering);
-      }
-
-      @Override
-      public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else {
-            return !(var1 instanceof RecipeBookSettings.TypeSettings var2) ? false : this.open == var2.open && this.filtering == var2.filtering;
-         }
-      }
-
-      @Override
-      public int hashCode() {
-         int var1 = this.open ? 1 : 0;
-         return 31 * var1 + (this.filtering ? 1 : 0);
-      }
-
-      @Override
-      public String toString() {
-         return "[open=" + this.open + ", filtering=" + this.filtering + "]";
-      }
-   }
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.NullPointerException
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.isExprentIndependent(InitializerProcessor.java:423)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractDynamicInitializers(InitializerProcessor.java:335)
+//   at org.jetbrains.java.decompiler.main.InitializerProcessor.extractInitializers(InitializerProcessor.java:44)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:97)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:348)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:492)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:474)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:191)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:187)
 }

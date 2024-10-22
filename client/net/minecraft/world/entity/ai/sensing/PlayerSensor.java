@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.player.Player;
 
@@ -28,14 +29,18 @@ public class PlayerSensor extends Sensor<LivingEntity> {
       List var3 = var1.players()
          .stream()
          .filter(EntitySelector.NO_SPECTATORS)
-         .filter(var1x -> var2.closerThan(var1x, 16.0))
+         .filter(var2x -> var2.closerThan(var2x, this.getFollowDistance(var2)))
          .sorted(Comparator.comparingDouble(var2::distanceToSqr))
          .collect(Collectors.toList());
       Brain var4 = var2.getBrain();
       var4.setMemory(MemoryModuleType.NEAREST_PLAYERS, var3);
-      List var5 = var3.stream().filter(var1x -> isEntityTargetable(var2, var1x)).collect(Collectors.toList());
+      List var5 = var3.stream().filter(var2x -> isEntityTargetable(var1, var2, var2x)).collect(Collectors.toList());
       var4.setMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER, var5.isEmpty() ? null : (Player)var5.get(0));
-      Optional var6 = var5.stream().filter(var1x -> isEntityAttackable(var2, var1x)).findFirst();
+      Optional var6 = var5.stream().filter(var2x -> isEntityAttackable(var1, var2, var2x)).findFirst();
       var4.setMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, var6);
+   }
+
+   protected double getFollowDistance(LivingEntity var1) {
+      return var1.getAttributeValue(Attributes.FOLLOW_RANGE);
    }
 }

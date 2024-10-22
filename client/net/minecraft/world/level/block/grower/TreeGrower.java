@@ -64,6 +64,7 @@ public final class TreeGrower {
       "cherry", Optional.empty(), Optional.of(TreeFeatures.CHERRY), Optional.of(TreeFeatures.CHERRY_BEES_005)
    );
    public static final TreeGrower DARK_OAK = new TreeGrower("dark_oak", Optional.of(TreeFeatures.DARK_OAK), Optional.empty(), Optional.empty());
+   public static final TreeGrower PALE_OAK = new TreeGrower("pale_oak", Optional.of(TreeFeatures.PALE_OAK), Optional.empty(), Optional.empty());
    private final String name;
    private final float secondaryChance;
    private final Optional<ResourceKey<ConfiguredFeature<?, ?>>> megaTree;
@@ -127,7 +128,7 @@ public final class TreeGrower {
    public boolean growTree(ServerLevel var1, ChunkGenerator var2, BlockPos var3, BlockState var4, RandomSource var5) {
       ResourceKey var6 = this.getConfiguredMegaFeature(var5);
       if (var6 != null) {
-         Holder var7 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(var6).orElse(null);
+         Holder var7 = var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(var6).orElse(null);
          if (var7 != null) {
             for (int var8 = 0; var8 >= -1; var8--) {
                for (int var9 = 0; var9 >= -1; var9--) {
@@ -157,7 +158,7 @@ public final class TreeGrower {
       if (var12 == null) {
          return false;
       } else {
-         Holder var13 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(var12).orElse(null);
+         Holder var13 = var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(var12).orElse(null);
          if (var13 == null) {
             return false;
          } else {

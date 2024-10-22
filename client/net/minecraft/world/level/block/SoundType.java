@@ -751,6 +751,15 @@ public class SoundType {
    public static final SoundType VAULT = new SoundType(
       1.0F, 1.0F, SoundEvents.VAULT_BREAK, SoundEvents.VAULT_STEP, SoundEvents.VAULT_PLACE, SoundEvents.VAULT_HIT, SoundEvents.VAULT_FALL
    );
+   public static final SoundType CREAKING_HEART = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.CREAKING_HEART_BREAK,
+      SoundEvents.CREAKING_HEART_STEP,
+      SoundEvents.CREAKING_HEART_PLACE,
+      SoundEvents.CREAKING_HEART_HIT,
+      SoundEvents.CREAKING_HEART_FALL
+   );
    public static final SoundType HEAVY_CORE = new SoundType(
       1.0F,
       1.0F,
@@ -762,6 +771,9 @@ public class SoundType {
    );
    public static final SoundType COBWEB = new SoundType(
       1.0F, 1.0F, SoundEvents.COBWEB_BREAK, SoundEvents.COBWEB_STEP, SoundEvents.COBWEB_PLACE, SoundEvents.COBWEB_HIT, SoundEvents.COBWEB_FALL
+   );
+   public static final SoundType SPAWNER = new SoundType(
+      1.0F, 1.0F, SoundEvents.SPAWNER_BREAK, SoundEvents.SPAWNER_STEP, SoundEvents.SPAWNER_PLACE, SoundEvents.SPAWNER_HIT, SoundEvents.SPAWNER_FALL
    );
    public final float volume;
    public final float pitch;

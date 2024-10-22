@@ -62,7 +62,7 @@ public class EatBlockGoal extends Goal {
       if (this.eatAnimationTick == this.adjustedTickDelay(4)) {
          BlockPos var1 = this.mob.blockPosition();
          if (IS_TALL_GRASS.test(this.level.getBlockState(var1))) {
-            if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                this.level.destroyBlock(var1, false);
             }
 
@@ -70,7 +70,7 @@ public class EatBlockGoal extends Goal {
          } else {
             BlockPos var2 = var1.below();
             if (this.level.getBlockState(var2).is(Blocks.GRASS_BLOCK)) {
-               if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+               if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                   this.level.levelEvent(2001, var2, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
                   this.level.setBlock(var2, Blocks.DIRT.defaultBlockState(), 2);
                }

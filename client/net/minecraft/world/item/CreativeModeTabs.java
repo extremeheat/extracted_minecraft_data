@@ -27,12 +27,13 @@ import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.Fireworks;
+import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
@@ -181,6 +182,19 @@ public class CreativeModeTabs {
                var1.accept(Items.CHERRY_TRAPDOOR);
                var1.accept(Items.CHERRY_PRESSURE_PLATE);
                var1.accept(Items.CHERRY_BUTTON);
+               var1.accept(Items.PALE_OAK_LOG);
+               var1.accept(Items.PALE_OAK_WOOD);
+               var1.accept(Items.STRIPPED_PALE_OAK_LOG);
+               var1.accept(Items.STRIPPED_PALE_OAK_WOOD);
+               var1.accept(Items.PALE_OAK_PLANKS);
+               var1.accept(Items.PALE_OAK_STAIRS);
+               var1.accept(Items.PALE_OAK_SLAB);
+               var1.accept(Items.PALE_OAK_FENCE);
+               var1.accept(Items.PALE_OAK_FENCE_GATE);
+               var1.accept(Items.PALE_OAK_DOOR);
+               var1.accept(Items.PALE_OAK_TRAPDOOR);
+               var1.accept(Items.PALE_OAK_PRESSURE_PLATE);
+               var1.accept(Items.PALE_OAK_BUTTON);
                var1.accept(Items.BAMBOO_BLOCK);
                var1.accept(Items.STRIPPED_BAMBOO_BLOCK);
                var1.accept(Items.BAMBOO_PLANKS);
@@ -719,6 +733,9 @@ public class CreativeModeTabs {
                var1.accept(Items.SNOW);
                var1.accept(Items.MOSS_BLOCK);
                var1.accept(Items.MOSS_CARPET);
+               var1.accept(Items.PALE_MOSS_BLOCK);
+               var1.accept(Items.PALE_MOSS_CARPET);
+               var1.accept(Items.PALE_HANGING_MOSS);
                var1.accept(Items.STONE);
                var1.accept(Items.DEEPSLATE);
                var1.accept(Items.GRANITE);
@@ -781,6 +798,7 @@ public class CreativeModeTabs {
                var1.accept(Items.MANGROVE_ROOTS);
                var1.accept(Items.MUDDY_MANGROVE_ROOTS);
                var1.accept(Items.CHERRY_LOG);
+               var1.accept(Items.PALE_OAK_LOG);
                var1.accept(Items.MUSHROOM_STEM);
                var1.accept(Items.CRIMSON_STEM);
                var1.accept(Items.WARPED_STEM);
@@ -792,6 +810,7 @@ public class CreativeModeTabs {
                var1.accept(Items.DARK_OAK_LEAVES);
                var1.accept(Items.MANGROVE_LEAVES);
                var1.accept(Items.CHERRY_LEAVES);
+               var1.accept(Items.PALE_OAK_LEAVES);
                var1.accept(Items.AZALEA_LEAVES);
                var1.accept(Items.FLOWERING_AZALEA_LEAVES);
                var1.accept(Items.BROWN_MUSHROOM_BLOCK);
@@ -807,6 +826,7 @@ public class CreativeModeTabs {
                var1.accept(Items.DARK_OAK_SAPLING);
                var1.accept(Items.MANGROVE_PROPAGULE);
                var1.accept(Items.CHERRY_SAPLING);
+               var1.accept(Items.PALE_OAK_SAPLING);
                var1.accept(Items.AZALEA);
                var1.accept(Items.FLOWERING_AZALEA);
                var1.accept(Items.BROWN_MUSHROOM);
@@ -1029,6 +1049,8 @@ public class CreativeModeTabs {
                   var1.accept(Items.MANGROVE_HANGING_SIGN);
                   var1.accept(Items.CHERRY_SIGN);
                   var1.accept(Items.CHERRY_HANGING_SIGN);
+                  var1.accept(Items.PALE_OAK_SIGN);
+                  var1.accept(Items.PALE_OAK_HANGING_SIGN);
                   var1.accept(Items.BAMBOO_SIGN);
                   var1.accept(Items.BAMBOO_HANGING_SIGN);
                   var1.accept(Items.CRIMSON_SIGN);
@@ -1105,7 +1127,7 @@ public class CreativeModeTabs {
                   var1.accept(Items.PURPLE_BANNER);
                   var1.accept(Items.MAGENTA_BANNER);
                   var1.accept(Items.PINK_BANNER);
-                  var1.accept(Raid.getLeaderBannerInstance(var0x.holders().lookupOrThrow(Registries.BANNER_PATTERN)));
+                  var1.accept(Raid.getOminousBannerInstance(var0x.holders().lookupOrThrow(Registries.BANNER_PATTERN)));
                   var1.accept(Items.SKELETON_SKULL);
                   var1.accept(Items.WITHER_SKELETON_SKULL);
                   var1.accept(Items.PLAYER_HEAD);
@@ -1289,10 +1311,23 @@ public class CreativeModeTabs {
                   var1.accept(Items.BRUSH);
                   var1.accept(Items.NAME_TAG);
                   var1.accept(Items.LEAD);
-                  if (var0x.enabledFeatures().contains(FeatureFlags.BUNDLE)) {
-                     var1.accept(Items.BUNDLE);
-                  }
-
+                  var1.accept(Items.BUNDLE);
+                  var1.accept(Items.WHITE_BUNDLE);
+                  var1.accept(Items.LIGHT_GRAY_BUNDLE);
+                  var1.accept(Items.GRAY_BUNDLE);
+                  var1.accept(Items.BLACK_BUNDLE);
+                  var1.accept(Items.BROWN_BUNDLE);
+                  var1.accept(Items.RED_BUNDLE);
+                  var1.accept(Items.ORANGE_BUNDLE);
+                  var1.accept(Items.YELLOW_BUNDLE);
+                  var1.accept(Items.LIME_BUNDLE);
+                  var1.accept(Items.GREEN_BUNDLE);
+                  var1.accept(Items.CYAN_BUNDLE);
+                  var1.accept(Items.LIGHT_BLUE_BUNDLE);
+                  var1.accept(Items.BLUE_BUNDLE);
+                  var1.accept(Items.PURPLE_BUNDLE);
+                  var1.accept(Items.MAGENTA_BUNDLE);
+                  var1.accept(Items.PINK_BUNDLE);
                   var1.accept(Items.COMPASS);
                   var1.accept(Items.RECOVERY_COMPASS);
                   var1.accept(Items.CLOCK);
@@ -1323,6 +1358,8 @@ public class CreativeModeTabs {
                   var1.accept(Items.MANGROVE_CHEST_BOAT);
                   var1.accept(Items.CHERRY_BOAT);
                   var1.accept(Items.CHERRY_CHEST_BOAT);
+                  var1.accept(Items.PALE_OAK_BOAT);
+                  var1.accept(Items.PALE_OAK_CHEST_BOAT);
                   var1.accept(Items.BAMBOO_RAFT);
                   var1.accept(Items.BAMBOO_CHEST_RAFT);
                   var1.accept(Items.RAIL);
@@ -1488,7 +1525,7 @@ public class CreativeModeTabs {
                generateSuspiciousStews(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                var1.accept(Items.MILK_BUCKET);
                var1.accept(Items.HONEY_BOTTLE);
-               generateOminousVials(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+               generateOminousBottles(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                var0x.holders().lookup(Registries.POTION).ifPresent(var2 -> {
                   generatePotionEffectTypes(var1, var2, Items.POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
                   generatePotionEffectTypes(var1, var2, Items.SPLASH_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
@@ -1595,6 +1632,8 @@ public class CreativeModeTabs {
                var1.accept(Items.GHAST_TEAR);
                var1.accept(Items.TURTLE_HELMET);
                var1.accept(Items.PHANTOM_MEMBRANE);
+               var1.accept(Items.FIELD_MASONED_BANNER_PATTERN);
+               var1.accept(Items.BORDURE_INDENTED_BANNER_PATTERN);
                var1.accept(Items.FLOWER_BANNER_PATTERN);
                var1.accept(Items.CREEPER_BANNER_PATTERN);
                var1.accept(Items.SKULL_BANNER_PATTERN);
@@ -1664,6 +1703,7 @@ public class CreativeModeTabs {
             .displayItems((var0x, var1) -> {
                var1.accept(Items.SPAWNER);
                var1.accept(Items.TRIAL_SPAWNER);
+               var1.accept(Items.CREAKING_HEART);
                var1.accept(Items.ALLAY_SPAWN_EGG);
                var1.accept(Items.ARMADILLO_SPAWN_EGG);
                var1.accept(Items.AXOLOTL_SPAWN_EGG);
@@ -1678,6 +1718,7 @@ public class CreativeModeTabs {
                var1.accept(Items.CHICKEN_SPAWN_EGG);
                var1.accept(Items.COD_SPAWN_EGG);
                var1.accept(Items.COW_SPAWN_EGG);
+               var1.accept(Items.CREAKING_SPAWN_EGG);
                var1.accept(Items.CREEPER_SPAWN_EGG);
                var1.accept(Items.DOLPHIN_SPAWN_EGG);
                var1.accept(Items.DONKEY_SPAWN_EGG);
@@ -1804,7 +1845,7 @@ public class CreativeModeTabs {
       HashMap var0 = new HashMap();
 
       for (ResourceKey var2 : BuiltInRegistries.CREATIVE_MODE_TAB.registryKeySet()) {
-         CreativeModeTab var3 = BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(var2);
+         CreativeModeTab var3 = BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(var2);
          String var4 = var3.getDisplayName().getString();
          String var5 = var0.put(Pair.of(var3.row(), var3.column()), var4);
          if (var5 != null) {
@@ -1814,7 +1855,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab getDefaultTab() {
-      return BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(BUILDING_BLOCKS);
+      return BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(BUILDING_BLOCKS);
    }
 
    private static void generatePotionEffectTypes(
@@ -1828,7 +1869,7 @@ public class CreativeModeTabs {
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
       var1.listElements()
-         .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel())))
+         .map(var0x -> EnchantmentHelper.createBook(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel())))
          .forEach(var2x -> var0.accept(var2x, var2));
    }
 
@@ -1836,7 +1877,7 @@ public class CreativeModeTabs {
       var1.listElements()
          .flatMap(
             var0x -> IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel())
-                  .mapToObj(var1x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var1x)))
+                  .mapToObj(var1x -> EnchantmentHelper.createBook(new EnchantmentInstance(var0x, var1x)))
          )
          .forEach(var2x -> var0.accept(var2x, var2));
    }
@@ -1861,10 +1902,10 @@ public class CreativeModeTabs {
       var0.acceptAll(var3, var1);
    }
 
-   private static void generateOminousVials(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
+   private static void generateOminousBottles(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
       for (int var2 = 0; var2 <= 4; var2++) {
          ItemStack var3 = new ItemStack(Items.OMINOUS_BOTTLE);
-         var3.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var2);
+         var3.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, new OminousBottleAmplifier(var2));
          var0.accept(var3, var1);
       }
    }
@@ -1912,7 +1953,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab searchTab() {
-      return BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(SEARCH);
+      return BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(SEARCH);
    }
 
    private static void buildAllTabContents(CreativeModeTab.ItemDisplayParameters var0) {

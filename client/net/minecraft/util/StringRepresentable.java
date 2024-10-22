@@ -80,6 +80,10 @@ public interface StringRepresentable {
       public E byName(@Nullable String var1, E var2) {
          return Objects.requireNonNullElse(this.byName(var1), (E)var2);
       }
+
+      public E byName(@Nullable String var1, Supplier<? extends E> var2) {
+         return Objects.requireNonNullElseGet(this.byName(var1), var2);
+      }
    }
 
    public static class StringRepresentableCodec<S extends StringRepresentable> implements Codec<S> {

@@ -22,7 +22,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 
-public class EditBox extends AbstractWidget implements Renderable {
+public class EditBox extends AbstractWidget {
    private static final WidgetSprites SPRITES = new WidgetSprites(
       ResourceLocation.withDefaultNamespace("widget/text_field"), ResourceLocation.withDefaultNamespace("widget/text_field_highlighted")
    );
@@ -366,7 +366,7 @@ public class EditBox extends AbstractWidget implements Renderable {
       if (this.isVisible()) {
          if (this.isBordered()) {
             ResourceLocation var5 = SPRITES.get(this.isActive(), this.isFocused());
-            var1.blitSprite(var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
          int var17 = this.isEditable ? this.textColor : this.textColorUneditable;

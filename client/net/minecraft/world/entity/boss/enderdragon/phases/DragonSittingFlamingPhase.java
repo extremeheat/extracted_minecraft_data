@@ -3,6 +3,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -58,7 +59,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
    }
 
    @Override
-   public void doServerTick() {
+   public void doServerTick(ServerLevel var1) {
       this.flameTicks++;
       if (this.flameTicks >= 200) {
          if (this.flameCount >= 4) {
@@ -67,31 +68,31 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_SCANNING);
          }
       } else if (this.flameTicks == 10) {
-         Vec3 var1 = new Vec3(this.dragon.head.getX() - this.dragon.getX(), 0.0, this.dragon.head.getZ() - this.dragon.getZ()).normalize();
-         float var2 = 5.0F;
-         double var3 = this.dragon.head.getX() + var1.x * 5.0 / 2.0;
-         double var5 = this.dragon.head.getZ() + var1.z * 5.0 / 2.0;
-         double var7 = this.dragon.head.getY(0.5);
-         double var9 = var7;
-         BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos(var3, var7, var5);
+         Vec3 var2 = new Vec3(this.dragon.head.getX() - this.dragon.getX(), 0.0, this.dragon.head.getZ() - this.dragon.getZ()).normalize();
+         float var3 = 5.0F;
+         double var4 = this.dragon.head.getX() + var2.x * 5.0 / 2.0;
+         double var6 = this.dragon.head.getZ() + var2.z * 5.0 / 2.0;
+         double var8 = this.dragon.head.getY(0.5);
+         double var10 = var8;
+         BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos(var4, var8, var6);
 
-         while (this.dragon.level().isEmptyBlock(var11)) {
-            if (--var9 < 0.0) {
-               var9 = var7;
+         while (var1.isEmptyBlock(var12)) {
+            if (--var10 < 0.0) {
+               var10 = var8;
                break;
             }
 
-            var11.set(var3, var9, var5);
+            var12.set(var4, var10, var6);
          }
 
-         var9 = (double)(Mth.floor(var9) + 1);
-         this.flame = new AreaEffectCloud(this.dragon.level(), var3, var9, var5);
+         var10 = (double)(Mth.floor(var10) + 1);
+         this.flame = new AreaEffectCloud(var1, var4, var10, var6);
          this.flame.setOwner(this.dragon);
          this.flame.setRadius(5.0F);
          this.flame.setDuration(200);
          this.flame.setParticle(ParticleTypes.DRAGON_BREATH);
          this.flame.addEffect(new MobEffectInstance(MobEffects.HARM));
-         this.dragon.level().addFreshEntity(this.flame);
+         var1.addFreshEntity(this.flame);
       }
    }
 

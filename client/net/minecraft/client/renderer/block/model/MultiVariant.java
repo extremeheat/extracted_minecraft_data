@@ -8,11 +8,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
@@ -20,58 +17,43 @@ import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.world.level.block.state.BlockState;
 
-public class MultiVariant implements UnbakedModel {
-   private final List<Variant> variants;
-
-   public MultiVariant(List<Variant> var1) {
+public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateModel {
+   public MultiVariant(List<Variant> variants) {
       super();
-      this.variants = var1;
-   }
-
-   public List<Variant> getVariants() {
-      return this.variants;
-   }
-
-   @Override
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
+      if (variants.isEmpty()) {
+         throw new IllegalArgumentException("Variant list must contain at least one element");
       } else {
-         return var1 instanceof MultiVariant var2 ? this.variants.equals(var2.variants) : false;
+         this.variants = variants;
       }
    }
 
    @Override
-   public int hashCode() {
-      return this.variants.hashCode();
+   public Object visualEqualityGroup(BlockState var1) {
+      return this;
    }
 
    @Override
-   public Collection<ResourceLocation> getDependencies() {
-      return this.getVariants().stream().map(Variant::getModelLocation).collect(Collectors.toSet());
+   public void resolveDependencies(UnbakedModel.Resolver var1) {
+      this.variants.forEach(var1x -> var1.resolve(var1x.getModelLocation()));
    }
 
-   @Override
-   public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
-      this.getVariants().stream().map(Variant::getModelLocation).distinct().forEach(var1x -> ((UnbakedModel)var1.apply(var1x)).resolveParents(var1));
-   }
-
-   @Nullable
    @Override
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
-      if (this.getVariants().isEmpty()) {
-         return null;
+      if (this.variants.size() == 1) {
+         Variant var8 = (Variant)this.variants.getFirst();
+         return var1.bake(var8.getModelLocation(), var8);
       } else {
-         WeightedBakedModel.Builder var4 = new WeightedBakedModel.Builder();
+         SimpleWeightedRandomList.Builder var4 = SimpleWeightedRandomList.builder();
 
-         for (Variant var6 : this.getVariants()) {
+         for (Variant var6 : this.variants) {
             BakedModel var7 = var1.bake(var6.getModelLocation(), var6);
             var4.add(var7, var6.getWeight());
          }
 
-         return var4.build();
+         return new WeightedBakedModel(var4.build());
       }
    }
 
@@ -84,7 +66,7 @@ public class MultiVariant implements UnbakedModel {
          ArrayList var4 = Lists.newArrayList();
          if (var1.isJsonArray()) {
             JsonArray var5 = var1.getAsJsonArray();
-            if (var5.size() == 0) {
+            if (var5.isEmpty()) {
                throw new JsonParseException("Empty variant array");
             }
 

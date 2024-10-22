@@ -2,13 +2,18 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,7 +23,7 @@ import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Bee;
@@ -32,12 +37,15 @@ import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -46,7 +54,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -57,7 +65,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BeehiveBlock extends BaseEntityBlock {
    public static final MapCodec<BeehiveBlock> CODEC = simpleCodec(BeehiveBlock::new);
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
    public static final IntegerProperty HONEY_LEVEL = BlockStateProperties.LEVEL_HONEY;
    public static final int MAX_HONEY_LEVELS = 5;
    private static final int SHEARED_HONEYCOMB_COUNT = 3;
@@ -96,6 +104,12 @@ public class BeehiveBlock extends BaseEntityBlock {
       }
    }
 
+   @Override
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      super.onExplosionHit(var1, var2, var3, var4, var5);
+      this.angerNearbyBees(var2, var3);
+   }
+
    private void angerNearbyBees(Level var1, BlockPos var2) {
       AABB var3 = new AABB(var2).inflate(8.0, 6.0, 8.0);
       List var4 = var1.getEntitiesOfClass(Bee.class, var3);
@@ -119,7 +133,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    @Override
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       int var8 = var2.getValue(HONEY_LEVEL);
       boolean var9 = false;
       if (var8 >= 5) {
@@ -159,7 +173,7 @@ public class BeehiveBlock extends BaseEntityBlock {
             this.resetHoneyLevel(var3, var2, var4);
          }
 
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       }
@@ -256,19 +270,19 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide
+      if (var1 instanceof ServerLevel var5
          && var4.isCreative()
-         && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)
-         && var1.getBlockEntity(var2) instanceof BeehiveBlockEntity var6) {
-         int var7 = var3.getValue(HONEY_LEVEL);
-         boolean var8 = !var6.isEmpty();
-         if (var8 || var7 > 0) {
-            ItemStack var9 = new ItemStack(this);
-            var9.applyComponents(var6.collectComponents());
-            var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var7));
-            ItemEntity var10 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var9);
-            var10.setDefaultPickUpDelay();
-            var1.addFreshEntity(var10);
+         && var5.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)
+         && var1.getBlockEntity(var2) instanceof BeehiveBlockEntity var7) {
+         int var8 = var3.getValue(HONEY_LEVEL);
+         boolean var9 = !var7.isEmpty();
+         if (var9 || var8 > 0) {
+            ItemStack var10 = new ItemStack(this);
+            var10.applyComponents(var7.collectComponents());
+            var10.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var8));
+            ItemEntity var11 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var10);
+            var11.setDefaultPickUpDelay();
+            var1.addFreshEntity(var11);
          }
       }
 
@@ -289,12 +303,14 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    @Override
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var4.getBlockState(var6).getBlock() instanceof FireBlock && var4.getBlockEntity(var5) instanceof BeehiveBlockEntity var8) {
-         var8.emptyAllLivingFromHive(null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
+   protected BlockState updateShape(
+      BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8
+   ) {
+      if (var2.getBlockState(var6).getBlock() instanceof FireBlock && var2.getBlockEntity(var4) instanceof BeehiveBlockEntity var10) {
+         var10.emptyAllLivingFromHive(null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Override
@@ -305,5 +321,15 @@ public class BeehiveBlock extends BaseEntityBlock {
    @Override
    public BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
+   }
+
+   @Override
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      super.appendHoverText(var1, var2, var3, var4);
+      BlockItemStateProperties var5 = var1.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+      int var6 = Objects.requireNonNullElse(var5.get(HONEY_LEVEL), 0);
+      int var7 = var1.getOrDefault(DataComponents.BEES, List.of()).size();
+      var3.add(Component.translatable("container.beehive.bees", var7, 3).withStyle(ChatFormatting.GRAY));
+      var3.add(Component.translatable("container.beehive.honey", var6, 5).withStyle(ChatFormatting.GRAY));
    }
 }

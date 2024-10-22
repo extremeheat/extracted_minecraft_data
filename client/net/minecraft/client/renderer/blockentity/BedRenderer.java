@@ -3,8 +3,8 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -25,13 +25,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
-   private final ModelPart headRoot;
-   private final ModelPart footRoot;
+   private final Model headModel;
+   private final Model footModel;
 
    public BedRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.headRoot = var1.bakeLayer(ModelLayers.BED_HEAD);
-      this.footRoot = var1.bakeLayer(ModelLayers.BED_FOOT);
+      this.headModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
+      this.footModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
    }
 
    public static LayerDefinition createHeadLayer() {
@@ -77,15 +77,22 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
          );
          int var11 = var10.apply(new BrightnessCombiner()).get(var5);
          this.renderPiece(
-            var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headRoot : this.footRoot, var9.getValue(BedBlock.FACING), var7, var11, var6, false
+            var3,
+            var4,
+            var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel,
+            var9.getValue(BedBlock.FACING),
+            var7,
+            var11,
+            var6,
+            false
          );
       } else {
-         this.renderPiece(var3, var4, this.headRoot, Direction.SOUTH, var7, var5, var6, false);
-         this.renderPiece(var3, var4, this.footRoot, Direction.SOUTH, var7, var5, var6, true);
+         this.renderPiece(var3, var4, this.headModel, Direction.SOUTH, var7, var5, var6, false);
+         this.renderPiece(var3, var4, this.footModel, Direction.SOUTH, var7, var5, var6, true);
       }
    }
 
-   private void renderPiece(PoseStack var1, MultiBufferSource var2, ModelPart var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
+   private void renderPiece(PoseStack var1, MultiBufferSource var2, Model var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
       var1.pushPose();
       var1.translate(0.0F, 0.5625F, var8 ? -1.0F : 0.0F);
       var1.mulPose(Axis.XP.rotationDegrees(90.0F));
@@ -93,7 +100,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
       var1.mulPose(Axis.ZP.rotationDegrees(180.0F + var4.toYRot()));
       var1.translate(-0.5F, -0.5F, -0.5F);
       VertexConsumer var9 = var5.buffer(var2, RenderType::entitySolid);
-      var3.render(var1, var9, var6, var7);
+      var3.renderToBuffer(var1, var9, var6, var7);
       var1.popPose();
    }
 }

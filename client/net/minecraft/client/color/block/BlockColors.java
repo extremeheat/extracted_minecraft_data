@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
@@ -80,7 +80,7 @@ public class BlockColors {
       var0.register((var0x, var1, var2, var3) -> -2046180, Blocks.ATTACHED_MELON_STEM, Blocks.ATTACHED_PUMPKIN_STEM);
       var0.register((var0x, var1, var2, var3) -> {
          int var4 = var0x.getValue(StemBlock.AGE);
-         return FastColor.ARGB32.color(var4 * 32, 255 - var4 * 8, var4 * 4);
+         return ARGB.color(var4 * 32, 255 - var4 * 8, var4 * 4);
       }, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
       var0.addColoringState(StemBlock.AGE, Blocks.MELON_STEM, Blocks.PUMPKIN_STEM);
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? -14647248 : -9321636, Blocks.LILY_PAD);

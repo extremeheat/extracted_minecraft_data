@@ -27,6 +27,7 @@ public final class BlockTags {
    public static final TagKey<Block> OVERWORLD_NATURAL_LOGS = create("overworld_natural_logs");
    public static final TagKey<Block> LOGS = create("logs");
    public static final TagKey<Block> DARK_OAK_LOGS = create("dark_oak_logs");
+   public static final TagKey<Block> PALE_OAK_LOGS = create("pale_oak_logs");
    public static final TagKey<Block> OAK_LOGS = create("oak_logs");
    public static final TagKey<Block> BIRCH_LOGS = create("birch_logs");
    public static final TagKey<Block> ACACIA_LOGS = create("acacia_logs");
@@ -68,6 +69,7 @@ public final class BlockTags {
    public static final TagKey<Block> BADLANDS_TERRACOTTA = create("badlands_terracotta");
    public static final TagKey<Block> CONCRETE_POWDER = create("concrete_powder");
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL = create("completes_find_tree_tutorial");
+   public static final TagKey<Block> SHULKER_BOXES = create("shulker_boxes");
    public static final TagKey<Block> FLOWER_POTS = create("flower_pots");
    public static final TagKey<Block> ENDERMAN_HOLDABLE = create("enderman_holdable");
    public static final TagKey<Block> ICE = create("ice");
@@ -101,7 +103,6 @@ public final class BlockTags {
    public static final TagKey<Block> WALL_POST_OVERRIDE = create("wall_post_override");
    public static final TagKey<Block> CLIMBABLE = create("climbable");
    public static final TagKey<Block> FALL_DAMAGE_RESETTING = create("fall_damage_resetting");
-   public static final TagKey<Block> SHULKER_BOXES = create("shulker_boxes");
    public static final TagKey<Block> HOGLIN_REPELLENTS = create("hoglin_repellents");
    public static final TagKey<Block> SOUL_FIRE_BASE_BLOCKS = create("soul_fire_base_blocks");
    public static final TagKey<Block> STRIDER_WARM_BLOCKS = create("strider_warm_blocks");
@@ -169,6 +170,7 @@ public final class BlockTags {
    public static final TagKey<Block> FOXES_SPAWNABLE_ON = create("foxes_spawnable_on");
    public static final TagKey<Block> WOLVES_SPAWNABLE_ON = create("wolves_spawnable_on");
    public static final TagKey<Block> FROGS_SPAWNABLE_ON = create("frogs_spawnable_on");
+   public static final TagKey<Block> BATS_SPAWNABLE_ON = create("bats_spawnable_on");
    public static final TagKey<Block> AZALEA_GROWS_ON = create("azalea_grows_on");
    public static final TagKey<Block> CONVERTABLE_TO_MUD = create("convertable_to_mud");
    public static final TagKey<Block> MANGROVE_LOGS_CAN_GROW_THROUGH = create("mangrove_logs_can_grow_through");

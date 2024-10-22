@@ -34,6 +34,7 @@ import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
@@ -53,26 +54,25 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Abilities;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.ClickAction;
-import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.component.WritableBookContent;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Portal;
@@ -100,20 +100,23 @@ public class LocalPlayer extends AbstractClientPlayer {
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
+   private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1280);
    private final List<AmbientSoundHandler> ambientSoundHandlers = Lists.newArrayList();
    private int permissionLevel = 0;
    private double xLast;
-   private double yLast1;
+   private double yLast;
    private double zLast;
    private float yRotLast;
    private float xRotLast;
    private boolean lastOnGround;
+   private boolean lastHorizontalCollision;
    private boolean crouching;
    private boolean wasShiftKeyDown;
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
-   public Input input;
+   public ClientInput input = new ClientInput();
+   private Input lastSentInput = Input.EMPTY;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
    public float yBob;
@@ -146,11 +149,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, var1.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
       this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager(), var2.getBiomeManager()));
-   }
-
-   @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      return false;
    }
 
    @Override
@@ -189,23 +187,27 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    public void tick() {
-      if (this.level().hasChunkAt(this.getBlockX(), this.getBlockZ())) {
-         super.tick();
-         if (this.isPassenger()) {
-            this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround()));
-            this.connection.send(new ServerboundPlayerInputPacket(this.xxa, this.zza, this.input.jumping, this.input.shiftKeyDown));
-            Entity var1 = this.getRootVehicle();
-            if (var1 != this && var1.isControlledByLocalInstance()) {
-               this.connection.send(new ServerboundMoveVehiclePacket(var1));
-               this.sendIsSprintingIfNeeded();
-            }
-         } else {
-            this.sendPosition();
-         }
+      this.dropSpamThrottler.tick();
+      super.tick();
+      this.sendShiftKeyState();
+      if (!this.lastSentInput.equals(this.input.keyPresses)) {
+         this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
+         this.lastSentInput = this.input.keyPresses;
+      }
 
-         for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
-            var2.tick();
+      if (this.isPassenger()) {
+         this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
+         Entity var1 = this.getRootVehicle();
+         if (var1 != this && var1.isControlledByLocalInstance()) {
+            this.connection.send(new ServerboundMoveVehiclePacket(var1));
+            this.sendIsSprintingIfNeeded();
          }
+      } else {
+         this.sendPosition();
+      }
+
+      for (AmbientSoundHandler var2 : this.ambientSoundHandlers) {
+         var2.tick();
       }
    }
 
@@ -221,6 +223,49 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    private void sendPosition() {
       this.sendIsSprintingIfNeeded();
+      if (this.isControlledCamera()) {
+         double var1 = this.getX() - this.xLast;
+         double var3 = this.getY() - this.yLast;
+         double var5 = this.getZ() - this.zLast;
+         double var7 = (double)(this.getYRot() - this.yRotLast);
+         double var9 = (double)(this.getXRot() - this.xRotLast);
+         this.positionReminder++;
+         boolean var11 = Mth.lengthSquared(var1, var3, var5) > Mth.square(2.0E-4) || this.positionReminder >= 20;
+         boolean var12 = var7 != 0.0 || var9 != 0.0;
+         if (var11 && var12) {
+            this.connection
+               .send(
+                  new ServerboundMovePlayerPacket.PosRot(
+                     this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision
+                  )
+               );
+         } else if (var11) {
+            this.connection.send(new ServerboundMovePlayerPacket.Pos(this.getX(), this.getY(), this.getZ(), this.onGround(), this.horizontalCollision));
+         } else if (var12) {
+            this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
+         } else if (this.lastOnGround != this.onGround() || this.lastHorizontalCollision != this.horizontalCollision) {
+            this.connection.send(new ServerboundMovePlayerPacket.StatusOnly(this.onGround(), this.horizontalCollision));
+         }
+
+         if (var11) {
+            this.xLast = this.getX();
+            this.yLast = this.getY();
+            this.zLast = this.getZ();
+            this.positionReminder = 0;
+         }
+
+         if (var12) {
+            this.yRotLast = this.getYRot();
+            this.xRotLast = this.getXRot();
+         }
+
+         this.lastOnGround = this.onGround();
+         this.lastHorizontalCollision = this.horizontalCollision;
+         this.autoJumpEnabled = this.minecraft.options.autoJump().get();
+      }
+   }
+
+   private void sendShiftKeyState() {
       boolean var1 = this.isShiftKeyDown();
       if (var1 != this.wasShiftKeyDown) {
          ServerboundPlayerCommandPacket.Action var2 = var1
@@ -228,46 +273,6 @@ public class LocalPlayer extends AbstractClientPlayer {
             : ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY;
          this.connection.send(new ServerboundPlayerCommandPacket(this, var2));
          this.wasShiftKeyDown = var1;
-      }
-
-      if (this.isControlledCamera()) {
-         double var15 = this.getX() - this.xLast;
-         double var4 = this.getY() - this.yLast1;
-         double var6 = this.getZ() - this.zLast;
-         double var8 = (double)(this.getYRot() - this.yRotLast);
-         double var10 = (double)(this.getXRot() - this.xRotLast);
-         this.positionReminder++;
-         boolean var12 = Mth.lengthSquared(var15, var4, var6) > Mth.square(2.0E-4) || this.positionReminder >= 20;
-         boolean var13 = var8 != 0.0 || var10 != 0.0;
-         if (this.isPassenger()) {
-            Vec3 var14 = this.getDeltaMovement();
-            this.connection.send(new ServerboundMovePlayerPacket.PosRot(var14.x, -999.0, var14.z, this.getYRot(), this.getXRot(), this.onGround()));
-            var12 = false;
-         } else if (var12 && var13) {
-            this.connection
-               .send(new ServerboundMovePlayerPacket.PosRot(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot(), this.onGround()));
-         } else if (var12) {
-            this.connection.send(new ServerboundMovePlayerPacket.Pos(this.getX(), this.getY(), this.getZ(), this.onGround()));
-         } else if (var13) {
-            this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround()));
-         } else if (this.lastOnGround != this.onGround()) {
-            this.connection.send(new ServerboundMovePlayerPacket.StatusOnly(this.onGround()));
-         }
-
-         if (var12) {
-            this.xLast = this.getX();
-            this.yLast1 = this.getY();
-            this.zLast = this.getZ();
-            this.positionReminder = 0;
-         }
-
-         if (var13) {
-            this.yRotLast = this.getYRot();
-            this.xRotLast = this.getXRot();
-         }
-
-         this.lastOnGround = this.onGround();
-         this.autoJumpEnabled = this.minecraft.options.autoJump().get();
       }
    }
 
@@ -299,13 +304,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void respawn() {
       this.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
       KeyMapping.resetToggleKeys();
-   }
-
-   @Override
-   protected void actuallyHurt(DamageSource var1, float var2) {
-      if (!this.isInvulnerableTo(var1)) {
-         this.setHealth(this.getHealth() - var2);
-      }
    }
 
    @Override
@@ -377,7 +375,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.recipeBook;
    }
 
-   public void removeRecipeHighlight(RecipeHolder<?> var1) {
+   public void removeRecipeHighlight(RecipeDisplayId var1) {
       if (this.recipeBook.willHighlight(var1)) {
          this.recipeBook.removeHighlight(var1);
          this.connection.send(new ServerboundRecipeBookSeenRecipePacket(var1));
@@ -438,11 +436,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.experienceProgress = var1;
       this.totalExperience = var2;
       this.experienceLevel = var3;
-   }
-
-   @Override
-   public void sendSystemMessage(Component var1) {
-      this.minecraft.gui.getChat().addMessage(var1);
    }
 
    @Override
@@ -578,8 +571,9 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    public void openItemGui(ItemStack var1, InteractionHand var2) {
-      if (var1.is(Items.WRITABLE_BOOK)) {
-         this.minecraft.setScreen(new BookEditScreen(this, var1, var2));
+      WritableBookContent var3 = var1.get(DataComponents.WRITABLE_BOOK_CONTENT);
+      if (var3 != null) {
+         this.minecraft.setScreen(new BookEditScreen(this, var1, var2, var3));
       }
    }
 
@@ -595,7 +589,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    public boolean isShiftKeyDown() {
-      return this.input != null && this.input.shiftKeyDown;
+      return this.input.keyPresses.shift();
    }
 
    @Override
@@ -613,7 +607,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.isControlledCamera()) {
          this.xxa = this.input.leftImpulse;
          this.zza = this.input.forwardImpulse;
-         this.jumping = this.input.jumping;
+         this.jumping = this.input.keyPresses.jump();
          this.yBobO = this.yBob;
          this.xBobO = this.xBob;
          this.xBob = this.xBob + (this.getXRot() - this.xBob) * 0.5F;
@@ -628,7 +622,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void resetPos() {
       this.setPose(Pose.STANDING);
       if (this.level() != null) {
-         for (double var1 = this.getY(); var1 > (double)this.level().getMinBuildHeight() && var1 < (double)this.level().getMaxBuildHeight(); var1++) {
+         for (double var1 = this.getY(); var1 > (double)this.level().getMinY() && var1 <= (double)this.level().getMaxY(); var1++) {
             this.setPos(this.getX(), var1, this.getZ());
             if (this.level().noCollision(this)) {
                break;
@@ -654,8 +648,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.processPortalCooldown();
       }
 
-      boolean var1 = this.input.jumping;
-      boolean var2 = this.input.shiftKeyDown;
+      boolean var1 = this.input.keyPresses.jump();
+      boolean var2 = this.input.keyPresses.shift();
       boolean var3 = this.hasEnoughImpulseToStartSprinting();
       Abilities var4 = this.getAbilities();
       this.crouching = !var4.flying
@@ -676,7 +670,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (this.autoJumpTime > 0) {
          this.autoJumpTime--;
          var6 = true;
-         this.input.jumping = true;
+         this.input.makeJump();
       }
 
       if (!this.noPhysics) {
@@ -709,7 +703,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          boolean var10 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
          boolean var11 = var10 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
          if (this.isSwimming()) {
-            if (!this.onGround() && !this.input.shiftKeyDown && var10 || !this.isInWater()) {
+            if (!this.onGround() && !this.input.keyPresses.shift() && var10 || !this.isInWater()) {
                this.setSprinting(false);
             }
          } else if (var11) {
@@ -725,7 +719,7 @@ public class LocalPlayer extends AbstractClientPlayer {
                var12 = true;
                this.onUpdateAbilities();
             }
-         } else if (!var1 && this.input.jumping && !var6) {
+         } else if (!var1 && this.input.keyPresses.jump() && !var6) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
             } else if (!this.isSwimming()) {
@@ -741,43 +735,40 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      if (this.input.jumping && !var12 && !var1 && !var4.flying && !this.isPassenger() && !this.onClimbable()) {
-         ItemStack var13 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var13.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var13) && this.tryToStartFallFlying()) {
-            this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
-         }
+      if (this.input.keyPresses.jump() && !var12 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
+         this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
       }
 
       this.wasFallFlying = this.isFallFlying();
-      if (this.isInWater() && this.input.shiftKeyDown && this.isAffectedByFluids()) {
+      if (this.isInWater() && this.input.keyPresses.shift() && this.isAffectedByFluids()) {
          this.goDownInWater();
       }
 
       if (this.isEyeInFluid(FluidTags.WATER)) {
-         int var14 = this.isSpectator() ? 10 : 1;
-         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var14, 0, 600);
+         int var13 = this.isSpectator() ? 10 : 1;
+         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var13, 0, 600);
       } else if (this.waterVisionTime > 0) {
          this.isEyeInFluid(FluidTags.WATER);
          this.waterVisionTime = Mth.clamp(this.waterVisionTime - 10, 0, 600);
       }
 
       if (var4.flying && this.isControlledCamera()) {
-         int var15 = 0;
-         if (this.input.shiftKeyDown) {
-            var15--;
+         int var14 = 0;
+         if (this.input.keyPresses.shift()) {
+            var14--;
          }
 
-         if (this.input.jumping) {
-            var15++;
+         if (this.input.keyPresses.jump()) {
+            var14++;
          }
 
-         if (var15 != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var15 * var4.getFlyingSpeed() * 3.0F), 0.0));
+         if (var14 != 0) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var14 * var4.getFlyingSpeed() * 3.0F), 0.0));
          }
       }
 
-      PlayerRideableJumping var16 = this.jumpableVehicle();
-      if (var16 != null && var16.getJumpCooldown() == 0) {
+      PlayerRideableJumping var15 = this.jumpableVehicle();
+      if (var15 != null && var15.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
             this.jumpRidingTicks++;
             if (this.jumpRidingTicks == 0) {
@@ -785,11 +776,11 @@ public class LocalPlayer extends AbstractClientPlayer {
             }
          }
 
-         if (var1 && !this.input.jumping) {
+         if (var1 && !this.input.keyPresses.jump()) {
             this.jumpRidingTicks = -10;
-            var16.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
+            var15.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
             this.sendRidingJump();
-         } else if (!var1 && this.input.jumping) {
+         } else if (!var1 && this.input.keyPresses.jump()) {
             this.jumpRidingTicks = 0;
             this.jumpRidingScale = 0.0F;
          } else if (var1) {
@@ -859,9 +850,10 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void rideTick() {
       super.rideTick();
       this.handsBusy = false;
-      if (this.getControlledVehicle() instanceof Boat var1) {
-         var1.setInput(this.input.left, this.input.right, this.input.up, this.input.down);
-         this.handsBusy = this.handsBusy | (this.input.left || this.input.right || this.input.up || this.input.down);
+      if (this.getControlledVehicle() instanceof AbstractBoat var1) {
+         var1.setInput(this.input.keyPresses.left(), this.input.keyPresses.right(), this.input.keyPresses.forward(), this.input.keyPresses.backward());
+         this.handsBusy = this.handsBusy
+            | (this.input.keyPresses.left() || this.input.keyPresses.right() || this.input.keyPresses.forward() || this.input.keyPresses.backward());
       }
    }
 
@@ -885,11 +877,19 @@ public class LocalPlayer extends AbstractClientPlayer {
       double var3 = this.getX();
       double var5 = this.getZ();
       super.move(var1, var2);
-      this.updateAutoJump((float)(this.getX() - var3), (float)(this.getZ() - var5));
+      float var7 = (float)(this.getX() - var3);
+      float var8 = (float)(this.getZ() - var5);
+      this.updateAutoJump(var7, var8);
+      this.walkDist = this.walkDist + Mth.length(var7, var8) * 0.6F;
    }
 
    public boolean isAutoJumpEnabled() {
       return this.autoJumpEnabled;
+   }
+
+   @Override
+   public boolean shouldRotateWithMinecart() {
+      return this.minecraft.options.rotateWithMinecart().get();
    }
 
    protected void updateAutoJump(float var1, float var2) {
@@ -1113,5 +1113,19 @@ public class LocalPlayer extends AbstractClientPlayer {
    @Override
    public float getVisualRotationYInDegrees() {
       return this.getYRot();
+   }
+
+   @Override
+   public void handleCreativeModeItemDrop(ItemStack var1) {
+      this.minecraft.gameMode.handleCreativeModeItemDrop(var1);
+   }
+
+   @Override
+   public boolean canDropItems() {
+      return this.dropSpamThrottler.isUnderThreshold();
+   }
+
+   public TickThrottler getDropSpamThrottler() {
+      return this.dropSpamThrottler;
    }
 }

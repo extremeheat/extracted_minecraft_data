@@ -82,7 +82,7 @@ public class SoundEngine {
 
       for (SoundEvent var2 : BuiltInRegistries.SOUND_EVENT) {
          if (var2 != SoundEvents.EMPTY) {
-            ResourceLocation var3 = var2.getLocation();
+            ResourceLocation var3 = var2.location();
             if (this.soundManager.getSoundEvent(var3) == null) {
                LOGGER.warn("Missing sound for event: {}", BuiltInRegistries.SOUND_EVENT.getKey(var2));
                ONLY_WARN_ONCE.add(var3);

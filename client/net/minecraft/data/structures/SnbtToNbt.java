@@ -64,14 +64,14 @@ public class SnbtToNbt implements DataProvider {
                   var5x = CompletableFuture.allOf(var4.filter(var0 -> var0.toString().endsWith(".snbt")).map(var4x -> CompletableFuture.runAsync(() -> {
                         SnbtToNbt.TaskResult var5xx = this.readStructure(var4x, this.getName(var5, var4x));
                         this.storeStructureIfChanged(var1, var5xx, var2);
-                     }, Util.backgroundExecutor())).toArray(CompletableFuture[]::new));
+                     }, Util.backgroundExecutor().forName("SnbtToNbt"))).toArray(CompletableFuture[]::new));
                }
 
                return var5x;
             } catch (Exception var9) {
                throw new RuntimeException("Failed to read structure input directory, aborting", var9);
             }
-         }, Util.backgroundExecutor()).thenCompose(var0 -> var0));
+         }, Util.backgroundExecutor().forName("SnbtToNbt")).thenCompose(var0 -> var0));
       }
 
       return Util.sequenceFailFast(var3);

@@ -49,7 +49,7 @@ public class FireChargeItem extends Item implements ProjectileItem {
 
       if (var5) {
          var1.getItemInHand().shrink(1);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.FAIL;
       }

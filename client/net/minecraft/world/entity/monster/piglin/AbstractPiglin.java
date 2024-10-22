@@ -1,6 +1,8 @@
 package net.minecraft.world.entity.monster.piglin;
 
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -9,13 +11,12 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
 
@@ -23,7 +24,7 @@ public abstract class AbstractPiglin extends Monster {
    protected static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(
       AbstractPiglin.class, EntityDataSerializers.BOOLEAN
    );
-   protected static final int CONVERSION_TIME = 300;
+   public static final int CONVERSION_TIME = 300;
    protected int timeInOverworld;
 
    public AbstractPiglin(EntityType<? extends AbstractPiglin> var1, Level var2) {
@@ -74,8 +75,8 @@ public abstract class AbstractPiglin extends Monster {
    }
 
    @Override
-   protected void customServerAiStep() {
-      super.customServerAiStep();
+   protected void customServerAiStep(ServerLevel var1) {
+      super.customServerAiStep(var1);
       if (this.isConverting()) {
          this.timeInOverworld++;
       } else {
@@ -84,8 +85,13 @@ public abstract class AbstractPiglin extends Monster {
 
       if (this.timeInOverworld > 300) {
          this.playConvertedSound();
-         this.finishConversion((ServerLevel)this.level());
+         this.finishConversion(var1);
       }
+   }
+
+   @VisibleForTesting
+   public void setTimeInOverworld(int var1) {
+      this.timeInOverworld = var1;
    }
 
    public boolean isConverting() {
@@ -93,10 +99,9 @@ public abstract class AbstractPiglin extends Monster {
    }
 
    protected void finishConversion(ServerLevel var1) {
-      ZombifiedPiglin var2 = this.convertTo(EntityType.ZOMBIFIED_PIGLIN, true);
-      if (var2 != null) {
-         var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
-      }
+      this.convertTo(
+         EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), var0 -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0))
+      );
    }
 
    public boolean isAdult() {
@@ -112,7 +117,7 @@ public abstract class AbstractPiglin extends Monster {
    }
 
    protected boolean isHoldingMeleeWeapon() {
-      return this.getMainHandItem().getItem() instanceof TieredItem;
+      return this.getMainHandItem().has(DataComponents.TOOL);
    }
 
    @Override
