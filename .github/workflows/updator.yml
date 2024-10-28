@@ -16,6 +16,11 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '20'
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 21
+        java-package: jre
     - name: Install dependencies
       run: npm install      
     - name: Run updator script
