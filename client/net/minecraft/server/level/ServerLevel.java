@@ -1344,8 +1344,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
          if (var3 != null) {
             try {
                ((Writer)var3).close();
-            } catch (Throwable var13) {
-               var22.addSuppressed(var13);
+            } catch (Throwable var12) {
+               var22.addSuppressed(var12);
             }
          }
 
@@ -1366,8 +1366,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
          if (var24 != null) {
             try {
                ((Writer)var24).close();
-            } catch (Throwable var16) {
-               var21.addSuppressed(var16);
+            } catch (Throwable var13) {
+               var21.addSuppressed(var13);
             }
          }
 
@@ -1383,16 +1383,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          var2.dumpChunks(var26);
-      } catch (Throwable var19) {
+      } catch (Throwable var18) {
          if (var26 != null) {
             try {
                ((Writer)var26).close();
-            } catch (Throwable var14) {
-               var19.addSuppressed(var14);
+            } catch (Throwable var15) {
+               var18.addSuppressed(var15);
             }
          }
 
-         throw var19;
+         throw var18;
       }
 
       if (var26 != null) {
@@ -1404,16 +1404,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.entityManager.dumpSections(var28);
-      } catch (Throwable var20) {
+      } catch (Throwable var19) {
          if (var28 != null) {
             try {
                ((Writer)var28).close();
-            } catch (Throwable var15) {
-               var20.addSuppressed(var15);
+            } catch (Throwable var11) {
+               var19.addSuppressed(var11);
             }
          }
 
-         throw var20;
+         throw var19;
       }
 
       if (var28 != null) {
@@ -1425,16 +1425,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          dumpEntities(var7, this.getEntities().getAll());
-      } catch (Throwable var18) {
+      } catch (Throwable var17) {
          if (var7 != null) {
             try {
                ((Writer)var7).close();
-            } catch (Throwable var11) {
-               var18.addSuppressed(var11);
+            } catch (Throwable var14) {
+               var17.addSuppressed(var14);
             }
          }
 
-         throw var18;
+         throw var17;
       }
 
       if (var7 != null) {
@@ -1446,16 +1446,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.dumpBlockEntityTickers(var8);
-      } catch (Throwable var17) {
+      } catch (Throwable var20) {
          if (var8 != null) {
             try {
                ((Writer)var8).close();
-            } catch (Throwable var12) {
-               var17.addSuppressed(var12);
+            } catch (Throwable var16) {
+               var20.addSuppressed(var16);
             }
          }
 
-         throw var17;
+         throw var20;
       }
 
       if (var8 != null) {

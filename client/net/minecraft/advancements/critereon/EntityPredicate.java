@@ -119,8 +119,10 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
 
                if (this.slots.isPresent() && !((SlotsPredicate)this.slots.get()).matches(var3)) {
                   return false;
+               } else if (this.nbt.isPresent() && !((NbtPredicate)this.nbt.get()).matches(var3)) {
+                  return false;
                } else {
-                  return !this.nbt.isPresent() || ((NbtPredicate)this.nbt.get()).matches(var3);
+                  return true;
                }
             }
          }

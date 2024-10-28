@@ -19,7 +19,7 @@ public class ChestedHorsesInventoryZeroIndexingFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       OpticFinder var1 = DSL.typeFinder(this.getInputSchema().getType(References.ITEM_STACK));
       Type var2 = this.getInputSchema().getType(References.ENTITY);
-      return TypeRewriteRule.seq(this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:llama"), new TypeRewriteRule[]{this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:mule"), this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:donkey")});
+      return TypeRewriteRule.seq(this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:llama"), new TypeRewriteRule[]{this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:trader_llama"), this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:mule"), this.horseLikeInventoryIndexingFixer(var1, var2, "minecraft:donkey")});
    }
 
    private TypeRewriteRule horseLikeInventoryIndexingFixer(OpticFinder<Pair<String, Pair<Either<Pair<String, String>, Unit>, Pair<Either<?, Unit>, Dynamic<?>>>>> var1, Type<?> var2, String var3) {

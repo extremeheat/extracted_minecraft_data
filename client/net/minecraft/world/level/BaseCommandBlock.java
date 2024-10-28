@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class BaseCommandBlock implements CommandSource {
@@ -72,7 +73,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       this.command = var1.getString("Command");
       this.successCount = var1.getInt("SuccessCount");
       if (var1.contains("CustomName", 8)) {
-         this.setCustomName(Component.Serializer.fromJson(var1.getString("CustomName"), var2));
+         this.setCustomName(BlockEntity.parseCustomNameSafe(var1.getString("CustomName"), var2));
       } else {
          this.setCustomName((Component)null);
       }

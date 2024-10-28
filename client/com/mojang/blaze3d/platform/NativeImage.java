@@ -606,13 +606,13 @@ public final class NativeImage implements AutoCloseable {
             LOGGER.warn("Dropping image height from {} to {} to fit the size into 32-bit signed int", this.getHeight(), var3);
          }
 
-         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) == 0) {
-            var4 = false;
+         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) != 0) {
+            var2.throwIfException();
+            var4 = true;
             return var4;
          }
 
-         var2.throwIfException();
-         var4 = true;
+         var4 = false;
       } finally {
          var2.free();
       }

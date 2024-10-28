@@ -302,7 +302,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       this.primaryPower = loadEffect(var1, "primary_effect");
       this.secondaryPower = loadEffect(var1, "secondary_effect");
       if (var1.contains("CustomName", 8)) {
-         this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
+         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
       }
 
       this.lockKey = LockCode.fromTag(var1);
