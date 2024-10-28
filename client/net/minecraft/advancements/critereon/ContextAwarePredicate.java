@@ -7,7 +7,6 @@ import net.minecraft.Util;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 
 public class ContextAwarePredicate {
    public static final Codec<ContextAwarePredicate> CODEC;
@@ -37,7 +36,7 @@ public class ContextAwarePredicate {
    }
 
    static {
-      CODEC = LootItemConditions.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (var0) -> {
+      CODEC = LootItemCondition.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (var0) -> {
          return var0.conditions;
       });
    }

@@ -39,6 +39,7 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
@@ -205,7 +206,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          EquipmentSlot var6 = var3[var5];
          ItemStack var7 = this.getItemBySlot(var6);
          if (!var7.isEmpty()) {
-            if (EnchantmentHelper.hasBindingCurse(var7)) {
+            if (EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
                var2.getSlot(var6.getIndex() + 300).set(var7);
             } else {
                double var8 = (double)this.getEquipmentDropChance(var6);

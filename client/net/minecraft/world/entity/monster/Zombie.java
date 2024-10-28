@@ -154,12 +154,12 @@ public class Zombie extends Monster {
       return (Boolean)this.getEntityData().get(DATA_BABY_ID);
    }
 
-   public int getExperienceReward() {
+   protected int getBaseExperienceReward() {
       if (this.isBaby()) {
          this.xpReward = (int)((double)this.xpReward * 2.5);
       }
 
-      return super.getExperienceReward();
+      return super.getBaseExperienceReward();
    }
 
    public void setBaby(boolean var1) {
@@ -226,7 +226,7 @@ public class Zombie extends Monster {
             }
 
             if (var1) {
-               this.igniteForSeconds(8);
+               this.igniteForSeconds(8.0F);
             }
          }
       }
@@ -307,7 +307,7 @@ public class Zombie extends Monster {
       if (var2) {
          float var3 = this.level().getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
          if (this.getMainHandItem().isEmpty() && this.isOnFire() && this.random.nextFloat() < var3 * 0.3F) {
-            var1.igniteForSeconds(2 * (int)var3);
+            var1.igniteForSeconds((float)(2 * (int)var3));
          }
       }
 
@@ -480,15 +480,15 @@ public class Zombie extends Monster {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(this.random.nextDouble() * 0.10000000149011612);
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            ItemStack var6 = this.getSkull();
-            if (!var6.isEmpty()) {
-               var5.increaseDroppedSkulls();
-               this.spawnAtLocation(var6);
+   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
+      super.dropCustomDeathLoot(var1, var2);
+      Entity var3 = var1.getEntity();
+      if (var3 instanceof Creeper var4) {
+         if (var4.canDropMobsSkull()) {
+            ItemStack var5 = this.getSkull();
+            if (!var5.isEmpty()) {
+               var4.increaseDroppedSkulls();
+               this.spawnAtLocation(var5);
             }
          }
       }

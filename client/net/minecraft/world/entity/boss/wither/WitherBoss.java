@@ -450,11 +450,11 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       }
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      ItemEntity var4 = this.spawnAtLocation(Items.NETHER_STAR);
-      if (var4 != null) {
-         var4.setExtendedLifetime();
+   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
+      super.dropCustomDeathLoot(var1, var2);
+      ItemEntity var3 = this.spawnAtLocation(Items.NETHER_STAR);
+      if (var3 != null) {
+         var3.setExtendedLifetime();
       }
 
    }

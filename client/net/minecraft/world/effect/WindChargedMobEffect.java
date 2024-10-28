@@ -23,7 +23,7 @@ class WindChargedMobEffect extends MobEffect {
             double var7 = var1.getY() + (double)(var1.getBbHeight() / 2.0F);
             double var9 = var1.getZ();
             float var11 = 3.0F + var1.getRandom().nextFloat() * 2.0F;
-            var4.explode(var1, (DamageSource)null, AbstractWindCharge.EXPLOSION_DAMAGE_CALCULATOR, var12, var7, var9, var11, false, Level.ExplosionInteraction.BLOW, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
+            var4.explode(var1, (DamageSource)null, AbstractWindCharge.EXPLOSION_DAMAGE_CALCULATOR, var12, var7, var9, var11, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
          }
       }
 

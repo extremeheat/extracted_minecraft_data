@@ -4,15 +4,19 @@ import com.mojang.text2speech.Narrator;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommonButtons;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
+import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -30,7 +34,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    @Nullable
    private FocusableTextWidget textWidget;
    @Nullable
-   private AbstractWidget narrationButton;
+   private AbstractWidget narratorButton;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, this.initTitleYPos(), 33);
 
    public AccessibilityOnboardingScreen(Options var1, Runnable var2) {
@@ -47,9 +51,9 @@ public class AccessibilityOnboardingScreen extends Screen {
       this.textWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), (Consumer)((var0) -> {
          var0.padding(8);
       }));
-      this.narrationButton = this.options.narrator().createButton(this.options);
-      this.narrationButton.active = this.narratorAvailable;
-      var1.addChild(this.narrationButton);
+      this.narratorButton = this.options.narrator().createButton(this.options);
+      this.narratorButton.active = this.narratorAvailable;
+      var1.addChild(this.narratorButton);
       var1.addChild(CommonButtons.accessibility(150, (var1x) -> {
          this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options));
       }, false));
@@ -72,8 +76,8 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    protected void setInitialFocus() {
-      if (this.narratorAvailable && this.narrationButton != null) {
-         this.setInitialFocus(this.narrationButton);
+      if (this.narratorAvailable && this.narratorButton != null) {
+         this.setInitialFocus(this.narratorButton);
       } else {
          super.setInitialFocus();
       }
@@ -119,6 +123,13 @@ public class AccessibilityOnboardingScreen extends Screen {
             Narrator.getNarrator().say(ONBOARDING_NARRATOR_MESSAGE.getString(), true);
             this.hasNarrated = true;
          }
+      }
+
+   }
+
+   public void updateNarratorButton() {
+      if (this.narratorButton instanceof CycleButton) {
+         ((CycleButton)this.narratorButton).setValue((NarratorStatus)this.options.narrator().get());
       }
 
    }

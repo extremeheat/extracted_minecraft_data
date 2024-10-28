@@ -23,9 +23,9 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
-import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.recipebook.PlaceRecipe;
@@ -56,7 +56,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
    @Nullable
    private RecipeBookTabButton selectedTab;
    protected StateSwitchingButton filterButton;
-   protected RecipeBookMenu<?> menu;
+   protected RecipeBookMenu<?, ?> menu;
    protected Minecraft minecraft;
    @Nullable
    private EditBox searchBox;
@@ -73,7 +73,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
       super();
    }
 
-   public void init(int var1, int var2, Minecraft var3, boolean var4, RecipeBookMenu<?> var5) {
+   public void init(int var1, int var2, Minecraft var3, boolean var4, RecipeBookMenu<?, ?> var5) {
       this.minecraft = var3;
       this.width = var1;
       this.height = var2;
@@ -204,10 +204,13 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
       });
       String var4 = this.searchBox.getValue();
       if (!var4.isEmpty()) {
-         ObjectLinkedOpenHashSet var5 = new ObjectLinkedOpenHashSet(this.minecraft.getSearchTree(SearchRegistry.RECIPE_COLLECTIONS).search(var4.toLowerCase(Locale.ROOT)));
-         var3.removeIf((var1x) -> {
-            return !var5.contains(var1x);
-         });
+         ClientPacketListener var5 = this.minecraft.getConnection();
+         if (var5 != null) {
+            ObjectLinkedOpenHashSet var6 = new ObjectLinkedOpenHashSet(var5.searchTrees().recipes().search(var4.toLowerCase(Locale.ROOT)));
+            var3.removeIf((var1x) -> {
+               return !var6.contains(var1x);
+            });
+         }
       }
 
       if (this.book.isFiltering(this.menu)) {
@@ -508,11 +511,10 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
       this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var1.value().getIngredients().iterator(), 0);
    }
 
-   public void addItemToSlot(Iterator<Ingredient> var1, int var2, int var3, int var4, int var5) {
-      Ingredient var6 = (Ingredient)var1.next();
-      if (!var6.isEmpty()) {
-         Slot var7 = (Slot)this.menu.slots.get(var2);
-         this.ghostRecipe.addIngredient(var6, var7.x, var7.y);
+   public void addItemToSlot(Ingredient var1, int var2, int var3, int var4, int var5) {
+      if (!var1.isEmpty()) {
+         Slot var6 = (Slot)this.menu.slots.get(var2);
+         this.ghostRecipe.addIngredient(var1, var6.x, var6.y);
       }
 
    }

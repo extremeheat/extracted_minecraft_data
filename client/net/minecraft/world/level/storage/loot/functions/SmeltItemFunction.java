@@ -5,10 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -32,7 +32,7 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
       if (var1.isEmpty()) {
          return var1;
       } else {
-         Optional var3 = var2.getLevel().getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SimpleContainer(new ItemStack[]{var1}), var2.getLevel());
+         Optional var3 = var2.getLevel().getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(var1), var2.getLevel());
          if (var3.isPresent()) {
             ItemStack var4 = ((SmeltingRecipe)((RecipeHolder)var3.get()).value()).getResultItem(var2.getLevel().registryAccess());
             if (!var4.isEmpty()) {

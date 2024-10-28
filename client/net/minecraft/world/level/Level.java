@@ -34,6 +34,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
@@ -909,19 +910,27 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       END = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_end"));
    }
 
-   public static enum ExplosionInteraction {
-      NONE,
-      BLOCK,
-      MOB,
-      TNT,
-      BLOW;
+   public static enum ExplosionInteraction implements StringRepresentable {
+      NONE("none"),
+      BLOCK("block"),
+      MOB("mob"),
+      TNT("tnt"),
+      TRIGGER("trigger");
 
-      private ExplosionInteraction() {
+      public static final Codec<ExplosionInteraction> CODEC = StringRepresentable.fromEnum(ExplosionInteraction::values);
+      private final String id;
+
+      private ExplosionInteraction(String var3) {
+         this.id = var3;
+      }
+
+      public String getSerializedName() {
+         return this.id;
       }
 
       // $FF: synthetic method
       private static ExplosionInteraction[] $values() {
-         return new ExplosionInteraction[]{NONE, BLOCK, MOB, TNT, BLOW};
+         return new ExplosionInteraction[]{NONE, BLOCK, MOB, TNT, TRIGGER};
       }
    }
 }

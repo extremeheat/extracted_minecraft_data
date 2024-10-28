@@ -17,8 +17,9 @@ import java.util.function.Function;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
@@ -52,6 +53,7 @@ public class ItemParser {
    public static final char SYNTAX_END_COMPONENTS = ']';
    public static final char SYNTAX_COMPONENT_SEPARATOR = ',';
    public static final char SYNTAX_COMPONENT_ASSIGNMENT = '=';
+   public static final char SYNTAX_REMOVED_COMPONENT = '!';
    static final Function<SuggestionsBuilder, CompletableFuture<Suggestions>> SUGGEST_NOTHING = SuggestionsBuilder::buildFuture;
    final HolderLookup.RegistryLookup<Item> items;
    final DynamicOps<Tag> registryOps;
@@ -64,7 +66,7 @@ public class ItemParser {
 
    public ItemResult parse(StringReader var1) throws CommandSyntaxException {
       final MutableObject var2 = new MutableObject();
-      final DataComponentMap.Builder var3 = DataComponentMap.builder();
+      final DataComponentPatch.Builder var3 = DataComponentPatch.builder();
       this.parse(var1, new Visitor(this) {
          public void visitItem(Holder<Item> var1) {
             var2.setValue(var1);
@@ -73,15 +75,19 @@ public class ItemParser {
          public <T> void visitComponent(DataComponentType<T> var1, T var2x) {
             var3.set(var1, var2x);
          }
+
+         public <T> void visitRemovedComponent(DataComponentType<T> var1) {
+            var3.remove(var1);
+         }
       });
       Holder var4 = (Holder)Objects.requireNonNull((Holder)var2.getValue(), "Parser gave no item");
-      DataComponentMap var5 = var3.build();
+      DataComponentPatch var5 = var3.build();
       validateComponents(var1, var4, var5);
       return new ItemResult(var4, var5);
    }
 
-   private static void validateComponents(StringReader var0, Holder<Item> var1, DataComponentMap var2) throws CommandSyntaxException {
-      DataComponentMap var3 = DataComponentMap.composite(((Item)var1.value()).components(), var2);
+   private static void validateComponents(StringReader var0, Holder<Item> var1, DataComponentPatch var2) throws CommandSyntaxException {
+      PatchedDataComponentMap var3 = PatchedDataComponentMap.fromPatch(((Item)var1.value()).components(), var2);
       DataResult var4 = ItemStack.validateComponents(var3);
       var4.getOrThrow((var1x) -> {
          return ERROR_MALFORMED_ITEM.createWithContext(var0, var1x);
@@ -120,12 +126,15 @@ public class ItemParser {
       default <T> void visitComponent(DataComponentType<T> var1, T var2) {
       }
 
+      default <T> void visitRemovedComponent(DataComponentType<T> var1) {
+      }
+
       default void visitSuggestions(Function<SuggestionsBuilder, CompletableFuture<Suggestions>> var1) {
       }
    }
 
-   public static record ItemResult(Holder<Item> item, DataComponentMap components) {
-      public ItemResult(Holder<Item> item, DataComponentMap components) {
+   public static record ItemResult(Holder<Item> item, DataComponentPatch components) {
+      public ItemResult(Holder<Item> item, DataComponentPatch components) {
          super();
          this.item = item;
          this.components = components;
@@ -135,7 +144,7 @@ public class ItemParser {
          return this.item;
       }
 
-      public DataComponentMap components() {
+      public DataComponentPatch components() {
          return this.components;
       }
    }
@@ -172,23 +181,38 @@ public class ItemParser {
 
       private void readComponents() throws CommandSyntaxException {
          this.reader.expect('[');
-         this.visitor.visitSuggestions(this::suggestComponentAssignment);
+         this.visitor.visitSuggestions(this::suggestComponentAssignmentOrRemoval);
          ReferenceArraySet var1 = new ReferenceArraySet();
 
          while(this.reader.canRead() && this.reader.peek() != ']') {
             this.reader.skipWhitespace();
-            DataComponentType var2 = readComponentType(this.reader);
-            if (!var1.add(var2)) {
-               throw ItemParser.ERROR_REPEATED_COMPONENT.create(var2);
+            DataComponentType var2;
+            if (this.reader.canRead() && this.reader.peek() == '!') {
+               this.reader.skip();
+               this.visitor.visitSuggestions(this::suggestComponent);
+               var2 = readComponentType(this.reader);
+               if (!var1.add(var2)) {
+                  throw ItemParser.ERROR_REPEATED_COMPONENT.create(var2);
+               }
+
+               this.visitor.visitRemovedComponent(var2);
+               this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
+               this.reader.skipWhitespace();
+            } else {
+               var2 = readComponentType(this.reader);
+               if (!var1.add(var2)) {
+                  throw ItemParser.ERROR_REPEATED_COMPONENT.create(var2);
+               }
+
+               this.visitor.visitSuggestions(this::suggestAssignment);
+               this.reader.skipWhitespace();
+               this.reader.expect('=');
+               this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
+               this.reader.skipWhitespace();
+               this.readComponent(var2);
+               this.reader.skipWhitespace();
             }
 
-            this.visitor.visitSuggestions(this::suggestAssignment);
-            this.reader.skipWhitespace();
-            this.reader.expect('=');
-            this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
-            this.reader.skipWhitespace();
-            this.readComponent(var2);
-            this.reader.skipWhitespace();
             this.visitor.visitSuggestions(this::suggestNextOrEndComponents);
             if (!this.reader.canRead() || this.reader.peek() != ',') {
                break;
@@ -196,7 +220,7 @@ public class ItemParser {
 
             this.reader.skip();
             this.reader.skipWhitespace();
-            this.visitor.visitSuggestions(this::suggestComponentAssignment);
+            this.visitor.visitSuggestions(this::suggestComponentAssignmentOrRemoval);
             if (!this.reader.canRead()) {
                throw ItemParser.ERROR_EXPECTED_COMPONENT.createWithContext(this.reader);
             }
@@ -261,15 +285,25 @@ public class ItemParser {
          return SharedSuggestionProvider.suggestResource(ItemParser.this.items.listElementIds().map(ResourceKey::location), var1);
       }
 
-      private CompletableFuture<Suggestions> suggestComponentAssignment(SuggestionsBuilder var1) {
-         String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var2, (var0) -> {
+      private CompletableFuture<Suggestions> suggestComponentAssignmentOrRemoval(SuggestionsBuilder var1) {
+         var1.suggest(String.valueOf('!'));
+         return this.suggestComponent(var1, String.valueOf('='));
+      }
+
+      private CompletableFuture<Suggestions> suggestComponent(SuggestionsBuilder var1) {
+         return this.suggestComponent(var1, "");
+      }
+
+      private CompletableFuture<Suggestions> suggestComponent(SuggestionsBuilder var1, String var2) {
+         String var3 = var1.getRemaining().toLowerCase(Locale.ROOT);
+         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var3, (var0) -> {
             return ((ResourceKey)var0.getKey()).location();
-         }, (var1x) -> {
-            DataComponentType var2 = (DataComponentType)var1x.getValue();
-            if (var2.codec() != null) {
-               ResourceLocation var3 = ((ResourceKey)var1x.getKey()).location();
-               var1.suggest(var3.toString() + "=");
+         }, (var2x) -> {
+            DataComponentType var3 = (DataComponentType)var2x.getValue();
+            if (var3.codec() != null) {
+               ResourceLocation var4 = ((ResourceKey)var2x.getKey()).location();
+               String var10001 = String.valueOf(var4);
+               var1.suggest(var10001 + var2);
             }
 
          });

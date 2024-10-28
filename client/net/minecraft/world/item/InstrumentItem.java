@@ -19,6 +19,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -69,9 +70,9 @@ public class InstrumentItem extends Item {
       }
    }
 
-   public int getUseDuration(ItemStack var1) {
-      Optional var2 = this.getInstrument(var1);
-      return (Integer)var2.map((var0) -> {
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+      Optional var3 = this.getInstrument(var1);
+      return (Integer)var3.map((var0) -> {
          return ((Instrument)var0.value()).useDuration();
       }).orElse(0);
    }

@@ -18,7 +18,7 @@ public class SliceShape extends VoxelShape {
       return new SubShape(var0, var1.choose(var2, 0, 0), var1.choose(0, var2, 0), var1.choose(0, 0, var2), var1.choose(var2 + 1, var0.xSize, var0.xSize), var1.choose(var0.ySize, var2 + 1, var0.ySize), var1.choose(var0.zSize, var0.zSize, var2 + 1));
    }
 
-   protected DoubleList getCoords(Direction.Axis var1) {
+   public DoubleList getCoords(Direction.Axis var1) {
       return var1 == this.axis ? SLICE_COORDS : this.delegate.getCoords(var1);
    }
 }

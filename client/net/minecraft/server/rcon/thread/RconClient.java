@@ -45,13 +45,13 @@ public class RconClient extends GenericThread {
             if (this.running) {
                BufferedInputStream var1 = new BufferedInputStream(this.client.getInputStream());
                int var2 = var1.read(this.buf, 0, 1460);
-               if (10 > var2) {
-                  return;
-               }
+               if (10 <= var2) {
+                  int var3 = 0;
+                  int var4 = PktUtils.intFromByteArray(this.buf, 0, var2);
+                  if (var4 != var2 - 4) {
+                     return;
+                  }
 
-               int var3 = 0;
-               int var4 = PktUtils.intFromByteArray(this.buf, 0, var2);
-               if (var4 == var2 - 4) {
                   var3 += 4;
                   int var5 = PktUtils.intFromByteArray(this.buf, var3, var2);
                   var3 += 4;

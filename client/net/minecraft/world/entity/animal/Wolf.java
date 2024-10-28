@@ -1,11 +1,14 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -32,7 +35,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -78,6 +80,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -159,7 +162,12 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, this.registryAccess().registryOrThrow(Registries.WOLF_VARIANT).getHolderOrThrow(WolfVariants.PALE));
+      RegistryAccess var2 = this.registryAccess();
+      Registry var3 = var2.registryOrThrow(Registries.WOLF_VARIANT);
+      EntityDataAccessor var10001 = DATA_VARIANT_ID;
+      Optional var10002 = var3.getHolder(WolfVariants.DEFAULT);
+      Objects.requireNonNull(var3);
+      var1.define(var10001, (Holder)var10002.or(var3::getAny).orElseThrow());
       var1.define(DATA_INTERESTED_ID, false);
       var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
       var1.define(DATA_REMAINING_ANGER_TIME, 0);
@@ -172,7 +180,9 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
-      var1.putString("variant", ((ResourceKey)this.getVariant().unwrapKey().orElse(WolfVariants.PALE)).location().toString());
+      this.getVariant().unwrapKey().ifPresent((var1x) -> {
+         var1.putString("variant", var1x.location().toString());
+      });
       this.addPersistentAngerSaveData(var1);
    }
 
@@ -366,15 +376,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       return this.hasArmor() && !var1.is(DamageTypeTags.BYPASSES_WOLF_ARMOR);
    }
 
-   public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-      if (var2) {
-         this.doEnchantDamageEffects(this, var1);
-      }
-
-      return var2;
-   }
-
    protected void applyTamingSideEffects() {
       if (this.isTame()) {
          this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);
@@ -423,7 +424,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                return InteractionResult.SUCCESS;
             } else {
                ItemStack var6;
-               if (!var3.is(Items.SHEARS) || !this.isOwnedBy(var1) || !this.hasArmor() || EnchantmentHelper.hasBindingCurse(this.getBodyArmorItem()) && !var1.isCreative()) {
+               if (!var3.is(Items.SHEARS) || !this.isOwnedBy(var1) || !this.hasArmor() || EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) && !var1.isCreative()) {
                   if (((Ingredient)((ArmorMaterial)ArmorMaterials.ARMADILLO.value()).repairIngredient().get()).test(var3) && this.isInSittingPose() && this.hasArmor() && this.isOwnedBy(var1) && this.getBodyArmorItem().isDamaged()) {
                      var3.shrink(1);
                      this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);

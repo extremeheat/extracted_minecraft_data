@@ -1,5 +1,7 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -23,6 +25,7 @@ public class WolfVariants {
    public static final ResourceKey<WolfVariant> WOODS = createKey("woods");
    public static final ResourceKey<WolfVariant> CHESTNUT = createKey("chestnut");
    public static final ResourceKey<WolfVariant> STRIPED = createKey("striped");
+   public static final ResourceKey<WolfVariant> DEFAULT;
 
    public WolfVariants() {
       super();
@@ -49,9 +52,13 @@ public class WolfVariants {
 
    public static Holder<WolfVariant> getSpawnVariant(RegistryAccess var0, Holder<Biome> var1) {
       Registry var2 = var0.registryOrThrow(Registries.WOLF_VARIANT);
-      return (Holder)var2.holders().filter((var1x) -> {
+      Optional var10000 = var2.holders().filter((var1x) -> {
          return ((WolfVariant)var1x.value()).biomes().contains(var1);
-      }).findFirst().orElse(var2.getHolderOrThrow(PALE));
+      }).findFirst().or(() -> {
+         return var2.getHolder(DEFAULT);
+      });
+      Objects.requireNonNull(var2);
+      return (Holder)var10000.or(var2::getAny).orElseThrow();
    }
 
    public static void bootstrap(BootstrapContext<WolfVariant> var0) {
@@ -64,5 +71,9 @@ public class WolfVariants {
       register(var0, WOODS, "wolf_woods", Biomes.FOREST);
       register(var0, CHESTNUT, "wolf_chestnut", Biomes.OLD_GROWTH_SPRUCE_TAIGA);
       register(var0, STRIPED, "wolf_striped", BiomeTags.IS_BADLANDS);
+   }
+
+   static {
+      DEFAULT = PALE;
    }
 }

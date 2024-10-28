@@ -54,7 +54,7 @@ public class RealmsConnect {
 
                ClientHandshakePacketListenerImpl var2 = new ClientHandshakePacketListenerImpl(RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, (Duration)null, (var0) -> {
                }, (TransferState)null);
-               if (var1.worldType == RealmsServer.WorldType.MINIGAME) {
+               if (var1.isMinigameActive()) {
                   var2.setMinigameName(var1.minigameName);
                }
 

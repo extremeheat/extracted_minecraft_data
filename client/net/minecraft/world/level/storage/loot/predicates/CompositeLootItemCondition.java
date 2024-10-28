@@ -22,14 +22,14 @@ public abstract class CompositeLootItemCondition implements LootItemCondition {
 
    protected static <T extends CompositeLootItemCondition> MapCodec<T> createCodec(Function<List<LootItemCondition>, T> var0) {
       return RecordCodecBuilder.mapCodec((var1) -> {
-         return var1.group(LootItemConditions.DIRECT_CODEC.listOf().fieldOf("terms").forGetter((var0x) -> {
+         return var1.group(LootItemCondition.DIRECT_CODEC.listOf().fieldOf("terms").forGetter((var0x) -> {
             return var0x.terms;
          })).apply(var1, var0);
       });
    }
 
    protected static <T extends CompositeLootItemCondition> Codec<T> createInlineCodec(Function<List<LootItemCondition>, T> var0) {
-      return LootItemConditions.DIRECT_CODEC.listOf().xmap(var0, (var0x) -> {
+      return LootItemCondition.DIRECT_CODEC.listOf().xmap(var0, (var0x) -> {
          return var0x.terms;
       });
    }

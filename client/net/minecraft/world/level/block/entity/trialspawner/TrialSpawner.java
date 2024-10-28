@@ -253,50 +253,38 @@ public final class TrialSpawner {
    }
 
    public void tickClient(Level var1, BlockPos var2, boolean var3) {
-      if (!this.canSpawnInLevel(var1)) {
+      TrialSpawnerState var4 = this.getState();
+      var4.emitParticles(var1, var2, var3);
+      if (var4.hasSpinningMob()) {
+         double var5 = (double)Math.max(0L, this.data.nextMobSpawnsAt - var1.getGameTime());
          this.data.oSpin = this.data.spin;
-      } else {
-         TrialSpawnerState var4 = this.getState();
-         var4.emitParticles(var1, var2, var3);
-         if (var4.hasSpinningMob()) {
-            double var5 = (double)Math.max(0L, this.data.nextMobSpawnsAt - var1.getGameTime());
-            this.data.oSpin = this.data.spin;
-            this.data.spin = (this.data.spin + var4.spinningMobSpeed() / (var5 + 200.0)) % 360.0;
-         }
-
-         if (var4.isCapableOfSpawning()) {
-            RandomSource var7 = var1.getRandom();
-            if (var7.nextFloat() <= 0.02F) {
-               SoundEvent var6 = var3 ? SoundEvents.TRIAL_SPAWNER_AMBIENT_OMINOUS : SoundEvents.TRIAL_SPAWNER_AMBIENT;
-               var1.playLocalSound(var2, var6, SoundSource.BLOCKS, var7.nextFloat() * 0.25F + 0.75F, var7.nextFloat() + 0.5F, false);
-            }
-         }
-
+         this.data.spin = (this.data.spin + var4.spinningMobSpeed() / (var5 + 200.0)) % 360.0;
       }
+
+      if (var4.isCapableOfSpawning()) {
+         RandomSource var7 = var1.getRandom();
+         if (var7.nextFloat() <= 0.02F) {
+            SoundEvent var6 = var3 ? SoundEvents.TRIAL_SPAWNER_AMBIENT_OMINOUS : SoundEvents.TRIAL_SPAWNER_AMBIENT;
+            var1.playLocalSound(var2, var6, SoundSource.BLOCKS, var7.nextFloat() * 0.25F + 0.75F, var7.nextFloat() + 0.5F, false);
+         }
+      }
+
    }
 
    public void tickServer(ServerLevel var1, BlockPos var2, boolean var3) {
       this.isOminous = var3;
       TrialSpawnerState var4 = this.getState();
-      if (!this.canSpawnInLevel(var1)) {
-         if (var4.isCapableOfSpawning()) {
-            this.data.reset();
-            this.setState(var1, TrialSpawnerState.INACTIVE);
-         }
-
-      } else {
-         if (this.data.currentMobs.removeIf((var2x) -> {
-            return shouldMobBeUntracked(var1, var2, var2x);
-         })) {
-            this.data.nextMobSpawnsAt = var1.getGameTime() + (long)this.getConfig().ticksBetweenSpawn();
-         }
-
-         TrialSpawnerState var5 = var4.tickAndGetNext(var2, this, var1);
-         if (var5 != var4) {
-            this.setState(var1, var5);
-         }
-
+      if (this.data.currentMobs.removeIf((var2x) -> {
+         return shouldMobBeUntracked(var1, var2, var2x);
+      })) {
+         this.data.nextMobSpawnsAt = var1.getGameTime() + (long)this.getConfig().ticksBetweenSpawn();
       }
+
+      TrialSpawnerState var5 = var4.tickAndGetNext(var2, this, var1);
+      if (var5 != var4) {
+         this.setState(var1, var5);
+      }
+
    }
 
    private static boolean shouldMobBeUntracked(ServerLevel var0, BlockPos var1, UUID var2) {

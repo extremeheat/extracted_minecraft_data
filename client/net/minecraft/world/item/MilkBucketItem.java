@@ -30,7 +30,7 @@ public class MilkBucketItem extends Item {
       return var1.isEmpty() ? new ItemStack(Items.BUCKET) : var1;
    }
 
-   public int getUseDuration(ItemStack var1) {
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 32;
    }
 

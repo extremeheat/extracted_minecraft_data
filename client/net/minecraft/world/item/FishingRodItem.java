@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -19,10 +20,9 @@ public class FishingRodItem extends Item {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      int var5;
       if (var2.fishing != null) {
          if (!var1.isClientSide) {
-            var5 = var2.fishing.retrieve(var4);
+            int var5 = var2.fishing.retrieve(var4);
             var4.hurtAndBreak(var5, var2, LivingEntity.getSlotForHand(var3));
          }
 
@@ -30,10 +30,11 @@ public class FishingRodItem extends Item {
          var2.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
       } else {
          var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.FISHING_BOBBER_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-         if (!var1.isClientSide) {
-            var5 = EnchantmentHelper.getFishingSpeedBonus(var4);
-            int var6 = EnchantmentHelper.getFishingLuckBonus(var4);
-            var1.addFreshEntity(new FishingHook(var2, var1, var6, var5));
+         if (var1 instanceof ServerLevel) {
+            ServerLevel var8 = (ServerLevel)var1;
+            int var6 = (int)(EnchantmentHelper.getFishingTimeReduction(var8, var4, var2) * 20.0F);
+            int var7 = EnchantmentHelper.getFishingLuckBonus(var8, var4, var2);
+            var1.addFreshEntity(new FishingHook(var2, var1, var7, var6));
          }
 
          var2.awardStat(Stats.ITEM_USED.get(this));

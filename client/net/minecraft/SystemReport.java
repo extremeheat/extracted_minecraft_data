@@ -2,6 +2,10 @@ package net.minecraft;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -81,6 +85,7 @@ public class SystemReport {
       this.ignoreErrors("memory", () -> {
          this.putMemory(var2.getMemory());
       });
+      this.ignoreErrors("storage", this::putStorage);
    }
 
    private void ignoreErrors(String var1, Runnable var2) {
@@ -92,6 +97,10 @@ public class SystemReport {
 
    }
 
+   public static float sizeInMiB(long var0) {
+      return (float)var0 / 1048576.0F;
+   }
+
    private void putPhysicalMemory(List<PhysicalMemory> var1) {
       int var2 = 0;
       Iterator var3 = var1.iterator();
@@ -99,8 +108,8 @@ public class SystemReport {
       while(var3.hasNext()) {
          PhysicalMemory var4 = (PhysicalMemory)var3.next();
          String var5 = String.format(Locale.ROOT, "Memory slot #%d ", var2++);
-         this.setDetail(var5 + "capacity (MB)", () -> {
-            return String.format(Locale.ROOT, "%.2f", (float)var4.getCapacity() / 1048576.0F);
+         this.setDetail(var5 + "capacity (MiB)", () -> {
+            return String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getCapacity()));
          });
          this.setDetail(var5 + "clockSpeed (GHz)", () -> {
             return String.format(Locale.ROOT, "%.2f", (float)var4.getClockSpeed() / 1.0E9F);
@@ -113,17 +122,17 @@ public class SystemReport {
    }
 
    private void putVirtualMemory(VirtualMemory var1) {
-      this.setDetail("Virtual memory max (MB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", (float)var1.getVirtualMax() / 1048576.0F);
+      this.setDetail("Virtual memory max (MiB)", () -> {
+         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualMax()));
       });
-      this.setDetail("Virtual memory used (MB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", (float)var1.getVirtualInUse() / 1048576.0F);
+      this.setDetail("Virtual memory used (MiB)", () -> {
+         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualInUse()));
       });
-      this.setDetail("Swap memory total (MB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", (float)var1.getSwapTotal() / 1048576.0F);
+      this.setDetail("Swap memory total (MiB)", () -> {
+         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapTotal()));
       });
-      this.setDetail("Swap memory used (MB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", (float)var1.getSwapUsed() / 1048576.0F);
+      this.setDetail("Swap memory used (MiB)", () -> {
+         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapUsed()));
       });
    }
 
@@ -149,8 +158,8 @@ public class SystemReport {
          var10001 = var5 + "vendor";
          Objects.requireNonNull(var4);
          this.setDetail(var10001, var4::getVendor);
-         this.setDetail(var5 + "VRAM (MB)", () -> {
-            return String.format(Locale.ROOT, "%.2f", (float)var4.getVRam() / 1048576.0F);
+         this.setDetail(var5 + "VRAM (MiB)", () -> {
+            return String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getVRam()));
          });
          var10001 = var5 + "deviceId";
          Objects.requireNonNull(var4);
@@ -184,6 +193,44 @@ public class SystemReport {
       this.setDetail("Number of logical CPUs", () -> {
          return String.valueOf(var1.getLogicalProcessorCount());
       });
+   }
+
+   private void putStorage() {
+      this.putSpaceForProperty("jna.tmpdir");
+      this.putSpaceForProperty("org.lwjgl.system.SharedLibraryExtractPath");
+      this.putSpaceForProperty("io.netty.native.workdir");
+      this.putSpaceForProperty("java.io.tmpdir");
+      this.putSpaceForPath("workdir", () -> {
+         return "";
+      });
+   }
+
+   private void putSpaceForProperty(String var1) {
+      this.putSpaceForPath(var1, () -> {
+         return System.getProperty(var1);
+      });
+   }
+
+   private void putSpaceForPath(String var1, Supplier<String> var2) {
+      String var3 = "Space in storage for " + var1 + " (MiB)";
+
+      try {
+         String var4 = (String)var2.get();
+         if (var4 == null) {
+            this.setDetail(var3, "<path not set>");
+            return;
+         }
+
+         FileStore var5 = Files.getFileStore(Path.of(var4));
+         this.setDetail(var3, String.format(Locale.ROOT, "available: %.2f, total: %.2f", sizeInMiB(var5.getUsableSpace()), sizeInMiB(var5.getTotalSpace())));
+      } catch (InvalidPathException var6) {
+         LOGGER.warn("{} is not a path", var1, var6);
+         this.setDetail(var3, "<invalid path>");
+      } catch (Exception var7) {
+         LOGGER.warn("Failed retrieving storage space for {}", var1, var7);
+         this.setDetail(var3, "ERR");
+      }
+
    }
 
    public void appendToCrashReportString(StringBuilder var1) {

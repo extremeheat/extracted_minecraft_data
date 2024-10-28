@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Iterator;
 import java.util.Set;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.LootContextUser;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
@@ -40,10 +41,14 @@ public class LootContextParamSet {
    }
 
    public void validateUser(ValidationContext var1, LootContextUser var2) {
+      this.validateUser(var1.reporter(), var2);
+   }
+
+   public void validateUser(ProblemReporter var1, LootContextUser var2) {
       Set var3 = var2.getReferencedContextParams();
       Sets.SetView var4 = Sets.difference(var3, this.all);
       if (!var4.isEmpty()) {
-         var1.reportProblem("Parameters " + String.valueOf(var4) + " are not provided in this context");
+         var1.report("Parameters " + String.valueOf(var4) + " are not provided in this context");
       }
 
    }

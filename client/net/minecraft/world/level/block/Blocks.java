@@ -20,7 +20,6 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.biome.Biome;
@@ -1888,7 +1887,7 @@ public class Blocks {
       }).strength(-1.0F, 3600000.0F).noLootTable().pushReaction(PushReaction.BLOCK)));
       REPEATING_COMMAND_BLOCK = register((String)"repeating_command_block", new CommandBlock(false, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noLootTable()));
       CHAIN_COMMAND_BLOCK = register((String)"chain_command_block", new CommandBlock(true, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noLootTable()));
-      FROSTED_ICE = register((String)"frosted_ice", new FrostedIceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).friction(0.98F).randomTicks().strength(0.5F).sound(SoundType.GLASS).noOcclusion().isValidSpawn((var0x, var1x, var2x, var3x) -> {
+      FROSTED_ICE = register((String)"frosted_ice", new FrostedIceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.ICE).friction(0.98F).strength(0.5F).sound(SoundType.GLASS).noOcclusion().isValidSpawn((var0x, var1x, var2x, var3x) -> {
          return var3x == EntityType.POLAR_BEAR;
       }).isRedstoneConductor(Blocks::never)));
       MAGMA_BLOCK = register((String)"magma_block", new MagmaBlock(BlockBehaviour.Properties.of().mapColor(MapColor.NETHER).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((var0x) -> {
@@ -2220,15 +2219,15 @@ public class Blocks {
          return 1;
       })));
       TUFF = register("tuff", new Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GRAY).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.TUFF).requiresCorrectToolForDrops().strength(1.5F, 6.0F)));
-      TUFF_SLAB = register((String)"tuff_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      TUFF_STAIRS = register((String)"tuff_stairs", new StairBlock(TUFF.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      TUFF_WALL = register((String)"tuff_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF).forceSolidOn().requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      POLISHED_TUFF = register("polished_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.POLISHED_TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      TUFF_SLAB = register((String)"tuff_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF)));
+      TUFF_STAIRS = register((String)"tuff_stairs", new StairBlock(TUFF.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(TUFF)));
+      TUFF_WALL = register((String)"tuff_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF).forceSolidOn()));
+      POLISHED_TUFF = register("polished_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.POLISHED_TUFF)));
       POLISHED_TUFF_SLAB = register((String)"polished_tuff_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(POLISHED_TUFF)));
       POLISHED_TUFF_STAIRS = register((String)"polished_tuff_stairs", new StairBlock(POLISHED_TUFF.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(POLISHED_TUFF)));
       POLISHED_TUFF_WALL = register((String)"polished_tuff_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(POLISHED_TUFF).forceSolidOn()));
-      CHISELED_TUFF = register("chiseled_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      TUFF_BRICKS = register("tuff_bricks", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.TUFF_BRICKS).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      CHISELED_TUFF = register("chiseled_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF)));
+      TUFF_BRICKS = register("tuff_bricks", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.TUFF_BRICKS)));
       TUFF_BRICK_SLAB = register((String)"tuff_brick_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF_BRICKS)));
       TUFF_BRICK_STAIRS = register((String)"tuff_brick_stairs", new StairBlock(TUFF_BRICKS.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(TUFF_BRICKS)));
       TUFF_BRICK_WALL = register((String)"tuff_brick_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF_BRICKS).forceSolidOn()));
@@ -2258,10 +2257,10 @@ public class Blocks {
       WEATHERED_CUT_COPPER = register((String)"weathered_cut_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER)));
       EXPOSED_CUT_COPPER = register((String)"exposed_cut_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER)));
       CUT_COPPER = register((String)"cut_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.ofFullCopy(COPPER_BLOCK)));
-      OXIDIZED_CHISELED_COPPER = register((String)"oxidized_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      WEATHERED_CHISELED_COPPER = register((String)"weathered_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      EXPOSED_CHISELED_COPPER = register((String)"exposed_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      CHISELED_COPPER = register((String)"chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.ofFullCopy(COPPER_BLOCK).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      OXIDIZED_CHISELED_COPPER = register((String)"oxidized_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER)));
+      WEATHERED_CHISELED_COPPER = register((String)"weathered_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER)));
+      EXPOSED_CHISELED_COPPER = register((String)"exposed_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER)));
+      CHISELED_COPPER = register((String)"chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.ofFullCopy(COPPER_BLOCK)));
       WAXED_OXIDIZED_CHISELED_COPPER = register("waxed_oxidized_chiseled_copper", new Block(BlockBehaviour.Properties.ofFullCopy(OXIDIZED_CHISELED_COPPER)));
       WAXED_WEATHERED_CHISELED_COPPER = register("waxed_weathered_chiseled_copper", new Block(BlockBehaviour.Properties.ofFullCopy(WEATHERED_CHISELED_COPPER)));
       WAXED_EXPOSED_CHISELED_COPPER = register("waxed_exposed_chiseled_copper", new Block(BlockBehaviour.Properties.ofFullCopy(EXPOSED_CHISELED_COPPER)));
@@ -2290,7 +2289,7 @@ public class Blocks {
       WAXED_WEATHERED_CUT_COPPER_SLAB = register((String)"waxed_weathered_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.ofFullCopy(WAXED_WEATHERED_CUT_COPPER).requiresCorrectToolForDrops()));
       WAXED_EXPOSED_CUT_COPPER_SLAB = register((String)"waxed_exposed_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.ofFullCopy(WAXED_EXPOSED_CUT_COPPER).requiresCorrectToolForDrops()));
       WAXED_CUT_COPPER_SLAB = register((String)"waxed_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.ofFullCopy(WAXED_CUT_COPPER).requiresCorrectToolForDrops()));
-      COPPER_DOOR = register((String)"copper_door", new WeatheringCopperDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops().pushReaction(PushReaction.DESTROY).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      COPPER_DOOR = register((String)"copper_door", new WeatheringCopperDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops().pushReaction(PushReaction.DESTROY)));
       EXPOSED_COPPER_DOOR = register((String)"exposed_copper_door", new WeatheringCopperDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(COPPER_DOOR).mapColor(EXPOSED_COPPER.defaultMapColor())));
       OXIDIZED_COPPER_DOOR = register((String)"oxidized_copper_door", new WeatheringCopperDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(COPPER_DOOR).mapColor(OXIDIZED_COPPER.defaultMapColor())));
       WEATHERED_COPPER_DOOR = register((String)"weathered_copper_door", new WeatheringCopperDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(COPPER_DOOR).mapColor(WEATHERED_COPPER.defaultMapColor())));
@@ -2298,7 +2297,7 @@ public class Blocks {
       WAXED_EXPOSED_COPPER_DOOR = register((String)"waxed_exposed_copper_door", new DoorBlock(BlockSetType.COPPER, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER_DOOR)));
       WAXED_OXIDIZED_COPPER_DOOR = register((String)"waxed_oxidized_copper_door", new DoorBlock(BlockSetType.COPPER, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER_DOOR)));
       WAXED_WEATHERED_COPPER_DOOR = register((String)"waxed_weathered_copper_door", new DoorBlock(BlockSetType.COPPER, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER_DOOR)));
-      COPPER_TRAPDOOR = register((String)"copper_trapdoor", new WeatheringCopperTrapDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).requiresCorrectToolForDrops().noOcclusion().isValidSpawn(Blocks::never).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      COPPER_TRAPDOOR = register((String)"copper_trapdoor", new WeatheringCopperTrapDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).requiresCorrectToolForDrops().noOcclusion().isValidSpawn(Blocks::never)));
       EXPOSED_COPPER_TRAPDOOR = register((String)"exposed_copper_trapdoor", new WeatheringCopperTrapDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(COPPER_TRAPDOOR).mapColor(EXPOSED_COPPER.defaultMapColor())));
       OXIDIZED_COPPER_TRAPDOOR = register((String)"oxidized_copper_trapdoor", new WeatheringCopperTrapDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(COPPER_TRAPDOOR).mapColor(OXIDIZED_COPPER.defaultMapColor())));
       WEATHERED_COPPER_TRAPDOOR = register((String)"weathered_copper_trapdoor", new WeatheringCopperTrapDoorBlock(BlockSetType.COPPER, WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(COPPER_TRAPDOOR).mapColor(WEATHERED_COPPER.defaultMapColor())));
@@ -2306,7 +2305,7 @@ public class Blocks {
       WAXED_EXPOSED_COPPER_TRAPDOOR = register((String)"waxed_exposed_copper_trapdoor", new TrapDoorBlock(BlockSetType.COPPER, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER_TRAPDOOR)));
       WAXED_OXIDIZED_COPPER_TRAPDOOR = register((String)"waxed_oxidized_copper_trapdoor", new TrapDoorBlock(BlockSetType.COPPER, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER_TRAPDOOR)));
       WAXED_WEATHERED_COPPER_TRAPDOOR = register((String)"waxed_weathered_copper_trapdoor", new TrapDoorBlock(BlockSetType.COPPER, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER_TRAPDOOR)));
-      COPPER_GRATE = register((String)"copper_grate", new WeatheringCopperGrateBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.COPPER_GRATE).mapColor(MapColor.COLOR_ORANGE).noOcclusion().requiresCorrectToolForDrops().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      COPPER_GRATE = register((String)"copper_grate", new WeatheringCopperGrateBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.COPPER_GRATE).mapColor(MapColor.COLOR_ORANGE).noOcclusion().requiresCorrectToolForDrops().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never)));
       EXPOSED_COPPER_GRATE = register((String)"exposed_copper_grate", new WeatheringCopperGrateBlock(WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(COPPER_GRATE).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY)));
       WEATHERED_COPPER_GRATE = register((String)"weathered_copper_grate", new WeatheringCopperGrateBlock(WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(COPPER_GRATE).mapColor(MapColor.WARPED_STEM)));
       OXIDIZED_COPPER_GRATE = register((String)"oxidized_copper_grate", new WeatheringCopperGrateBlock(WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(COPPER_GRATE).mapColor(MapColor.WARPED_NYLIUM)));
@@ -2314,7 +2313,7 @@ public class Blocks {
       WAXED_EXPOSED_COPPER_GRATE = register((String)"waxed_exposed_copper_grate", new WaterloggedTransparentBlock(BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER_GRATE)));
       WAXED_WEATHERED_COPPER_GRATE = register((String)"waxed_weathered_copper_grate", new WaterloggedTransparentBlock(BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER_GRATE)));
       WAXED_OXIDIZED_COPPER_GRATE = register((String)"waxed_oxidized_copper_grate", new WaterloggedTransparentBlock(BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER_GRATE)));
-      COPPER_BULB = register((String)"copper_bulb", new WeatheringCopperBulbBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).sound(SoundType.COPPER_BULB).requiresCorrectToolForDrops().isRedstoneConductor(Blocks::never).lightLevel(litBlockEmission(15)).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      COPPER_BULB = register((String)"copper_bulb", new WeatheringCopperBulbBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.of().mapColor(COPPER_BLOCK.defaultMapColor()).strength(3.0F, 6.0F).sound(SoundType.COPPER_BULB).requiresCorrectToolForDrops().isRedstoneConductor(Blocks::never).lightLevel(litBlockEmission(15))));
       EXPOSED_COPPER_BULB = register((String)"exposed_copper_bulb", new WeatheringCopperBulbBlock(WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(COPPER_BULB).mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).lightLevel(litBlockEmission(12))));
       WEATHERED_COPPER_BULB = register((String)"weathered_copper_bulb", new WeatheringCopperBulbBlock(WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(COPPER_BULB).mapColor(MapColor.WARPED_STEM).lightLevel(litBlockEmission(8))));
       OXIDIZED_COPPER_BULB = register((String)"oxidized_copper_bulb", new WeatheringCopperBulbBlock(WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(COPPER_BULB).mapColor(MapColor.WARPED_NYLIUM).lightLevel(litBlockEmission(4))));
@@ -2378,14 +2377,14 @@ public class Blocks {
       FROGSPAWN = register((String)"frogspawn", new FrogspawnBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WATER).instabreak().noOcclusion().noCollission().sound(SoundType.FROGSPAWN).pushReaction(PushReaction.DESTROY)));
       REINFORCED_DEEPSLATE = register("reinforced_deepslate", new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DEEPSLATE).strength(55.0F, 1200.0F)));
       DECORATED_POT = register((String)"decorated_pot", new DecoratedPotBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_RED).strength(0.0F, 0.0F).pushReaction(PushReaction.DESTROY).noOcclusion()));
-      CRAFTER = register((String)"crafter", new CrafterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 3.5F).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      CRAFTER = register((String)"crafter", new CrafterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 3.5F)));
       TRIAL_SPAWNER = register((String)"trial_spawner", new TrialSpawnerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((var0x) -> {
          return ((TrialSpawnerState)var0x.getValue(TrialSpawnerBlock.STATE)).lightLevel();
-      }).strength(50.0F).sound(SoundType.TRIAL_SPAWNER).isViewBlocking(Blocks::never).noOcclusion().requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      }).strength(50.0F).sound(SoundType.TRIAL_SPAWNER).isViewBlocking(Blocks::never).noOcclusion()));
       VAULT = register((String)"vault", new VaultBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().requiresCorrectToolForDrops().sound(SoundType.VAULT).lightLevel((var0x) -> {
          return ((VaultState)var0x.getValue(VaultBlock.STATE)).lightLevel();
-      }).strength(50.0F).isViewBlocking(Blocks::never).requiredFeatures(FeatureFlags.UPDATE_1_21)));
-      HEAVY_CORE = register((String)"heavy_core", new HeavyCoreBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).instrument(NoteBlockInstrument.SNARE).sound(SoundType.HEAVY_CORE).strength(10.0F).pushReaction(PushReaction.NORMAL).explosionResistance(1200.0F).requiredFeatures(FeatureFlags.UPDATE_1_21)));
+      }).strength(50.0F).isViewBlocking(Blocks::never)));
+      HEAVY_CORE = register((String)"heavy_core", new HeavyCoreBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).instrument(NoteBlockInstrument.SNARE).sound(SoundType.HEAVY_CORE).strength(10.0F).pushReaction(PushReaction.NORMAL).explosionResistance(1200.0F)));
       Iterator var0 = BuiltInRegistries.BLOCK.iterator();
 
       while(var0.hasNext()) {

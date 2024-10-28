@@ -45,7 +45,7 @@ public interface PlaceRecipe<T> {
             }
 
             if (var16) {
-               this.addItemToSlot(var5, var17, var6, var11, var14);
+               this.addItemToSlot(var5.next(), var17, var6, var14, var11);
             } else if (var15 == var14) {
                var17 += var1 - var14;
                break;
@@ -57,5 +57,5 @@ public interface PlaceRecipe<T> {
 
    }
 
-   void addItemToSlot(Iterator<T> var1, int var2, int var3, int var4, int var5);
+   void addItemToSlot(T var1, int var2, int var3, int var4, int var5);
 }

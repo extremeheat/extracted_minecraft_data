@@ -70,8 +70,8 @@ public class EnchantCommand {
                         LivingEntity var8 = (LivingEntity)var7;
                         ItemStack var9 = var8.getMainHandItem();
                         if (!var9.isEmpty()) {
-                           if (var4.canEnchant(var9) && EnchantmentHelper.isEnchantmentCompatible(EnchantmentHelper.getEnchantmentsForCrafting(var9).keySet(), var4)) {
-                              var9.enchant(var4, var3);
+                           if (var4.canEnchant(var9) && EnchantmentHelper.isEnchantmentCompatible(EnchantmentHelper.getEnchantmentsForCrafting(var9).keySet(), var2)) {
+                              var9.enchant(var2, var3);
                               ++var5;
                            } else if (var1.size() == 1) {
                               throw ERROR_INCOMPATIBLE.create(var9.getItem().getName(var9).getString());
@@ -90,11 +90,11 @@ public class EnchantCommand {
 
                   if (var1.size() == 1) {
                      var0.sendSuccess(() -> {
-                        return Component.translatable("commands.enchant.success.single", var4.getFullname(var3), ((Entity)var1.iterator().next()).getDisplayName());
+                        return Component.translatable("commands.enchant.success.single", Enchantment.getFullname(var2, var3), ((Entity)var1.iterator().next()).getDisplayName());
                      }, true);
                   } else {
                      var0.sendSuccess(() -> {
-                        return Component.translatable("commands.enchant.success.multiple", var4.getFullname(var3), var1.size());
+                        return Component.translatable("commands.enchant.success.multiple", Enchantment.getFullname(var2, var3), var1.size());
                      }, true);
                   }
 

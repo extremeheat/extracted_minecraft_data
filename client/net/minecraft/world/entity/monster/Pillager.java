@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -39,7 +40,8 @@ import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -139,8 +141,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       if (var1.nextInt(300) == 0) {
          ItemStack var3 = this.getMainHandItem();
          if (var3.is(Items.CROSSBOW)) {
-            var3.enchant(Enchantments.PIERCING, 1);
-            this.setItemSlot(EquipmentSlot.MAINHAND, var3);
+            EnchantmentHelper.enchantItemFromProvider(var3, VanillaEnchantmentProviders.PILLAGER_SPAWN_CROSSBOW, this.level(), this.blockPosition(), var1);
          }
       }
 
@@ -196,14 +197,19 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       boolean var4 = this.random.nextFloat() <= var3.getEnchantOdds();
       if (var4) {
          ItemStack var5 = new ItemStack(Items.CROSSBOW);
+         ResourceKey var6;
          if (var1 > var3.getNumGroups(Difficulty.NORMAL)) {
-            var5.enchant(Enchantments.QUICK_CHARGE, 2);
+            var6 = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_5;
          } else if (var1 > var3.getNumGroups(Difficulty.EASY)) {
-            var5.enchant(Enchantments.QUICK_CHARGE, 1);
+            var6 = VanillaEnchantmentProviders.RAID_PILLAGER_POST_WAVE_3;
+         } else {
+            var6 = null;
          }
 
-         var5.enchant(Enchantments.MULTISHOT, 1);
-         this.setItemSlot(EquipmentSlot.MAINHAND, var5);
+         if (var6 != null) {
+            EnchantmentHelper.enchantItemFromProvider(var5, var6, this.level(), this.blockPosition(), this.getRandom());
+            this.setItemSlot(EquipmentSlot.MAINHAND, var5);
+         }
       }
 
    }

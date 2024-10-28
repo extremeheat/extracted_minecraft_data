@@ -177,6 +177,7 @@ import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
 import net.minecraft.util.datafix.fixes.PrimedTntBlockStateFixer;
+import net.minecraft.util.datafix.fixes.ProjectileStoredWeaponFix;
 import net.minecraft.util.datafix.fixes.RandomSequenceSettingsFix;
 import net.minecraft.util.datafix.fixes.RecipesFix;
 import net.minecraft.util.datafix.fixes.RecipesRenameningFix;
@@ -294,6 +295,7 @@ import net.minecraft.util.datafix.schemas.V3818_3;
 import net.minecraft.util.datafix.schemas.V3818_4;
 import net.minecraft.util.datafix.schemas.V3818_5;
 import net.minecraft.util.datafix.schemas.V3825;
+import net.minecraft.util.datafix.schemas.V3938;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -786,9 +788,9 @@ public class DataFixers {
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
          return (String)var173.getOrDefault(var1x, var1x);
       }));
-      Set var231 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var231);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var231::contains));
+      Set var233 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var233);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var233::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -916,6 +918,10 @@ public class DataFixers {
       var0.addFixer(new EmptyItemInVillagerTradeFix(var229));
       Schema var230 = var0.addSchema(3833, SAME_NAMESPACED);
       var0.addFixer(new RemoveEmptyItemInBrushableBlockFix(var230));
+      Schema var231 = var0.addSchema(3938, V3938::new);
+      var0.addFixer(new ProjectileStoredWeaponFix(var231));
+      Schema var232 = var0.addSchema(3939, SAME_NAMESPACED);
+      var0.addFixer(new FeatureFlagRemoveFix(var232, "Remove 1.21 feature toggle", Set.of("minecraft:update_1_21")));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

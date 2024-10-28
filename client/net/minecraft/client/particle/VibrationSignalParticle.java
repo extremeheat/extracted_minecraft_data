@@ -2,7 +2,6 @@ package net.minecraft.client.particle;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleOptions;
@@ -11,7 +10,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 public class VibrationSignalParticle extends TextureSheetParticle {
    private final PositionSource target;
@@ -41,41 +39,11 @@ public class VibrationSignalParticle extends TextureSheetParticle {
       float var4 = Mth.sin(((float)this.age + var3 - 6.2831855F) * 0.05F) * 2.0F;
       float var5 = Mth.lerp(var3, this.rotO, this.rot);
       float var6 = Mth.lerp(var3, this.pitchO, this.pitch) + 1.5707964F;
-      this.renderSignal(var1, var2, var3, (var3x) -> {
-         var3x.rotateY(var5).rotateX(-var6).rotateY(var4);
-      });
-      this.renderSignal(var1, var2, var3, (var3x) -> {
-         var3x.rotateY(-3.1415927F + var5).rotateX(var6).rotateY(var4);
-      });
-   }
-
-   private void renderSignal(VertexConsumer var1, Camera var2, float var3, Consumer<Quaternionf> var4) {
-      Vec3 var5 = var2.getPosition();
-      float var6 = (float)(Mth.lerp((double)var3, this.xo, this.x) - var5.x());
-      float var7 = (float)(Mth.lerp((double)var3, this.yo, this.y) - var5.y());
-      float var8 = (float)(Mth.lerp((double)var3, this.zo, this.z) - var5.z());
-      Vector3f var9 = (new Vector3f(0.5F, 0.5F, 0.5F)).normalize();
-      Quaternionf var10 = (new Quaternionf()).setAngleAxis(0.0F, var9.x(), var9.y(), var9.z());
-      var4.accept(var10);
-      Vector3f[] var11 = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
-      float var12 = this.getQuadSize(var3);
-
-      for(int var13 = 0; var13 < 4; ++var13) {
-         Vector3f var14 = var11[var13];
-         var14.rotate(var10);
-         var14.mul(var12);
-         var14.add(var6, var7, var8);
-      }
-
-      float var18 = this.getU0();
-      float var19 = this.getU1();
-      float var15 = this.getV0();
-      float var16 = this.getV1();
-      int var17 = this.getLightColor(var3);
-      var1.vertex((double)var11[0].x(), (double)var11[0].y(), (double)var11[0].z()).uv(var19, var16).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
-      var1.vertex((double)var11[1].x(), (double)var11[1].y(), (double)var11[1].z()).uv(var19, var15).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
-      var1.vertex((double)var11[2].x(), (double)var11[2].y(), (double)var11[2].z()).uv(var18, var15).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
-      var1.vertex((double)var11[3].x(), (double)var11[3].y(), (double)var11[3].z()).uv(var18, var16).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
+      Quaternionf var7 = new Quaternionf();
+      var7.rotationY(var5).rotateX(-var6).rotateY(var4);
+      this.renderRotatedQuad(var1, var2, var7, var3);
+      var7.rotationY(-3.1415927F + var5).rotateX(var6).rotateY(var4);
+      this.renderRotatedQuad(var1, var2, var7, var3);
    }
 
    public int getLightColor(float var1) {

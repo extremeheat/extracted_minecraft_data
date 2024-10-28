@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Maps;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,14 +46,11 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
@@ -316,7 +314,7 @@ public class Sheep extends Animal implements Shearable {
    private DyeColor getOffspringColor(Animal var1, Animal var2) {
       DyeColor var3 = ((Sheep)var1).getColor();
       DyeColor var4 = ((Sheep)var2).getColor();
-      CraftingContainer var5 = makeContainer(var3, var4);
+      CraftingInput var5 = makeCraftInput(var3, var4);
       Optional var10000 = this.level().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var5, this.level()).map((var2x) -> {
          return ((CraftingRecipe)var2x.value()).assemble(var5, this.level().registryAccess());
       }).map(ItemStack::getItem);
@@ -328,19 +326,8 @@ public class Sheep extends Animal implements Shearable {
       });
    }
 
-   private static CraftingContainer makeContainer(DyeColor var0, DyeColor var1) {
-      TransientCraftingContainer var2 = new TransientCraftingContainer(new AbstractContainerMenu((MenuType)null, -1) {
-         public ItemStack quickMoveStack(Player var1, int var2) {
-            return ItemStack.EMPTY;
-         }
-
-         public boolean stillValid(Player var1) {
-            return false;
-         }
-      }, 2, 1);
-      var2.setItem(0, new ItemStack(DyeItem.byColor(var0)));
-      var2.setItem(1, new ItemStack(DyeItem.byColor(var1)));
-      return var2;
+   private static CraftingInput makeCraftInput(DyeColor var0, DyeColor var1) {
+      return CraftingInput.of(2, 1, List.of(new ItemStack(DyeItem.byColor(var0)), new ItemStack(DyeItem.byColor(var1))));
    }
 
    // $FF: synthetic method

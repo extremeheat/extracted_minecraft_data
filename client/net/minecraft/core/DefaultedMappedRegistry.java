@@ -47,6 +47,10 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
       return Optional.ofNullable(super.get(var1));
    }
 
+   public Optional<Holder.Reference<T>> getAny() {
+      return Optional.ofNullable(this.defaultValue);
+   }
+
    @Nonnull
    public T byId(int var1) {
       Object var2 = super.byId(var1);

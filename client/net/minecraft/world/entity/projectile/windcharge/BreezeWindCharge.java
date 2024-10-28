@@ -19,6 +19,6 @@ public class BreezeWindCharge extends AbstractWindCharge {
    }
 
    protected void explode() {
-      this.level().explode(this, (DamageSource)null, EXPLOSION_DAMAGE_CALCULATOR, this.getX(), this.getY(), this.getZ(), 3.0F, false, Level.ExplosionInteraction.BLOW, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
+      this.level().explode(this, (DamageSource)null, EXPLOSION_DAMAGE_CALCULATOR, this.getX(), this.getY(), this.getZ(), 3.0F, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
    }
 }

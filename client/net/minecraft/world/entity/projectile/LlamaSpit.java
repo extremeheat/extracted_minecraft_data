@@ -3,11 +3,14 @@ package net.minecraft.world.entity.projectile;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.horse.Llama;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.phys.BlockHitResult;
@@ -55,7 +58,15 @@ public class LlamaSpit extends Projectile {
       super.onHitEntity(var1);
       Entity var3 = this.getOwner();
       if (var3 instanceof LivingEntity var2) {
-         var1.getEntity().hurt(this.damageSources().spit(this, var2), 1.0F);
+         var3 = var1.getEntity();
+         DamageSource var4 = this.damageSources().spit(this, var2);
+         if (var3.hurt(var4, 1.0F)) {
+            Level var6 = this.level();
+            if (var6 instanceof ServerLevel) {
+               ServerLevel var5 = (ServerLevel)var6;
+               EnchantmentHelper.doPostAttackEffects(var5, var3, var4);
+            }
+         }
       }
 
    }

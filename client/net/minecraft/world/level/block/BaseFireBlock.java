@@ -119,7 +119,7 @@ public abstract class BaseFireBlock extends Block {
       if (!var4.fireImmune()) {
          var4.setRemainingFireTicks(var4.getRemainingFireTicks() + 1);
          if (var4.getRemainingFireTicks() == 0) {
-            var4.igniteForSeconds(8);
+            var4.igniteForSeconds(8.0F);
          }
       }
 

@@ -71,7 +71,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       } else {
          super.tick();
          if (this.shouldBurn()) {
-            this.igniteForSeconds(1);
+            this.igniteForSeconds(1.0F);
          }
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());

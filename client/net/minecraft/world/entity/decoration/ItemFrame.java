@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,13 +37,14 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
 
 public class ItemFrame extends HangingEntity {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityDataAccessor<ItemStack> DATA_ITEM;
    private static final EntityDataAccessor<Integer> DATA_ROTATION;
    public static final int NUM_ROTATIONS = 8;
+   private static final float DEPTH = 0.0625F;
+   private static final float WIDTH = 0.75F;
+   private static final float HEIGHT = 0.75F;
    private float dropChance;
    private boolean fixed;
 
@@ -84,28 +84,14 @@ public class ItemFrame extends HangingEntity {
       this.recalculateBoundingBox();
    }
 
-   protected void recalculateBoundingBox() {
-      if (this.direction != null) {
-         double var1 = 0.46875;
-         double var3 = (double)this.pos.getX() + 0.5 - (double)this.direction.getStepX() * 0.46875;
-         double var5 = (double)this.pos.getY() + 0.5 - (double)this.direction.getStepY() * 0.46875;
-         double var7 = (double)this.pos.getZ() + 0.5 - (double)this.direction.getStepZ() * 0.46875;
-         this.setPosRaw(var3, var5, var7);
-         double var9 = (double)this.getWidth();
-         double var11 = (double)this.getHeight();
-         double var13 = (double)this.getWidth();
-         Direction.Axis var15 = this.direction.getAxis();
-         switch (var15) {
-            case X -> var9 = 1.0;
-            case Y -> var11 = 1.0;
-            case Z -> var13 = 1.0;
-         }
-
-         var9 /= 32.0;
-         var11 /= 32.0;
-         var13 /= 32.0;
-         this.setBoundingBox(new AABB(var3 - var9, var5 - var11, var7 - var13, var3 + var9, var5 + var11, var7 + var13));
-      }
+   protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
+      float var3 = 0.46875F;
+      Vec3 var4 = Vec3.atCenterOf(var1).relative(var2, -0.46875);
+      Direction.Axis var5 = var2.getAxis();
+      double var6 = var5 == Direction.Axis.X ? 0.0625 : 0.75;
+      double var8 = var5 == Direction.Axis.Y ? 0.0625 : 0.75;
+      double var10 = var5 == Direction.Axis.Z ? 0.0625 : 0.75;
+      return AABB.ofSize(var4, var6, var8, var10);
    }
 
    public boolean survives() {
@@ -158,14 +144,6 @@ public class ItemFrame extends HangingEntity {
 
    public SoundEvent getRemoveItemSound() {
       return SoundEvents.ITEM_FRAME_REMOVE_ITEM;
-   }
-
-   public int getWidth() {
-      return 12;
-   }
-
-   public int getHeight() {
-      return 12;
    }
 
    public boolean shouldRenderAtSqrDistance(double var1) {

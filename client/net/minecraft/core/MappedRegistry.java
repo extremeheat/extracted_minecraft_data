@@ -191,6 +191,10 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return Optional.ofNullable((Holder.Reference)this.byKey.get(var1));
    }
 
+   public Optional<Holder.Reference<T>> getAny() {
+      return this.byId.isEmpty() ? Optional.empty() : Optional.of((Holder.Reference)this.byId.getFirst());
+   }
+
    public Holder<T> wrapAsHolder(T var1) {
       Holder.Reference var2 = (Holder.Reference)this.byValue.get(var1);
       return (Holder)(var2 != null ? var2 : Holder.direct(var1));

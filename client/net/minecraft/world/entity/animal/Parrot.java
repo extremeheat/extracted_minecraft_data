@@ -115,7 +115,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 6.0).add(Attributes.FLYING_SPEED, 0.4000000059604645).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
+      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 6.0).add(Attributes.FLYING_SPEED, 0.4000000059604645).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224).add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    protected PathNavigation createNavigation(Level var1) {
@@ -242,10 +242,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
-   }
-
-   public boolean doHurtTarget(Entity var1) {
-      return var1.hurt(this.damageSources().mobAttack(this), 3.0F);
    }
 
    @Nullable

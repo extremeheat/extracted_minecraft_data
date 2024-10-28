@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
@@ -13,6 +14,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -288,6 +290,12 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
    private static ItemStack getDefaultItem() {
       return new ItemStack(Items.FIREWORK_ROCKET);
+   }
+
+   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(LivingEntity var1, DamageSource var2) {
+      double var3 = var1.position().x - this.position().x;
+      double var5 = var1.position().z - this.position().z;
+      return DoubleDoubleImmutablePair.of(var3, var5);
    }
 
    static {

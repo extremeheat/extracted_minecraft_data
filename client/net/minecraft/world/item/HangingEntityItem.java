@@ -5,9 +5,10 @@ import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -85,15 +86,16 @@ public class HangingEntityItem extends Item {
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      if (this.type == EntityType.PAINTING) {
-         CustomData var5 = (CustomData)var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-         if (!var5.isEmpty()) {
-            var5.read(Painting.VARIANT_MAP_CODEC).result().ifPresentOrElse((var1x) -> {
+      HolderLookup.Provider var5 = var2.registries();
+      if (var5 != null && this.type == EntityType.PAINTING) {
+         CustomData var6 = (CustomData)var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+         if (!var6.isEmpty()) {
+            var6.read(var5.createSerializationContext(NbtOps.INSTANCE), Painting.VARIANT_MAP_CODEC).result().ifPresentOrElse((var1x) -> {
                var1x.unwrapKey().ifPresent((var1) -> {
                   var3.add(Component.translatable(var1.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW));
                   var3.add(Component.translatable(var1.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY));
                });
-               var3.add(Component.translatable("painting.dimensions", Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getWidth(), 16), Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getHeight(), 16)));
+               var3.add(Component.translatable("painting.dimensions", ((PaintingVariant)var1x.value()).width(), ((PaintingVariant)var1x.value()).height()));
             }, () -> {
                var3.add(TOOLTIP_RANDOM_VARIANT);
             });

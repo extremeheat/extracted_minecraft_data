@@ -322,12 +322,15 @@ public class Panda extends Animal {
    }
 
    public boolean doHurtTarget(Entity var1) {
-      this.playSound(SoundEvents.PANDA_BITE, 1.0F, 1.0F);
       if (!this.isAggressive()) {
          this.didBite = true;
       }
 
       return super.doHurtTarget(var1);
+   }
+
+   public void playAttackSound() {
+      this.playSound(SoundEvents.PANDA_BITE, 1.0F, 1.0F);
    }
 
    public void tick() {

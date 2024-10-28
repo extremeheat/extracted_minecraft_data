@@ -104,7 +104,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          }
 
          if (var1) {
-            this.igniteForSeconds(8);
+            this.igniteForSeconds(8.0F);
          }
       }
 
@@ -175,19 +175,20 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    }
 
    public void performRangedAttack(LivingEntity var1, float var2) {
-      ItemStack var3 = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
-      AbstractArrow var4 = this.getArrow(var3, var2);
-      double var5 = var1.getX() - this.getX();
-      double var7 = var1.getY(0.3333333333333333) - var4.getY();
-      double var9 = var1.getZ() - this.getZ();
-      double var11 = Math.sqrt(var5 * var5 + var9 * var9);
-      var4.shoot(var5, var7 + var11 * 0.20000000298023224, var9, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+      ItemStack var3 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+      ItemStack var4 = this.getProjectile(var3);
+      AbstractArrow var5 = this.getArrow(var4, var2, var3);
+      double var6 = var1.getX() - this.getX();
+      double var8 = var1.getY(0.3333333333333333) - var5.getY();
+      double var10 = var1.getZ() - this.getZ();
+      double var12 = Math.sqrt(var6 * var6 + var10 * var10);
+      var5.shoot(var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level().addFreshEntity(var4);
+      this.level().addFreshEntity(var5);
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2) {
-      return ProjectileUtil.getMobArrow(this, var1, var2);
+   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
+      return ProjectileUtil.getMobArrow(this, var1, var2, var3);
    }
 
    public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {

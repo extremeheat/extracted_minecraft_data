@@ -9,8 +9,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.flag.FeatureFlag;
-import net.minecraft.world.flag.FeatureFlags;
 
 public class MobEffects {
    private static final int DARKNESS_EFFECT_FACTOR_PADDING_DURATION_TICKS = 22;
@@ -100,17 +98,17 @@ public class MobEffects {
       BAD_OMEN = register("bad_omen", (new BadOmenMobEffect(MobEffectCategory.NEUTRAL, 745784)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_BAD_OMEN));
       HERO_OF_THE_VILLAGE = register("hero_of_the_village", new MobEffect(MobEffectCategory.BENEFICIAL, 4521796));
       DARKNESS = register("darkness", (new MobEffect(MobEffectCategory.HARMFUL, 2696993)).setBlendDuration(22));
-      TRIAL_OMEN = register("trial_omen", (new MobEffect(MobEffectCategory.NEUTRAL, 1484454, ParticleTypes.TRIAL_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_TRIAL_OMEN).requiredFeatures(FeatureFlags.UPDATE_1_21));
-      RAID_OMEN = register("raid_omen", (new RaidOmenMobEffect(MobEffectCategory.NEUTRAL, 14565464, ParticleTypes.RAID_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_RAID_OMEN).requiredFeatures(FeatureFlags.UPDATE_1_21));
-      WIND_CHARGED = register("wind_charged", (new WindChargedMobEffect(MobEffectCategory.HARMFUL, 12438015)).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
-      WEAVING = register("weaving", (new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, (var0) -> {
+      TRIAL_OMEN = register("trial_omen", (new MobEffect(MobEffectCategory.NEUTRAL, 1484454, ParticleTypes.TRIAL_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_TRIAL_OMEN));
+      RAID_OMEN = register("raid_omen", (new RaidOmenMobEffect(MobEffectCategory.NEUTRAL, 14565464, ParticleTypes.RAID_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_RAID_OMEN));
+      WIND_CHARGED = register("wind_charged", new WindChargedMobEffect(MobEffectCategory.HARMFUL, 12438015));
+      WEAVING = register("weaving", new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, (var0) -> {
          return Mth.randomBetweenInclusive(var0, 2, 3);
-      })).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
-      OOZING = register("oozing", (new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (var0) -> {
+      }));
+      OOZING = register("oozing", new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (var0) -> {
          return 2;
-      })).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
-      INFESTED = register("infested", (new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (var0) -> {
+      }));
+      INFESTED = register("infested", new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (var0) -> {
          return Mth.randomBetweenInclusive(var0, 1, 2);
-      })).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
+      }));
    }
 }

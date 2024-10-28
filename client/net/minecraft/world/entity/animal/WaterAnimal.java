@@ -27,7 +27,7 @@ public abstract class WaterAnimal extends PathfinderMob {
       return 120;
    }
 
-   public int getExperienceReward() {
+   protected int getBaseExperienceReward() {
       return 1 + this.level().random.nextInt(3);
    }
 

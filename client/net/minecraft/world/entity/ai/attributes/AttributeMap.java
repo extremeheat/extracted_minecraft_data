@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.attributes;
 
+import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -75,6 +76,29 @@ public class AttributeMap {
    public double getModifierValue(Holder<Attribute> var1, UUID var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
+   }
+
+   public void addTransientAttributeModifiers(Multimap<Holder<Attribute>, AttributeModifier> var1) {
+      var1.forEach((var1x, var2) -> {
+         AttributeInstance var3 = this.getInstance(var1x);
+         if (var3 != null) {
+            var3.removeModifier(var2.id());
+            var3.addTransientModifier(var2);
+         }
+
+      });
+   }
+
+   public void removeAttributeModifiers(Multimap<Holder<Attribute>, AttributeModifier> var1) {
+      var1.asMap().forEach((var1x, var2) -> {
+         AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1x);
+         if (var3 != null) {
+            var2.forEach((var1) -> {
+               var3.removeModifier(var1.id());
+            });
+         }
+
+      });
    }
 
    public void assignValues(AttributeMap var1) {

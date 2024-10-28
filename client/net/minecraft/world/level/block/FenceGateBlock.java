@@ -156,7 +156,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && !(Boolean)var1.getValue(POWERED)) {
+      if (var4.canTriggerBlocks() && !(Boolean)var1.getValue(POWERED)) {
          boolean var6 = (Boolean)var1.getValue(OPEN);
          var2.setBlockAndUpdate(var3, (BlockState)var1.setValue(OPEN, !var6));
          var2.playSound((Player)null, (BlockPos)var3, var6 ? this.type.fenceGateClose() : this.type.fenceGateOpen(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);

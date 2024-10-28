@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import net.minecraft.SystemReport;
 import net.minecraft.util.profiling.ProfileCollector;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
@@ -53,7 +54,7 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
       }
 
       var0.add(MetricSampler.create("heap MiB", MetricCategory.JVM, () -> {
-         return (double)((float)(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576.0F);
+         return (double)SystemReport.sizeInMiB(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
       }));
       var0.addAll(MetricsRegistry.INSTANCE.getRegisteredSamplers());
       return var0.build();

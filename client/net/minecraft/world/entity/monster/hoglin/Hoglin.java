@@ -207,7 +207,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       return true;
    }
 
-   public int getExperienceReward() {
+   protected int getBaseExperienceReward() {
       return this.xpReward;
    }
 

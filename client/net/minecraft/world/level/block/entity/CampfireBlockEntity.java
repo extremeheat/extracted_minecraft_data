@@ -15,10 +15,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
-import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -26,6 +24,7 @@ import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,7 +36,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    private final NonNullList<ItemStack> items;
    private final int[] cookingProgress;
    private final int[] cookingTime;
-   private final RecipeManager.CachedCheck<Container, CampfireCookingRecipe> quickCheck;
+   private final RecipeManager.CachedCheck<SingleRecipeInput, CampfireCookingRecipe> quickCheck;
 
    public CampfireBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CAMPFIRE, var1, var2);
@@ -56,7 +55,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
             var4 = true;
             int var10002 = var3.cookingProgress[var5]++;
             if (var3.cookingProgress[var5] >= var3.cookingTime[var5]) {
-               SimpleContainer var7 = new SimpleContainer(new ItemStack[]{var6});
+               SingleRecipeInput var7 = new SingleRecipeInput(var6);
                ItemStack var8 = (ItemStack)var3.quickCheck.getRecipeFor(var7, var0).map((var2x) -> {
                   return ((CampfireCookingRecipe)var2x.value()).assemble(var7, var0.registryAccess());
                }).orElse(var6);
@@ -158,7 +157,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    }
 
    public Optional<RecipeHolder<CampfireCookingRecipe>> getCookableRecipe(ItemStack var1) {
-      return this.items.stream().noneMatch(ItemStack::isEmpty) ? Optional.empty() : this.quickCheck.getRecipeFor(new SimpleContainer(new ItemStack[]{var1}), this.level);
+      return this.items.stream().noneMatch(ItemStack::isEmpty) ? Optional.empty() : this.quickCheck.getRecipeFor(new SingleRecipeInput(var1), this.level);
    }
 
    public boolean placeFood(@Nullable Entity var1, ItemStack var2, int var3) {

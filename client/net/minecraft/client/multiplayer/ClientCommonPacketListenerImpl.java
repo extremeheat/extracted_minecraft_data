@@ -90,6 +90,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void onPacketError(Packet var1, Exception var2) {
       LOGGER.error("Failed to handle packet {}", var1, var2);
+      ClientCommonPacketListener.super.onPacketError(var1, var2);
       if (this.strictErrorHandling) {
          this.connection.disconnect(Component.translatable("disconnect.packetError"));
       }

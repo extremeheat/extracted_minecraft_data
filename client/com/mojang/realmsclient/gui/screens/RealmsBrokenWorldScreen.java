@@ -26,7 +26,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -73,7 +72,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       for(Iterator var1 = this.serverData.slots.entrySet().iterator(); var1.hasNext(); this.addRenderableWidget(var5)) {
          Map.Entry var2 = (Map.Entry)var1.next();
          int var3 = (Integer)var2.getKey();
-         boolean var4 = var3 != this.serverData.activeSlot || this.serverData.worldType == RealmsServer.WorldType.MINIGAME;
+         boolean var4 = var3 != this.serverData.activeSlot || this.serverData.isMinigameActive();
          if (var4) {
             var5 = Button.builder(Component.translatable("mco.brokenworld.play"), (var2x) -> {
                this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, var3, this::doSwitchOrReset)}));
@@ -81,16 +80,9 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
             var5.active = !((RealmsWorldOptions)this.serverData.slots.get(var3)).empty;
          } else {
             var5 = Button.builder(Component.translatable("mco.brokenworld.download"), (var2x) -> {
-               MutableComponent var3x = Component.translatable("mco.configure.world.restore.download.question.line1");
-               MutableComponent var4 = Component.translatable("mco.configure.world.restore.download.question.line2");
-               this.minecraft.setScreen(new RealmsLongConfirmationScreen((var2) -> {
-                  if (var2) {
-                     this.downloadWorld(var3);
-                  } else {
-                     this.minecraft.setScreen(this);
-                  }
-
-               }, RealmsLongConfirmationScreen.Type.INFO, var3x, var4, true));
+               this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> {
+                  this.downloadWorld(var3);
+               }));
             }).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
          }
 
@@ -203,7 +195,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    }
 
    private boolean isMinigame() {
-      return this.serverData != null && this.serverData.worldType == RealmsServer.WorldType.MINIGAME;
+      return this.serverData != null && this.serverData.isMinigameActive();
    }
 
    private void drawSlotFrame(GuiGraphics var1, int var2, int var3, int var4, int var5, boolean var6, String var7, int var8, long var9, @Nullable String var11, boolean var12) {

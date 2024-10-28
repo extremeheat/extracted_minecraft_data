@@ -101,7 +101,7 @@ public class ItemProperties {
          if (var2 == null) {
             return 0.0F;
          } else {
-            return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration() - var2.getUseItemRemainingTicks()) / 20.0F;
+            return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / 20.0F;
          }
       });
       register(Items.BRUSH, new ResourceLocation("brushing"), (var0x, var1, var2, var3) -> {
@@ -171,7 +171,7 @@ public class ItemProperties {
          if (var2 == null) {
             return 0.0F;
          } else {
-            return CrossbowItem.isCharged(var0x) ? 0.0F : (float)(var0x.getUseDuration() - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x);
+            return CrossbowItem.isCharged(var0x) ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2);
          }
       });
       register(Items.CROSSBOW, new ResourceLocation("pulling"), (var0x, var1, var2, var3) -> {

@@ -74,11 +74,13 @@ public abstract class ContainerObjectSelectionList<E extends Entry<E>> extends A
    }
 
    public void setFocused(@Nullable GuiEventListener var1) {
-      super.setFocused(var1);
-      if (var1 == null) {
-         this.setSelected((AbstractSelectionList.Entry)null);
-      }
+      if (this.getFocused() != var1) {
+         super.setFocused(var1);
+         if (var1 == null) {
+            this.setSelected((AbstractSelectionList.Entry)null);
+         }
 
+      }
    }
 
    public NarratableEntry.NarrationPriority narrationPriority() {

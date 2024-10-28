@@ -53,4 +53,8 @@ public class ValidationContext {
    public ValidationContext setParams(LootContextParamSet var1) {
       return new ValidationContext(this.reporter, var1, this.resolver, this.visitedElements);
    }
+
+   public ProblemReporter reporter() {
+      return this.reporter;
+   }
 }

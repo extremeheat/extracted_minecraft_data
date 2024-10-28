@@ -12,7 +12,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -73,7 +72,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -362,13 +360,7 @@ public class CreateWorldScreen extends Screen {
          var0.close();
          return new WorldCreationContext(var3x.worldGenSettings(), var2x, var1x, var3x.dataConfiguration());
       }, Util.backgroundExecutor(), this.minecraft).thenApplyAsync((var0) -> {
-         Iterator var1 = var0.datapackDimensions().iterator();
-
-         while(var1.hasNext()) {
-            LevelStem var2 = (LevelStem)var1.next();
-            var2.generator().validate();
-         }
-
+         var0.validate();
          return var0;
       });
       WorldCreationUiState var10001 = this.uiState;

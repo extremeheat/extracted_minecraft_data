@@ -6,7 +6,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.flag.FeatureFlags;
 
 public class Potions {
    public static final Holder<Potion> WATER = register("water", new Potion(new MobEffectInstance[0]));
@@ -107,9 +106,9 @@ public class Potions {
       LUCK = register("luck", new Potion("luck", new MobEffectInstance[]{new MobEffectInstance(MobEffects.LUCK, 6000)}));
       SLOW_FALLING = register("slow_falling", new Potion(new MobEffectInstance[]{new MobEffectInstance(MobEffects.SLOW_FALLING, 1800)}));
       LONG_SLOW_FALLING = register("long_slow_falling", new Potion("slow_falling", new MobEffectInstance[]{new MobEffectInstance(MobEffects.SLOW_FALLING, 4800)}));
-      WIND_CHARGED = register("wind_charged", (new Potion("wind_charged", new MobEffectInstance[]{new MobEffectInstance(MobEffects.WIND_CHARGED, 3600)})).requiredFeatures(FeatureFlags.UPDATE_1_21));
-      WEAVING = register("weaving", (new Potion("weaving", new MobEffectInstance[]{new MobEffectInstance(MobEffects.WEAVING, 3600)})).requiredFeatures(FeatureFlags.UPDATE_1_21));
-      OOZING = register("oozing", (new Potion("oozing", new MobEffectInstance[]{new MobEffectInstance(MobEffects.OOZING, 3600)})).requiredFeatures(FeatureFlags.UPDATE_1_21));
-      INFESTED = register("infested", (new Potion("infested", new MobEffectInstance[]{new MobEffectInstance(MobEffects.INFESTED, 3600)})).requiredFeatures(FeatureFlags.UPDATE_1_21));
+      WIND_CHARGED = register("wind_charged", new Potion("wind_charged", new MobEffectInstance[]{new MobEffectInstance(MobEffects.WIND_CHARGED, 3600)}));
+      WEAVING = register("weaving", new Potion("weaving", new MobEffectInstance[]{new MobEffectInstance(MobEffects.WEAVING, 3600)}));
+      OOZING = register("oozing", new Potion("oozing", new MobEffectInstance[]{new MobEffectInstance(MobEffects.OOZING, 3600)}));
+      INFESTED = register("infested", new Potion("infested", new MobEffectInstance[]{new MobEffectInstance(MobEffects.INFESTED, 3600)}));
    }
 }

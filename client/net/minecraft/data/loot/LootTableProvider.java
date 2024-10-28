@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -56,7 +56,7 @@ public class LootTableProvider implements DataProvider {
       MappedRegistry var3 = new MappedRegistry(Registries.LOOT_TABLE, Lifecycle.experimental());
       Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
       this.subProviders.forEach((var3x) -> {
-         ((LootTableSubProvider)var3x.provider().get()).generate(var2, (var3xx, var4x) -> {
+         ((LootTableSubProvider)var3x.provider().apply(var2)).generate((var3xx, var4x) -> {
             ResourceLocation var5 = sequenceIdForLootTable(var3xx);
             ResourceLocation var6 = (ResourceLocation)var4.put(RandomSequence.seedForKey(var5), var5);
             if (var6 != null) {
@@ -110,16 +110,16 @@ public class LootTableProvider implements DataProvider {
       return "Loot Tables";
    }
 
-   public static record SubProviderEntry(Supplier<LootTableSubProvider> provider, LootContextParamSet paramSet) {
+   public static record SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, LootContextParamSet paramSet) {
       final LootContextParamSet paramSet;
 
-      public SubProviderEntry(Supplier<LootTableSubProvider> provider, LootContextParamSet paramSet) {
+      public SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, LootContextParamSet paramSet) {
          super();
          this.provider = provider;
          this.paramSet = paramSet;
       }
 
-      public Supplier<LootTableSubProvider> provider() {
+      public Function<HolderLookup.Provider, LootTableSubProvider> provider() {
          return this.provider;
       }
 

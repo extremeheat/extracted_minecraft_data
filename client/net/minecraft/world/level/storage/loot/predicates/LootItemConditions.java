@@ -1,23 +1,16 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 
 public class LootItemConditions {
-   private static final Codec<LootItemCondition> TYPED_CODEC;
-   public static final Codec<LootItemCondition> DIRECT_CODEC;
-   public static final Codec<Holder<LootItemCondition>> CODEC;
    public static final LootItemConditionType INVERTED;
    public static final LootItemConditionType ANY_OF;
    public static final LootItemConditionType ALL_OF;
    public static final LootItemConditionType RANDOM_CHANCE;
-   public static final LootItemConditionType RANDOM_CHANCE_WITH_LOOTING;
+   public static final LootItemConditionType RANDOM_CHANCE_WITH_ENCHANTED_BONUS;
    public static final LootItemConditionType ENTITY_PROPERTIES;
    public static final LootItemConditionType KILLED_BY_PLAYER;
    public static final LootItemConditionType ENTITY_SCORES;
@@ -31,6 +24,7 @@ public class LootItemConditions {
    public static final LootItemConditionType REFERENCE;
    public static final LootItemConditionType TIME_CHECK;
    public static final LootItemConditionType VALUE_CHECK;
+   public static final LootItemConditionType ENCHANTMENT_ACTIVE_CHECK;
 
    public LootItemConditions() {
       super();
@@ -41,16 +35,11 @@ public class LootItemConditions {
    }
 
    static {
-      TYPED_CODEC = BuiltInRegistries.LOOT_CONDITION_TYPE.byNameCodec().dispatch("condition", LootItemCondition::getType, LootItemConditionType::codec);
-      DIRECT_CODEC = Codec.lazyInitialized(() -> {
-         return Codec.withAlternative(TYPED_CODEC, AllOfCondition.INLINE_CODEC);
-      });
-      CODEC = RegistryFileCodec.create(Registries.PREDICATE, DIRECT_CODEC);
       INVERTED = register("inverted", InvertedLootItemCondition.CODEC);
       ANY_OF = register("any_of", AnyOfCondition.CODEC);
       ALL_OF = register("all_of", AllOfCondition.CODEC);
       RANDOM_CHANCE = register("random_chance", LootItemRandomChanceCondition.CODEC);
-      RANDOM_CHANCE_WITH_LOOTING = register("random_chance_with_looting", LootItemRandomChanceWithLootingCondition.CODEC);
+      RANDOM_CHANCE_WITH_ENCHANTED_BONUS = register("random_chance_with_enchanted_bonus", LootItemRandomChanceWithEnchantedBonusCondition.CODEC);
       ENTITY_PROPERTIES = register("entity_properties", LootItemEntityPropertyCondition.CODEC);
       KILLED_BY_PLAYER = register("killed_by_player", LootItemKilledByPlayerCondition.CODEC);
       ENTITY_SCORES = register("entity_scores", EntityHasScoreCondition.CODEC);
@@ -64,5 +53,6 @@ public class LootItemConditions {
       REFERENCE = register("reference", ConditionReference.CODEC);
       TIME_CHECK = register("time_check", TimeCheck.CODEC);
       VALUE_CHECK = register("value_check", ValueCheckCondition.CODEC);
+      ENCHANTMENT_ACTIVE_CHECK = register("enchantment_active_check", EnchantmentActiveCheck.CODEC);
    }
 }

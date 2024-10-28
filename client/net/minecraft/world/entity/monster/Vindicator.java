@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -37,7 +38,8 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -150,14 +152,10 @@ public class Vindicator extends AbstractIllager {
    public void applyRaidBuffs(int var1, boolean var2) {
       ItemStack var3 = new ItemStack(Items.IRON_AXE);
       Raid var4 = this.getCurrentRaid();
-      byte var5 = 1;
-      if (var1 > var4.getNumGroups(Difficulty.NORMAL)) {
-         var5 = 2;
-      }
-
-      boolean var6 = this.random.nextFloat() <= var4.getEnchantOdds();
-      if (var6) {
-         var3.enchant(Enchantments.SHARPNESS, var5);
+      boolean var5 = this.random.nextFloat() <= var4.getEnchantOdds();
+      if (var5) {
+         ResourceKey var6 = var1 > var4.getNumGroups(Difficulty.NORMAL) ? VanillaEnchantmentProviders.RAID_VINDICATOR_POST_WAVE_5 : VanillaEnchantmentProviders.RAID_VINDICATOR;
+         EnchantmentHelper.enchantItemFromProvider(var3, var6, this.level(), this.blockPosition(), this.random);
       }
 
       this.setItemSlot(EquipmentSlot.MAINHAND, var3);

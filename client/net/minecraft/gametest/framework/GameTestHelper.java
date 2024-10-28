@@ -224,7 +224,7 @@ public class GameTestHelper {
       BlockPos var2 = this.absolutePos(var1);
       BlockState var3 = this.getLevel().getBlockState(var2);
       ButtonBlock var4 = (ButtonBlock)var3.getBlock();
-      var4.press(var3, this.getLevel(), var2);
+      var4.press(var3, this.getLevel(), var2, (Player)null);
    }
 
    public void useBlock(BlockPos var1) {
@@ -306,7 +306,7 @@ public class GameTestHelper {
       BlockPos var2 = this.absolutePos(var1);
       BlockState var3 = this.getLevel().getBlockState(var2);
       LeverBlock var4 = (LeverBlock)var3.getBlock();
-      var4.pull(var3, this.getLevel(), var2);
+      var4.pull(var3, this.getLevel(), var2, (Player)null);
    }
 
    public void pulseRedstone(BlockPos var1, long var2) {

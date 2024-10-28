@@ -208,10 +208,10 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          this.defaultButtonNarrationText(var1);
       }
 
-      public void addItemToSlot(Iterator<Ingredient> var1, int var2, int var3, int var4, int var5) {
-         ItemStack[] var6 = ((Ingredient)var1.next()).getItems();
+      public void addItemToSlot(Ingredient var1, int var2, int var3, int var4, int var5) {
+         ItemStack[] var6 = var1.getItems();
          if (var6.length != 0) {
-            this.ingredientPos.add(new Pos(this, 3 + var5 * 7, 3 + var4 * 7, var6));
+            this.ingredientPos.add(new Pos(this, 3 + var4 * 7, 3 + var5 * 7, var6));
          }
 
       }

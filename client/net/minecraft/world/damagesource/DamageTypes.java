@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public interface DamageTypes {
    ResourceKey<DamageType> IN_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("in_fire"));
+   ResourceKey<DamageType> CAMPFIRE = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("campfire"));
    ResourceKey<DamageType> LIGHTNING_BOLT = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("lightning_bolt"));
    ResourceKey<DamageType> ON_FIRE = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("on_fire"));
    ResourceKey<DamageType> LAVA = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("lava"));
@@ -55,6 +56,7 @@ public interface DamageTypes {
 
    static void bootstrap(BootstrapContext<DamageType> var0) {
       var0.register(IN_FIRE, new DamageType("inFire", 0.1F, DamageEffects.BURNING));
+      var0.register(CAMPFIRE, new DamageType("inFire", 0.1F, DamageEffects.BURNING));
       var0.register(LIGHTNING_BOLT, new DamageType("lightningBolt", 0.1F));
       var0.register(ON_FIRE, new DamageType("onFire", 0.0F, DamageEffects.BURNING));
       var0.register(LAVA, new DamageType("lava", 0.1F, DamageEffects.BURNING));
@@ -99,5 +101,6 @@ public interface DamageTypes {
       var0.register(BAD_RESPAWN_POINT, new DamageType("badRespawnPoint", DamageScaling.ALWAYS, 0.1F, DamageEffects.HURT, DeathMessageType.INTENTIONAL_GAME_DESIGN));
       var0.register(OUTSIDE_BORDER, new DamageType("outsideBorder", 0.0F));
       var0.register(GENERIC_KILL, new DamageType("genericKill", 0.0F));
+      var0.register(WIND_CHARGE, new DamageType("mob", 0.1F));
    }
 }

@@ -10,7 +10,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagNetworkSerialization;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
@@ -23,10 +22,6 @@ public class TagCollector {
 
    public void append(ResourceKey<? extends Registry<?>> var1, TagNetworkSerialization.NetworkPayload var2) {
       this.tags.put(var1, var2);
-   }
-
-   private static void refreshCommonTagDependentData() {
-      CreativeModeTabs.searchTab().rebuildSearchTree();
    }
 
    private static void refreshBuiltInTagDependentData() {
@@ -60,6 +55,5 @@ public class TagCollector {
          refreshBuiltInTagDependentData();
       }
 
-      refreshCommonTagDependentData();
    }
 }

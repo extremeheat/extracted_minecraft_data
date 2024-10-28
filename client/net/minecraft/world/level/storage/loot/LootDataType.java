@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import org.slf4j.Logger;
 
 public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, Validator<T> validator) {
@@ -75,7 +74,7 @@ public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> cod
    }
 
    static {
-      PREDICATE = new LootDataType(Registries.PREDICATE, LootItemConditions.DIRECT_CODEC, "predicates", createSimpleValidator());
+      PREDICATE = new LootDataType(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, "predicates", createSimpleValidator());
       MODIFIER = new LootDataType(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, "item_modifiers", createSimpleValidator());
       TABLE = new LootDataType(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, "loot_tables", createLootTableValidator());
    }

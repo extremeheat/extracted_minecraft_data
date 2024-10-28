@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -26,7 +25,7 @@ public class MagmaBlock extends Block {
    }
 
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
-      if (!var4.isSteppingCarefully() && var4 instanceof LivingEntity && !EnchantmentHelper.hasFrostWalker((LivingEntity)var4)) {
+      if (!var4.isSteppingCarefully() && var4 instanceof LivingEntity) {
          var4.hurt(var1.damageSources().hotFloor(), 1.0F);
       }
 

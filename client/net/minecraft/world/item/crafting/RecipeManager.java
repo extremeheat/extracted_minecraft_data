@@ -27,7 +27,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
@@ -75,30 +74,30 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       return this.hasErrors;
    }
 
-   public <C extends Container, T extends Recipe<C>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, C var2, Level var3) {
-      return this.byType(var1).stream().filter((var2x) -> {
-         return var2x.value().matches(var2, var3);
-      }).findFirst();
+   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, I var2, Level var3) {
+      return this.getRecipeFor(var1, var2, var3, (RecipeHolder)null);
    }
 
-   public <C extends Container, T extends Recipe<C>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, C var2, Level var3, @Nullable ResourceLocation var4) {
-      if (var4 != null) {
-         RecipeHolder var5 = this.byKeyTyped(var1, var4);
-         if (var5 != null && var5.value().matches(var2, var3)) {
-            return Optional.of(var5);
-         }
+   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, I var2, Level var3, @Nullable ResourceLocation var4) {
+      RecipeHolder var5 = var4 != null ? this.byKeyTyped(var1, var4) : null;
+      return this.getRecipeFor(var1, var2, var3, var5);
+   }
+
+   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, I var2, Level var3, @Nullable RecipeHolder<T> var4) {
+      if (var2.isEmpty()) {
+         return Optional.empty();
+      } else {
+         return var4 != null && var4.value().matches(var2, var3) ? Optional.of(var4) : this.byType(var1).stream().filter((var2x) -> {
+            return var2x.value().matches(var2, var3);
+         }).findFirst();
       }
-
-      return this.byType(var1).stream().filter((var2x) -> {
-         return var2x.value().matches(var2, var3);
-      }).findFirst();
    }
 
-   public <C extends Container, T extends Recipe<C>> List<RecipeHolder<T>> getAllRecipesFor(RecipeType<T> var1) {
+   public <I extends RecipeInput, T extends Recipe<I>> List<RecipeHolder<T>> getAllRecipesFor(RecipeType<T> var1) {
       return List.copyOf(this.byType(var1));
    }
 
-   public <C extends Container, T extends Recipe<C>> List<RecipeHolder<T>> getRecipesFor(RecipeType<T> var1, C var2, Level var3) {
+   public <I extends RecipeInput, T extends Recipe<I>> List<RecipeHolder<T>> getRecipesFor(RecipeType<T> var1, I var2, Level var3) {
       return (List)this.byType(var1).stream().filter((var2x) -> {
          return var2x.value().matches(var2, var3);
       }).sorted(Comparator.comparing((var1x) -> {
@@ -106,16 +105,16 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       })).collect(Collectors.toList());
    }
 
-   private <C extends Container, T extends Recipe<C>> Collection<RecipeHolder<T>> byType(RecipeType<T> var1) {
+   private <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> byType(RecipeType<T> var1) {
       return this.byType.get(var1);
    }
 
-   public <C extends Container, T extends Recipe<C>> NonNullList<ItemStack> getRemainingItemsFor(RecipeType<T> var1, C var2, Level var3) {
+   public <I extends RecipeInput, T extends Recipe<I>> NonNullList<ItemStack> getRemainingItemsFor(RecipeType<T> var1, I var2, Level var3) {
       Optional var4 = this.getRecipeFor(var1, var2, var3);
       if (var4.isPresent()) {
          return ((RecipeHolder)var4.get()).value().getRemainingItems(var2);
       } else {
-         NonNullList var5 = NonNullList.withSize(var2.getContainerSize(), ItemStack.EMPTY);
+         NonNullList var5 = NonNullList.withSize(var2.size(), ItemStack.EMPTY);
 
          for(int var6 = 0; var6 < var5.size(); ++var6) {
             var5.set(var6, var2.getItem(var6));
@@ -170,12 +169,12 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       this.byName = var3.build();
    }
 
-   public static <C extends Container, T extends Recipe<C>> CachedCheck<C, T> createCheck(final RecipeType<T> var0) {
-      return new CachedCheck<C, T>() {
+   public static <I extends RecipeInput, T extends Recipe<I>> CachedCheck<I, T> createCheck(final RecipeType<T> var0) {
+      return new CachedCheck<I, T>() {
          @Nullable
          private ResourceLocation lastRecipe;
 
-         public Optional<RecipeHolder<T>> getRecipeFor(C var1, Level var2) {
+         public Optional<RecipeHolder<T>> getRecipeFor(I var1, Level var2) {
             RecipeManager var3 = var2.getRecipeManager();
             Optional var4 = var3.getRecipeFor(var0, var1, var2, this.lastRecipe);
             if (var4.isPresent()) {
@@ -189,7 +188,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       };
    }
 
-   public interface CachedCheck<C extends Container, T extends Recipe<C>> {
-      Optional<RecipeHolder<T>> getRecipeFor(C var1, Level var2);
+   public interface CachedCheck<I extends RecipeInput, T extends Recipe<I>> {
+      Optional<RecipeHolder<T>> getRecipeFor(I var1, Level var2);
    }
 }

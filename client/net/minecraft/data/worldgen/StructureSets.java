@@ -38,5 +38,6 @@ public interface StructureSets {
       var0.register(BuiltinStructureSets.END_CITIES, new StructureSet(var1.getOrThrow(BuiltinStructures.END_CITY), new RandomSpreadStructurePlacement(20, 11, RandomSpreadType.TRIANGULAR, 10387313)));
       var0.register(BuiltinStructureSets.STRONGHOLDS, new StructureSet(var1.getOrThrow(BuiltinStructures.STRONGHOLD), new ConcentricRingsStructurePlacement(32, 3, 128, var2.getOrThrow(BiomeTags.STRONGHOLD_BIASED_TO))));
       var0.register(BuiltinStructureSets.TRAIL_RUINS, new StructureSet(var1.getOrThrow(BuiltinStructures.TRAIL_RUINS), new RandomSpreadStructurePlacement(34, 8, RandomSpreadType.LINEAR, 83469867)));
+      var0.register(BuiltinStructureSets.TRIAL_CHAMBERS, new StructureSet(var1.getOrThrow(BuiltinStructures.TRIAL_CHAMBERS), new RandomSpreadStructurePlacement(34, 12, RandomSpreadType.LINEAR, 94251327)));
    }
 }

@@ -9,10 +9,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
 public class EvokerFangs extends Entity implements TraceableEntity {
@@ -127,7 +129,14 @@ public class EvokerFangs extends Entity implements TraceableEntity {
                return;
             }
 
-            var1.hurt(this.damageSources().indirectMagic(this, var2), 6.0F);
+            DamageSource var3 = this.damageSources().indirectMagic(this, var2);
+            if (var1.hurt(var3, 6.0F)) {
+               Level var5 = this.level();
+               if (var5 instanceof ServerLevel) {
+                  ServerLevel var4 = (ServerLevel)var5;
+                  EnchantmentHelper.doPostAttackEffects(var4, var1, var3);
+               }
+            }
          }
 
       }

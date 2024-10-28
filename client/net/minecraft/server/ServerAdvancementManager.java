@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -11,7 +10,6 @@ import com.mojang.serialization.JsonOps;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -70,15 +68,9 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener {
    private void validate(ResourceLocation var1, Advancement var2) {
       ProblemReporter.Collector var3 = new ProblemReporter.Collector();
       var2.validate(var3, this.registries.asGetterLookup());
-      Multimap var4 = var3.get();
-      if (!var4.isEmpty()) {
-         String var5 = (String)var4.asMap().entrySet().stream().map((var0) -> {
-            String var10000 = (String)var0.getKey();
-            return "  at " + var10000 + ": " + String.join("; ", (Iterable)var0.getValue());
-         }).collect(Collectors.joining("\n"));
-         LOGGER.warn("Found validation problems in advancement {}: \n{}", var1, var5);
-      }
-
+      var3.getReport().ifPresent((var1x) -> {
+         LOGGER.warn("Found validation problems in advancement {}: \n{}", var1, var1x);
+      });
    }
 
    @Nullable

@@ -1,9 +1,10 @@
 package net.minecraft.world.entity.projectile.windcharge;
 
 import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -11,19 +12,16 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.SimpleExplosionDamageCalculator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public abstract class AbstractWindCharge extends AbstractHurtingProjectile implements ItemSupplier {
-   public static final WindChargeDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new WindChargeDamageCalculator();
+   public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR;
 
    public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
       super(var1, var2);
@@ -133,17 +131,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    }
 
-   public static class WindChargeDamageCalculator extends ExplosionDamageCalculator {
-      public WindChargeDamageCalculator() {
-         super();
-      }
-
-      public boolean shouldDamageEntity(Explosion var1, Entity var2) {
-         return false;
-      }
-
-      public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5) {
-         return var4.is(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS) ? Optional.of(3600000.0F) : Optional.empty();
-      }
+   static {
+      EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(true, false, Optional.empty(), BuiltInRegistries.BLOCK.getTag(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity()));
    }
 }

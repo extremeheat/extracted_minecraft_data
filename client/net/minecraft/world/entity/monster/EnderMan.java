@@ -52,7 +52,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -299,19 +300,19 @@ public class EnderMan extends Monster implements NeutralMob {
       return SoundEvents.ENDERMAN_DEATH;
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      BlockState var4 = this.getCarriedBlock();
-      if (var4 != null) {
-         ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
-         var5.enchant(Enchantments.SILK_TOUCH, 1);
-         LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var5).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
-         List var7 = var4.getDrops(var6);
-         Iterator var8 = var7.iterator();
+   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
+      super.dropCustomDeathLoot(var1, var2);
+      BlockState var3 = this.getCarriedBlock();
+      if (var3 != null) {
+         ItemStack var4 = new ItemStack(Items.DIAMOND_AXE);
+         EnchantmentHelper.enchantItemFromProvider(var4, VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, this.level(), this.blockPosition(), this.getRandom());
+         LootParams.Builder var5 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var4).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
+         List var6 = var3.getDrops(var5);
+         Iterator var7 = var6.iterator();
 
-         while(var8.hasNext()) {
-            ItemStack var9 = (ItemStack)var8.next();
-            this.spawnAtLocation(var9);
+         while(var7.hasNext()) {
+            ItemStack var8 = (ItemStack)var7.next();
+            this.spawnAtLocation(var8);
          }
       }
 

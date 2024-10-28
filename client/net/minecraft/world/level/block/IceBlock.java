@@ -4,11 +4,11 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -32,7 +32,7 @@ public class IceBlock extends HalfTransparentBlock {
 
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
       super.playerDestroy(var1, var2, var3, var4, var5, var6);
-      if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, var6) == 0) {
+      if (!EnchantmentHelper.hasTag(var6, EnchantmentTags.PREVENTS_ICE_MELTING)) {
          if (var1.dimensionType().ultraWarm()) {
             var1.removeBlock(var3, false);
             return;

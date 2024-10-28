@@ -2,11 +2,10 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public abstract class AbstractCookingRecipe implements Recipe<Container> {
+public abstract class AbstractCookingRecipe implements Recipe<SingleRecipeInput> {
    protected final RecipeType<?> type;
    protected final CookingBookCategory category;
    protected final String group;
@@ -26,11 +25,11 @@ public abstract class AbstractCookingRecipe implements Recipe<Container> {
       this.cookingTime = var7;
    }
 
-   public boolean matches(Container var1, Level var2) {
-      return this.ingredient.test(var1.getItem(0));
+   public boolean matches(SingleRecipeInput var1, Level var2) {
+      return this.ingredient.test(var1.item());
    }
 
-   public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(SingleRecipeInput var1, HolderLookup.Provider var2) {
       return this.result.copy();
    }
 

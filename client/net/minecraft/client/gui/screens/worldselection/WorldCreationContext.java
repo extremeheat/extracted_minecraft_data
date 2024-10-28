@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.worldselection;
 
+import java.util.Iterator;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.LayeredRegistryAccess;
@@ -47,6 +48,16 @@ public record WorldCreationContext(WorldOptions options, Registry<LevelStem> dat
 
    public RegistryAccess.Frozen worldgenLoadContext() {
       return this.worldgenRegistries.compositeAccess();
+   }
+
+   public void validate() {
+      Iterator var1 = this.datapackDimensions().iterator();
+
+      while(var1.hasNext()) {
+         LevelStem var2 = (LevelStem)var1.next();
+         var2.generator().validate();
+      }
+
    }
 
    public WorldOptions options() {

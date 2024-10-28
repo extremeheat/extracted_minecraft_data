@@ -20,7 +20,10 @@ public class DiggerItem extends TieredItem {
    }
 
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      var1.hurtAndBreak(2, var3, EquipmentSlot.MAINHAND);
       return true;
+   }
+
+   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+      var1.hurtAndBreak(2, var3, EquipmentSlot.MAINHAND);
    }
 }

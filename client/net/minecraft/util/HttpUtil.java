@@ -66,7 +66,7 @@ public class HttpUtil {
          var10 = null;
       }
 
-      Path var17;
+      Path var15;
       try {
          var8 = (HttpURLConnection)var1.openConnection(var6);
          var8.setInstanceFollowRedirects(true);
@@ -83,34 +83,34 @@ public class HttpUtil {
             throw new IOException("Filesize is bigger than maximum allowed (file is " + var10002 + ", limit is " + var5 + ")");
          }
 
-         if (var10 != null) {
-            HashCode var38 = downloadAndHash(var3, var5, var7, var9, var10);
-            if (!var38.equals(var4)) {
-               var10002 = String.valueOf(var38);
-               throw new IOException("Hash of downloaded file (" + var10002 + ") did not match requested (" + String.valueOf(var4) + ")");
-            }
+         if (var10 == null) {
+            Path var38 = Files.createTempFile(var0, "download", ".tmp");
 
-            var7.requestFinished(true);
-            Path var39 = var10;
-            return var39;
+            try {
+               HashCode var39 = downloadAndHash(var3, var5, var7, var9, var38);
+               Path var16 = cachedFilePath(var0, var39);
+               if (!checkExistingFile(var16, var3, var39)) {
+                  Files.move(var38, var16, StandardCopyOption.REPLACE_EXISTING);
+               } else {
+                  updateModificationTime(var16);
+               }
+
+               var7.requestFinished(true);
+               Path var17 = var16;
+               return var17;
+            } finally {
+               Files.deleteIfExists(var38);
+            }
          }
 
-         Path var14 = Files.createTempFile(var0, "download", ".tmp");
-
-         try {
-            HashCode var15 = downloadAndHash(var3, var5, var7, var9, var14);
-            Path var16 = cachedFilePath(var0, var15);
-            if (!checkExistingFile(var16, var3, var15)) {
-               Files.move(var14, var16, StandardCopyOption.REPLACE_EXISTING);
-            } else {
-               updateModificationTime(var16);
-            }
-
-            var7.requestFinished(true);
-            var17 = var16;
-         } finally {
-            Files.deleteIfExists(var14);
+         HashCode var14 = downloadAndHash(var3, var5, var7, var9, var10);
+         if (!var14.equals(var4)) {
+            var10002 = String.valueOf(var14);
+            throw new IOException("Hash of downloaded file (" + var10002 + ") did not match requested (" + String.valueOf(var4) + ")");
          }
+
+         var7.requestFinished(true);
+         var15 = var10;
       } catch (Throwable var36) {
          if (var8 != null) {
             InputStream var12 = var8.getErrorStream();
@@ -129,7 +129,7 @@ public class HttpUtil {
          IOUtils.closeQuietly(var9);
       }
 
-      return var17;
+      return var15;
    }
 
    private static void updateModificationTime(Path var0) {

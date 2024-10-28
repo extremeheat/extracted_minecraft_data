@@ -7,8 +7,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
@@ -23,9 +24,9 @@ public class ItemInput {
       return Component.translatableEscape("arguments.item.overstacked", var0, var1);
    });
    private final Holder<Item> item;
-   private final DataComponentMap components;
+   private final DataComponentPatch components;
 
-   public ItemInput(Holder<Item> var1, DataComponentMap var2) {
+   public ItemInput(Holder<Item> var1, DataComponentPatch var2) {
       super();
       this.item = var1;
       this.components = var2;
@@ -59,15 +60,22 @@ public class ItemInput {
 
    private String serializeComponents(HolderLookup.Provider var1) {
       RegistryOps var2 = var1.createSerializationContext(NbtOps.INSTANCE);
-      return (String)this.components.stream().flatMap((var1x) -> {
-         DataComponentType var2x = var1x.type();
+      return (String)this.components.entrySet().stream().flatMap((var1x) -> {
+         DataComponentType var2x = (DataComponentType)var1x.getKey();
          ResourceLocation var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var2x);
-         Optional var4 = var1x.encodeValue(var2).result();
-         if (var3 != null && !var4.isEmpty()) {
-            String var10000 = var3.toString();
-            return Stream.of(var10000 + "=" + String.valueOf(var4.get()));
-         } else {
+         if (var3 == null) {
             return Stream.empty();
+         } else {
+            Optional var4 = (Optional)var1x.getValue();
+            if (var4.isPresent()) {
+               TypedDataComponent var5 = TypedDataComponent.createUnchecked(var2x, var4.get());
+               return var5.encodeValue(var2).result().stream().map((var1) -> {
+                  String var10000 = var3.toString();
+                  return var10000 + "=" + String.valueOf(var1);
+               });
+            } else {
+               return Stream.of("!" + var3.toString());
+            }
          }
       }).collect(Collectors.joining(String.valueOf(',')));
    }

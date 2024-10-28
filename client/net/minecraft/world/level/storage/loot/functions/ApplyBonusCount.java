@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
@@ -49,7 +48,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    public ItemStack run(ItemStack var1, LootContext var2) {
       ItemStack var3 = (ItemStack)var2.getParamOrNull(LootContextParams.TOOL);
       if (var3 != null) {
-         int var4 = EnchantmentHelper.getItemEnchantmentLevel((Enchantment)this.enchantment.value(), var3);
+         int var4 = EnchantmentHelper.getItemEnchantmentLevel(this.enchantment, var3);
          int var5 = this.formula.calculateNewCount(var2.getRandom(), var1.getCount(), var4);
          var1.setCount(var5);
       }
@@ -57,27 +56,27 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       return var1;
    }
 
-   public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Enchantment var0, float var1, int var2) {
+   public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Holder<Enchantment> var0, float var1, int var2) {
       return simpleBuilder((var3) -> {
-         return new ApplyBonusCount(var3, var0.builtInRegistryHolder(), new BinomialWithBonusCount(var2, var1));
+         return new ApplyBonusCount(var3, var0, new BinomialWithBonusCount(var2, var1));
       });
    }
 
-   public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Enchantment var0) {
+   public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Holder<Enchantment> var0) {
       return simpleBuilder((var1) -> {
-         return new ApplyBonusCount(var1, var0.builtInRegistryHolder(), new OreDrops());
+         return new ApplyBonusCount(var1, var0, new OreDrops());
       });
    }
 
-   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Enchantment var0) {
+   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0) {
       return simpleBuilder((var1) -> {
-         return new ApplyBonusCount(var1, var0.builtInRegistryHolder(), new UniformBonusCount(1));
+         return new ApplyBonusCount(var1, var0, new UniformBonusCount(1));
       });
    }
 
-   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Enchantment var0, int var1) {
+   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0, int var1) {
       return simpleBuilder((var2) -> {
-         return new ApplyBonusCount(var2, var0.builtInRegistryHolder(), new UniformBonusCount(var1));
+         return new ApplyBonusCount(var2, var0, new UniformBonusCount(var1));
       });
    }
 
@@ -91,7 +90,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }, FormulaType::id);
       FORMULA_CODEC = ExtraCodecs.dispatchOptionalValue("formula", "parameters", FORMULA_TYPE_CODEC, Formula::getType, FormulaType::codec);
       CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(var0.group(BuiltInRegistries.ENCHANTMENT.holderByNameCodec().fieldOf("enchantment").forGetter((var0x) -> {
+         return commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> {
             return var0x.enchantment;
          }), FORMULA_CODEC.forGetter((var0x) -> {
             return var0x.formula;

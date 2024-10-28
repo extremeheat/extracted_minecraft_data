@@ -28,7 +28,7 @@ public class RecipeButton extends AbstractWidget {
    private static final int BACKGROUND_SIZE = 25;
    public static final int TICKS_TO_SWAP = 30;
    private static final Component MORE_RECIPES_TOOLTIP = Component.translatable("gui.recipebook.moreRecipes");
-   private RecipeBookMenu<?> menu;
+   private RecipeBookMenu<?, ?> menu;
    private RecipeBook book;
    private RecipeCollection collection;
    private float time;

@@ -22,7 +22,6 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -32,7 +31,7 @@ public class LootPool {
    public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((var0) -> {
       return var0.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((var0x) -> {
          return var0x.entries;
-      }), LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
+      }), LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
          return var0x.conditions;
       }), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> {
          return var0x.functions;

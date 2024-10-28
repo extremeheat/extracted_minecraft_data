@@ -11,6 +11,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class RenameEnchantmentsFix extends DataFix {
    final String name;
@@ -44,7 +45,7 @@ public class RenameEnchantmentsFix extends DataFix {
             return var1.map((var1x) -> {
                return var1x.update("id", (var2) -> {
                   return (Dynamic)var2.asString().map((var2x) -> {
-                     return var1x.createString((String)this.renames.getOrDefault(var2x, var2x));
+                     return var1x.createString((String)this.renames.getOrDefault(NamespacedSchema.ensureNamespaced(var2x), var2x));
                   }).mapOrElse(Function.identity(), (var1) -> {
                      return var2;
                   });

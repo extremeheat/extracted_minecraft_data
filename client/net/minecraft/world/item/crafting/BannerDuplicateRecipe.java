@@ -3,7 +3,6 @@ package net.minecraft.world.item.crafting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -16,12 +15,12 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       DyeColor var3 = null;
       ItemStack var4 = null;
       ItemStack var5 = null;
 
-      for(int var6 = 0; var6 < var1.getContainerSize(); ++var6) {
+      for(int var6 = 0; var6 < var1.size(); ++var6) {
          ItemStack var7 = var1.getItem(var6);
          if (!var7.isEmpty()) {
             Item var8 = var7.getItem();
@@ -60,8 +59,8 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       return var4 != null && var5 != null;
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
          ItemStack var4 = var1.getItem(var3);
          if (!var4.isEmpty()) {
             int var5 = ((BannerPatternLayers)var4.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
@@ -74,8 +73,8 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       return ItemStack.EMPTY;
    }
 
-   public NonNullList<ItemStack> getRemainingItems(CraftingContainer var1) {
-      NonNullList var2 = NonNullList.withSize(var1.getContainerSize(), ItemStack.EMPTY);
+   public NonNullList<ItemStack> getRemainingItems(CraftingInput var1) {
+      NonNullList var2 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
       for(int var3 = 0; var3 < var2.size(); ++var3) {
          ItemStack var4 = var1.getItem(var3);

@@ -29,7 +29,6 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
@@ -147,7 +146,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    public static class LootPredicateArgument extends ResourceOrIdArgument<LootItemCondition> {
       protected LootPredicateArgument(CommandBuildContext var1) {
-         super(var1, Registries.PREDICATE, LootItemConditions.CODEC);
+         super(var1, Registries.PREDICATE, LootItemCondition.CODEC);
       }
 
       // $FF: synthetic method

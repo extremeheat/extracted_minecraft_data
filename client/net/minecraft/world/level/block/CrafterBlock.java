@@ -17,9 +17,9 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeCache;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -160,25 +160,26 @@ public class CrafterBlock extends BaseEntityBlock {
    protected void dispenseFrom(BlockState var1, ServerLevel var2, BlockPos var3) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof CrafterBlockEntity var4) {
-         Optional var10 = getPotentialResults(var2, var4);
-         if (var10.isEmpty()) {
+         CraftingInput var11 = var4.asCraftInput();
+         Optional var6 = getPotentialResults(var2, var11);
+         if (var6.isEmpty()) {
             var2.levelEvent(1050, var3, 0);
          } else {
-            RecipeHolder var6 = (RecipeHolder)var10.get();
-            ItemStack var7 = ((CraftingRecipe)var6.value()).assemble(var4, var2.registryAccess());
-            if (var7.isEmpty()) {
+            RecipeHolder var7 = (RecipeHolder)var6.get();
+            ItemStack var8 = ((CraftingRecipe)var7.value()).assemble(var11, var2.registryAccess());
+            if (var8.isEmpty()) {
                var2.levelEvent(1050, var3, 0);
             } else {
                var4.setCraftingTicksRemaining(6);
                var2.setBlock(var3, (BlockState)var1.setValue(CRAFTING, true), 2);
-               var7.onCraftedBySystem(var2);
-               this.dispenseItem(var2, var3, var4, var7, var1, var6);
-               Iterator var8 = ((CraftingRecipe)var6.value()).getRemainingItems(var4).iterator();
+               var8.onCraftedBySystem(var2);
+               this.dispenseItem(var2, var3, var4, var8, var1, var7);
+               Iterator var9 = ((CraftingRecipe)var7.value()).getRemainingItems(var11).iterator();
 
-               while(var8.hasNext()) {
-                  ItemStack var9 = (ItemStack)var8.next();
-                  if (!var9.isEmpty()) {
-                     this.dispenseItem(var2, var3, var4, var9, var1, var6);
+               while(var9.hasNext()) {
+                  ItemStack var10 = (ItemStack)var9.next();
+                  if (!var10.isEmpty()) {
+                     this.dispenseItem(var2, var3, var4, var10, var1, var7);
                   }
                }
 
@@ -193,7 +194,7 @@ public class CrafterBlock extends BaseEntityBlock {
       }
    }
 
-   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(Level var0, CraftingContainer var1) {
+   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(Level var0, CraftingInput var1) {
       return RECIPE_CACHE.get(var0, var1);
    }
 

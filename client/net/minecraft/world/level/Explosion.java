@@ -24,13 +24,14 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -241,7 +242,7 @@ public class Explosion {
          double var37 = (1.0 - var35) * (double)getSeenPercent(var11, var13) * (double)this.damageCalculator.getKnockbackMultiplier(var13);
          double var26;
          if (var13 instanceof LivingEntity var28) {
-            var26 = ProtectionEnchantment.getExplosionKnockbackAfterDampener(var28, var37);
+            var26 = var37 * (1.0 - var28.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE));
          } else {
             var26 = var37;
          }
@@ -393,6 +394,14 @@ public class Explosion {
 
    public Holder<SoundEvent> getExplosionSound() {
       return this.explosionSound;
+   }
+
+   public boolean canTriggerBlocks() {
+      if (this.blockInteraction == Explosion.BlockInteraction.TRIGGER_BLOCK && !this.level.isClientSide()) {
+         return this.source != null && this.source.getType() == EntityType.BREEZE_WIND_CHARGE ? this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) : true;
+      } else {
+         return false;
+      }
    }
 
    public static enum BlockInteraction {

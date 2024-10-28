@@ -27,7 +27,7 @@ public class AnimationUtils {
       var4.yRot = var3 ? -0.8F : 0.8F;
       var4.xRot = -0.97079635F;
       var5.xRot = var4.xRot;
-      float var6 = (float)CrossbowItem.getChargeDuration(var2.getUseItem());
+      float var6 = (float)CrossbowItem.getChargeDuration(var2.getUseItem(), var2);
       float var7 = Mth.clamp((float)var2.getTicksUsingItem(), 0.0F, var6);
       float var8 = var7 / var6;
       var5.yRot = Mth.lerp(var8, 0.4F, 0.85F) * (float)(var3 ? 1 : -1);

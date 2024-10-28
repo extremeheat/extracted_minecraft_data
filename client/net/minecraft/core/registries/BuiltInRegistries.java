@@ -48,8 +48,6 @@ import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.FrogVariant;
-import net.minecraft.world.entity.decoration.PaintingVariant;
-import net.minecraft.world.entity.decoration.PaintingVariants;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
@@ -67,8 +65,13 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
+import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
+import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
+import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProviderTypes;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.BiomeSources;
 import net.minecraft.world.level.block.Block;
@@ -133,13 +136,11 @@ public class BuiltInRegistries {
    public static final DefaultedRegistry<Fluid> FLUID;
    public static final Registry<MobEffect> MOB_EFFECT;
    public static final DefaultedRegistry<Block> BLOCK;
-   public static final Registry<Enchantment> ENCHANTMENT;
    public static final DefaultedRegistry<EntityType<?>> ENTITY_TYPE;
    public static final DefaultedRegistry<Item> ITEM;
    public static final Registry<Potion> POTION;
    public static final Registry<ParticleType<?>> PARTICLE_TYPE;
    public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE;
-   public static final DefaultedRegistry<PaintingVariant> PAINTING_VARIANT;
    public static final Registry<ResourceLocation> CUSTOM_STAT;
    public static final DefaultedRegistry<ChunkStatus> CHUNK_STATUS;
    public static final Registry<RuleTestType<?>> RULE_TEST;
@@ -202,6 +203,12 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends EntitySubPredicate>> ENTITY_SUB_PREDICATE_TYPE;
    public static final Registry<ItemSubPredicate.Type<?>> ITEM_SUB_PREDICATE_TYPE;
    public static final Registry<MapDecorationType> MAP_DECORATION_TYPE;
+   public static final Registry<DataComponentType<?>> ENCHANTMENT_EFFECT_COMPONENT_TYPE;
+   public static final Registry<MapCodec<? extends LevelBasedValue>> ENCHANTMENT_LEVEL_BASED_VALUE_TYPE;
+   public static final Registry<MapCodec<? extends EnchantmentEntityEffect>> ENCHANTMENT_ENTITY_EFFECT_TYPE;
+   public static final Registry<MapCodec<? extends EnchantmentLocationBasedEffect>> ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE;
+   public static final Registry<MapCodec<? extends EnchantmentValueEffect>> ENCHANTMENT_VALUE_EFFECT_TYPE;
+   public static final Registry<MapCodec<? extends EnchantmentProvider>> ENCHANTMENT_PROVIDER_TYPE;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
    public BuiltInRegistries() {
@@ -290,9 +297,6 @@ public class BuiltInRegistries {
       BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> {
          return Blocks.AIR;
       });
-      ENCHANTMENT = registerSimpleWithIntrusiveHolders(Registries.ENCHANTMENT, (var0) -> {
-         return Enchantments.FORTUNE;
-      });
       ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> {
          return EntityType.PIG;
       });
@@ -306,7 +310,6 @@ public class BuiltInRegistries {
       BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(Registries.BLOCK_ENTITY_TYPE, (var0) -> {
          return BlockEntityType.FURNACE;
       });
-      PAINTING_VARIANT = registerDefaulted(Registries.PAINTING_VARIANT, "kebab", PaintingVariants::bootstrap);
       CUSTOM_STAT = registerSimple(Registries.CUSTOM_STAT, (var0) -> {
          return Stats.JUMP;
       });
@@ -449,6 +452,12 @@ public class BuiltInRegistries {
       ENTITY_SUB_PREDICATE_TYPE = registerSimple(Registries.ENTITY_SUB_PREDICATE_TYPE, EntitySubPredicates::bootstrap);
       ITEM_SUB_PREDICATE_TYPE = registerSimple(Registries.ITEM_SUB_PREDICATE_TYPE, ItemSubPredicates::bootstrap);
       MAP_DECORATION_TYPE = registerSimple(Registries.MAP_DECORATION_TYPE, MapDecorationTypes::bootstrap);
+      ENCHANTMENT_EFFECT_COMPONENT_TYPE = registerSimple(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, EnchantmentEffectComponents::bootstrap);
+      ENCHANTMENT_LEVEL_BASED_VALUE_TYPE = registerSimple(Registries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE, LevelBasedValue::bootstrap);
+      ENCHANTMENT_ENTITY_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_ENTITY_EFFECT_TYPE, EnchantmentEntityEffect::bootstrap);
+      ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE, EnchantmentLocationBasedEffect::bootstrap);
+      ENCHANTMENT_VALUE_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_VALUE_EFFECT_TYPE, EnchantmentValueEffect::bootstrap);
+      ENCHANTMENT_PROVIDER_TYPE = registerSimple(Registries.ENCHANTMENT_PROVIDER_TYPE, EnchantmentProviderTypes::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }
 

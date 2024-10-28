@@ -108,7 +108,7 @@ public abstract class Animal extends AgeableMob {
       return false;
    }
 
-   public int getExperienceReward() {
+   protected int getBaseExperienceReward() {
       return 1 + this.level().random.nextInt(3);
    }
 

@@ -38,6 +38,7 @@ import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManager;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -295,42 +296,46 @@ public class EnderDragon extends Mob implements Enemy {
             this.tickPart(this.body, (double)(var8 * 0.5F), 0.0, (double)(-var35 * 0.5F));
             this.tickPart(this.wing1, (double)(var35 * 4.5F), 2.0, (double)(var8 * 4.5F));
             this.tickPart(this.wing2, (double)(var35 * -4.5F), 2.0, (double)(var8 * -4.5F));
-            if (!this.level().isClientSide && this.hurtTime == 0) {
-               this.knockBack(this.level().getEntities((Entity)this, this.wing1.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
-               this.knockBack(this.level().getEntities((Entity)this, this.wing2.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
-               this.hurt(this.level().getEntities((Entity)this, this.head.getBoundingBox().inflate(1.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
-               this.hurt(this.level().getEntities((Entity)this, this.neck.getBoundingBox().inflate(1.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
+            Level var37 = this.level();
+            if (var37 instanceof ServerLevel) {
+               ServerLevel var10 = (ServerLevel)var37;
+               if (this.hurtTime == 0) {
+                  this.knockBack(var10, var10.getEntities(this, this.wing1.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
+                  this.knockBack(var10, var10.getEntities(this, this.wing2.getBoundingBox().inflate(4.0, 2.0, 4.0).move(0.0, -2.0, 0.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
+                  this.hurt(var10.getEntities(this, this.head.getBoundingBox().inflate(1.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
+                  this.hurt(var10.getEntities(this, this.neck.getBoundingBox().inflate(1.0), EntitySelector.NO_CREATIVE_OR_SPECTATOR));
+               }
             }
 
-            float var10 = Mth.sin(this.getYRot() * 0.017453292F - this.yRotA * 0.01F);
-            float var36 = Mth.cos(this.getYRot() * 0.017453292F - this.yRotA * 0.01F);
+            float var36 = Mth.sin(this.getYRot() * 0.017453292F - this.yRotA * 0.01F);
+            float var38 = Mth.cos(this.getYRot() * 0.017453292F - this.yRotA * 0.01F);
             float var12 = this.getHeadYOffset();
-            this.tickPart(this.head, (double)(var10 * 6.5F * var33), (double)(var12 + var6 * 6.5F), (double)(-var36 * 6.5F * var33));
-            this.tickPart(this.neck, (double)(var10 * 5.5F * var33), (double)(var12 + var6 * 5.5F), (double)(-var36 * 5.5F * var33));
-            double[] var37 = this.getLatencyPos(5, 1.0F);
+            this.tickPart(this.head, (double)(var36 * 6.5F * var33), (double)(var12 + var6 * 6.5F), (double)(-var38 * 6.5F * var33));
+            this.tickPart(this.neck, (double)(var36 * 5.5F * var33), (double)(var12 + var6 * 5.5F), (double)(-var38 * 5.5F * var33));
+            double[] var39 = this.getLatencyPos(5, 1.0F);
 
-            int var38;
-            for(var38 = 0; var38 < 3; ++var38) {
+            int var40;
+            for(var40 = 0; var40 < 3; ++var40) {
                EnderDragonPart var15 = null;
-               if (var38 == 0) {
+               if (var40 == 0) {
                   var15 = this.tail1;
                }
 
-               if (var38 == 1) {
+               if (var40 == 1) {
                   var15 = this.tail2;
                }
 
-               if (var38 == 2) {
+               if (var40 == 2) {
                   var15 = this.tail3;
                }
 
-               double[] var39 = this.getLatencyPos(12 + var38 * 2, 1.0F);
-               float var40 = this.getYRot() * 0.017453292F + this.rotWrap(var39[0] - var37[0]) * 0.017453292F;
-               var18 = Mth.sin(var40);
-               var19 = Mth.cos(var40);
+               double[] var41 = this.getLatencyPos(12 + var40 * 2, 1.0F);
+               float var42 = this.getYRot() * 0.017453292F + this.rotWrap(var41[0] - var39[0]) * 0.017453292F;
+               var18 = Mth.sin(var42);
+               var19 = Mth.cos(var42);
                var20 = 1.5F;
-               float var41 = (float)(var38 + 1) * 2.0F;
-               this.tickPart(var15, (double)(-(var8 * 1.5F + var18 * var41) * var33), var39[1] - var37[1] - (double)((var41 + 1.5F) * var6) + 1.5, (double)((var35 * 1.5F + var19 * var41) * var33));
+               float var43 = (float)(var40 + 1) * 2.0F;
+               this.tickPart(var15, (double)(-(var8 * 1.5F + var18 * var43) * var33), var41[1] - var39[1] - (double)((var43 + 1.5F) * var6) + 1.5, (double)((var35 * 1.5F + var19 * var43) * var33));
             }
 
             if (!this.level().isClientSide) {
@@ -340,13 +345,13 @@ public class EnderDragon extends Mob implements Enemy {
                }
             }
 
-            for(var38 = 0; var38 < this.subEntities.length; ++var38) {
-               this.subEntities[var38].xo = var30[var38].x;
-               this.subEntities[var38].yo = var30[var38].y;
-               this.subEntities[var38].zo = var30[var38].z;
-               this.subEntities[var38].xOld = var30[var38].x;
-               this.subEntities[var38].yOld = var30[var38].y;
-               this.subEntities[var38].zOld = var30[var38].z;
+            for(var40 = 0; var40 < this.subEntities.length; ++var40) {
+               this.subEntities[var40].xo = var30[var40].x;
+               this.subEntities[var40].yo = var30[var40].y;
+               this.subEntities[var40].zo = var30[var40].z;
+               this.subEntities[var40].xOld = var30[var40].x;
+               this.subEntities[var40].yOld = var30[var40].y;
+               this.subEntities[var40].zOld = var30[var40].z;
             }
 
          }
@@ -396,21 +401,22 @@ public class EnderDragon extends Mob implements Enemy {
 
    }
 
-   private void knockBack(List<Entity> var1) {
-      double var2 = (this.body.getBoundingBox().minX + this.body.getBoundingBox().maxX) / 2.0;
-      double var4 = (this.body.getBoundingBox().minZ + this.body.getBoundingBox().maxZ) / 2.0;
-      Iterator var6 = var1.iterator();
+   private void knockBack(ServerLevel var1, List<Entity> var2) {
+      double var3 = (this.body.getBoundingBox().minX + this.body.getBoundingBox().maxX) / 2.0;
+      double var5 = (this.body.getBoundingBox().minZ + this.body.getBoundingBox().maxZ) / 2.0;
+      Iterator var7 = var2.iterator();
 
-      while(var6.hasNext()) {
-         Entity var7 = (Entity)var6.next();
-         if (var7 instanceof LivingEntity) {
-            double var8 = var7.getX() - var2;
-            double var10 = var7.getZ() - var4;
-            double var12 = Math.max(var8 * var8 + var10 * var10, 0.1);
-            var7.push(var8 / var12 * 4.0, 0.20000000298023224, var10 / var12 * 4.0);
-            if (!this.phaseManager.getCurrentPhase().isSitting() && ((LivingEntity)var7).getLastHurtByMobTimestamp() < var7.tickCount - 2) {
-               var7.hurt(this.damageSources().mobAttack(this), 5.0F);
-               this.doEnchantDamageEffects(this, var7);
+      while(var7.hasNext()) {
+         Entity var8 = (Entity)var7.next();
+         if (var8 instanceof LivingEntity var9) {
+            double var10 = var8.getX() - var3;
+            double var12 = var8.getZ() - var5;
+            double var14 = Math.max(var10 * var10 + var12 * var12, 0.1);
+            var8.push(var10 / var14 * 4.0, 0.20000000298023224, var12 / var14 * 4.0);
+            if (!this.phaseManager.getCurrentPhase().isSitting() && var9.getLastHurtByMobTimestamp() < var8.tickCount - 2) {
+               DamageSource var16 = this.damageSources().mobAttack(this);
+               var8.hurt(var16, 5.0F);
+               EnchantmentHelper.doPostAttackEffects(var1, var8, var16);
             }
          }
       }
@@ -423,8 +429,13 @@ public class EnderDragon extends Mob implements Enemy {
       while(var2.hasNext()) {
          Entity var3 = (Entity)var2.next();
          if (var3 instanceof LivingEntity) {
-            var3.hurt(this.damageSources().mobAttack(this), 10.0F);
-            this.doEnchantDamageEffects(this, var3);
+            DamageSource var4 = this.damageSources().mobAttack(this);
+            var3.hurt(var4, 10.0F);
+            Level var6 = this.level();
+            if (var6 instanceof ServerLevel) {
+               ServerLevel var5 = (ServerLevel)var6;
+               EnchantmentHelper.doPostAttackEffects(var5, var3, var4);
+            }
          }
       }
 

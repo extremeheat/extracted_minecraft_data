@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -17,12 +18,12 @@ public class SpectralArrow extends AbstractArrow {
       super(var1, var2);
    }
 
-   public SpectralArrow(Level var1, LivingEntity var2, ItemStack var3) {
-      super(EntityType.SPECTRAL_ARROW, var2, var1, var3);
+   public SpectralArrow(Level var1, LivingEntity var2, ItemStack var3, @Nullable ItemStack var4) {
+      super(EntityType.SPECTRAL_ARROW, var2, var1, var3, var4);
    }
 
-   public SpectralArrow(Level var1, double var2, double var4, double var6, ItemStack var8) {
-      super(EntityType.SPECTRAL_ARROW, var2, var4, var6, var1, var8);
+   public SpectralArrow(Level var1, double var2, double var4, double var6, ItemStack var8, @Nullable ItemStack var9) {
+      super(EntityType.SPECTRAL_ARROW, var2, var4, var6, var1, var8, var9);
    }
 
    public void tick() {

@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -85,36 +86,38 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockState var6;
       if (var2.isClientSide) {
-         var6 = (BlockState)var1.cycle(POWERED);
+         BlockState var6 = (BlockState)var1.cycle(POWERED);
          if ((Boolean)var6.getValue(POWERED)) {
             makeParticle(var6, var2, var3, 1.0F);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         var6 = this.pull(var1, var2, var3);
-         float var7 = (Boolean)var6.getValue(POWERED) ? 0.6F : 0.5F;
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var7);
-         var2.gameEvent(var4, (Boolean)var6.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
+         this.pull(var1, var2, var3, (Player)null);
          return InteractionResult.CONSUME;
       }
    }
 
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
-         this.pull(var1, var2, var3);
+      if (var4.canTriggerBlocks()) {
+         this.pull(var1, var2, var3, (Player)null);
       }
 
       super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 
-   public BlockState pull(BlockState var1, Level var2, BlockPos var3) {
+   public void pull(BlockState var1, Level var2, BlockPos var3, @Nullable Player var4) {
       var1 = (BlockState)var1.cycle(POWERED);
       var2.setBlock(var3, var1, 3);
       this.updateNeighbours(var1, var2, var3);
-      return var1;
+      playSound(var4, var2, var3, var1);
+      var2.gameEvent(var4, (Boolean)var1.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
+   }
+
+   protected static void playSound(@Nullable Player var0, LevelAccessor var1, BlockPos var2, BlockState var3) {
+      float var4 = (Boolean)var3.getValue(POWERED) ? 0.6F : 0.5F;
+      var1.playSound(var0, var2, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var4);
    }
 
    private static void makeParticle(BlockState var0, LevelAccessor var1, BlockPos var2, float var3) {

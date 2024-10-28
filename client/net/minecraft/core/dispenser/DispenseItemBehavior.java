@@ -290,24 +290,24 @@ public interface DispenseItemBehavior {
             this.setSuccess(true);
             Direction var4 = (Direction)var1.state().getValue(DispenserBlock.FACING);
             BlockPos var5 = var1.pos().relative(var4);
-            BlockState var6 = ((Level)var3).getBlockState(var5);
+            BlockState var6 = var3.getBlockState(var5);
             if (BaseFireBlock.canBePlacedAt(var3, var5, var4)) {
-               ((Level)var3).setBlockAndUpdate(var5, BaseFireBlock.getState(var3, var5));
-               ((Level)var3).gameEvent((Entity)null, GameEvent.BLOCK_PLACE, var5);
+               var3.setBlockAndUpdate(var5, BaseFireBlock.getState(var3, var5));
+               var3.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, var5);
             } else if (!CampfireBlock.canLight(var6) && !CandleBlock.canLight(var6) && !CandleCakeBlock.canLight(var6)) {
                if (var6.getBlock() instanceof TntBlock) {
                   TntBlock.explode(var3, var5);
-                  ((Level)var3).removeBlock(var5, false);
+                  var3.removeBlock(var5, false);
                } else {
                   this.setSuccess(false);
                }
             } else {
-               ((Level)var3).setBlockAndUpdate(var5, (BlockState)var6.setValue(BlockStateProperties.LIT, true));
-               ((Level)var3).gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, var5);
+               var3.setBlockAndUpdate(var5, (BlockState)var6.setValue(BlockStateProperties.LIT, true));
+               var3.gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, var5);
             }
 
             if (this.isSuccess()) {
-               var2.hurtAndBreak(1, ((Level)var3).getRandom(), (ServerPlayer)null, () -> {
+               var2.hurtAndBreak(1, var3, (ServerPlayer)null, () -> {
                   var2.setCount(0);
                });
             }
@@ -483,7 +483,7 @@ public interface DispenseItemBehavior {
                   var7 = (Armadillo)var6.next();
                } while(!var7.brushOffScute());
 
-               var2.hurtAndBreak(16, var3.getRandom(), (ServerPlayer)null, () -> {
+               var2.hurtAndBreak(16, var3, (ServerPlayer)null, () -> {
                   var2.shrink(1);
                   var2.setDamageValue(0);
                });

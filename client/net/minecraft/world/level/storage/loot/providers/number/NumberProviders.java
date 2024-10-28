@@ -15,6 +15,7 @@ public class NumberProviders {
    public static final LootNumberProviderType BINOMIAL;
    public static final LootNumberProviderType SCORE;
    public static final LootNumberProviderType STORAGE;
+   public static final LootNumberProviderType ENCHANTMENT_LEVEL;
 
    public NumberProviders() {
       super();
@@ -44,5 +45,6 @@ public class NumberProviders {
       BINOMIAL = register("binomial", BinomialDistributionGenerator.CODEC);
       SCORE = register("score", ScoreboardValue.CODEC);
       STORAGE = register("storage", StorageValue.CODEC);
+      ENCHANTMENT_LEVEL = register("enchantment_level", EnchantmentLevelProvider.CODEC);
    }
 }

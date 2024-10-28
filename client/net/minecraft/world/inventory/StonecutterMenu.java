@@ -13,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -143,12 +144,16 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
    }
 
+   private static SingleRecipeInput createRecipeInput(Container var0) {
+      return new SingleRecipeInput(var0.getItem(0));
+   }
+
    private void setupRecipeList(Container var1, ItemStack var2) {
       this.recipes.clear();
       this.selectedRecipeIndex.set(-1);
       this.resultSlot.set(ItemStack.EMPTY);
       if (!var2.isEmpty()) {
-         this.recipes = this.level.getRecipeManager().getRecipesFor(RecipeType.STONECUTTING, var1, this.level);
+         this.recipes = this.level.getRecipeManager().getRecipesFor(RecipeType.STONECUTTING, createRecipeInput(var1), this.level);
       }
 
    }
@@ -156,7 +161,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
    void setupResultSlot() {
       if (!this.recipes.isEmpty() && this.isValidRecipeIndex(this.selectedRecipeIndex.get())) {
          RecipeHolder var1 = (RecipeHolder)this.recipes.get(this.selectedRecipeIndex.get());
-         ItemStack var2 = ((StonecutterRecipe)var1.value()).assemble(this.container, this.level.registryAccess());
+         ItemStack var2 = ((StonecutterRecipe)var1.value()).assemble(createRecipeInput(this.container), this.level.registryAccess());
          if (var2.isItemEnabled(this.level.enabledFeatures())) {
             this.resultContainer.setRecipeUsed(var1);
             this.resultSlot.set(var2);
@@ -200,7 +205,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(var5, 2, 38, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.level.getRecipeManager().getRecipeFor(RecipeType.STONECUTTING, new SimpleContainer(new ItemStack[]{var5}), this.level).isPresent()) {
+         } else if (this.level.getRecipeManager().getRecipeFor(RecipeType.STONECUTTING, new SingleRecipeInput(var5), this.level).isPresent()) {
             if (!this.moveItemStackTo(var5, 0, 1, false)) {
                return ItemStack.EMPTY;
             }

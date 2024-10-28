@@ -15,12 +15,12 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
-public record LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid) {
+public record LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid, Optional<Boolean> canSeeSky) {
    public static final Codec<LocationPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(LocationPredicate.PositionPredicate.CODEC.optionalFieldOf("position").forGetter(LocationPredicate::position), RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(LocationPredicate::biomes), RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(LocationPredicate::structures), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(LocationPredicate::dimension), Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey), LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light), BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block), FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid)).apply(var0, LocationPredicate::new);
+      return var0.group(LocationPredicate.PositionPredicate.CODEC.optionalFieldOf("position").forGetter(LocationPredicate::position), RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(LocationPredicate::biomes), RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(LocationPredicate::structures), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(LocationPredicate::dimension), Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey), LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light), BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block), FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid), Codec.BOOL.optionalFieldOf("can_see_sky").forGetter(LocationPredicate::canSeeSky)).apply(var0, LocationPredicate::new);
    });
 
-   public LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid) {
+   public LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid, Optional<Boolean> canSeeSky) {
       super();
       this.position = position;
       this.biomes = biomes;
@@ -30,6 +30,7 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
       this.light = light;
       this.block = block;
       this.fluid = fluid;
+      this.canSeeSky = canSeeSky;
    }
 
    public boolean matches(ServerLevel var1, double var2, double var4, double var6) {
@@ -40,19 +41,19 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
       } else {
          BlockPos var8 = BlockPos.containing(var2, var4, var6);
          boolean var9 = var1.isLoaded(var8);
-         if (!this.biomes.isPresent() || var9 && ((HolderSet)this.biomes.get()).contains(var1.getBiome(var8))) {
-            if (this.structures.isPresent() && (!var9 || !var1.structureManager().getStructureWithPieceAt(var8, (HolderSet)this.structures.get()).isValid())) {
+         if (this.biomes.isPresent() && (!var9 || !((HolderSet)this.biomes.get()).contains(var1.getBiome(var8)))) {
+            return false;
+         } else if (this.structures.isPresent() && (!var9 || !var1.structureManager().getStructureWithPieceAt(var8, (HolderSet)this.structures.get()).isValid())) {
+            return false;
+         } else if (!this.smokey.isPresent() || var9 && (Boolean)this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var8)) {
+            if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(var1, var8)) {
                return false;
-            } else if (!this.smokey.isPresent() || var9 && (Boolean)this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var8)) {
-               if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(var1, var8)) {
-                  return false;
-               } else if (this.block.isPresent() && !((BlockPredicate)this.block.get()).matches(var1, var8)) {
-                  return false;
-               } else {
-                  return !this.fluid.isPresent() || ((FluidPredicate)this.fluid.get()).matches(var1, var8);
-               }
+            } else if (this.block.isPresent() && !((BlockPredicate)this.block.get()).matches(var1, var8)) {
+               return false;
+            } else if (this.fluid.isPresent() && !((FluidPredicate)this.fluid.get()).matches(var1, var8)) {
+               return false;
             } else {
-               return false;
+               return !this.canSeeSky.isPresent() || (Boolean)this.canSeeSky.get() == var1.canSeeSky(var8);
             }
          } else {
             return false;
@@ -90,6 +91,10 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
 
    public Optional<FluidPredicate> fluid() {
       return this.fluid;
+   }
+
+   public Optional<Boolean> canSeeSky() {
+      return this.canSeeSky;
    }
 
    private static record PositionPredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z) {
@@ -136,6 +141,7 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
       private Optional<LightPredicate> light;
       private Optional<BlockPredicate> block;
       private Optional<FluidPredicate> fluid;
+      private Optional<Boolean> canSeeSky;
 
       public Builder() {
          super();
@@ -149,6 +155,7 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          this.light = Optional.empty();
          this.block = Optional.empty();
          this.fluid = Optional.empty();
+         this.canSeeSky = Optional.empty();
       }
 
       public static Builder location() {
@@ -221,9 +228,14 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          return this;
       }
 
+      public Builder setCanSeeSky(boolean var1) {
+         this.canSeeSky = Optional.of(var1);
+         return this;
+      }
+
       public LocationPredicate build() {
          Optional var1 = LocationPredicate.PositionPredicate.of(this.x, this.y, this.z);
-         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.smokey, this.light, this.block, this.fluid);
+         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.smokey, this.light, this.block, this.fluid, this.canSeeSky);
       }
    }
 }

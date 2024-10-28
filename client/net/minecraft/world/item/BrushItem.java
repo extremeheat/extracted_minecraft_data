@@ -47,7 +47,7 @@ public class BrushItem extends Item {
       return UseAnim.BRUSH;
    }
 
-   public int getUseDuration(ItemStack var1) {
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 200;
    }
 
@@ -56,7 +56,7 @@ public class BrushItem extends Item {
          HitResult var6 = this.calculateHitResult(var5);
          if (var6 instanceof BlockHitResult var7) {
             if (var6.getType() == HitResult.Type.BLOCK) {
-               int var8 = this.getUseDuration(var3) - var4 + 1;
+               int var8 = this.getUseDuration(var3, var2) - var4 + 1;
                boolean var9 = var8 % 10 == 5;
                if (var9) {
                   BlockPos var10 = var7.getBlockPos();

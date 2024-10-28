@@ -10,7 +10,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 
 public abstract class LootPoolEntryContainer implements ComposableEntryContainer {
    protected final List<LootItemCondition> conditions;
@@ -23,7 +22,7 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
    }
 
    protected static <T extends LootPoolEntryContainer> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(RecordCodecBuilder.Instance<T> var0) {
-      return var0.group(LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
+      return var0.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
          return var0x.conditions;
       }));
    }

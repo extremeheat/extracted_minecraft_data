@@ -40,8 +40,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.WolfVariant;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.item.armortrim.TrimPattern;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.entity.BannerPattern;
@@ -90,7 +93,7 @@ public class RegistryDataLoader {
       }, var2, var3);
    }
 
-   public static RegistryAccess.Frozen load(LoadingFunction var0, RegistryAccess var1, List<RegistryData<?>> var2) {
+   private static RegistryAccess.Frozen load(LoadingFunction var0, RegistryAccess var1, List<RegistryData<?>> var2) {
       HashMap var3 = new HashMap();
       List var4 = (List)var2.stream().map((var1x) -> {
          return var1x.create(Lifecycle.stable(), var3);
@@ -106,6 +109,10 @@ public class RegistryDataLoader {
             var2.freeze();
          } catch (Exception var4) {
             var3.put(var2.key(), var4);
+         }
+
+         if (var1x.data.requiredNonEmpty && var2.size() == 0) {
+            var3.put(var2.key(), new IllegalStateException("Registry must be non-empty"));
          }
 
       });
@@ -248,9 +255,9 @@ public class RegistryDataLoader {
    }
 
    static {
-      WORLDGEN_REGISTRIES = List.of(new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.BIOME, Biome.DIRECT_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC), new RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE, Structure.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC), new RegistryData(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC), new RegistryData(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC), new RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC), new RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC), new RegistryData(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC), new RegistryData(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC), new RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC));
+      WORLDGEN_REGISTRIES = List.of(new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.BIOME, Biome.DIRECT_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC), new RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE, Structure.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC), new RegistryData(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC), new RegistryData(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC), new RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC), new RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC), new RegistryData(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC), new RegistryData(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC), new RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC));
       DIMENSION_REGISTRIES = List.of(new RegistryData(Registries.LEVEL_STEM, LevelStem.CODEC));
-      SYNCHRONIZED_REGISTRIES = List.of(new RegistryData(Registries.BIOME, Biome.NETWORK_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC), new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC));
+      SYNCHRONIZED_REGISTRIES = List.of(new RegistryData(Registries.BIOME, Biome.NETWORK_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC));
    }
 
    @FunctionalInterface
@@ -259,6 +266,7 @@ public class RegistryDataLoader {
    }
 
    static record Loader<T>(RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
+      final RegistryData<T> data;
       final WritableRegistry<T> registry;
 
       Loader(RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
@@ -289,13 +297,19 @@ public class RegistryDataLoader {
       }
    }
 
-   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
+   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
       final Codec<T> elementCodec;
+      final boolean requiredNonEmpty;
 
-      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
+      RegistryData(ResourceKey<? extends Registry<T>> var1, Codec<T> var2) {
+         this(var1, var2, false);
+      }
+
+      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
          super();
          this.key = key;
          this.elementCodec = elementCodec;
+         this.requiredNonEmpty = requiredNonEmpty;
       }
 
       Loader<T> create(Lifecycle var1, Map<ResourceKey<?>, Exception> var2) {
@@ -313,6 +327,10 @@ public class RegistryDataLoader {
 
       public Codec<T> elementCodec() {
          return this.elementCodec;
+      }
+
+      public boolean requiredNonEmpty() {
+         return this.requiredNonEmpty;
       }
    }
 }

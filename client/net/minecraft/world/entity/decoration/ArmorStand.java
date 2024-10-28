@@ -403,7 +403,7 @@ public class ArmorStand extends LivingEntity {
                if (this.isOnFire()) {
                   this.causeDamage(var1, 0.15F);
                } else {
-                  this.igniteForSeconds(5);
+                  this.igniteForSeconds(5.0F);
                }
 
                return false;

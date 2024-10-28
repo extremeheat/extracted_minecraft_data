@@ -48,7 +48,7 @@ public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
       return createUnchecked((DataComponentType)var0.getKey(), var0.getValue());
    }
 
-   static <T> TypedDataComponent<T> createUnchecked(DataComponentType<T> var0, Object var1) {
+   public static <T> TypedDataComponent<T> createUnchecked(DataComponentType<T> var0, Object var1) {
       return new TypedDataComponent(var0, var1);
    }
 

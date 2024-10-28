@@ -132,8 +132,8 @@ public class Chicken extends Animal {
       return var1.is(ItemTags.CHICKEN_FOOD);
    }
 
-   public int getExperienceReward() {
-      return this.isChickenJockey() ? 10 : super.getExperienceReward();
+   protected int getBaseExperienceReward() {
+      return this.isChickenJockey() ? 10 : super.getBaseExperienceReward();
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {

@@ -64,6 +64,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
@@ -72,7 +73,6 @@ import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
@@ -96,7 +96,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    private static final float WATER_VISION_QUICK_PERCENT = 0.6F;
    private static final double SUFFOCATING_COLLISION_CHECK_SCALE = 0.35;
    private static final double MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN = 0.13962633907794952;
-   private static final float DEFAULT_SNEAKING_MOVEMENT_FACTOR = 0.3F;
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
@@ -350,10 +349,6 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public boolean canSpawnSprintParticle() {
       return !this.getAbilities().flying && super.canSpawnSprintParticle();
-   }
-
-   public boolean canSpawnSoulSpeedParticle() {
-      return !this.getAbilities().flying && super.canSpawnSoulSpeedParticle();
    }
 
    protected void sendRidingJump() {
@@ -643,7 +638,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       boolean var3 = this.hasEnoughImpulseToStartSprinting();
       Abilities var4 = this.getAbilities();
       this.crouching = !var4.flying && !this.isSwimming() && !this.isPassenger() && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING) && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
-      float var5 = Mth.clamp(0.3F + EnchantmentHelper.getSneakingSpeedBonus(this), 0.0F, 1.0F);
+      float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
       this.input.tick(this.isMovingSlowly(), var5);
       this.minecraft.getTutorial().onInput(this.input);
       if (this.isUsingItem() && !this.isPassenger()) {

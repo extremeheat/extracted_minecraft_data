@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -15,11 +14,11 @@ public class ShulkerBoxColoring extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       int var3 = 0;
       int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for(int var5 = 0; var5 < var1.size(); ++var5) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (Block.byItem(var6.getItem()) instanceof ShulkerBoxBlock) {
@@ -41,11 +40,11 @@ public class ShulkerBoxColoring extends CustomRecipe {
       return var3 == 1 && var4 == 1;
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       ItemStack var3 = ItemStack.EMPTY;
       DyeItem var4 = (DyeItem)Items.WHITE_DYE;
 
-      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+      for(int var5 = 0; var5 < var1.size(); ++var5) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             Item var7 = var6.getItem();

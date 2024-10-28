@@ -33,7 +33,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
          BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
          this.setSuccess(tryShearBeehive(var3, var4) || tryShearLivingEntity(var3, var4));
          if (this.isSuccess()) {
-            var2.hurtAndBreak(1, var3.getRandom(), (ServerPlayer)null, () -> {
+            var2.hurtAndBreak(1, var3, (ServerPlayer)null, () -> {
                var2.setCount(0);
             });
          }

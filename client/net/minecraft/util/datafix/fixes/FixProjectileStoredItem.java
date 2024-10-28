@@ -11,6 +11,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.function.Function;
 import net.minecraft.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class FixProjectileStoredItem extends DataFix {
    private static final String EMPTY_POTION = "minecraft:empty";
@@ -22,22 +23,7 @@ public class FixProjectileStoredItem extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ENTITY);
       Type var2 = this.getOutputSchema().getType(References.ENTITY);
-      return this.fixTypeEverywhereTyped("Fix AbstractArrow item type", var1, var2, this.chainAllFilters(this.fixChoice("minecraft:trident", FixProjectileStoredItem::castUnchecked), this.fixChoice("minecraft:arrow", FixProjectileStoredItem::fixArrow), this.fixChoice("minecraft:spectral_arrow", FixProjectileStoredItem::fixSpectralArrow)));
-   }
-
-   @SafeVarargs
-   private <T> Function<Typed<?>, Typed<?>> chainAllFilters(Function<Typed<?>, Typed<?>>... var1) {
-      return (var1x) -> {
-         Function[] var2 = var1;
-         int var3 = var1.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Function var5 = var2[var4];
-            var1x = (Typed)var5.apply(var1x);
-         }
-
-         return var1x;
-      };
+      return this.fixTypeEverywhereTyped("Fix AbstractArrow item type", var1, var2, ExtraDataFixUtils.chainAllFilters(this.fixChoice("minecraft:trident", FixProjectileStoredItem::castUnchecked), this.fixChoice("minecraft:arrow", FixProjectileStoredItem::fixArrow), this.fixChoice("minecraft:spectral_arrow", FixProjectileStoredItem::fixSpectralArrow)));
    }
 
    private Function<Typed<?>, Typed<?>> fixChoice(String var1, SubFixer<?> var2) {

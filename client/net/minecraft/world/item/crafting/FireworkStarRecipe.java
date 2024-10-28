@@ -7,7 +7,6 @@ import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,14 +25,14 @@ public class FireworkStarRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       boolean var3 = false;
       boolean var4 = false;
       boolean var5 = false;
       boolean var6 = false;
       boolean var7 = false;
 
-      for(int var8 = 0; var8 < var1.getContainerSize(); ++var8) {
+      for(int var8 = 0; var8 < var1.size(); ++var8) {
          ItemStack var9 = var1.getItem(var8);
          if (!var9.isEmpty()) {
             if (SHAPE_INGREDIENT.test(var9)) {
@@ -73,13 +72,13 @@ public class FireworkStarRecipe extends CustomRecipe {
       return var3 && var4;
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       FireworkExplosion.Shape var3 = FireworkExplosion.Shape.SMALL_BALL;
       boolean var4 = false;
       boolean var5 = false;
       IntArrayList var6 = new IntArrayList();
 
-      for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
+      for(int var7 = 0; var7 < var1.size(); ++var7) {
          ItemStack var8 = var1.getItem(var7);
          if (!var8.isEmpty()) {
             if (SHAPE_INGREDIENT.test(var8)) {

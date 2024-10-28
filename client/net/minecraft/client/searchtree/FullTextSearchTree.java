@@ -7,19 +7,11 @@ import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 
 public class FullTextSearchTree<T> extends IdSearchTree<T> {
-   private final List<T> contents;
-   private final Function<T, Stream<String>> filler;
-   private PlainTextSearchTree<T> plainTextSearchTree = PlainTextSearchTree.empty();
+   private final SearchTree<T> plainTextSearchTree;
 
    public FullTextSearchTree(Function<T, Stream<String>> var1, Function<T, Stream<ResourceLocation>> var2, List<T> var3) {
       super(var2, var3);
-      this.contents = var3;
-      this.filler = var1;
-   }
-
-   public void refresh() {
-      super.refresh();
-      this.plainTextSearchTree = PlainTextSearchTree.create(this.contents, this.filler);
+      this.plainTextSearchTree = SearchTree.plainText(var3, var1);
    }
 
    protected List<T> searchPlainText(String var1) {

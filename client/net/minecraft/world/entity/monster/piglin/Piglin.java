@@ -46,6 +46,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -103,14 +104,14 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return this.inventory;
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
-      super.dropCustomDeathLoot(var1, var2, var3);
-      Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5) {
-         if (var5.canDropMobsSkull()) {
-            ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var6);
+   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
+      super.dropCustomDeathLoot(var1, var2);
+      Entity var3 = var1.getEntity();
+      if (var3 instanceof Creeper var4) {
+         if (var4.canDropMobsSkull()) {
+            ItemStack var5 = new ItemStack(Items.PIGLIN_HEAD);
+            var4.increaseDroppedSkulls();
+            this.spawnAtLocation(var5);
          }
       }
 
@@ -250,7 +251,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       super.customServerAiStep();
    }
 
-   public int getExperienceReward() {
+   protected int getBaseExperienceReward() {
       return this.xpReward;
    }
 
@@ -344,7 +345,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
-      if (EnchantmentHelper.hasBindingCurse(var2)) {
+      if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
          return false;
       } else {
          boolean var3 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);

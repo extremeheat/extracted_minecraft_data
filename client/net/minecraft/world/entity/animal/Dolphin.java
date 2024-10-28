@@ -159,14 +159,8 @@ public class Dolphin extends WaterAnimal {
       return new WaterBoundPathNavigation(this, var1);
    }
 
-   public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-      if (var2) {
-         this.doEnchantDamageEffects(this, var1);
-         this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
-      }
-
-      return var2;
+   public void playAttackSound() {
+      this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
    }
 
    public int getMaxAirSupply() {

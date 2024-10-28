@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
 import com.google.common.base.MoreObjects;
+import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import java.util.Iterator;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -12,8 +13,10 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
@@ -32,6 +35,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private Entity cachedOwner;
    private boolean leftOwner;
    private boolean hasBeenShot;
+   @Nullable
+   private Entity lastDeflectedBy;
 
    Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
@@ -158,10 +163,15 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    protected ProjectileDeflection hitTargetOrDeflectSelf(HitResult var1) {
       if (var1.getType() == HitResult.Type.ENTITY) {
          EntityHitResult var2 = (EntityHitResult)var1;
-         ProjectileDeflection var3 = var2.getEntity().deflection(this);
-         if (var3 != ProjectileDeflection.NONE) {
-            this.deflect(var3, var2.getEntity(), this.getOwner(), false);
-            return var3;
+         Entity var3 = var2.getEntity();
+         ProjectileDeflection var4 = var3.deflection(this);
+         if (var4 != ProjectileDeflection.NONE) {
+            if (var3 != this.lastDeflectedBy) {
+               this.lastDeflectedBy = var3;
+               this.deflect(var4, var3, this.getOwner(), false);
+            }
+
+            return var4;
          }
       }
 
@@ -284,5 +294,11 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    public float getPickRadius() {
       return this.isPickable() ? 1.0F : 0.0F;
+   }
+
+   public DoubleDoubleImmutablePair calculateHorizontalHurtKnockbackDirection(LivingEntity var1, DamageSource var2) {
+      double var3 = this.getDeltaMovement().x;
+      double var5 = this.getDeltaMovement().z;
+      return DoubleDoubleImmutablePair.of(var3, var5);
    }
 }
