@@ -35,6 +35,7 @@ public class LootContextParamSets {
    public static final LootContextParamSet ENCHANTED_ITEM;
    public static final LootContextParamSet ENCHANTED_LOCATION;
    public static final LootContextParamSet ENCHANTED_ENTITY;
+   public static final LootContextParamSet HIT_BLOCK;
 
    public LootContextParamSets() {
       super();
@@ -44,7 +45,7 @@ public class LootContextParamSets {
       LootContextParamSet.Builder var2 = new LootContextParamSet.Builder();
       var1.accept(var2);
       LootContextParamSet var3 = var2.build();
-      ResourceLocation var4 = new ResourceLocation(var0);
+      ResourceLocation var4 = ResourceLocation.withDefaultNamespace(var0);
       LootContextParamSet var5 = (LootContextParamSet)REGISTRY.put(var4, var3);
       if (var5 != null) {
          throw new IllegalStateException("Loot table parameter set " + String.valueOf(var4) + " is already registered");
@@ -129,6 +130,9 @@ public class LootContextParamSets {
       });
       ENCHANTED_ENTITY = register("enchanted_entity", (var0) -> {
          var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ENCHANTMENT_LEVEL).required(LootContextParams.ORIGIN);
+      });
+      HIT_BLOCK = register("hit_block", (var0) -> {
+         var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ENCHANTMENT_LEVEL).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE);
       });
    }
 }

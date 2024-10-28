@@ -16,9 +16,9 @@ public record FishingHookPredicate(Optional<Boolean> inOpenWater) implements Ent
       return var0.group(Codec.BOOL.optionalFieldOf("in_open_water").forGetter(FishingHookPredicate::inOpenWater)).apply(var0, FishingHookPredicate::new);
    });
 
-   public FishingHookPredicate(Optional<Boolean> inOpenWater) {
+   public FishingHookPredicate(Optional<Boolean> var1) {
       super();
-      this.inOpenWater = inOpenWater;
+      this.inOpenWater = var1;
    }
 
    public static FishingHookPredicate inOpenWater(boolean var0) {

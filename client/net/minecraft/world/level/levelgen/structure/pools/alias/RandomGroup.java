@@ -16,9 +16,9 @@ record RandomGroup(SimpleWeightedRandomList<List<PoolAliasBinding>> groups) impl
       return var0.group(SimpleWeightedRandomList.wrappedCodec(Codec.list(PoolAliasBinding.CODEC)).fieldOf("groups").forGetter(RandomGroup::groups)).apply(var0, RandomGroup::new);
    });
 
-   RandomGroup(SimpleWeightedRandomList<List<PoolAliasBinding>> groups) {
+   RandomGroup(SimpleWeightedRandomList<List<PoolAliasBinding>> var1) {
       super();
-      this.groups = groups;
+      this.groups = var1;
    }
 
    public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {

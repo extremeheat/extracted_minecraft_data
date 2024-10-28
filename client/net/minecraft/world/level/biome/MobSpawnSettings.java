@@ -76,10 +76,10 @@ public class MobSpawnSettings {
          })).apply(var0, MobSpawnCost::new);
       });
 
-      public MobSpawnCost(double energyBudget, double charge) {
+      public MobSpawnCost(double var1, double var3) {
          super();
-         this.energyBudget = energyBudget;
-         this.charge = charge;
+         this.energyBudget = var1;
+         this.charge = var3;
       }
 
       public double energyBudget() {

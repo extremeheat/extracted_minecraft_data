@@ -24,6 +24,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -156,7 +157,7 @@ public class BeehiveBlockEntity extends BlockEntity {
             }
 
             BlockPos var3 = this.getBlockPos();
-            this.level.playSound((Player)null, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level.playSound((Player)null, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (SoundEvent)SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
             this.level.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1, this.getBlockState()));
          }
 
@@ -257,7 +258,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          double var4 = (double)var1.getX() + 0.5;
          double var6 = (double)var1.getY();
          double var8 = (double)var1.getZ() + 0.5;
-         var0.playSound((Player)null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, var4, var6, var8, (SoundEvent)SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       DebugPackets.sendHiveInfo(var0, var1, var2, var3);
@@ -330,11 +331,11 @@ public class BeehiveBlockEntity extends BlockEntity {
       public static final Codec<List<Occupant>> LIST_CODEC;
       public static final StreamCodec<ByteBuf, Occupant> STREAM_CODEC;
 
-      public Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
+      public Occupant(CustomData var1, int var2, int var3) {
          super();
-         this.entityData = entityData;
-         this.ticksInHive = ticksInHive;
-         this.minTicksInHive = minTicksInHive;
+         this.entityData = var1;
+         this.ticksInHive = var2;
+         this.minTicksInHive = var3;
       }
 
       public static Occupant of(Entity var0) {

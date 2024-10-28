@@ -34,9 +34,8 @@ public class BannerPatternFormatFix extends NamedEntityFix {
          Objects.requireNonNull(var0x);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createString).result(), var0x);
       });
-      var0 = var0.renameAndFixField("Color", "color", (var0x) -> {
-         return var0x.createString(fixColor(var0x.asInt(0)));
-      });
+      var0 = var0.set("color", var0.createString(fixColor(var0.get("Color").asInt(0))));
+      var0 = var0.remove("Color");
       return var0;
    }
 

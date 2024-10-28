@@ -60,12 +60,8 @@ public abstract class StructurePiece {
    }
 
    public StructurePiece(StructurePieceType var1, CompoundTag var2) {
-      int var10002 = var2.getInt("GD");
-      DataResult var10003 = BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB"));
-      Logger var10004 = LOGGER;
-      Objects.requireNonNull(var10004);
-      this(var1, var10002, (BoundingBox)var10003.resultOrPartial(var10004::error).orElseThrow(() -> {
-         return new IllegalArgumentException("Invalid boundingbox");
+      this(var1, var2.getInt("GD"), (BoundingBox)BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB")).getOrThrow((var0) -> {
+         return new IllegalArgumentException("Invalid boundingbox: " + var0);
       }));
       int var3 = var2.getInt("O");
       this.setOrientation(var3 == -1 ? null : Direction.from2DDataValue(var3));

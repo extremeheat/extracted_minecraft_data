@@ -605,7 +605,7 @@ public class LevelChunk extends ChunkAccess {
       var1.getFluidTicks().removeContainer(this.chunkPos);
    }
 
-   public ChunkStatus getStatus() {
+   public ChunkStatus getPersistedStatus() {
       return ChunkStatus.FULL;
    }
 

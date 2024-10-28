@@ -32,12 +32,12 @@ public class BeeNestDestroyedTrigger extends SimpleCriterionTrigger<TriggerInsta
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(TriggerInstance::block), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("num_bees_inside", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::beesInside)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Block>> block, Optional<ItemPredicate> item, MinMaxBounds.Ints beesInside) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Block>> var2, Optional<ItemPredicate> var3, MinMaxBounds.Ints var4) {
          super();
-         this.player = player;
-         this.block = block;
-         this.item = item;
-         this.beesInside = beesInside;
+         this.player = var1;
+         this.block = var2;
+         this.item = var3;
+         this.beesInside = var4;
       }
 
       public static Criterion<TriggerInstance> destroyedBeeNest(Block var0, ItemPredicate.Builder var1, MinMaxBounds.Ints var2) {

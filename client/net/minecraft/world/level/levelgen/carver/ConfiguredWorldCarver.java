@@ -22,10 +22,10 @@ public record ConfiguredWorldCarver<WC extends CarverConfiguration>(WorldCarver<
    public static final Codec<Holder<ConfiguredWorldCarver<?>>> CODEC;
    public static final Codec<HolderSet<ConfiguredWorldCarver<?>>> LIST_CODEC;
 
-   public ConfiguredWorldCarver(WorldCarver<WC> worldCarver, WC config) {
+   public ConfiguredWorldCarver(WorldCarver<WC> var1, WC var2) {
       super();
-      this.worldCarver = worldCarver;
-      this.config = config;
+      this.worldCarver = var1;
+      this.config = var2;
    }
 
    public boolean isStartChunk(RandomSource var1) {

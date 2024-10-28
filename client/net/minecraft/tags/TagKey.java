@@ -14,10 +14,10 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, ResourceLoc
 
    /** @deprecated */
    @Deprecated
-   public TagKey(ResourceKey<? extends Registry<T>> registry, ResourceLocation location) {
+   public TagKey(ResourceKey<? extends Registry<T>> var1, ResourceLocation var2) {
       super();
-      this.registry = registry;
-      this.location = location;
+      this.registry = var1;
+      this.location = var2;
    }
 
    public static <T> Codec<TagKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {

@@ -21,14 +21,14 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
       return var0.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProvider.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(var0, SpawnParticlesEffect::new);
    });
 
-   public SpawnParticlesEffect(ParticleOptions particle, PositionSource horizontalPosition, PositionSource verticalPosition, VelocitySource horizontalVelocity, VelocitySource verticalVelocity, FloatProvider speed) {
+   public SpawnParticlesEffect(ParticleOptions var1, PositionSource var2, PositionSource var3, VelocitySource var4, VelocitySource var5, FloatProvider var6) {
       super();
-      this.particle = particle;
-      this.horizontalPosition = horizontalPosition;
-      this.verticalPosition = verticalPosition;
-      this.horizontalVelocity = horizontalVelocity;
-      this.verticalVelocity = verticalVelocity;
-      this.speed = speed;
+      this.particle = var1;
+      this.horizontalPosition = var2;
+      this.verticalPosition = var3;
+      this.horizontalVelocity = var4;
+      this.verticalVelocity = var5;
+      this.speed = var6;
    }
 
    public static PositionSource offsetFromEntityPosition(float var0) {
@@ -49,7 +49,7 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
       RandomSource var6 = var4.getRandom();
-      Vec3 var7 = var4.getDeltaMovement();
+      Vec3 var7 = var4.getKnownMovement();
       float var8 = var4.getBbWidth();
       float var9 = var4.getBbHeight();
       var1.sendParticles(this.particle, this.horizontalPosition.getCoordinate(var5.x(), var8, var6), this.verticalPosition.getCoordinate(var5.y(), var9, var6), this.horizontalPosition.getCoordinate(var5.z(), var8, var6), 0, this.horizontalVelocity.getVelocity(var7.x(), var6), this.verticalVelocity.getVelocity(var7.y(), var6), this.horizontalVelocity.getVelocity(var7.z(), var6), (double)this.speed.sample(var6));
@@ -92,11 +92,11 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
          }) : DataResult.success(var0);
       });
 
-      public PositionSource(PositionSourceType type, float offset, float scale) {
+      public PositionSource(PositionSourceType var1, float var2, float var3) {
          super();
-         this.type = type;
-         this.offset = offset;
-         this.scale = scale;
+         this.type = var1;
+         this.offset = var2;
+         this.scale = var3;
       }
 
       public double getCoordinate(double var1, float var3, RandomSource var4) {
@@ -121,10 +121,10 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
          return var0.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProvider.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(var0, VelocitySource::new);
       });
 
-      public VelocitySource(float movementScale, FloatProvider base) {
+      public VelocitySource(float var1, FloatProvider var2) {
          super();
-         this.movementScale = movementScale;
-         this.base = base;
+         this.movementScale = var1;
+         this.base = var2;
       }
 
       public double getVelocity(double var1, RandomSource var3) {

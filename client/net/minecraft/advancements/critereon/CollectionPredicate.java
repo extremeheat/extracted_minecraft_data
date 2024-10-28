@@ -7,11 +7,11 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public record CollectionPredicate<T, P extends Predicate<T>>(Optional<CollectionContentsPredicate<T, P>> contains, Optional<CollectionCountsPredicate<T, P>> counts, Optional<MinMaxBounds.Ints> size) implements Predicate<Iterable<T>> {
-   public CollectionPredicate(Optional<CollectionContentsPredicate<T, P>> contains, Optional<CollectionCountsPredicate<T, P>> counts, Optional<MinMaxBounds.Ints> size) {
+   public CollectionPredicate(Optional<CollectionContentsPredicate<T, P>> var1, Optional<CollectionCountsPredicate<T, P>> var2, Optional<MinMaxBounds.Ints> var3) {
       super();
-      this.contains = contains;
-      this.counts = counts;
-      this.size = size;
+      this.contains = var1;
+      this.counts = var2;
+      this.size = var3;
    }
 
    public static <T, P extends Predicate<T>> Codec<CollectionPredicate<T, P>> codec(Codec<P> var0) {

@@ -1,14 +1,17 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -25,26 +28,25 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private static final int PANIC_MAX_DURATION = 120;
    private static final int PANIC_DISTANCE_HORIZONTAL = 5;
    private static final int PANIC_DISTANCE_VERTICAL = 4;
-   private static final Predicate<PathfinderMob> DEFAULT_SHOULD_PANIC_PREDICATE = (var0) -> {
-      return var0.getLastHurtByMob() != null || var0.isFreezing() || var0.isOnFire();
-   };
    private final float speedMultiplier;
-   private final Predicate<E> shouldPanic;
+   private final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes;
 
    public AnimalPanic(float var1) {
-      Predicate var10002 = DEFAULT_SHOULD_PANIC_PREDICATE;
-      Objects.requireNonNull(var10002);
-      this(var1, var10002::test);
+      this(var1, (var0) -> {
+         return DamageTypeTags.PANIC_CAUSES;
+      });
    }
 
-   public AnimalPanic(float var1, Predicate<E> var2) {
+   public AnimalPanic(float var1, Function<PathfinderMob, TagKey<DamageType>> var2) {
       super(Map.of(MemoryModuleType.IS_PANICKING, MemoryStatus.REGISTERED, MemoryModuleType.HURT_BY, MemoryStatus.REGISTERED), 100, 120);
       this.speedMultiplier = var1;
-      this.shouldPanic = var2;
+      this.panicCausingDamageTypes = var2;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return this.shouldPanic.test(var2) && (var2.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING));
+      return (Boolean)var2.getBrain().getMemory(MemoryModuleType.HURT_BY).map((var2x) -> {
+         return var2x.is((TagKey)this.panicCausingDamageTypes.apply(var2));
+      }).orElse(false) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
    }
 
    protected boolean canStillUse(ServerLevel var1, E var2, long var3) {

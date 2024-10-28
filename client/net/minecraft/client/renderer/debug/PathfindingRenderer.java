@@ -126,7 +126,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
             int var13 = var12 >> 16 & 255;
             int var14 = var12 >> 8 & 255;
             int var15 = var12 & 255;
-            var1.vertex(var0.last(), (float)((double)var10.x - var3 + 0.5), (float)((double)var10.y - var5 + 0.5), (float)((double)var10.z - var7 + 0.5)).color(var13, var14, var15, 255).endVertex();
+            var1.addVertex(var0.last(), (float)((double)var10.x - var3 + 0.5), (float)((double)var10.y - var5 + 0.5), (float)((double)var10.z - var7 + 0.5)).setColor(var13, var14, var15, 255);
          }
       }
 

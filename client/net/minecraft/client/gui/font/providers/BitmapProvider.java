@@ -56,16 +56,16 @@ public class BitmapProvider implements GlyphProvider {
       final int height;
       final int ascent;
 
-      Glyph(float scale, NativeImage image, int offsetX, int offsetY, int width, int height, int advance, int ascent) {
+      Glyph(float var1, NativeImage var2, int var3, int var4, int var5, int var6, int var7, int var8) {
          super();
-         this.scale = scale;
-         this.image = image;
-         this.offsetX = offsetX;
-         this.offsetY = offsetY;
-         this.width = width;
-         this.height = height;
-         this.advance = advance;
-         this.ascent = ascent;
+         this.scale = var1;
+         this.image = var2;
+         this.offsetX = var3;
+         this.offsetY = var4;
+         this.width = var5;
+         this.height = var6;
+         this.advance = var7;
+         this.ascent = var8;
       }
 
       public float getAdvance() {
@@ -137,12 +137,12 @@ public class BitmapProvider implements GlyphProvider {
       private static final Codec<int[][]> CODEPOINT_GRID_CODEC;
       public static final MapCodec<Definition> CODEC;
 
-      public Definition(ResourceLocation file, int height, int ascent, int[][] codepointGrid) {
+      public Definition(ResourceLocation var1, int var2, int var3, int[][] var4) {
          super();
-         this.file = file;
-         this.height = height;
-         this.ascent = ascent;
-         this.codepointGrid = codepointGrid;
+         this.file = var1;
+         this.height = var2;
+         this.ascent = var3;
+         this.codepointGrid = var4;
       }
 
       private static DataResult<int[][]> validateDimensions(int[][] var0) {

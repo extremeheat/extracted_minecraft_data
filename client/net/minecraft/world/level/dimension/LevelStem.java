@@ -16,10 +16,10 @@ public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
    public static final ResourceKey<LevelStem> NETHER;
    public static final ResourceKey<LevelStem> END;
 
-   public LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
+   public LevelStem(Holder<DimensionType> var1, ChunkGenerator var2) {
       super();
-      this.type = type;
-      this.generator = generator;
+      this.type = var1;
+      this.generator = var2;
    }
 
    public Holder<DimensionType> type() {
@@ -31,8 +31,8 @@ public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
    }
 
    static {
-      OVERWORLD = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("overworld"));
-      NETHER = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("the_nether"));
-      END = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("the_end"));
+      OVERWORLD = ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.withDefaultNamespace("overworld"));
+      NETHER = ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.withDefaultNamespace("the_nether"));
+      END = ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.withDefaultNamespace("the_end"));
    }
 }

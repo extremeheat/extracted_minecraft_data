@@ -22,12 +22,12 @@ public class IronGolemCrackinessLayer extends RenderLayer<IronGolem, IronGolemMo
          Crackiness.Level var11 = var4.getCrackiness();
          if (var11 != Crackiness.Level.NONE) {
             ResourceLocation var12 = (ResourceLocation)resourceLocations.get(var11);
-            renderColoredCutoutModel(this.getParentModel(), var12, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
+            renderColoredCutoutModel(this.getParentModel(), var12, var1, var2, var3, var4, -1);
          }
       }
    }
 
    static {
-      resourceLocations = ImmutableMap.of(Crackiness.Level.LOW, new ResourceLocation("textures/entity/iron_golem/iron_golem_crackiness_low.png"), Crackiness.Level.MEDIUM, new ResourceLocation("textures/entity/iron_golem/iron_golem_crackiness_medium.png"), Crackiness.Level.HIGH, new ResourceLocation("textures/entity/iron_golem/iron_golem_crackiness_high.png"));
+      resourceLocations = ImmutableMap.of(Crackiness.Level.LOW, ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem_crackiness_low.png"), Crackiness.Level.MEDIUM, ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem_crackiness_medium.png"), Crackiness.Level.HIGH, ResourceLocation.withDefaultNamespace("textures/entity/iron_golem/iron_golem_crackiness_high.png"));
    }
 }

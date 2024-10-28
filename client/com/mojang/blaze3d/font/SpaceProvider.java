@@ -41,9 +41,9 @@ public class SpaceProvider implements GlyphProvider {
          return var0.group(Codec.unboundedMap(ExtraCodecs.CODEPOINT, Codec.FLOAT).fieldOf("advances").forGetter(Definition::advances)).apply(var0, Definition::new);
       });
 
-      public Definition(Map<Integer, Float> advances) {
+      public Definition(Map<Integer, Float> var1) {
          super();
-         this.advances = advances;
+         this.advances = var1;
       }
 
       public GlyphProviderType type() {

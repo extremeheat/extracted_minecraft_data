@@ -5,10 +5,10 @@ import net.minecraft.util.Signer;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 
 public record LocalChatSession(UUID sessionId, ProfileKeyPair keyPair) {
-   public LocalChatSession(UUID sessionId, ProfileKeyPair keyPair) {
+   public LocalChatSession(UUID var1, ProfileKeyPair var2) {
       super();
-      this.sessionId = sessionId;
-      this.keyPair = keyPair;
+      this.sessionId = var1;
+      this.keyPair = var2;
    }
 
    public static LocalChatSession create(ProfileKeyPair var0) {

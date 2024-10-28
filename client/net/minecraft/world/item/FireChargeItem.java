@@ -65,9 +65,10 @@ public class FireChargeItem extends Item implements ProjectileItem {
       double var6 = var5.triangle((double)var4.getStepX(), 0.11485000000000001);
       double var8 = var5.triangle((double)var4.getStepY(), 0.11485000000000001);
       double var10 = var5.triangle((double)var4.getStepZ(), 0.11485000000000001);
-      SmallFireball var12 = new SmallFireball(var1, var2.x(), var2.y(), var2.z(), var6, var8, var10);
-      var12.setItem(var3);
-      return var12;
+      Vec3 var12 = new Vec3(var6, var8, var10);
+      SmallFireball var13 = new SmallFireball(var1, var2.x(), var2.y(), var2.z(), var12.normalize());
+      var13.setItem(var3);
+      return var13;
    }
 
    public void shoot(Projectile var1, double var2, double var4, double var6, float var8, float var9) {

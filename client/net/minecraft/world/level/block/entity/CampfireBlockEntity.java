@@ -17,7 +17,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
@@ -160,13 +160,13 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       return this.items.stream().noneMatch(ItemStack::isEmpty) ? Optional.empty() : this.quickCheck.getRecipeFor(new SingleRecipeInput(var1), this.level);
    }
 
-   public boolean placeFood(@Nullable Entity var1, ItemStack var2, int var3) {
+   public boolean placeFood(@Nullable LivingEntity var1, ItemStack var2, int var3) {
       for(int var4 = 0; var4 < this.items.size(); ++var4) {
          ItemStack var5 = (ItemStack)this.items.get(var4);
          if (var5.isEmpty()) {
             this.cookingTime[var4] = var3;
             this.cookingProgress[var4] = 0;
-            this.items.set(var4, var2.split(1));
+            this.items.set(var4, var2.consumeAndReturn(1, var1));
             this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(var1, this.getBlockState()));
             this.markUpdated();
             return true;

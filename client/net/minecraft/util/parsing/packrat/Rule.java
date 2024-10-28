@@ -16,10 +16,10 @@ public interface Rule<S, T> {
    }
 
    public static record WrappedTerm<S, T>(RuleAction<S, T> action, Term<S> child) implements Rule<S, T> {
-      public WrappedTerm(RuleAction<S, T> action, Term<S> child) {
+      public WrappedTerm(RuleAction<S, T> var1, Term<S> var2) {
          super();
-         this.action = action;
-         this.child = child;
+         this.action = var1;
+         this.child = var2;
       }
 
       public Optional<T> parse(ParseState<S> var1) {

@@ -17,10 +17,10 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
       return var0.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(var0, LootItemEntityPropertyCondition::new);
    });
 
-   public LootItemEntityPropertyCondition(Optional<EntityPredicate> predicate, LootContext.EntityTarget entityTarget) {
+   public LootItemEntityPropertyCondition(Optional<EntityPredicate> var1, LootContext.EntityTarget var2) {
       super();
-      this.predicate = predicate;
-      this.entityTarget = entityTarget;
+      this.predicate = var1;
+      this.entityTarget = var2;
    }
 
    public LootItemConditionType getType() {

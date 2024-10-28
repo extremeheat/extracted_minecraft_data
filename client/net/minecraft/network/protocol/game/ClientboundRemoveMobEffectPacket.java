@@ -2,7 +2,6 @@ package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,10 +14,10 @@ import net.minecraft.world.level.Level;
 public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC;
 
-   public ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) {
+   public ClientboundRemoveMobEffectPacket(int var1, Holder<MobEffect> var2) {
       super();
-      this.entityId = entityId;
-      this.effect = effect;
+      this.entityId = var1;
+      this.effect = var2;
    }
 
    public PacketType<ClientboundRemoveMobEffectPacket> type() {
@@ -43,8 +42,6 @@ public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> e
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, (var0) -> {
-         return var0.entityId;
-      }, ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT), ClientboundRemoveMobEffectPacket::effect, ClientboundRemoveMobEffectPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundRemoveMobEffectPacket::entityId, MobEffect.STREAM_CODEC, ClientboundRemoveMobEffectPacket::effect, ClientboundRemoveMobEffectPacket::new);
    }
 }

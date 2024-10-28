@@ -9,9 +9,9 @@ public record GuiMetadataSection(GuiSpriteScaling scaling) {
    public static final Codec<GuiMetadataSection> CODEC;
    public static final MetadataSectionType<GuiMetadataSection> TYPE;
 
-   public GuiMetadataSection(GuiSpriteScaling scaling) {
+   public GuiMetadataSection(GuiSpriteScaling var1) {
       super();
-      this.scaling = scaling;
+      this.scaling = var1;
    }
 
    public GuiSpriteScaling scaling() {

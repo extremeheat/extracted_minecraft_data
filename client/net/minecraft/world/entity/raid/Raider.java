@@ -64,7 +64,7 @@ public abstract class Raider extends PatrollingMonster {
       var1.define(IS_CELEBRATING, false);
    }
 
-   public abstract void applyRaidBuffs(int var1, boolean var2);
+   public abstract void applyRaidBuffs(ServerLevel var1, int var2, boolean var3);
 
    public boolean canJoinRaid() {
       return this.canJoinRaid;

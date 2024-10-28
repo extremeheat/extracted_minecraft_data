@@ -3,9 +3,9 @@ package net.minecraft.world.item.crafting;
 import net.minecraft.world.item.ItemStack;
 
 public record SingleRecipeInput(ItemStack item) implements RecipeInput {
-   public SingleRecipeInput(ItemStack item) {
+   public SingleRecipeInput(ItemStack var1) {
       super();
-      this.item = item;
+      this.item = var1;
    }
 
    public ItemStack getItem(int var1) {

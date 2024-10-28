@@ -235,7 +235,7 @@ public class Util {
       }
 
       if (var1 instanceof ReportedException var2) {
-         Bootstrap.realStdoutPrintln(var2.getReport().getFriendlyReport());
+         Bootstrap.realStdoutPrintln(var2.getReport().getFriendlyReport(ReportType.CRASH));
          System.exit(-1);
       }
 

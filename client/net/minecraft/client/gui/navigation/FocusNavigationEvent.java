@@ -4,9 +4,9 @@ public interface FocusNavigationEvent {
    ScreenDirection getVerticalDirectionForInitialFocus();
 
    public static record ArrowNavigation(ScreenDirection direction) implements FocusNavigationEvent {
-      public ArrowNavigation(ScreenDirection direction) {
+      public ArrowNavigation(ScreenDirection var1) {
          super();
-         this.direction = direction;
+         this.direction = var1;
       }
 
       public ScreenDirection getVerticalDirectionForInitialFocus() {
@@ -29,9 +29,9 @@ public interface FocusNavigationEvent {
    }
 
    public static record TabNavigation(boolean forward) implements FocusNavigationEvent {
-      public TabNavigation(boolean forward) {
+      public TabNavigation(boolean var1) {
          super();
-         this.forward = forward;
+         this.forward = var1;
       }
 
       public ScreenDirection getVerticalDirectionForInitialFocus() {

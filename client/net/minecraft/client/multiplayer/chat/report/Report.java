@@ -39,9 +39,9 @@ public abstract class Report {
       public static final CannotBuildReason TOO_MANY_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.too_many_messages"));
       public static final CannotBuildReason COMMENT_TOO_LONG = new CannotBuildReason(Component.translatable("gui.abuseReport.send.comment_too_long"));
 
-      public CannotBuildReason(Component message) {
+      public CannotBuildReason(Component var1) {
          super();
-         this.message = message;
+         this.message = var1;
       }
 
       public Tooltip tooltip() {
@@ -54,11 +54,11 @@ public abstract class Report {
    }
 
    public static record Result(UUID id, ReportType reportType, AbuseReport report) {
-      public Result(UUID id, ReportType reportType, AbuseReport report) {
+      public Result(UUID var1, ReportType var2, AbuseReport var3) {
          super();
-         this.id = id;
-         this.reportType = reportType;
-         this.report = report;
+         this.id = var1;
+         this.reportType = var2;
+         this.report = var3;
       }
 
       public UUID id() {

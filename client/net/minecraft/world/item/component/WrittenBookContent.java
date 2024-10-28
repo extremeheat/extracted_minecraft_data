@@ -33,16 +33,16 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    public static final Codec<WrittenBookContent> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, WrittenBookContent> STREAM_CODEC;
 
-   public WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) {
+   public WrittenBookContent(Filterable<String> var1, String var2, int var3, List<Filterable<Component>> var4, boolean var5) {
       super();
-      if (generation >= 0 && generation <= 3) {
-         this.title = title;
-         this.author = author;
-         this.generation = generation;
-         this.pages = pages;
-         this.resolved = resolved;
+      if (var3 >= 0 && var3 <= 3) {
+         this.title = var1;
+         this.author = var2;
+         this.generation = var3;
+         this.pages = var4;
+         this.resolved = var5;
       } else {
-         throw new IllegalArgumentException("Generation was " + generation + ", but must be between 0 and 3");
+         throw new IllegalArgumentException("Generation was " + var3 + ", but must be between 0 and 3");
       }
    }
 

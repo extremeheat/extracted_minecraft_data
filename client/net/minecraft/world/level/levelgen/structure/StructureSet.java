@@ -19,10 +19,10 @@ public record StructureSet(List<StructureSelectionEntry> structures, StructurePl
       this(List.of(new StructureSelectionEntry(var1, 1)), var2);
    }
 
-   public StructureSet(List<StructureSelectionEntry> structures, StructurePlacement placement) {
+   public StructureSet(List<StructureSelectionEntry> var1, StructurePlacement var2) {
       super();
-      this.structures = structures;
-      this.placement = placement;
+      this.structures = var1;
+      this.placement = var2;
    }
 
    public static StructureSelectionEntry entry(Holder<Structure> var0, int var1) {
@@ -50,10 +50,10 @@ public record StructureSet(List<StructureSelectionEntry> structures, StructurePl
          return var0.group(Structure.CODEC.fieldOf("structure").forGetter(StructureSelectionEntry::structure), ExtraCodecs.POSITIVE_INT.fieldOf("weight").forGetter(StructureSelectionEntry::weight)).apply(var0, StructureSelectionEntry::new);
       });
 
-      public StructureSelectionEntry(Holder<Structure> structure, int weight) {
+      public StructureSelectionEntry(Holder<Structure> var1, int var2) {
          super();
-         this.structure = structure;
-         this.weight = weight;
+         this.structure = var1;
+         this.weight = var2;
       }
 
       public Holder<Structure> structure() {

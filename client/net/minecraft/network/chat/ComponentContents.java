@@ -24,10 +24,10 @@ public interface ComponentContents {
    Type<?> type();
 
    public static record Type<T extends ComponentContents>(MapCodec<T> codec, String id) implements StringRepresentable {
-      public Type(MapCodec<T> codec, String id) {
+      public Type(MapCodec<T> var1, String var2) {
          super();
-         this.codec = codec;
-         this.id = id;
+         this.codec = var1;
+         this.id = var2;
       }
 
       public String getSerializedName() {

@@ -15,9 +15,9 @@ public record ClientboundResourcePackPopPacket(Optional<UUID> id) implements Pac
       this(var1.readOptional(UUIDUtil.STREAM_CODEC));
    }
 
-   public ClientboundResourcePackPopPacket(Optional<UUID> id) {
+   public ClientboundResourcePackPopPacket(Optional<UUID> var1) {
       super();
-      this.id = id;
+      this.id = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

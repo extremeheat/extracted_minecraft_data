@@ -316,8 +316,8 @@ public class PackSelectionScreen extends Screen {
                }
 
                String var5 = var2.getId();
-               String var10003 = Util.sanitizeName(var5, ResourceLocation::validPathChar);
-               ResourceLocation var6 = new ResourceLocation("minecraft", "pack/" + var10003 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
+               String var10000 = Util.sanitizeName(var5, ResourceLocation::validPathChar);
+               ResourceLocation var6 = ResourceLocation.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
                InputStream var7 = (InputStream)var4.get();
 
                try {
@@ -378,7 +378,7 @@ public class PackSelectionScreen extends Screen {
    static {
       DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
       DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
-      DEFAULT_ICON = new ResourceLocation("textures/misc/unknown_pack.png");
+      DEFAULT_ICON = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");
    }
 
    static class Watcher implements AutoCloseable {

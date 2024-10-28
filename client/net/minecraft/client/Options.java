@@ -118,8 +118,8 @@ public class Options {
    private final OptionInstance<Double> chatOpacity;
    private final OptionInstance<Double> chatLineSpacing;
    private static final Component MENU_BACKGROUND_BLURRINESS_TOOLTIP;
-   private static final double BLURRINESS_DEFAULT_VALUE = 0.5;
-   private final OptionInstance<Double> menuBackgroundBlurriness;
+   private static final int BLURRINESS_DEFAULT_VALUE = 5;
+   private final OptionInstance<Integer> menuBackgroundBlurriness;
    private final OptionInstance<Double> textBackgroundOpacity;
    private final OptionInstance<Double> panoramaSpeed;
    private static final Component ACCESSIBILITY_TOOLTIP_CONTRAST_MODE;
@@ -163,6 +163,7 @@ public class Options {
    private final OptionInstance<Boolean> japaneseGlyphVariants;
    private final OptionInstance<Boolean> invertYMouse;
    private final OptionInstance<Boolean> discreteMouseScroll;
+   private static final Component REALMS_NOTIFICATIONS_TOOLTIP;
    private final OptionInstance<Boolean> realmsNotifications;
    private static final Component ALLOW_SERVER_LISTING_TOOLTIP;
    private final OptionInstance<Boolean> allowServerListing;
@@ -329,12 +330,12 @@ public class Options {
       return this.chatLineSpacing;
    }
 
-   public OptionInstance<Double> menuBackgroundBlurriness() {
+   public OptionInstance<Integer> menuBackgroundBlurriness() {
       return this.menuBackgroundBlurriness;
    }
 
-   public double getMenuBackgroundBlurriness() {
-      return (Double)this.menuBackgroundBlurriness().get();
+   public int getMenuBackgroundBlurriness() {
+      return (Integer)this.menuBackgroundBlurriness().get();
    }
 
    public OptionInstance<Double> textBackgroundOpacity() {
@@ -686,7 +687,7 @@ public class Options {
       });
       this.chatLineSpacing = new OptionInstance("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (var0) -> {
       });
-      this.menuBackgroundBlurriness = new OptionInstance("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
+      this.menuBackgroundBlurriness = new OptionInstance("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::genericValueOrOffLabel, new OptionInstance.IntRange(0, 10), 5, (var0) -> {
       });
       this.textBackgroundOpacity = new OptionInstance("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
          Minecraft.getInstance().gui.getChat().rescaleChat();
@@ -797,7 +798,7 @@ public class Options {
       });
       this.invertYMouse = OptionInstance.createBoolean("options.invertMouse", false);
       this.discreteMouseScroll = OptionInstance.createBoolean("options.discrete_mouse_scroll", false);
-      this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", true);
+      this.realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", OptionInstance.cachedConstantTooltip(REALMS_NOTIFICATIONS_TOOLTIP), true);
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, (var1x) -> {
          this.broadcastOptions();
       });
@@ -1173,7 +1174,7 @@ public class Options {
          this.processOptions(new FieldAccess(this) {
             @Nullable
             private String getValueOrNull(String var1) {
-               return var8.contains(var1) ? var8.getString(var1) : null;
+               return var8.contains(var1) ? var8.get(var1).getAsString() : null;
             }
 
             public <T> void process(String var1, OptionInstance<T> var2) {
@@ -1479,12 +1480,16 @@ public class Options {
       return Component.translatable("options.generic_value", var0, var1);
    }
 
-   private static Component percentValueOrOffLabel(Component var0, double var1) {
-      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
-   }
-
    public static Component genericValueLabel(Component var0, int var1) {
       return genericValueLabel(var0, Component.literal(Integer.toString(var1)));
+   }
+
+   public static Component genericValueOrOffLabel(Component var0, int var1) {
+      return var1 == 0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : genericValueLabel(var0, var1);
+   }
+
+   private static Component percentValueOrOffLabel(Component var0, double var1) {
+      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
    }
 
    static {
@@ -1496,6 +1501,7 @@ public class Options {
       MENU_BACKGROUND_BLURRINESS_TOOLTIP = Component.translatable("options.accessibility.menu_background_blurriness.tooltip");
       ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
       ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
+      REALMS_NOTIFICATIONS_TOOLTIP = Component.translatable("options.realmsNotifications.tooltip");
       ALLOW_SERVER_LISTING_TOOLTIP = Component.translatable("options.allowServerListing.tooltip");
       DIRECTIONAL_AUDIO_TOOLTIP_ON = Component.translatable("options.directionalAudio.on.tooltip");
       DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");

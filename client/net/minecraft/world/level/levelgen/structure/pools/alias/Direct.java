@@ -14,10 +14,10 @@ record Direct(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTem
       return var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Direct::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(Direct::target)).apply(var0, Direct::new);
    });
 
-   Direct(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTemplatePool> target) {
+   Direct(ResourceKey<StructureTemplatePool> var1, ResourceKey<StructureTemplatePool> var2) {
       super();
-      this.alias = alias;
-      this.target = target;
+      this.alias = var1;
+      this.target = var2;
    }
 
    public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {

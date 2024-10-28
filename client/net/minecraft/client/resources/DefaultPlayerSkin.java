@@ -24,7 +24,7 @@ public class DefaultPlayerSkin {
    }
 
    private static PlayerSkin create(String var0, PlayerSkin.Model var1) {
-      return new PlayerSkin(new ResourceLocation(var0), (String)null, (ResourceLocation)null, (ResourceLocation)null, var1, true);
+      return new PlayerSkin(ResourceLocation.withDefaultNamespace(var0), (String)null, (ResourceLocation)null, (ResourceLocation)null, var1, true);
    }
 
    static {

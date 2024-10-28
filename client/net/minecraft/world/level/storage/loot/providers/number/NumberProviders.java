@@ -22,7 +22,7 @@ public class NumberProviders {
    }
 
    private static LootNumberProviderType register(String var0, MapCodec<? extends NumberProvider> var1) {
-      return (LootNumberProviderType)Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, (ResourceLocation)(new ResourceLocation(var0)), new LootNumberProviderType(var1));
+      return (LootNumberProviderType)Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootNumberProviderType(var1));
    }
 
    static {

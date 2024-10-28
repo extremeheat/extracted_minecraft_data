@@ -523,12 +523,14 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                   return PathType.RAIL;
                } else if (var3 instanceof LeavesBlock) {
                   return PathType.LEAVES;
-               } else if (var2.is(BlockTags.FENCES) || var2.is(BlockTags.WALLS) || var3 instanceof FenceGateBlock && !(Boolean)var2.getValue(FenceGateBlock.OPEN)) {
-                  return PathType.FENCE;
-               } else if (!var2.isPathfindable(PathComputationType.LAND)) {
-                  return PathType.BLOCKED;
+               } else if (!var2.is(BlockTags.FENCES) && !var2.is(BlockTags.WALLS) && (!(var3 instanceof FenceGateBlock) || (Boolean)var2.getValue(FenceGateBlock.OPEN))) {
+                  if (!var2.isPathfindable(PathComputationType.LAND)) {
+                     return PathType.BLOCKED;
+                  } else {
+                     return var4.is(FluidTags.WATER) ? PathType.WATER : PathType.OPEN;
+                  }
                } else {
-                  return var4.is(FluidTags.WATER) ? PathType.WATER : PathType.OPEN;
+                  return PathType.FENCE;
                }
             } else {
                return PathType.DAMAGE_CAUTIOUS;

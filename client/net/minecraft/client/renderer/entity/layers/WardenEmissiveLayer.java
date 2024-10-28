@@ -11,6 +11,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.warden.Warden;
 
 public class WardenEmissiveLayer<T extends Warden, M extends WardenModel<T>> extends RenderLayer<T, M> {
@@ -29,7 +31,9 @@ public class WardenEmissiveLayer<T extends Warden, M extends WardenModel<T>> ext
       if (!var4.isInvisible()) {
          this.onlyDrawSelectedParts();
          VertexConsumer var11 = var2.getBuffer(RenderType.entityTranslucentEmissive(this.texture));
-         ((WardenModel)this.getParentModel()).renderToBuffer(var1, var11, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), 1.0F, 1.0F, 1.0F, this.alphaFunction.apply(var4, var7, var8));
+         float var12 = this.alphaFunction.apply(var4, var7, var8);
+         int var13 = FastColor.ARGB32.color(Mth.floor(var12 * 255.0F), 255, 255, 255);
+         ((WardenModel)this.getParentModel()).renderToBuffer(var1, var11, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), var13);
          this.resetDrawForAllParts();
       }
    }

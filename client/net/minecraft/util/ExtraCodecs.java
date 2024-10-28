@@ -602,10 +602,10 @@ public class ExtraCodecs {
    }
 
    public static record StrictUnboundedMapCodec<K, V>(Codec<K> keyCodec, Codec<V> elementCodec) implements Codec<Map<K, V>>, BaseMapCodec<K, V> {
-      public StrictUnboundedMapCodec(Codec<K> keyCodec, Codec<V> elementCodec) {
+      public StrictUnboundedMapCodec(Codec<K> var1, Codec<V> var2) {
          super();
-         this.keyCodec = keyCodec;
-         this.elementCodec = elementCodec;
+         this.keyCodec = var1;
+         this.elementCodec = var2;
       }
 
       public <T> DataResult<Map<K, V>> decode(DynamicOps<T> var1, MapLike<T> var2) {
@@ -676,10 +676,10 @@ public class ExtraCodecs {
    }
 
    public static record TagOrElementLocation(ResourceLocation id, boolean tag) {
-      public TagOrElementLocation(ResourceLocation id, boolean tag) {
+      public TagOrElementLocation(ResourceLocation var1, boolean var2) {
          super();
-         this.id = id;
-         this.tag = tag;
+         this.id = var1;
+         this.tag = var2;
       }
 
       public String toString() {

@@ -8,10 +8,10 @@ public record Criterion<T extends CriterionTriggerInstance>(CriterionTrigger<T> 
    private static final MapCodec<Criterion<?>> MAP_CODEC;
    public static final Codec<Criterion<?>> CODEC;
 
-   public Criterion(CriterionTrigger<T> trigger, T triggerInstance) {
+   public Criterion(CriterionTrigger<T> var1, T var2) {
       super();
-      this.trigger = trigger;
-      this.triggerInstance = triggerInstance;
+      this.trigger = var1;
+      this.triggerInstance = var2;
    }
 
    private static <T extends CriterionTriggerInstance> Codec<Criterion<T>> criterionCodec(CriterionTrigger<T> var0) {

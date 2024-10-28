@@ -12,9 +12,9 @@ public record ServerboundChunkBatchReceivedPacket(float desiredChunksPerTick) im
       this(var1.readFloat());
    }
 
-   public ServerboundChunkBatchReceivedPacket(float desiredChunksPerTick) {
+   public ServerboundChunkBatchReceivedPacket(float var1) {
       super();
-      this.desiredChunksPerTick = desiredChunksPerTick;
+      this.desiredChunksPerTick = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

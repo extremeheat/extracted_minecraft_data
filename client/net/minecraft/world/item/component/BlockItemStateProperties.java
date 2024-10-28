@@ -19,9 +19,9 @@ public record BlockItemStateProperties(Map<String, String> properties) {
    private static final StreamCodec<ByteBuf, Map<String, String>> PROPERTIES_STREAM_CODEC;
    public static final StreamCodec<ByteBuf, BlockItemStateProperties> STREAM_CODEC;
 
-   public BlockItemStateProperties(Map<String, String> properties) {
+   public BlockItemStateProperties(Map<String, String> var1) {
       super();
-      this.properties = properties;
+      this.properties = var1;
    }
 
    public <T extends Comparable<T>> BlockItemStateProperties with(Property<T> var1, T var2) {

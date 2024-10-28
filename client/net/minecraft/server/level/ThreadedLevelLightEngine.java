@@ -179,7 +179,6 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       }));
       return CompletableFuture.supplyAsync(() -> {
          var1.setLightCorrect(true);
-         this.chunkMap.releaseLightTicket(var3);
          return var1;
       }, (var2x) -> {
          this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.POST_UPDATE, var2x);

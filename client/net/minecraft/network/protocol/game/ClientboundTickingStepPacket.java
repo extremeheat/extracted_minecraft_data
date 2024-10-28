@@ -13,9 +13,9 @@ public record ClientboundTickingStepPacket(int tickSteps) implements Packet<Clie
       this(var1.readVarInt());
    }
 
-   public ClientboundTickingStepPacket(int tickSteps) {
+   public ClientboundTickingStepPacket(int var1) {
       super();
-      this.tickSteps = tickSteps;
+      this.tickSteps = var1;
    }
 
    public static ClientboundTickingStepPacket from(TickRateManager var0) {

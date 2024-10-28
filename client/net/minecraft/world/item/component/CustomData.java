@@ -17,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.Entity;
@@ -167,7 +168,7 @@ public final class CustomData {
    }
 
    static {
-      CODEC = CompoundTag.CODEC.xmap(CustomData::new, (var0) -> {
+      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> {
          return var0.tag;
       });
       CODEC_WITH_ID = CODEC.validate((var0) -> {

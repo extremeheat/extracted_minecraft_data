@@ -19,10 +19,10 @@ public record LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<
       return var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(LootItemBlockStatePropertyCondition::block), StatePropertiesPredicate.CODEC.optionalFieldOf("properties").forGetter(LootItemBlockStatePropertyCondition::properties)).apply(var0, LootItemBlockStatePropertyCondition::new);
    }).validate(LootItemBlockStatePropertyCondition::validate);
 
-   public LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<StatePropertiesPredicate> properties) {
+   public LootItemBlockStatePropertyCondition(Holder<Block> var1, Optional<StatePropertiesPredicate> var2) {
       super();
-      this.block = block;
-      this.properties = properties;
+      this.block = var1;
+      this.properties = var2;
    }
 
    private static DataResult<LootItemBlockStatePropertyCondition> validate(LootItemBlockStatePropertyCondition var0) {

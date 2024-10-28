@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer<T> {
-   private static final ResourceLocation MINECART_LOCATION = new ResourceLocation("textures/entity/minecart.png");
+   private static final ResourceLocation MINECART_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/minecart.png");
    protected final EntityModel<T> model;
    private final BlockRenderDispatcher blockRenderer;
 
@@ -91,7 +91,7 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
       var4.scale(-1.0F, -1.0F, 1.0F);
       this.model.setupAnim(var1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
       VertexConsumer var30 = var5.getBuffer(this.model.renderType(this.getTextureLocation(var1)));
-      this.model.renderToBuffer(var4, var30, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.renderToBuffer(var4, var30, var6, OverlayTexture.NO_OVERLAY);
       var4.popPose();
    }
 

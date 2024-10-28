@@ -12,9 +12,9 @@ public record ClientboundBlockChangedAckPacket(int sequence) implements Packet<C
       this(var1.readVarInt());
    }
 
-   public ClientboundBlockChangedAckPacket(int sequence) {
+   public ClientboundBlockChangedAckPacket(int var1) {
       super();
-      this.sequence = sequence;
+      this.sequence = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

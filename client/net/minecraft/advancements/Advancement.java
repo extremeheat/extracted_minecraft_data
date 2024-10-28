@@ -34,15 +34,15 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
       this(var1, var2, var3, Map.copyOf(var4), var5, var6, var2.map(Advancement::decorateName));
    }
 
-   public Advancement(Optional<ResourceLocation> parent, Optional<DisplayInfo> display, AdvancementRewards rewards, Map<String, Criterion<?>> criteria, AdvancementRequirements requirements, boolean sendsTelemetryEvent, Optional<Component> name) {
+   public Advancement(Optional<ResourceLocation> var1, Optional<DisplayInfo> var2, AdvancementRewards var3, Map<String, Criterion<?>> var4, AdvancementRequirements var5, boolean var6, Optional<Component> var7) {
       super();
-      this.parent = parent;
-      this.display = display;
-      this.rewards = rewards;
-      this.criteria = criteria;
-      this.requirements = requirements;
-      this.sendsTelemetryEvent = sendsTelemetryEvent;
-      this.name = name;
+      this.parent = var1;
+      this.display = var2;
+      this.rewards = var3;
+      this.criteria = var4;
+      this.requirements = var5;
+      this.sendsTelemetryEvent = var6;
+      this.name = var7;
    }
 
    private static DataResult<Advancement> validate(Advancement var0) {
@@ -226,7 +226,7 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
       }
 
       public AdvancementHolder save(Consumer<AdvancementHolder> var1, String var2) {
-         AdvancementHolder var3 = this.build(new ResourceLocation(var2));
+         AdvancementHolder var3 = this.build(ResourceLocation.parse(var2));
          var1.accept(var3);
          return var3;
       }

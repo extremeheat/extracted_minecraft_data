@@ -48,10 +48,10 @@ public final class RandomSupport {
    }
 
    public static record Seed128bit(long seedLo, long seedHi) {
-      public Seed128bit(long seedLo, long seedHi) {
+      public Seed128bit(long var1, long var3) {
          super();
-         this.seedLo = seedLo;
-         this.seedHi = seedHi;
+         this.seedLo = var1;
+         this.seedHi = var3;
       }
 
       public Seed128bit xor(long var1, long var3) {

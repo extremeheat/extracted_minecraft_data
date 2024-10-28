@@ -13,10 +13,10 @@ public record ClientboundTickingStatePacket(float tickRate, boolean isFrozen) im
       this(var1.readFloat(), var1.readBoolean());
    }
 
-   public ClientboundTickingStatePacket(float tickRate, boolean isFrozen) {
+   public ClientboundTickingStatePacket(float var1, boolean var2) {
       super();
-      this.tickRate = tickRate;
-      this.isFrozen = isFrozen;
+      this.tickRate = var1;
+      this.isFrozen = var2;
    }
 
    public static ClientboundTickingStatePacket from(TickRateManager var0) {

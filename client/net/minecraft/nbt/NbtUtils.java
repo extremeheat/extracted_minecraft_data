@@ -178,7 +178,7 @@ public final class NbtUtils {
       if (!var1.contains("Name", 8)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         ResourceLocation var2 = new ResourceLocation(var1.getString("Name"));
+         ResourceLocation var2 = ResourceLocation.parse(var1.getString("Name"));
          Optional var3 = var0.get(ResourceKey.create(Registries.BLOCK, var2));
          if (var3.isEmpty()) {
             return Blocks.AIR.defaultBlockState();

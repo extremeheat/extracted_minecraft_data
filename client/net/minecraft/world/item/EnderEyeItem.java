@@ -4,6 +4,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -93,7 +94,7 @@ public class EnderEyeItem extends Item {
                }
 
                float var10 = Mth.lerp(var1.random.nextFloat(), 0.33F, 0.5F);
-               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
+               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
                var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
                var2.swing(var3, true);

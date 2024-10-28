@@ -6,13 +6,13 @@ import com.mojang.serialization.DataResult;
 public record InclusiveRange<T extends Comparable<T>>(T minInclusive, T maxInclusive) {
    public static final Codec<InclusiveRange<Integer>> INT;
 
-   public InclusiveRange(T minInclusive, T maxInclusive) {
+   public InclusiveRange(T var1, T var2) {
       super();
-      if (minInclusive.compareTo(maxInclusive) > 0) {
+      if (var1.compareTo(var2) > 0) {
          throw new IllegalArgumentException("min_inclusive must be less than or equal to max_inclusive");
       } else {
-         this.minInclusive = minInclusive;
-         this.maxInclusive = maxInclusive;
+         this.minInclusive = var1;
+         this.maxInclusive = var2;
       }
    }
 

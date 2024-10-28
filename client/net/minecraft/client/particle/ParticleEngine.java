@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -63,7 +65,7 @@ import org.slf4j.Logger;
 public class ParticleEngine implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particles");
-   private static final ResourceLocation PARTICLES_ATLAS_INFO = new ResourceLocation("particles");
+   private static final ResourceLocation PARTICLES_ATLAS_INFO = ResourceLocation.withDefaultNamespace("particles");
    private static final int MAX_PARTICLES_PER_LAYER = 16384;
    private static final List<ParticleRenderType> RENDER_ORDER;
    protected ClientLevel level;
@@ -234,10 +236,10 @@ public class ParticleEngine implements PreparableReloadListener {
             ResourceLocation var5x = PARTICLE_LISTER.fileToId(var3x);
             var3.add(CompletableFuture.supplyAsync(() -> {
                record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
-                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
+                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
                      super();
-                     this.id = id;
-                     this.sprites = sprites;
+                     this.id = var1;
+                     this.sprites = var2;
                   }
 
                   public ResourceLocation id() {
@@ -421,23 +423,28 @@ public class ParticleEngine implements PreparableReloadListener {
 
       while(true) {
          ParticleRenderType var5;
-         Iterable var6;
+         Queue var6;
+         BufferBuilder var8;
          do {
-            if (!var4.hasNext()) {
-               RenderSystem.depthMask(true);
-               RenderSystem.disableBlend();
-               var1.turnOffLightLayer();
-               return;
-            }
+            do {
+               do {
+                  if (!var4.hasNext()) {
+                     RenderSystem.depthMask(true);
+                     RenderSystem.disableBlend();
+                     var1.turnOffLightLayer();
+                     return;
+                  }
 
-            var5 = (ParticleRenderType)var4.next();
-            var6 = (Iterable)this.particles.get(var5);
-         } while(var6 == null);
+                  var5 = (ParticleRenderType)var4.next();
+                  var6 = (Queue)this.particles.get(var5);
+               } while(var6 == null);
+            } while(var6.isEmpty());
 
-         RenderSystem.setShader(GameRenderer::getParticleShader);
-         Tesselator var7 = Tesselator.getInstance();
-         BufferBuilder var8 = var7.getBuilder();
-         var5.begin(var8, this.textureManager);
+            RenderSystem.setShader(GameRenderer::getParticleShader);
+            Tesselator var7 = Tesselator.getInstance();
+            var8 = var5.begin(var7, this.textureManager);
+         } while(var8 == null);
+
          Iterator var9 = var6.iterator();
 
          while(var9.hasNext()) {
@@ -456,7 +463,10 @@ public class ParticleEngine implements PreparableReloadListener {
             }
          }
 
-         var5.end(var7);
+         MeshData var15 = var8.build();
+         if (var15 != null) {
+            BufferUploader.drawWithShader(var15);
+         }
       }
    }
 

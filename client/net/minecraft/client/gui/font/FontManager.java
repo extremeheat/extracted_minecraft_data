@@ -50,7 +50,7 @@ import org.slf4j.Logger;
 public class FontManager implements PreparableReloadListener, AutoCloseable {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final String FONTS_PATH = "fonts.json";
-   public static final ResourceLocation MISSING_FONT = new ResourceLocation("minecraft", "missing");
+   public static final ResourceLocation MISSING_FONT = ResourceLocation.withDefaultNamespace("missing");
    private static final FileToIdConverter FONT_DEFINITIONS = FileToIdConverter.json("font");
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
    private final FontSet missingFontSet;
@@ -301,11 +301,11 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    }
 
    static record BuilderId(ResourceLocation fontId, String pack, int index) {
-      BuilderId(ResourceLocation fontId, String pack, int index) {
+      BuilderId(ResourceLocation var1, String var2, int var3) {
          super();
-         this.fontId = fontId;
-         this.pack = pack;
-         this.index = index;
+         this.fontId = var1;
+         this.pack = var2;
+         this.index = var3;
       }
 
       public String toString() {
@@ -329,10 +329,10 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    static record Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> fontSets, List<GlyphProvider> allProviders) {
       final List<GlyphProvider> allProviders;
 
-      Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> fontSets, List<GlyphProvider> allProviders) {
+      Preparation(Map<ResourceLocation, List<GlyphProvider.Conditional>> var1, List<GlyphProvider> var2) {
          super();
-         this.fontSets = fontSets;
-         this.allProviders = allProviders;
+         this.fontSets = var1;
+         this.allProviders = var2;
       }
 
       public Map<ResourceLocation, List<GlyphProvider.Conditional>> fontSets() {
@@ -350,9 +350,9 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          return var0.group(GlyphProviderDefinition.Conditional.CODEC.listOf().fieldOf("providers").forGetter(FontDefinitionFile::providers)).apply(var0, FontDefinitionFile::new);
       });
 
-      private FontDefinitionFile(List<GlyphProviderDefinition.Conditional> providers) {
+      private FontDefinitionFile(List<GlyphProviderDefinition.Conditional> var1) {
          super();
-         this.providers = providers;
+         this.providers = var1;
       }
 
       public List<GlyphProviderDefinition.Conditional> providers() {
@@ -367,11 +367,11 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
          this(var1, new ArrayList(), new HashSet());
       }
 
-      private UnresolvedBuilderBundle(ResourceLocation fontId, List<BuilderResult> builders, Set<ResourceLocation> dependencies) {
+      private UnresolvedBuilderBundle(ResourceLocation var1, List<BuilderResult> var2, Set<ResourceLocation> var3) {
          super();
-         this.fontId = fontId;
-         this.builders = builders;
-         this.dependencies = dependencies;
+         this.fontId = var1;
+         this.builders = var2;
+         this.dependencies = var3;
       }
 
       public void add(BuilderId var1, FontOption.Filter var2, GlyphProviderDefinition.Reference var3) {
@@ -429,11 +429,11 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    private static record BuilderResult(BuilderId id, FontOption.Filter filter, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> result) {
       final Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> result;
 
-      BuilderResult(BuilderId id, FontOption.Filter filter, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> result) {
+      BuilderResult(BuilderId var1, FontOption.Filter var2, Either<CompletableFuture<Optional<GlyphProvider>>, ResourceLocation> var3) {
          super();
-         this.id = id;
-         this.filter = filter;
-         this.result = result;
+         this.id = var1;
+         this.filter = var2;
+         this.result = var3;
       }
 
       public Optional<List<GlyphProvider.Conditional>> resolve(Function<ResourceLocation, List<GlyphProvider.Conditional>> var1) {

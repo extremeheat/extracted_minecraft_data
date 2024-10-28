@@ -12,10 +12,10 @@ public record ClientboundTransferPacket(String host, int port) implements Packet
       this(var1.readUtf(), var1.readVarInt());
    }
 
-   public ClientboundTransferPacket(String host, int port) {
+   public ClientboundTransferPacket(String var1, int var2) {
       super();
-      this.host = host;
-      this.port = port;
+      this.host = var1;
+      this.port = var2;
    }
 
    private void write(FriendlyByteBuf var1) {

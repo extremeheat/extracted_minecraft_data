@@ -2,6 +2,7 @@ package net.minecraft.world.item;
 
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -19,7 +20,7 @@ public class ExperienceBottleItem extends Item implements ProjectileItem {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.EXPERIENCE_BOTTLE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.EXPERIENCE_BOTTLE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       if (!var1.isClientSide) {
          ThrownExperienceBottle var5 = new ThrownExperienceBottle(var1, var2);
          var5.setItem(var4);

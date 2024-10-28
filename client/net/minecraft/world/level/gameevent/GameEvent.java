@@ -1,9 +1,12 @@
 package net.minecraft.world.level.gameevent;
 
+import com.mojang.serialization.Codec;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -71,10 +74,11 @@ public record GameEvent(int notificationRadius) {
    public static final Holder.Reference<GameEvent> RESONATE_14 = register("resonate_14");
    public static final Holder.Reference<GameEvent> RESONATE_15 = register("resonate_15");
    public static final int DEFAULT_NOTIFICATION_RADIUS = 16;
+   public static final Codec<Holder<GameEvent>> CODEC;
 
-   public GameEvent(int notificationRadius) {
+   public GameEvent(int var1) {
       super();
-      this.notificationRadius = notificationRadius;
+      this.notificationRadius = var1;
    }
 
    public static Holder<GameEvent> bootstrap(Registry<GameEvent> var0) {
@@ -90,7 +94,11 @@ public record GameEvent(int notificationRadius) {
    }
 
    private static Holder.Reference<GameEvent> register(String var0, int var1) {
-      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, (ResourceLocation)(new ResourceLocation(var0)), new GameEvent(var1));
+      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new GameEvent(var1));
+   }
+
+   static {
+      CODEC = RegistryFixedCodec.create(Registries.GAME_EVENT);
    }
 
    public static final class ListenerInfo implements Comparable<ListenerInfo> {
@@ -136,10 +144,10 @@ public record GameEvent(int notificationRadius) {
    }
 
    public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
-      public Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
+      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
          super();
-         this.sourceEntity = sourceEntity;
-         this.affectedState = affectedState;
+         this.sourceEntity = var1;
+         this.affectedState = var2;
       }
 
       public static Context of(@Nullable Entity var0) {

@@ -290,13 +290,14 @@ public class Ghast extends FlyingMob implements Enemy {
                   double var8 = var1.getX() - (this.ghast.getX() + var7.x * 4.0);
                   double var10 = var1.getY(0.5) - (0.5 + this.ghast.getY(0.5));
                   double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0);
+                  Vec3 var14 = new Vec3(var8, var10, var12);
                   if (!this.ghast.isSilent()) {
                      var4.levelEvent((Player)null, 1016, this.ghast.blockPosition(), 0);
                   }
 
-                  LargeFireball var14 = new LargeFireball(var4, this.ghast, var8, var10, var12, this.ghast.getExplosionPower());
-                  var14.setPos(this.ghast.getX() + var7.x * 4.0, this.ghast.getY(0.5) + 0.5, var14.getZ() + var7.z * 4.0);
-                  var4.addFreshEntity(var14);
+                  LargeFireball var15 = new LargeFireball(var4, this.ghast, var14.normalize(), this.ghast.getExplosionPower());
+                  var15.setPos(this.ghast.getX() + var7.x * 4.0, this.ghast.getY(0.5) + 0.5, var15.getZ() + var7.z * 4.0);
+                  var4.addFreshEntity(var15);
                   this.chargeTime = -40;
                }
             } else if (this.chargeTime > 0) {

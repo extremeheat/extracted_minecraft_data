@@ -12,9 +12,9 @@ public record ServerboundChatCommandPacket(String command) implements Packet<Ser
       this(var1.readUtf());
    }
 
-   public ServerboundChatCommandPacket(String command) {
+   public ServerboundChatCommandPacket(String var1) {
       super();
-      this.command = command;
+      this.command = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

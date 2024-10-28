@@ -116,10 +116,10 @@ public class DownloadCacheCleaner {
       final Path path;
       public static final Comparator<PathAndTime> NEWEST_FIRST = Comparator.comparing(PathAndTime::modifiedTime).reversed();
 
-      PathAndTime(Path path, FileTime modifiedTime) {
+      PathAndTime(Path var1, FileTime var2) {
          super();
-         this.path = path;
-         this.modifiedTime = modifiedTime;
+         this.path = var1;
+         this.modifiedTime = var2;
       }
 
       public Path path() {
@@ -136,10 +136,10 @@ public class DownloadCacheCleaner {
       final int removalPriority;
       public static final Comparator<PathAndPriority> HIGHEST_PRIORITY_FIRST = Comparator.comparing(PathAndPriority::removalPriority).reversed();
 
-      PathAndPriority(Path path, int removalPriority) {
+      PathAndPriority(Path var1, int var2) {
          super();
-         this.path = path;
-         this.removalPriority = removalPriority;
+         this.path = var1;
+         this.removalPriority = var2;
       }
 
       public Path path() {

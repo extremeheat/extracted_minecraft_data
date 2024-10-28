@@ -35,12 +35,12 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
       this(var1, var2, var3, createStack(var1, var2, var3));
    }
 
-   public ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
+   public ItemCost(Holder<Item> var1, int var2, DataComponentPredicate var3, ItemStack var4) {
       super();
-      this.item = item;
-      this.count = count;
-      this.components = components;
-      this.itemStack = itemStack;
+      this.item = var1;
+      this.count = var2;
+      this.components = var3;
+      this.itemStack = var4;
    }
 
    public ItemCost withComponents(UnaryOperator<DataComponentPredicate.Builder> var1) {

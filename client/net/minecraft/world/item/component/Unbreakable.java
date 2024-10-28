@@ -18,9 +18,9 @@ public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
    public static final StreamCodec<ByteBuf, Unbreakable> STREAM_CODEC;
    private static final Component TOOLTIP;
 
-   public Unbreakable(boolean showInTooltip) {
+   public Unbreakable(boolean var1) {
       super();
-      this.showInTooltip = showInTooltip;
+      this.showInTooltip = var1;
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {

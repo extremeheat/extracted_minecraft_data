@@ -52,9 +52,13 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerModel<Shulker>>
    }
 
    static {
-      DEFAULT_TEXTURE_LOCATION = new ResourceLocation("textures/" + Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().getPath() + ".png");
+      DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().withPath((var0) -> {
+         return "textures/" + var0 + ".png";
+      });
       TEXTURE_LOCATION = (ResourceLocation[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((var0) -> {
-         return new ResourceLocation("textures/" + var0.texture().getPath() + ".png");
+         return var0.texture().withPath((var0x) -> {
+            return "textures/" + var0x + ".png";
+         });
       }).toArray((var0) -> {
          return new ResourceLocation[var0];
       });

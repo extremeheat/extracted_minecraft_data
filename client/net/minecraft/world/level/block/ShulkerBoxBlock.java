@@ -299,6 +299,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    static {
       FACING = DirectionalBlock.FACING;
-      CONTENTS = new ResourceLocation("contents");
+      CONTENTS = ResourceLocation.withDefaultNamespace("contents");
    }
 }

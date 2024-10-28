@@ -11,7 +11,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Slime;
 
 public class SlimeRenderer extends MobRenderer<Slime, SlimeModel<Slime>> {
-   private static final ResourceLocation SLIME_LOCATION = new ResourceLocation("textures/entity/slime/slime.png");
+   private static final ResourceLocation SLIME_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/slime/slime.png");
 
    public SlimeRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SlimeModel(var1.bakeLayer(ModelLayers.SLIME)), 0.25F);

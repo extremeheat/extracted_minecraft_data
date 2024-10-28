@@ -27,13 +27,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
-   private static final ResourceLocation[] ENABLED_LEVEL_SPRITES = new ResourceLocation[]{new ResourceLocation("container/enchanting_table/level_1"), new ResourceLocation("container/enchanting_table/level_2"), new ResourceLocation("container/enchanting_table/level_3")};
-   private static final ResourceLocation[] DISABLED_LEVEL_SPRITES = new ResourceLocation[]{new ResourceLocation("container/enchanting_table/level_1_disabled"), new ResourceLocation("container/enchanting_table/level_2_disabled"), new ResourceLocation("container/enchanting_table/level_3_disabled")};
-   private static final ResourceLocation ENCHANTMENT_SLOT_DISABLED_SPRITE = new ResourceLocation("container/enchanting_table/enchantment_slot_disabled");
-   private static final ResourceLocation ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = new ResourceLocation("container/enchanting_table/enchantment_slot_highlighted");
-   private static final ResourceLocation ENCHANTMENT_SLOT_SPRITE = new ResourceLocation("container/enchanting_table/enchantment_slot");
-   private static final ResourceLocation ENCHANTING_TABLE_LOCATION = new ResourceLocation("textures/gui/container/enchanting_table.png");
-   private static final ResourceLocation ENCHANTING_BOOK_LOCATION = new ResourceLocation("textures/entity/enchanting_table_book.png");
+   private static final ResourceLocation[] ENABLED_LEVEL_SPRITES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3")};
+   private static final ResourceLocation[] DISABLED_LEVEL_SPRITES = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/enchanting_table/level_1_disabled"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_2_disabled"), ResourceLocation.withDefaultNamespace("container/enchanting_table/level_3_disabled")};
+   private static final ResourceLocation ENCHANTMENT_SLOT_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot_disabled");
+   private static final ResourceLocation ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot_highlighted");
+   private static final ResourceLocation ENCHANTMENT_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/enchanting_table/enchantment_slot");
+   private static final ResourceLocation ENCHANTING_TABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/enchanting_table.png");
+   private static final ResourceLocation ENCHANTING_BOOK_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enchanting_table_book.png");
    private final RandomSource random = RandomSource.create();
    private BookModel bookModel;
    public int time;
@@ -144,14 +144,13 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       float var10 = Mth.clamp(Mth.frac(var6 + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       this.bookModel.setupAnim(0.0F, var9, var10, var5);
       VertexConsumer var11 = var1.bufferSource().getBuffer(this.bookModel.renderType(ENCHANTING_BOOK_LOCATION));
-      this.bookModel.renderToBuffer(var1.pose(), var11, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.bookModel.renderToBuffer(var1.pose(), var11, 15728880, OverlayTexture.NO_OVERLAY);
       var1.flush();
       var1.pose().popPose();
       Lighting.setupFor3DItems();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      var4 = this.minecraft.getFrameTime();
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
       boolean var5 = this.minecraft.player.getAbilities().instabuild;

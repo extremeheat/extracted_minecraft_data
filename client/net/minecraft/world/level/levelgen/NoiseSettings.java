@@ -18,12 +18,12 @@ public record NoiseSettings(int minY, int height, int noiseSizeHorizontal, int n
    protected static final NoiseSettings CAVES_NOISE_SETTINGS = create(-64, 192, 1, 2);
    protected static final NoiseSettings FLOATING_ISLANDS_NOISE_SETTINGS = create(0, 256, 2, 1);
 
-   public NoiseSettings(int minY, int height, int noiseSizeHorizontal, int noiseSizeVertical) {
+   public NoiseSettings(int var1, int var2, int var3, int var4) {
       super();
-      this.minY = minY;
-      this.height = height;
-      this.noiseSizeHorizontal = noiseSizeHorizontal;
-      this.noiseSizeVertical = noiseSizeVertical;
+      this.minY = var1;
+      this.height = var2;
+      this.noiseSizeHorizontal = var3;
+      this.noiseSizeVertical = var4;
    }
 
    private static DataResult<NoiseSettings> guardY(NoiseSettings var0) {

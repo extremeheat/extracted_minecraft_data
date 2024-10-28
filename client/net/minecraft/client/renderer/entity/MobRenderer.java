@@ -95,8 +95,8 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       float var23 = var2 * var15;
       float var24 = var3 > 0.0F ? var3 * var15 * var15 : var3 - var3 * (1.0F - var15) * (1.0F - var15);
       float var25 = var4 * var15;
-      var0.vertex(var1, var23 - var11, var24 + var10, var25 + var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
-      var0.vertex(var1, var23 + var11, var24 + var9 - var10, var25 - var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
+      var0.addVertex(var1, var23 - var11, var24 + var10, var25 + var12).setColor(var20, var21, var22, 1.0F).setLight(var18);
+      var0.addVertex(var1, var23 + var11, var24 + var9 - var10, var25 - var12).setColor(var20, var21, var22, 1.0F).setLight(var18);
    }
 
    protected float getShadowRadius(T var1) {

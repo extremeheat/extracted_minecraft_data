@@ -197,7 +197,7 @@ public class ChunkSerializer {
          }
 
          ChunkStatus var24 = ChunkStatus.byName(var3.getString("Status"));
-         var45.setStatus(var24);
+         var45.setPersistedStatus(var24);
          if (var24.isOrAfter(ChunkStatus.INITIALIZE_LIGHT)) {
             var45.setLightEngine(var12);
          }
@@ -206,7 +206,7 @@ public class ChunkSerializer {
       ((ChunkAccess)var37).setLightCorrect(var6);
       CompoundTag var43 = var3.getCompound("Heightmaps");
       EnumSet var44 = EnumSet.noneOf(Heightmap.Types.class);
-      Iterator var46 = ((ChunkAccess)var37).getStatus().heightmapsAfter().iterator();
+      Iterator var46 = ((ChunkAccess)var37).getPersistedStatus().heightmapsAfter().iterator();
 
       while(var46.hasNext()) {
          Heightmap.Types var48 = (Heightmap.Types)var46.next();
@@ -284,7 +284,7 @@ public class ChunkSerializer {
       var3.putInt("zPos", var2.z);
       var3.putLong("LastUpdate", var0.getGameTime());
       var3.putLong("InhabitedTime", var1.getInhabitedTime());
-      var3.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(var1.getStatus()).toString());
+      var3.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(var1.getPersistedStatus()).toString());
       BlendingData var4 = var1.getBlendingData();
       DataResult var10000;
       Logger var10001;
@@ -365,7 +365,7 @@ public class ChunkSerializer {
       }
 
       var3.put("block_entities", var22);
-      if (var1.getStatus().getChunkType() == ChunkType.PROTOCHUNK) {
+      if (var1.getPersistedStatus().getChunkType() == ChunkType.PROTOCHUNK) {
          ProtoChunk var24 = (ProtoChunk)var1;
          ListTag var27 = new ListTag();
          var27.addAll(var24.getEntities());
@@ -392,7 +392,7 @@ public class ChunkSerializer {
 
       while(var28.hasNext()) {
          Map.Entry var30 = (Map.Entry)var28.next();
-         if (var1.getStatus().heightmapsAfter().contains(var30.getKey())) {
+         if (var1.getPersistedStatus().heightmapsAfter().contains(var30.getKey())) {
             var25.put(((Heightmap.Types)var30.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var30.getValue()).getRawData()));
          }
       }

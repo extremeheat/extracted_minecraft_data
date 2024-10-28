@@ -53,7 +53,7 @@ public class PlacementUtils {
    }
 
    public static ResourceKey<PlacedFeature> createKey(String var0) {
-      return ResourceKey.create(Registries.PLACED_FEATURE, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.PLACED_FEATURE, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static void register(BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3) {

@@ -507,14 +507,14 @@ public abstract class Display extends Entity {
       final FloatInterpolator shadowRadius;
       final FloatInterpolator shadowStrength;
 
-      public RenderState(GenericInterpolator<Transformation> transformation, BillboardConstraints billboardConstraints, int brightnessOverride, FloatInterpolator shadowRadius, FloatInterpolator shadowStrength, int glowColorOverride) {
+      public RenderState(GenericInterpolator<Transformation> var1, BillboardConstraints var2, int var3, FloatInterpolator var4, FloatInterpolator var5, int var6) {
          super();
-         this.transformation = transformation;
-         this.billboardConstraints = billboardConstraints;
-         this.brightnessOverride = brightnessOverride;
-         this.shadowRadius = shadowRadius;
-         this.shadowStrength = shadowStrength;
-         this.glowColorOverride = glowColorOverride;
+         this.transformation = var1;
+         this.billboardConstraints = var2;
+         this.brightnessOverride = var3;
+         this.shadowRadius = var4;
+         this.shadowStrength = var5;
+         this.glowColorOverride = var6;
       }
 
       public GenericInterpolator<Transformation> transformation() {
@@ -623,10 +623,10 @@ public abstract class Display extends Entity {
    }
 
    static record TransformationInterpolator(Transformation previous, Transformation current) implements GenericInterpolator<Transformation> {
-      TransformationInterpolator(Transformation previous, Transformation current) {
+      TransformationInterpolator(Transformation var1, Transformation var2) {
          super();
-         this.previous = previous;
-         this.current = current;
+         this.previous = var1;
+         this.current = var2;
       }
 
       public Transformation get(float var1) {
@@ -648,10 +648,10 @@ public abstract class Display extends Entity {
    }
 
    static record LinearFloatInterpolator(float previous, float current) implements FloatInterpolator {
-      LinearFloatInterpolator(float previous, float current) {
+      LinearFloatInterpolator(float var1, float var2) {
          super();
-         this.previous = previous;
-         this.current = current;
+         this.previous = var1;
+         this.current = var2;
       }
 
       public float get(float var1) {
@@ -668,10 +668,10 @@ public abstract class Display extends Entity {
    }
 
    static record ColorInterpolator(int previous, int current) implements IntInterpolator {
-      ColorInterpolator(int previous, int current) {
+      ColorInterpolator(int var1, int var2) {
          super();
-         this.previous = previous;
-         this.current = current;
+         this.previous = var1;
+         this.current = var2;
       }
 
       public int get(float var1) {
@@ -688,10 +688,10 @@ public abstract class Display extends Entity {
    }
 
    static record LinearIntInterpolator(int previous, int current) implements IntInterpolator {
-      LinearIntInterpolator(int previous, int current) {
+      LinearIntInterpolator(int var1, int var2) {
          super();
-         this.previous = previous;
-         this.current = current;
+         this.previous = var1;
+         this.current = var2;
       }
 
       public int get(float var1) {
@@ -962,13 +962,13 @@ public abstract class Display extends Entity {
          final IntInterpolator textOpacity;
          final IntInterpolator backgroundColor;
 
-         public TextRenderState(Component text, int lineWidth, IntInterpolator textOpacity, IntInterpolator backgroundColor, byte flags) {
+         public TextRenderState(Component var1, int var2, IntInterpolator var3, IntInterpolator var4, byte var5) {
             super();
-            this.text = text;
-            this.lineWidth = lineWidth;
-            this.textOpacity = textOpacity;
-            this.backgroundColor = backgroundColor;
-            this.flags = flags;
+            this.text = var1;
+            this.lineWidth = var2;
+            this.textOpacity = var3;
+            this.backgroundColor = var4;
+            this.flags = var5;
          }
 
          public Component text() {
@@ -993,10 +993,10 @@ public abstract class Display extends Entity {
       }
 
       public static record CachedInfo(List<CachedLine> lines, int width) {
-         public CachedInfo(List<CachedLine> lines, int width) {
+         public CachedInfo(List<CachedLine> var1, int var2) {
             super();
-            this.lines = lines;
-            this.width = width;
+            this.lines = var1;
+            this.width = var2;
          }
 
          public List<CachedLine> lines() {
@@ -1014,10 +1014,10 @@ public abstract class Display extends Entity {
       }
 
       public static record CachedLine(FormattedCharSequence contents, int width) {
-         public CachedLine(FormattedCharSequence contents, int width) {
+         public CachedLine(FormattedCharSequence var1, int var2) {
             super();
-            this.contents = contents;
-            this.width = width;
+            this.contents = var1;
+            this.width = var2;
          }
 
          public FormattedCharSequence contents() {
@@ -1085,9 +1085,9 @@ public abstract class Display extends Entity {
       }
 
       public static record BlockRenderState(BlockState blockState) {
-         public BlockRenderState(BlockState blockState) {
+         public BlockRenderState(BlockState var1) {
             super();
-            this.blockState = blockState;
+            this.blockState = var1;
          }
 
          public BlockState blockState() {
@@ -1190,10 +1190,10 @@ public abstract class Display extends Entity {
       }
 
       public static record ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
-         public ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
+         public ItemRenderState(ItemStack var1, ItemDisplayContext var2) {
             super();
-            this.itemStack = itemStack;
-            this.itemTransform = itemTransform;
+            this.itemStack = var1;
+            this.itemTransform = var2;
          }
 
          public ItemStack itemStack() {

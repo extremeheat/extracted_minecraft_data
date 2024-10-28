@@ -49,14 +49,14 @@ public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPrior
       this(var1, var2, var3, TickPriority.NORMAL, var5);
    }
 
-   public ScheduledTick(T type, BlockPos pos, long triggerTick, TickPriority priority, long subTickOrder) {
+   public ScheduledTick(T var1, BlockPos var2, long var3, TickPriority var5, long var6) {
       super();
-      pos = pos.immutable();
-      this.type = type;
-      this.pos = pos;
-      this.triggerTick = triggerTick;
-      this.priority = priority;
-      this.subTickOrder = subTickOrder;
+      var2 = var2.immutable();
+      this.type = var1;
+      this.pos = var2;
+      this.triggerTick = var3;
+      this.priority = var5;
+      this.subTickOrder = var6;
    }
 
    public static <T> ScheduledTick<T> probe(T var0, BlockPos var1) {

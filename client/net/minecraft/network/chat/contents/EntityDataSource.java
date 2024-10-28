@@ -24,10 +24,10 @@ public record EntityDataSource(String selectorPattern, @Nullable EntitySelector 
       this(var1, compileSelector(var1));
    }
 
-   public EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) {
+   public EntityDataSource(String var1, @Nullable EntitySelector var2) {
       super();
-      this.selectorPattern = selectorPattern;
-      this.compiledSelector = compiledSelector;
+      this.selectorPattern = var1;
+      this.compiledSelector = var2;
    }
 
    @Nullable

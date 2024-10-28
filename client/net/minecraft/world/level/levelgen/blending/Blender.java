@@ -402,10 +402,10 @@ public class Blender {
    }
 
    public static record BlendingOutput(double alpha, double blendingOffset) {
-      public BlendingOutput(double alpha, double blendingOffset) {
+      public BlendingOutput(double var1, double var3) {
          super();
-         this.alpha = alpha;
-         this.blendingOffset = blendingOffset;
+         this.alpha = var1;
+         this.blendingOffset = var3;
       }
 
       public double alpha() {

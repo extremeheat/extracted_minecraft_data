@@ -31,10 +31,10 @@ public interface PalettedContainerRO<T> {
    }
 
    public static record PackedData<T>(List<T> paletteEntries, Optional<LongStream> storage) {
-      public PackedData(List<T> paletteEntries, Optional<LongStream> storage) {
+      public PackedData(List<T> var1, Optional<LongStream> var2) {
          super();
-         this.paletteEntries = paletteEntries;
-         this.storage = storage;
+         this.paletteEntries = var1;
+         this.storage = var2;
       }
 
       public List<T> paletteEntries() {

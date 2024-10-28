@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -22,7 +21,8 @@ import org.slf4j.Logger;
 public class AttributeMap {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Map<Holder<Attribute>, AttributeInstance> attributes = new Object2ObjectOpenHashMap();
-   private final Set<AttributeInstance> dirtyAttributes = new ObjectOpenHashSet();
+   private final Set<AttributeInstance> attributesToSync = new ObjectOpenHashSet();
+   private final Set<AttributeInstance> attributesToUpdate = new ObjectOpenHashSet();
    private final AttributeSupplier supplier;
 
    public AttributeMap(AttributeSupplier var1) {
@@ -31,14 +31,19 @@ public class AttributeMap {
    }
 
    private void onAttributeModified(AttributeInstance var1) {
+      this.attributesToUpdate.add(var1);
       if (((Attribute)var1.getAttribute().value()).isClientSyncable()) {
-         this.dirtyAttributes.add(var1);
+         this.attributesToSync.add(var1);
       }
 
    }
 
-   public Set<AttributeInstance> getDirtyAttributes() {
-      return this.dirtyAttributes;
+   public Set<AttributeInstance> getAttributesToSync() {
+      return this.attributesToSync;
+   }
+
+   public Set<AttributeInstance> getAttributesToUpdate() {
+      return this.attributesToUpdate;
    }
 
    public Collection<AttributeInstance> getSyncableAttributes() {
@@ -58,7 +63,7 @@ public class AttributeMap {
       return this.attributes.get(var1) != null || this.supplier.hasAttribute(var1);
    }
 
-   public boolean hasModifier(Holder<Attribute> var1, UUID var2) {
+   public boolean hasModifier(Holder<Attribute> var1, ResourceLocation var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
    }
@@ -73,7 +78,7 @@ public class AttributeMap {
       return var2 != null ? var2.getBaseValue() : this.supplier.getBaseValue(var1);
    }
 
-   public double getModifierValue(Holder<Attribute> var1, UUID var2) {
+   public double getModifierValue(Holder<Attribute> var1, ResourceLocation var2) {
       AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
    }
@@ -101,11 +106,21 @@ public class AttributeMap {
       });
    }
 
-   public void assignValues(AttributeMap var1) {
+   public void assignAllValues(AttributeMap var1) {
       var1.attributes.values().forEach((var1x) -> {
          AttributeInstance var2 = this.getInstance(var1x.getAttribute());
          if (var2 != null) {
             var2.replaceFrom(var1x);
+         }
+
+      });
+   }
+
+   public void assignBaseValues(AttributeMap var1) {
+      var1.attributes.values().forEach((var1x) -> {
+         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
+         if (var2 != null) {
+            var2.setBaseValue(var1x.getBaseValue());
          }
 
       });
@@ -126,7 +141,7 @@ public class AttributeMap {
    public void load(ListTag var1) {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
          CompoundTag var3 = var1.getCompound(var2);
-         String var4 = var3.getString("Name");
+         String var4 = var3.getString("id");
          ResourceLocation var5 = ResourceLocation.tryParse(var4);
          if (var5 != null) {
             Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), (var2x) -> {

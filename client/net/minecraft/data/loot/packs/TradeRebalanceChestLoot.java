@@ -25,9 +25,9 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 public record TradeRebalanceChestLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
-   public TradeRebalanceChestLoot(HolderLookup.Provider registries) {
+   public TradeRebalanceChestLoot(HolderLookup.Provider var1) {
       super();
-      this.registries = registries;
+      this.registries = var1;
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {

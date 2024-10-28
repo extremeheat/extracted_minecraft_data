@@ -34,12 +34,12 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("parent").forGetter(TriggerInstance::parent), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("partner").forGetter(TriggerInstance::partner), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("child").forGetter(TriggerInstance::child)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> parent, Optional<ContextAwarePredicate> partner, Optional<ContextAwarePredicate> child) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3, Optional<ContextAwarePredicate> var4) {
          super();
-         this.player = player;
-         this.parent = parent;
-         this.partner = partner;
-         this.child = child;
+         this.player = var1;
+         this.parent = var2;
+         this.partner = var3;
+         this.child = var4;
       }
 
       public static Criterion<TriggerInstance> bredAnimals() {

@@ -41,7 +41,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          }
 
          public boolean isActive() {
-            return var4.canWearBodyArmor();
+            return var4.canUseSlot(EquipmentSlot.BODY);
          }
       });
       int var7;

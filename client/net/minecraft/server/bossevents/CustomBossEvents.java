@@ -58,7 +58,7 @@ public class CustomBossEvents {
 
       while(var3.hasNext()) {
          String var4 = (String)var3.next();
-         ResourceLocation var5 = new ResourceLocation(var4);
+         ResourceLocation var5 = ResourceLocation.parse(var4);
          this.events.put(var5, CustomBossEvent.load(var1.getCompound(var4), var5, var2));
       }
 

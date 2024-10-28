@@ -3,14 +3,13 @@ package net.minecraft.advancements.critereon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Predicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -22,9 +21,9 @@ public record ItemAttributeModifiersPredicate(Optional<CollectionPredicate<ItemA
       return var0.group(CollectionPredicate.codec(ItemAttributeModifiersPredicate.EntryPredicate.CODEC).optionalFieldOf("modifiers").forGetter(ItemAttributeModifiersPredicate::modifiers)).apply(var0, ItemAttributeModifiersPredicate::new);
    });
 
-   public ItemAttributeModifiersPredicate(Optional<CollectionPredicate<ItemAttributeModifiers.Entry, EntryPredicate>> modifiers) {
+   public ItemAttributeModifiersPredicate(Optional<CollectionPredicate<ItemAttributeModifiers.Entry, EntryPredicate>> var1) {
       super();
-      this.modifiers = modifiers;
+      this.modifiers = var1;
    }
 
    public DataComponentType<ItemAttributeModifiers> componentType() {
@@ -39,27 +38,24 @@ public record ItemAttributeModifiersPredicate(Optional<CollectionPredicate<ItemA
       return this.modifiers;
    }
 
-   public static record EntryPredicate(Optional<HolderSet<Attribute>> attribute, Optional<UUID> id, Optional<String> name, MinMaxBounds.Doubles amount, Optional<AttributeModifier.Operation> operation, Optional<EquipmentSlotGroup> slot) implements Predicate<ItemAttributeModifiers.Entry> {
+   public static record EntryPredicate(Optional<HolderSet<Attribute>> attribute, Optional<ResourceLocation> id, MinMaxBounds.Doubles amount, Optional<AttributeModifier.Operation> operation, Optional<EquipmentSlotGroup> slot) implements Predicate<ItemAttributeModifiers.Entry> {
       public static final Codec<EntryPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(RegistryCodecs.homogeneousList(Registries.ATTRIBUTE).optionalFieldOf("attribute").forGetter(EntryPredicate::attribute), UUIDUtil.LENIENT_CODEC.optionalFieldOf("uuid").forGetter(EntryPredicate::id), Codec.STRING.optionalFieldOf("name").forGetter(EntryPredicate::name), MinMaxBounds.Doubles.CODEC.optionalFieldOf("amount", MinMaxBounds.Doubles.ANY).forGetter(EntryPredicate::amount), AttributeModifier.Operation.CODEC.optionalFieldOf("operation").forGetter(EntryPredicate::operation), EquipmentSlotGroup.CODEC.optionalFieldOf("slot").forGetter(EntryPredicate::slot)).apply(var0, EntryPredicate::new);
+         return var0.group(RegistryCodecs.homogeneousList(Registries.ATTRIBUTE).optionalFieldOf("attribute").forGetter(EntryPredicate::attribute), ResourceLocation.CODEC.optionalFieldOf("id").forGetter(EntryPredicate::id), MinMaxBounds.Doubles.CODEC.optionalFieldOf("amount", MinMaxBounds.Doubles.ANY).forGetter(EntryPredicate::amount), AttributeModifier.Operation.CODEC.optionalFieldOf("operation").forGetter(EntryPredicate::operation), EquipmentSlotGroup.CODEC.optionalFieldOf("slot").forGetter(EntryPredicate::slot)).apply(var0, EntryPredicate::new);
       });
 
-      public EntryPredicate(Optional<HolderSet<Attribute>> attribute, Optional<UUID> id, Optional<String> name, MinMaxBounds.Doubles amount, Optional<AttributeModifier.Operation> operation, Optional<EquipmentSlotGroup> slot) {
+      public EntryPredicate(Optional<HolderSet<Attribute>> var1, Optional<ResourceLocation> var2, MinMaxBounds.Doubles var3, Optional<AttributeModifier.Operation> var4, Optional<EquipmentSlotGroup> var5) {
          super();
-         this.attribute = attribute;
-         this.id = id;
-         this.name = name;
-         this.amount = amount;
-         this.operation = operation;
-         this.slot = slot;
+         this.attribute = var1;
+         this.id = var2;
+         this.amount = var3;
+         this.operation = var4;
+         this.slot = var5;
       }
 
       public boolean test(ItemAttributeModifiers.Entry var1) {
          if (this.attribute.isPresent() && !((HolderSet)this.attribute.get()).contains(var1.attribute())) {
             return false;
-         } else if (this.id.isPresent() && !((UUID)this.id.get()).equals(var1.modifier().id())) {
-            return false;
-         } else if (this.name.isPresent() && !((String)this.name.get()).equals(var1.modifier().name())) {
+         } else if (this.id.isPresent() && !((ResourceLocation)this.id.get()).equals(var1.modifier().id())) {
             return false;
          } else if (!this.amount.matches(var1.modifier().amount())) {
             return false;
@@ -74,12 +70,8 @@ public record ItemAttributeModifiersPredicate(Optional<CollectionPredicate<ItemA
          return this.attribute;
       }
 
-      public Optional<UUID> id() {
+      public Optional<ResourceLocation> id() {
          return this.id;
-      }
-
-      public Optional<String> name() {
-         return this.name;
       }
 
       public MinMaxBounds.Doubles amount() {

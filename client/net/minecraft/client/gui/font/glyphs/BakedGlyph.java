@@ -37,17 +37,17 @@ public class BakedGlyph {
       float var14 = var3 + this.down;
       float var15 = var1 ? 1.0F - 0.25F * this.up : 0.0F;
       float var16 = var1 ? 1.0F - 0.25F * this.down : 0.0F;
-      var5.vertex(var4, var11 + var15, var13, 0.0F).color(var6, var7, var8, var9).uv(this.u0, this.v0).uv2(var10).endVertex();
-      var5.vertex(var4, var11 + var16, var14, 0.0F).color(var6, var7, var8, var9).uv(this.u0, this.v1).uv2(var10).endVertex();
-      var5.vertex(var4, var12 + var16, var14, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v1).uv2(var10).endVertex();
-      var5.vertex(var4, var12 + var15, var13, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v0).uv2(var10).endVertex();
+      var5.addVertex(var4, var11 + var15, var13, 0.0F).setColor(var6, var7, var8, var9).setUv(this.u0, this.v0).setLight(var10);
+      var5.addVertex(var4, var11 + var16, var14, 0.0F).setColor(var6, var7, var8, var9).setUv(this.u0, this.v1).setLight(var10);
+      var5.addVertex(var4, var12 + var16, var14, 0.0F).setColor(var6, var7, var8, var9).setUv(this.u1, this.v1).setLight(var10);
+      var5.addVertex(var4, var12 + var15, var13, 0.0F).setColor(var6, var7, var8, var9).setUv(this.u1, this.v0).setLight(var10);
    }
 
    public void renderEffect(Effect var1, Matrix4f var2, VertexConsumer var3, int var4) {
-      var3.vertex(var2, var1.x0, var1.y0, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u0, this.v0).uv2(var4).endVertex();
-      var3.vertex(var2, var1.x1, var1.y0, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u0, this.v1).uv2(var4).endVertex();
-      var3.vertex(var2, var1.x1, var1.y1, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u1, this.v1).uv2(var4).endVertex();
-      var3.vertex(var2, var1.x0, var1.y1, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u1, this.v0).uv2(var4).endVertex();
+      var3.addVertex(var2, var1.x0, var1.y0, var1.depth).setColor(var1.r, var1.g, var1.b, var1.a).setUv(this.u0, this.v0).setLight(var4);
+      var3.addVertex(var2, var1.x1, var1.y0, var1.depth).setColor(var1.r, var1.g, var1.b, var1.a).setUv(this.u0, this.v1).setLight(var4);
+      var3.addVertex(var2, var1.x1, var1.y1, var1.depth).setColor(var1.r, var1.g, var1.b, var1.a).setUv(this.u1, this.v1).setLight(var4);
+      var3.addVertex(var2, var1.x0, var1.y1, var1.depth).setColor(var1.r, var1.g, var1.b, var1.a).setUv(this.u1, this.v0).setLight(var4);
    }
 
    public RenderType renderType(Font.DisplayMode var1) {

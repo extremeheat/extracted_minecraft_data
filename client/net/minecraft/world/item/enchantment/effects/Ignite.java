@@ -15,9 +15,9 @@ public record Ignite(LevelBasedValue duration) implements EnchantmentEntityEffec
       })).apply(var0, Ignite::new);
    });
 
-   public Ignite(LevelBasedValue duration) {
+   public Ignite(LevelBasedValue var1) {
       super();
-      this.duration = duration;
+      this.duration = var1;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {

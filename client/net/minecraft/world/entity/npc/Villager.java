@@ -256,24 +256,24 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
             this.setUnhappy();
             return InteractionResult.sidedSuccess(this.level().isClientSide);
          } else {
-            boolean var4 = this.getOffers().isEmpty();
-            if (var2 == InteractionHand.MAIN_HAND) {
-               if (var4 && !this.level().isClientSide) {
-                  this.setUnhappy();
+            if (!this.level().isClientSide) {
+               boolean var4 = this.getOffers().isEmpty();
+               if (var2 == InteractionHand.MAIN_HAND) {
+                  if (var4) {
+                     this.setUnhappy();
+                  }
+
+                  var1.awardStat(Stats.TALKED_TO_VILLAGER);
                }
 
-               var1.awardStat(Stats.TALKED_TO_VILLAGER);
-            }
-
-            if (var4) {
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
-            } else {
-               if (!this.level().isClientSide && !this.offers.isEmpty()) {
-                  this.startTrading(var1);
+               if (var4) {
+                  return InteractionResult.CONSUME;
                }
 
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               this.startTrading(var1);
             }
+
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
          }
       } else {
          return super.mobInteract(var1, var2);
@@ -309,13 +309,15 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void resetSpecialPrices() {
-      Iterator var1 = this.getOffers().iterator();
+      if (!this.level().isClientSide()) {
+         Iterator var1 = this.getOffers().iterator();
 
-      while(var1.hasNext()) {
-         MerchantOffer var2 = (MerchantOffer)var1.next();
-         var2.resetSpecialPriceDiff();
+         while(var1.hasNext()) {
+            MerchantOffer var2 = (MerchantOffer)var1.next();
+            var2.resetSpecialPriceDiff();
+         }
+
       }
-
    }
 
    public boolean canRestock() {

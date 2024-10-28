@@ -124,11 +124,11 @@ public class BrushItem extends Item {
       private static final double ALONG_SIDE_DELTA = 1.0;
       private static final double OUT_FROM_SIDE_DELTA = 0.1;
 
-      private DustParticlesDelta(double xd, double yd, double zd) {
+      private DustParticlesDelta(double var1, double var3, double var5) {
          super();
-         this.xd = xd;
-         this.yd = yd;
-         this.zd = zd;
+         this.xd = var1;
+         this.yd = var3;
+         this.zd = var5;
       }
 
       public static DustParticlesDelta fromDirection(Vec3 var0, Direction var1) {

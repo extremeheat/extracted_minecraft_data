@@ -11,9 +11,9 @@ import net.minecraft.world.entity.EntityType;
 public record EntityTypePredicate(HolderSet<EntityType<?>> types) {
    public static final Codec<EntityTypePredicate> CODEC;
 
-   public EntityTypePredicate(HolderSet<EntityType<?>> types) {
+   public EntityTypePredicate(HolderSet<EntityType<?>> var1) {
       super();
-      this.types = types;
+      this.types = var1;
    }
 
    public static EntityTypePredicate of(EntityType<?> var0) {

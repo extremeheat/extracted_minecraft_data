@@ -65,10 +65,10 @@ public class RealmsAvailability {
          this(RealmsAvailability.Type.UNEXPECTED_ERROR, var1);
       }
 
-      public Result(Type type, @Nullable RealmsServiceException exception) {
+      public Result(Type var1, @Nullable RealmsServiceException var2) {
          super();
-         this.type = type;
-         this.exception = exception;
+         this.type = var1;
+         this.exception = var2;
       }
 
       @Nullable

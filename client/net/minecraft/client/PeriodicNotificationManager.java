@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +35,7 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
    private final ResourceLocation notifications;
    private final Object2BooleanFunction<String> selector;
    @Nullable
-   private java.util.Timer timer;
+   private Timer timer;
    @Nullable
    private NotificationTask notificationTask;
 
@@ -89,7 +90,7 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
          long var5 = this.calculateInitialDelay(var4);
          long var7 = this.calculateOptimalPeriod(var4, var5);
          if (this.timer == null) {
-            this.timer = new java.util.Timer();
+            this.timer = new Timer();
          }
 
          if (this.notificationTask == null) {
@@ -186,12 +187,12 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
       final String title;
       final String message;
 
-      public Notification(final long delay, final long period, final String title, final String message) {
+      public Notification(final long var1, final long var3, final String var5, final String var6) {
          super();
-         this.delay = delay != 0L ? delay : period;
-         this.period = period;
-         this.title = title;
-         this.message = message;
+         this.delay = var1 != 0L ? var1 : var3;
+         this.period = var3;
+         this.title = var5;
+         this.message = var6;
       }
 
       public long delay() {

@@ -37,6 +37,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -293,7 +294,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!this.isSilent()) {
          SoundEvent var1 = this.getEatingSound();
          if (var1 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -676,7 +677,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                   return var4;
                }
 
-               if (this.canWearBodyArmor() && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
+               if (this.canUseSlot(EquipmentSlot.BODY) && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
                   this.equipBodyArmor(var1, var3);
                   return InteractionResult.sidedSuccess(this.level().isClientSide);
                }

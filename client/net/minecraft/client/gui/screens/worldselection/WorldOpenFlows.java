@@ -146,11 +146,11 @@ public class WorldOpenFlows {
             final WorldOptions options;
             final Registry<LevelStem> existingDimensions;
 
-            _Data/* $FF was: 1Data*/(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
+            _Data/* $FF was: 1Data*/(LevelSettings var1, WorldOptions var2, Registry<LevelStem> var3) {
                super();
-               this.levelSettings = levelSettings;
-               this.options = options;
-               this.existingDimensions = existingDimensions;
+               this.levelSettings = var1;
+               this.options = var2;
+               this.existingDimensions = var3;
             }
 
             public LevelSettings levelSettings() {

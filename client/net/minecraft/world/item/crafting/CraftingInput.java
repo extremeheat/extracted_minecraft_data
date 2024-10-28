@@ -34,6 +34,10 @@ public class CraftingInput implements RecipeInput {
    }
 
    public static CraftingInput of(int var0, int var1, List<ItemStack> var2) {
+      return ofPositioned(var0, var1, var2).input();
+   }
+
+   public static Positioned ofPositioned(int var0, int var1, List<ItemStack> var2) {
       if (var0 != 0 && var1 != 0) {
          int var3 = var0 - 1;
          int var4 = 0;
@@ -63,7 +67,7 @@ public class CraftingInput implements RecipeInput {
          int var13 = var6 - var5 + 1;
          if (var7 > 0 && var13 > 0) {
             if (var7 == var0 && var13 == var1) {
-               return new CraftingInput(var0, var1, var2);
+               return new Positioned(new CraftingInput(var0, var1, var2), var3, var5);
             } else {
                ArrayList var14 = new ArrayList(var7 * var13);
 
@@ -74,13 +78,13 @@ public class CraftingInput implements RecipeInput {
                   }
                }
 
-               return new CraftingInput(var7, var13, var14);
+               return new Positioned(new CraftingInput(var7, var13, var14), var3, var5);
             }
          } else {
-            return EMPTY;
+            return CraftingInput.Positioned.EMPTY;
          }
       } else {
-         return EMPTY;
+         return CraftingInput.Positioned.EMPTY;
       }
    }
 
@@ -136,5 +140,32 @@ public class CraftingInput implements RecipeInput {
       var1 = 31 * var1 + this.width;
       var1 = 31 * var1 + this.height;
       return var1;
+   }
+
+   public static record Positioned(CraftingInput input, int left, int top) {
+      public static final Positioned EMPTY;
+
+      public Positioned(CraftingInput var1, int var2, int var3) {
+         super();
+         this.input = var1;
+         this.left = var2;
+         this.top = var3;
+      }
+
+      public CraftingInput input() {
+         return this.input;
+      }
+
+      public int left() {
+         return this.left;
+      }
+
+      public int top() {
+         return this.top;
+      }
+
+      static {
+         EMPTY = new Positioned(CraftingInput.EMPTY, 0, 0);
+      }
    }
 }

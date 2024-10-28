@@ -4,10 +4,10 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.ObjectUtils;
 
 public record ModCheck(Confidence confidence, String description) {
-   public ModCheck(Confidence confidence, String description) {
+   public ModCheck(Confidence var1, String var2) {
       super();
-      this.confidence = confidence;
-      this.description = description;
+      this.confidence = var1;
+      this.description = var2;
    }
 
    public static ModCheck identify(String var0, Supplier<String> var1, String var2, Class<?> var3) {

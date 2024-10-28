@@ -31,7 +31,7 @@ public class ConstantFloat extends FloatProvider {
    }
 
    public float getMaxValue() {
-      return this.value + 1.0F;
+      return this.value;
    }
 
    public FloatProviderType<?> getType() {

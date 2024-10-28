@@ -4,26 +4,30 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
-public record FoodProperties(int nutrition, float saturation, boolean canAlwaysEat, float eatSeconds, List<PossibleEffect> effects) {
+public record FoodProperties(int nutrition, float saturation, boolean canAlwaysEat, float eatSeconds, Optional<ItemStack> usingConvertsTo, List<PossibleEffect> effects) {
    private static final float DEFAULT_EAT_SECONDS = 1.6F;
    public static final Codec<FoodProperties> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition), Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation), Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("eat_seconds", 1.6F).forGetter(FoodProperties::eatSeconds), FoodProperties.PossibleEffect.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(FoodProperties::effects)).apply(var0, FoodProperties::new);
+      return var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition), Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation), Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("eat_seconds", 1.6F).forGetter(FoodProperties::eatSeconds), ItemStack.SINGLE_ITEM_CODEC.optionalFieldOf("using_converts_to").forGetter(FoodProperties::usingConvertsTo), FoodProperties.PossibleEffect.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(FoodProperties::effects)).apply(var0, FoodProperties::new);
    });
    public static final StreamCodec<RegistryFriendlyByteBuf, FoodProperties> DIRECT_STREAM_CODEC;
 
-   public FoodProperties(int nutrition, float saturation, boolean canAlwaysEat, float eatSeconds, List<PossibleEffect> effects) {
+   public FoodProperties(int var1, float var2, boolean var3, float var4, Optional<ItemStack> var5, List<PossibleEffect> var6) {
       super();
-      this.nutrition = nutrition;
-      this.saturation = saturation;
-      this.canAlwaysEat = canAlwaysEat;
-      this.eatSeconds = eatSeconds;
-      this.effects = effects;
+      this.nutrition = var1;
+      this.saturation = var2;
+      this.canAlwaysEat = var3;
+      this.eatSeconds = var4;
+      this.usingConvertsTo = var5;
+      this.effects = var6;
    }
 
    public int eatDurationTicks() {
@@ -46,12 +50,16 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
       return this.eatSeconds;
    }
 
+   public Optional<ItemStack> usingConvertsTo() {
+      return this.usingConvertsTo;
+   }
+
    public List<PossibleEffect> effects() {
       return this.effects;
    }
 
    static {
-      DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, FoodProperties::nutrition, ByteBufCodecs.FLOAT, FoodProperties::saturation, ByteBufCodecs.BOOL, FoodProperties::canAlwaysEat, ByteBufCodecs.FLOAT, FoodProperties::eatSeconds, FoodProperties.PossibleEffect.STREAM_CODEC.apply(ByteBufCodecs.list()), FoodProperties::effects, FoodProperties::new);
+      DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, FoodProperties::nutrition, ByteBufCodecs.FLOAT, FoodProperties::saturation, ByteBufCodecs.BOOL, FoodProperties::canAlwaysEat, ByteBufCodecs.FLOAT, FoodProperties::eatSeconds, ItemStack.STREAM_CODEC.apply(ByteBufCodecs::optional), FoodProperties::usingConvertsTo, FoodProperties.PossibleEffect.STREAM_CODEC.apply(ByteBufCodecs.list()), FoodProperties::effects, FoodProperties::new);
    }
 
    public static record PossibleEffect(MobEffectInstance effect, float probability) {
@@ -60,10 +68,10 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, PossibleEffect> STREAM_CODEC;
 
-      public PossibleEffect(MobEffectInstance effect, float probability) {
+      public PossibleEffect(MobEffectInstance var1, float var2) {
          super();
-         this.effect = effect;
-         this.probability = probability;
+         this.effect = var1;
+         this.probability = var2;
       }
 
       public MobEffectInstance effect() {
@@ -84,6 +92,7 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
       private float saturationModifier;
       private boolean canAlwaysEat;
       private float eatSeconds = 1.6F;
+      private Optional<ItemStack> usingConvertsTo = Optional.empty();
       private final ImmutableList.Builder<PossibleEffect> effects = ImmutableList.builder();
 
       public Builder() {
@@ -115,9 +124,14 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
          return this;
       }
 
+      public Builder usingConvertsTo(ItemLike var1) {
+         this.usingConvertsTo = Optional.of(new ItemStack(var1));
+         return this;
+      }
+
       public FoodProperties build() {
          float var1 = FoodConstants.saturationByModifier(this.nutrition, this.saturationModifier);
-         return new FoodProperties(this.nutrition, var1, this.canAlwaysEat, this.eatSeconds, this.effects.build());
+         return new FoodProperties(this.nutrition, var1, this.canAlwaysEat, this.eatSeconds, this.usingConvertsTo, this.effects.build());
       }
    }
 }

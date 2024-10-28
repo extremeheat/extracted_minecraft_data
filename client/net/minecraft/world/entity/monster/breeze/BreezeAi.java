@@ -39,14 +39,14 @@ public class BreezeAi {
       super();
    }
 
-   protected static Brain<?> makeBrain(Brain<Breeze> var0) {
-      initCoreActivity(var0);
-      initIdleActivity(var0);
-      initFightActivity(var0);
-      var0.setCoreActivities(Set.of(Activity.CORE));
-      var0.setDefaultActivity(Activity.FIGHT);
-      var0.useDefaultActivity();
-      return var0;
+   protected static Brain<?> makeBrain(Breeze var0, Brain<Breeze> var1) {
+      initCoreActivity(var1);
+      initIdleActivity(var1);
+      initFightActivity(var0, var1);
+      var1.setCoreActivities(Set.of(Activity.CORE));
+      var1.setDefaultActivity(Activity.FIGHT);
+      var1.useDefaultActivity();
+      return var1;
    }
 
    private static void initCoreActivity(Brain<Breeze> var0) {
@@ -59,8 +59,10 @@ public class BreezeAi {
       })), Pair.of(1, StartAttacking.create(Breeze::getHurtBy)), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
    }
 
-   private static void initFightActivity(Brain<Breeze> var0) {
-      var0.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, StopAttackingIfTargetInvalid.create()), Pair.of(1, new Shoot()), Pair.of(2, new LongJump()), Pair.of(3, new ShootWhenStuck()), Pair.of(4, new Slide())), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT)));
+   private static void initFightActivity(Breeze var0, Brain<Breeze> var1) {
+      var1.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, StopAttackingIfTargetInvalid.create((var1x) -> {
+         return !Sensor.isEntityAttackable(var0, var1x);
+      })), Pair.of(1, new Shoot()), Pair.of(2, new LongJump()), Pair.of(3, new ShootWhenStuck()), Pair.of(4, new Slide())), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT)));
    }
 
    static void updateActivity(Breeze var0) {

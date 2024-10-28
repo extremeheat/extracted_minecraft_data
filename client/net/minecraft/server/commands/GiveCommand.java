@@ -15,6 +15,7 @@ import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -70,7 +71,7 @@ public class GiveCommand {
                         var13.makeFakeItem();
                      }
 
-                     var8.level().playSound((Player)null, var8.getX(), var8.getY(), var8.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var8.getRandom().nextFloat() - var8.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                     var8.level().playSound((Player)null, var8.getX(), var8.getY(), var8.getZ(), (SoundEvent)SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var8.getRandom().nextFloat() - var8.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                      var8.containerMenu.broadcastChanges();
                   } else {
                      var13 = var8.drop(var11, false);

@@ -20,12 +20,12 @@ import org.slf4j.Logger;
 
 public record PiecesContainer(List<StructurePiece> pieces) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation JIGSAW_RENAME = new ResourceLocation("jigsaw");
+   private static final ResourceLocation JIGSAW_RENAME = ResourceLocation.withDefaultNamespace("jigsaw");
    private static final Map<ResourceLocation, ResourceLocation> RENAMES;
 
-   public PiecesContainer(final List<StructurePiece> pieces) {
+   public PiecesContainer(final List<StructurePiece> var1) {
       super();
-      this.pieces = List.copyOf(pieces);
+      this.pieces = List.copyOf(var1);
    }
 
    public boolean isEmpty() {
@@ -65,7 +65,7 @@ public record PiecesContainer(List<StructurePiece> pieces) {
       for(int var3 = 0; var3 < var0.size(); ++var3) {
          CompoundTag var4 = var0.getCompound(var3);
          String var5 = var4.getString("id").toLowerCase(Locale.ROOT);
-         ResourceLocation var6 = new ResourceLocation(var5);
+         ResourceLocation var6 = ResourceLocation.parse(var5);
          ResourceLocation var7 = (ResourceLocation)RENAMES.getOrDefault(var6, var6);
          StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.get(var7);
          if (var8 == null) {
@@ -92,6 +92,6 @@ public record PiecesContainer(List<StructurePiece> pieces) {
    }
 
    static {
-      RENAMES = ImmutableMap.builder().put(new ResourceLocation("nvi"), JIGSAW_RENAME).put(new ResourceLocation("pcp"), JIGSAW_RENAME).put(new ResourceLocation("bastionremnant"), JIGSAW_RENAME).put(new ResourceLocation("runtime"), JIGSAW_RENAME).build();
+      RENAMES = ImmutableMap.builder().put(ResourceLocation.withDefaultNamespace("nvi"), JIGSAW_RENAME).put(ResourceLocation.withDefaultNamespace("pcp"), JIGSAW_RENAME).put(ResourceLocation.withDefaultNamespace("bastionremnant"), JIGSAW_RENAME).put(ResourceLocation.withDefaultNamespace("runtime"), JIGSAW_RENAME).build();
    }
 }

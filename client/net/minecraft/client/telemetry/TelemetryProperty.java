@@ -52,12 +52,12 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
    public static final TelemetryProperty<String> ADVANCEMENT_ID;
    public static final TelemetryProperty<Long> ADVANCEMENT_GAME_TIME;
 
-   public TelemetryProperty(String id, String exportKey, Codec<T> codec, Exporter<T> exporter) {
+   public TelemetryProperty(String var1, String var2, Codec<T> var3, Exporter<T> var4) {
       super();
-      this.id = id;
-      this.exportKey = exportKey;
-      this.codec = codec;
-      this.exporter = exporter;
+      this.id = var1;
+      this.exportKey = var2;
+      this.codec = var3;
+      this.exporter = var4;
    }
 
    public static <T> TelemetryProperty<T> create(String var0, String var1, Codec<T> var2, Exporter<T> var3) {

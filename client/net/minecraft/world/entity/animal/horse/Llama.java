@@ -195,7 +195,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       if (var6 && !this.isSilent()) {
          SoundEvent var7 = this.getEatingSound();
          if (var7 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -259,7 +259,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       return this.getStrength();
    }
 
-   public boolean canWearBodyArmor() {
+   public boolean canUseSlot(EquipmentSlot var1) {
       return true;
    }
 
@@ -321,7 +321,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       double var9 = Math.sqrt(var3 * var3 + var7 * var7) * 0.20000000298023224;
       var2.shoot(var3, var5 + var9, var7, 1.5F, 10.0F);
       if (!this.isSilent()) {
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
       }
 
       this.level().addFreshEntity(var2);

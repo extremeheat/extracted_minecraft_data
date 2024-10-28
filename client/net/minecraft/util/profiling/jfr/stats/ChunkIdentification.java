@@ -3,12 +3,12 @@ package net.minecraft.util.profiling.jfr.stats;
 import jdk.jfr.consumer.RecordedEvent;
 
 public record ChunkIdentification(String level, String dimension, int x, int z) {
-   public ChunkIdentification(String level, String dimension, int x, int z) {
+   public ChunkIdentification(String var1, String var2, int var3, int var4) {
       super();
-      this.level = level;
-      this.dimension = dimension;
-      this.x = x;
-      this.z = z;
+      this.level = var1;
+      this.dimension = var2;
+      this.x = var3;
+      this.z = var4;
    }
 
    public static ChunkIdentification from(RecordedEvent var0) {

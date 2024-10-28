@@ -10,9 +10,9 @@ public record ProviderReferenceDefinition(ResourceLocation id) implements GlyphP
       return var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(ProviderReferenceDefinition::id)).apply(var0, ProviderReferenceDefinition::new);
    });
 
-   public ProviderReferenceDefinition(ResourceLocation id) {
+   public ProviderReferenceDefinition(ResourceLocation var1) {
       super();
-      this.id = id;
+      this.id = var1;
    }
 
    public GlyphProviderType type() {

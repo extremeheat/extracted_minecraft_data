@@ -48,7 +48,7 @@ public class WorldPresets {
    }
 
    private static ResourceKey<WorldPreset> register(String var0) {
-      return ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.WORLD_PRESET, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static Optional<ResourceKey<WorldPreset>> fromSettings(WorldDimensions var0) {

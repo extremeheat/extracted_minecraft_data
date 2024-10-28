@@ -456,7 +456,7 @@ public class PiglinAi {
    public static InteractionResult mobInteract(Piglin var0, Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (canAdmire(var0, var3)) {
-         ItemStack var4 = var3.split(1);
+         ItemStack var4 = var3.consumeAndReturn(1, var1);
          holdInOffhand(var0, var4);
          admireGoldItem(var0);
          stopWalking(var0);

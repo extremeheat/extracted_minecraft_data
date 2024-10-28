@@ -154,10 +154,10 @@ public class HashCache {
    static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
       final String version;
 
-      ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
+      ProviderCache(String var1, ImmutableMap<Path, HashCode> var2) {
          super();
-         this.version = version;
-         this.data = data;
+         this.version = var1;
+         this.data = var2;
       }
 
       @Nullable
@@ -299,11 +299,11 @@ public class HashCache {
    }
 
    public static record UpdateResult(String providerId, ProviderCache cache, int writes) {
-      public UpdateResult(String providerId, ProviderCache cache, int writes) {
+      public UpdateResult(String var1, ProviderCache var2, int var3) {
          super();
-         this.providerId = providerId;
-         this.cache = cache;
-         this.writes = writes;
+         this.providerId = var1;
+         this.cache = var2;
+         this.writes = var3;
       }
 
       public String providerId() {
@@ -324,10 +324,10 @@ public class HashCache {
          this(var1, new ConcurrentHashMap());
       }
 
-      private ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
+      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
          super();
-         this.version = version;
-         this.data = data;
+         this.version = var1;
+         this.data = var2;
       }
 
       public void put(Path var1, HashCode var2) {

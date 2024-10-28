@@ -51,7 +51,7 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
 
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.is(Items.BOOK)) {
-         var1 = var1.transmuteCopy(Items.ENCHANTED_BOOK, var1.getCount());
+         var1 = var1.transmuteCopy(Items.ENCHANTED_BOOK);
          var1.set(DataComponents.STORED_ENCHANTMENTS, (ItemEnchantments)var1.remove(DataComponents.ENCHANTMENTS));
       }
 

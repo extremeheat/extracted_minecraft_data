@@ -67,7 +67,7 @@ public class LootItemFunctions {
    }
 
    private static <T extends LootItemFunction> LootItemFunctionType<T> register(String var0, MapCodec<T> var1) {
-      return (LootItemFunctionType)Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, (ResourceLocation)(new ResourceLocation(var0)), new LootItemFunctionType(var1));
+      return (LootItemFunctionType)Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootItemFunctionType(var1));
    }
 
    public static BiFunction<ItemStack, LootContext, ItemStack> compose(List<? extends BiFunction<ItemStack, LootContext, ItemStack>> var0) {

@@ -98,16 +98,16 @@ public class WanderingTrader extends AbstractVillager {
             var1.awardStat(Stats.TALKED_TO_VILLAGER);
          }
 
-         if (this.getOffers().isEmpty()) {
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
-         } else {
-            if (!this.level().isClientSide) {
-               this.setTradingPlayer(var1);
-               this.openTradingScreen(var1, this.getDisplayName(), 1);
+         if (!this.level().isClientSide) {
+            if (this.getOffers().isEmpty()) {
+               return InteractionResult.CONSUME;
             }
 
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            this.setTradingPlayer(var1);
+            this.openTradingScreen(var1, this.getDisplayName(), 1);
          }
+
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }

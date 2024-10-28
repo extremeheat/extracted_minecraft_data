@@ -41,8 +41,8 @@ import net.minecraft.world.level.Level;
 public class Tadpole extends AbstractFish {
    @VisibleForTesting
    public static int ticksToBeFrog = Math.abs(-24000);
-   public static float HITBOX_WIDTH = 0.4F;
-   public static float HITBOX_HEIGHT = 0.3F;
+   public static final float HITBOX_WIDTH = 0.4F;
+   public static final float HITBOX_HEIGHT = 0.3F;
    private int age;
    protected static final ImmutableList<SensorType<? extends Sensor<? super Tadpole>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
@@ -209,6 +209,7 @@ public class Tadpole extends AbstractFish {
             }
 
             var3.setPersistenceRequired();
+            var3.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
             this.playSound(SoundEvents.TADPOLE_GROW_UP, 0.15F, 1.0F);
             var1.addFreshEntityWithPassengers(var3);
             this.discard();

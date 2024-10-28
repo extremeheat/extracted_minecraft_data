@@ -35,9 +35,9 @@ public record ClientboundCustomPayloadPacket(CustomPacketPayload payload) implem
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC;
    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC;
 
-   public ClientboundCustomPayloadPacket(CustomPacketPayload payload) {
+   public ClientboundCustomPayloadPacket(CustomPacketPayload var1) {
       super();
-      this.payload = payload;
+      this.payload = var1;
    }
 
    public PacketType<ClientboundCustomPayloadPacket> type() {

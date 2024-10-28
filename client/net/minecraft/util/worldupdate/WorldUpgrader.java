@@ -497,10 +497,10 @@ public class WorldUpgrader {
       final RegionFile file;
       final List<ChunkPos> chunksToUpgrade;
 
-      FileToUpgrade(RegionFile file, List<ChunkPos> chunksToUpgrade) {
+      FileToUpgrade(RegionFile var1, List<ChunkPos> var2) {
          super();
-         this.file = file;
-         this.chunksToUpgrade = chunksToUpgrade;
+         this.file = var1;
+         this.chunksToUpgrade = var2;
       }
 
       public RegionFile file() {
@@ -517,11 +517,11 @@ public class WorldUpgrader {
       final T storage;
       final ListIterator<FileToUpgrade> files;
 
-      DimensionToUpgrade(ResourceKey<Level> dimensionKey, T storage, ListIterator<FileToUpgrade> files) {
+      DimensionToUpgrade(ResourceKey<Level> var1, T var2, ListIterator<FileToUpgrade> var3) {
          super();
-         this.dimensionKey = dimensionKey;
-         this.storage = storage;
-         this.files = files;
+         this.dimensionKey = var1;
+         this.storage = var2;
+         this.files = var3;
       }
 
       public ResourceKey<Level> dimensionKey() {

@@ -10,7 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.SpellcasterIllager;
 
 public class EvokerRenderer<T extends SpellcasterIllager> extends IllagerRenderer<T> {
-   private static final ResourceLocation EVOKER_ILLAGER = new ResourceLocation("textures/entity/illager/evoker.png");
+   private static final ResourceLocation EVOKER_ILLAGER = ResourceLocation.withDefaultNamespace("textures/entity/illager/evoker.png");
 
    public EvokerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.EVOKER)), 0.5F);

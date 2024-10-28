@@ -15,10 +15,10 @@ public record TimeCheck(Optional<Long> period, IntRange value) implements LootIt
       return var0.group(Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(var0, TimeCheck::new);
    });
 
-   public TimeCheck(Optional<Long> period, IntRange value) {
+   public TimeCheck(Optional<Long> var1, IntRange var2) {
       super();
-      this.period = period;
-      this.value = value;
+      this.period = var1;
+      this.value = var2;
    }
 
    public LootItemConditionType getType() {

@@ -14,7 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 
 public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet> {
-   private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/shulker/spark.png");
+   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/shulker/spark.png");
    private static final RenderType RENDER_TYPE;
    private final ShulkerBulletModel<ShulkerBullet> model;
 
@@ -39,10 +39,10 @@ public class ShulkerBulletRenderer extends EntityRenderer<ShulkerBullet> {
       var4.scale(-0.5F, -0.5F, 0.5F);
       this.model.setupAnim(var1, 0.0F, 0.0F, 0.0F, var7, var8);
       VertexConsumer var10 = var5.getBuffer(this.model.renderType(TEXTURE_LOCATION));
-      this.model.renderToBuffer(var4, var10, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.renderToBuffer(var4, var10, var6, OverlayTexture.NO_OVERLAY);
       var4.scale(1.5F, 1.5F, 1.5F);
       VertexConsumer var11 = var5.getBuffer(RENDER_TYPE);
-      this.model.renderToBuffer(var4, var11, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 0.15F);
+      this.model.renderToBuffer(var4, var11, var6, OverlayTexture.NO_OVERLAY, 654311423);
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }

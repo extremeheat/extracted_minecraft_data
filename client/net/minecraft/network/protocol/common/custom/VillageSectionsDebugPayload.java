@@ -14,10 +14,10 @@ public record VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<Sec
       this((Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos), (Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos));
    }
 
-   public VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<SectionPos> notVillageChunks) {
+   public VillageSectionsDebugPayload(Set<SectionPos> var1, Set<SectionPos> var2) {
       super();
-      this.villageChunks = villageChunks;
-      this.notVillageChunks = notVillageChunks;
+      this.villageChunks = var1;
+      this.notVillageChunks = var2;
    }
 
    private void write(FriendlyByteBuf var1) {

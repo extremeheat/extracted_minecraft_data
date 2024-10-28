@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.Filterable;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WritableBookContent;
@@ -170,7 +170,7 @@ class ReportGameListener implements GameTestListener {
       var2.setBlockAndUpdate(var5, Blocks.LECTERN.defaultBlockState().rotate(var0.getRotation()));
       BlockState var6 = var2.getBlockState(var5);
       ItemStack var7 = createBook(var0.getTestName(), var0.isRequired(), var1);
-      LecternBlock.tryPlaceBook((Entity)null, var2, var5, var6, var7);
+      LecternBlock.tryPlaceBook((LivingEntity)null, var2, var5, var6, var7);
    }
 
    private static ItemStack createBook(String var0, boolean var1, String var2) {

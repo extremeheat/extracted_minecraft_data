@@ -12,10 +12,10 @@ public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThun
       return var0.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(var0, WeatherCheck::new);
    });
 
-   public WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThundering) {
+   public WeatherCheck(Optional<Boolean> var1, Optional<Boolean> var2) {
       super();
-      this.isRaining = isRaining;
-      this.isThundering = isThundering;
+      this.isRaining = var1;
+      this.isThundering = var2;
    }
 
    public LootItemConditionType getType() {

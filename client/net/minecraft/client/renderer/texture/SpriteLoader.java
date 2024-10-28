@@ -143,14 +143,14 @@ public class SpriteLoader {
    }
 
    public static record Preparations(int width, int height, int mipLevel, TextureAtlasSprite missing, Map<ResourceLocation, TextureAtlasSprite> regions, CompletableFuture<Void> readyForUpload) {
-      public Preparations(int width, int height, int mipLevel, TextureAtlasSprite missing, Map<ResourceLocation, TextureAtlasSprite> regions, CompletableFuture<Void> readyForUpload) {
+      public Preparations(int var1, int var2, int var3, TextureAtlasSprite var4, Map<ResourceLocation, TextureAtlasSprite> var5, CompletableFuture<Void> var6) {
          super();
-         this.width = width;
-         this.height = height;
-         this.mipLevel = mipLevel;
-         this.missing = missing;
-         this.regions = regions;
-         this.readyForUpload = readyForUpload;
+         this.width = var1;
+         this.height = var2;
+         this.mipLevel = var3;
+         this.missing = var4;
+         this.regions = var5;
+         this.readyForUpload = var6;
       }
 
       public CompletableFuture<Preparations> waitForUpload() {

@@ -51,21 +51,22 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          BlockPos var8 = var6.relative(var7);
          if (var1.mayInteract(var2, var6) && var2.mayUseItemAt(var8, var7, var4)) {
             BlockState var9;
+            ItemStack var11;
             if (this.content == Fluids.EMPTY) {
                var9 = var1.getBlockState(var6);
-               Block var11 = var9.getBlock();
-               if (var11 instanceof BucketPickup) {
-                  BucketPickup var13 = (BucketPickup)var11;
-                  ItemStack var14 = var13.pickupBlock(var2, var1, var6, var9);
-                  if (!var14.isEmpty()) {
+               Block var14 = var9.getBlock();
+               if (var14 instanceof BucketPickup) {
+                  BucketPickup var13 = (BucketPickup)var14;
+                  var11 = var13.pickupBlock(var2, var1, var6, var9);
+                  if (!var11.isEmpty()) {
                      var2.awardStat(Stats.ITEM_USED.get(this));
                      var13.getPickupSound().ifPresent((var1x) -> {
                         var2.playSound(var1x, 1.0F, 1.0F);
                      });
                      var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var6);
-                     ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var14);
+                     ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var11);
                      if (!var1.isClientSide) {
-                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var14);
+                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var11);
                      }
 
                      return InteractionResultHolder.sidedSuccess(var12, var1.isClientSide());
@@ -83,7 +84,8 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                   }
 
                   var2.awardStat(Stats.ITEM_USED.get(this));
-                  return InteractionResultHolder.sidedSuccess(getEmptySuccessItem(var4, var2), var1.isClientSide());
+                  var11 = ItemUtils.createFilledResult(var4, var2, getEmptySuccessItem(var4, var2));
+                  return InteractionResultHolder.sidedSuccess(var11, var1.isClientSide());
                } else {
                   return InteractionResultHolder.fail(var4);
                }

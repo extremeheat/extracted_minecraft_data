@@ -31,7 +31,6 @@ import net.minecraft.world.item.component.TooltipProvider;
 
 public class ItemEnchantments implements TooltipProvider {
    public static final ItemEnchantments EMPTY = new ItemEnchantments(new Object2IntOpenHashMap(), true);
-   public static final int MAX_LEVEL = 255;
    private static final Codec<Integer> LEVEL_CODEC = Codec.intRange(0, 255);
    private static final Codec<Object2IntOpenHashMap<Holder<Enchantment>>> LEVELS_CODEC;
    private static final Codec<ItemEnchantments> FULL_CODEC;
@@ -157,7 +156,7 @@ public class ItemEnchantments implements TooltipProvider {
       CODEC = Codec.withAlternative(FULL_CODEC, LEVELS_CODEC, (var0) -> {
          return new ItemEnchantments(var0, true);
       });
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(Object2IntOpenHashMap::new, ByteBufCodecs.holderRegistry(Registries.ENCHANTMENT), ByteBufCodecs.VAR_INT), (var0) -> {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(Object2IntOpenHashMap::new, Enchantment.STREAM_CODEC, ByteBufCodecs.VAR_INT), (var0) -> {
          return var0.enchantments;
       }, ByteBufCodecs.BOOL, (var0) -> {
          return var0.showInTooltip;

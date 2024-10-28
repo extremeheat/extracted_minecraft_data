@@ -262,14 +262,14 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
 
    static {
       DATE_FORMAT = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withZone(ZoneId.systemDefault());
-      ERROR_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/error_highlighted");
-      ERROR_SPRITE = new ResourceLocation("world_list/error");
-      MARKED_JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/marked_join_highlighted");
-      MARKED_JOIN_SPRITE = new ResourceLocation("world_list/marked_join");
-      WARNING_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/warning_highlighted");
-      WARNING_SPRITE = new ResourceLocation("world_list/warning");
-      JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/join_highlighted");
-      JOIN_SPRITE = new ResourceLocation("world_list/join");
+      ERROR_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error_highlighted");
+      ERROR_SPRITE = ResourceLocation.withDefaultNamespace("world_list/error");
+      MARKED_JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join_highlighted");
+      MARKED_JOIN_SPRITE = ResourceLocation.withDefaultNamespace("world_list/marked_join");
+      WARNING_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/warning_highlighted");
+      WARNING_SPRITE = ResourceLocation.withDefaultNamespace("world_list/warning");
+      JOIN_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("world_list/join_highlighted");
+      JOIN_SPRITE = ResourceLocation.withDefaultNamespace("world_list/join");
       LOGGER = LogUtils.getLogger();
       FROM_NEWER_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.fromNewerVersion1").withStyle(ChatFormatting.RED);
       FROM_NEWER_TOOLTIP_2 = Component.translatable("selectWorld.tooltip.fromNewerVersion2").withStyle(ChatFormatting.RED);

@@ -13,10 +13,10 @@ public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) 
       return var0.group(NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(var0, BinomialDistributionGenerator::new);
    });
 
-   public BinomialDistributionGenerator(NumberProvider n, NumberProvider p) {
+   public BinomialDistributionGenerator(NumberProvider var1, NumberProvider var2) {
       super();
-      this.n = n;
-      this.p = p;
+      this.n = var1;
+      this.p = var2;
    }
 
    public LootNumberProviderType getType() {

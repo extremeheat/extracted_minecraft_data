@@ -78,6 +78,6 @@ public class ServerPacksSource extends BuiltInPackSource {
       VANILLA_PACK_INFO = new PackLocationInfo("vanilla", Component.translatable("dataPack.vanilla.name"), PackSource.BUILT_IN, Optional.of(CORE_PACK_INFO));
       VANILLA_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.BOTTOM, false);
       FEATURE_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
-      PACKS_DIR = new ResourceLocation("minecraft", "datapacks");
+      PACKS_DIR = ResourceLocation.withDefaultNamespace("datapacks");
    }
 }

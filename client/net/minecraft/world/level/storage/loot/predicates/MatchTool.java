@@ -16,9 +16,9 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
       return var0.group(ItemPredicate.CODEC.optionalFieldOf("predicate").forGetter(MatchTool::predicate)).apply(var0, MatchTool::new);
    });
 
-   public MatchTool(Optional<ItemPredicate> predicate) {
+   public MatchTool(Optional<ItemPredicate> var1) {
       super();
-      this.predicate = predicate;
+      this.predicate = var1;
    }
 
    public LootItemConditionType getType() {

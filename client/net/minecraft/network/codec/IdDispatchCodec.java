@@ -75,10 +75,10 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
       final StreamCodec<? super B, ? extends V> serializer;
       final T type;
 
-      Entry(StreamCodec<? super B, ? extends V> serializer, T type) {
+      Entry(StreamCodec<? super B, ? extends V> var1, T var2) {
          super();
-         this.serializer = serializer;
-         this.type = type;
+         this.serializer = var1;
+         this.type = var2;
       }
 
       public StreamCodec<? super B, ? extends V> serializer() {

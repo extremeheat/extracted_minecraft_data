@@ -74,10 +74,10 @@ public class PathAllowList implements PathMatcher {
    }
 
    public static record ConfigEntry(EntryType type, String pattern) {
-      public ConfigEntry(EntryType type, String pattern) {
+      public ConfigEntry(EntryType var1, String var2) {
          super();
-         this.type = type;
-         this.pattern = pattern;
+         this.type = var1;
+         this.pattern = var2;
       }
 
       public PathMatcher compile(FileSystem var1) {

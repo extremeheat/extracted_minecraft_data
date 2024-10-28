@@ -14,10 +14,10 @@ public record ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack item
       this((short)var1, var2);
    }
 
-   public ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack itemStack) {
+   public ServerboundSetCreativeModeSlotPacket(short var1, ItemStack var2) {
       super();
-      this.slotNum = slotNum;
-      this.itemStack = itemStack;
+      this.slotNum = var1;
+      this.itemStack = var2;
    }
 
    public PacketType<ServerboundSetCreativeModeSlotPacket> type() {

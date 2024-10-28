@@ -16,10 +16,10 @@ public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath pat
       return var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(var0, StorageValue::new);
    });
 
-   public StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath path) {
+   public StorageValue(ResourceLocation var1, NbtPathArgument.NbtPath var2) {
       super();
-      this.storage = storage;
-      this.path = path;
+      this.storage = var1;
+      this.path = var2;
    }
 
    public LootNumberProviderType getType() {

@@ -62,7 +62,7 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
    static final Dynamic2CommandExceptionType ERROR_MALFORMED_PREDICATE = new Dynamic2CommandExceptionType((var0, var1) -> {
       return Component.translatableEscape("arguments.item.predicate.malformed", var0, var1);
    });
-   private static final ResourceLocation COUNT_ID = new ResourceLocation("count");
+   private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
    static final Map<ResourceLocation, ComponentWrapper> PSEUDO_COMPONENTS;
    static final Map<ResourceLocation, PredicateWrapper> PSEUDO_PREDICATES;
    private final Grammar<List<Predicate<ItemStack>>> grammarWithContext;
@@ -247,11 +247,11 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
    private static record ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
       final Predicate<ItemStack> presenceChecker;
 
-      ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
+      ComponentWrapper(ResourceLocation var1, Predicate<ItemStack> var2, Decoder<? extends Predicate<ItemStack>> var3) {
          super();
-         this.id = id;
-         this.presenceChecker = presenceChecker;
-         this.valueChecker = valueChecker;
+         this.id = var1;
+         this.presenceChecker = var2;
+         this.valueChecker = var3;
       }
 
       public static <T> ComponentWrapper create(ImmutableStringReader var0, ResourceLocation var1, DataComponentType<T> var2) throws CommandSyntaxException {
@@ -298,10 +298,10 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
          }));
       }
 
-      PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
+      PredicateWrapper(ResourceLocation var1, Decoder<? extends Predicate<ItemStack>> var2) {
          super();
-         this.id = id;
-         this.type = type;
+         this.id = var1;
+         this.type = var2;
       }
 
       public Predicate<ItemStack> decode(ImmutableStringReader var1, RegistryOps<Tag> var2, Tag var3) throws CommandSyntaxException {

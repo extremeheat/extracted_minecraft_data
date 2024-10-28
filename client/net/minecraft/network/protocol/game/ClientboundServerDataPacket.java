@@ -12,10 +12,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundServerDataPacket(Component motd, Optional<byte[]> iconBytes) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundServerDataPacket> STREAM_CODEC;
 
-   public ClientboundServerDataPacket(Component motd, Optional<byte[]> iconBytes) {
+   public ClientboundServerDataPacket(Component var1, Optional<byte[]> var2) {
       super();
-      this.motd = motd;
-      this.iconBytes = iconBytes;
+      this.motd = var1;
+      this.iconBytes = var2;
    }
 
    public PacketType<ClientboundServerDataPacket> type() {

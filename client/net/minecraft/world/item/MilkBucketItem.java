@@ -22,12 +22,16 @@ public class MilkBucketItem extends Item {
          var4.awardStat(Stats.ITEM_USED.get(this));
       }
 
-      var1.consume(1, var3);
       if (!var2.isClientSide) {
          var3.removeAllEffects();
       }
 
-      return var1.isEmpty() ? new ItemStack(Items.BUCKET) : var1;
+      if (var3 instanceof Player var5) {
+         return ItemUtils.createFilledResult(var1, var5, new ItemStack(Items.BUCKET), false);
+      } else {
+         var1.consume(1, var3);
+         return var1;
+      }
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {

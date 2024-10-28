@@ -40,20 +40,20 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class PlayerTabOverlay {
-   private static final ResourceLocation PING_UNKNOWN_SPRITE = new ResourceLocation("icon/ping_unknown");
-   private static final ResourceLocation PING_1_SPRITE = new ResourceLocation("icon/ping_1");
-   private static final ResourceLocation PING_2_SPRITE = new ResourceLocation("icon/ping_2");
-   private static final ResourceLocation PING_3_SPRITE = new ResourceLocation("icon/ping_3");
-   private static final ResourceLocation PING_4_SPRITE = new ResourceLocation("icon/ping_4");
-   private static final ResourceLocation PING_5_SPRITE = new ResourceLocation("icon/ping_5");
-   private static final ResourceLocation HEART_CONTAINER_BLINKING_SPRITE = new ResourceLocation("hud/heart/container_blinking");
-   private static final ResourceLocation HEART_CONTAINER_SPRITE = new ResourceLocation("hud/heart/container");
-   private static final ResourceLocation HEART_FULL_BLINKING_SPRITE = new ResourceLocation("hud/heart/full_blinking");
-   private static final ResourceLocation HEART_HALF_BLINKING_SPRITE = new ResourceLocation("hud/heart/half_blinking");
-   private static final ResourceLocation HEART_ABSORBING_FULL_BLINKING_SPRITE = new ResourceLocation("hud/heart/absorbing_full_blinking");
-   private static final ResourceLocation HEART_FULL_SPRITE = new ResourceLocation("hud/heart/full");
-   private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = new ResourceLocation("hud/heart/absorbing_half_blinking");
-   private static final ResourceLocation HEART_HALF_SPRITE = new ResourceLocation("hud/heart/half");
+   private static final ResourceLocation PING_UNKNOWN_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_unknown");
+   private static final ResourceLocation PING_1_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_1");
+   private static final ResourceLocation PING_2_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_2");
+   private static final ResourceLocation PING_3_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_3");
+   private static final ResourceLocation PING_4_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_4");
+   private static final ResourceLocation PING_5_SPRITE = ResourceLocation.withDefaultNamespace("icon/ping_5");
+   private static final ResourceLocation HEART_CONTAINER_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/container_blinking");
+   private static final ResourceLocation HEART_CONTAINER_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/container");
+   private static final ResourceLocation HEART_FULL_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/full_blinking");
+   private static final ResourceLocation HEART_HALF_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/half_blinking");
+   private static final ResourceLocation HEART_ABSORBING_FULL_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full_blinking");
+   private static final ResourceLocation HEART_FULL_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/full");
+   private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half_blinking");
+   private static final ResourceLocation HEART_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/half");
    private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.comparingInt((var0) -> {
       return var0.getGameMode() == GameType.SPECTATOR ? 1 : 0;
    }).thenComparing((var0) -> {
@@ -374,12 +374,12 @@ public class PlayerTabOverlay {
       final Component formattedScore;
       final int scoreWidth;
 
-      ScoreDisplayEntry(Component name, int score, @Nullable Component formattedScore, int scoreWidth) {
+      ScoreDisplayEntry(Component var1, int var2, @Nullable Component var3, int var4) {
          super();
-         this.name = name;
-         this.score = score;
-         this.formattedScore = formattedScore;
-         this.scoreWidth = scoreWidth;
+         this.name = var1;
+         this.score = var2;
+         this.formattedScore = var3;
+         this.scoreWidth = var4;
       }
 
       public Component name() {

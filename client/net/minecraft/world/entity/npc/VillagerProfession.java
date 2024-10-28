@@ -38,14 +38,14 @@ public record VillagerProfession(String name, Predicate<Holder<PoiType>> heldJob
    public static final VillagerProfession TOOLSMITH;
    public static final VillagerProfession WEAPONSMITH;
 
-   public VillagerProfession(String name, Predicate<Holder<PoiType>> heldJobSite, Predicate<Holder<PoiType>> acquirableJobSite, ImmutableSet<Item> requestedItems, ImmutableSet<Block> secondaryPoi, @Nullable SoundEvent workSound) {
+   public VillagerProfession(String var1, Predicate<Holder<PoiType>> var2, Predicate<Holder<PoiType>> var3, ImmutableSet<Item> var4, ImmutableSet<Block> var5, @Nullable SoundEvent var6) {
       super();
-      this.name = name;
-      this.heldJobSite = heldJobSite;
-      this.acquirableJobSite = acquirableJobSite;
-      this.requestedItems = requestedItems;
-      this.secondaryPoi = secondaryPoi;
-      this.workSound = workSound;
+      this.name = var1;
+      this.heldJobSite = var2;
+      this.acquirableJobSite = var3;
+      this.requestedItems = var4;
+      this.secondaryPoi = var5;
+      this.workSound = var6;
    }
 
    public String toString() {
@@ -73,7 +73,7 @@ public record VillagerProfession(String name, Predicate<Holder<PoiType>> heldJob
    }
 
    private static VillagerProfession register(String var0, Predicate<Holder<PoiType>> var1, Predicate<Holder<PoiType>> var2, ImmutableSet<Item> var3, ImmutableSet<Block> var4, @Nullable SoundEvent var5) {
-      return (VillagerProfession)Registry.register(BuiltInRegistries.VILLAGER_PROFESSION, (ResourceLocation)(new ResourceLocation(var0)), new VillagerProfession(var0, var1, var2, var3, var4, var5));
+      return (VillagerProfession)Registry.register(BuiltInRegistries.VILLAGER_PROFESSION, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new VillagerProfession(var0, var1, var2, var3, var4, var5));
    }
 
    public String name() {

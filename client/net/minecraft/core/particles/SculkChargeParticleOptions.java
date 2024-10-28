@@ -15,9 +15,9 @@ public record SculkChargeParticleOptions(float roll) implements ParticleOptions 
    });
    public static final StreamCodec<RegistryFriendlyByteBuf, SculkChargeParticleOptions> STREAM_CODEC;
 
-   public SculkChargeParticleOptions(float roll) {
+   public SculkChargeParticleOptions(float var1) {
       super();
-      this.roll = roll;
+      this.roll = var1;
    }
 
    public ParticleType<SculkChargeParticleOptions> getType() {

@@ -17,10 +17,10 @@ public record LodestoneTracker(Optional<GlobalPos> target, boolean tracked) {
    });
    public static final StreamCodec<ByteBuf, LodestoneTracker> STREAM_CODEC;
 
-   public LodestoneTracker(Optional<GlobalPos> target, boolean tracked) {
+   public LodestoneTracker(Optional<GlobalPos> var1, boolean var2) {
       super();
-      this.target = target;
-      this.tracked = tracked;
+      this.target = var1;
+      this.tracked = var2;
    }
 
    public LodestoneTracker tick(ServerLevel var1) {

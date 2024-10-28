@@ -21,10 +21,10 @@ public record BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Flo
       return var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter(BonusLevelTableCondition::enchantment), ExtraCodecs.nonEmptyList(Codec.FLOAT.listOf()).fieldOf("chances").forGetter(BonusLevelTableCondition::values)).apply(var0, BonusLevelTableCondition::new);
    });
 
-   public BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Float> values) {
+   public BonusLevelTableCondition(Holder<Enchantment> var1, List<Float> var2) {
       super();
-      this.enchantment = enchantment;
-      this.values = values;
+      this.enchantment = var1;
+      this.values = var2;
    }
 
    public LootItemConditionType getType() {

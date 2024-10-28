@@ -76,10 +76,10 @@ public class LastSeenMessagesTracker {
    }
 
    public static record Update(LastSeenMessages lastSeen, LastSeenMessages.Update update) {
-      public Update(LastSeenMessages lastSeen, LastSeenMessages.Update update) {
+      public Update(LastSeenMessages var1, LastSeenMessages.Update var2) {
          super();
-         this.lastSeen = lastSeen;
-         this.update = update;
+         this.lastSeen = var1;
+         this.update = var2;
       }
 
       public LastSeenMessages lastSeen() {

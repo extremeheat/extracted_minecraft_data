@@ -16,7 +16,7 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
 
    public HangingSignEditScreen(SignBlockEntity var1, boolean var2, boolean var3) {
       super(var1, var2, var3, Component.translatable("hanging_sign.edit"));
-      this.texture = new ResourceLocation("textures/gui/hanging_signs/" + this.woodType.name() + ".png");
+      this.texture = ResourceLocation.withDefaultNamespace("textures/gui/hanging_signs/" + this.woodType.name() + ".png");
    }
 
    protected void offsetSign(GuiGraphics var1, BlockState var2) {

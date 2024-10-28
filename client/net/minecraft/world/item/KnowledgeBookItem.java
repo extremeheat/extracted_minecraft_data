@@ -25,11 +25,8 @@ public class KnowledgeBookItem extends Item {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      if (!var2.hasInfiniteMaterials()) {
-         var2.setItemInHand(var3, ItemStack.EMPTY);
-      }
-
       List var5 = (List)var4.getOrDefault(DataComponents.RECIPES, List.of());
+      var4.consume(1, var2);
       if (var5.isEmpty()) {
          return InteractionResultHolder.fail(var4);
       } else {

@@ -270,7 +270,7 @@ public class ModelBakery {
             this.cacheAndQueueDependencies(var2, var4);
             this.unbakedCache.put(var3, var4);
          } else {
-            var3 = new ResourceLocation(var1.getNamespace(), var1.getPath());
+            var3 = ResourceLocation.fromNamespaceAndPath(var1.getNamespace(), var1.getPath());
             StateDefinition var28 = (StateDefinition)Optional.ofNullable((StateDefinition)STATIC_DEFINITIONS.get(var3)).orElseGet(() -> {
                return ((Block)BuiltInRegistries.BLOCK.get(var3)).getStateDefinition();
             });
@@ -485,19 +485,21 @@ public class ModelBakery {
    }
 
    static {
-      FIRE_0 = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("block/fire_0"));
-      FIRE_1 = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("block/fire_1"));
-      LAVA_FLOW = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("block/lava_flow"));
-      WATER_FLOW = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("block/water_flow"));
-      WATER_OVERLAY = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("block/water_overlay"));
-      BANNER_BASE = new Material(Sheets.BANNER_SHEET, new ResourceLocation("entity/banner_base"));
-      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, new ResourceLocation("entity/shield_base"));
-      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, new ResourceLocation("entity/shield_base_nopattern"));
+      FIRE_0 = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/fire_0"));
+      FIRE_1 = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/fire_1"));
+      LAVA_FLOW = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/lava_flow"));
+      WATER_FLOW = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/water_flow"));
+      WATER_OVERLAY = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("block/water_overlay"));
+      BANNER_BASE = new Material(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner_base"));
+      SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
+      NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
       DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> {
-         return new ResourceLocation("block/destroy_stage_" + var0);
+         return ResourceLocation.withDefaultNamespace("block/destroy_stage_" + var0);
       }).collect(Collectors.toList());
       BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> {
-         return new ResourceLocation("textures/" + var0.getPath() + ".png");
+         return var0.withPath((var0x) -> {
+            return "textures/" + var0x + ".png";
+         });
       }).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderType::crumbling).collect(Collectors.toList());
       LOGGER = LogUtils.getLogger();
@@ -516,7 +518,7 @@ public class ModelBakery {
       });
       ITEM_FRAME_FAKE_DEFINITION = (new StateDefinition.Builder(Blocks.AIR)).add(BooleanProperty.create("map")).create(Block::defaultBlockState, BlockState::new);
       ITEM_MODEL_GENERATOR = new ItemModelGenerator();
-      STATIC_DEFINITIONS = ImmutableMap.of(new ResourceLocation("item_frame"), ITEM_FRAME_FAKE_DEFINITION, new ResourceLocation("glow_item_frame"), ITEM_FRAME_FAKE_DEFINITION);
+      STATIC_DEFINITIONS = ImmutableMap.of(ResourceLocation.withDefaultNamespace("item_frame"), ITEM_FRAME_FAKE_DEFINITION, ResourceLocation.withDefaultNamespace("glow_item_frame"), ITEM_FRAME_FAKE_DEFINITION);
    }
 
    private static class BlockStateDefinitionException extends RuntimeException {
@@ -575,10 +577,10 @@ public class ModelBakery {
       final String source;
       final JsonElement data;
 
-      public LoadedJson(String source, JsonElement data) {
+      public LoadedJson(String var1, JsonElement var2) {
          super();
-         this.source = source;
-         this.data = data;
+         this.source = var1;
+         this.data = var2;
       }
 
       public String source() {
@@ -626,11 +628,11 @@ public class ModelBakery {
    }
 
    private static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
-      BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
+      BakedCacheKey(ResourceLocation var1, Transformation var2, boolean var3) {
          super();
-         this.id = id;
-         this.transformation = transformation;
-         this.isUvLocked = isUvLocked;
+         this.id = var1;
+         this.transformation = var2;
+         this.isUvLocked = var3;
       }
 
       public ResourceLocation id() {

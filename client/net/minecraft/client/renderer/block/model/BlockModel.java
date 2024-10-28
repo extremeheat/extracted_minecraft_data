@@ -333,7 +333,7 @@ public class BlockModel implements UnbakedModel {
             var11 = BlockModel.GuiLight.getByName(GsonHelper.getAsString(var4, "gui_light"));
          }
 
-         ResourceLocation var12 = var6.isEmpty() ? null : new ResourceLocation(var6);
+         ResourceLocation var12 = var6.isEmpty() ? null : ResourceLocation.parse(var6);
          return new BlockModel(var12, var5, var7, var8, var11, var9, var13);
       }
 

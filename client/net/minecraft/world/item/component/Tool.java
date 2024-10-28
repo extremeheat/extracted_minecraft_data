@@ -24,11 +24,11 @@ public record Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBloc
    });
    public static final StreamCodec<RegistryFriendlyByteBuf, Tool> STREAM_CODEC;
 
-   public Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBlock) {
+   public Tool(List<Rule> var1, float var2, int var3) {
       super();
-      this.rules = rules;
-      this.defaultMiningSpeed = defaultMiningSpeed;
-      this.damagePerBlock = damagePerBlock;
+      this.rules = var1;
+      this.defaultMiningSpeed = var2;
+      this.damagePerBlock = var3;
    }
 
    public float getMiningSpeed(BlockState var1) {
@@ -86,11 +86,11 @@ public record Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBloc
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, Rule> STREAM_CODEC;
 
-      public Rule(HolderSet<Block> blocks, Optional<Float> speed, Optional<Boolean> correctForDrops) {
+      public Rule(HolderSet<Block> var1, Optional<Float> var2, Optional<Boolean> var3) {
          super();
-         this.blocks = blocks;
-         this.speed = speed;
-         this.correctForDrops = correctForDrops;
+         this.blocks = var1;
+         this.speed = var2;
+         this.correctForDrops = var3;
       }
 
       public static Rule minesAndDrops(List<Block> var0, float var1) {

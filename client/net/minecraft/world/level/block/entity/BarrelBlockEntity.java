@@ -120,6 +120,6 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
       double var4 = (double)this.worldPosition.getX() + 0.5 + (double)var3.getX() / 2.0;
       double var6 = (double)this.worldPosition.getY() + 0.5 + (double)var3.getY() / 2.0;
       double var8 = (double)this.worldPosition.getZ() + 0.5 + (double)var3.getZ() / 2.0;
-      this.level.playSound((Player)null, var4, var6, var8, var2, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+      this.level.playSound((Player)null, var4, var6, var8, (SoundEvent)var2, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
    }
 }

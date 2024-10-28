@@ -178,9 +178,9 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
 
       private static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
-         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) {
+         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> var1) {
             super();
-            this.map = map;
+            this.map = var1;
          }
 
          @Nullable

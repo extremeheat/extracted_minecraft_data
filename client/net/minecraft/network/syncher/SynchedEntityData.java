@@ -183,11 +183,11 @@ public class SynchedEntityData {
       final int id;
       final T value;
 
-      public DataValue(int id, EntityDataSerializer<T> serializer, T value) {
+      public DataValue(int var1, EntityDataSerializer<T> var2, T var3) {
          super();
-         this.id = id;
-         this.serializer = serializer;
-         this.value = value;
+         this.id = var1;
+         this.serializer = var2;
+         this.value = var3;
       }
 
       public static <T> DataValue<T> create(EntityDataAccessor<T> var0, T var1) {

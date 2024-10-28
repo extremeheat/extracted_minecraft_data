@@ -13,9 +13,9 @@ public record SlimePredicate(MinMaxBounds.Ints size) implements EntitySubPredica
       return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("size", MinMaxBounds.Ints.ANY).forGetter(SlimePredicate::size)).apply(var0, SlimePredicate::new);
    });
 
-   public SlimePredicate(MinMaxBounds.Ints size) {
+   public SlimePredicate(MinMaxBounds.Ints var1) {
       super();
-      this.size = size;
+      this.size = var1;
    }
 
    public static SlimePredicate sized(MinMaxBounds.Ints var0) {

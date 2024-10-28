@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.windcharge.AbstractWindCharge;
 
 public class WindChargeRenderer extends EntityRenderer<AbstractWindCharge> {
-   private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/projectiles/wind_charge.png");
+   private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/projectiles/wind_charge.png");
    private final WindChargeModel model;
 
    public WindChargeRenderer(EntityRendererProvider.Context var1) {
@@ -23,7 +23,7 @@ public class WindChargeRenderer extends EntityRenderer<AbstractWindCharge> {
       float var7 = (float)var1.tickCount + var3;
       VertexConsumer var8 = var5.getBuffer(RenderType.breezeWind(TEXTURE_LOCATION, this.xOffset(var7) % 1.0F, 0.0F));
       this.model.setupAnim(var1, 0.0F, 0.0F, var7, 0.0F, 0.0F);
-      this.model.renderToBuffer(var4, var8, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.renderToBuffer(var4, var8, var6, OverlayTexture.NO_OVERLAY);
       super.render(var1, var2, var3, var4, var5, var6);
    }
 

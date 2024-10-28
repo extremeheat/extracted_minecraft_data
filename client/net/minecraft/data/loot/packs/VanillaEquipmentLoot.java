@@ -25,9 +25,9 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCon
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public record VanillaEquipmentLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
-   public VanillaEquipmentLoot(HolderLookup.Provider registries) {
+   public VanillaEquipmentLoot(HolderLookup.Provider var1) {
       super();
-      this.registries = registries;
+      this.registries = var1;
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {

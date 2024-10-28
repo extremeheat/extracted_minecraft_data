@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -15,6 +14,7 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -58,7 +58,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public class Shulker extends AbstractGolem implements VariantHolder<Optional<DyeColor>>, Enemy {
-   private static final UUID COVERED_ARMOR_MODIFIER_UUID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
+   private static final ResourceLocation COVERED_ARMOR_MODIFIER_ID = ResourceLocation.withDefaultNamespace("covered");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER;
    protected static final EntityDataAccessor<Direction> DATA_ATTACH_FACE_ID;
    protected static final EntityDataAccessor<Byte> DATA_PEEK_ID;
@@ -458,7 +458,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    void setRawPeekAmount(int var1) {
       if (!this.level().isClientSide) {
-         this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER.id());
+         this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER_ID);
          if (var1 == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);
             this.playSound(SoundEvents.SHULKER_CLOSE, 1.0F, 1.0F);
@@ -533,7 +533,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    static {
-      COVERED_ARMOR_MODIFIER = new AttributeModifier(COVERED_ARMOR_MODIFIER_UUID, "Covered armor bonus", 20.0, AttributeModifier.Operation.ADD_VALUE);
+      COVERED_ARMOR_MODIFIER = new AttributeModifier(COVERED_ARMOR_MODIFIER_ID, 20.0, AttributeModifier.Operation.ADD_VALUE);
       DATA_ATTACH_FACE_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.DIRECTION);
       DATA_PEEK_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.BYTE);
       DATA_COLOR_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.BYTE);

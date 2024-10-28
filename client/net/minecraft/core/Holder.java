@@ -49,9 +49,9 @@ public interface Holder<T> {
    }
 
    public static record Direct<T>(T value) implements Holder<T> {
-      public Direct(T value) {
+      public Direct(T var1) {
          super();
-         this.value = value;
+         this.value = var1;
       }
 
       public boolean isBound() {

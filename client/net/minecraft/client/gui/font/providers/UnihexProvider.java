@@ -240,9 +240,9 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    static record ByteContents(byte[] contents) implements LineData {
-      private ByteContents(byte[] contents) {
+      private ByteContents(byte[] var1) {
          super();
-         this.contents = contents;
+         this.contents = var1;
       }
 
       public int line(int var1) {
@@ -273,9 +273,9 @@ public class UnihexProvider implements GlyphProvider {
    }
 
    private static record ShortContents(short[] contents) implements LineData {
-      private ShortContents(short[] contents) {
+      private ShortContents(short[] var1) {
          super();
-         this.contents = contents;
+         this.contents = var1;
       }
 
       public int line(int var1) {
@@ -310,10 +310,10 @@ public class UnihexProvider implements GlyphProvider {
    static record IntContents(int[] contents, int bitWidth) implements LineData {
       private static final int SIZE_24 = 24;
 
-      private IntContents(int[] contents, int bitWidth) {
+      private IntContents(int[] var1, int var2) {
          super();
-         this.contents = contents;
-         this.bitWidth = bitWidth;
+         this.contents = var1;
+         this.bitWidth = var2;
       }
 
       public int line(int var1) {
@@ -381,11 +381,11 @@ public class UnihexProvider implements GlyphProvider {
       final int left;
       final int right;
 
-      Glyph(LineData contents, int left, int right) {
+      Glyph(LineData var1, int var2, int var3) {
          super();
-         this.contents = contents;
-         this.left = left;
-         this.right = right;
+         this.contents = var1;
+         this.left = var2;
+         this.right = var3;
       }
 
       public int width() {
@@ -577,10 +577,10 @@ public class UnihexProvider implements GlyphProvider {
       });
       public static final Codec<Dimensions> CODEC;
 
-      public Dimensions(int left, int right) {
+      public Dimensions(int var1, int var2) {
          super();
-         this.left = left;
-         this.right = right;
+         this.left = var1;
+         this.right = var2;
       }
 
       public int pack() {
@@ -621,11 +621,11 @@ public class UnihexProvider implements GlyphProvider {
       });
       public static final Codec<OverrideRange> CODEC;
 
-      private OverrideRange(int from, int to, Dimensions dimensions) {
+      private OverrideRange(int var1, int var2, Dimensions var3) {
          super();
-         this.from = from;
-         this.to = to;
-         this.dimensions = dimensions;
+         this.from = var1;
+         this.to = var2;
+         this.dimensions = var3;
       }
 
       public int from() {

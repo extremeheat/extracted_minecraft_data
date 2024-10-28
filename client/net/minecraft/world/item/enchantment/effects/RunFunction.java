@@ -21,9 +21,9 @@ public record RunFunction(ResourceLocation function) implements EnchantmentEntit
       return var0.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(var0, RunFunction::new);
    });
 
-   public RunFunction(ResourceLocation function) {
+   public RunFunction(ResourceLocation var1) {
       super();
-      this.function = function;
+      this.function = var1;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
@@ -31,7 +31,7 @@ public record RunFunction(ResourceLocation function) implements EnchantmentEntit
       ServerFunctionManager var7 = var6.getFunctions();
       Optional var8 = var7.get(this.function);
       if (var8.isPresent()) {
-         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(2).withSuppressedOutput().withEntity(var4).withPosition(var5);
+         CommandSourceStack var9 = var6.createCommandSourceStack().withPermission(2).withSuppressedOutput().withEntity(var4).withLevel(var1).withPosition(var5).withRotation(var4.getRotationVector());
          var7.execute((CommandFunction)var8.get(), var9);
       } else {
          LOGGER.error("Enchantment run_function effect failed for non-existent function {}", this.function);

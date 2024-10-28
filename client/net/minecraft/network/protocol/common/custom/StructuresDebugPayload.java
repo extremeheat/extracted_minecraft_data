@@ -16,11 +16,11 @@ public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox m
       this(var1.readResourceKey(Registries.DIMENSION), readBoundingBox(var1), var1.readList(PieceInfo::new));
    }
 
-   public StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox mainBB, List<PieceInfo> pieces) {
+   public StructuresDebugPayload(ResourceKey<Level> var1, BoundingBox var2, List<PieceInfo> var3) {
       super();
-      this.dimension = dimension;
-      this.mainBB = mainBB;
-      this.pieces = pieces;
+      this.dimension = var1;
+      this.mainBB = var2;
+      this.pieces = var3;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -65,10 +65,10 @@ public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox m
          this(StructuresDebugPayload.readBoundingBox(var1), var1.readBoolean());
       }
 
-      public PieceInfo(BoundingBox boundingBox, boolean isStart) {
+      public PieceInfo(BoundingBox var1, boolean var2) {
          super();
-         this.boundingBox = boundingBox;
-         this.isStart = isStart;
+         this.boundingBox = var1;
+         this.isStart = var2;
       }
 
       public void write(FriendlyByteBuf var1) {

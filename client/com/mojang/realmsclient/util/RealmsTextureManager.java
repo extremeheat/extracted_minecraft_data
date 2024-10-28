@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 public class RealmsTextureManager {
    private static final Map<String, RealmsTexture> TEXTURES = Maps.newHashMap();
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation TEMPLATE_ICON_LOCATION = new ResourceLocation("textures/gui/presets/isles.png");
+   private static final ResourceLocation TEMPLATE_ICON_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/presets/isles.png");
 
    public RealmsTextureManager() {
       super();
@@ -41,7 +41,7 @@ public class RealmsTextureManager {
             TEXTURES.put(var0, new RealmsTexture(var1, var4));
             return var4;
          } else {
-            var4 = new ResourceLocation("realms", "dynamic/" + var0);
+            var4 = ResourceLocation.fromNamespaceAndPath("realms", "dynamic/" + var0);
             Minecraft.getInstance().getTextureManager().register((ResourceLocation)var4, (AbstractTexture)(new DynamicTexture(var3)));
             TEXTURES.put(var0, new RealmsTexture(var1, var4));
             return var4;
@@ -69,10 +69,10 @@ public class RealmsTextureManager {
    public static record RealmsTexture(String image, ResourceLocation textureId) {
       final ResourceLocation textureId;
 
-      public RealmsTexture(String image, ResourceLocation textureId) {
+      public RealmsTexture(String var1, ResourceLocation var2) {
          super();
-         this.image = image;
-         this.textureId = textureId;
+         this.image = var1;
+         this.textureId = var2;
       }
 
       public String image() {

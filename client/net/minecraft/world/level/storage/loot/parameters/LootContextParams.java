@@ -28,6 +28,6 @@ public class LootContextParams {
    }
 
    private static <T> LootContextParam<T> create(String var0) {
-      return new LootContextParam(new ResourceLocation(var0));
+      return new LootContextParam(ResourceLocation.withDefaultNamespace(var0));
    }
 }

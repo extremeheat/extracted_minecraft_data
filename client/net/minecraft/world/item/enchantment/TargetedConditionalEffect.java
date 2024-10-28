@@ -9,12 +9,12 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public record TargetedConditionalEffect<T>(EnchantmentTarget enchanted, EnchantmentTarget affected, T effect, Optional<LootItemCondition> requirements) {
-   public TargetedConditionalEffect(EnchantmentTarget enchanted, EnchantmentTarget affected, T effect, Optional<LootItemCondition> requirements) {
+   public TargetedConditionalEffect(EnchantmentTarget var1, EnchantmentTarget var2, T var3, Optional<LootItemCondition> var4) {
       super();
-      this.enchanted = enchanted;
-      this.affected = affected;
-      this.effect = effect;
-      this.requirements = requirements;
+      this.enchanted = var1;
+      this.affected = var2;
+      this.effect = var3;
+      this.requirements = var4;
    }
 
    public static <S> Codec<TargetedConditionalEffect<S>> codec(Codec<S> var0, LootContextParamSet var1) {

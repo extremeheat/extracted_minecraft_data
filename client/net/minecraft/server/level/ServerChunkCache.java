@@ -20,6 +20,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -152,31 +153,27 @@ public class ServerChunkCache extends ChunkSource {
          this.level.getProfiler().incrementCounter("getChunkNow");
          long var3 = ChunkPos.asLong(var1, var2);
 
+         ChunkAccess var6;
          for(int var5 = 0; var5 < 4; ++var5) {
             if (var3 == this.lastChunkPos[var5] && this.lastChunkStatus[var5] == ChunkStatus.FULL) {
-               ChunkAccess var6 = this.lastChunk[var5];
+               var6 = this.lastChunk[var5];
                return var6 instanceof LevelChunk ? (LevelChunk)var6 : null;
             }
          }
 
-         ChunkHolder var8 = this.getVisibleChunkIfPresent(var3);
-         if (var8 == null) {
+         ChunkHolder var7 = this.getVisibleChunkIfPresent(var3);
+         if (var7 == null) {
             return null;
          } else {
-            ChunkResult var9 = (ChunkResult)var8.getFutureIfPresent(ChunkStatus.FULL).getNow((Object)null);
-            if (var9 == null) {
-               return null;
-            } else {
-               ChunkAccess var7 = (ChunkAccess)var9.orElse((Object)null);
-               if (var7 != null) {
-                  this.storeInCache(var3, var7, ChunkStatus.FULL);
-                  if (var7 instanceof LevelChunk) {
-                     return (LevelChunk)var7;
-                  }
+            var6 = var7.getChunkIfPresent(ChunkStatus.FULL);
+            if (var6 != null) {
+               this.storeInCache(var3, var6, ChunkStatus.FULL);
+               if (var6 instanceof LevelChunk) {
+                  return (LevelChunk)var6;
                }
-
-               return null;
             }
+
+            return null;
          }
       }
    }
@@ -225,7 +222,7 @@ public class ServerChunkCache extends ChunkSource {
          }
       }
 
-      return this.chunkAbsent(var9, var8) ? ChunkHolder.UNLOADED_CHUNK_FUTURE : var9.getOrScheduleFuture(var3, this.chunkMap);
+      return this.chunkAbsent(var9, var8) ? GenerationChunkHolder.UNLOADED_CHUNK_FUTURE : var9.scheduleChunkGenerationTask(var3, this.chunkMap);
    }
 
    private boolean chunkAbsent(@Nullable ChunkHolder var1, int var2) {
@@ -242,25 +239,7 @@ public class ServerChunkCache extends ChunkSource {
    public LightChunk getChunkForLighting(int var1, int var2) {
       long var3 = ChunkPos.asLong(var1, var2);
       ChunkHolder var5 = this.getVisibleChunkIfPresent(var3);
-      if (var5 == null) {
-         return null;
-      } else {
-         int var6 = CHUNK_STATUSES.size() - 1;
-
-         while(true) {
-            ChunkStatus var7 = (ChunkStatus)CHUNK_STATUSES.get(var6);
-            ChunkAccess var8 = (ChunkAccess)((ChunkResult)var5.getFutureIfPresentUnchecked(var7).getNow(ChunkHolder.UNLOADED_CHUNK)).orElse((Object)null);
-            if (var8 != null) {
-               return var8;
-            }
-
-            if (var7 == ChunkStatus.INITIALIZE_LIGHT.getParent()) {
-               return null;
-            }
-
-            --var6;
-         }
-      }
+      return var5 == null ? null : var5.getChunkIfPresentUnchecked(ChunkStatus.INITIALIZE_LIGHT);
    }
 
    public Level getLevel() {
@@ -274,6 +253,7 @@ public class ServerChunkCache extends ChunkSource {
    boolean runDistanceManagerUpdates() {
       boolean var1 = this.distanceManager.runAllUpdates(this.chunkMap);
       boolean var2 = this.chunkMap.promoteChunkMap();
+      this.chunkMap.runGenerationTasks();
       if (!var1 && !var2) {
          return false;
       } else {
@@ -534,6 +514,12 @@ public class ServerChunkCache extends ChunkSource {
          super("Chunk source main thread executor for " + String.valueOf(var2.dimension().location()));
       }
 
+      public void managedBlock(BooleanSupplier var1) {
+         super.managedBlock(() -> {
+            return MinecraftServer.throwIfFatalException() && var1.getAsBoolean();
+         });
+      }
+
       protected Runnable wrapRunnable(Runnable var1) {
          return var1;
       }
@@ -569,10 +555,10 @@ public class ServerChunkCache extends ChunkSource {
       final LevelChunk chunk;
       final ChunkHolder holder;
 
-      ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
+      ChunkAndHolder(LevelChunk var1, ChunkHolder var2) {
          super();
-         this.chunk = chunk;
-         this.holder = holder;
+         this.chunk = var1;
+         this.holder = var2;
       }
 
       public LevelChunk chunk() {

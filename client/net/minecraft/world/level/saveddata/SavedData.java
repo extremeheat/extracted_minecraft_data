@@ -51,11 +51,11 @@ public abstract class SavedData {
    }
 
    public static record Factory<T extends SavedData>(Supplier<T> constructor, BiFunction<CompoundTag, HolderLookup.Provider, T> deserializer, DataFixTypes type) {
-      public Factory(Supplier<T> constructor, BiFunction<CompoundTag, HolderLookup.Provider, T> deserializer, DataFixTypes type) {
+      public Factory(Supplier<T> var1, BiFunction<CompoundTag, HolderLookup.Provider, T> var2, DataFixTypes var3) {
          super();
-         this.constructor = constructor;
-         this.deserializer = deserializer;
-         this.type = type;
+         this.constructor = var1;
+         this.deserializer = var2;
+         this.type = var3;
       }
 
       public Supplier<T> constructor() {

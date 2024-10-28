@@ -15,13 +15,13 @@ public record ServerboundChatCommandSignedPacket(String command, Instant timeSta
       this(var1.readUtf(), var1.readInstant(), var1.readLong(), new ArgumentSignatures(var1), new LastSeenMessages.Update(var1));
    }
 
-   public ServerboundChatCommandSignedPacket(String command, Instant timeStamp, long salt, ArgumentSignatures argumentSignatures, LastSeenMessages.Update lastSeenMessages) {
+   public ServerboundChatCommandSignedPacket(String var1, Instant var2, long var3, ArgumentSignatures var5, LastSeenMessages.Update var6) {
       super();
-      this.command = command;
-      this.timeStamp = timeStamp;
-      this.salt = salt;
-      this.argumentSignatures = argumentSignatures;
-      this.lastSeenMessages = lastSeenMessages;
+      this.command = var1;
+      this.timeStamp = var2;
+      this.salt = var3;
+      this.argumentSignatures = var5;
+      this.lastSeenMessages = var6;
    }
 
    private void write(FriendlyByteBuf var1) {

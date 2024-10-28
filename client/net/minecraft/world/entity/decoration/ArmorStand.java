@@ -29,7 +29,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -149,7 +148,7 @@ public class ArmorStand extends LivingEntity {
          case HAND -> {
             return (ItemStack)this.handItems.get(var1.getIndex());
          }
-         case ARMOR -> {
+         case HUMANOID_ARMOR -> {
             return (ItemStack)this.armorItems.get(var1.getIndex());
          }
          default -> {
@@ -166,13 +165,13 @@ public class ArmorStand extends LivingEntity {
       this.verifyEquippedItem(var2);
       switch (var1.getType()) {
          case HAND -> this.onEquipItem(var1, (ItemStack)this.handItems.set(var1.getIndex(), var2), var2);
-         case ARMOR -> this.onEquipItem(var1, (ItemStack)this.armorItems.set(var1.getIndex(), var2), var2);
+         case HUMANOID_ARMOR -> this.onEquipItem(var1, (ItemStack)this.armorItems.set(var1.getIndex(), var2), var2);
       }
 
    }
 
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       return this.getItemBySlot(var2).isEmpty() && !this.isDisabled(var2);
    }
 
@@ -300,7 +299,7 @@ public class ArmorStand extends LivingEntity {
       while(var2.hasNext()) {
          Entity var3 = (Entity)var2.next();
          if (this.distanceToSqr(var3) <= 0.2) {
-            var3.push(this);
+            var3.push((Entity)this);
          }
       }
 
@@ -314,7 +313,7 @@ public class ArmorStand extends LivingEntity {
          } else if (var1.level().isClientSide) {
             return InteractionResult.CONSUME;
          } else {
-            EquipmentSlot var5 = Mob.getEquipmentSlotForItem(var4);
+            EquipmentSlot var5 = this.getEquipmentSlotForItem(var4);
             if (var4.isEmpty()) {
                EquipmentSlot var6 = this.getClickedSlot(var2);
                EquipmentSlot var7 = this.isDisabled(var6) ? var5 : var6;
@@ -390,66 +389,72 @@ public class ArmorStand extends LivingEntity {
    }
 
    public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level().isClientSide && !this.isRemoved()) {
-         if (var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            this.kill();
-            return false;
-         } else if (!this.isInvulnerableTo(var1) && !this.invisible && !this.isMarker()) {
-            if (var1.is(DamageTypeTags.IS_EXPLOSION)) {
-               this.brokenByAnything(var1);
+      if (this.isRemoved()) {
+         return false;
+      } else {
+         Level var4 = this.level();
+         if (var4 instanceof ServerLevel) {
+            ServerLevel var3 = (ServerLevel)var4;
+            if (var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
                this.kill();
                return false;
-            } else if (var1.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
-               if (this.isOnFire()) {
-                  this.causeDamage(var1, 0.15F);
-               } else {
-                  this.igniteForSeconds(5.0F);
-               }
+            } else if (!this.isInvulnerableTo(var1) && !this.invisible && !this.isMarker()) {
+               if (var1.is(DamageTypeTags.IS_EXPLOSION)) {
+                  this.brokenByAnything(var3, var1);
+                  this.kill();
+                  return false;
+               } else if (var1.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
+                  if (this.isOnFire()) {
+                     this.causeDamage(var3, var1, 0.15F);
+                  } else {
+                     this.igniteForSeconds(5.0F);
+                  }
 
-               return false;
-            } else if (var1.is(DamageTypeTags.BURNS_ARMOR_STANDS) && this.getHealth() > 0.5F) {
-               this.causeDamage(var1, 4.0F);
-               return false;
-            } else {
-               boolean var3 = var1.is(DamageTypeTags.CAN_BREAK_ARMOR_STAND);
-               boolean var4 = var1.is(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS);
-               if (!var3 && !var4) {
+                  return false;
+               } else if (var1.is(DamageTypeTags.BURNS_ARMOR_STANDS) && this.getHealth() > 0.5F) {
+                  this.causeDamage(var3, var1, 4.0F);
                   return false;
                } else {
-                  Entity var6 = var1.getEntity();
-                  if (var6 instanceof Player) {
-                     Player var5 = (Player)var6;
-                     if (!var5.getAbilities().mayBuild) {
-                        return false;
-                     }
-                  }
-
-                  if (var1.isCreativePlayer()) {
-                     this.playBrokenSound();
-                     this.showBreakingParticles();
-                     this.kill();
-                     return true;
+                  boolean var8 = var1.is(DamageTypeTags.CAN_BREAK_ARMOR_STAND);
+                  boolean var5 = var1.is(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS);
+                  if (!var8 && !var5) {
+                     return false;
                   } else {
-                     long var7 = this.level().getGameTime();
-                     if (var7 - this.lastHit > 5L && !var4) {
-                        this.level().broadcastEntityEvent(this, (byte)32);
-                        this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-                        this.lastHit = var7;
-                     } else {
-                        this.brokenByPlayer(var1);
+                     Entity var7 = var1.getEntity();
+                     if (var7 instanceof Player) {
+                        Player var6 = (Player)var7;
+                        if (!var6.getAbilities().mayBuild) {
+                           return false;
+                        }
+                     }
+
+                     if (var1.isCreativePlayer()) {
+                        this.playBrokenSound();
                         this.showBreakingParticles();
                         this.kill();
-                     }
+                        return true;
+                     } else {
+                        long var9 = var3.getGameTime();
+                        if (var9 - this.lastHit > 5L && !var5) {
+                           var3.broadcastEntityEvent(this, (byte)32);
+                           this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+                           this.lastHit = var9;
+                        } else {
+                           this.brokenByPlayer(var3, var1);
+                           this.showBreakingParticles();
+                           this.kill();
+                        }
 
-                     return true;
+                        return true;
+                     }
                   }
                }
+            } else {
+               return false;
             }
          } else {
             return false;
          }
-      } else {
-         return false;
       }
    }
 
@@ -482,52 +487,52 @@ public class ArmorStand extends LivingEntity {
 
    }
 
-   private void causeDamage(DamageSource var1, float var2) {
-      float var3 = this.getHealth();
-      var3 -= var2;
-      if (var3 <= 0.5F) {
-         this.brokenByAnything(var1);
+   private void causeDamage(ServerLevel var1, DamageSource var2, float var3) {
+      float var4 = this.getHealth();
+      var4 -= var3;
+      if (var4 <= 0.5F) {
+         this.brokenByAnything(var1, var2);
          this.kill();
       } else {
-         this.setHealth(var3);
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+         this.setHealth(var4);
+         this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
       }
 
    }
 
-   private void brokenByPlayer(DamageSource var1) {
-      ItemStack var2 = new ItemStack(Items.ARMOR_STAND);
-      var2.set(DataComponents.CUSTOM_NAME, this.getCustomName());
-      Block.popResource(this.level(), this.blockPosition(), var2);
-      this.brokenByAnything(var1);
+   private void brokenByPlayer(ServerLevel var1, DamageSource var2) {
+      ItemStack var3 = new ItemStack(Items.ARMOR_STAND);
+      var3.set(DataComponents.CUSTOM_NAME, this.getCustomName());
+      Block.popResource(this.level(), this.blockPosition(), var3);
+      this.brokenByAnything(var1, var2);
    }
 
-   private void brokenByAnything(DamageSource var1) {
+   private void brokenByAnything(ServerLevel var1, DamageSource var2) {
       this.playBrokenSound();
-      this.dropAllDeathLoot(var1);
+      this.dropAllDeathLoot(var1, var2);
 
-      int var2;
-      ItemStack var3;
-      for(var2 = 0; var2 < this.handItems.size(); ++var2) {
-         var3 = (ItemStack)this.handItems.get(var2);
-         if (!var3.isEmpty()) {
-            Block.popResource(this.level(), this.blockPosition().above(), var3);
-            this.handItems.set(var2, ItemStack.EMPTY);
+      int var3;
+      ItemStack var4;
+      for(var3 = 0; var3 < this.handItems.size(); ++var3) {
+         var4 = (ItemStack)this.handItems.get(var3);
+         if (!var4.isEmpty()) {
+            Block.popResource(this.level(), this.blockPosition().above(), var4);
+            this.handItems.set(var3, ItemStack.EMPTY);
          }
       }
 
-      for(var2 = 0; var2 < this.armorItems.size(); ++var2) {
-         var3 = (ItemStack)this.armorItems.get(var2);
-         if (!var3.isEmpty()) {
-            Block.popResource(this.level(), this.blockPosition().above(), var3);
-            this.armorItems.set(var2, ItemStack.EMPTY);
+      for(var3 = 0; var3 < this.armorItems.size(); ++var3) {
+         var4 = (ItemStack)this.armorItems.get(var3);
+         if (!var4.isEmpty()) {
+            Block.popResource(this.level(), this.blockPosition().above(), var4);
+            this.armorItems.set(var3, ItemStack.EMPTY);
          }
       }
 
    }
 
    private void playBrokenSound() {
-      this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
+      this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
    }
 
    protected float tickHeadTurn(float var1, float var2) {

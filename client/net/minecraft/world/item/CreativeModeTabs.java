@@ -7,8 +7,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
@@ -26,7 +24,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.InstrumentTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.decoration.Painting;
@@ -46,6 +43,8 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
 
 public class CreativeModeTabs {
+   private static final ResourceLocation INVENTORY_BACKGROUND = CreativeModeTab.createTextureLocation("inventory");
+   private static final ResourceLocation SEARCH_BACKGROUND = CreativeModeTab.createTextureLocation("item_search");
    private static final ResourceKey<CreativeModeTab> BUILDING_BLOCKS = createKey("building_blocks");
    private static final ResourceKey<CreativeModeTab> COLORED_BLOCKS = createKey("colored_blocks");
    private static final ResourceKey<CreativeModeTab> NATURAL_BLOCKS = createKey("natural_blocks");
@@ -69,7 +68,7 @@ public class CreativeModeTabs {
    }
 
    private static ResourceKey<CreativeModeTab> createKey(String var0) {
-      return ResourceKey.create(Registries.CREATIVE_MODE_TAB, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static CreativeModeTab bootstrap(Registry<CreativeModeTab> var0) {
@@ -1188,7 +1187,7 @@ public class CreativeModeTabs {
          }
 
          var2.acceptAll(var3);
-      }).backgroundSuffix("item_search.png").alignedRight().type(CreativeModeTab.Type.SEARCH).build());
+      }).backgroundTexture(SEARCH_BACKGROUND).alignedRight().type(CreativeModeTab.Type.SEARCH).build());
       Registry.register(var0, (ResourceKey)TOOLS_AND_UTILITIES, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 0).title(Component.translatable("itemGroup.tools")).icon(() -> {
          return new ItemStack(Items.DIAMOND_PICKAXE);
       }).displayItems((var0x, var1) -> {
@@ -1565,10 +1564,9 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.EXPERIENCE_BOTTLE);
          var1.accept((ItemLike)Items.TRIAL_KEY);
          var1.accept((ItemLike)Items.OMINOUS_TRIAL_KEY);
-         Set var2 = Set.of(ItemTags.FOOT_ARMOR_ENCHANTABLE, ItemTags.LEG_ARMOR_ENCHANTABLE, ItemTags.CHEST_ARMOR_ENCHANTABLE, ItemTags.HEAD_ARMOR_ENCHANTABLE, ItemTags.ARMOR_ENCHANTABLE, ItemTags.SWORD_ENCHANTABLE, ItemTags.SHARP_WEAPON_ENCHANTABLE, ItemTags.MACE_ENCHANTABLE, ItemTags.FIRE_ASPECT_ENCHANTABLE, ItemTags.WEAPON_ENCHANTABLE, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.FISHING_ENCHANTABLE, ItemTags.TRIDENT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE, ItemTags.BOW_ENCHANTABLE, ItemTags.EQUIPPABLE_ENCHANTABLE, ItemTags.CROSSBOW_ENCHANTABLE, ItemTags.VANISHING_ENCHANTABLE);
-         var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent((var2x) -> {
-            generateEnchantmentBookTypesOnlyMaxLevel(var1, var2x, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
-            generateEnchantmentBookTypesAllLevels(var1, var2x, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+         var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent((var1x) -> {
+            generateEnchantmentBookTypesOnlyMaxLevel(var1, var1x, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
+            generateEnchantmentBookTypesAllLevels(var1, var1x, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
          });
       }).build());
       Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> {
@@ -1683,7 +1681,7 @@ public class CreativeModeTabs {
       }).build());
       return (CreativeModeTab)Registry.register(var0, (ResourceKey)INVENTORY, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 6).title(Component.translatable("itemGroup.inventory")).icon(() -> {
          return new ItemStack(Blocks.CHEST);
-      }).backgroundSuffix("inventory.png").hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
+      }).backgroundTexture(INVENTORY_BACKGROUND).hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
    }
 
    public static void validate() {
@@ -1720,29 +1718,21 @@ public class CreativeModeTabs {
       });
    }
 
-   private static void generateEnchantmentBookTypesOnlyMaxLevel(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3) {
-      var1.listElements().filter((var1x) -> {
-         Optional var10000 = ((Enchantment)var1x.value()).getSupportedItems().unwrapKey();
-         Objects.requireNonNull(var2);
-         return var10000.filter(var2::contains).isPresent();
-      }).map((var0x) -> {
+   private static void generateEnchantmentBookTypesOnlyMaxLevel(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
+      var1.listElements().map((var0x) -> {
          return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel()));
       }).forEach((var2x) -> {
-         var0.accept(var2x, var3);
+         var0.accept(var2x, var2);
       });
    }
 
-   private static void generateEnchantmentBookTypesAllLevels(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3) {
-      var1.listElements().filter((var1x) -> {
-         Optional var10000 = ((Enchantment)var1x.value()).getSupportedItems().unwrapKey();
-         Objects.requireNonNull(var2);
-         return var10000.filter(var2::contains).isPresent();
-      }).flatMap((var0x) -> {
+   private static void generateEnchantmentBookTypesAllLevels(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
+      var1.listElements().flatMap((var0x) -> {
          return IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel()).mapToObj((var1) -> {
             return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var1));
          });
       }).forEach((var2x) -> {
-         var0.accept(var2x, var3);
+         var0.accept(var2x, var2);
       });
    }
 

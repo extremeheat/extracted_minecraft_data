@@ -81,7 +81,7 @@ public class BlendingData {
    public static BlendingData getOrUpdateBlendingData(WorldGenRegion var0, int var1, int var2) {
       ChunkAccess var3 = var0.getChunk(var1, var2);
       BlendingData var4 = var3.getBlendingData();
-      if (var4 != null && var3.getHighestGeneratedStatus().isOrAfter(ChunkStatus.BIOMES)) {
+      if (var4 != null && !var3.getHighestGeneratedStatus().isBefore(ChunkStatus.BIOMES)) {
          var4.calculateData(var3, sideByGenerationAge(var0, var1, var2, false));
          return var4;
       } else {

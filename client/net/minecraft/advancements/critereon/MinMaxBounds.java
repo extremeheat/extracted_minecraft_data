@@ -133,12 +133,12 @@ public interface MinMaxBounds<T extends Number> {
          this(var1, var2, squareOpt(var1), squareOpt(var2));
       }
 
-      public Doubles(Optional<Double> min, Optional<Double> max, Optional<Double> minSq, Optional<Double> maxSq) {
+      public Doubles(Optional<Double> var1, Optional<Double> var2, Optional<Double> var3, Optional<Double> var4) {
          super();
-         this.min = min;
-         this.max = max;
-         this.minSq = minSq;
-         this.maxSq = maxSq;
+         this.min = var1;
+         this.max = var2;
+         this.minSq = var3;
+         this.maxSq = var4;
       }
 
       private static Doubles create(StringReader var0, Optional<Double> var1, Optional<Double> var2) throws CommandSyntaxException {
@@ -232,12 +232,12 @@ public interface MinMaxBounds<T extends Number> {
          }), squareOpt(var2));
       }
 
-      public Ints(Optional<Integer> min, Optional<Integer> max, Optional<Long> minSq, Optional<Long> maxSq) {
+      public Ints(Optional<Integer> var1, Optional<Integer> var2, Optional<Long> var3, Optional<Long> var4) {
          super();
-         this.min = min;
-         this.max = max;
-         this.minSq = minSq;
-         this.maxSq = maxSq;
+         this.min = var1;
+         this.max = var2;
+         this.minSq = var3;
+         this.maxSq = var4;
       }
 
       private static Ints create(StringReader var0, Optional<Integer> var1, Optional<Integer> var2) throws CommandSyntaxException {

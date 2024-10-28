@@ -313,9 +313,9 @@ public class WorldCreationUiState {
    public static record WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
       private static final Component CUSTOM_WORLD_DESCRIPTION = Component.translatable("generator.custom");
 
-      public WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
+      public WorldTypeEntry(@Nullable Holder<WorldPreset> var1) {
          super();
-         this.preset = preset;
+         this.preset = var1;
       }
 
       public Component describePreset() {

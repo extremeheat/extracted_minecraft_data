@@ -45,11 +45,11 @@ public class EncoderCache {
    }
 
    private static record Key<A, T>(Codec<A> codec, A value, DynamicOps<T> ops) {
-      Key(Codec<A> codec, A value, DynamicOps<T> ops) {
+      Key(Codec<A> var1, A var2, DynamicOps<T> var3) {
          super();
-         this.codec = codec;
-         this.value = value;
-         this.ops = ops;
+         this.codec = var1;
+         this.value = var2;
+         this.ops = var3;
       }
 
       public DataResult<T> resolve() {

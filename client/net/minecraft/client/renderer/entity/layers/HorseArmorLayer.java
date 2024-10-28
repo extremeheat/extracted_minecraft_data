@@ -34,22 +34,15 @@ public class HorseArmorLayer extends RenderLayer<Horse, HorseModel<Horse>> {
             ((HorseModel)this.getParentModel()).copyPropertiesTo(this.model);
             this.model.prepareMobModel((AbstractHorse)var4, var5, var6, var7);
             this.model.setupAnim((AbstractHorse)var4, var5, var6, var8, var9, var10);
-            float var14;
-            float var15;
-            float var17;
+            int var15;
             if (var11.is(ItemTags.DYEABLE)) {
-               int var16 = DyedItemColor.getOrDefault(var11, -6265536);
-               var17 = (float)FastColor.ARGB32.red(var16) / 255.0F;
-               var14 = (float)FastColor.ARGB32.green(var16) / 255.0F;
-               var15 = (float)FastColor.ARGB32.blue(var16) / 255.0F;
+               var15 = FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(var11, -6265536));
             } else {
-               var17 = 1.0F;
-               var14 = 1.0F;
-               var15 = 1.0F;
+               var15 = -1;
             }
 
-            VertexConsumer var18 = var2.getBuffer(RenderType.entityCutoutNoCull(var12.getTexture()));
-            this.model.renderToBuffer(var1, var18, var3, OverlayTexture.NO_OVERLAY, var17, var14, var15, 1.0F);
+            VertexConsumer var14 = var2.getBuffer(RenderType.entityCutoutNoCull(var12.getTexture()));
+            this.model.renderToBuffer(var1, var14, var3, OverlayTexture.NO_OVERLAY, var15);
             return;
          }
       }

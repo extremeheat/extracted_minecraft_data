@@ -23,10 +23,10 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
       return var0.group(Codec.unboundedMap(Codec.STRING, IntRange.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)).apply(var0, EntityHasScoreCondition::new);
    });
 
-   public EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.EntityTarget entityTarget) {
+   public EntityHasScoreCondition(Map<String, IntRange> var1, LootContext.EntityTarget var2) {
       super();
-      this.scores = scores;
-      this.entityTarget = entityTarget;
+      this.scores = var1;
+      this.entityTarget = var2;
    }
 
    public LootItemConditionType getType() {

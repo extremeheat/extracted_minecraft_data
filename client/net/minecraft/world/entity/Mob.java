@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -42,6 +43,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -105,6 +107,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
    public static final int PRESERVE_ITEM_DROP_CHANCE = 2;
    public static final int UPDATE_GOAL_SELECTOR_EVERY_N_TICKS = 2;
    private static final double DEFAULT_ATTACK_REACH;
+   protected static final ResourceLocation RANDOM_SPAWN_BONUS_ID;
    public int ambientSoundTime;
    protected int xpReward;
    protected LookControl lookControl;
@@ -544,7 +547,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
 
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
       if (var1.contains("DeathLootTable", 8)) {
-         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("DeathLootTable")));
+         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("DeathLootTable")));
          this.lootTableSeed = var1.getLong("DeathLootTableSeed");
       }
 
@@ -630,7 +633,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
    }
 
    public ItemStack equipItemIfPossible(ItemStack var1) {
-      EquipmentSlot var2 = getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       ItemStack var3 = this.getItemBySlot(var2);
       boolean var4 = this.canReplaceCurrentItem(var1, var3);
       if (var2.isArmor() && !var4) {
@@ -645,14 +648,9 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
             this.spawnAtLocation(var3);
          }
 
-         if (var2.isArmor() && var1.getCount() > 1) {
-            ItemStack var7 = var1.copyWithCount(1);
-            this.setItemSlotAndDropWhenKilled(var2, var7);
-            return var7;
-         } else {
-            this.setItemSlotAndDropWhenKilled(var2, var1);
-            return var1;
-         }
+         ItemStack var7 = var2.limit(var1);
+         this.setItemSlotAndDropWhenKilled(var2, var7);
+         return var7;
       } else {
          return ItemStack.EMPTY;
       }
@@ -667,8 +665,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
    public void setGuaranteedDrop(EquipmentSlot var1) {
       switch (var1.getType()) {
          case HAND -> this.handDropChances[var1.getIndex()] = 2.0F;
-         case ARMOR -> this.armorDropChances[var1.getIndex()] = 2.0F;
-         case BODY -> this.bodyArmorDropChance = 2.0F;
+         case HUMANOID_ARMOR -> this.armorDropChances[var1.getIndex()] = 2.0F;
+         case ANIMAL_ARMOR -> this.bodyArmorDropChance = 2.0F;
       }
 
    }
@@ -948,12 +946,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
       return this.bodyArmorItem;
    }
 
-   public boolean canWearBodyArmor() {
-      return false;
-   }
-
    public boolean canUseSlot(EquipmentSlot var1) {
-      return true;
+      return var1 != EquipmentSlot.BODY;
    }
 
    public boolean isWearingBodyArmor() {
@@ -976,8 +970,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
       ItemStack var10000;
       switch (var1.getType()) {
          case HAND -> var10000 = (ItemStack)this.handItems.get(var1.getIndex());
-         case ARMOR -> var10000 = (ItemStack)this.armorItems.get(var1.getIndex());
-         case BODY -> var10000 = this.bodyArmorItem;
+         case HUMANOID_ARMOR -> var10000 = (ItemStack)this.armorItems.get(var1.getIndex());
+         case ANIMAL_ARMOR -> var10000 = this.bodyArmorItem;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -990,10 +984,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
          case HAND:
             this.onEquipItem(var1, (ItemStack)this.handItems.set(var1.getIndex(), var2), var2);
             break;
-         case ARMOR:
+         case HUMANOID_ARMOR:
             this.onEquipItem(var1, (ItemStack)this.armorItems.set(var1.getIndex(), var2), var2);
             break;
-         case BODY:
+         case ANIMAL_ARMOR:
             ItemStack var3 = this.bodyArmorItem;
             this.bodyArmorItem = var2;
             this.onEquipItem(var1, var3, var2);
@@ -1001,34 +995,34 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
 
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      EquipmentSlot[] var3 = EquipmentSlot.values();
-      int var4 = var3.length;
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      EquipmentSlot[] var4 = EquipmentSlot.values();
+      int var5 = var4.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         EquipmentSlot var6 = var3[var5];
-         ItemStack var7 = this.getItemBySlot(var6);
-         float var8 = this.getEquipmentDropChance(var6);
-         if (var8 != 0.0F) {
-            boolean var9 = var8 > 1.0F;
-            Entity var12 = var1.getEntity();
-            if (var12 instanceof LivingEntity) {
-               LivingEntity var10 = (LivingEntity)var12;
-               Level var13 = this.level();
-               if (var13 instanceof ServerLevel) {
-                  ServerLevel var11 = (ServerLevel)var13;
-                  var8 = EnchantmentHelper.processEquipmentDropChance(var11, var10, var1, var8);
+      for(int var6 = 0; var6 < var5; ++var6) {
+         EquipmentSlot var7 = var4[var6];
+         ItemStack var8 = this.getItemBySlot(var7);
+         float var9 = this.getEquipmentDropChance(var7);
+         if (var9 != 0.0F) {
+            boolean var10 = var9 > 1.0F;
+            Entity var13 = var2.getEntity();
+            if (var13 instanceof LivingEntity) {
+               LivingEntity var11 = (LivingEntity)var13;
+               Level var14 = this.level();
+               if (var14 instanceof ServerLevel) {
+                  ServerLevel var12 = (ServerLevel)var14;
+                  var9 = EnchantmentHelper.processEquipmentDropChance(var12, var11, var2, var9);
                }
             }
 
-            if (!var7.isEmpty() && !EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP) && (var2 || var9) && this.random.nextFloat() < var8) {
-               if (!var9 && var7.isDamageableItem()) {
-                  var7.setDamageValue(var7.getMaxDamage() - this.random.nextInt(1 + this.random.nextInt(Math.max(var7.getMaxDamage() - 3, 1))));
+            if (!var8.isEmpty() && !EnchantmentHelper.has(var8, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP) && (var3 || var10) && this.random.nextFloat() < var9) {
+               if (!var10 && var8.isDamageableItem()) {
+                  var8.setDamageValue(var8.getMaxDamage() - this.random.nextInt(1 + this.random.nextInt(Math.max(var8.getMaxDamage() - 3, 1))));
                }
 
-               this.spawnAtLocation(var7);
-               this.setItemSlot(var6, ItemStack.EMPTY);
+               this.spawnAtLocation(var8);
+               this.setItemSlot(var7, ItemStack.EMPTY);
             }
          }
       }
@@ -1039,8 +1033,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
       float var10000;
       switch (var1.getType()) {
          case HAND -> var10000 = this.handDropChances[var1.getIndex()];
-         case ARMOR -> var10000 = this.armorDropChances[var1.getIndex()];
-         case BODY -> var10000 = this.bodyArmorDropChance;
+         case HUMANOID_ARMOR -> var10000 = this.armorDropChances[var1.getIndex()];
+         case ANIMAL_ARMOR -> var10000 = this.bodyArmorDropChance;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -1085,7 +1079,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
 
          for(int var8 = 0; var8 < var7; ++var8) {
             EquipmentSlot var9 = var6[var8];
-            if (var9.getType() == EquipmentSlot.Type.ARMOR) {
+            if (var9.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
                ItemStack var10 = this.getItemBySlot(var9);
                if (!var5 && var1.nextFloat() < var4) {
                   break;
@@ -1160,34 +1154,33 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
       }
    }
 
-   protected void populateDefaultEquipmentEnchantments(RandomSource var1, DifficultyInstance var2) {
-      float var3 = var2.getSpecialMultiplier();
-      this.enchantSpawnedWeapon(var1, var3);
+   protected void populateDefaultEquipmentEnchantments(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
+      this.enchantSpawnedWeapon(var1, var2, var3);
       EquipmentSlot[] var4 = EquipmentSlot.values();
       int var5 = var4.length;
 
       for(int var6 = 0; var6 < var5; ++var6) {
          EquipmentSlot var7 = var4[var6];
-         if (var7.getType() == EquipmentSlot.Type.ARMOR) {
-            this.enchantSpawnedArmor(var1, var3, var7);
+         if (var7.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+            this.enchantSpawnedArmor(var1, var2, var7, var3);
          }
       }
 
    }
 
-   protected void enchantSpawnedWeapon(RandomSource var1, float var2) {
-      this.enchantSpawnedEquipment(EquipmentSlot.MAINHAND, var1, 0.25F, var2);
+   protected void enchantSpawnedWeapon(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
+      this.enchantSpawnedEquipment(var1, EquipmentSlot.MAINHAND, var2, 0.25F, var3);
    }
 
-   protected void enchantSpawnedArmor(RandomSource var1, float var2, EquipmentSlot var3) {
-      this.enchantSpawnedEquipment(var3, var1, 0.5F, var2);
+   protected void enchantSpawnedArmor(ServerLevelAccessor var1, RandomSource var2, EquipmentSlot var3, DifficultyInstance var4) {
+      this.enchantSpawnedEquipment(var1, var3, var2, 0.5F, var4);
    }
 
-   private void enchantSpawnedEquipment(EquipmentSlot var1, RandomSource var2, float var3, float var4) {
-      ItemStack var5 = this.getItemBySlot(var1);
-      if (!var5.isEmpty() && var2.nextFloat() < var3 * var4) {
-         EnchantmentHelper.enchantItemFromProvider(var5, VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, this.level(), this.blockPosition(), var2);
-         this.setItemSlot(var1, var5);
+   private void enchantSpawnedEquipment(ServerLevelAccessor var1, EquipmentSlot var2, RandomSource var3, float var4, DifficultyInstance var5) {
+      ItemStack var6 = this.getItemBySlot(var2);
+      if (!var6.isEmpty() && var3.nextFloat() < var4 * var5.getSpecialMultiplier()) {
+         EnchantmentHelper.enchantItemFromProvider(var6, var1.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, var5, var3);
+         this.setItemSlot(var2, var6);
       }
 
    }
@@ -1195,7 +1188,11 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
-      this.getAttribute(Attributes.FOLLOW_RANGE).addPermanentModifier(new AttributeModifier("Random spawn bonus", var5.triangle(0.0, 0.11485000000000001), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+      AttributeInstance var6 = (AttributeInstance)Objects.requireNonNull(this.getAttribute(Attributes.FOLLOW_RANGE));
+      if (!var6.hasModifier(RANDOM_SPAWN_BONUS_ID)) {
+         var6.addPermanentModifier(new AttributeModifier(RANDOM_SPAWN_BONUS_ID, var5.triangle(0.0, 0.11485000000000001), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+      }
+
       this.setLeftHanded(var5.nextFloat() < 0.05F);
       return var4;
    }
@@ -1207,8 +1204,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
    public void setDropChance(EquipmentSlot var1, float var2) {
       switch (var1.getType()) {
          case HAND -> this.handDropChances[var1.getIndex()] = var2;
-         case ARMOR -> this.armorDropChances[var1.getIndex()] = var2;
-         case BODY -> this.bodyArmorDropChance = var2;
+         case HUMANOID_ARMOR -> this.armorDropChances[var1.getIndex()] = var2;
+         case ANIMAL_ARMOR -> this.bodyArmorDropChance = var2;
       }
 
    }
@@ -1222,7 +1219,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
    }
 
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       return this.getItemBySlot(var2).isEmpty() && this.canPickUpLoot();
    }
 
@@ -1623,5 +1620,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
       DATA_MOB_FLAGS_ID = SynchedEntityData.defineId(Mob.class, EntityDataSerializers.BYTE);
       ITEM_PICKUP_REACH = new Vec3i(1, 0, 1);
       DEFAULT_ATTACK_REACH = Math.sqrt(2.0399999618530273) - 0.6000000238418579;
+      RANDOM_SPAWN_BONUS_ID = ResourceLocation.withDefaultNamespace("random_spawn_bonus");
    }
 }

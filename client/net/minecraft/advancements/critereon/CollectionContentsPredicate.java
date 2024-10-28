@@ -49,9 +49,9 @@ public interface CollectionContentsPredicate<T, P extends Predicate<T>> extends 
    }
 
    public static record Single<T, P extends Predicate<T>>(P test) implements CollectionContentsPredicate<T, P> {
-      public Single(P test) {
+      public Single(P var1) {
          super();
-         this.test = test;
+         this.test = var1;
       }
 
       public boolean test(Iterable<T> var1) {
@@ -84,9 +84,9 @@ public interface CollectionContentsPredicate<T, P extends Predicate<T>> extends 
    }
 
    public static record Multiple<T, P extends Predicate<T>>(List<P> tests) implements CollectionContentsPredicate<T, P> {
-      public Multiple(List<P> tests) {
+      public Multiple(List<P> var1) {
          super();
-         this.tests = tests;
+         this.tests = var1;
       }
 
       public boolean test(Iterable<T> var1) {

@@ -12,9 +12,9 @@ public record LootItemRandomChanceCondition(NumberProvider chance) implements Lo
       return var0.group(NumberProviders.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceCondition::chance)).apply(var0, LootItemRandomChanceCondition::new);
    });
 
-   public LootItemRandomChanceCondition(NumberProvider chance) {
+   public LootItemRandomChanceCondition(NumberProvider var1) {
       super();
-      this.chance = chance;
+      this.chance = var1;
    }
 
    public LootItemConditionType getType() {

@@ -153,10 +153,10 @@ public class StatsCounterFix extends DataFix {
       final String type;
       final String typeKey;
 
-      StatType(String type, String typeKey) {
+      StatType(String var1, String var2) {
          super();
-         this.type = type;
-         this.typeKey = typeKey;
+         this.type = var1;
+         this.typeKey = var2;
       }
 
       public String type() {

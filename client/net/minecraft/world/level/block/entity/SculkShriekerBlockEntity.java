@@ -187,7 +187,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          int var4 = var3.getX() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var5 = var3.getY() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var6 = var3.getZ() + Mth.randomBetweenInclusive(var1.random, -10, 10);
-         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
+         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, (SoundEvent)var2, SoundSource.HOSTILE, 5.0F, 1.0F);
       }
 
    }

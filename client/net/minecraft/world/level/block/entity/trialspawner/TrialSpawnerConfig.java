@@ -13,17 +13,17 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
    public static final TrialSpawnerConfig DEFAULT;
    public static final Codec<TrialSpawnerConfig> CODEC;
 
-   public TrialSpawnerConfig(int spawnRange, float totalMobs, float simultaneousMobs, float totalMobsAddedPerPlayer, float simultaneousMobsAddedPerPlayer, int ticksBetweenSpawn, SimpleWeightedRandomList<SpawnData> spawnPotentialsDefinition, SimpleWeightedRandomList<ResourceKey<LootTable>> lootTablesToEject, ResourceKey<LootTable> itemsToDropWhenOminous) {
+   public TrialSpawnerConfig(int var1, float var2, float var3, float var4, float var5, int var6, SimpleWeightedRandomList<SpawnData> var7, SimpleWeightedRandomList<ResourceKey<LootTable>> var8, ResourceKey<LootTable> var9) {
       super();
-      this.spawnRange = spawnRange;
-      this.totalMobs = totalMobs;
-      this.simultaneousMobs = simultaneousMobs;
-      this.totalMobsAddedPerPlayer = totalMobsAddedPerPlayer;
-      this.simultaneousMobsAddedPerPlayer = simultaneousMobsAddedPerPlayer;
-      this.ticksBetweenSpawn = ticksBetweenSpawn;
-      this.spawnPotentialsDefinition = spawnPotentialsDefinition;
-      this.lootTablesToEject = lootTablesToEject;
-      this.itemsToDropWhenOminous = itemsToDropWhenOminous;
+      this.spawnRange = var1;
+      this.totalMobs = var2;
+      this.simultaneousMobs = var3;
+      this.totalMobsAddedPerPlayer = var4;
+      this.simultaneousMobsAddedPerPlayer = var5;
+      this.ticksBetweenSpawn = var6;
+      this.spawnPotentialsDefinition = var7;
+      this.lootTablesToEject = var8;
+      this.itemsToDropWhenOminous = var9;
    }
 
    public int calculateTargetTotalMobs(int var1) {

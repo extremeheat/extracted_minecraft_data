@@ -16,9 +16,9 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
       return var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new);
    });
 
-   public ConditionReference(ResourceKey<LootItemCondition> name) {
+   public ConditionReference(ResourceKey<LootItemCondition> var1) {
       super();
-      this.name = name;
+      this.name = var1;
    }
 
    public LootItemConditionType getType() {

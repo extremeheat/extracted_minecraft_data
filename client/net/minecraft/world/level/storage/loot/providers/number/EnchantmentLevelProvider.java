@@ -11,9 +11,9 @@ public record EnchantmentLevelProvider(LevelBasedValue amount) implements Number
       return var0.group(LevelBasedValue.CODEC.fieldOf("amount").forGetter(EnchantmentLevelProvider::amount)).apply(var0, EnchantmentLevelProvider::new);
    });
 
-   public EnchantmentLevelProvider(LevelBasedValue amount) {
+   public EnchantmentLevelProvider(LevelBasedValue var1) {
       super();
-      this.amount = amount;
+      this.amount = var1;
    }
 
    public float getFloat(LootContext var1) {

@@ -150,11 +150,11 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
             var3.scale(1.0F, -1.0F, -1.0F);
             Material var11 = var10 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
             VertexConsumer var12 = var11.sprite().wrap(ItemRenderer.getFoilBufferDirect(var4, this.shieldModel.renderType(var11.atlasLocation()), true, var1.hasFoil()));
-            this.shieldModel.handle().render(var3, var12, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+            this.shieldModel.handle().render(var3, var12, var5, var6);
             if (var10) {
                BannerRenderer.renderPatterns(var3, var4, var5, var6, this.shieldModel.plate(), var11, false, (DyeColor)Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, var1.hasFoil());
             } else {
-               this.shieldModel.plate().render(var3, var12, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+               this.shieldModel.plate().render(var3, var12, var5, var6);
             }
 
             var3.popPose();
@@ -162,7 +162,7 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
             var3.pushPose();
             var3.scale(1.0F, -1.0F, -1.0F);
             VertexConsumer var13 = ItemRenderer.getFoilBufferDirect(var4, this.tridentModel.renderType(TridentModel.TEXTURE), false, var1.hasFoil());
-            this.tridentModel.renderToBuffer(var3, var13, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+            this.tridentModel.renderToBuffer(var3, var13, var5, var6);
             var3.popPose();
          }
 

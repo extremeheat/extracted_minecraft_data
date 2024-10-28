@@ -20,9 +20,9 @@ public interface MemoryCondition<F extends K1, Value> {
    MemoryAccessor<F, Value> createAccessor(Brain<?> var1, Optional<Value> var2);
 
    public static record Absent<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<Const.Mu<Unit>, Value> {
-      public Absent(MemoryModuleType<Value> memory) {
+      public Absent(MemoryModuleType<Value> var1) {
          super();
-         this.memory = memory;
+         this.memory = var1;
       }
 
       public MemoryStatus condition() {
@@ -39,9 +39,9 @@ public interface MemoryCondition<F extends K1, Value> {
    }
 
    public static record Present<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<IdF.Mu, Value> {
-      public Present(MemoryModuleType<Value> memory) {
+      public Present(MemoryModuleType<Value> var1) {
          super();
-         this.memory = memory;
+         this.memory = var1;
       }
 
       public MemoryStatus condition() {
@@ -58,9 +58,9 @@ public interface MemoryCondition<F extends K1, Value> {
    }
 
    public static record Registered<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<OptionalBox.Mu, Value> {
-      public Registered(MemoryModuleType<Value> memory) {
+      public Registered(MemoryModuleType<Value> var1) {
          super();
-         this.memory = memory;
+         this.memory = var1;
       }
 
       public MemoryStatus condition() {

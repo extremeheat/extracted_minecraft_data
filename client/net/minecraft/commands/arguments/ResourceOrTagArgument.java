@@ -113,9 +113,9 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    }
 
    private static record TagResult<T>(HolderSet.Named<T> tag) implements Result<T> {
-      TagResult(HolderSet.Named<T> tag) {
+      TagResult(HolderSet.Named<T> var1) {
          super();
-         this.tag = tag;
+         this.tag = var1;
       }
 
       public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
@@ -145,9 +145,9 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    }
 
    static record ResourceResult<T>(Holder.Reference<T> value) implements Result<T> {
-      ResourceResult(Holder.Reference<T> value) {
+      ResourceResult(Holder.Reference<T> var1) {
          super();
-         this.value = value;
+         this.value = var1;
       }
 
       public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {

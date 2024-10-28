@@ -9,7 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Spider;
 
 public class SpiderRenderer<T extends Spider> extends MobRenderer<T, SpiderModel<T>> {
-   private static final ResourceLocation SPIDER_LOCATION = new ResourceLocation("textures/entity/spider/spider.png");
+   private static final ResourceLocation SPIDER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/spider/spider.png");
 
    public SpiderRenderer(EntityRendererProvider.Context var1) {
       this(var1, ModelLayers.SPIDER);

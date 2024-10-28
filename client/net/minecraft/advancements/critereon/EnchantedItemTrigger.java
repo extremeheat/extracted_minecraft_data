@@ -28,11 +28,11 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<TriggerInstance
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::levels)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints levels) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, MinMaxBounds.Ints var3) {
          super();
-         this.player = player;
-         this.item = item;
-         this.levels = levels;
+         this.player = var1;
+         this.item = var2;
+         this.levels = var3;
       }
 
       public static Criterion<TriggerInstance> enchantedItem() {

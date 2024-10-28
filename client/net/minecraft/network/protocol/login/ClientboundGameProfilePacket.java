@@ -10,10 +10,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundGameProfilePacket(GameProfile gameProfile, boolean strictErrorHandling) implements Packet<ClientLoginPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundGameProfilePacket> STREAM_CODEC;
 
-   public ClientboundGameProfilePacket(GameProfile gameProfile, @Deprecated(forRemoval = true) boolean strictErrorHandling) {
+   public ClientboundGameProfilePacket(GameProfile var1, @Deprecated(forRemoval = true) boolean var2) {
       super();
-      this.gameProfile = gameProfile;
-      this.strictErrorHandling = strictErrorHandling;
+      this.gameProfile = var1;
+      this.strictErrorHandling = var2;
    }
 
    public PacketType<ClientboundGameProfilePacket> type() {

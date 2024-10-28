@@ -45,7 +45,6 @@ public class SuspiciousStewItem extends Item {
          var3.addEffect(var6.createEffectInstance());
       }
 
-      super.finishUsingItem(var1, var2, var3);
-      return var3.hasInfiniteMaterials() ? var1 : new ItemStack(Items.BOWL);
+      return super.finishUsingItem(var1, var2, var3);
    }
 }

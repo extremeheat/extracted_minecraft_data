@@ -132,7 +132,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
       return true;
    }
 
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
    }
 
@@ -291,7 +291,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
                   Vec3 var3 = this.getViewVector(1.0F);
                   double var4 = var1 == 1 ? -var3.z : var3.z;
                   double var6 = var1 == 1 ? var3.x : -var3.x;
-                  this.level().playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
+                  this.level().playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, (SoundEvent)var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
                }
             }
 
@@ -567,9 +567,13 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
       this.invFriction = 0.05F;
       if (this.oldStatus == Boat.Status.IN_AIR && this.status != Boat.Status.IN_AIR && this.status != Boat.Status.ON_LAND) {
          this.waterLevel = this.getY(1.0);
-         this.setPos(this.getX(), (double)(this.getWaterLevelAbove() - this.getBbHeight()) + 0.101, this.getZ());
-         this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.0, 1.0));
-         this.lastYd = 0.0;
+         double var7 = (double)(this.getWaterLevelAbove() - this.getBbHeight()) + 0.101;
+         if (this.level().noCollision(this, this.getBoundingBox().move(0.0, var7 - this.getY(), 0.0))) {
+            this.setPos(this.getX(), var7, this.getZ());
+            this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+            this.lastYd = 0.0;
+         }
+
          this.status = Boat.Status.IN_WATER;
       } else {
          if (this.status == Boat.Status.IN_WATER) {

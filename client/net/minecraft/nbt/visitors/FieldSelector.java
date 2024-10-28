@@ -16,11 +16,11 @@ public record FieldSelector(List<String> path, TagType<?> type, String name) {
       this(List.of(var1, var2), var3, var4);
    }
 
-   public FieldSelector(List<String> path, TagType<?> type, String name) {
+   public FieldSelector(List<String> var1, TagType<?> var2, String var3) {
       super();
-      this.path = path;
-      this.type = type;
-      this.name = name;
+      this.path = var1;
+      this.type = var2;
+      this.name = var3;
    }
 
    public List<String> path() {

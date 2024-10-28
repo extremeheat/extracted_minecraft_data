@@ -30,20 +30,20 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> cu
       this(new CompoundTag(), Optional.empty(), Optional.empty());
    }
 
-   public SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
+   public SpawnData(CompoundTag var1, Optional<CustomSpawnRules> var2, Optional<EquipmentTable> var3) {
       super();
-      if (entityToSpawn.contains("id")) {
-         ResourceLocation var4 = ResourceLocation.tryParse(entityToSpawn.getString("id"));
+      if (var1.contains("id")) {
+         ResourceLocation var4 = ResourceLocation.tryParse(var1.getString("id"));
          if (var4 != null) {
-            entityToSpawn.putString("id", var4.toString());
+            var1.putString("id", var4.toString());
          } else {
-            entityToSpawn.remove("id");
+            var1.remove("id");
          }
       }
 
-      this.entityToSpawn = entityToSpawn;
-      this.customSpawnRules = customSpawnRules;
-      this.equipment = equipment;
+      this.entityToSpawn = var1;
+      this.customSpawnRules = var2;
+      this.equipment = var3;
    }
 
    public CompoundTag getEntityToSpawn() {
@@ -84,10 +84,10 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> cu
          })).apply(var0, CustomSpawnRules::new);
       });
 
-      public CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {
+      public CustomSpawnRules(InclusiveRange<Integer> var1, InclusiveRange<Integer> var2) {
          super();
-         this.blockLightLimit = blockLightLimit;
-         this.skyLightLimit = skyLightLimit;
+         this.blockLightLimit = var1;
+         this.skyLightLimit = var2;
       }
 
       private static DataResult<InclusiveRange<Integer>> checkLightBoundaries(InclusiveRange<Integer> var0) {

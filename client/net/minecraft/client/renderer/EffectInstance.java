@@ -57,7 +57,7 @@ public class EffectInstance implements Effect, AutoCloseable {
 
    public EffectInstance(ResourceProvider var1, String var2) throws IOException {
       super();
-      ResourceLocation var3 = new ResourceLocation("shaders/program/" + var2 + ".json");
+      ResourceLocation var3 = ResourceLocation.withDefaultNamespace("shaders/program/" + var2 + ".json");
       this.name = var2;
       Resource var4 = var1.getResourceOrThrow(var3);
 
@@ -172,7 +172,7 @@ public class EffectInstance implements Effect, AutoCloseable {
       } else {
          EffectProgram var4;
          if (var3 == null) {
-            ResourceLocation var5 = new ResourceLocation("shaders/program/" + var2 + var1.getExtension());
+            ResourceLocation var5 = ResourceLocation.withDefaultNamespace("shaders/program/" + var2 + var1.getExtension());
             Resource var6 = var0.getResourceOrThrow(var5);
             InputStream var7 = var6.open();
 
@@ -286,7 +286,6 @@ public class EffectInstance implements Effect, AutoCloseable {
    }
 
    public void apply() {
-      RenderSystem.assertOnGameThread();
       this.dirty = false;
       lastAppliedEffect = this;
       this.blend.apply();
@@ -328,7 +327,6 @@ public class EffectInstance implements Effect, AutoCloseable {
    }
 
    public AbstractUniform safeGetUniform(String var1) {
-      RenderSystem.assertOnGameThread();
       Uniform var2 = this.getUniform(var1);
       return (AbstractUniform)(var2 == null ? DUMMY_UNIFORM : var2);
    }

@@ -13,10 +13,10 @@ public record ClientboundResetScorePacket(String owner, @Nullable String objecti
       this(var1.readUtf(), (String)var1.readNullable(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundResetScorePacket(String owner, @Nullable String objectiveName) {
+   public ClientboundResetScorePacket(String var1, @Nullable String var2) {
       super();
-      this.owner = owner;
-      this.objectiveName = objectiveName;
+      this.owner = var1;
+      this.objectiveName = var2;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -23,12 +23,12 @@ public interface ProjectileItem {
    public static record DispenseConfig(PositionFunction positionFunction, float uncertainty, float power, OptionalInt overrideDispenseEvent) {
       public static final DispenseConfig DEFAULT = builder().build();
 
-      public DispenseConfig(PositionFunction positionFunction, float uncertainty, float power, OptionalInt overrideDispenseEvent) {
+      public DispenseConfig(PositionFunction var1, float var2, float var3, OptionalInt var4) {
          super();
-         this.positionFunction = positionFunction;
-         this.uncertainty = uncertainty;
-         this.power = power;
-         this.overrideDispenseEvent = overrideDispenseEvent;
+         this.positionFunction = var1;
+         this.uncertainty = var2;
+         this.power = var3;
+         this.overrideDispenseEvent = var4;
       }
 
       public static Builder builder() {

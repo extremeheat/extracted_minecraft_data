@@ -41,6 +41,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -50,7 +51,6 @@ import net.minecraft.world.entity.ai.goal.FollowMobGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LandOnOwnersShoulderGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
@@ -104,11 +104,11 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    }
 
    protected void registerGoals() {
-      this.goalSelector.addGoal(0, new PanicGoal(this, 1.25));
+      this.goalSelector.addGoal(0, new TamableAnimal.TamableAnimalPanicGoal(1.25));
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
-      this.goalSelector.addGoal(2, new FollowOwnerGoal(this, 1.0, 5.0F, 1.0F, true));
+      this.goalSelector.addGoal(2, new FollowOwnerGoal(this, 1.0, 5.0F, 1.0F));
       this.goalSelector.addGoal(2, new ParrotWanderGoal(this, 1.0));
       this.goalSelector.addGoal(3, new LandOnOwnersShoulderGoal(this));
       this.goalSelector.addGoal(3, new FollowMobGoal(this, 1.0, 3.0F, 7.0F));
@@ -174,7 +174,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
             Mob var3 = (Mob)var2.get(var0.random.nextInt(var2.size()));
             if (!var3.isSilent()) {
                SoundEvent var4 = getImitatedSound(var3.getType());
-               var0.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), var4, var1.getSoundSource(), 0.7F, getPitch(var0.random));
+               var0.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)var4, var1.getSoundSource(), 0.7F, getPitch(var0.random));
                return true;
             }
          }
@@ -190,7 +190,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       if (!this.isTame() && var3.is(ItemTags.PARROT_FOOD)) {
          var3.consume(1, var1);
          if (!this.isSilent()) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
 
          if (!this.level().isClientSide) {
@@ -342,6 +342,10 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
 
    public boolean isFlying() {
       return !this.onGround();
+   }
+
+   protected boolean canFlyToOwner() {
+      return true;
    }
 
    public Vec3 getLeashOffset() {

@@ -91,9 +91,9 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
    }
 
    static record TagResult<T>(TagKey<T> key) implements Result<T> {
-      TagResult(TagKey<T> key) {
+      TagResult(TagKey<T> var1) {
          super();
-         this.key = key;
+         this.key = var1;
       }
 
       public Either<ResourceKey<T>, TagKey<T>> unwrap() {
@@ -123,9 +123,9 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
    }
 
    private static record ResourceResult<T>(ResourceKey<T> key) implements Result<T> {
-      ResourceResult(ResourceKey<T> key) {
+      ResourceResult(ResourceKey<T> var1) {
          super();
-         this.key = key;
+         this.key = var1;
       }
 
       public Either<ResourceKey<T>, TagKey<T>> unwrap() {

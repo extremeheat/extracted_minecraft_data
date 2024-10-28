@@ -189,9 +189,9 @@ public class AngerManagement {
 
    @VisibleForTesting
    protected static record Sorter(AngerManagement angerManagement) implements Comparator<Entity> {
-      protected Sorter(AngerManagement angerManagement) {
+      protected Sorter(AngerManagement var1) {
          super();
-         this.angerManagement = angerManagement;
+         this.angerManagement = var1;
       }
 
       public int compare(Entity var1, Entity var2) {

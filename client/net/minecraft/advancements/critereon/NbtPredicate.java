@@ -19,9 +19,9 @@ public record NbtPredicate(CompoundTag tag) {
    public static final Codec<NbtPredicate> CODEC;
    public static final StreamCodec<ByteBuf, NbtPredicate> STREAM_CODEC;
 
-   public NbtPredicate(CompoundTag tag) {
+   public NbtPredicate(CompoundTag var1) {
       super();
-      this.tag = tag;
+      this.tag = var1;
    }
 
    public boolean matches(ItemStack var1) {

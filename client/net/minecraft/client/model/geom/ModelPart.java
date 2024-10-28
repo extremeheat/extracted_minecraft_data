@@ -104,23 +104,23 @@ public final class ModelPart {
    }
 
    public void render(PoseStack var1, VertexConsumer var2, int var3, int var4) {
-      this.render(var1, var2, var3, var4, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.render(var1, var2, var3, var4, -1);
    }
 
-   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
       if (this.visible) {
          if (!this.cubes.isEmpty() || !this.children.isEmpty()) {
             var1.pushPose();
             this.translateAndRotate(var1);
             if (!this.skipDraw) {
-               this.compile(var1.last(), var2, var3, var4, var5, var6, var7, var8);
+               this.compile(var1.last(), var2, var3, var4, var5);
             }
 
-            Iterator var9 = this.children.values().iterator();
+            Iterator var6 = this.children.values().iterator();
 
-            while(var9.hasNext()) {
-               ModelPart var10 = (ModelPart)var9.next();
-               var10.render(var1, var2, var3, var4, var5, var6, var7, var8);
+            while(var6.hasNext()) {
+               ModelPart var7 = (ModelPart)var6.next();
+               var7.render(var1, var2, var3, var4, var5);
             }
 
             var1.popPose();
@@ -162,12 +162,12 @@ public final class ModelPart {
 
    }
 
-   private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-      Iterator var9 = this.cubes.iterator();
+   private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
+      Iterator var6 = this.cubes.iterator();
 
-      while(var9.hasNext()) {
-         Cube var10 = (Cube)var9.next();
-         var10.compile(var1, var2, var3, var4, var5, var6, var7, var8);
+      while(var6.hasNext()) {
+         Cube var7 = (Cube)var6.next();
+         var7.compile(var1, var2, var3, var4, var5);
       }
 
    }
@@ -284,28 +284,28 @@ public final class ModelPart {
 
       }
 
-      public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-         Matrix4f var9 = var1.pose();
-         Vector3f var10 = new Vector3f();
-         Polygon[] var11 = this.polygons;
-         int var12 = var11.length;
+      public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
+         Matrix4f var6 = var1.pose();
+         Vector3f var7 = new Vector3f();
+         Polygon[] var8 = this.polygons;
+         int var9 = var8.length;
 
-         for(int var13 = 0; var13 < var12; ++var13) {
-            Polygon var14 = var11[var13];
-            Vector3f var15 = var1.transformNormal(var14.normal, var10);
-            float var16 = var15.x();
-            float var17 = var15.y();
-            float var18 = var15.z();
-            Vertex[] var19 = var14.vertices;
-            int var20 = var19.length;
+         for(int var10 = 0; var10 < var9; ++var10) {
+            Polygon var11 = var8[var10];
+            Vector3f var12 = var1.transformNormal(var11.normal, var7);
+            float var13 = var12.x();
+            float var14 = var12.y();
+            float var15 = var12.z();
+            Vertex[] var16 = var11.vertices;
+            int var17 = var16.length;
 
-            for(int var21 = 0; var21 < var20; ++var21) {
-               Vertex var22 = var19[var21];
-               float var23 = var22.pos.x() / 16.0F;
-               float var24 = var22.pos.y() / 16.0F;
-               float var25 = var22.pos.z() / 16.0F;
-               Vector3f var26 = var9.transformPosition(var23, var24, var25, var10);
-               var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var16, var17, var18);
+            for(int var18 = 0; var18 < var17; ++var18) {
+               Vertex var19 = var16[var18];
+               float var20 = var19.pos.x() / 16.0F;
+               float var21 = var19.pos.y() / 16.0F;
+               float var22 = var19.pos.z() / 16.0F;
+               Vector3f var23 = var6.transformPosition(var20, var21, var22, var7);
+               var2.addVertex(var23.x(), var23.y(), var23.z(), var5, var19.u, var19.v, var4, var3, var13, var14, var15);
             }
          }
 

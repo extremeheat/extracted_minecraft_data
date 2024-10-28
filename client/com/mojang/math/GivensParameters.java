@@ -5,10 +5,10 @@ import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 
 public record GivensParameters(float sinHalf, float cosHalf) {
-   public GivensParameters(float sinHalf, float cosHalf) {
+   public GivensParameters(float var1, float var2) {
       super();
-      this.sinHalf = sinHalf;
-      this.cosHalf = cosHalf;
+      this.sinHalf = var1;
+      this.cosHalf = var2;
    }
 
    public static GivensParameters fromUnnormalized(float var0, float var1) {

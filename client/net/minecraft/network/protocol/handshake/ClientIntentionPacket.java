@@ -11,12 +11,12 @@ public record ClientIntentionPacket(int protocolVersion, String hostName, int po
 
    /** @deprecated */
    @Deprecated
-   public ClientIntentionPacket(int protocolVersion, String hostName, int port, ClientIntent intention) {
+   public ClientIntentionPacket(int var1, String var2, int var3, ClientIntent var4) {
       super();
-      this.protocolVersion = protocolVersion;
-      this.hostName = hostName;
-      this.port = port;
-      this.intention = intention;
+      this.protocolVersion = var1;
+      this.hostName = var2;
+      this.port = var3;
+      this.intention = var4;
    }
 
    private ClientIntentionPacket(FriendlyByteBuf var1) {

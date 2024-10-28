@@ -99,7 +99,7 @@ public class FeatureFlagRegistry {
       }
 
       public FeatureFlag createVanilla(String var1) {
-         return this.create(new ResourceLocation("minecraft", var1));
+         return this.create(ResourceLocation.withDefaultNamespace(var1));
       }
 
       public FeatureFlag create(ResourceLocation var1) {

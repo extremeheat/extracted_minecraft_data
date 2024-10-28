@@ -181,22 +181,23 @@ public final class DataComponentPatch {
             if (var2 == 0 && var3 == 0) {
                return DataComponentPatch.EMPTY;
             } else {
-               Reference2ObjectArrayMap var4 = new Reference2ObjectArrayMap(var2 + var3);
+               int var4 = var2 + var3;
+               Reference2ObjectArrayMap var5 = new Reference2ObjectArrayMap(Math.min(var4, 65536));
 
-               int var5;
-               DataComponentType var6;
-               for(var5 = 0; var5 < var2; ++var5) {
-                  var6 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
-                  Object var7 = var6.streamCodec().decode(var1);
-                  var4.put(var6, Optional.of(var7));
+               int var6;
+               DataComponentType var7;
+               for(var6 = 0; var6 < var2; ++var6) {
+                  var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
+                  Object var8 = var7.streamCodec().decode(var1);
+                  var5.put(var7, Optional.of(var8));
                }
 
-               for(var5 = 0; var5 < var3; ++var5) {
-                  var6 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
-                  var4.put(var6, Optional.empty());
+               for(var6 = 0; var6 < var3; ++var6) {
+                  var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
+                  var5.put(var7, Optional.empty());
                }
 
-               return new DataComponentPatch(var4);
+               return new DataComponentPatch(var5);
             }
          }
 
@@ -291,10 +292,10 @@ public final class DataComponentPatch {
    public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
       public static final SplitResult EMPTY;
 
-      public SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
+      public SplitResult(DataComponentMap var1, Set<DataComponentType<?>> var2) {
          super();
-         this.added = added;
-         this.removed = removed;
+         this.added = var1;
+         this.removed = var2;
       }
 
       public DataComponentMap added() {
@@ -313,10 +314,10 @@ public final class DataComponentPatch {
    static record PatchKey(DataComponentType<?> type, boolean removed) {
       public static final Codec<PatchKey> CODEC;
 
-      PatchKey(DataComponentType<?> type, boolean removed) {
+      PatchKey(DataComponentType<?> var1, boolean var2) {
          super();
-         this.type = type;
-         this.removed = removed;
+         this.type = var1;
+         this.removed = var2;
       }
 
       public Codec<?> valueCodec() {

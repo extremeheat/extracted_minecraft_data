@@ -277,12 +277,12 @@ public final class Biome {
          })).apply(var0, ClimateSettings::new);
       });
 
-      ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
+      ClimateSettings(boolean var1, float var2, TemperatureModifier var3, float var4) {
          super();
-         this.hasPrecipitation = hasPrecipitation;
-         this.temperature = temperature;
-         this.temperatureModifier = temperatureModifier;
-         this.downfall = downfall;
+         this.hasPrecipitation = var1;
+         this.temperature = var2;
+         this.temperatureModifier = var3;
+         this.downfall = var4;
       }
 
       public boolean hasPrecipitation() {

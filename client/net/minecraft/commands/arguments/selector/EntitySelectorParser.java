@@ -42,6 +42,7 @@ public class EntitySelectorParser {
    private static final char SELECTOR_RANDOM_PLAYERS = 'r';
    private static final char SELECTOR_CURRENT_ENTITY = 's';
    private static final char SELECTOR_ALL_ENTITIES = 'e';
+   private static final char SELECTOR_NEAREST_ENTITY = 'n';
    public static final SimpleCommandExceptionType ERROR_INVALID_NAME_OR_UUID = new SimpleCommandExceptionType(Component.translatable("argument.entity.invalid"));
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType((var0) -> {
       return Component.translatableEscape("argument.entity.selector.unknown", var0);
@@ -229,16 +230,20 @@ public class EntitySelectorParser {
             this.maxResults = 1;
             this.includesEntities = true;
             this.currentEntity = true;
-         } else {
-            if (var2 != 'e') {
-               this.reader.setCursor(var1);
-               throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + String.valueOf(var2));
-            }
-
+         } else if (var2 == 'e') {
             this.maxResults = 2147483647;
             this.includesEntities = true;
             this.order = EntitySelector.ORDER_ARBITRARY;
             this.predicate = Entity::isAlive;
+         } else {
+            if (var2 != 'n') {
+               this.reader.setCursor(var1);
+               throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + String.valueOf(var2));
+            }
+
+            this.maxResults = 1;
+            this.includesEntities = true;
+            this.order = ORDER_NEAREST;
          }
 
          this.suggestions = this::suggestOpenOptions;
@@ -480,6 +485,7 @@ public class EntitySelectorParser {
       var0.suggest("@r", Component.translatable("argument.entity.selector.randomPlayer"));
       var0.suggest("@s", Component.translatable("argument.entity.selector.self"));
       var0.suggest("@e", Component.translatable("argument.entity.selector.allEntities"));
+      var0.suggest("@n", Component.translatable("argument.entity.selector.nearestEntity"));
    }
 
    private CompletableFuture<Suggestions> suggestNameOrSelector(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {

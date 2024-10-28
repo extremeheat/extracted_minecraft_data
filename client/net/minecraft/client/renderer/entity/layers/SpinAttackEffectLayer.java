@@ -20,7 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 public class SpinAttackEffectLayer<T extends LivingEntity> extends RenderLayer<T, PlayerModel<T>> {
-   public static final ResourceLocation TEXTURE = new ResourceLocation("textures/entity/trident_riptide.png");
+   public static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/trident_riptide.png");
    public static final String BOX = "box";
    private final ModelPart box;
 

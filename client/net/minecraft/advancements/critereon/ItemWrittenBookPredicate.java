@@ -17,13 +17,13 @@ public record ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<C
       return var0.group(CollectionPredicate.codec(ItemWrittenBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(ItemWrittenBookPredicate::pages), Codec.STRING.optionalFieldOf("author").forGetter(ItemWrittenBookPredicate::author), Codec.STRING.optionalFieldOf("title").forGetter(ItemWrittenBookPredicate::title), MinMaxBounds.Ints.CODEC.optionalFieldOf("generation", MinMaxBounds.Ints.ANY).forGetter(ItemWrittenBookPredicate::generation), Codec.BOOL.optionalFieldOf("resolved").forGetter(ItemWrittenBookPredicate::resolved)).apply(var0, ItemWrittenBookPredicate::new);
    });
 
-   public ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> pages, Optional<String> author, Optional<String> title, MinMaxBounds.Ints generation, Optional<Boolean> resolved) {
+   public ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> var1, Optional<String> var2, Optional<String> var3, MinMaxBounds.Ints var4, Optional<Boolean> var5) {
       super();
-      this.pages = pages;
-      this.author = author;
-      this.title = title;
-      this.generation = generation;
-      this.resolved = resolved;
+      this.pages = var1;
+      this.author = var2;
+      this.title = var3;
+      this.generation = var4;
+      this.resolved = var5;
    }
 
    public DataComponentType<WrittenBookContent> componentType() {
@@ -67,9 +67,9 @@ public record ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<C
    public static record PagePredicate(Component contents) implements Predicate<Filterable<Component>> {
       public static final Codec<PagePredicate> CODEC;
 
-      public PagePredicate(Component contents) {
+      public PagePredicate(Component var1) {
          super();
-         this.contents = contents;
+         this.contents = var1;
       }
 
       public boolean test(Filterable<Component> var1) {

@@ -96,7 +96,7 @@ public class CreateWorldScreen extends Screen {
    private static final Component PREPARING_WORLD_DATA = Component.translatable("createWorld.preparing");
    private static final int HORIZONTAL_BUTTON_SPACING = 10;
    private static final int VERTICAL_BUTTON_SPACING = 8;
-   public static final ResourceLocation TAB_HEADER_BACKGROUND = new ResourceLocation("textures/gui/tab_header_background.png");
+   public static final ResourceLocation TAB_HEADER_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/tab_header_background.png");
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    final WorldCreationUiState uiState;
    private final TabManager tabManager = new TabManager(this::addRenderableWidget, (var1x) -> {
@@ -742,10 +742,10 @@ public class CreateWorldScreen extends Screen {
    }
 
    static record DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
-      DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
+      DataPackReloadCookie(WorldGenSettings var1, WorldDataConfiguration var2) {
          super();
-         this.worldGenSettings = worldGenSettings;
-         this.dataConfiguration = dataConfiguration;
+         this.worldGenSettings = var1;
+         this.dataConfiguration = var2;
       }
 
       public WorldGenSettings worldGenSettings() {

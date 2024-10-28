@@ -12,11 +12,11 @@ public record PoiAddedDebugPayload(BlockPos pos, String poiType, int freeTicketC
       this(var1.readBlockPos(), var1.readUtf(), var1.readInt());
    }
 
-   public PoiAddedDebugPayload(BlockPos pos, String poiType, int freeTicketCount) {
+   public PoiAddedDebugPayload(BlockPos var1, String var2, int var3) {
       super();
-      this.pos = pos;
-      this.poiType = poiType;
-      this.freeTicketCount = freeTicketCount;
+      this.pos = var1;
+      this.poiType = var2;
+      this.freeTicketCount = var3;
    }
 
    private void write(FriendlyByteBuf var1) {

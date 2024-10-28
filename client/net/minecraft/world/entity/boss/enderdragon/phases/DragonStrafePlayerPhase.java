@@ -57,27 +57,28 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
          if (this.attackTarget.distanceToSqr(this.dragon) < 4096.0) {
             if (this.dragon.hasLineOfSight(this.attackTarget)) {
                ++this.fireballCharge;
-               Vec3 var25 = (new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ())).normalize();
+               Vec3 var26 = (new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ())).normalize();
                Vec3 var6 = (new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))).normalize();
-               float var26 = (float)var6.dot(var25);
-               float var8 = (float)(Math.acos((double)var26) * 57.2957763671875);
+               float var27 = (float)var6.dot(var26);
+               float var8 = (float)(Math.acos((double)var27) * 57.2957763671875);
                var8 += 0.5F;
                if (this.fireballCharge >= 5 && var8 >= 0.0F && var8 < 10.0F) {
                   var9 = 1.0;
-                  Vec3 var27 = this.dragon.getViewVector(1.0F);
-                  double var12 = this.dragon.head.getX() - var27.x * 1.0;
+                  Vec3 var28 = this.dragon.getViewVector(1.0F);
+                  double var12 = this.dragon.head.getX() - var28.x * 1.0;
                   double var14 = this.dragon.head.getY(0.5) + 0.5;
-                  double var16 = this.dragon.head.getZ() - var27.z * 1.0;
+                  double var16 = this.dragon.head.getZ() - var28.z * 1.0;
                   double var18 = this.attackTarget.getX() - var12;
                   double var20 = this.attackTarget.getY(0.5) - var14;
                   double var22 = this.attackTarget.getZ() - var16;
+                  Vec3 var24 = new Vec3(var18, var20, var22);
                   if (!this.dragon.isSilent()) {
                      this.dragon.level().levelEvent((Player)null, 1017, this.dragon.blockPosition(), 0);
                   }
 
-                  DragonFireball var24 = new DragonFireball(this.dragon.level(), this.dragon, var18, var20, var22);
-                  var24.moveTo(var12, var14, var16, 0.0F, 0.0F);
-                  this.dragon.level().addFreshEntity(var24);
+                  DragonFireball var25 = new DragonFireball(this.dragon.level(), this.dragon, var24.normalize());
+                  var25.moveTo(var12, var14, var16, 0.0F, 0.0F);
+                  this.dragon.level().addFreshEntity(var25);
                   this.fireballCharge = 0;
                   if (this.currentPath != null) {
                      while(!this.currentPath.isDone()) {

@@ -240,11 +240,11 @@ public class PotionBrewing {
       final Ingredient ingredient;
       final Holder<T> to;
 
-      Mix(Holder<T> from, Ingredient ingredient, Holder<T> to) {
+      Mix(Holder<T> var1, Ingredient var2, Holder<T> var3) {
          super();
-         this.from = from;
-         this.ingredient = ingredient;
-         this.to = to;
+         this.from = var1;
+         this.ingredient = var2;
+         this.to = var3;
       }
 
       public Holder<T> from() {

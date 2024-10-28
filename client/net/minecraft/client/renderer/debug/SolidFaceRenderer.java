@@ -53,57 +53,54 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             float var22 = (float)(var18.maxX - var3);
             float var23 = (float)(var18.maxY - var5);
             float var24 = (float)(var18.maxZ - var7);
-            float var25 = 1.0F;
-            float var26 = 0.0F;
-            float var27 = 0.0F;
-            float var28 = 0.5F;
-            VertexConsumer var29;
+            int var25 = -2130771968;
+            VertexConsumer var26;
             if (var14.isFaceSturdy(var10, var13, Direction.WEST)) {
-               var29 = var2.getBuffer(RenderType.debugFilledBox());
-               var29.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+               var26 = var2.getBuffer(RenderType.debugFilledBox());
+               var26.addVertex(var9, var19, var20, var21).setColor(-2130771968);
+               var26.addVertex(var9, var19, var20, var24).setColor(-2130771968);
+               var26.addVertex(var9, var19, var23, var21).setColor(-2130771968);
+               var26.addVertex(var9, var19, var23, var24).setColor(-2130771968);
             }
 
             if (var14.isFaceSturdy(var10, var13, Direction.SOUTH)) {
-               var29 = var2.getBuffer(RenderType.debugFilledBox());
-               var29.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+               var26 = var2.getBuffer(RenderType.debugFilledBox());
+               var26.addVertex(var9, var19, var23, var24).setColor(-2130771968);
+               var26.addVertex(var9, var19, var20, var24).setColor(-2130771968);
+               var26.addVertex(var9, var22, var23, var24).setColor(-2130771968);
+               var26.addVertex(var9, var22, var20, var24).setColor(-2130771968);
             }
 
             if (var14.isFaceSturdy(var10, var13, Direction.EAST)) {
-               var29 = var2.getBuffer(RenderType.debugFilledBox());
-               var29.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+               var26 = var2.getBuffer(RenderType.debugFilledBox());
+               var26.addVertex(var9, var22, var20, var24).setColor(-2130771968);
+               var26.addVertex(var9, var22, var20, var21).setColor(-2130771968);
+               var26.addVertex(var9, var22, var23, var24).setColor(-2130771968);
+               var26.addVertex(var9, var22, var23, var21).setColor(-2130771968);
             }
 
             if (var14.isFaceSturdy(var10, var13, Direction.NORTH)) {
-               var29 = var2.getBuffer(RenderType.debugFilledBox());
-               var29.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+               var26 = var2.getBuffer(RenderType.debugFilledBox());
+               var26.addVertex(var9, var22, var23, var21).setColor(-2130771968);
+               var26.addVertex(var9, var22, var20, var21).setColor(-2130771968);
+               var26.addVertex(var9, var19, var23, var21).setColor(-2130771968);
+               var26.addVertex(var9, var19, var20, var21).setColor(-2130771968);
             }
 
             if (var14.isFaceSturdy(var10, var13, Direction.DOWN)) {
-               var29 = var2.getBuffer(RenderType.debugFilledBox());
-               var29.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+               var26 = var2.getBuffer(RenderType.debugFilledBox());
+               var26.addVertex(var9, var19, var20, var21).setColor(-2130771968);
+               var26.addVertex(var9, var22, var20, var21).setColor(-2130771968);
+               var26.addVertex(var9, var19, var20, var24).setColor(-2130771968);
+               var26.addVertex(var9, var22, var20, var24).setColor(-2130771968);
             }
 
             if (var14.isFaceSturdy(var10, var13, Direction.UP)) {
-               var29 = var2.getBuffer(RenderType.debugFilledBox());
-               var29.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-               var29.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+               var26 = var2.getBuffer(RenderType.debugFilledBox());
+               var26.addVertex(var9, var19, var23, var21).setColor(-2130771968);
+               var26.addVertex(var9, var19, var23, var24).setColor(-2130771968);
+               var26.addVertex(var9, var22, var23, var21).setColor(-2130771968);
+               var26.addVertex(var9, var22, var23, var24).setColor(-2130771968);
             }
          }
       }

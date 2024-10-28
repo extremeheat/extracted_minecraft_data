@@ -158,11 +158,11 @@ public class SpawnPlacements {
       final SpawnPlacementType placement;
       final SpawnPredicate<?> predicate;
 
-      Data(Heightmap.Types heightMap, SpawnPlacementType placement, SpawnPredicate<?> predicate) {
+      Data(Heightmap.Types var1, SpawnPlacementType var2, SpawnPredicate<?> var3) {
          super();
-         this.heightMap = heightMap;
-         this.placement = placement;
-         this.predicate = predicate;
+         this.heightMap = var1;
+         this.placement = var2;
+         this.predicate = var3;
       }
 
       public Heightmap.Types heightMap() {

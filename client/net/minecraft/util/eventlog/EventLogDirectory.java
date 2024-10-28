@@ -229,10 +229,10 @@ public class EventLogDirectory {
    public static record FileId(LocalDate date, int index) {
       private static final DateTimeFormatter DATE_FORMATTER;
 
-      public FileId(LocalDate date, int index) {
+      public FileId(LocalDate var1, int var2) {
          super();
-         this.date = date;
-         this.index = index;
+         this.date = var1;
+         this.index = var2;
       }
 
       @Nullable
@@ -276,10 +276,10 @@ public class EventLogDirectory {
    }
 
    public static record RawFile(Path path, FileId id) implements File {
-      public RawFile(Path path, FileId id) {
+      public RawFile(Path var1, FileId var2) {
          super();
-         this.path = path;
-         this.id = id;
+         this.path = var1;
+         this.id = var2;
       }
 
       public FileChannel openChannel() throws IOException {
@@ -307,10 +307,10 @@ public class EventLogDirectory {
    }
 
    public static record CompressedFile(Path path, FileId id) implements File {
-      public CompressedFile(Path path, FileId id) {
+      public CompressedFile(Path var1, FileId var2) {
          super();
-         this.path = path;
-         this.id = id;
+         this.path = var1;
+         this.id = var2;
       }
 
       @Nullable

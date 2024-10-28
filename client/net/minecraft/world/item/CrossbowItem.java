@@ -87,7 +87,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
          ChargingSounds var7 = this.getChargingSounds(var1);
          var7.end().ifPresent((var2x) -> {
-            var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)var2x.value(), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
+            var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)((SoundEvent)var2x.value()), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
          });
       }
 
@@ -125,7 +125,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
       var2.shoot((double)var8.x(), (double)var8.y(), (double)var8.z(), var4, var5);
       float var19 = getShotPitch(var1.getRandom(), var3);
-      var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var19);
+      var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var19);
    }
 
    private static Vector3f getProjectileShotVector(LivingEntity var0, Vec3 var1, float var2) {
@@ -185,7 +185,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
       if (!var1.isClientSide) {
          ChargingSounds var5 = this.getChargingSounds(var3);
-         float var6 = (float)(var3.getUseDuration(var2) - var4) / (float)getChargeDuration(var3, var2);
+         float var6 = (float)(var3.getUseDuration(var2) - var4) / (float)getChargeDuration(var2);
          if (var6 < 0.2F) {
             this.startSoundPlayed = false;
             this.midLoadSoundPlayed = false;
@@ -194,14 +194,14 @@ public class CrossbowItem extends ProjectileWeaponItem {
          if (var6 >= 0.2F && !this.startSoundPlayed) {
             this.startSoundPlayed = true;
             var5.start().ifPresent((var2x) -> {
-               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F);
+               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)((SoundEvent)var2x.value()), SoundSource.PLAYERS, 0.5F, 1.0F);
             });
          }
 
          if (var6 >= 0.5F && !this.midLoadSoundPlayed) {
             this.midLoadSoundPlayed = true;
             var5.mid().ifPresent((var2x) -> {
-               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F);
+               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)((SoundEvent)var2x.value()), SoundSource.PLAYERS, 0.5F, 1.0F);
             });
          }
       }
@@ -209,19 +209,12 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      return getChargeDuration(var1, var2) + 3;
+      return getChargeDuration(var2) + 3;
    }
 
-   public static int getChargeDuration(ItemStack var0, LivingEntity var1) {
-      Level var4 = var1.level();
-      float var2;
-      if (var4 instanceof ServerLevel var3) {
-         var2 = EnchantmentHelper.modifyCrossbowChargingTime(var3, var0, var1, 1.25F);
-      } else {
-         var2 = 1.25F;
-      }
-
-      return Mth.floor(var2 * 20.0F);
+   public static int getChargeDuration(LivingEntity var0) {
+      float var1 = EnchantmentHelper.modifyCrossbowChargingTime(var0, 1.25F);
+      return Mth.floor(var1 * 20.0F);
    }
 
    public UseAnim getUseAnimation(ItemStack var1) {
@@ -233,7 +226,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    private static float getPowerForTime(int var0, ItemStack var1, LivingEntity var2) {
-      float var3 = (float)var0 / (float)getChargeDuration(var1, var2);
+      float var3 = (float)var0 / (float)getChargeDuration(var2);
       if (var3 > 1.0F) {
          var3 = 1.0F;
       }
@@ -278,11 +271,11 @@ public class CrossbowItem extends ProjectileWeaponItem {
          return var0.group(SoundEvent.CODEC.optionalFieldOf("start").forGetter(ChargingSounds::start), SoundEvent.CODEC.optionalFieldOf("mid").forGetter(ChargingSounds::mid), SoundEvent.CODEC.optionalFieldOf("end").forGetter(ChargingSounds::end)).apply(var0, ChargingSounds::new);
       });
 
-      public ChargingSounds(Optional<Holder<SoundEvent>> start, Optional<Holder<SoundEvent>> mid, Optional<Holder<SoundEvent>> end) {
+      public ChargingSounds(Optional<Holder<SoundEvent>> var1, Optional<Holder<SoundEvent>> var2, Optional<Holder<SoundEvent>> var3) {
          super();
-         this.start = start;
-         this.mid = mid;
-         this.end = end;
+         this.start = var1;
+         this.mid = var2;
+         this.end = var3;
       }
 
       public Optional<Holder<SoundEvent>> start() {

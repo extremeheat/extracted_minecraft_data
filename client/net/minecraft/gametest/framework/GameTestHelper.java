@@ -80,9 +80,13 @@ public class GameTestHelper {
       return this.getLevel().getBlockState(this.absolutePos(var1));
    }
 
-   @Nullable
-   public BlockEntity getBlockEntity(BlockPos var1) {
-      return this.getLevel().getBlockEntity(this.absolutePos(var1));
+   public <T extends BlockEntity> T getBlockEntity(BlockPos var1) {
+      BlockEntity var2 = this.getLevel().getBlockEntity(this.absolutePos(var1));
+      if (var2 == null) {
+         throw new GameTestAssertPosException("Missing block entity", this.absolutePos(var1), var1, this.testInfo.getTick());
+      } else {
+         return var2;
+      }
    }
 
    public void killAllEntities() {
@@ -414,6 +418,13 @@ public class GameTestHelper {
 
    public void assertBlockState(BlockPos var1, Predicate<BlockState> var2, Supplier<String> var3) {
       BlockState var4 = this.getBlockState(var1);
+      if (!var2.test(var4)) {
+         throw new GameTestAssertPosException((String)var3.get(), this.absolutePos(var1), var1, this.testInfo.getTick());
+      }
+   }
+
+   public <T extends BlockEntity> void assertBlockEntityData(BlockPos var1, Predicate<T> var2, Supplier<String> var3) {
+      BlockEntity var4 = this.getBlockEntity(var1);
       if (!var2.test(var4)) {
          throw new GameTestAssertPosException((String)var3.get(), this.absolutePos(var1), var1, this.testInfo.getTick());
       }

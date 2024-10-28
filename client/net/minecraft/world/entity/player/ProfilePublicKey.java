@@ -22,9 +22,9 @@ public record ProfilePublicKey(Data data) {
    public static final Duration EXPIRY_GRACE_PERIOD = Duration.ofHours(8L);
    public static final Codec<ProfilePublicKey> TRUSTED_CODEC;
 
-   public ProfilePublicKey(Data data) {
+   public ProfilePublicKey(Data var1) {
       super();
-      this.data = data;
+      this.data = var1;
    }
 
    public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, Data var2) throws ValidationException {
@@ -58,11 +58,11 @@ public record ProfilePublicKey(Data data) {
          this(var1.readInstant(), var1.readPublicKey(), var1.readByteArray(4096));
       }
 
-      public Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
+      public Data(Instant var1, PublicKey var2, byte[] var3) {
          super();
-         this.expiresAt = expiresAt;
-         this.key = key;
-         this.keySignature = keySignature;
+         this.expiresAt = var1;
+         this.key = var2;
+         this.keySignature = var3;
       }
 
       public void write(FriendlyByteBuf var1) {

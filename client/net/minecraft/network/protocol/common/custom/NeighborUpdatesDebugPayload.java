@@ -12,10 +12,10 @@ public record NeighborUpdatesDebugPayload(long time, BlockPos pos) implements Cu
       this(var1.readVarLong(), var1.readBlockPos());
    }
 
-   public NeighborUpdatesDebugPayload(long time, BlockPos pos) {
+   public NeighborUpdatesDebugPayload(long var1, BlockPos var3) {
       super();
-      this.time = time;
-      this.pos = pos;
+      this.time = var1;
+      this.pos = var3;
    }
 
    private void write(FriendlyByteBuf var1) {

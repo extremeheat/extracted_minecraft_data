@@ -50,15 +50,15 @@ public abstract class SingleQuadParticle extends Particle {
       float var10 = this.getV0();
       float var11 = this.getV1();
       int var12 = this.getLightColor(var6);
-      this.renderVertex(var1, var2, var3, var4, var5, -1.0F, -1.0F, var7, var9, var11, var12);
-      this.renderVertex(var1, var2, var3, var4, var5, -1.0F, 1.0F, var7, var9, var10, var12);
-      this.renderVertex(var1, var2, var3, var4, var5, 1.0F, 1.0F, var7, var8, var10, var12);
-      this.renderVertex(var1, var2, var3, var4, var5, 1.0F, -1.0F, var7, var8, var11, var12);
+      this.renderVertex(var1, var2, var3, var4, var5, 1.0F, -1.0F, var7, var9, var11, var12);
+      this.renderVertex(var1, var2, var3, var4, var5, 1.0F, 1.0F, var7, var9, var10, var12);
+      this.renderVertex(var1, var2, var3, var4, var5, -1.0F, 1.0F, var7, var8, var10, var12);
+      this.renderVertex(var1, var2, var3, var4, var5, -1.0F, -1.0F, var7, var8, var11, var12);
    }
 
    private void renderVertex(VertexConsumer var1, Quaternionf var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, int var11) {
       Vector3f var12 = (new Vector3f(var6, var7, 0.0F)).rotate(var2).mul(var8).add(var3, var4, var5);
-      var1.vertex((double)var12.x(), (double)var12.y(), (double)var12.z()).uv(var9, var10).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var11).endVertex();
+      var1.addVertex(var12.x(), var12.y(), var12.z()).setUv(var9, var10).setColor(this.rCol, this.gCol, this.bCol, this.alpha).setLight(var11);
    }
 
    public float getQuadSize(float var1) {

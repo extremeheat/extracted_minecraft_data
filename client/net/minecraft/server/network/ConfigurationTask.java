@@ -9,9 +9,9 @@ public interface ConfigurationTask {
    Type type();
 
    public static record Type(String id) {
-      public Type(String id) {
+      public Type(String var1) {
          super();
-         this.id = id;
+         this.id = var1;
       }
 
       public String toString() {

@@ -14,10 +14,10 @@ public record ItemFireworksPredicate(Optional<CollectionPredicate<FireworkExplos
       return var0.group(CollectionPredicate.codec(ItemFireworkExplosionPredicate.FireworkPredicate.CODEC).optionalFieldOf("explosions").forGetter(ItemFireworksPredicate::explosions), MinMaxBounds.Ints.CODEC.optionalFieldOf("flight_duration", MinMaxBounds.Ints.ANY).forGetter(ItemFireworksPredicate::flightDuration)).apply(var0, ItemFireworksPredicate::new);
    });
 
-   public ItemFireworksPredicate(Optional<CollectionPredicate<FireworkExplosion, ItemFireworkExplosionPredicate.FireworkPredicate>> explosions, MinMaxBounds.Ints flightDuration) {
+   public ItemFireworksPredicate(Optional<CollectionPredicate<FireworkExplosion, ItemFireworkExplosionPredicate.FireworkPredicate>> var1, MinMaxBounds.Ints var2) {
       super();
-      this.explosions = explosions;
-      this.flightDuration = flightDuration;
+      this.explosions = var1;
+      this.flightDuration = var2;
    }
 
    public DataComponentType<Fireworks> componentType() {

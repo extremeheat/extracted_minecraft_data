@@ -12,9 +12,9 @@ import net.minecraft.world.inventory.SlotRanges;
 public record SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
    public static final Codec<SlotsPredicate> CODEC;
 
-   public SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
+   public SlotsPredicate(Map<SlotRange, ItemPredicate> var1) {
       super();
-      this.slots = slots;
+      this.slots = var1;
    }
 
    public boolean matches(Entity var1) {

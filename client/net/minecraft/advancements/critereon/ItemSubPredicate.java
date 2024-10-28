@@ -11,9 +11,9 @@ public interface ItemSubPredicate {
    boolean matches(ItemStack var1);
 
    public static record Type<T extends ItemSubPredicate>(Codec<T> codec) {
-      public Type(Codec<T> codec) {
+      public Type(Codec<T> var1) {
          super();
-         this.codec = codec;
+         this.codec = var1;
       }
 
       public Codec<T> codec() {

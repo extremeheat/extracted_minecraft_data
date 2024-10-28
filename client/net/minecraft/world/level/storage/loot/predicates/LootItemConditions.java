@@ -31,7 +31,7 @@ public class LootItemConditions {
    }
 
    private static LootItemConditionType register(String var0, MapCodec<? extends LootItemCondition> var1) {
-      return (LootItemConditionType)Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, (ResourceLocation)(new ResourceLocation(var0)), new LootItemConditionType(var1));
+      return (LootItemConditionType)Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootItemConditionType(var1));
    }
 
    static {

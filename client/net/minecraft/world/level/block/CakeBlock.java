@@ -58,10 +58,7 @@ public class CakeBlock extends Block {
          Block var10 = Block.byItem(var8);
          if (var10 instanceof CandleBlock) {
             CandleBlock var9 = (CandleBlock)var10;
-            if (!var5.isCreative()) {
-               var1.shrink(1);
-            }
-
+            var1.consume(1, var5);
             var3.playSound((Player)null, (BlockPos)var4, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS, 1.0F, 1.0F);
             var3.setBlockAndUpdate(var4, CandleCakeBlock.byCandle(var9));
             var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);

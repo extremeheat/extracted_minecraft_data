@@ -81,6 +81,6 @@ public class BiomeTags {
    }
 
    private static TagKey<Biome> create(String var0) {
-      return TagKey.create(Registries.BIOME, new ResourceLocation(var0));
+      return TagKey.create(Registries.BIOME, ResourceLocation.withDefaultNamespace(var0));
    }
 }

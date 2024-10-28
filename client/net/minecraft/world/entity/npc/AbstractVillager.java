@@ -15,7 +15,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -37,6 +36,7 @@ import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -96,12 +96,16 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    public MerchantOffers getOffers() {
-      if (this.offers == null) {
-         this.offers = new MerchantOffers();
-         this.updateTrades();
-      }
+      if (this.level().isClientSide) {
+         throw new IllegalStateException("Cannot load Villager offers on the client");
+      } else {
+         if (this.offers == null) {
+            this.offers = new MerchantOffers();
+            this.updateTrades();
+         }
 
-      return this.offers;
+         return this.offers;
+      }
    }
 
    public void overrideOffers(@Nullable MerchantOffers var1) {
@@ -148,9 +152,11 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      MerchantOffers var2 = this.getOffers();
-      if (!var2.isEmpty()) {
-         var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
+      if (!this.level().isClientSide) {
+         MerchantOffers var2 = this.getOffers();
+         if (!var2.isEmpty()) {
+            var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow());
+         }
       }
 
       this.writeInventoryToTag(var1, this.registryAccess());
@@ -171,7 +177,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    @Nullable
-   public Entity changeDimension(ServerLevel var1) {
+   public Entity changeDimension(DimensionTransition var1) {
       this.stopTrading();
       return super.changeDimension(var1);
    }

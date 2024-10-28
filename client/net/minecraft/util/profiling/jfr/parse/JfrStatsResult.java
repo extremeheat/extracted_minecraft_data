@@ -22,23 +22,23 @@ import net.minecraft.util.profiling.jfr.stats.TimedStatSummary;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public record JfrStatsResult(Instant recordingStarted, Instant recordingEnded, Duration recordingDuration, @Nullable Duration worldCreationDuration, List<TickTimeStat> tickTimes, List<CpuLoadStat> cpuLoadStats, GcHeapStat.Summary heapSummary, ThreadAllocationStat.Summary threadAllocationSummary, IoSummary<PacketIdentification> receivedPacketsSummary, IoSummary<PacketIdentification> sentPacketsSummary, IoSummary<ChunkIdentification> writtenChunks, IoSummary<ChunkIdentification> readChunks, FileIOStat.Summary fileWrites, FileIOStat.Summary fileReads, List<ChunkGenStat> chunkGenStats) {
-   public JfrStatsResult(Instant recordingStarted, Instant recordingEnded, Duration recordingDuration, @Nullable Duration worldCreationDuration, List<TickTimeStat> tickTimes, List<CpuLoadStat> cpuLoadStats, GcHeapStat.Summary heapSummary, ThreadAllocationStat.Summary threadAllocationSummary, IoSummary<PacketIdentification> receivedPacketsSummary, IoSummary<PacketIdentification> sentPacketsSummary, IoSummary<ChunkIdentification> writtenChunks, IoSummary<ChunkIdentification> readChunks, FileIOStat.Summary fileWrites, FileIOStat.Summary fileReads, List<ChunkGenStat> chunkGenStats) {
+   public JfrStatsResult(Instant var1, Instant var2, Duration var3, @Nullable Duration var4, List<TickTimeStat> var5, List<CpuLoadStat> var6, GcHeapStat.Summary var7, ThreadAllocationStat.Summary var8, IoSummary<PacketIdentification> var9, IoSummary<PacketIdentification> var10, IoSummary<ChunkIdentification> var11, IoSummary<ChunkIdentification> var12, FileIOStat.Summary var13, FileIOStat.Summary var14, List<ChunkGenStat> var15) {
       super();
-      this.recordingStarted = recordingStarted;
-      this.recordingEnded = recordingEnded;
-      this.recordingDuration = recordingDuration;
-      this.worldCreationDuration = worldCreationDuration;
-      this.tickTimes = tickTimes;
-      this.cpuLoadStats = cpuLoadStats;
-      this.heapSummary = heapSummary;
-      this.threadAllocationSummary = threadAllocationSummary;
-      this.receivedPacketsSummary = receivedPacketsSummary;
-      this.sentPacketsSummary = sentPacketsSummary;
-      this.writtenChunks = writtenChunks;
-      this.readChunks = readChunks;
-      this.fileWrites = fileWrites;
-      this.fileReads = fileReads;
-      this.chunkGenStats = chunkGenStats;
+      this.recordingStarted = var1;
+      this.recordingEnded = var2;
+      this.recordingDuration = var3;
+      this.worldCreationDuration = var4;
+      this.tickTimes = var5;
+      this.cpuLoadStats = var6;
+      this.heapSummary = var7;
+      this.threadAllocationSummary = var8;
+      this.receivedPacketsSummary = var9;
+      this.sentPacketsSummary = var10;
+      this.writtenChunks = var11;
+      this.readChunks = var12;
+      this.fileWrites = var13;
+      this.fileReads = var14;
+      this.chunkGenStats = var15;
    }
 
    public List<Pair<ChunkStatus, TimedStatSummary<ChunkGenStat>>> chunkGenSummary() {

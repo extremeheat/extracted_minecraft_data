@@ -26,7 +26,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
    }
 
    protected void addContents() {
-      this.keyBindsList = (KeyBindsList)this.layout.addToContents((KeyBindsList)this.addRenderableWidget(new KeyBindsList(this, this.minecraft)));
+      this.keyBindsList = (KeyBindsList)this.layout.addToContents(new KeyBindsList(this, this.minecraft));
    }
 
    protected void addOptions() {

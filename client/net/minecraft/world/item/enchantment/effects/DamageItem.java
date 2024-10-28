@@ -2,12 +2,10 @@ package net.minecraft.world.item.enchantment.effects;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Objects;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
@@ -19,9 +17,9 @@ public record DamageItem(LevelBasedValue amount) implements EnchantmentEntityEff
       })).apply(var0, DamageItem::new);
    });
 
-   public DamageItem(LevelBasedValue amount) {
+   public DamageItem(LevelBasedValue var1) {
       super();
-      this.amount = amount;
+      this.amount = var1;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
@@ -34,10 +32,7 @@ public record DamageItem(LevelBasedValue amount) implements EnchantmentEntityEff
       }
 
       ServerPlayer var6 = var10000;
-      ItemStack var9 = var3.itemStack();
-      int var10001 = (int)this.amount.calculate(var2);
-      Objects.requireNonNull(var3);
-      var9.hurtAndBreak(var10001, var1, var6, var3::onBreak);
+      var3.itemStack().hurtAndBreak((int)this.amount.calculate(var2), var1, var6, var3.onBreak());
    }
 
    public MapCodec<DamageItem> codec() {

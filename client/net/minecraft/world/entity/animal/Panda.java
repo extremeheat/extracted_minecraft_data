@@ -18,7 +18,9 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -112,7 +114,7 @@ public class Panda extends Animal {
    }
 
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       if (!this.getItemBySlot(var2).isEmpty()) {
          return false;
       } else {
@@ -802,12 +804,8 @@ public class Panda extends Animal {
       private final Panda panda;
 
       public PandaPanicGoal(Panda var1, double var2) {
-         super(var1, var2);
+         super(var1, var2, (TagKey)DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES);
          this.panda = var1;
-      }
-
-      protected boolean shouldPanic() {
-         return this.mob.isFreezing() || this.mob.isOnFire();
       }
 
       public boolean canContinueToUse() {

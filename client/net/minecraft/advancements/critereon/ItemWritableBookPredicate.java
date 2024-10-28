@@ -15,9 +15,9 @@ public record ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<
       return var0.group(CollectionPredicate.codec(ItemWritableBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(ItemWritableBookPredicate::pages)).apply(var0, ItemWritableBookPredicate::new);
    });
 
-   public ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<String>, PagePredicate>> pages) {
+   public ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<String>, PagePredicate>> var1) {
       super();
-      this.pages = pages;
+      this.pages = var1;
    }
 
    public DataComponentType<WritableBookContent> componentType() {
@@ -35,9 +35,9 @@ public record ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<
    public static record PagePredicate(String contents) implements Predicate<Filterable<String>> {
       public static final Codec<PagePredicate> CODEC;
 
-      public PagePredicate(String contents) {
+      public PagePredicate(String var1) {
          super();
-         this.contents = contents;
+         this.contents = var1;
       }
 
       public boolean test(Filterable<String> var1) {

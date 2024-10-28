@@ -5,10 +5,10 @@ import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
 public record AnimationChannel(Target target, Keyframe... keyframes) {
-   public AnimationChannel(Target target, Keyframe... keyframes) {
+   public AnimationChannel(Target var1, Keyframe... var2) {
       super();
-      this.target = target;
-      this.keyframes = keyframes;
+      this.target = var1;
+      this.keyframes = var2;
    }
 
    public Target target() {

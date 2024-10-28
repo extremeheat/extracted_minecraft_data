@@ -5,7 +5,6 @@ import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
@@ -28,12 +27,12 @@ public class InventoryMenu extends RecipeBookMenu<CraftingInput, CraftingRecipe>
    public static final int USE_ROW_SLOT_START = 36;
    public static final int USE_ROW_SLOT_END = 45;
    public static final int SHIELD_SLOT = 45;
-   public static final ResourceLocation BLOCK_ATLAS = new ResourceLocation("textures/atlas/blocks.png");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = new ResourceLocation("item/empty_armor_slot_helmet");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = new ResourceLocation("item/empty_armor_slot_chestplate");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = new ResourceLocation("item/empty_armor_slot_leggings");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = new ResourceLocation("item/empty_armor_slot_boots");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = new ResourceLocation("item/empty_armor_slot_shield");
+   public static final ResourceLocation BLOCK_ATLAS = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_helmet");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_chestplate");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_leggings");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_boots");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_shield");
    private static final Map<EquipmentSlot, ResourceLocation> TEXTURE_EMPTY_SLOTS;
    private static final EquipmentSlot[] SLOT_IDS;
    private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 2, 2);
@@ -122,7 +121,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingInput, CraftingRecipe>
       if (var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
-         EquipmentSlot var6 = Mob.getEquipmentSlotForItem(var3);
+         EquipmentSlot var6 = var1.getEquipmentSlotForItem(var3);
          if (var2 == 0) {
             if (!this.moveItemStackTo(var5, 9, 45, true)) {
                return ItemStack.EMPTY;
@@ -137,7 +136,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingInput, CraftingRecipe>
             if (!this.moveItemStackTo(var5, 9, 45, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var6.getType() == EquipmentSlot.Type.ARMOR && !((Slot)this.slots.get(8 - var6.getIndex())).hasItem()) {
+         } else if (var6.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && !((Slot)this.slots.get(8 - var6.getIndex())).hasItem()) {
             int var7 = 8 - var6.getIndex();
             if (!this.moveItemStackTo(var5, var7, var7 + 1, false)) {
                return ItemStack.EMPTY;

@@ -29,7 +29,7 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       return new SimpleSoundInstance(var0.getLocation(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
-   public static SimpleSoundInstance forRecord(SoundEvent var0, Vec3 var1) {
+   public static SimpleSoundInstance forJukeboxSong(SoundEvent var0, Vec3 var1) {
       return new SimpleSoundInstance(var0, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, var1.x, var1.y, var1.z);
    }
 

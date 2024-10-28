@@ -221,10 +221,10 @@ public class Crypt {
          this(var1.readLong(), var1.readByteArray());
       }
 
-      public SaltSignaturePair(long salt, byte[] signature) {
+      public SaltSignaturePair(long var1, byte[] var3) {
          super();
-         this.salt = salt;
-         this.signature = signature;
+         this.salt = var1;
+         this.signature = var3;
       }
 
       public boolean isValid() {

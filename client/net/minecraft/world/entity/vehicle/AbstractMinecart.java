@@ -115,7 +115,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return true;
    }
 
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
    }
 
@@ -222,7 +222,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       }
 
       this.checkBelowWorld();
-      this.handleNetherPortal();
+      this.handlePortal();
       if (this.level().isClientSide) {
          if (this.lerpSteps > 0) {
             this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
@@ -287,7 +287,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
                      if (!(var14 instanceof Player) && !(var14 instanceof IronGolem) && !(var14 instanceof AbstractMinecart) && !this.isVehicle() && !var14.isPassenger()) {
                         var14.startRiding(this);
                      } else {
-                        var14.push(this);
+                        var14.push((Entity)this);
                      }
                   }
                }
@@ -298,7 +298,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
             while(var12.hasNext()) {
                Entity var13 = (Entity)var12.next();
                if (!this.hasPassenger(var13) && var13.isPushable() && var13 instanceof AbstractMinecart) {
-                  var13.push(this);
+                  var13.push((Entity)this);
                }
             }
          }

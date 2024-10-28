@@ -34,9 +34,9 @@ public interface PlainTextContents extends ComponentContents {
    }
 
    public static record LiteralContents(String text) implements PlainTextContents {
-      public LiteralContents(String text) {
+      public LiteralContents(String var1) {
          super();
-         this.text = text;
+         this.text = var1;
       }
 
       public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {

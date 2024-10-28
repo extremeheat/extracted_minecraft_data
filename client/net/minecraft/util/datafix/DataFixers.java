@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
@@ -26,6 +27,7 @@ import net.minecraft.util.datafix.fixes.AddNewChoices;
 import net.minecraft.util.datafix.fixes.AdvancementsFix;
 import net.minecraft.util.datafix.fixes.AdvancementsRenameFix;
 import net.minecraft.util.datafix.fixes.AreaEffectCloudPotionFix;
+import net.minecraft.util.datafix.fixes.AttributeModifierIdFix;
 import net.minecraft.util.datafix.fixes.AttributesRename;
 import net.minecraft.util.datafix.fixes.BannerEntityCustomNameToOverrideComponentFix;
 import net.minecraft.util.datafix.fixes.BannerPatternFormatFix;
@@ -141,6 +143,7 @@ import net.minecraft.util.datafix.fixes.ItemWaterPotionFix;
 import net.minecraft.util.datafix.fixes.ItemWrittenBookPagesStrictJsonFix;
 import net.minecraft.util.datafix.fixes.JigsawPropertiesFix;
 import net.minecraft.util.datafix.fixes.JigsawRotationFix;
+import net.minecraft.util.datafix.fixes.JukeboxTicksSinceSongStartedFix;
 import net.minecraft.util.datafix.fixes.LeavesFix;
 import net.minecraft.util.datafix.fixes.LegacyDragonFightFix;
 import net.minecraft.util.datafix.fixes.LevelDataGeneratorOptionsFix;
@@ -168,6 +171,7 @@ import net.minecraft.util.datafix.fixes.OptionsForceVBOFix;
 import net.minecraft.util.datafix.fixes.OptionsKeyLwjgl3Fix;
 import net.minecraft.util.datafix.fixes.OptionsKeyTranslationFix;
 import net.minecraft.util.datafix.fixes.OptionsLowerCaseLanguageFix;
+import net.minecraft.util.datafix.fixes.OptionsMenuBlurrinessFix;
 import net.minecraft.util.datafix.fixes.OptionsProgrammerArtFix;
 import net.minecraft.util.datafix.fixes.OptionsRenameFieldFix;
 import net.minecraft.util.datafix.fixes.OverreachingTickFix;
@@ -309,7 +313,7 @@ import net.minecraft.util.datafix.schemas.V99;
 public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME = Schema::new;
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
-   private static final DataFixer dataFixer;
+   private static final DataFixerBuilder.Result DATA_FIXER = createFixerUpper();
    public static final int BLENDING_VERSION = 3441;
 
    private DataFixers() {
@@ -317,17 +321,21 @@ public class DataFixers {
    }
 
    public static DataFixer getDataFixer() {
-      return dataFixer;
+      return DATA_FIXER.fixer();
    }
 
-   private static synchronized DataFixer createFixerUpper(Set<DSL.TypeReference> var0) {
-      DataFixerBuilder var1 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-      addFixers(var1);
+   private static DataFixerBuilder.Result createFixerUpper() {
+      DataFixerBuilder var0 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+      addFixers(var0);
+      return var0.build();
+   }
+
+   public static CompletableFuture<?> optimize(Set<DSL.TypeReference> var0) {
       if (var0.isEmpty()) {
-         return var1.buildUnoptimized();
+         return CompletableFuture.completedFuture((Object)null);
       } else {
-         ExecutorService var2 = Executors.newSingleThreadExecutor((new ThreadFactoryBuilder()).setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build());
-         return var1.buildOptimized(var0, var2);
+         ExecutorService var1 = Executors.newSingleThreadExecutor((new ThreadFactoryBuilder()).setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build());
+         return DATA_FIXER.optimize(var0, var1);
       }
    }
 
@@ -788,9 +796,9 @@ public class DataFixers {
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
          return (String)var173.getOrDefault(var1x, var1x);
       }));
-      Set var233 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var233);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var233::contains));
+      Set var235 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var235);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var235::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -922,6 +930,11 @@ public class DataFixers {
       var0.addFixer(new ProjectileStoredWeaponFix(var231));
       Schema var232 = var0.addSchema(3939, SAME_NAMESPACED);
       var0.addFixer(new FeatureFlagRemoveFix(var232, "Remove 1.21 feature toggle", Set.of("minecraft:update_1_21")));
+      Schema var233 = var0.addSchema(3943, SAME_NAMESPACED);
+      var0.addFixer(new OptionsMenuBlurrinessFix(var233));
+      Schema var234 = var0.addSchema(3945, SAME_NAMESPACED);
+      var0.addFixer(new AttributeModifierIdFix(var234));
+      var0.addFixer(new JukeboxTicksSinceSongStartedFix(var234));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {
@@ -940,9 +953,5 @@ public class DataFixers {
       return (var2) -> {
          return Objects.equals(NamespacedSchema.ensureNamespaced(var2), var0) ? var1 : var2;
       };
-   }
-
-   static {
-      dataFixer = createFixerUpper(SharedConstants.DATA_FIX_TYPES_TO_OPTIMIZE);
    }
 }

@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EntityTypeTags;
@@ -292,7 +293,7 @@ public class Ravager extends Raider {
       return !var1.containsAnyLiquid(this.getBoundingBox());
    }
 
-   public void applyRaidBuffs(int var1, boolean var2) {
+   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
    }
 
    public boolean canBeLeader() {

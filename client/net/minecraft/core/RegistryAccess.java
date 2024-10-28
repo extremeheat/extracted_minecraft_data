@@ -69,10 +69,10 @@ public interface RegistryAccess extends HolderLookup.Provider {
    public static record RegistryEntry<T>(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
       final Registry<T> value;
 
-      public RegistryEntry(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
+      public RegistryEntry(ResourceKey<? extends Registry<T>> var1, Registry<T> var2) {
          super();
-         this.key = key;
-         this.value = value;
+         this.key = var1;
+         this.value = var2;
       }
 
       private static <T, R extends Registry<? extends T>> RegistryEntry<T> fromMapEntry(Map.Entry<? extends ResourceKey<? extends Registry<?>>, R> var0) {

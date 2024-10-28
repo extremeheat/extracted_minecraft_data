@@ -22,13 +22,13 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
    });
    public static final StreamCodec<ByteBuf, Fireworks> STREAM_CODEC;
 
-   public Fireworks(int flightDuration, List<FireworkExplosion> explosions) {
+   public Fireworks(int var1, List<FireworkExplosion> var2) {
       super();
-      if (explosions.size() > 256) {
-         throw new IllegalArgumentException("Got " + explosions.size() + " explosions, but maximum is 256");
+      if (var2.size() > 256) {
+         throw new IllegalArgumentException("Got " + var2.size() + " explosions, but maximum is 256");
       } else {
-         this.flightDuration = flightDuration;
-         this.explosions = explosions;
+         this.flightDuration = var1;
+         this.explosions = var2;
       }
    }
 

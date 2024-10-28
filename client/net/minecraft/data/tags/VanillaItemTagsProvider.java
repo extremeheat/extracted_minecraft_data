@@ -79,7 +79,6 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
       this.copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
       this.tag(ItemTags.CREEPER_DROP_MUSIC_DISCS).add((Object[])(Items.MUSIC_DISC_13, Items.MUSIC_DISC_CAT, Items.MUSIC_DISC_BLOCKS, Items.MUSIC_DISC_CHIRP, Items.MUSIC_DISC_FAR, Items.MUSIC_DISC_MALL, Items.MUSIC_DISC_MELLOHI, Items.MUSIC_DISC_STAL, Items.MUSIC_DISC_STRAD, Items.MUSIC_DISC_WARD, Items.MUSIC_DISC_11, Items.MUSIC_DISC_WAIT));
-      this.tag(ItemTags.MUSIC_DISCS).addTag(ItemTags.CREEPER_DROP_MUSIC_DISCS).add((Object)Items.MUSIC_DISC_PIGSTEP).add((Object)Items.MUSIC_DISC_OTHERSIDE).add((Object)Items.MUSIC_DISC_5).add((Object)Items.MUSIC_DISC_RELIC).add((Object)Items.MUSIC_DISC_CREATOR).add((Object)Items.MUSIC_DISC_CREATOR_MUSIC_BOX).add((Object)Items.MUSIC_DISC_PRECIPICE);
       this.tag(ItemTags.COALS).add((Object[])(Items.COAL, Items.CHARCOAL));
       this.tag(ItemTags.ARROWS).add((Object[])(Items.ARROW, Items.TIPPED_ARROW, Items.SPECTRAL_ARROW));
       this.tag(ItemTags.LECTERN_BOOKS).add((Object[])(Items.WRITTEN_BOOK, Items.WRITABLE_BOOK));

@@ -4,14 +4,14 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
 public record PlayerSkin(ResourceLocation texture, @Nullable String textureUrl, @Nullable ResourceLocation capeTexture, @Nullable ResourceLocation elytraTexture, Model model, boolean secure) {
-   public PlayerSkin(ResourceLocation texture, @Nullable String textureUrl, @Nullable ResourceLocation capeTexture, @Nullable ResourceLocation elytraTexture, Model model, boolean secure) {
+   public PlayerSkin(ResourceLocation var1, @Nullable String var2, @Nullable ResourceLocation var3, @Nullable ResourceLocation var4, Model var5, boolean var6) {
       super();
-      this.texture = texture;
-      this.textureUrl = textureUrl;
-      this.capeTexture = capeTexture;
-      this.elytraTexture = elytraTexture;
-      this.model = model;
-      this.secure = secure;
+      this.texture = var1;
+      this.textureUrl = var2;
+      this.capeTexture = var3;
+      this.elytraTexture = var4;
+      this.model = var5;
+      this.secure = var6;
    }
 
    public ResourceLocation texture() {

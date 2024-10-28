@@ -215,7 +215,7 @@ public class ConduitBlockEntity extends BlockEntity {
       }
 
       if (var4.destroyTarget != null) {
-         var0.playSound((Player)null, var4.destroyTarget.getX(), var4.destroyTarget.getY(), var4.destroyTarget.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, var4.destroyTarget.getX(), var4.destroyTarget.getY(), var4.destroyTarget.getZ(), (SoundEvent)SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
          var4.destroyTarget.hurt(var0.damageSources().magic(), 4.0F);
       }
 

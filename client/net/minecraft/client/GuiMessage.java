@@ -6,12 +6,12 @@ import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.util.FormattedCharSequence;
 
 public record GuiMessage(int addedTime, Component content, @Nullable MessageSignature signature, @Nullable GuiMessageTag tag) {
-   public GuiMessage(int addedTime, Component content, @Nullable MessageSignature signature, @Nullable GuiMessageTag tag) {
+   public GuiMessage(int var1, Component var2, @Nullable MessageSignature var3, @Nullable GuiMessageTag var4) {
       super();
-      this.addedTime = addedTime;
-      this.content = content;
-      this.signature = signature;
-      this.tag = tag;
+      this.addedTime = var1;
+      this.content = var2;
+      this.signature = var3;
+      this.tag = var4;
    }
 
    @Nullable
@@ -38,12 +38,12 @@ public record GuiMessage(int addedTime, Component content, @Nullable MessageSign
    }
 
    public static record Line(int addedTime, FormattedCharSequence content, @Nullable GuiMessageTag tag, boolean endOfEntry) {
-      public Line(int addedTime, FormattedCharSequence content, @Nullable GuiMessageTag tag, boolean endOfEntry) {
+      public Line(int var1, FormattedCharSequence var2, @Nullable GuiMessageTag var3, boolean var4) {
          super();
-         this.addedTime = addedTime;
-         this.content = content;
-         this.tag = tag;
-         this.endOfEntry = endOfEntry;
+         this.addedTime = var1;
+         this.content = var2;
+         this.tag = var3;
+         this.endOfEntry = var4;
       }
 
       public int addedTime() {

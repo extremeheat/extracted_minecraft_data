@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
 public class TridentModel extends Model {
-   public static final ResourceLocation TEXTURE = new ResourceLocation("textures/entity/trident.png");
+   public static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/trident.png");
    private final ModelPart root;
 
    public TridentModel(ModelPart var1) {
@@ -31,7 +31,7 @@ public class TridentModel extends Model {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-      this.root.render(var1, var2, var3, var4, var5, var6, var7, var8);
+   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
+      this.root.render(var1, var2, var3, var4, var5);
    }
 }

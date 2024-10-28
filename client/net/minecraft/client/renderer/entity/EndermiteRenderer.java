@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Endermite;
 
 public class EndermiteRenderer extends MobRenderer<Endermite, EndermiteModel<Endermite>> {
-   private static final ResourceLocation ENDERMITE_LOCATION = new ResourceLocation("textures/entity/endermite.png");
+   private static final ResourceLocation ENDERMITE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/endermite.png");
 
    public EndermiteRenderer(EntityRendererProvider.Context var1) {
       super(var1, new EndermiteModel(var1.bakeLayer(ModelLayers.ENDERMITE)), 0.3F);

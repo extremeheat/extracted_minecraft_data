@@ -85,7 +85,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          ItemStack var10 = var5.getItemInHand(var6);
          Optional var11 = var9.getCookableRecipe(var10);
          if (var11.isPresent()) {
-            if (!var3.isClientSide && var9.placeFood(var5, var5.hasInfiniteMaterials() ? var10.copy() : var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime())) {
+            if (!var3.isClientSide && var9.placeFood(var5, var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime())) {
                var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
                return ItemInteractionResult.SUCCESS;
             }

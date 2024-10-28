@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -8,8 +7,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
@@ -23,7 +20,6 @@ import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
@@ -54,7 +50,6 @@ public class RealmsServer extends ValueObject {
    public String parentWorldName;
    public String activeVersion;
    public Compatibility compatibility;
-   public RealmsServerPing serverPing;
 
    public RealmsServer() {
       super();
@@ -62,7 +57,6 @@ public class RealmsServer extends ValueObject {
       this.parentRealmId = -1L;
       this.activeVersion = "";
       this.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
-      this.serverPing = new RealmsServerPing();
    }
 
    public String getDescription() {
@@ -84,32 +78,6 @@ public class RealmsServer extends ValueObject {
 
    public void setDescription(String var1) {
       this.motd = var1;
-   }
-
-   public void updateServerPing(RealmsServerPlayerList var1) {
-      ArrayList var2 = Lists.newArrayList();
-      int var3 = 0;
-      MinecraftSessionService var4 = Minecraft.getInstance().getMinecraftSessionService();
-      Iterator var5 = var1.players.iterator();
-
-      while(var5.hasNext()) {
-         UUID var6 = (UUID)var5.next();
-         if (!Minecraft.getInstance().isLocalPlayer(var6)) {
-            try {
-               ProfileResult var7 = var4.fetchProfile(var6, false);
-               if (var7 != null) {
-                  var2.add(var7.profile().getName());
-               }
-
-               ++var3;
-            } catch (Exception var8) {
-               LOGGER.error("Could not get name for {}", var6, var8);
-            }
-         }
-      }
-
-      this.serverPing.nrOfPlayers = String.valueOf(var3);
-      this.serverPing.playerList = Joiner.on('\n').join(var2);
    }
 
    public static RealmsServer parse(JsonObject var0) {
@@ -300,9 +268,6 @@ public class RealmsServer extends ValueObject {
       var1.expired = this.expired;
       var1.expiredTrial = this.expiredTrial;
       var1.daysLeft = this.daysLeft;
-      var1.serverPing = new RealmsServerPing();
-      var1.serverPing.nrOfPlayers = this.serverPing.nrOfPlayers;
-      var1.serverPing.playerList = this.serverPing.playerList;
       var1.worldType = this.worldType;
       var1.ownerUUID = this.ownerUUID;
       var1.minigameName = this.minigameName;

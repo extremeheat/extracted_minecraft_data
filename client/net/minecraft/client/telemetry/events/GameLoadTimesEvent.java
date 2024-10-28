@@ -81,9 +81,9 @@ public class GameLoadTimesEvent {
    public static record Measurement(int millis) {
       public static final Codec<Measurement> CODEC;
 
-      public Measurement(int millis) {
+      public Measurement(int var1) {
          super();
-         this.millis = millis;
+         this.millis = var1;
       }
 
       public int millis() {

@@ -86,10 +86,10 @@ public class FeatureCountTracker {
    }
 
    static record LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
-      LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
+      LevelData(Object2IntMap<FeatureData> var1, MutableInt var2) {
          super();
-         this.featureData = featureData;
-         this.chunksWithFeatures = chunksWithFeatures;
+         this.featureData = var1;
+         this.chunksWithFeatures = var2;
       }
 
       public Object2IntMap<FeatureData> featureData() {
@@ -102,10 +102,10 @@ public class FeatureCountTracker {
    }
 
    private static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
-      FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
+      FeatureData(ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
          super();
-         this.feature = feature;
-         this.topFeature = topFeature;
+         this.feature = var1;
+         this.topFeature = var2;
       }
 
       public ConfiguredFeature<?, ?> feature() {

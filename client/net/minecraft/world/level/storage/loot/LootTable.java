@@ -106,6 +106,10 @@ public class LootTable {
       this.getRandomItemsRaw(var1, createStackSplitter(var1.getLevel(), var2));
    }
 
+   public ObjectArrayList<ItemStack> getRandomItems(LootParams var1, RandomSource var2) {
+      return this.getRandomItems((new LootContext.Builder(var1)).withOptionalRandomSource(var2).create(this.randomSequence));
+   }
+
    public ObjectArrayList<ItemStack> getRandomItems(LootParams var1, long var2) {
       return this.getRandomItems((new LootContext.Builder(var1)).withOptionalRandomSeed(var2).create(this.randomSequence));
    }

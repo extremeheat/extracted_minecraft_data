@@ -24,13 +24,13 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float s
    private static final Codec<String> SKIP_LIST_CODEC;
    public static final MapCodec<TrueTypeGlyphProviderDefinition> CODEC;
 
-   public TrueTypeGlyphProviderDefinition(ResourceLocation location, float size, float oversample, Shift shift, String skip) {
+   public TrueTypeGlyphProviderDefinition(ResourceLocation var1, float var2, float var3, Shift var4, String var5) {
       super();
-      this.location = location;
-      this.size = size;
-      this.oversample = oversample;
-      this.shift = shift;
-      this.skip = skip;
+      this.location = var1;
+      this.size = var2;
+      this.oversample = var3;
+      this.shift = var4;
+      this.skip = var5;
    }
 
    public GlyphProviderType type() {
@@ -153,10 +153,10 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation location, float s
          return List.of(var0.x, var0.y);
       });
 
-      public Shift(float x, float y) {
+      public Shift(float var1, float var2) {
          super();
-         this.x = x;
-         this.y = y;
+         this.x = var1;
+         this.y = var2;
       }
 
       public float x() {

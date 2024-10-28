@@ -13,9 +13,9 @@ public record RaidsDebugPayload(List<BlockPos> raidCenters) implements CustomPac
       this(var1.readList(BlockPos.STREAM_CODEC));
    }
 
-   public RaidsDebugPayload(List<BlockPos> raidCenters) {
+   public RaidsDebugPayload(List<BlockPos> var1) {
       super();
-      this.raidCenters = raidCenters;
+      this.raidCenters = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -439,7 +438,8 @@ public abstract class BlockBehaviour implements FeatureElement {
       StatePredicate emissiveRendering;
       boolean dynamicShape;
       FeatureFlagSet requiredFeatures;
-      Optional<OffsetFunction> offsetFunction;
+      @Nullable
+      OffsetFunction offsetFunction;
 
       private Properties() {
          super();
@@ -471,7 +471,6 @@ public abstract class BlockBehaviour implements FeatureElement {
             return false;
          };
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
-         this.offsetFunction = Optional.empty();
       }
 
       public static Properties of() {
@@ -689,16 +688,18 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Properties offsetType(OffsetType var1) {
+         OffsetFunction var10001;
          switch (var1.ordinal()) {
-            case 1 -> this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+            case 0 -> var10001 = null;
+            case 1 -> var10001 = (var0, var1x, var2) -> {
    Block var3 = var0.getBlock();
    long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
    float var6 = var3.getMaxHorizontalOffset();
    double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
    double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
    return new Vec3(var7, 0.0, var9);
-});
-            case 2 -> this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+};
+            case 2 -> var10001 = (var0, var1x, var2) -> {
    Block var3 = var0.getBlock();
    long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
    double var6 = ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset();
@@ -706,10 +707,11 @@ public abstract class BlockBehaviour implements FeatureElement {
    double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
    double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
    return new Vec3(var9, var6, var11);
-});
-            default -> this.offsetFunction = Optional.empty();
+};
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
 
+         this.offsetFunction = var10001;
          return this;
       }
 
@@ -767,7 +769,8 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final StatePredicate isViewBlocking;
       private final StatePredicate hasPostProcess;
       private final StatePredicate emissiveRendering;
-      private final Optional<OffsetFunction> offsetFunction;
+      @Nullable
+      private final OffsetFunction offsetFunction;
       private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
       private final boolean replaceable;
@@ -1014,13 +1017,12 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Vec3 getOffset(BlockGetter var1, BlockPos var2) {
-         return (Vec3)this.offsetFunction.map((var3) -> {
-            return var3.evaluate(this.asState(), var1, var2);
-         }).orElse(Vec3.ZERO);
+         OffsetFunction var3 = this.offsetFunction;
+         return var3 != null ? var3.evaluate(this.asState(), var1, var2) : Vec3.ZERO;
       }
 
       public boolean hasOffsetFunction() {
-         return this.offsetFunction.isPresent();
+         return this.offsetFunction != null;
       }
 
       public boolean triggerEvent(Level var1, BlockPos var2, int var3, int var4) {

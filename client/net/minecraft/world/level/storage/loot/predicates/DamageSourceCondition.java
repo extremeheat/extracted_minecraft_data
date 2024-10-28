@@ -17,9 +17,9 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) i
       return var0.group(DamageSourcePredicate.CODEC.optionalFieldOf("predicate").forGetter(DamageSourceCondition::predicate)).apply(var0, DamageSourceCondition::new);
    });
 
-   public DamageSourceCondition(Optional<DamageSourcePredicate> predicate) {
+   public DamageSourceCondition(Optional<DamageSourcePredicate> var1) {
       super();
-      this.predicate = predicate;
+      this.predicate = var1;
    }
 
    public LootItemConditionType getType() {

@@ -13,9 +13,9 @@ public record DebugStickState(Map<Holder<Block>, Property<?>> properties) {
    public static final DebugStickState EMPTY = new DebugStickState(Map.of());
    public static final Codec<DebugStickState> CODEC;
 
-   public DebugStickState(Map<Holder<Block>, Property<?>> properties) {
+   public DebugStickState(Map<Holder<Block>, Property<?>> var1) {
       super();
-      this.properties = properties;
+      this.properties = var1;
    }
 
    public DebugStickState withProperty(Holder<Block> var1, Property<?> var2) {

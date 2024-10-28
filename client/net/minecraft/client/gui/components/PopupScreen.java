@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class PopupScreen extends Screen {
-   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("popup/background");
+   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("popup/background");
    private static final int SPACING = 12;
    private static final int BG_BORDER_WITH_SPACING = 18;
    private static final int BUTTON_SPACING = 6;
@@ -109,10 +109,10 @@ public class PopupScreen extends Screen {
    }
 
    static record ButtonOption(Component message, Consumer<PopupScreen> action) {
-      ButtonOption(Component message, Consumer<PopupScreen> action) {
+      ButtonOption(Component var1, Consumer<PopupScreen> var2) {
          super();
-         this.message = message;
-         this.action = action;
+         this.message = var1;
+         this.action = var2;
       }
 
       public Component message() {

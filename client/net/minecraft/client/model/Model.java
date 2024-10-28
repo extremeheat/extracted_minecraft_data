@@ -18,5 +18,9 @@ public abstract class Model {
       return (RenderType)this.renderType.apply(var1);
    }
 
-   public abstract void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8);
+   public abstract void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5);
+
+   public final void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4) {
+      this.renderToBuffer(var1, var2, var3, var4, -1);
+   }
 }

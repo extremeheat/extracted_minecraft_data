@@ -2,70 +2,113 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 
 public class VertexFormat {
-   private final ImmutableList<VertexFormatElement> elements;
-   private final ImmutableMap<String, VertexFormatElement> elementMapping;
-   private final IntList offsets = new IntArrayList();
+   public static final int UNKNOWN_ELEMENT = -1;
+   private final List<VertexFormatElement> elements;
+   private final List<String> names;
    private final int vertexSize;
+   private final int elementsMask;
+   private final int[] offsetsByElement = new int[32];
    @Nullable
    private VertexBuffer immediateDrawVertexBuffer;
 
-   public VertexFormat(ImmutableMap<String, VertexFormatElement> var1) {
+   VertexFormat(List<VertexFormatElement> var1, List<String> var2, IntList var3, int var4) {
       super();
-      this.elementMapping = var1;
-      this.elements = var1.values().asList();
-      int var2 = 0;
+      this.elements = var1;
+      this.names = var2;
+      this.vertexSize = var4;
+      this.elementsMask = var1.stream().mapToInt(VertexFormatElement::mask).reduce(0, (var0, var1x) -> {
+         return var0 | var1x;
+      });
 
-      VertexFormatElement var4;
-      for(UnmodifiableIterator var3 = var1.values().iterator(); var3.hasNext(); var2 += var4.getByteSize()) {
-         var4 = (VertexFormatElement)var3.next();
-         this.offsets.add(var2);
+      for(int var5 = 0; var5 < this.offsetsByElement.length; ++var5) {
+         VertexFormatElement var6 = VertexFormatElement.byId(var5);
+         int var7 = var6 != null ? var1.indexOf(var6) : -1;
+         this.offsetsByElement[var5] = var7 != -1 ? var3.getInt(var7) : -1;
       }
 
-      this.vertexSize = var2;
+   }
+
+   public static Builder builder() {
+      return new Builder();
    }
 
    public String toString() {
-      int var10000 = this.elementMapping.size();
-      return "format: " + var10000 + " elements: " + (String)this.elementMapping.entrySet().stream().map(Object::toString).collect(Collectors.joining(" "));
-   }
+      StringBuilder var1 = (new StringBuilder("Vertex format (")).append(this.vertexSize).append(" bytes):\n");
 
-   public int getIntegerSize() {
-      return this.getVertexSize() / 4;
+      for(int var2 = 0; var2 < this.elements.size(); ++var2) {
+         VertexFormatElement var3 = (VertexFormatElement)this.elements.get(var2);
+         var1.append(var2).append(". ").append((String)this.names.get(var2)).append(": ").append(var3).append(" @ ").append(this.getOffset(var3)).append('\n');
+      }
+
+      return var1.toString();
    }
 
    public int getVertexSize() {
       return this.vertexSize;
    }
 
-   public ImmutableList<VertexFormatElement> getElements() {
+   public List<VertexFormatElement> getElements() {
       return this.elements;
    }
 
-   public ImmutableList<String> getElementAttributeNames() {
-      return this.elementMapping.keySet().asList();
+   public List<String> getElementAttributeNames() {
+      return this.names;
+   }
+
+   public int[] getOffsetsByElement() {
+      return this.offsetsByElement;
+   }
+
+   public int getOffset(VertexFormatElement var1) {
+      return this.offsetsByElement[var1.id()];
+   }
+
+   public boolean contains(VertexFormatElement var1) {
+      return (this.elementsMask & var1.mask()) != 0;
+   }
+
+   public int getElementsMask() {
+      return this.elementsMask;
+   }
+
+   public String getElementName(VertexFormatElement var1) {
+      int var2 = this.elements.indexOf(var1);
+      if (var2 == -1) {
+         throw new IllegalArgumentException(String.valueOf(var1) + " is not contained in format");
+      } else {
+         return (String)this.names.get(var2);
+      }
    }
 
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         VertexFormat var2 = (VertexFormat)var1;
-         return this.vertexSize != var2.vertexSize ? false : this.elementMapping.equals(var2.elementMapping);
       } else {
-         return false;
+         boolean var10000;
+         if (var1 instanceof VertexFormat) {
+            VertexFormat var2 = (VertexFormat)var1;
+            if (this.elementsMask == var2.elementsMask && this.vertexSize == var2.vertexSize && this.names.equals(var2.names) && Arrays.equals(this.offsetsByElement, var2.offsetsByElement)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
       }
    }
 
    public int hashCode() {
-      return this.elementMapping.hashCode();
+      return this.elementsMask * 31 + Arrays.hashCode(this.offsetsByElement);
    }
 
    public void setupBufferState() {
@@ -78,10 +121,11 @@ public class VertexFormat {
 
    private void _setupBufferState() {
       int var1 = this.getVertexSize();
-      ImmutableList var2 = this.getElements();
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         ((VertexFormatElement)var2.get(var3)).setupBufferState(var3, (long)this.offsets.getInt(var3), var1);
+      for(int var2 = 0; var2 < this.elements.size(); ++var2) {
+         GlStateManager._enableVertexAttribArray(var2);
+         VertexFormatElement var3 = (VertexFormatElement)this.elements.get(var2);
+         var3.setupBufferState(var2, (long)this.getOffset(var3), var1);
       }
 
    }
@@ -95,11 +139,8 @@ public class VertexFormat {
    }
 
    private void _clearBufferState() {
-      ImmutableList var1 = this.getElements();
-
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         VertexFormatElement var3 = (VertexFormatElement)var1.get(var2);
-         var3.clearBufferState(var2);
+      for(int var1 = 0; var1 < this.elements.size(); ++var1) {
+         GlStateManager._disableVertexAttribArray(var1);
       }
 
    }
@@ -111,6 +152,35 @@ public class VertexFormat {
       }
 
       return var1;
+   }
+
+   public static class Builder {
+      private final ImmutableMap.Builder<String, VertexFormatElement> elements = ImmutableMap.builder();
+      private final IntList offsets = new IntArrayList();
+      private int offset;
+
+      Builder() {
+         super();
+      }
+
+      public Builder add(String var1, VertexFormatElement var2) {
+         this.elements.put(var1, var2);
+         this.offsets.add(this.offset);
+         this.offset += var2.byteSize();
+         return this;
+      }
+
+      public Builder padding(int var1) {
+         this.offset += var1;
+         return this;
+      }
+
+      public VertexFormat build() {
+         ImmutableMap var1 = this.elements.buildOrThrow();
+         ImmutableList var2 = var1.values().asList();
+         ImmutableList var3 = var1.keySet().asList();
+         return new VertexFormat(var2, var3, this.offsets, this.offset);
+      }
    }
 
    public static enum Mode {

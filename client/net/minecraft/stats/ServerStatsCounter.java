@@ -102,7 +102,7 @@ public class ServerStatsCounter extends StatsCounter {
                   while(var7.hasNext()) {
                      String var8 = (String)var7.next();
                      if (var6.contains(var8, 10)) {
-                        Util.ifElse(BuiltInRegistries.STAT_TYPE.getOptional(new ResourceLocation(var8)), (var3x) -> {
+                        Util.ifElse(BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.parse(var8)), (var3x) -> {
                            CompoundTag var4 = var6.getCompound(var8);
                            Iterator var5 = var4.getAllKeys().iterator();
 

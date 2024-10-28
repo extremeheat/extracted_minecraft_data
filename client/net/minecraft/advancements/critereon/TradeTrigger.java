@@ -31,11 +31,11 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> villager, Optional<ItemPredicate> item) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ItemPredicate> var3) {
          super();
-         this.player = player;
-         this.villager = villager;
-         this.item = item;
+         this.player = var1;
+         this.villager = var2;
+         this.item = var3;
       }
 
       public static Criterion<TriggerInstance> tradedWithVillager() {

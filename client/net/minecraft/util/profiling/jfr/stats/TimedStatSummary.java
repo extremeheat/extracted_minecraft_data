@@ -8,14 +8,14 @@ import javax.annotation.Nullable;
 import net.minecraft.util.profiling.jfr.Percentiles;
 
 public record TimedStatSummary<T extends TimedStat>(T fastest, T slowest, @Nullable T secondSlowest, int count, Map<Integer, Double> percentilesNanos, Duration totalDuration) {
-   public TimedStatSummary(T fastest, T slowest, @Nullable T secondSlowest, int count, Map<Integer, Double> percentilesNanos, Duration totalDuration) {
+   public TimedStatSummary(T var1, T var2, @Nullable T var3, int var4, Map<Integer, Double> var5, Duration var6) {
       super();
-      this.fastest = fastest;
-      this.slowest = slowest;
-      this.secondSlowest = secondSlowest;
-      this.count = count;
-      this.percentilesNanos = percentilesNanos;
-      this.totalDuration = totalDuration;
+      this.fastest = var1;
+      this.slowest = var2;
+      this.secondSlowest = var3;
+      this.count = var4;
+      this.percentilesNanos = var5;
+      this.totalDuration = var6;
    }
 
    public static <T extends TimedStat> TimedStatSummary<T> summary(List<T> var0) {

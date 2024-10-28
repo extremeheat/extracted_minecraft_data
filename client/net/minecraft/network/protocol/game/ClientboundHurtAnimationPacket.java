@@ -17,10 +17,10 @@ public record ClientboundHurtAnimationPacket(int id, float yaw) implements Packe
       this(var1.readVarInt(), var1.readFloat());
    }
 
-   public ClientboundHurtAnimationPacket(int id, float yaw) {
+   public ClientboundHurtAnimationPacket(int var1, float var2) {
       super();
-      this.id = id;
-      this.yaw = yaw;
+      this.id = var1;
+      this.yaw = var2;
    }
 
    private void write(FriendlyByteBuf var1) {

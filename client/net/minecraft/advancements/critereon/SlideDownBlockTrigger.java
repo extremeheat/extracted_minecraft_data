@@ -32,11 +32,11 @@ public class SlideDownBlockTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(TriggerInstance::block), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(TriggerInstance::state)).apply(var0, TriggerInstance::new);
       }).validate(TriggerInstance::validate);
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Block>> block, Optional<StatePropertiesPredicate> state) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Block>> var2, Optional<StatePropertiesPredicate> var3) {
          super();
-         this.player = player;
-         this.block = block;
-         this.state = state;
+         this.player = var1;
+         this.block = var2;
+         this.state = var3;
       }
 
       private static DataResult<TriggerInstance> validate(TriggerInstance var0) {

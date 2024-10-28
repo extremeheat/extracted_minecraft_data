@@ -29,13 +29,13 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
       }));
    }
 
-   public ItemLore(List<Component> lines, List<Component> styledLines) {
+   public ItemLore(List<Component> var1, List<Component> var2) {
       super();
-      if (lines.size() > 256) {
-         throw new IllegalArgumentException("Got " + lines.size() + " lines, but maximum is 256");
+      if (var1.size() > 256) {
+         throw new IllegalArgumentException("Got " + var1.size() + " lines, but maximum is 256");
       } else {
-         this.lines = lines;
-         this.styledLines = styledLines;
+         this.lines = var1;
+         this.styledLines = var2;
       }
    }
 

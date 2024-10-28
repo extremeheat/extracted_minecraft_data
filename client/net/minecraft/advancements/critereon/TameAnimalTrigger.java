@@ -30,10 +30,10 @@ public class TameAnimalTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> entity) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
          super();
-         this.player = player;
-         this.entity = entity;
+         this.player = var1;
+         this.entity = var2;
       }
 
       public static Criterion<TriggerInstance> tamedAnimal() {

@@ -8,6 +8,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 
 public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
+   private static final int DEFAULT_ACCURACY = 6;
+
    public DefaultDispenseItemBehavior() {
       super();
    }
@@ -44,10 +46,38 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
    }
 
    protected void playSound(BlockSource var1) {
-      var1.level().levelEvent(1000, var1.pos(), 0);
+      playDefaultSound(var1);
    }
 
    protected void playAnimation(BlockSource var1, Direction var2) {
-      var1.level().levelEvent(2000, var1.pos(), var2.get3DDataValue());
+      playDefaultAnimation(var1, var2);
+   }
+
+   private static void playDefaultSound(BlockSource var0) {
+      var0.level().levelEvent(1000, var0.pos(), 0);
+   }
+
+   private static void playDefaultAnimation(BlockSource var0, Direction var1) {
+      var0.level().levelEvent(2000, var0.pos(), var1.get3DDataValue());
+   }
+
+   protected ItemStack consumeWithRemainder(BlockSource var1, ItemStack var2, ItemStack var3) {
+      var2.shrink(1);
+      if (var2.isEmpty()) {
+         return var3;
+      } else {
+         this.addToInventoryOrDispense(var1, var3);
+         return var2;
+      }
+   }
+
+   private void addToInventoryOrDispense(BlockSource var1, ItemStack var2) {
+      ItemStack var3 = var1.blockEntity().insertItem(var2);
+      if (!var3.isEmpty()) {
+         Direction var4 = (Direction)var1.state().getValue(DispenserBlock.FACING);
+         spawnItem(var1.level(), var3, 6, var4, DispenserBlock.getDispensePosition(var1));
+         playDefaultSound(var1);
+         playDefaultAnimation(var1, var4);
+      }
    }
 }

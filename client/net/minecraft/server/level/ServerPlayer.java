@@ -15,10 +15,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.BlockUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -106,6 +104,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -133,6 +132,7 @@ import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ComplexItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -146,16 +146,16 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.NetherPortalBlock;
+import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -196,7 +196,7 @@ public class ServerPlayer extends Player {
    @Nullable
    private Entity camera;
    private boolean isChangingDimension;
-   private boolean seenCredits;
+   public boolean seenCredits;
    private final ServerRecipeBook recipeBook;
    @Nullable
    private Vec3 levitationStartPos;
@@ -224,6 +224,7 @@ public class ServerPlayer extends Player {
    private WardenSpawnTracker wardenSpawnTracker;
    @Nullable
    private BlockPos raidOmenPosition;
+   private Vec3 lastKnownClientMovement;
    private final ContainerSynchronizer containerSynchronizer;
    private final ContainerListener containerListener;
    @Nullable
@@ -245,6 +246,7 @@ public class ServerPlayer extends Player {
       this.chunkTrackingView = ChunkTrackingView.EMPTY;
       this.respawnDimension = Level.OVERWORLD;
       this.wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
+      this.lastKnownClientMovement = Vec3.ZERO;
       this.containerSynchronizer = new ContainerSynchronizer() {
          public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
             ServerPlayer.this.connection.send(new ClientboundContainerSetContentPacket(var1.containerId, var1.incrementStateId(), var2, var3));
@@ -701,7 +703,7 @@ public class ServerPlayer extends Player {
       }
 
       if (!this.isSpectator()) {
-         this.dropAllDeathLoot(var1);
+         this.dropAllDeathLoot(this.serverLevel(), var1);
       }
 
       this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
@@ -801,103 +803,110 @@ public class ServerPlayer extends Player {
       return this.server.isPvpAllowed();
    }
 
-   @Nullable
-   protected PortalInfo findDimensionEntryPoint(ServerLevel var1) {
-      PortalInfo var2 = super.findDimensionEntryPoint(var1);
-      if (var2 != null && this.level().dimension() == Level.OVERWORLD && var1.dimension() == Level.END) {
-         Vec3 var3 = var2.pos.add(0.0, -1.0, 0.0);
-         return new PortalInfo(var3, Vec3.ZERO, 90.0F, 0.0F);
+   public DimensionTransition findRespawnPositionAndUseSpawnBlock(boolean var1) {
+      BlockPos var2 = this.getRespawnPosition();
+      float var3 = this.getRespawnAngle();
+      boolean var4 = this.isRespawnForced();
+      ServerLevel var5 = this.server.getLevel(this.getRespawnDimension());
+      if (var5 != null && var2 != null) {
+         Optional var6 = findRespawnAndUseSpawnBlock(var5, var2, var3, var4, var1);
+         if (var6.isPresent()) {
+            RespawnPosAngle var7 = (RespawnPosAngle)var6.get();
+            return new DimensionTransition(var5, var7.position(), Vec3.ZERO, var7.yaw(), 0.0F);
+         } else {
+            return DimensionTransition.missingRespawnBlock(this.server.overworld());
+         }
       } else {
-         return var2;
+         return new DimensionTransition(this.server.overworld());
       }
    }
 
-   @Nullable
-   public Entity changeDimension(ServerLevel var1) {
-      this.isChangingDimension = true;
-      ServerLevel var2 = this.serverLevel();
-      ResourceKey var3 = var2.dimension();
-      if (var3 == Level.END && var1.dimension() == Level.OVERWORLD) {
-         this.unRide();
-         this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
-         if (!this.wonGame) {
-            this.wonGame = true;
-            this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.WIN_GAME, this.seenCredits ? 0.0F : 1.0F));
-            this.seenCredits = true;
+   private static Optional<RespawnPosAngle> findRespawnAndUseSpawnBlock(ServerLevel var0, BlockPos var1, float var2, boolean var3, boolean var4) {
+      BlockState var5 = var0.getBlockState(var1);
+      Block var6 = var5.getBlock();
+      if (var6 instanceof RespawnAnchorBlock && (var3 || (Integer)var5.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
+         Optional var10 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var1);
+         if (!var3 && !var4 && var10.isPresent()) {
+            var0.setBlock(var1, (BlockState)var5.setValue(RespawnAnchorBlock.CHARGE, (Integer)var5.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
          }
 
-         return this;
+         return var10.map((var1x) -> {
+            return ServerPlayer.RespawnPosAngle.of(var1x, var1);
+         });
+      } else if (var6 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
+         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, (Direction)var5.getValue(BedBlock.FACING), var2).map((var1x) -> {
+            return ServerPlayer.RespawnPosAngle.of(var1x, var1);
+         });
+      } else if (!var3) {
+         return Optional.empty();
       } else {
-         LevelData var4 = var1.getLevelData();
-         this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(var1), (byte)3));
-         this.connection.send(new ClientboundChangeDifficultyPacket(var4.getDifficulty(), var4.isDifficultyLocked()));
-         PlayerList var5 = this.server.getPlayerList();
-         var5.sendPlayerPermissionLevel(this);
-         var2.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
-         this.unsetRemoved();
-         PortalInfo var6 = this.findDimensionEntryPoint(var1);
-         if (var6 != null) {
-            var2.getProfiler().push("moving");
-            if (var3 == Level.OVERWORLD && var1.dimension() == Level.NETHER) {
-               this.enteredNetherPosition = this.position();
-            } else if (var1.dimension() == Level.END) {
-               this.createEndPlatform(var1, BlockPos.containing(var6.pos));
-            }
+         boolean var7 = var6.isPossibleToRespawnInThis(var5);
+         BlockState var8 = var0.getBlockState(var1.above());
+         boolean var9 = var8.getBlock().isPossibleToRespawnInThis(var8);
+         return var7 && var9 ? Optional.of(new RespawnPosAngle(new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 0.1, (double)var1.getZ() + 0.5), var2)) : Optional.empty();
+      }
+   }
 
-            var2.getProfiler().pop();
-            var2.getProfiler().push("placing");
-            this.setServerLevel(var1);
-            this.connection.teleport(var6.pos.x, var6.pos.y, var6.pos.z, var6.yRot, var6.xRot);
+   public void showEndCredits() {
+      this.unRide();
+      this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+      if (!this.wonGame) {
+         this.wonGame = true;
+         this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.WIN_GAME, 0.0F));
+         this.seenCredits = true;
+      }
+
+   }
+
+   @Nullable
+   public Entity changeDimension(DimensionTransition var1) {
+      if (this.isRemoved()) {
+         return null;
+      } else {
+         if (var1.missingRespawnBlock()) {
+            this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
+         }
+
+         ServerLevel var2 = var1.newLevel();
+         ServerLevel var3 = this.serverLevel();
+         ResourceKey var4 = var3.dimension();
+         if (var2.dimension() == var4) {
+            this.connection.teleport(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var1.xRot());
             this.connection.resetPosition();
-            var1.addDuringPortalTeleport(this);
-            var2.getProfiler().pop();
-            this.triggerDimensionChangeTriggers(var2);
-            this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
-            var5.sendLevelInfo(this, var1);
-            var5.sendAllPlayerInfo(this);
-            Iterator var7 = this.getActiveEffects().iterator();
-
-            while(var7.hasNext()) {
-               MobEffectInstance var8 = (MobEffectInstance)var7.next();
-               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var8, false));
+            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
+            return this;
+         } else {
+            this.isChangingDimension = true;
+            LevelData var5 = var2.getLevelData();
+            this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(var2), (byte)3));
+            this.connection.send(new ClientboundChangeDifficultyPacket(var5.getDifficulty(), var5.isDifficultyLocked()));
+            PlayerList var6 = this.server.getPlayerList();
+            var6.sendPlayerPermissionLevel(this);
+            var3.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+            this.unsetRemoved();
+            var3.getProfiler().push("moving");
+            if (var4 == Level.OVERWORLD && var2.dimension() == Level.NETHER) {
+               this.enteredNetherPosition = this.position();
             }
 
+            var3.getProfiler().pop();
+            var3.getProfiler().push("placing");
+            this.setServerLevel(var2);
+            this.connection.teleport(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var1.xRot());
+            this.connection.resetPosition();
+            var2.addDuringTeleport(this);
+            var3.getProfiler().pop();
+            this.triggerDimensionChangeTriggers(var3);
+            this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
+            var6.sendLevelInfo(this, var2);
+            var6.sendAllPlayerInfo(this);
+            var6.sendActivePlayerEffects(this);
             this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
             this.lastSentFood = -1;
+            return this;
          }
-
-         return this;
-      }
-   }
-
-   private void createEndPlatform(ServerLevel var1, BlockPos var2) {
-      BlockPos.MutableBlockPos var3 = var2.mutable();
-
-      for(int var4 = -2; var4 <= 2; ++var4) {
-         for(int var5 = -2; var5 <= 2; ++var5) {
-            for(int var6 = -1; var6 < 3; ++var6) {
-               BlockState var7 = var6 == -1 ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState();
-               var1.setBlockAndUpdate(var3.set(var2).move(var5, var6, var4), var7);
-            }
-         }
-      }
-
-   }
-
-   protected Optional<BlockUtil.FoundRectangle> getExitPortal(ServerLevel var1, BlockPos var2, boolean var3, WorldBorder var4) {
-      Optional var5 = super.getExitPortal(var1, var2, var3, var4);
-      if (var5.isPresent()) {
-         return var5;
-      } else {
-         Direction.Axis var6 = (Direction.Axis)this.level().getBlockState(this.portalEntrancePos).getOptionalValue(NetherPortalBlock.AXIS).orElse(Direction.Axis.X);
-         Optional var7 = var1.getPortalForcer().createPortal(var2, var6);
-         if (var7.isEmpty()) {
-            LOGGER.error("Unable to create a portal, likely target out of worldborder");
-         }
-
-         return var7;
       }
    }
 
@@ -1028,7 +1037,7 @@ public class ServerPlayer extends Player {
          BlockState var9 = this.level().getBlockState(var8);
          if (this.spawnExtraParticlesOnFall && var7 && this.fallDistance > 0.0F) {
             Vec3 var10 = var8.getCenter().add(0.0, 0.5, 0.0);
-            int var11 = (int)(50.0F * this.fallDistance);
+            int var11 = (int)Mth.clamp(50.0F * this.fallDistance, 0.0F, 200.0F);
             this.serverLevel().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var9), var10.x, var10.y, var10.z, var11, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
             this.spawnExtraParticlesOnFall = false;
          }
@@ -1314,15 +1323,24 @@ public class ServerPlayer extends Player {
       this.chatSession = var1.chatSession;
       this.gameMode.setGameModeForPlayer(var1.gameMode.getGameModeForPlayer(), var1.gameMode.getPreviousGameModeForPlayer());
       this.onUpdateAbilities();
+      this.getAttributes().assignBaseValues(var1.getAttributes());
+      this.setHealth(this.getMaxHealth());
       if (var2) {
          this.getInventory().replaceWith(var1.getInventory());
          this.setHealth(var1.getHealth());
          this.foodData = var1.foodData;
+         Iterator var3 = var1.getActiveEffects().iterator();
+
+         while(var3.hasNext()) {
+            MobEffectInstance var4 = (MobEffectInstance)var3.next();
+            this.addEffect(new MobEffectInstance(var4));
+         }
+
          this.experienceLevel = var1.experienceLevel;
          this.totalExperience = var1.totalExperience;
          this.experienceProgress = var1.experienceProgress;
          this.setScore(var1.getScore());
-         this.portalEntrancePos = var1.portalEntrancePos;
+         this.portalProcess = var1.portalProcess;
       } else if (this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
          this.getInventory().replaceWith(var1.getInventory());
          this.experienceLevel = var1.experienceLevel;
@@ -1628,20 +1646,7 @@ public class ServerPlayer extends Player {
       if (var1 == this.level()) {
          this.connection.teleport(var2, var4, var6, var8, var9);
       } else {
-         ServerLevel var10 = this.serverLevel();
-         LevelData var11 = var1.getLevelData();
-         this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(var1), (byte)3));
-         this.connection.send(new ClientboundChangeDifficultyPacket(var11.getDifficulty(), var11.isDifficultyLocked()));
-         this.server.getPlayerList().sendPlayerPermissionLevel(this);
-         var10.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
-         this.unsetRemoved();
-         this.moveTo(var2, var4, var6, var8, var9);
-         this.setServerLevel(var1);
-         var1.addDuringCommandTeleport(this);
-         this.triggerDimensionChangeTriggers(var10);
-         this.connection.teleport(var2, var4, var6, var8, var9);
-         this.server.getPlayerList().sendLevelInfo(this, var1);
-         this.server.getPlayerList().sendAllPlayerInfo(this);
+         this.changeDimension(new DimensionTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8, var9));
       }
 
    }
@@ -1661,6 +1666,10 @@ public class ServerPlayer extends Player {
 
    public boolean isRespawnForced() {
       return this.respawnForced;
+   }
+
+   public void copyRespawnPosition(ServerPlayer var1) {
+      this.setRespawnPosition(var1.getRespawnDimension(), var1.getRespawnPosition(), var1.getRespawnAngle(), var1.isRespawnForced(), false);
    }
 
    public void setRespawnPosition(ResourceKey<Level> var1, @Nullable BlockPos var2, float var3, boolean var4, boolean var5) {
@@ -1824,22 +1833,17 @@ public class ServerPlayer extends Player {
    }
 
    public boolean startRiding(Entity var1, boolean var2) {
-      if (!super.startRiding(var1, var2)) {
-         return false;
-      } else {
+      if (super.startRiding(var1, var2)) {
          var1.positionRider(this);
          this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
          if (var1 instanceof LivingEntity) {
             LivingEntity var3 = (LivingEntity)var1;
-            Iterator var4 = var3.getActiveEffects().iterator();
-
-            while(var4.hasNext()) {
-               MobEffectInstance var5 = (MobEffectInstance)var4.next();
-               this.connection.send(new ClientboundUpdateMobEffectPacket(var1.getId(), var5, false));
-            }
+            this.server.getPlayerList().sendActiveEffects(var3, this.connection);
          }
 
          return true;
+      } else {
+         return false;
       }
    }
 
@@ -1874,17 +1878,50 @@ public class ServerPlayer extends Player {
       return this.raidOmenPosition;
    }
 
-   public void setOnGroundWithKnownMovement(boolean var1, Vec3 var2) {
-      super.setOnGroundWithKnownMovement(var1, var2);
-      this.setDeltaMovement(var2);
+   public Vec3 getKnownMovement() {
+      return this.lastKnownClientMovement;
+   }
+
+   public void setKnownMovement(Vec3 var1) {
+      this.lastKnownClientMovement = var1;
    }
 
    protected float getEnchantedDamage(Entity var1, float var2, DamageSource var3) {
       return EnchantmentHelper.modifyDamage(this.serverLevel(), this.getMainHandItem(), var1, var3, var2);
    }
 
+   public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {
+      super.onEquippedItemBroken(var1, var2);
+      this.awardStat(Stats.ITEM_BROKEN.get(var1));
+   }
+
    static {
-      CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(UUID.fromString("736565d2-e1a7-403d-a3f8-1aeb3e302542"), "Creative block interaction range modifier", 0.5, AttributeModifier.Operation.ADD_VALUE);
-      CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER = new AttributeModifier(UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf73"), "Creative entity interaction range modifier", 2.0, AttributeModifier.Operation.ADD_VALUE);
+      CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("creative_mode_block_range"), 0.5, AttributeModifier.Operation.ADD_VALUE);
+      CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER = new AttributeModifier(ResourceLocation.withDefaultNamespace("creative_mode_entity_range"), 2.0, AttributeModifier.Operation.ADD_VALUE);
+   }
+
+   private static record RespawnPosAngle(Vec3 position, float yaw) {
+      RespawnPosAngle(Vec3 var1, float var2) {
+         super();
+         this.position = var1;
+         this.yaw = var2;
+      }
+
+      public static RespawnPosAngle of(Vec3 var0, BlockPos var1) {
+         return new RespawnPosAngle(var0, calculateLookAtYaw(var0, var1));
+      }
+
+      private static float calculateLookAtYaw(Vec3 var0, BlockPos var1) {
+         Vec3 var2 = Vec3.atBottomCenterOf(var1).subtract(var0).normalize();
+         return (float)Mth.wrapDegrees(Mth.atan2(var2.z, var2.x) * 57.2957763671875 - 90.0);
+      }
+
+      public Vec3 position() {
+         return this.position;
+      }
+
+      public float yaw() {
+         return this.yaw;
+      }
    }
 }

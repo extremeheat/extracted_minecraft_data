@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
+import net.minecraft.world.level.levelgen.structure.pools.DimensionPadding;
 import net.minecraft.world.level.levelgen.structure.structures.BuriedTreasureStructure;
 import net.minecraft.world.level.levelgen.structure.structures.DesertPyramidStructure;
 import net.minecraft.world.level.levelgen.structure.structures.EndCityStructure;
@@ -98,12 +99,12 @@ public class Structures {
          return var0x;
       }, (var0x) -> {
          return new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.STRUCTURE, WeightedRandomList.create());
-      })), GenerationStep.Decoration.UNDERGROUND_DECORATION, TerrainAdjustment.BEARD_BOX), var2.getOrThrow(AncientCityStructurePieces.START), Optional.of(new ResourceLocation("city_anchor")), 7, ConstantHeight.of(VerticalAnchor.absolute(-27)), false, Optional.empty(), 116, List.of()));
+      })), GenerationStep.Decoration.UNDERGROUND_DECORATION, TerrainAdjustment.BEARD_BOX), var2.getOrThrow(AncientCityStructurePieces.START), Optional.of(ResourceLocation.withDefaultNamespace("city_anchor")), 7, ConstantHeight.of(VerticalAnchor.absolute(-27)), false, Optional.empty(), 116, List.of(), JigsawStructure.DEFAULT_DIMENSION_PADDING));
       var0.register(BuiltinStructures.TRAIL_RUINS, new JigsawStructure(structure(var1.getOrThrow(BiomeTags.HAS_TRAIL_RUINS), Map.of(), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.BURY), var2.getOrThrow(TrailRuinsStructurePools.START), 7, ConstantHeight.of(VerticalAnchor.absolute(-15)), false, Heightmap.Types.WORLD_SURFACE_WG));
       var0.register(BuiltinStructures.TRIAL_CHAMBERS, new JigsawStructure(structure(var1.getOrThrow(BiomeTags.HAS_TRIAL_CHAMBERS), (Map)Arrays.stream(MobCategory.values()).collect(Collectors.toMap((var0x) -> {
          return var0x;
       }, (var0x) -> {
          return new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedRandomList.create());
-      })), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.ENCAPSULATE), var2.getOrThrow(TrialChambersStructurePools.START), Optional.empty(), 20, UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)), false, Optional.empty(), 116, TrialChambersStructurePools.ALIAS_BINDINGS));
+      })), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.ENCAPSULATE), var2.getOrThrow(TrialChambersStructurePools.START), Optional.empty(), 20, UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)), false, Optional.empty(), 116, TrialChambersStructurePools.ALIAS_BINDINGS, new DimensionPadding(10)));
    }
 }

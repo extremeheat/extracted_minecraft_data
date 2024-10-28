@@ -17,8 +17,11 @@ import java.util.concurrent.Executor;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
@@ -33,10 +36,11 @@ import org.slf4j.Logger;
 
 public class ServerFunctionLibrary implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final FileToIdConverter LISTER = new FileToIdConverter("functions", ".mcfunction");
+   public static final ResourceKey<Registry<CommandFunction<CommandSourceStack>>> TYPE_KEY = ResourceKey.createRegistryKey(ResourceLocation.withDefaultNamespace("function"));
+   private static final FileToIdConverter LISTER;
    private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
-   private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader = new TagLoader(this::getFunction, "tags/functions");
-   private volatile Map<ResourceLocation, Collection<CommandFunction<CommandSourceStack>>> tags = Map.of();
+   private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader;
+   private volatile Map<ResourceLocation, Collection<CommandFunction<CommandSourceStack>>> tags;
    private final int functionCompilationLevel;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
@@ -58,6 +62,8 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
 
    public ServerFunctionLibrary(int var1, CommandDispatcher<CommandSourceStack> var2) {
       super();
+      this.tagsLoader = new TagLoader(this::getFunction, Registries.tagsDirPath(TYPE_KEY));
+      this.tags = Map.of();
       this.functionCompilationLevel = var1;
       this.dispatcher = var2;
    }
@@ -111,5 +117,9 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
 
    private static List<String> readLines(Resource param0) {
       // $FF: Couldn't be decompiled
+   }
+
+   static {
+      LISTER = new FileToIdConverter(Registries.elementsDirPath(TYPE_KEY), ".mcfunction");
    }
 }

@@ -191,10 +191,10 @@ public class DataFetcher {
       final T value;
       final long time;
 
-      SuccessfulComputationResult(T value, long time) {
+      SuccessfulComputationResult(T var1, long var2) {
          super();
-         this.value = value;
-         this.time = time;
+         this.value = var1;
+         this.time = var2;
       }
 
       public T value() {
@@ -209,10 +209,10 @@ public class DataFetcher {
    private static record ComputationResult<T>(Either<T, Exception> value, long time) {
       final long time;
 
-      ComputationResult(Either<T, Exception> value, long time) {
+      ComputationResult(Either<T, Exception> var1, long var2) {
          super();
-         this.value = value;
-         this.time = time;
+         this.value = var1;
+         this.time = var2;
       }
 
       public Either<T, Exception> value() {

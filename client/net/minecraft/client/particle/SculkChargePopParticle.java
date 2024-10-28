@@ -30,9 +30,9 @@ public class SculkChargePopParticle extends TextureSheetParticle {
    }
 
    public static record Provider(SpriteSet sprite) implements ParticleProvider<SimpleParticleType> {
-      public Provider(SpriteSet sprite) {
+      public Provider(SpriteSet var1) {
          super();
-         this.sprite = sprite;
+         this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {

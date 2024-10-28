@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import net.minecraft.client.DeltaTracker;
 
 public class LayeredDraw {
    public static final float Z_SEPARATION = 200.0F;
@@ -27,13 +28,13 @@ public class LayeredDraw {
       });
    }
 
-   public void render(GuiGraphics var1, float var2) {
+   public void render(GuiGraphics var1, DeltaTracker var2) {
       var1.pose().pushPose();
       this.renderInner(var1, var2);
       var1.pose().popPose();
    }
 
-   private void renderInner(GuiGraphics var1, float var2) {
+   private void renderInner(GuiGraphics var1, DeltaTracker var2) {
       Iterator var3 = this.layers.iterator();
 
       while(var3.hasNext()) {
@@ -45,6 +46,6 @@ public class LayeredDraw {
    }
 
    public interface Layer {
-      void render(GuiGraphics var1, float var2);
+      void render(GuiGraphics var1, DeltaTracker var2);
    }
 }

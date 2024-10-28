@@ -43,9 +43,9 @@ public interface VerticalAnchor {
    public static record Absolute(int y) implements VerticalAnchor {
       public static final Codec<Absolute> CODEC;
 
-      public Absolute(int y) {
+      public Absolute(int var1) {
          super();
-         this.y = y;
+         this.y = var1;
       }
 
       public int resolveY(WorldGenerationContext var1) {
@@ -68,9 +68,9 @@ public interface VerticalAnchor {
    public static record AboveBottom(int offset) implements VerticalAnchor {
       public static final Codec<AboveBottom> CODEC;
 
-      public AboveBottom(int offset) {
+      public AboveBottom(int var1) {
          super();
-         this.offset = offset;
+         this.offset = var1;
       }
 
       public int resolveY(WorldGenerationContext var1) {
@@ -93,9 +93,9 @@ public interface VerticalAnchor {
    public static record BelowTop(int offset) implements VerticalAnchor {
       public static final Codec<BelowTop> CODEC;
 
-      public BelowTop(int offset) {
+      public BelowTop(int var1) {
          super();
-         this.offset = offset;
+         this.offset = var1;
       }
 
       public int resolveY(WorldGenerationContext var1) {

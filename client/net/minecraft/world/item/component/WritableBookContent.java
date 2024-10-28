@@ -18,12 +18,12 @@ public record WritableBookContent(List<Filterable<String>> pages) implements Boo
    public static final Codec<WritableBookContent> CODEC;
    public static final StreamCodec<ByteBuf, WritableBookContent> STREAM_CODEC;
 
-   public WritableBookContent(List<Filterable<String>> pages) {
+   public WritableBookContent(List<Filterable<String>> var1) {
       super();
-      if (pages.size() > 100) {
-         throw new IllegalArgumentException("Got " + pages.size() + " pages, but maximum is 100");
+      if (var1.size() > 100) {
+         throw new IllegalArgumentException("Got " + var1.size() + " pages, but maximum is 100");
       } else {
-         this.pages = pages;
+         this.pages = var1;
       }
    }
 

@@ -42,7 +42,7 @@ public class RegistriesDatapackGenerator implements DataProvider {
    private <T> Optional<CompletableFuture<?>> dumpRegistryCap(CachedOutput var1, HolderLookup.Provider var2, DynamicOps<JsonElement> var3, RegistryDataLoader.RegistryData<T> var4) {
       ResourceKey var5 = var4.key();
       return var2.lookup(var5).map((var5x) -> {
-         PackOutput.PathProvider var6 = this.output.createPathProvider(PackOutput.Target.DATA_PACK, var5.location().getPath());
+         PackOutput.PathProvider var6 = this.output.createRegistryElementsPathProvider(var5);
          return CompletableFuture.allOf((CompletableFuture[])var5x.listElements().map((var4x) -> {
             return dumpValue(var6.json(var4x.key().location()), var1, var3, var4.elementCodec(), var4x.value());
          }).toArray((var0) -> {

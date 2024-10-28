@@ -13,9 +13,9 @@ public record ItemBundlePredicate(Optional<CollectionPredicate<ItemStack, ItemPr
       return var0.group(CollectionPredicate.codec(ItemPredicate.CODEC).optionalFieldOf("items").forGetter(ItemBundlePredicate::items)).apply(var0, ItemBundlePredicate::new);
    });
 
-   public ItemBundlePredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> items) {
+   public ItemBundlePredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> var1) {
       super();
-      this.items = items;
+      this.items = var1;
    }
 
    public DataComponentType<BundleContents> componentType() {

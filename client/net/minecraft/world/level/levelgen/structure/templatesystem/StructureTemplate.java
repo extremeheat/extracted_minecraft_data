@@ -765,11 +765,11 @@ public class StructureTemplate {
       @Nullable
       final CompoundTag nbt;
 
-      public StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
+      public StructureBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
          super();
-         this.pos = pos;
-         this.state = state;
-         this.nbt = nbt;
+         this.pos = var1;
+         this.state = var2;
+         this.nbt = var3;
       }
 
       public String toString() {

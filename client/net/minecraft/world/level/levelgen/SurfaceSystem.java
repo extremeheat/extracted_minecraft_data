@@ -54,7 +54,7 @@ public class SurfaceSystem {
       this.seaLevel = var3;
       this.noiseRandom = var4;
       this.clayBandsOffsetNoise = var1.getOrCreateNoise(Noises.CLAY_BANDS_OFFSET);
-      this.clayBands = generateBands(var4.fromHashOf(new ResourceLocation("clay_bands")));
+      this.clayBands = generateBands(var4.fromHashOf(ResourceLocation.withDefaultNamespace("clay_bands")));
       this.surfaceNoise = var1.getOrCreateNoise(Noises.SURFACE);
       this.surfaceSecondaryNoise = var1.getOrCreateNoise(Noises.SURFACE_SECONDARY);
       this.badlandsPillarNoise = var1.getOrCreateNoise(Noises.BADLANDS_PILLAR);

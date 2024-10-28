@@ -19,7 +19,6 @@ public class ScreenManager {
 
    public ScreenManager(MonitorCreator var1) {
       super();
-      RenderSystem.assertInInitPhase();
       this.monitorCreator = var1;
       GLFW.glfwSetMonitorCallback(this::onMonitorChange);
       PointerBuffer var2 = GLFW.glfwGetMonitors();
@@ -46,7 +45,6 @@ public class ScreenManager {
 
    @Nullable
    public Monitor getMonitor(long var1) {
-      RenderSystem.assertInInitPhase();
       return (Monitor)this.monitors.get(var1);
    }
 

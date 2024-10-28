@@ -1,6 +1,7 @@
 package net.minecraft.server.network;
 
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
@@ -21,7 +22,7 @@ public class ServerStatusPacketListenerImpl implements ServerStatusPacketListene
       this.connection = var2;
    }
 
-   public void onDisconnect(Component var1) {
+   public void onDisconnect(DisconnectionDetails var1) {
    }
 
    public boolean isAcceptingMessages() {

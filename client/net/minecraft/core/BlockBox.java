@@ -28,10 +28,10 @@ public record BlockBox(BlockPos min, BlockPos max) implements Iterable<BlockPos>
       }
    };
 
-   public BlockBox(final BlockPos min, final BlockPos max) {
+   public BlockBox(final BlockPos var1, final BlockPos var2) {
       super();
-      this.min = BlockPos.min(min, max);
-      this.max = BlockPos.max(min, max);
+      this.min = BlockPos.min(var1, var2);
+      this.max = BlockPos.max(var1, var2);
    }
 
    public static BlockBox of(BlockPos var0) {

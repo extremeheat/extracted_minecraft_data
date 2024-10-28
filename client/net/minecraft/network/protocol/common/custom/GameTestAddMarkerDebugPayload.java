@@ -12,12 +12,12 @@ public record GameTestAddMarkerDebugPayload(BlockPos pos, int color, String text
       this(var1.readBlockPos(), var1.readInt(), var1.readUtf(), var1.readInt());
    }
 
-   public GameTestAddMarkerDebugPayload(BlockPos pos, int color, String text, int durationMs) {
+   public GameTestAddMarkerDebugPayload(BlockPos var1, int var2, String var3, int var4) {
       super();
-      this.pos = pos;
-      this.color = color;
-      this.text = text;
-      this.durationMs = durationMs;
+      this.pos = var1;
+      this.color = var2;
+      this.text = var3;
+      this.durationMs = var4;
    }
 
    private void write(FriendlyByteBuf var1) {

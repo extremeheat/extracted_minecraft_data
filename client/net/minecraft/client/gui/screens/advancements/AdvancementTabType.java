@@ -5,10 +5,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 enum AdvancementTabType {
-   ABOVE(new Sprites(new ResourceLocation("advancements/tab_above_left_selected"), new ResourceLocation("advancements/tab_above_middle_selected"), new ResourceLocation("advancements/tab_above_right_selected")), new Sprites(new ResourceLocation("advancements/tab_above_left"), new ResourceLocation("advancements/tab_above_middle"), new ResourceLocation("advancements/tab_above_right")), 28, 32, 8),
-   BELOW(new Sprites(new ResourceLocation("advancements/tab_below_left_selected"), new ResourceLocation("advancements/tab_below_middle_selected"), new ResourceLocation("advancements/tab_below_right_selected")), new Sprites(new ResourceLocation("advancements/tab_below_left"), new ResourceLocation("advancements/tab_below_middle"), new ResourceLocation("advancements/tab_below_right")), 28, 32, 8),
-   LEFT(new Sprites(new ResourceLocation("advancements/tab_left_top_selected"), new ResourceLocation("advancements/tab_left_middle_selected"), new ResourceLocation("advancements/tab_left_bottom_selected")), new Sprites(new ResourceLocation("advancements/tab_left_top"), new ResourceLocation("advancements/tab_left_middle"), new ResourceLocation("advancements/tab_left_bottom")), 32, 28, 5),
-   RIGHT(new Sprites(new ResourceLocation("advancements/tab_right_top_selected"), new ResourceLocation("advancements/tab_right_middle_selected"), new ResourceLocation("advancements/tab_right_bottom_selected")), new Sprites(new ResourceLocation("advancements/tab_right_top"), new ResourceLocation("advancements/tab_right_middle"), new ResourceLocation("advancements/tab_right_bottom")), 32, 28, 5);
+   ABOVE(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_above_left_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_above_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_above_right_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_above_left"), ResourceLocation.withDefaultNamespace("advancements/tab_above_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_above_right")), 28, 32, 8),
+   BELOW(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_below_left_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_below_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_below_right_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_below_left"), ResourceLocation.withDefaultNamespace("advancements/tab_below_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_below_right")), 28, 32, 8),
+   LEFT(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_left_top_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_left_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_left_top"), ResourceLocation.withDefaultNamespace("advancements/tab_left_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom")), 32, 28, 5),
+   RIGHT(new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_right_top_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_right_middle_selected"), ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom_selected")), new Sprites(ResourceLocation.withDefaultNamespace("advancements/tab_right_top"), ResourceLocation.withDefaultNamespace("advancements/tab_right_middle"), ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom")), 32, 28, 5);
 
    private final Sprites selectedSprites;
    private final Sprites unselectedSprites;
@@ -114,11 +114,11 @@ enum AdvancementTabType {
    }
 
    private static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
-      Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
+      Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
          super();
-         this.first = first;
-         this.middle = middle;
-         this.last = last;
+         this.first = var1;
+         this.middle = var2;
+         this.last = var3;
       }
 
       public ResourceLocation first() {

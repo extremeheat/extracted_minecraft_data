@@ -54,6 +54,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean pvp = this.get("pvp", true);
    public final boolean allowFlight = this.get("allow-flight", false);
    public final String motd = this.get("motd", "A Minecraft Server");
+   public final String bugReportLink = this.get("bug-report-link", "");
    public final boolean forceGameMode = this.get("force-gamemode", false);
    public final boolean enforceWhitelist = this.get("enforce-whitelist", false);
    public final Difficulty difficulty;
@@ -241,10 +242,10 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    static record WorldDimensionData(JsonObject generatorSettings, String levelType) {
       private static final Map<String, ResourceKey<WorldPreset>> LEGACY_PRESET_NAMES;
 
-      WorldDimensionData(JsonObject generatorSettings, String levelType) {
+      WorldDimensionData(JsonObject var1, String var2) {
          super();
-         this.generatorSettings = generatorSettings;
-         this.levelType = levelType;
+         this.generatorSettings = var1;
+         this.levelType = var2;
       }
 
       public WorldDimensions create(RegistryAccess var1) {

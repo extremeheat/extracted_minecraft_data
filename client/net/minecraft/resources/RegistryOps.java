@@ -148,11 +148,11 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    }
 
    public static record RegistryInfo<T>(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
-      public RegistryInfo(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
+      public RegistryInfo(HolderOwner<T> var1, HolderGetter<T> var2, Lifecycle var3) {
          super();
-         this.owner = owner;
-         this.getter = getter;
-         this.elementsLifecycle = elementsLifecycle;
+         this.owner = var1;
+         this.getter = var2;
+         this.elementsLifecycle = var3;
       }
 
       public static <T> RegistryInfo<T> fromRegistryLookup(HolderLookup.RegistryLookup<T> var0) {

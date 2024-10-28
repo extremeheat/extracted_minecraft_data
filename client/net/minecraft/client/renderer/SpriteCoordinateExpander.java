@@ -13,43 +13,31 @@ public class SpriteCoordinateExpander implements VertexConsumer {
       this.sprite = var2;
    }
 
-   public VertexConsumer vertex(double var1, double var3, double var5) {
-      return this.delegate.vertex(var1, var3, var5);
+   public VertexConsumer addVertex(float var1, float var2, float var3) {
+      return this.delegate.addVertex(var1, var2, var3);
    }
 
-   public VertexConsumer color(int var1, int var2, int var3, int var4) {
-      return this.delegate.color(var1, var2, var3, var4);
+   public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
+      return this.delegate.setColor(var1, var2, var3, var4);
    }
 
-   public VertexConsumer uv(float var1, float var2) {
-      return this.delegate.uv(this.sprite.getU(var1), this.sprite.getV(var2));
+   public VertexConsumer setUv(float var1, float var2) {
+      return this.delegate.setUv(this.sprite.getU(var1), this.sprite.getV(var2));
    }
 
-   public VertexConsumer overlayCoords(int var1, int var2) {
-      return this.delegate.overlayCoords(var1, var2);
+   public VertexConsumer setUv1(int var1, int var2) {
+      return this.delegate.setUv1(var1, var2);
    }
 
-   public VertexConsumer uv2(int var1, int var2) {
-      return this.delegate.uv2(var1, var2);
+   public VertexConsumer setUv2(int var1, int var2) {
+      return this.delegate.setUv2(var1, var2);
    }
 
-   public VertexConsumer normal(float var1, float var2, float var3) {
-      return this.delegate.normal(var1, var2, var3);
+   public VertexConsumer setNormal(float var1, float var2, float var3) {
+      return this.delegate.setNormal(var1, var2, var3);
    }
 
-   public void endVertex() {
-      this.delegate.endVertex();
-   }
-
-   public void defaultColor(int var1, int var2, int var3, int var4) {
-      this.delegate.defaultColor(var1, var2, var3, var4);
-   }
-
-   public void unsetDefaultColor() {
-      this.delegate.unsetDefaultColor();
-   }
-
-   public void vertex(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, int var10, int var11, float var12, float var13, float var14) {
-      this.delegate.vertex(var1, var2, var3, var4, var5, var6, var7, this.sprite.getU(var8), this.sprite.getV(var9), var10, var11, var12, var13, var14);
+   public void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
+      this.delegate.addVertex(var1, var2, var3, var4, this.sprite.getU(var5), this.sprite.getV(var6), var7, var8, var9, var10, var11);
    }
 }

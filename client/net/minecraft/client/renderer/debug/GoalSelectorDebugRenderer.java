@@ -65,10 +65,10 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
       final BlockPos entityPos;
       final List<GoalDebugPayload.DebugGoal> goals;
 
-      EntityGoalInfo(BlockPos entityPos, List<GoalDebugPayload.DebugGoal> goals) {
+      EntityGoalInfo(BlockPos var1, List<GoalDebugPayload.DebugGoal> var2) {
          super();
-         this.entityPos = entityPos;
-         this.goals = goals;
+         this.entityPos = var1;
+         this.goals = var2;
       }
 
       public BlockPos entityPos() {

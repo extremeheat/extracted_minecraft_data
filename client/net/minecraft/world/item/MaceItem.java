@@ -39,7 +39,7 @@ public class MaceItem extends Item {
    }
 
    public static ItemAttributeModifiers createAttributes() {
-      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", 5.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", -3.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
+      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 5.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -3.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
    }
 
    public static Tool createToolProperties() {
@@ -71,11 +71,10 @@ public class MaceItem extends Item {
             }
 
             knockback(var5, var4, var2);
-            return true;
          }
       }
 
-      return false;
+      return true;
    }
 
    public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
@@ -125,6 +124,10 @@ public class MaceItem extends Item {
          Vec3 var6 = var3.normalize().scale(var4);
          if (var4 > 0.0) {
             var2x.push(var6.x, 0.699999988079071, var6.z);
+            if (var2x instanceof ServerPlayer) {
+               ServerPlayer var7 = (ServerPlayer)var2x;
+               var7.connection.send(new ClientboundSetEntityMotionPacket(var7));
+            }
          }
 
       });

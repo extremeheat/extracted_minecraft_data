@@ -87,6 +87,7 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_DO_VINES_SPREAD;
    public static final Key<BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH;
    public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
+   public static final Key<BooleanValue> RULE_ENTITIES_WITH_PASSENGERS_CAN_USE_PORTALS;
    private final Map<Key<?>, Value<?>> rules;
 
    private static <T extends Value<T>> Key<T> register(String var0, Category var1, Type<T> var2) {
@@ -252,6 +253,7 @@ public class GameRules {
          ServerLevel var2 = var0.overworld();
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
+      RULE_ENTITIES_WITH_PASSENGERS_CAN_USE_PORTALS = register("entitiesWithPassengersCanUsePortals", GameRules.Category.MOBS, GameRules.BooleanValue.create(false));
    }
 
    public static final class Key<T extends Value<T>> {

@@ -21,12 +21,12 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
    private static final GuiMessageTag CHAT_NOT_SECURE;
    private static final GuiMessageTag CHAT_ERROR;
 
-   public GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable Component text, @Nullable String logTag) {
+   public GuiMessageTag(int var1, @Nullable Icon var2, @Nullable Component var3, @Nullable String var4) {
       super();
-      this.indicatorColor = indicatorColor;
-      this.icon = icon;
-      this.text = text;
-      this.logTag = logTag;
+      this.indicatorColor = var1;
+      this.icon = var2;
+      this.text = var3;
+      this.logTag = var4;
    }
 
    public static GuiMessageTag system() {
@@ -78,7 +78,7 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
    }
 
    public static enum Icon {
-      CHAT_MODIFIED(new ResourceLocation("icon/chat_modified"), 9, 9);
+      CHAT_MODIFIED(ResourceLocation.withDefaultNamespace("icon/chat_modified"), 9, 9);
 
       public final ResourceLocation sprite;
       public final int width;

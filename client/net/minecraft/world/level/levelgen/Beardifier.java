@@ -198,11 +198,11 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
 
    @VisibleForTesting
    public static record Rigid(BoundingBox box, TerrainAdjustment terrainAdjustment, int groundLevelDelta) {
-      public Rigid(BoundingBox box, TerrainAdjustment terrainAdjustment, int groundLevelDelta) {
+      public Rigid(BoundingBox var1, TerrainAdjustment var2, int var3) {
          super();
-         this.box = box;
-         this.terrainAdjustment = terrainAdjustment;
-         this.groundLevelDelta = groundLevelDelta;
+         this.box = var1;
+         this.terrainAdjustment = var2;
+         this.groundLevelDelta = var3;
       }
 
       public BoundingBox box() {

@@ -13,11 +13,11 @@ import jdk.jfr.consumer.RecordedThread;
 public record ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
    private static final String UNKNOWN_THREAD = "unknown";
 
-   public ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
+   public ThreadAllocationStat(Instant var1, String var2, long var3) {
       super();
-      this.timestamp = timestamp;
-      this.threadName = threadName;
-      this.totalBytes = totalBytes;
+      this.timestamp = var1;
+      this.threadName = var2;
+      this.totalBytes = var3;
    }
 
    public static ThreadAllocationStat from(RecordedEvent var0) {
@@ -56,9 +56,9 @@ public record ThreadAllocationStat(Instant timestamp, String threadName, long to
    }
 
    public static record Summary(Map<String, Double> allocationsPerSecondByThread) {
-      public Summary(Map<String, Double> allocationsPerSecondByThread) {
+      public Summary(Map<String, Double> var1) {
          super();
-         this.allocationsPerSecondByThread = allocationsPerSecondByThread;
+         this.allocationsPerSecondByThread = var1;
       }
 
       public Map<String, Double> allocationsPerSecondByThread() {

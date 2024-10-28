@@ -86,10 +86,10 @@ public class DebugSampleSubscriptionTracker {
    }
 
    static record SubscriptionRequest(ServerPlayer player, RemoteDebugSampleType sampleType) {
-      SubscriptionRequest(ServerPlayer player, RemoteDebugSampleType sampleType) {
+      SubscriptionRequest(ServerPlayer var1, RemoteDebugSampleType var2) {
          super();
-         this.player = player;
-         this.sampleType = sampleType;
+         this.player = var1;
+         this.sampleType = var2;
       }
 
       public ServerPlayer player() {
@@ -102,10 +102,10 @@ public class DebugSampleSubscriptionTracker {
    }
 
    static record SubscriptionStartedAt(long millis, int tick) {
-      SubscriptionStartedAt(long millis, int tick) {
+      SubscriptionStartedAt(long var1, int var3) {
          super();
-         this.millis = millis;
-         this.tick = tick;
+         this.millis = var1;
+         this.tick = var3;
       }
 
       public long millis() {

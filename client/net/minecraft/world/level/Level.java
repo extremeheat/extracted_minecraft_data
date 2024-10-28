@@ -376,6 +376,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
    }
 
+   public void playSound(@Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11) {
+      this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
+   }
+
    public void playSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
       this.playSeededSound(var1, var2, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var3), var4, var5, var6, this.threadSafeRandom.nextLong());
    }
@@ -905,9 +909,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    static {
       RESOURCE_KEY_CODEC = ResourceKey.codec(Registries.DIMENSION);
-      OVERWORLD = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("overworld"));
-      NETHER = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_nether"));
-      END = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_end"));
+      OVERWORLD = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("overworld"));
+      NETHER = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_nether"));
+      END = ResourceKey.create(Registries.DIMENSION, ResourceLocation.withDefaultNamespace("the_end"));
    }
 
    public static enum ExplosionInteraction implements StringRepresentable {

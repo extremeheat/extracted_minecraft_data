@@ -123,11 +123,11 @@ public class PalettedPermutations implements SpriteSource {
    }
 
    static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) implements SpriteSource.SpriteSupplier {
-      PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) {
+      PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, ResourceLocation var3) {
          super();
-         this.baseImage = baseImage;
-         this.palette = palette;
-         this.permutationLocation = permutationLocation;
+         this.baseImage = var1;
+         this.palette = var2;
+         this.permutationLocation = var3;
       }
 
       @Nullable

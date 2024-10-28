@@ -28,10 +28,10 @@ public class UsingItemTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2) {
          super();
-         this.player = player;
-         this.item = item;
+         this.player = var1;
+         this.item = var2;
       }
 
       public static Criterion<TriggerInstance> lookingAt(EntityPredicate.Builder var0, ItemPredicate.Builder var1) {

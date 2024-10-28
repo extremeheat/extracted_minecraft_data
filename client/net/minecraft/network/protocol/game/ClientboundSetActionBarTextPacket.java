@@ -10,9 +10,9 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSetActionBarTextPacket(Component text) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetActionBarTextPacket> STREAM_CODEC;
 
-   public ClientboundSetActionBarTextPacket(Component text) {
+   public ClientboundSetActionBarTextPacket(Component var1) {
       super();
-      this.text = text;
+      this.text = var1;
    }
 
    public PacketType<ClientboundSetActionBarTextPacket> type() {

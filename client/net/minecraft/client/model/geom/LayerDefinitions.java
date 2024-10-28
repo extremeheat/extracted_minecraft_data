@@ -156,6 +156,7 @@ public class LayerDefinitions {
       var0.put(ModelLayers.BOGGED_OUTER_LAYER, LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.2F), 0.0F), 64, 32));
       var0.put(ModelLayers.BOOK, BookModel.createBodyLayer());
       var0.put(ModelLayers.BREEZE, BreezeModel.createBodyLayer(32, 32));
+      var0.put(ModelLayers.BREEZE_WIND, BreezeModel.createBodyLayer(128, 128));
       var0.put(ModelLayers.CAT, var10);
       var0.put(ModelLayers.CAT_COLLAR, LayerDefinition.create(OcelotModel.createBodyMesh(new CubeDeformation(0.01F)), 64, 32));
       var0.put(ModelLayers.CAMEL, CamelModel.createBodyLayer());

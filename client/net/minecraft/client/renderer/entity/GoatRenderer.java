@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.goat.Goat;
 
 public class GoatRenderer extends MobRenderer<Goat, GoatModel<Goat>> {
-   private static final ResourceLocation GOAT_LOCATION = new ResourceLocation("textures/entity/goat/goat.png");
+   private static final ResourceLocation GOAT_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/goat/goat.png");
 
    public GoatRenderer(EntityRendererProvider.Context var1) {
       super(var1, new GoatModel(var1.bakeLayer(ModelLayers.GOAT)), 0.7F);

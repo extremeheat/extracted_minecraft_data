@@ -235,6 +235,7 @@ import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.ServerLinks;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stat;
@@ -519,7 +520,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
       if (var2 != null) {
-         var2.lerpMotion((double)var1.getXa() / 8000.0, (double)var1.getYa() / 8000.0, (double)var1.getZa() / 8000.0);
+         var2.lerpMotion(var1.getXa(), var1.getYa(), var1.getZa());
       }
    }
 
@@ -799,7 +800,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.sendChatAcknowledgement();
       ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.strictErrorHandling)));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, this.registryAccess, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, var2, this.strictErrorHandling, this.customReportDetails, this.serverLinks)));
       this.send(ServerboundConfigurationAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
    }
@@ -1092,7 +1093,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       if (var1.shouldKeep((byte)1)) {
-         var13.getAttributes().assignValues(var5.getAttributes());
+         var13.getAttributes().assignAllValues(var5.getAttributes());
+      } else {
+         var13.getAttributes().assignBaseValues(var5.getAttributes());
       }
 
       var13.resetPos();
@@ -1283,17 +1286,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (var3 == ClientboundGameEventPacket.CHANGE_GAME_MODE) {
          this.minecraft.gameMode.setLocalMode(GameType.byId(var5));
       } else if (var3 == ClientboundGameEventPacket.WIN_GAME) {
-         if (var5 == 0) {
+         this.minecraft.setScreen(new WinScreen(true, () -> {
             this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-            this.minecraft.setScreen(new ReceivingLevelScreen(() -> {
-               return false;
-            }, ReceivingLevelScreen.Reason.END_PORTAL));
-         } else if (var5 == 1) {
-            this.minecraft.setScreen(new WinScreen(true, () -> {
-               this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-               this.minecraft.setScreen((Screen)null);
-            }));
-         }
+            this.minecraft.setScreen((Screen)null);
+         }));
       } else if (var3 == ClientboundGameEventPacket.DEMO_EVENT) {
          Options var6 = this.minecraft.options;
          if (var4 == 0.0F) {
@@ -2163,9 +2159,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
       if (var2 instanceof AbstractHurtingProjectile var3) {
-         var3.xPower = var1.getXPower();
-         var3.yPower = var1.getYPower();
-         var3.zPower = var1.getZPower();
+         var3.accelerationPower = var1.getAccelerationPower();
       }
 
    }
@@ -2386,5 +2380,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public SessionSearchTrees searchTrees() {
       return this.searchTrees;
+   }
+
+   public ServerLinks serverLinks() {
+      return this.serverLinks;
    }
 }

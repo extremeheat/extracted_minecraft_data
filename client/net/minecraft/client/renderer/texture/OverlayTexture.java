@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.util.Objects;
 
 public class OverlayTexture implements AutoCloseable {
    private static final int SIZE = 16;
@@ -38,9 +37,7 @@ public class OverlayTexture implements AutoCloseable {
    }
 
    public void setupOverlayColor() {
-      DynamicTexture var10000 = this.texture;
-      Objects.requireNonNull(var10000);
-      RenderSystem.setupOverlayColor(var10000::getId, 16);
+      RenderSystem.setupOverlayColor(this.texture.getId(), 16);
    }
 
    public static int u(float var0) {

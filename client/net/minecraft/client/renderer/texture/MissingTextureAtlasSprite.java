@@ -14,7 +14,7 @@ public final class MissingTextureAtlasSprite {
    private static final int MISSING_IMAGE_WIDTH = 16;
    private static final int MISSING_IMAGE_HEIGHT = 16;
    private static final String MISSING_TEXTURE_NAME = "missingno";
-   private static final ResourceLocation MISSING_TEXTURE_LOCATION = new ResourceLocation("missingno");
+   private static final ResourceLocation MISSING_TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("missingno");
    private static final ResourceMetadata SPRITE_METADATA;
    @Nullable
    private static DynamicTexture missingTexture;

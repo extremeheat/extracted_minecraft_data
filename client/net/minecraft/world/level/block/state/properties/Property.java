@@ -102,14 +102,14 @@ public abstract class Property<T extends Comparable<T>> {
    }
 
    public static record Value<T extends Comparable<T>>(Property<T> property, T value) {
-      public Value(Property<T> property, T value) {
+      public Value(Property<T> var1, T var2) {
          super();
-         if (!property.getPossibleValues().contains(value)) {
-            String var10002 = String.valueOf(value);
-            throw new IllegalArgumentException("Value " + var10002 + " does not belong to property " + String.valueOf(property));
+         if (!var1.getPossibleValues().contains(var2)) {
+            String var10002 = String.valueOf(var2);
+            throw new IllegalArgumentException("Value " + var10002 + " does not belong to property " + String.valueOf(var1));
          } else {
-            this.property = property;
-            this.value = value;
+            this.property = var1;
+            this.value = var2;
          }
       }
 

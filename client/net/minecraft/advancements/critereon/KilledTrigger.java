@@ -31,11 +31,11 @@ public class KilledTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entityPredicate), DamageSourcePredicate.CODEC.optionalFieldOf("killing_blow").forGetter(TriggerInstance::killingBlow)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> entityPredicate, Optional<DamageSourcePredicate> killingBlow) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<DamageSourcePredicate> var3) {
          super();
-         this.player = player;
-         this.entityPredicate = entityPredicate;
-         this.killingBlow = killingBlow;
+         this.player = var1;
+         this.entityPredicate = var2;
+         this.killingBlow = var3;
       }
 
       public static Criterion<TriggerInstance> playerKilledEntity(Optional<EntityPredicate> var0) {

@@ -85,10 +85,10 @@ public interface ChunkTrackingView {
    }
 
    public static record Positioned(ChunkPos center, int viewDistance) implements ChunkTrackingView {
-      public Positioned(ChunkPos center, int viewDistance) {
+      public Positioned(ChunkPos var1, int var2) {
          super();
-         this.center = center;
-         this.viewDistance = viewDistance;
+         this.center = var1;
+         this.viewDistance = var2;
       }
 
       int minX() {

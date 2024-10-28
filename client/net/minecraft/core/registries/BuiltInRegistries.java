@@ -78,6 +78,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BlockTypes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGenerators;
@@ -194,7 +195,7 @@ public class BuiltInRegistries {
    public static final Registry<CatVariant> CAT_VARIANT;
    public static final Registry<FrogVariant> FROG_VARIANT;
    public static final Registry<Instrument> INSTRUMENT;
-   public static final Registry<String> DECORATED_POT_PATTERNS;
+   public static final Registry<DecoratedPotPattern> DECORATED_POT_PATTERN;
    public static final Registry<CreativeModeTab> CREATIVE_MODE_TAB;
    public static final Registry<CriterionTrigger<?>> TRIGGER_TYPES;
    public static final Registry<NumberFormatType<?>> NUMBER_FORMAT_TYPE;
@@ -443,7 +444,7 @@ public class BuiltInRegistries {
       CAT_VARIANT = registerSimple(Registries.CAT_VARIANT, CatVariant::bootstrap);
       FROG_VARIANT = registerSimple(Registries.FROG_VARIANT, FrogVariant::bootstrap);
       INSTRUMENT = registerSimple(Registries.INSTRUMENT, Instruments::bootstrap);
-      DECORATED_POT_PATTERNS = registerSimple(Registries.DECORATED_POT_PATTERNS, DecoratedPotPatterns::bootstrap);
+      DECORATED_POT_PATTERN = registerSimple(Registries.DECORATED_POT_PATTERN, DecoratedPotPatterns::bootstrap);
       CREATIVE_MODE_TAB = registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
       TRIGGER_TYPES = registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
       NUMBER_FORMAT_TYPE = registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);

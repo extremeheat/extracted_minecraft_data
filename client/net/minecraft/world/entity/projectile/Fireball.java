@@ -10,6 +10,7 @@ import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public abstract class Fireball extends AbstractHurtingProjectile implements ItemSupplier {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
@@ -18,12 +19,12 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
       super(var1, var2);
    }
 
-   public Fireball(EntityType<? extends Fireball> var1, double var2, double var4, double var6, double var8, double var10, double var12, Level var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14);
+   public Fireball(EntityType<? extends Fireball> var1, double var2, double var4, double var6, Vec3 var8, Level var9) {
+      super(var1, var2, var4, var6, var8, var9);
    }
 
-   public Fireball(EntityType<? extends Fireball> var1, LivingEntity var2, double var3, double var5, double var7, Level var9) {
-      super(var1, var2, var3, var5, var7, var9);
+   public Fireball(EntityType<? extends Fireball> var1, LivingEntity var2, Vec3 var3, Level var4) {
+      super(var1, var2, var3, var4);
    }
 
    public void setItem(ItemStack var1) {

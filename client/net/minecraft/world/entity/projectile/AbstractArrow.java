@@ -83,32 +83,28 @@ public abstract class AbstractArrow extends Projectile {
       this.firedFromWeapon = null;
    }
 
-   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2, ItemStack var3, @Nullable ItemStack var4) {
-      this(var1, var2);
-      this.pickupItemStack = var3.copy();
-      this.setCustomName((Component)var3.get(DataComponents.CUSTOM_NAME));
-      Unit var5 = (Unit)var3.remove(DataComponents.INTANGIBLE_PROJECTILE);
-      if (var5 != null) {
+   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8, ItemStack var9, @Nullable ItemStack var10) {
+      this(var1, var8);
+      this.pickupItemStack = var9.copy();
+      this.setCustomName((Component)var9.get(DataComponents.CUSTOM_NAME));
+      Unit var11 = (Unit)var9.remove(DataComponents.INTANGIBLE_PROJECTILE);
+      if (var11 != null) {
          this.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
       }
 
-      if (var4 != null && var2 instanceof ServerLevel var6) {
-         this.firedFromWeapon = var4.copy();
-         int var7 = EnchantmentHelper.getPiercingCount(var6, var4, this.pickupItemStack);
-         if (var7 > 0) {
-            this.setPierceLevel((byte)var7);
+      this.setPos(var2, var4, var6);
+      if (var10 != null && var8 instanceof ServerLevel var12) {
+         this.firedFromWeapon = var10.copy();
+         int var13 = EnchantmentHelper.getPiercingCount(var12, var10, this.pickupItemStack);
+         if (var13 > 0) {
+            this.setPierceLevel((byte)var13);
          }
 
-         EnchantmentHelper.onProjectileSpawned(var6, var4, this, () -> {
+         EnchantmentHelper.onProjectileSpawned(var12, var10, this, (var1x) -> {
             this.firedFromWeapon = null;
          });
       }
 
-   }
-
-   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8, ItemStack var9, @Nullable ItemStack var10) {
-      this(var1, var8, var9, var10);
-      this.setPos(var2, var4, var6);
    }
 
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, LivingEntity var2, Level var3, ItemStack var4, @Nullable ItemStack var5) {
@@ -328,11 +324,11 @@ public abstract class AbstractArrow extends Projectile {
       double var4 = this.baseDamage;
       Entity var6 = this.getOwner();
       DamageSource var7 = this.damageSources().arrow(this, (Entity)(var6 != null ? var6 : this));
-      if (this.firedFromWeapon != null) {
+      if (this.getWeaponItem() != null) {
          Level var9 = this.level();
          if (var9 instanceof ServerLevel) {
             ServerLevel var8 = (ServerLevel)var9;
-            var4 = (double)EnchantmentHelper.modifyDamage(var8, this.firedFromWeapon, var2, var7, (float)var4);
+            var4 = (double)EnchantmentHelper.modifyDamage(var8, this.getWeaponItem(), var2, var7, (float)var4);
          }
       }
 
@@ -384,7 +380,7 @@ public abstract class AbstractArrow extends Projectile {
             Level var13 = this.level();
             if (var13 instanceof ServerLevel) {
                ServerLevel var12 = (ServerLevel)var13;
-               EnchantmentHelper.doPostAttackEffects(var12, var11, var7);
+               EnchantmentHelper.doPostAttackEffectsWithItemSource(var12, var11, var7, this.getWeaponItem());
             }
 
             this.doPostHurtEffects(var11);
@@ -472,20 +468,21 @@ public abstract class AbstractArrow extends Projectile {
       this.setCritArrow(false);
       this.setPierceLevel((byte)0);
       this.setSoundEvent(SoundEvents.ARROW_HIT);
-      this.firedFromWeapon = null;
       this.resetPiercedEntities();
    }
 
    protected void hitBlockEnchantmentEffects(ServerLevel var1, BlockHitResult var2, ItemStack var3) {
-      Entity var5 = this.getOwner();
+      Vec3 var4 = var2.getBlockPos().clampLocationWithin(var2.getLocation());
+      Entity var6 = this.getOwner();
       LivingEntity var10002;
-      if (var5 instanceof LivingEntity var4) {
-         var10002 = var4;
+      if (var6 instanceof LivingEntity var5) {
+         var10002 = var5;
       } else {
          var10002 = null;
       }
 
-      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var2.getLocation(), () -> {
+      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> {
+         this.firedFromWeapon = null;
       });
    }
 
@@ -552,7 +549,7 @@ public abstract class AbstractArrow extends Projectile {
       this.setCritArrow(var1.getBoolean("crit"));
       this.setPierceLevel(var1.getByte("PierceLevel"));
       if (var1.contains("SoundEvent", 8)) {
-         this.soundEvent = (SoundEvent)BuiltInRegistries.SOUND_EVENT.getOptional(new ResourceLocation(var1.getString("SoundEvent"))).orElse(this.getDefaultHitGroundSoundEvent());
+         this.soundEvent = (SoundEvent)BuiltInRegistries.SOUND_EVENT.getOptional(ResourceLocation.parse(var1.getString("SoundEvent"))).orElse(this.getDefaultHitGroundSoundEvent());
       }
 
       if (var1.contains("item", 10)) {

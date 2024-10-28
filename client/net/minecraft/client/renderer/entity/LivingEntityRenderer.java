@@ -128,7 +128,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       if (var19 != null) {
          VertexConsumer var20 = var5.getBuffer(var19);
          int var21 = getOverlayCoords(var1, this.getWhiteOverlayProgress(var1, var3));
-         this.model.renderToBuffer(var4, var20, var6, var21, 1.0F, 1.0F, 1.0F, var17 ? 0.15F : 1.0F);
+         this.model.renderToBuffer(var4, var20, var6, var21, var17 ? 654311423 : -1);
       }
 
       if (!var1.isSpectator()) {

@@ -2,6 +2,7 @@ package net.minecraft.server.network;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
@@ -42,7 +43,7 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
                this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
                MutableComponent var2 = Component.translatable("multiplayer.disconnect.transfers_disabled");
                this.connection.send(new ClientboundLoginDisconnectPacket(var2));
-               this.connection.disconnect(var2);
+               this.connection.disconnect((Component)var2);
             } else {
                this.beginLogin(var1, true);
             }
@@ -64,14 +65,14 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
          }
 
          this.connection.send(new ClientboundLoginDisconnectPacket(var3));
-         this.connection.disconnect(var3);
+         this.connection.disconnect((Component)var3);
       } else {
          this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, var2));
       }
 
    }
 
-   public void onDisconnect(Component var1) {
+   public void onDisconnect(DisconnectionDetails var1) {
    }
 
    public boolean isAcceptingMessages() {

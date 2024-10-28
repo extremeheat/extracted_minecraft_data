@@ -10,12 +10,12 @@ public record PoiType(Set<BlockState> matchingStates, int maxTickets, int validR
       return false;
    };
 
-   public PoiType(Set<BlockState> matchingStates, int maxTickets, int validRange) {
+   public PoiType(Set<BlockState> var1, int var2, int var3) {
       super();
-      matchingStates = Set.copyOf(matchingStates);
-      this.matchingStates = matchingStates;
-      this.maxTickets = maxTickets;
-      this.validRange = validRange;
+      var1 = Set.copyOf(var1);
+      this.matchingStates = var1;
+      this.maxTickets = var2;
+      this.validRange = var3;
    }
 
    public boolean is(BlockState var1) {

@@ -200,11 +200,11 @@ public class Path {
    public static record DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
       final Set<Target> targetNodes;
 
-      public DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
+      public DebugData(Node[] var1, Node[] var2, Set<Target> var3) {
          super();
-         this.openSet = openSet;
-         this.closedSet = closedSet;
-         this.targetNodes = targetNodes;
+         this.openSet = var1;
+         this.closedSet = var2;
+         this.targetNodes = var3;
       }
 
       public void write(FriendlyByteBuf var1) {

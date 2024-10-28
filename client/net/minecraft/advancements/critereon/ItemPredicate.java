@@ -23,12 +23,12 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
       return var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items), MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components), ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)).apply(var0, ItemPredicate::new);
    });
 
-   public ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates) {
+   public ItemPredicate(Optional<HolderSet<Item>> var1, MinMaxBounds.Ints var2, DataComponentPredicate var3, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> var4) {
       super();
-      this.items = items;
-      this.count = count;
-      this.components = components;
-      this.subPredicates = subPredicates;
+      this.items = var1;
+      this.count = var2;
+      this.components = var3;
+      this.subPredicates = var4;
    }
 
    public boolean test(ItemStack var1) {

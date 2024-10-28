@@ -107,7 +107,7 @@ public class Variant implements ModelState {
       }
 
       protected ResourceLocation getModel(JsonObject var1) {
-         return new ResourceLocation(GsonHelper.getAsString(var1, "model"));
+         return ResourceLocation.parse(GsonHelper.getAsString(var1, "model"));
       }
 
       protected int getWeight(JsonObject var1) {

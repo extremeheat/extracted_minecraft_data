@@ -9,10 +9,10 @@ public record GameEventListenerDebugPayload(PositionSource listenerPos, int list
    public static final StreamCodec<RegistryFriendlyByteBuf, GameEventListenerDebugPayload> STREAM_CODEC;
    public static final CustomPacketPayload.Type<GameEventListenerDebugPayload> TYPE;
 
-   public GameEventListenerDebugPayload(PositionSource listenerPos, int listenerRange) {
+   public GameEventListenerDebugPayload(PositionSource var1, int var2) {
       super();
-      this.listenerPos = listenerPos;
-      this.listenerRange = listenerRange;
+      this.listenerPos = var1;
+      this.listenerRange = var2;
    }
 
    public CustomPacketPayload.Type<GameEventListenerDebugPayload> type() {

@@ -74,10 +74,10 @@ public class PlayerSkinWidget extends AbstractWidget {
    }
 
    static record Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
-      private Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
+      private Model(PlayerModel<?> var1, PlayerModel<?> var2) {
          super();
-         this.wideModel = wideModel;
-         this.slimModel = slimModel;
+         this.wideModel = var1;
+         this.slimModel = var2;
       }
 
       public static Model bake(EntityModelSet var0) {
@@ -94,7 +94,7 @@ public class PlayerSkinWidget extends AbstractWidget {
          var1.pose().translate(0.0F, -1.5F, 0.0F);
          PlayerModel var3 = var2.model() == PlayerSkin.Model.SLIM ? this.slimModel : this.wideModel;
          RenderType var4 = var3.renderType(var2.texture());
-         var3.renderToBuffer(var1.pose(), var1.bufferSource().getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+         var3.renderToBuffer(var1.pose(), var1.bufferSource().getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY);
          var1.pose().popPose();
       }
 

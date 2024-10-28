@@ -1,14 +1,14 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import java.util.Optional;
+import net.minecraft.util.FastColor;
 
 public class OutlineBufferSource implements MultiBufferSource {
    private final MultiBufferSource.BufferSource bufferSource;
-   private final MultiBufferSource.BufferSource outlineBufferSource = MultiBufferSource.immediate(new BufferBuilder(1536));
+   private final MultiBufferSource.BufferSource outlineBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(1536));
    private int teamR = 255;
    private int teamG = 255;
    private int teamB = 255;
@@ -48,61 +48,49 @@ public class OutlineBufferSource implements MultiBufferSource {
       this.outlineBufferSource.endBatch();
    }
 
-   static class EntityOutlineGenerator extends DefaultedVertexConsumer {
-      private final VertexConsumer delegate;
-      private double x;
-      private double y;
-      private double z;
-      private float u;
-      private float v;
+   static record EntityOutlineGenerator(VertexConsumer delegate, int color) implements VertexConsumer {
+      public EntityOutlineGenerator(VertexConsumer var1, int var2, int var3, int var4, int var5) {
+         this(var1, FastColor.ARGB32.color(var5, var2, var3, var4));
+      }
 
-      EntityOutlineGenerator(VertexConsumer var1, int var2, int var3, int var4, int var5) {
+      private EntityOutlineGenerator(VertexConsumer var1, int var2) {
          super();
          this.delegate = var1;
-         super.defaultColor(var2, var3, var4, var5);
+         this.color = var2;
       }
 
-      public void defaultColor(int var1, int var2, int var3, int var4) {
-      }
-
-      public void unsetDefaultColor() {
-      }
-
-      public VertexConsumer vertex(double var1, double var3, double var5) {
-         this.x = var1;
-         this.y = var3;
-         this.z = var5;
+      public VertexConsumer addVertex(float var1, float var2, float var3) {
+         this.delegate.addVertex(var1, var2, var3).setColor(this.color);
          return this;
       }
 
-      public VertexConsumer color(int var1, int var2, int var3, int var4) {
+      public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
          return this;
       }
 
-      public VertexConsumer uv(float var1, float var2) {
-         this.u = var1;
-         this.v = var2;
+      public VertexConsumer setUv(float var1, float var2) {
+         this.delegate.setUv(var1, var2);
          return this;
       }
 
-      public VertexConsumer overlayCoords(int var1, int var2) {
+      public VertexConsumer setUv1(int var1, int var2) {
          return this;
       }
 
-      public VertexConsumer uv2(int var1, int var2) {
+      public VertexConsumer setUv2(int var1, int var2) {
          return this;
       }
 
-      public VertexConsumer normal(float var1, float var2, float var3) {
+      public VertexConsumer setNormal(float var1, float var2, float var3) {
          return this;
       }
 
-      public void vertex(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, int var10, int var11, float var12, float var13, float var14) {
-         this.delegate.vertex((double)var1, (double)var2, (double)var3).color(this.defaultR, this.defaultG, this.defaultB, this.defaultA).uv(var8, var9).endVertex();
+      public VertexConsumer delegate() {
+         return this.delegate;
       }
 
-      public void endVertex() {
-         this.delegate.vertex(this.x, this.y, this.z).color(this.defaultR, this.defaultG, this.defaultB, this.defaultA).uv(this.u, this.v).endVertex();
+      public int color() {
+         return this.color;
       }
    }
 }

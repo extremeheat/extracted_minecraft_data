@@ -27,15 +27,15 @@ public record VaultConfig(ResourceKey<LootTable> lootTable, double activationRan
       this(var1, var2, var4, var6, var7, DEFAULT.playerDetector(), DEFAULT.entitySelector());
    }
 
-   public VaultConfig(ResourceKey<LootTable> lootTable, double activationRange, double deactivationRange, ItemStack keyItem, Optional<ResourceKey<LootTable>> overrideLootTableToDisplay, PlayerDetector playerDetector, PlayerDetector.EntitySelector entitySelector) {
+   public VaultConfig(ResourceKey<LootTable> var1, double var2, double var4, ItemStack var6, Optional<ResourceKey<LootTable>> var7, PlayerDetector var8, PlayerDetector.EntitySelector var9) {
       super();
-      this.lootTable = lootTable;
-      this.activationRange = activationRange;
-      this.deactivationRange = deactivationRange;
-      this.keyItem = keyItem;
-      this.overrideLootTableToDisplay = overrideLootTableToDisplay;
-      this.playerDetector = playerDetector;
-      this.entitySelector = entitySelector;
+      this.lootTable = var1;
+      this.activationRange = var2;
+      this.deactivationRange = var4;
+      this.keyItem = var6;
+      this.overrideLootTableToDisplay = var7;
+      this.playerDetector = var8;
+      this.entitySelector = var9;
    }
 
    public PlayerDetector playerDetector() {

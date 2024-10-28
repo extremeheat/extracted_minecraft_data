@@ -15,7 +15,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 
 public class TabButton extends AbstractWidget {
-   private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("widget/tab_selected"), new ResourceLocation("widget/tab"), new ResourceLocation("widget/tab_selected_highlighted"), new ResourceLocation("widget/tab_highlighted"));
+   private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/tab_selected"), ResourceLocation.withDefaultNamespace("widget/tab"), ResourceLocation.withDefaultNamespace("widget/tab_selected_highlighted"), ResourceLocation.withDefaultNamespace("widget/tab_highlighted"));
    private static final int SELECTED_OFFSET = 3;
    private static final int TEXT_MARGIN = 1;
    private static final int UNDERLINE_HEIGHT = 1;

@@ -64,7 +64,7 @@ public class NoiseRouterData {
    }
 
    private static ResourceKey<DensityFunction> createKey(String var0) {
-      return ResourceKey.create(Registries.DENSITY_FUNCTION, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.DENSITY_FUNCTION, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static Holder<? extends DensityFunction> bootstrap(BootstrapContext<DensityFunction> var0) {

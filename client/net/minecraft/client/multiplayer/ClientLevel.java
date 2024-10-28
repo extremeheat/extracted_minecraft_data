@@ -351,7 +351,7 @@ public class ClientLevel extends Level {
    }
 
    public void disconnect() {
-      this.connection.getConnection().disconnect(Component.translatable("multiplayer.status.quitting"));
+      this.connection.getConnection().disconnect((Component)Component.translatable("multiplayer.status.quitting"));
    }
 
    public void animateTick(int var1, int var2, int var3) {

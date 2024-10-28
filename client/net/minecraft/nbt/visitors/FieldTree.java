@@ -9,11 +9,11 @@ public record FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<S
       this(var1, new HashMap(), new HashMap());
    }
 
-   public FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<String, FieldTree> fieldsToRecurse) {
+   public FieldTree(int var1, Map<String, TagType<?>> var2, Map<String, FieldTree> var3) {
       super();
-      this.depth = depth;
-      this.selectedFields = selectedFields;
-      this.fieldsToRecurse = fieldsToRecurse;
+      this.depth = var1;
+      this.selectedFields = var2;
+      this.fieldsToRecurse = var3;
    }
 
    public static FieldTree createRoot() {

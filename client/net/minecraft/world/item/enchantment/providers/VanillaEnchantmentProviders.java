@@ -30,6 +30,6 @@ public interface VanillaEnchantmentProviders {
    }
 
    static ResourceKey<EnchantmentProvider> create(String var0) {
-      return ResourceKey.create(Registries.ENCHANTMENT_PROVIDER, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.ENCHANTMENT_PROVIDER, ResourceLocation.withDefaultNamespace(var0));
    }
 }

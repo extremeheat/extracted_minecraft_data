@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -37,7 +36,6 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
          var4.pushPose();
          var4.scale(this.scale, this.scale, this.scale);
          var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
-         var4.mulPose(Axis.YP.rotationDegrees(180.0F));
          this.itemRenderer.renderStatic(((ItemSupplier)var1).getItem(), ItemDisplayContext.GROUND, var6, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
          var4.popPose();
          super.render(var1, var2, var3, var4, var5, var6);

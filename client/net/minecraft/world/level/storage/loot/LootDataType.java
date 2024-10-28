@@ -15,18 +15,17 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.slf4j.Logger;
 
-public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, Validator<T> validator) {
+public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> codec, Validator<T> validator) {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final LootDataType<LootItemCondition> PREDICATE;
    public static final LootDataType<LootItemFunction> MODIFIER;
    public static final LootDataType<LootTable> TABLE;
 
-   public LootDataType(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, Validator<T> validator) {
+   public LootDataType(ResourceKey<Registry<T>> var1, Codec<T> var2, Validator<T> var3) {
       super();
-      this.registryKey = registryKey;
-      this.codec = codec;
-      this.directory = directory;
-      this.validator = validator;
+      this.registryKey = var1;
+      this.codec = var2;
+      this.validator = var3;
    }
 
    public void runValidation(ValidationContext var1, ResourceKey<T> var2, T var3) {
@@ -36,7 +35,7 @@ public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> cod
    public <V> Optional<T> deserialize(ResourceLocation var1, DynamicOps<V> var2, V var3) {
       DataResult var4 = this.codec.parse(var2, var3);
       var4.error().ifPresent((var2x) -> {
-         LOGGER.error("Couldn't parse element {}:{} - {}", new Object[]{this.directory, var1, var2x.message()});
+         LOGGER.error("Couldn't parse element {}/{} - {}", new Object[]{this.registryKey.location(), var1, var2x.message()});
       });
       return var4.result();
    }
@@ -65,18 +64,14 @@ public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> cod
       return this.codec;
    }
 
-   public String directory() {
-      return this.directory;
-   }
-
    public Validator<T> validator() {
       return this.validator;
    }
 
    static {
-      PREDICATE = new LootDataType(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, "predicates", createSimpleValidator());
-      MODIFIER = new LootDataType(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, "item_modifiers", createSimpleValidator());
-      TABLE = new LootDataType(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, "loot_tables", createLootTableValidator());
+      PREDICATE = new LootDataType(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, createSimpleValidator());
+      MODIFIER = new LootDataType(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, createSimpleValidator());
+      TABLE = new LootDataType(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, createLootTableValidator());
    }
 
    @FunctionalInterface

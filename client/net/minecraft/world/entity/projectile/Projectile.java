@@ -50,6 +50,11 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    }
 
+   protected void disown() {
+      this.ownerUUID = null;
+      this.cachedOwner = null;
+   }
+
    @Nullable
    public Entity getOwner() {
       if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
@@ -144,6 +149,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public void shoot(double var1, double var3, double var5, float var7, float var8) {
       Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
+      this.hasImpulse = true;
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));
       this.setXRot((float)(Mth.atan2(var9.y, var10) * 57.2957763671875));
@@ -156,7 +162,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       float var8 = -Mth.sin((var2 + var4) * 0.017453292F);
       float var9 = Mth.cos(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
-      Vec3 var10 = var1.getDeltaMovement();
+      Vec3 var10 = var1.getKnownMovement();
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
@@ -166,9 +172,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          Entity var3 = var2.getEntity();
          ProjectileDeflection var4 = var3.deflection(this);
          if (var4 != ProjectileDeflection.NONE) {
-            if (var3 != this.lastDeflectedBy) {
+            if (var3 != this.lastDeflectedBy && this.deflect(var4, var3, this.getOwner(), false)) {
                this.lastDeflectedBy = var3;
-               this.deflect(var4, var3, this.getOwner(), false);
             }
 
             return var4;
@@ -179,13 +184,14 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return ProjectileDeflection.NONE;
    }
 
-   public void deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
+   public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
       if (!this.level().isClientSide) {
          var1.deflect(this, var2, this.random);
          this.setOwner(var3);
          this.onDeflection(var2, var4);
       }
 
+      return true;
    }
 
    protected void onDeflection(@Nullable Entity var1, boolean var2) {

@@ -54,7 +54,6 @@ import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.LeapAtTargetGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
@@ -118,12 +117,12 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
 
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
-      this.goalSelector.addGoal(1, new WolfPanicGoal(this, 1.5));
+      this.goalSelector.addGoal(1, new TamableAnimal.TamableAnimalPanicGoal(1.5, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
       this.goalSelector.addGoal(3, new WolfAvoidEntityGoal(this, Llama.class, 24.0F, 1.5, 1.5));
       this.goalSelector.addGoal(4, new LeapAtTargetGoal(this, 0.4F));
       this.goalSelector.addGoal(5, new MeleeAttackGoal(this, 1.0, true));
-      this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0, 10.0F, 2.0F, false));
+      this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0, 10.0F, 2.0F));
       this.goalSelector.addGoal(7, new BreedGoal(this, 1.0));
       this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(9, new BegGoal(this, 8.0F));
@@ -352,6 +351,10 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       }
    }
 
+   public boolean canUseSlot(EquipmentSlot var1) {
+      return true;
+   }
+
    protected void actuallyHurt(DamageSource var1, float var2) {
       if (!this.canArmorAbsorb(var1)) {
          super.actuallyHurt(var1, var2);
@@ -418,7 +421,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                }
             }
 
-            if (var3.is(Items.WOLF_ARMOR) && this.isOwnedBy(var1) && !this.hasArmor() && !this.isBaby()) {
+            if (var3.is(Items.WOLF_ARMOR) && this.isOwnedBy(var1) && this.getBodyArmorItem().isEmpty() && !this.isBaby()) {
                this.setBodyArmorItem(var3.copyWithCount(1));
                var3.consume(1, var1);
                return InteractionResult.SUCCESS;
@@ -535,7 +538,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    public boolean hasArmor() {
-      return !this.getBodyArmorItem().isEmpty();
+      return this.getBodyArmorItem().is(Items.WOLF_ARMOR);
    }
 
    private void setCollarColor(DyeColor var1) {
@@ -671,16 +674,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          return var1 == EntityType.SHEEP || var1 == EntityType.RABBIT || var1 == EntityType.FOX;
       };
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
-   }
-
-   private class WolfPanicGoal extends PanicGoal {
-      public WolfPanicGoal(final Wolf var1, final double var2) {
-         super(var1, var2);
-      }
-
-      protected boolean shouldPanic() {
-         return this.mob.isFreezing() || this.mob.isOnFire();
-      }
    }
 
    private class WolfAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {

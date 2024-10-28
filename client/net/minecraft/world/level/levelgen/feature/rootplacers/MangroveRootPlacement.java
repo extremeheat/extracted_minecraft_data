@@ -25,14 +25,14 @@ public record MangroveRootPlacement(HolderSet<Block> canGrowThrough, HolderSet<B
       })).apply(var0, MangroveRootPlacement::new);
    });
 
-   public MangroveRootPlacement(HolderSet<Block> canGrowThrough, HolderSet<Block> muddyRootsIn, BlockStateProvider muddyRootsProvider, int maxRootWidth, int maxRootLength, float randomSkewChance) {
+   public MangroveRootPlacement(HolderSet<Block> var1, HolderSet<Block> var2, BlockStateProvider var3, int var4, int var5, float var6) {
       super();
-      this.canGrowThrough = canGrowThrough;
-      this.muddyRootsIn = muddyRootsIn;
-      this.muddyRootsProvider = muddyRootsProvider;
-      this.maxRootWidth = maxRootWidth;
-      this.maxRootLength = maxRootLength;
-      this.randomSkewChance = randomSkewChance;
+      this.canGrowThrough = var1;
+      this.muddyRootsIn = var2;
+      this.muddyRootsProvider = var3;
+      this.maxRootWidth = var4;
+      this.maxRootLength = var5;
+      this.randomSkewChance = var6;
    }
 
    public HolderSet<Block> canGrowThrough() {

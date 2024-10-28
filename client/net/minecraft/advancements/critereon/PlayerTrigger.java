@@ -29,9 +29,9 @@ public class PlayerTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1) {
          super();
-         this.player = player;
+         this.player = var1;
       }
 
       public static Criterion<TriggerInstance> located(LocationPredicate.Builder var0) {

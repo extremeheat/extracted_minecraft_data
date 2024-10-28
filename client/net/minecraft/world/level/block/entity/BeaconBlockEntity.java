@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +26,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -137,16 +137,16 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       for(var10 = 0; var10 < 10 && var7.getY() <= var9; ++var10) {
          BlockState var11 = var0.getBlockState(var7);
          Block var12 = var11.getBlock();
-         if (var12 instanceof BeaconBeamBlock) {
-            float[] var13 = ((BeaconBeamBlock)var12).getColor().getTextureDiffuseColors();
+         if (var12 instanceof BeaconBeamBlock var13) {
+            int var14 = var13.getColor().getTextureDiffuseColor();
             if (var3.checkingBeamSections.size() <= 1) {
-               var8 = new BeaconBeamSection(var13);
+               var8 = new BeaconBeamSection(var14);
                var3.checkingBeamSections.add(var8);
             } else if (var8 != null) {
-               if (Arrays.equals(var13, var8.color)) {
+               if (var14 == var8.color) {
                   var8.increaseHeight();
                } else {
-                  var8 = new BeaconBeamSection(new float[]{(var8.color[0] + var13[0]) / 2.0F, (var8.color[1] + var13[1]) / 2.0F, (var8.color[2] + var13[2]) / 2.0F});
+                  var8 = new BeaconBeamSection(FastColor.ARGB32.average(var8.color, var14));
                   var3.checkingBeamSections.add(var8);
                }
             }
@@ -187,8 +187,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
                Iterator var17 = var0.getEntitiesOfClass(ServerPlayer.class, (new AABB((double)var4, (double)var5, (double)var6, (double)var4, (double)(var5 - 4), (double)var6)).inflate(10.0, 5.0, 10.0)).iterator();
 
                while(var17.hasNext()) {
-                  ServerPlayer var14 = (ServerPlayer)var17.next();
-                  CriteriaTriggers.CONSTRUCT_BEACON.trigger(var14, var3.levels);
+                  ServerPlayer var18 = (ServerPlayer)var17.next();
+                  CriteriaTriggers.CONSTRUCT_BEACON.trigger(var18, var3.levels);
                }
             } else if (var15 && !var16) {
                playSound(var0, var1, SoundEvents.BEACON_DEACTIVATE);
@@ -379,10 +379,10 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    public static class BeaconBeamSection {
-      final float[] color;
+      final int color;
       private int height;
 
-      public BeaconBeamSection(float[] var1) {
+      public BeaconBeamSection(int var1) {
          super();
          this.color = var1;
          this.height = 1;
@@ -392,7 +392,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          ++this.height;
       }
 
-      public float[] getColor() {
+      public int getColor() {
          return this.color;
       }
 

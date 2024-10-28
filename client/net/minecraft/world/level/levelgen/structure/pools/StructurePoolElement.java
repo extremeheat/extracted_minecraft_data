@@ -78,25 +78,25 @@ public abstract class StructurePoolElement {
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0) {
       return (var1) -> {
-         return new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
+         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1);
       };
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0, Holder<StructureProcessorList> var1) {
       return (var2) -> {
-         return new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), var1, var2);
+         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2);
       };
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0) {
       return (var1) -> {
-         return new SinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
+         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1);
       };
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1) {
       return (var2) -> {
-         return new SinglePoolElement(Either.left(new ResourceLocation(var0)), var1, var2);
+         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2);
       };
    }
 

@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity.trialspawner;
 
 import com.google.common.collect.Sets;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -31,6 +33,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.random.WeightedEntry;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -134,42 +137,61 @@ public class TrialSpawnerData {
       if (!var4) {
          if (!var3.getState().equals(TrialSpawnerState.COOLDOWN) || !var3.isOminous()) {
             List var5 = var3.getPlayerDetector().detect(var1, var3.getEntitySelector(), var2, (double)var3.getRequiredPlayerRange(), true);
-            Player var6 = null;
-            Iterator var7 = var5.iterator();
-
-            while(var7.hasNext()) {
-               UUID var8 = (UUID)var7.next();
-               Player var9 = var1.getPlayerByUUID(var8);
-               if (var9 != null) {
-                  if (var9.hasEffect(MobEffects.BAD_OMEN)) {
-                     this.transformBadOmenIntoTrialOmen(var9, var9.getEffect(MobEffects.BAD_OMEN));
-                     var6 = var9;
-                  } else if (var9.hasEffect(MobEffects.TRIAL_OMEN)) {
-                     var6 = var9;
+            boolean var6;
+            if (!var3.isOminous() && !var5.isEmpty()) {
+               Optional var7 = findPlayerWithOminousEffect(var1, var5);
+               var7.ifPresent((var3x) -> {
+                  Player var4 = (Player)var3x.getFirst();
+                  if (var3x.getSecond() == MobEffects.BAD_OMEN) {
+                     transformBadOmenIntoTrialOmen(var4);
                   }
-               }
+
+                  var1.levelEvent(3020, BlockPos.containing(var4.getEyePosition()), 0);
+                  var3.applyOminous(var1, var2);
+               });
+               var6 = var7.isPresent();
+            } else {
+               var6 = false;
             }
 
-            boolean var11 = !var3.isOminous() && var6 != null;
-            if (!var3.getState().equals(TrialSpawnerState.COOLDOWN) || var11) {
-               if (var11) {
-                  var1.levelEvent(3020, BlockPos.containing(var6.getEyePosition()), 0);
-                  var3.applyOminous(var1, var2);
-               }
-
-               boolean var12 = var3.getData().detectedPlayers.isEmpty();
-               List var13 = var12 ? var5 : var3.getPlayerDetector().detect(var1, var3.getEntitySelector(), var2, (double)var3.getRequiredPlayerRange(), false);
-               if (this.detectedPlayers.addAll(var13)) {
+            if (!var3.getState().equals(TrialSpawnerState.COOLDOWN) || var6) {
+               boolean var10 = var3.getData().detectedPlayers.isEmpty();
+               List var8 = var10 ? var5 : var3.getPlayerDetector().detect(var1, var3.getEntitySelector(), var2, (double)var3.getRequiredPlayerRange(), false);
+               if (this.detectedPlayers.addAll(var8)) {
                   this.nextMobSpawnsAt = Math.max(var1.getGameTime() + 40L, this.nextMobSpawnsAt);
-                  if (!var11) {
-                     int var10 = var3.isOminous() ? 3019 : 3013;
-                     var1.levelEvent(var10, var2, this.detectedPlayers.size());
+                  if (!var6) {
+                     int var9 = var3.isOminous() ? 3019 : 3013;
+                     var1.levelEvent(var9, var2, this.detectedPlayers.size());
                   }
                }
 
             }
          }
       }
+   }
+
+   private static Optional<Pair<Player, Holder<MobEffect>>> findPlayerWithOminousEffect(ServerLevel var0, List<UUID> var1) {
+      Player var2 = null;
+      Iterator var3 = var1.iterator();
+
+      while(var3.hasNext()) {
+         UUID var4 = (UUID)var3.next();
+         Player var5 = var0.getPlayerByUUID(var4);
+         if (var5 != null) {
+            Holder var6 = MobEffects.TRIAL_OMEN;
+            if (var5.hasEffect(var6)) {
+               return Optional.of(Pair.of(var5, var6));
+            }
+
+            if (var5.hasEffect(MobEffects.BAD_OMEN)) {
+               var2 = var5;
+            }
+         }
+      }
+
+      return Optional.ofNullable(var2).map((var0x) -> {
+         return Pair.of(var0x, MobEffects.BAD_OMEN);
+      });
    }
 
    public void resetAfterBecomingOminous(TrialSpawner var1, ServerLevel var2) {
@@ -192,11 +214,14 @@ public class TrialSpawnerData {
       this.cooldownEndsAt = var2.getGameTime() + var1.getOminousConfig().ticksBetweenItemSpawners();
    }
 
-   private void transformBadOmenIntoTrialOmen(Player var1, MobEffectInstance var2) {
-      int var3 = var2.getAmplifier() + 1;
-      int var4 = 18000 * var3;
-      var1.removeEffect(MobEffects.BAD_OMEN);
-      var1.addEffect(new MobEffectInstance(MobEffects.TRIAL_OMEN, var4, 0));
+   private static void transformBadOmenIntoTrialOmen(Player var0) {
+      MobEffectInstance var1 = var0.getEffect(MobEffects.BAD_OMEN);
+      if (var1 != null) {
+         int var2 = var1.getAmplifier() + 1;
+         int var3 = 18000 * var2;
+         var0.removeEffect(MobEffects.BAD_OMEN);
+         var0.addEffect(new MobEffectInstance(MobEffects.TRIAL_OMEN, var3, 0));
+      }
    }
 
    public boolean isReadyToOpenShutter(ServerLevel var1, float var2, int var3) {

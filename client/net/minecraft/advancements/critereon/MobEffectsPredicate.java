@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -17,9 +16,9 @@ import net.minecraft.world.entity.LivingEntity;
 public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> effectMap) {
    public static final Codec<MobEffectsPredicate> CODEC;
 
-   public MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> effectMap) {
+   public MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> var1) {
       super();
-      this.effectMap = effectMap;
+      this.effectMap = var1;
    }
 
    public boolean matches(Entity var1) {
@@ -61,7 +60,7 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
    }
 
    static {
-      CODEC = Codec.unboundedMap(BuiltInRegistries.MOB_EFFECT.holderByNameCodec(), MobEffectsPredicate.MobEffectInstancePredicate.CODEC).xmap(MobEffectsPredicate::new, MobEffectsPredicate::effectMap);
+      CODEC = Codec.unboundedMap(MobEffect.CODEC, MobEffectsPredicate.MobEffectInstancePredicate.CODEC).xmap(MobEffectsPredicate::new, MobEffectsPredicate::effectMap);
    }
 
    public static record MobEffectInstancePredicate(MinMaxBounds.Ints amplifier, MinMaxBounds.Ints duration, Optional<Boolean> ambient, Optional<Boolean> visible) {
@@ -73,12 +72,12 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
          this(MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, Optional.empty(), Optional.empty());
       }
 
-      public MobEffectInstancePredicate(MinMaxBounds.Ints amplifier, MinMaxBounds.Ints duration, Optional<Boolean> ambient, Optional<Boolean> visible) {
+      public MobEffectInstancePredicate(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, Optional<Boolean> var3, Optional<Boolean> var4) {
          super();
-         this.amplifier = amplifier;
-         this.duration = duration;
-         this.ambient = ambient;
-         this.visible = visible;
+         this.amplifier = var1;
+         this.duration = var2;
+         this.ambient = var3;
+         this.visible = var4;
       }
 
       public boolean matches(@Nullable MobEffectInstance var1) {

@@ -2,7 +2,6 @@ package net.minecraft.world.item.crafting;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
@@ -26,7 +25,7 @@ public class RecipeCache {
 
          for(int var3 = 0; var3 < this.entries.length; ++var3) {
             Entry var4 = this.entries[var3];
-            if (var4 != null && var4.matches(var2.items())) {
+            if (var4 != null && var4.matches(var2)) {
                this.moveEntryToFront(var3);
                return Optional.ofNullable(var4.value());
             }
@@ -47,7 +46,7 @@ public class RecipeCache {
 
    private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingInput var1, Level var2) {
       Optional var3 = var2.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var1, var2);
-      this.insert(var1.items(), (RecipeHolder)var3.orElse((Object)null));
+      this.insert(var1, (RecipeHolder)var3.orElse((Object)null));
       return var3;
    }
 
@@ -60,40 +59,50 @@ public class RecipeCache {
 
    }
 
-   private void insert(List<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
+   private void insert(CraftingInput var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
       NonNullList var3 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
       for(int var4 = 0; var4 < var1.size(); ++var4) {
-         var3.set(var4, ((ItemStack)var1.get(var4)).copyWithCount(1));
+         var3.set(var4, var1.getItem(var4).copyWithCount(1));
       }
 
       System.arraycopy(this.entries, 0, this.entries, 1, this.entries.length - 1);
-      this.entries[0] = new Entry(var3, var2);
+      this.entries[0] = new Entry(var3, var1.width(), var1.height(), var2);
    }
 
-   static record Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
-      Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
+   static record Entry(NonNullList<ItemStack> key, int width, int height, @Nullable RecipeHolder<CraftingRecipe> value) {
+      Entry(NonNullList<ItemStack> var1, int var2, int var3, @Nullable RecipeHolder<CraftingRecipe> var4) {
          super();
-         this.key = key;
-         this.value = value;
+         this.key = var1;
+         this.width = var2;
+         this.height = var3;
+         this.value = var4;
       }
 
-      public boolean matches(List<ItemStack> var1) {
-         if (this.key.size() != var1.size()) {
-            return false;
-         } else {
+      public boolean matches(CraftingInput var1) {
+         if (this.width == var1.width() && this.height == var1.height()) {
             for(int var2 = 0; var2 < this.key.size(); ++var2) {
-               if (!ItemStack.isSameItemSameComponents((ItemStack)this.key.get(var2), (ItemStack)var1.get(var2))) {
+               if (!ItemStack.isSameItemSameComponents((ItemStack)this.key.get(var2), var1.getItem(var2))) {
                   return false;
                }
             }
 
             return true;
+         } else {
+            return false;
          }
       }
 
       public NonNullList<ItemStack> key() {
          return this.key;
+      }
+
+      public int width() {
+         return this.width;
+      }
+
+      public int height() {
+         return this.height;
       }
 
       @Nullable

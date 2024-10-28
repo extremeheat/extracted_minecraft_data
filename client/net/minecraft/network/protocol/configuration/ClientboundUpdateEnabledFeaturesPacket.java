@@ -15,9 +15,9 @@ public record ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> featu
       this((Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readResourceLocation));
    }
 
-   public ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> features) {
+   public ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> var1) {
       super();
-      this.features = features;
+      this.features = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

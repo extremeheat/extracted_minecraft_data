@@ -13,13 +13,13 @@ public record EnchantmentActiveCheck(boolean active) implements LootItemConditio
       return var0.group(Codec.BOOL.fieldOf("active").forGetter(EnchantmentActiveCheck::active)).apply(var0, EnchantmentActiveCheck::new);
    });
 
-   public EnchantmentActiveCheck(boolean active) {
+   public EnchantmentActiveCheck(boolean var1) {
       super();
-      this.active = active;
+      this.active = var1;
    }
 
    public boolean test(LootContext var1) {
-      return (Boolean)var1.getParam(LootContextParams.ENCHANTMENT_ACTIVE) != this.active;
+      return (Boolean)var1.getParam(LootContextParams.ENCHANTMENT_ACTIVE) == this.active;
    }
 
    public LootItemConditionType getType() {

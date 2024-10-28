@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -13,6 +12,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -55,6 +55,7 @@ import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -65,8 +66,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class Zombie extends Monster {
-   private static final UUID SPEED_MODIFIER_BABY_UUID = UUID.fromString("B9766B59-9566-4402-BC1F-2EE2A276D836");
+   private static final ResourceLocation SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
    private static final AttributeModifier SPEED_MODIFIER_BABY;
+   private static final ResourceLocation REINFORCEMENT_CALLER_CHARGE_ID;
+   private static final AttributeModifier ZOMBIE_REINFORCEMENT_CALLEE_CHARGE;
+   private static final ResourceLocation LEADER_ZOMBIE_BONUS_ID;
+   private static final ResourceLocation ZOMBIE_RANDOM_SPAWN_BONUS_ID;
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    private static final EntityDataAccessor<Integer> DATA_SPECIAL_TYPE_ID;
    private static final EntityDataAccessor<Boolean> DATA_DROWNED_CONVERSION_ID;
@@ -166,7 +171,7 @@ public class Zombie extends Monster {
       this.getEntityData().set(DATA_BABY_ID, var1);
       if (this.level() != null && !this.level().isClientSide) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-         var2.removeModifier(SPEED_MODIFIER_BABY.id());
+         var2.removeModifier(SPEED_MODIFIER_BABY_ID);
          if (var1) {
             var2.addTransientModifier(SPEED_MODIFIER_BABY);
          }
@@ -215,9 +220,10 @@ public class Zombie extends Monster {
             ItemStack var2 = this.getItemBySlot(EquipmentSlot.HEAD);
             if (!var2.isEmpty()) {
                if (var2.isDamageableItem()) {
+                  Item var3 = var2.getItem();
                   var2.setDamageValue(var2.getDamageValue() + this.random.nextInt(2));
                   if (var2.getDamageValue() >= var2.getMaxDamage()) {
-                     this.broadcastBreakEvent(EquipmentSlot.HEAD);
+                     this.onEquippedItemBroken(var3, EquipmentSlot.HEAD);
                      this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
                   }
                }
@@ -290,8 +296,11 @@ public class Zombie extends Monster {
                      var8.setTarget(var4);
                      var8.finalizeSpawn(var3, this.level().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.REINFORCEMENT, (SpawnGroupData)null);
                      var3.addFreshEntityWithPassengers(var8);
-                     this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier("Zombie reinforcement caller charge", -0.05000000074505806, AttributeModifier.Operation.ADD_VALUE));
-                     var8.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier("Zombie reinforcement callee charge", -0.05000000074505806, AttributeModifier.Operation.ADD_VALUE));
+                     AttributeInstance var15 = this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
+                     AttributeModifier var16 = var15.getModifier(REINFORCEMENT_CALLER_CHARGE_ID);
+                     double var17 = var16 != null ? var16.amount() : 0.0;
+                     var15.addPermanentModifier(new AttributeModifier(REINFORCEMENT_CALLER_CHARGE_ID, var17 - 0.05, AttributeModifier.Operation.ADD_VALUE));
+                     var8.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(ZOMBIE_REINFORCEMENT_CALLEE_CHARGE);
                      break;
                   }
                }
@@ -439,7 +448,7 @@ public class Zombie extends Monster {
 
          this.setCanBreakDoors(this.supportsBreakDoorGoal() && var5.nextFloat() < var6 * 0.1F);
          this.populateDefaultEquipmentSlots(var5, var2);
-         this.populateDefaultEquipmentEnchantments(var5, var2);
+         this.populateDefaultEquipmentEnchantments(var1, var5, var2);
       }
 
       if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -462,15 +471,15 @@ public class Zombie extends Monster {
 
    protected void handleAttributes(float var1) {
       this.randomizeReinforcementsChance();
-      this.getAttribute(Attributes.KNOCKBACK_RESISTANCE).addPermanentModifier(new AttributeModifier("Random spawn bonus", this.random.nextDouble() * 0.05000000074505806, AttributeModifier.Operation.ADD_VALUE));
+      this.getAttribute(Attributes.KNOCKBACK_RESISTANCE).addPermanentModifier(new AttributeModifier(RANDOM_SPAWN_BONUS_ID, this.random.nextDouble() * 0.05000000074505806, AttributeModifier.Operation.ADD_VALUE));
       double var2 = this.random.nextDouble() * 1.5 * (double)var1;
       if (var2 > 1.0) {
-         this.getAttribute(Attributes.FOLLOW_RANGE).addPermanentModifier(new AttributeModifier("Random zombie-spawn bonus", var2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+         this.getAttribute(Attributes.FOLLOW_RANGE).addPermanentModifier(new AttributeModifier(ZOMBIE_RANDOM_SPAWN_BONUS_ID, var2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
       }
 
       if (this.random.nextFloat() < var1 * 0.05F) {
-         this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier("Leader zombie bonus", this.random.nextDouble() * 0.25 + 0.5, AttributeModifier.Operation.ADD_VALUE));
-         this.getAttribute(Attributes.MAX_HEALTH).addPermanentModifier(new AttributeModifier("Leader zombie bonus", this.random.nextDouble() * 3.0 + 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+         this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 0.25 + 0.5, AttributeModifier.Operation.ADD_VALUE));
+         this.getAttribute(Attributes.MAX_HEALTH).addPermanentModifier(new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 3.0 + 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
          this.setCanBreakDoors(this.supportsBreakDoorGoal());
       }
 
@@ -480,15 +489,15 @@ public class Zombie extends Monster {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(this.random.nextDouble() * 0.10000000149011612);
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      Entity var3 = var1.getEntity();
-      if (var3 instanceof Creeper var4) {
-         if (var4.canDropMobsSkull()) {
-            ItemStack var5 = this.getSkull();
-            if (!var5.isEmpty()) {
-               var4.increaseDroppedSkulls();
-               this.spawnAtLocation(var5);
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      Entity var4 = var2.getEntity();
+      if (var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            ItemStack var6 = this.getSkull();
+            if (!var6.isEmpty()) {
+               var5.increaseDroppedSkulls();
+               this.spawnAtLocation(var6);
             }
          }
       }
@@ -500,7 +509,11 @@ public class Zombie extends Monster {
    }
 
    static {
-      SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_UUID, "Baby speed boost", 0.5, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+      SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_ID, 0.5, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+      REINFORCEMENT_CALLER_CHARGE_ID = ResourceLocation.withDefaultNamespace("reinforcement_caller_charge");
+      ZOMBIE_REINFORCEMENT_CALLEE_CHARGE = new AttributeModifier(ResourceLocation.withDefaultNamespace("reinforcement_callee_charge"), -0.05000000074505806, AttributeModifier.Operation.ADD_VALUE);
+      LEADER_ZOMBIE_BONUS_ID = ResourceLocation.withDefaultNamespace("leader_zombie_bonus");
+      ZOMBIE_RANDOM_SPAWN_BONUS_ID = ResourceLocation.withDefaultNamespace("zombie_random_spawn_bonus");
       DATA_BABY_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       DATA_SPECIAL_TYPE_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.INT);
       DATA_DROWNED_CONVERSION_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);

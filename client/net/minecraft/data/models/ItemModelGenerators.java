@@ -24,7 +24,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
 public class ItemModelGenerators {
-   public static final ResourceLocation TRIM_TYPE_PREDICATE_ID = new ResourceLocation("trim_type");
+   public static final ResourceLocation TRIM_TYPE_PREDICATE_ID = ResourceLocation.withDefaultNamespace("trim_type");
    private static final List<TrimModelData> GENERATED_TRIM_MODELS;
    private final BiConsumer<ResourceLocation, Supplier<JsonElement>> output;
 
@@ -119,7 +119,7 @@ public class ItemModelGenerators {
             ResourceLocation var8 = this.getItemModelForTrimMaterial(var2, var7);
             String var10000 = var1.getType().getName();
             String var9 = var10000 + "_trim_" + var7;
-            ResourceLocation var10 = (new ResourceLocation(var9)).withPrefix("trims/items/");
+            ResourceLocation var10 = ResourceLocation.withDefaultNamespace(var9).withPrefix("trims/items/");
             if (var1.getMaterial().is(ArmorMaterials.LEATHER)) {
                this.generateLayeredItem(var8, var3, var4, var10);
             } else {
@@ -434,11 +434,11 @@ public class ItemModelGenerators {
    }
 
    private static record TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
-      TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
+      TrimModelData(String var1, float var2, Map<Holder<ArmorMaterial>, String> var3) {
          super();
-         this.name = name;
-         this.itemModelIndex = itemModelIndex;
-         this.overrideArmorMaterials = overrideArmorMaterials;
+         this.name = var1;
+         this.itemModelIndex = var2;
+         this.overrideArmorMaterials = var3;
       }
 
       public String name(Holder<ArmorMaterial> var1) {

@@ -280,7 +280,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    static {
-      VANILLA_ATLASES = Map.of(Sheets.BANNER_SHEET, new ResourceLocation("banner_patterns"), Sheets.BED_SHEET, new ResourceLocation("beds"), Sheets.CHEST_SHEET, new ResourceLocation("chests"), Sheets.SHIELD_SHEET, new ResourceLocation("shield_patterns"), Sheets.SIGN_SHEET, new ResourceLocation("signs"), Sheets.SHULKER_SHEET, new ResourceLocation("shulker_boxes"), Sheets.ARMOR_TRIMS_SHEET, new ResourceLocation("armor_trims"), Sheets.DECORATED_POT_SHEET, new ResourceLocation("decorated_pot"), TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("blocks"));
+      VANILLA_ATLASES = Map.of(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("banner_patterns"), Sheets.BED_SHEET, ResourceLocation.withDefaultNamespace("beds"), Sheets.CHEST_SHEET, ResourceLocation.withDefaultNamespace("chests"), Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("shield_patterns"), Sheets.SIGN_SHEET, ResourceLocation.withDefaultNamespace("signs"), Sheets.SHULKER_SHEET, ResourceLocation.withDefaultNamespace("shulker_boxes"), Sheets.ARMOR_TRIMS_SHEET, ResourceLocation.withDefaultNamespace("armor_trims"), Sheets.DECORATED_POT_SHEET, ResourceLocation.withDefaultNamespace("decorated_pot"), TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("blocks"));
    }
 
    static record ReloadState(ModelBakery modelBakery, BakedModel missingModel, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, CompletableFuture<Void> readyForUpload) {
@@ -290,13 +290,13 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       final Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations;
       final CompletableFuture<Void> readyForUpload;
 
-      ReloadState(ModelBakery modelBakery, BakedModel missingModel, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, CompletableFuture<Void> readyForUpload) {
+      ReloadState(ModelBakery var1, BakedModel var2, Map<BlockState, BakedModel> var3, Map<ResourceLocation, AtlasSet.StitchResult> var4, CompletableFuture<Void> var5) {
          super();
-         this.modelBakery = modelBakery;
-         this.missingModel = missingModel;
-         this.modelCache = modelCache;
-         this.atlasPreparations = atlasPreparations;
-         this.readyForUpload = readyForUpload;
+         this.modelBakery = var1;
+         this.missingModel = var2;
+         this.modelCache = var3;
+         this.atlasPreparations = var4;
+         this.readyForUpload = var5;
       }
 
       public ModelBakery modelBakery() {

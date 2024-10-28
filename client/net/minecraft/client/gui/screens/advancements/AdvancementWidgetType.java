@@ -4,8 +4,8 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.resources.ResourceLocation;
 
 public enum AdvancementWidgetType {
-   OBTAINED(new ResourceLocation("advancements/box_obtained"), new ResourceLocation("advancements/task_frame_obtained"), new ResourceLocation("advancements/challenge_frame_obtained"), new ResourceLocation("advancements/goal_frame_obtained")),
-   UNOBTAINED(new ResourceLocation("advancements/box_unobtained"), new ResourceLocation("advancements/task_frame_unobtained"), new ResourceLocation("advancements/challenge_frame_unobtained"), new ResourceLocation("advancements/goal_frame_unobtained"));
+   OBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_obtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_obtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_obtained")),
+   UNOBTAINED(ResourceLocation.withDefaultNamespace("advancements/box_unobtained"), ResourceLocation.withDefaultNamespace("advancements/task_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/challenge_frame_unobtained"), ResourceLocation.withDefaultNamespace("advancements/goal_frame_unobtained"));
 
    private final ResourceLocation boxSprite;
    private final ResourceLocation taskFrameSprite;

@@ -26,13 +26,13 @@ public record TrimMaterial(String assetName, Holder<Item> ingredient, float item
    public static final Codec<Holder<TrimMaterial>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<TrimMaterial>> STREAM_CODEC;
 
-   public TrimMaterial(String assetName, Holder<Item> ingredient, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials, Component description) {
+   public TrimMaterial(String var1, Holder<Item> var2, float var3, Map<Holder<ArmorMaterial>, String> var4, Component var5) {
       super();
-      this.assetName = assetName;
-      this.ingredient = ingredient;
-      this.itemModelIndex = itemModelIndex;
-      this.overrideArmorMaterials = overrideArmorMaterials;
-      this.description = description;
+      this.assetName = var1;
+      this.ingredient = var2;
+      this.itemModelIndex = var3;
+      this.overrideArmorMaterials = var4;
+      this.description = var5;
    }
 
    public static TrimMaterial create(String var0, Item var1, float var2, Component var3, Map<Holder<ArmorMaterial>, String> var4) {

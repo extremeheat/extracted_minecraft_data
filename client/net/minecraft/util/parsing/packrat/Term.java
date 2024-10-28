@@ -57,9 +57,9 @@ public interface Term<S> {
    }
 
    public static record Reference<S, T>(Atom<T> name) implements Term<S> {
-      public Reference(Atom<T> name) {
+      public Reference(Atom<T> var1) {
          super();
-         this.name = name;
+         this.name = var1;
       }
 
       public boolean parse(ParseState<S> var1, Scope var2, Control var3) {
@@ -78,10 +78,10 @@ public interface Term<S> {
    }
 
    public static record Marker<S, T>(Atom<T> name, T value) implements Term<S> {
-      public Marker(Atom<T> name, T value) {
+      public Marker(Atom<T> var1, T var2) {
          super();
-         this.name = name;
-         this.value = value;
+         this.name = var1;
+         this.value = var2;
       }
 
       public boolean parse(ParseState<S> var1, Scope var2, Control var3) {
@@ -99,9 +99,9 @@ public interface Term<S> {
    }
 
    public static record Sequence<S>(List<Term<S>> elements) implements Term<S> {
-      public Sequence(List<Term<S>> elements) {
+      public Sequence(List<Term<S>> var1) {
          super();
-         this.elements = elements;
+         this.elements = var1;
       }
 
       public boolean parse(ParseState<S> var1, Scope var2, Control var3) {
@@ -127,9 +127,9 @@ public interface Term<S> {
    }
 
    public static record Alternative<S>(List<Term<S>> elements) implements Term<S> {
-      public Alternative(List<Term<S>> elements) {
+      public Alternative(List<Term<S>> var1) {
          super();
-         this.elements = elements;
+         this.elements = var1;
       }
 
       public boolean parse(ParseState<S> var1, Scope var2, Control var3) {
@@ -163,9 +163,9 @@ public interface Term<S> {
    }
 
    public static record Maybe<S>(Term<S> term) implements Term<S> {
-      public Maybe(Term<S> term) {
+      public Maybe(Term<S> var1) {
          super();
-         this.term = term;
+         this.term = var1;
       }
 
       public boolean parse(ParseState<S> var1, Scope var2, Control var3) {

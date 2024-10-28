@@ -89,7 +89,7 @@ public class SurfaceRules {
    }
 
    public static ConditionSource verticalGradient(String var0, VerticalAnchor var1, VerticalAnchor var2) {
-      return new VerticalGradientConditionSource(new ResourceLocation(var0), var1, var2);
+      return new VerticalGradientConditionSource(ResourceLocation.parse(var0), var1, var2);
    }
 
    public static ConditionSource steep() {
@@ -149,12 +149,12 @@ public class SurfaceRules {
          return var0.group(Codec.INT.fieldOf("offset").forGetter(StoneDepthCheck::offset), Codec.BOOL.fieldOf("add_surface_depth").forGetter(StoneDepthCheck::addSurfaceDepth), Codec.INT.fieldOf("secondary_depth_range").forGetter(StoneDepthCheck::secondaryDepthRange), CaveSurface.CODEC.fieldOf("surface_type").forGetter(StoneDepthCheck::surfaceType)).apply(var0, StoneDepthCheck::new);
       }));
 
-      StoneDepthCheck(int offset, boolean addSurfaceDepth, int secondaryDepthRange, CaveSurface surfaceType) {
+      StoneDepthCheck(int var1, boolean var2, int var3, CaveSurface var4) {
          super();
-         this.offset = offset;
-         this.addSurfaceDepth = addSurfaceDepth;
-         this.secondaryDepthRange = secondaryDepthRange;
-         this.surfaceType = surfaceType;
+         this.offset = var1;
+         this.addSurfaceDepth = var2;
+         this.secondaryDepthRange = var3;
+         this.surfaceType = var4;
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -205,9 +205,9 @@ public class SurfaceRules {
    static record NotConditionSource(ConditionSource target) implements ConditionSource {
       static final KeyDispatchDataCodec<NotConditionSource> CODEC;
 
-      NotConditionSource(ConditionSource target) {
+      NotConditionSource(ConditionSource var1) {
          super();
-         this.target = target;
+         this.target = var1;
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -262,11 +262,11 @@ public class SurfaceRules {
          return var0.group(VerticalAnchor.CODEC.fieldOf("anchor").forGetter(YConditionSource::anchor), Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(YConditionSource::surfaceDepthMultiplier), Codec.BOOL.fieldOf("add_stone_depth").forGetter(YConditionSource::addStoneDepth)).apply(var0, YConditionSource::new);
       }));
 
-      YConditionSource(VerticalAnchor anchor, int surfaceDepthMultiplier, boolean addStoneDepth) {
+      YConditionSource(VerticalAnchor var1, int var2, boolean var3) {
          super();
-         this.anchor = anchor;
-         this.surfaceDepthMultiplier = surfaceDepthMultiplier;
-         this.addStoneDepth = addStoneDepth;
+         this.anchor = var1;
+         this.surfaceDepthMultiplier = var2;
+         this.addStoneDepth = var3;
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -313,11 +313,11 @@ public class SurfaceRules {
          return var0.group(Codec.INT.fieldOf("offset").forGetter(WaterConditionSource::offset), Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(WaterConditionSource::surfaceDepthMultiplier), Codec.BOOL.fieldOf("add_stone_depth").forGetter(WaterConditionSource::addStoneDepth)).apply(var0, WaterConditionSource::new);
       }));
 
-      WaterConditionSource(int offset, int surfaceDepthMultiplier, boolean addStoneDepth) {
+      WaterConditionSource(int var1, int var2, boolean var3) {
          super();
-         this.offset = offset;
-         this.surfaceDepthMultiplier = surfaceDepthMultiplier;
-         this.addStoneDepth = addStoneDepth;
+         this.offset = var1;
+         this.surfaceDepthMultiplier = var2;
+         this.addStoneDepth = var3;
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -425,11 +425,11 @@ public class SurfaceRules {
          return var0.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseThresholdConditionSource::noise), Codec.DOUBLE.fieldOf("min_threshold").forGetter(NoiseThresholdConditionSource::minThreshold), Codec.DOUBLE.fieldOf("max_threshold").forGetter(NoiseThresholdConditionSource::maxThreshold)).apply(var0, NoiseThresholdConditionSource::new);
       }));
 
-      NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold) {
+      NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> var1, double var2, double var4) {
          super();
-         this.noise = noise;
-         this.minThreshold = minThreshold;
-         this.maxThreshold = maxThreshold;
+         this.noise = var1;
+         this.minThreshold = var2;
+         this.maxThreshold = var4;
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -476,11 +476,11 @@ public class SurfaceRules {
          return var0.group(ResourceLocation.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new);
       }));
 
-      VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) {
+      VerticalGradientConditionSource(ResourceLocation var1, VerticalAnchor var2, VerticalAnchor var3) {
          super();
-         this.randomName = randomName;
-         this.trueAtAndBelow = trueAtAndBelow;
-         this.falseAtAndAbove = falseAtAndAbove;
+         this.randomName = var1;
+         this.trueAtAndBelow = var2;
+         this.falseAtAndAbove = var3;
       }
 
       public KeyDispatchDataCodec<? extends ConditionSource> codec() {
@@ -645,10 +645,10 @@ public class SurfaceRules {
          return var0.group(SurfaceRules.ConditionSource.CODEC.fieldOf("if_true").forGetter(TestRuleSource::ifTrue), SurfaceRules.RuleSource.CODEC.fieldOf("then_run").forGetter(TestRuleSource::thenRun)).apply(var0, TestRuleSource::new);
       }));
 
-      TestRuleSource(ConditionSource ifTrue, RuleSource thenRun) {
+      TestRuleSource(ConditionSource var1, RuleSource var2) {
          super();
-         this.ifTrue = ifTrue;
-         this.thenRun = thenRun;
+         this.ifTrue = var1;
+         this.thenRun = var2;
       }
 
       public KeyDispatchDataCodec<? extends RuleSource> codec() {
@@ -691,9 +691,9 @@ public class SurfaceRules {
    private static record SequenceRuleSource(List<RuleSource> sequence) implements RuleSource {
       static final KeyDispatchDataCodec<SequenceRuleSource> CODEC;
 
-      SequenceRuleSource(List<RuleSource> sequence) {
+      SequenceRuleSource(List<RuleSource> var1) {
          super();
-         this.sequence = sequence;
+         this.sequence = var1;
       }
 
       public KeyDispatchDataCodec<? extends RuleSource> codec() {
@@ -737,10 +737,10 @@ public class SurfaceRules {
          this(var1, new StateRule(var1));
       }
 
-      private BlockRuleSource(BlockState resultState, StateRule rule) {
+      private BlockRuleSource(BlockState var1, StateRule var2) {
          super();
-         this.resultState = resultState;
-         this.rule = rule;
+         this.resultState = var1;
+         this.rule = var2;
       }
 
       public KeyDispatchDataCodec<? extends RuleSource> codec() {
@@ -799,9 +799,9 @@ public class SurfaceRules {
    }
 
    private static record SequenceRule(List<SurfaceRule> rules) implements SurfaceRule {
-      SequenceRule(List<SurfaceRule> rules) {
+      SequenceRule(List<SurfaceRule> var1) {
          super();
-         this.rules = rules;
+         this.rules = var1;
       }
 
       @Nullable
@@ -827,10 +827,10 @@ public class SurfaceRules {
    }
 
    private static record TestRule(Condition condition, SurfaceRule followup) implements SurfaceRule {
-      TestRule(Condition condition, SurfaceRule followup) {
+      TestRule(Condition var1, SurfaceRule var2) {
          super();
-         this.condition = condition;
-         this.followup = followup;
+         this.condition = var1;
+         this.followup = var2;
       }
 
       @Nullable
@@ -848,9 +848,9 @@ public class SurfaceRules {
    }
 
    static record StateRule(BlockState state) implements SurfaceRule {
-      StateRule(BlockState state) {
+      StateRule(BlockState var1) {
          super();
-         this.state = state;
+         this.state = var1;
       }
 
       public BlockState tryApply(int var1, int var2, int var3) {
@@ -868,9 +868,9 @@ public class SurfaceRules {
    }
 
    private static record NotCondition(Condition target) implements Condition {
-      NotCondition(Condition target) {
+      NotCondition(Condition var1) {
          super();
-         this.target = target;
+         this.target = var1;
       }
 
       public boolean test() {

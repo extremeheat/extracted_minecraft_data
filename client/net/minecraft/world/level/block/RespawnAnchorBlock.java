@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -83,7 +84,7 @@ public class RespawnAnchorBlock extends Block {
             ServerPlayer var6 = (ServerPlayer)var4;
             if (var6.getRespawnDimension() != var2.dimension() || !var3.equals(var6.getRespawnPosition())) {
                var6.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
-               var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (SoundEvent)SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                return InteractionResult.SUCCESS;
             }
          }
@@ -142,7 +143,7 @@ public class RespawnAnchorBlock extends Block {
       BlockState var4 = (BlockState)var3.setValue(CHARGE, (Integer)var3.getValue(CHARGE) + 1);
       var1.setBlock(var2, var4, 3);
       var1.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var0, var4));
-      var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, (SoundEvent)SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {

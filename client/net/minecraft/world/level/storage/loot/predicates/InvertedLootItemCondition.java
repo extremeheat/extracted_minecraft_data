@@ -12,9 +12,9 @@ public record InvertedLootItemCondition(LootItemCondition term) implements LootI
       return var0.group(LootItemCondition.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(var0, InvertedLootItemCondition::new);
    });
 
-   public InvertedLootItemCondition(LootItemCondition term) {
+   public InvertedLootItemCondition(LootItemCondition var1) {
       super();
-      this.term = term;
+      this.term = var1;
    }
 
    public LootItemConditionType getType() {

@@ -33,7 +33,6 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
 
    public DynamicTexture(int var1, int var2, boolean var3) {
       super();
-      RenderSystem.assertOnGameThreadOrInit();
       this.pixels = new NativeImage(var1, var2, var3);
       TextureUtil.prepareImage(this.getId(), this.pixels.getWidth(), this.pixels.getHeight());
    }

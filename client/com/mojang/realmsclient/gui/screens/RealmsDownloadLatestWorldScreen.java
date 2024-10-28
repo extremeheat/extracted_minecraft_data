@@ -202,12 +202,17 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private void downloadSave() {
       (new Thread(() -> {
          try {
-            if (!DOWNLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
-               this.status = Component.translatable("mco.download.failed");
-               return;
-            }
+            try {
+               if (!DOWNLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
+                  this.status = Component.translatable("mco.download.failed");
+                  return;
+               }
 
-            if (!this.cancelled) {
+               if (this.cancelled) {
+                  this.downloadCancelled();
+                  return;
+               }
+
                this.status = Component.translatable("mco.download.downloading", this.worldName);
                FileDownload var1 = new FileDownload();
                var1.contentLength(this.worldDownload.downloadLink);
@@ -246,26 +251,22 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                this.status = Component.translatable("mco.download.done");
                this.cancelButton.setMessage(CommonComponents.GUI_DONE);
                return;
+            } catch (InterruptedException var9) {
+               LOGGER.error("Could not acquire upload lock");
+            } catch (Exception var10) {
+               this.errorMessage = Component.translatable("mco.download.failed");
+               LOGGER.info("Exception while downloading world", var10);
             }
 
-            this.downloadCancelled();
-         } catch (InterruptedException var9) {
-            LOGGER.error("Could not acquire upload lock");
-            return;
-         } catch (Exception var10) {
-            this.errorMessage = Component.translatable("mco.download.failed");
-            LOGGER.info("Exception while downloading world", var10);
-            return;
          } finally {
             if (!DOWNLOAD_LOCK.isHeldByCurrentThread()) {
                return;
+            } else {
+               DOWNLOAD_LOCK.unlock();
+               this.showDots = false;
+               this.finished = true;
             }
-
-            DOWNLOAD_LOCK.unlock();
-            this.showDots = false;
-            this.finished = true;
          }
-
       })).start();
    }
 

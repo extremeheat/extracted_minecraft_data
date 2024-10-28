@@ -15,8 +15,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -36,7 +34,6 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects) {
    public static final PotionContents EMPTY = new PotionContents(Optional.empty(), Optional.empty(), List.of());
    private static final Component NO_EFFECT;
-   private static final int EMPTY_COLOR = -524040;
    private static final int BASE_POTION_COLOR = -13083194;
    private static final Codec<PotionContents> FULL_CODEC;
    public static final Codec<PotionContents> CODEC;
@@ -46,11 +43,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       this(Optional.of(var1), Optional.empty(), List.of());
    }
 
-   public PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects) {
+   public PotionContents(Optional<Holder<Potion>> var1, Optional<Integer> var2, List<MobEffectInstance> var3) {
       super();
-      this.potion = potion;
-      this.customColor = customColor;
-      this.customEffects = customEffects;
+      this.potion = var1;
+      this.customColor = var2;
+      this.customEffects = var3;
    }
 
    public static ItemStack createItemStack(Item var0, Holder<Potion> var1) {
@@ -220,9 +217,9 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    static {
       NO_EFFECT = Component.translatable("effect.none").withStyle(ChatFormatting.GRAY);
       FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(BuiltInRegistries.POTION.holderByNameCodec().optionalFieldOf("potion").forGetter(PotionContents::potion), Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor), MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects)).apply(var0, PotionContents::new);
+         return var0.group(Potion.CODEC.optionalFieldOf("potion").forGetter(PotionContents::potion), Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor), MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects)).apply(var0, PotionContents::new);
       });
-      CODEC = Codec.withAlternative(FULL_CODEC, BuiltInRegistries.POTION.holderByNameCodec(), PotionContents::new);
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.POTION).apply(ByteBufCodecs::optional), PotionContents::potion, ByteBufCodecs.INT.apply(ByteBufCodecs::optional), PotionContents::customColor, MobEffectInstance.STREAM_CODEC.apply(ByteBufCodecs.list()), PotionContents::customEffects, PotionContents::new);
+      CODEC = Codec.withAlternative(FULL_CODEC, Potion.CODEC, PotionContents::new);
+      STREAM_CODEC = StreamCodec.composite(Potion.STREAM_CODEC.apply(ByteBufCodecs::optional), PotionContents::potion, ByteBufCodecs.INT.apply(ByteBufCodecs::optional), PotionContents::customColor, MobEffectInstance.STREAM_CODEC.apply(ByteBufCodecs.list()), PotionContents::customEffects, PotionContents::new);
    }
 }

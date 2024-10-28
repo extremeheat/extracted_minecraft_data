@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
 public class EnchantmentNames {
-   private static final ResourceLocation ALT_FONT = new ResourceLocation("minecraft", "alt");
+   private static final ResourceLocation ALT_FONT = ResourceLocation.withDefaultNamespace("alt");
    private static final Style ROOT_STYLE;
    private static final EnchantmentNames INSTANCE;
    private final RandomSource random = RandomSource.create();

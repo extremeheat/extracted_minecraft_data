@@ -75,10 +75,10 @@ public class ResourceKey<T> {
       final ResourceLocation registry;
       final ResourceLocation location;
 
-      InternKey(ResourceLocation registry, ResourceLocation location) {
+      InternKey(ResourceLocation var1, ResourceLocation var2) {
          super();
-         this.registry = registry;
-         this.location = location;
+         this.registry = var1;
+         this.location = var2;
       }
 
       public ResourceLocation registry() {

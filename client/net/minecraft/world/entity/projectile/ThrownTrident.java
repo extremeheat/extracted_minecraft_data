@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -112,7 +113,7 @@ public class ThrownTrident extends AbstractArrow {
       DamageSource var5 = this.damageSources().trident(this, (Entity)(var4 == null ? this : var4));
       Level var7 = this.level();
       if (var7 instanceof ServerLevel var6) {
-         var3 = EnchantmentHelper.modifyDamage(var6, this.getPickupItemStackOrigin(), var2, var5, var3);
+         var3 = EnchantmentHelper.modifyDamage(var6, this.getWeaponItem(), var2, var5, var3);
       }
 
       this.dealtDamage = true;
@@ -124,7 +125,7 @@ public class ThrownTrident extends AbstractArrow {
          var7 = this.level();
          if (var7 instanceof ServerLevel) {
             var6 = (ServerLevel)var7;
-            EnchantmentHelper.doPostAttackEffects(var6, var2, var5);
+            EnchantmentHelper.doPostAttackEffectsWithItemSource(var6, var2, var5, this.getWeaponItem());
          }
 
          if (var2 instanceof LivingEntity) {
@@ -139,17 +140,21 @@ public class ThrownTrident extends AbstractArrow {
    }
 
    protected void hitBlockEnchantmentEffects(ServerLevel var1, BlockHitResult var2, ItemStack var3) {
-      Entity var5 = this.getOwner();
+      Vec3 var4 = var2.getBlockPos().clampLocationWithin(var2.getLocation());
+      Entity var6 = this.getOwner();
       LivingEntity var10002;
-      if (var5 instanceof LivingEntity var4) {
-         var10002 = var4;
+      if (var6 instanceof LivingEntity var5) {
+         var10002 = var5;
       } else {
          var10002 = null;
       }
 
-      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var2.getLocation(), this::kill);
+      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> {
+         this.kill();
+      });
    }
 
+   @Nonnull
    protected ItemStack getWeaponItem() {
       return this.getPickupItemStackOrigin();
    }

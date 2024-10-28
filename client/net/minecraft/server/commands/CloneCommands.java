@@ -245,10 +245,10 @@ public class CloneCommands {
    }
 
    private static record DimensionAndPosition(ServerLevel dimension, BlockPos position) {
-      DimensionAndPosition(ServerLevel dimension, BlockPos position) {
+      DimensionAndPosition(ServerLevel var1, BlockPos var2) {
          super();
-         this.dimension = dimension;
-         this.position = position;
+         this.dimension = var1;
+         this.position = var2;
       }
 
       public ServerLevel dimension() {
@@ -285,10 +285,10 @@ public class CloneCommands {
       final CompoundTag tag;
       final DataComponentMap components;
 
-      CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
+      CloneBlockEntityInfo(CompoundTag var1, DataComponentMap var2) {
          super();
-         this.tag = tag;
-         this.components = components;
+         this.tag = var1;
+         this.components = var2;
       }
 
       public CompoundTag tag() {
@@ -306,11 +306,11 @@ public class CloneCommands {
       @Nullable
       final CloneBlockEntityInfo blockEntityInfo;
 
-      CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo) {
+      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3) {
          super();
-         this.pos = pos;
-         this.state = state;
-         this.blockEntityInfo = blockEntityInfo;
+         this.pos = var1;
+         this.state = var2;
+         this.blockEntityInfo = var3;
       }
 
       public BlockPos pos() {

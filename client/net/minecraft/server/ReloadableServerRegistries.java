@@ -61,7 +61,8 @@ public class ReloadableServerRegistries {
       return CompletableFuture.supplyAsync(() -> {
          MappedRegistry var3 = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
          HashMap var4 = new HashMap();
-         SimpleJsonResourceReloadListener.scanDirectory(var2, var0.directory(), GSON, var4);
+         String var5 = Registries.elementsDirPath(var0.registryKey());
+         SimpleJsonResourceReloadListener.scanDirectory(var2, var5, GSON, var4);
          var4.forEach((var3x, var4x) -> {
             var0.deserialize(var3x, var1, var4x).ifPresent((var3xx) -> {
                var3.register(ResourceKey.create(var0.registryKey(), var3x), var3xx, DEFAULT_REGISTRATION_INFO);

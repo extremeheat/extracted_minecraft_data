@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -13,11 +14,11 @@ public class EnderChestBlockEntity extends BlockEntity implements LidBlockEntity
    private final ChestLidController chestLidController = new ChestLidController();
    private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
       protected void onOpen(Level var1, BlockPos var2, BlockState var3) {
-         var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.ENDER_CHEST_OPEN, SoundSource.BLOCKS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
+         var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, (SoundEvent)SoundEvents.ENDER_CHEST_OPEN, SoundSource.BLOCKS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
       }
 
       protected void onClose(Level var1, BlockPos var2, BlockState var3) {
-         var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.ENDER_CHEST_CLOSE, SoundSource.BLOCKS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
+         var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, (SoundEvent)SoundEvents.ENDER_CHEST_CLOSE, SoundSource.BLOCKS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
       }
 
       protected void openerCountChanged(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {

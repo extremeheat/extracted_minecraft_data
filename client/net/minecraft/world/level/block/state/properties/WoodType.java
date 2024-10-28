@@ -29,14 +29,14 @@ public record WoodType(String name, BlockSetType setType, SoundType soundType, S
       this(var1, var2, SoundType.WOOD, SoundType.HANGING_SIGN, SoundEvents.FENCE_GATE_CLOSE, SoundEvents.FENCE_GATE_OPEN);
    }
 
-   public WoodType(String name, BlockSetType setType, SoundType soundType, SoundType hangingSignSoundType, SoundEvent fenceGateClose, SoundEvent fenceGateOpen) {
+   public WoodType(String var1, BlockSetType var2, SoundType var3, SoundType var4, SoundEvent var5, SoundEvent var6) {
       super();
-      this.name = name;
-      this.setType = setType;
-      this.soundType = soundType;
-      this.hangingSignSoundType = hangingSignSoundType;
-      this.fenceGateClose = fenceGateClose;
-      this.fenceGateOpen = fenceGateOpen;
+      this.name = var1;
+      this.setType = var2;
+      this.soundType = var3;
+      this.hangingSignSoundType = var4;
+      this.fenceGateClose = var5;
+      this.fenceGateOpen = var6;
    }
 
    private static WoodType register(WoodType var0) {

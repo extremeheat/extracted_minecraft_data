@@ -5,6 +5,7 @@ import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.dto.RealmsServer;
+import com.mojang.realmsclient.dto.RealmsServerPlayerLists;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import com.mojang.realmsclient.gui.task.RepeatedDelayStrategy;
 import com.mojang.realmsclient.util.RealmsPersistence;
@@ -22,6 +23,7 @@ public class RealmsDataFetcher {
    public final DataFetcher.Task<Integer> pendingInvitesTask;
    public final DataFetcher.Task<Boolean> trialAvailabilityTask;
    public final DataFetcher.Task<RealmsNews> newsTask;
+   public final DataFetcher.Task<RealmsServerPlayerLists> onlinePlayersTask;
    public final RealmsNewsManager newsManager;
 
    public RealmsDataFetcher(RealmsClient var1) {
@@ -44,7 +46,10 @@ public class RealmsDataFetcher {
       var10001 = this.dataFetcher;
       Objects.requireNonNull(var1);
       this.notificationsTask = var10001.createTask("notifications", var1::getNotifications, Duration.ofMinutes(5L), RepeatedDelayStrategy.CONSTANT);
-      this.tasks = List.of(this.notificationsTask, this.serverListUpdateTask, this.pendingInvitesTask, this.trialAvailabilityTask, this.newsTask);
+      var10001 = this.dataFetcher;
+      Objects.requireNonNull(var1);
+      this.onlinePlayersTask = var10001.createTask("online players", var1::getLiveStats, Duration.ofSeconds(10L), RepeatedDelayStrategy.CONSTANT);
+      this.tasks = List.of(this.notificationsTask, this.serverListUpdateTask, this.pendingInvitesTask, this.trialAvailabilityTask, this.newsTask, this.onlinePlayersTask);
    }
 
    public List<DataFetcher.Task<?>> getTasks() {
@@ -52,10 +57,10 @@ public class RealmsDataFetcher {
    }
 
    public static record ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
-      public ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
+      public ServerListData(List<RealmsServer> var1, List<RealmsServer> var2) {
          super();
-         this.serverList = serverList;
-         this.availableSnapshotServers = availableSnapshotServers;
+         this.serverList = var1;
+         this.availableSnapshotServers = var2;
       }
 
       public List<RealmsServer> serverList() {

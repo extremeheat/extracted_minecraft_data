@@ -21,15 +21,15 @@ public abstract class AgeableHierarchicalModel<E extends Entity> extends Hierarc
       this.youngScaleFactor = var1;
    }
 
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
       if (this.young) {
          var1.pushPose();
          var1.scale(this.youngScaleFactor, this.youngScaleFactor, this.youngScaleFactor);
          var1.translate(0.0F, this.bodyYOffset / 16.0F, 0.0F);
-         this.root().render(var1, var2, var3, var4, var5, var6, var7, var8);
+         this.root().render(var1, var2, var3, var4, var5);
          var1.popPose();
       } else {
-         this.root().render(var1, var2, var3, var4, var5, var6, var7, var8);
+         this.root().render(var1, var2, var3, var4, var5);
       }
 
    }

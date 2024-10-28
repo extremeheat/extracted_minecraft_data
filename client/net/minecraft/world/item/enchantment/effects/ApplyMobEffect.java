@@ -23,13 +23,13 @@ public record ApplyMobEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDu
       return var0.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyMobEffect::toApply), LevelBasedValue.CODEC.fieldOf("min_duration").forGetter(ApplyMobEffect::minDuration), LevelBasedValue.CODEC.fieldOf("max_duration").forGetter(ApplyMobEffect::maxDuration), LevelBasedValue.CODEC.fieldOf("min_amplifier").forGetter(ApplyMobEffect::minAmplifier), LevelBasedValue.CODEC.fieldOf("max_amplifier").forGetter(ApplyMobEffect::maxAmplifier)).apply(var0, ApplyMobEffect::new);
    });
 
-   public ApplyMobEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) {
+   public ApplyMobEffect(HolderSet<MobEffect> var1, LevelBasedValue var2, LevelBasedValue var3, LevelBasedValue var4, LevelBasedValue var5) {
       super();
-      this.toApply = toApply;
-      this.minDuration = minDuration;
-      this.maxDuration = maxDuration;
-      this.minAmplifier = minAmplifier;
-      this.maxAmplifier = maxAmplifier;
+      this.toApply = var1;
+      this.minDuration = var2;
+      this.maxDuration = var3;
+      this.minAmplifier = var4;
+      this.maxAmplifier = var5;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
@@ -38,7 +38,7 @@ public record ApplyMobEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDu
          Optional var8 = this.toApply.getRandomElement(var7);
          if (var8.isPresent()) {
             int var9 = Math.round(Mth.randomBetween(var7, this.minDuration.calculate(var2), this.maxDuration.calculate(var2)) * 20.0F);
-            int var10 = Math.min(0, Math.round(Mth.randomBetween(var7, this.minAmplifier.calculate(var2), this.maxAmplifier.calculate(var2))));
+            int var10 = Math.max(0, Math.round(Mth.randomBetween(var7, this.minAmplifier.calculate(var2), this.maxAmplifier.calculate(var2))));
             var6.addEffect(new MobEffectInstance((Holder)var8.get(), var9, var10));
          }
       }

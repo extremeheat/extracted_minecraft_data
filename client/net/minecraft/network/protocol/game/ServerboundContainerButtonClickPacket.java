@@ -9,10 +9,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundContainerButtonClickPacket(int containerId, int buttonId) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundContainerButtonClickPacket> STREAM_CODEC;
 
-   public ServerboundContainerButtonClickPacket(int containerId, int buttonId) {
+   public ServerboundContainerButtonClickPacket(int var1, int var2) {
       super();
-      this.containerId = containerId;
-      this.buttonId = buttonId;
+      this.containerId = var1;
+      this.buttonId = var2;
    }
 
    public PacketType<ServerboundContainerButtonClickPacket> type() {

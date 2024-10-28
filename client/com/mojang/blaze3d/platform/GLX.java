@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -57,12 +58,10 @@ public class GLX {
    }
 
    public static String _getLWJGLVersion() {
-      RenderSystem.assertInInitPhase();
       return Version.getVersion();
    }
 
    public static LongSupplier _initGlfw() {
-      RenderSystem.assertInInitPhase();
       Window.checkGlfwError((var0x, var1x) -> {
          throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error before init: [0x%X]%s", var0x, var1x));
       });
@@ -90,7 +89,6 @@ public class GLX {
    }
 
    public static void _setGlfwErrorCallback(GLFWErrorCallbackI var0) {
-      RenderSystem.assertInInitPhase();
       GLFWErrorCallback var1 = GLFW.glfwSetErrorCallback(var0);
       if (var1 != null) {
          var1.free();
@@ -103,8 +101,6 @@ public class GLX {
    }
 
    public static void _init(int var0, boolean var1) {
-      RenderSystem.assertInInitPhase();
-
       try {
          CentralProcessor var2 = (new SystemInfo()).getHardware().getProcessor();
          cpuInfo = String.format(Locale.ROOT, "%dx %s", var2.getLogicalProcessorCount(), var2.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");
@@ -119,51 +115,52 @@ public class GLX {
    }
 
    public static void _renderCrosshair(int var0, boolean var1, boolean var2, boolean var3) {
-      RenderSystem.assertOnRenderThread();
-      GlStateManager._depthMask(false);
-      GlStateManager._disableCull();
-      RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
-      Tesselator var4 = RenderSystem.renderThreadTesselator();
-      BufferBuilder var5 = var4.getBuilder();
-      RenderSystem.lineWidth(4.0F);
-      var5.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-      if (var1) {
-         var5.vertex(0.0, 0.0, 0.0).color(0, 0, 0, 255).normal(1.0F, 0.0F, 0.0F).endVertex();
-         var5.vertex((double)var0, 0.0, 0.0).color(0, 0, 0, 255).normal(1.0F, 0.0F, 0.0F).endVertex();
-      }
+      if (var1 || var2 || var3) {
+         RenderSystem.assertOnRenderThread();
+         GlStateManager._depthMask(false);
+         GlStateManager._disableCull();
+         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+         Tesselator var4 = RenderSystem.renderThreadTesselator();
+         BufferBuilder var5 = var4.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+         RenderSystem.lineWidth(4.0F);
+         if (var1) {
+            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F);
+            var5.addVertex((float)var0, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F);
+         }
 
-      if (var2) {
-         var5.vertex(0.0, 0.0, 0.0).color(0, 0, 0, 255).normal(0.0F, 1.0F, 0.0F).endVertex();
-         var5.vertex(0.0, (double)var0, 0.0).color(0, 0, 0, 255).normal(0.0F, 1.0F, 0.0F).endVertex();
-      }
+         if (var2) {
+            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F);
+            var5.addVertex(0.0F, (float)var0, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F);
+         }
 
-      if (var3) {
-         var5.vertex(0.0, 0.0, 0.0).color(0, 0, 0, 255).normal(0.0F, 0.0F, 1.0F).endVertex();
-         var5.vertex(0.0, 0.0, (double)var0).color(0, 0, 0, 255).normal(0.0F, 0.0F, 1.0F).endVertex();
-      }
+         if (var3) {
+            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F);
+            var5.addVertex(0.0F, 0.0F, (float)var0).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F);
+         }
 
-      var4.end();
-      RenderSystem.lineWidth(2.0F);
-      var5.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-      if (var1) {
-         var5.vertex(0.0, 0.0, 0.0).color(255, 0, 0, 255).normal(1.0F, 0.0F, 0.0F).endVertex();
-         var5.vertex((double)var0, 0.0, 0.0).color(255, 0, 0, 255).normal(1.0F, 0.0F, 0.0F).endVertex();
-      }
+         BufferUploader.drawWithShader(var5.buildOrThrow());
+         RenderSystem.lineWidth(2.0F);
+         var5 = var4.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+         if (var1) {
+            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+            var5.addVertex((float)var0, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+         }
 
-      if (var2) {
-         var5.vertex(0.0, 0.0, 0.0).color(0, 255, 0, 255).normal(0.0F, 1.0F, 0.0F).endVertex();
-         var5.vertex(0.0, (double)var0, 0.0).color(0, 255, 0, 255).normal(0.0F, 1.0F, 0.0F).endVertex();
-      }
+         if (var2) {
+            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+            var5.addVertex(0.0F, (float)var0, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+         }
 
-      if (var3) {
-         var5.vertex(0.0, 0.0, 0.0).color(127, 127, 255, 255).normal(0.0F, 0.0F, 1.0F).endVertex();
-         var5.vertex(0.0, 0.0, (double)var0).color(127, 127, 255, 255).normal(0.0F, 0.0F, 1.0F).endVertex();
-      }
+         if (var3) {
+            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+            var5.addVertex(0.0F, 0.0F, (float)var0).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+         }
 
-      var4.end();
-      RenderSystem.lineWidth(1.0F);
-      GlStateManager._enableCull();
-      GlStateManager._depthMask(true);
+         BufferUploader.drawWithShader(var5.buildOrThrow());
+         RenderSystem.lineWidth(1.0F);
+         GlStateManager._enableCull();
+         GlStateManager._depthMask(true);
+      }
    }
 
    public static <T> T make(Supplier<T> var0) {

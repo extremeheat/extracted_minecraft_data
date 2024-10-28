@@ -51,11 +51,8 @@ public class PoolElementStructurePiece extends StructurePiece {
       this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
       this.groundLevelDelta = var2.getInt("ground_level_delta");
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10001 = StructurePoolElement.CODEC.parse(var3, var2.getCompound("pool_element"));
-      Logger var10002 = LOGGER;
-      Objects.requireNonNull(var10002);
-      this.element = (StructurePoolElement)var10001.resultOrPartial(var10002::error).orElseThrow(() -> {
-         return new IllegalStateException("Invalid pool element found");
+      this.element = (StructurePoolElement)StructurePoolElement.CODEC.parse(var3, var2.getCompound("pool_element")).getPartialOrThrow((var0) -> {
+         return new IllegalStateException("Invalid pool element found: " + var0);
       });
       this.rotation = Rotation.valueOf(var2.getString("rotation"));
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);

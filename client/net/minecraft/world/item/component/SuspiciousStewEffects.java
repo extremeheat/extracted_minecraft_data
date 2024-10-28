@@ -5,8 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -18,9 +16,9 @@ public record SuspiciousStewEffects(List<Entry> effects) {
    public static final Codec<SuspiciousStewEffects> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, SuspiciousStewEffects> STREAM_CODEC;
 
-   public SuspiciousStewEffects(List<Entry> effects) {
+   public SuspiciousStewEffects(List<Entry> var1) {
       super();
-      this.effects = effects;
+      this.effects = var1;
    }
 
    public SuspiciousStewEffects withEffectAdded(Entry var1) {
@@ -38,14 +36,14 @@ public record SuspiciousStewEffects(List<Entry> effects) {
 
    public static record Entry(Holder<MobEffect> effect, int duration) {
       public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("id").forGetter(Entry::effect), Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(Entry::duration)).apply(var0, Entry::new);
+         return var0.group(MobEffect.CODEC.fieldOf("id").forGetter(Entry::effect), Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(Entry::duration)).apply(var0, Entry::new);
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(Holder<MobEffect> effect, int duration) {
+      public Entry(Holder<MobEffect> var1, int var2) {
          super();
-         this.effect = effect;
-         this.duration = duration;
+         this.effect = var1;
+         this.duration = var2;
       }
 
       public MobEffectInstance createEffectInstance() {
@@ -61,7 +59,7 @@ public record SuspiciousStewEffects(List<Entry> effects) {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT), Entry::effect, ByteBufCodecs.VAR_INT, Entry::duration, Entry::new);
+         STREAM_CODEC = StreamCodec.composite(MobEffect.STREAM_CODEC, Entry::effect, ByteBufCodecs.VAR_INT, Entry::duration, Entry::new);
       }
    }
 }

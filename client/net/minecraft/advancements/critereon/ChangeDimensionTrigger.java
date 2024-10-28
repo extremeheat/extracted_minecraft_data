@@ -30,11 +30,11 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<TriggerInstan
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("from").forGetter(TriggerInstance::from), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("to").forGetter(TriggerInstance::to)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ResourceKey<Level>> from, Optional<ResourceKey<Level>> to) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ResourceKey<Level>> var2, Optional<ResourceKey<Level>> var3) {
          super();
-         this.player = player;
-         this.from = from;
-         this.to = to;
+         this.player = var1;
+         this.from = var2;
+         this.to = var3;
       }
 
       public static Criterion<TriggerInstance> changedDimension() {

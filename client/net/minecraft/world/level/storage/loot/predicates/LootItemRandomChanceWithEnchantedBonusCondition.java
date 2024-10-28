@@ -22,10 +22,10 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue ch
       return var0.group(LevelBasedValue.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::chance), Enchantment.CODEC.fieldOf("enchantment").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantment)).apply(var0, LootItemRandomChanceWithEnchantedBonusCondition::new);
    });
 
-   public LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue chance, Holder<Enchantment> enchantment) {
+   public LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue var1, Holder<Enchantment> var2) {
       super();
-      this.chance = chance;
-      this.enchantment = enchantment;
+      this.chance = var1;
+      this.enchantment = var2;
    }
 
    public LootItemConditionType getType() {
@@ -51,7 +51,7 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue ch
    public static LootItemCondition.Builder randomChanceAndLootingBoost(HolderLookup.Provider var0, float var1, float var2) {
       HolderLookup.RegistryLookup var3 = var0.lookupOrThrow(Registries.ENCHANTMENT);
       return () -> {
-         return new LootItemRandomChanceWithEnchantedBonusCondition(new LevelBasedValue.Linear(var1, var2), var3.getOrThrow(Enchantments.LOOTING));
+         return new LootItemRandomChanceWithEnchantedBonusCondition(new LevelBasedValue.Linear(var1 + var2, var2), var3.getOrThrow(Enchantments.LOOTING));
       };
    }
 

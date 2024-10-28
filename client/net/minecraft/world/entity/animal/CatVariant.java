@@ -1,30 +1,35 @@
 package net.minecraft.world.entity.animal;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 public record CatVariant(ResourceLocation texture) {
-   public static final ResourceKey<CatVariant> TABBY = createKey("tabby");
-   public static final ResourceKey<CatVariant> BLACK = createKey("black");
-   public static final ResourceKey<CatVariant> RED = createKey("red");
-   public static final ResourceKey<CatVariant> SIAMESE = createKey("siamese");
-   public static final ResourceKey<CatVariant> BRITISH_SHORTHAIR = createKey("british_shorthair");
-   public static final ResourceKey<CatVariant> CALICO = createKey("calico");
-   public static final ResourceKey<CatVariant> PERSIAN = createKey("persian");
-   public static final ResourceKey<CatVariant> RAGDOLL = createKey("ragdoll");
-   public static final ResourceKey<CatVariant> WHITE = createKey("white");
-   public static final ResourceKey<CatVariant> JELLIE = createKey("jellie");
-   public static final ResourceKey<CatVariant> ALL_BLACK = createKey("all_black");
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<CatVariant>> STREAM_CODEC;
+   public static final ResourceKey<CatVariant> TABBY;
+   public static final ResourceKey<CatVariant> BLACK;
+   public static final ResourceKey<CatVariant> RED;
+   public static final ResourceKey<CatVariant> SIAMESE;
+   public static final ResourceKey<CatVariant> BRITISH_SHORTHAIR;
+   public static final ResourceKey<CatVariant> CALICO;
+   public static final ResourceKey<CatVariant> PERSIAN;
+   public static final ResourceKey<CatVariant> RAGDOLL;
+   public static final ResourceKey<CatVariant> WHITE;
+   public static final ResourceKey<CatVariant> JELLIE;
+   public static final ResourceKey<CatVariant> ALL_BLACK;
 
-   public CatVariant(ResourceLocation texture) {
+   public CatVariant(ResourceLocation var1) {
       super();
-      this.texture = texture;
+      this.texture = var1;
    }
 
    private static ResourceKey<CatVariant> createKey(String var0) {
-      return ResourceKey.create(Registries.CAT_VARIANT, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.CAT_VARIANT, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static CatVariant bootstrap(Registry<CatVariant> var0) {
@@ -42,10 +47,25 @@ public record CatVariant(ResourceLocation texture) {
    }
 
    private static CatVariant register(Registry<CatVariant> var0, ResourceKey<CatVariant> var1, String var2) {
-      return (CatVariant)Registry.register(var0, (ResourceKey)var1, new CatVariant(new ResourceLocation(var2)));
+      return (CatVariant)Registry.register(var0, (ResourceKey)var1, new CatVariant(ResourceLocation.withDefaultNamespace(var2)));
    }
 
    public ResourceLocation texture() {
       return this.texture;
+   }
+
+   static {
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.CAT_VARIANT);
+      TABBY = createKey("tabby");
+      BLACK = createKey("black");
+      RED = createKey("red");
+      SIAMESE = createKey("siamese");
+      BRITISH_SHORTHAIR = createKey("british_shorthair");
+      CALICO = createKey("calico");
+      PERSIAN = createKey("persian");
+      RAGDOLL = createKey("ragdoll");
+      WHITE = createKey("white");
+      JELLIE = createKey("jellie");
+      ALL_BLACK = createKey("all_black");
    }
 }

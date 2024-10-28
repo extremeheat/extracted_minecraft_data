@@ -56,6 +56,6 @@ public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
    }
 
    static {
-      TEXTURES = ImmutableMap.of(EntityType.PIGLIN, new ResourceLocation("textures/entity/piglin/piglin.png"), EntityType.ZOMBIFIED_PIGLIN, new ResourceLocation("textures/entity/piglin/zombified_piglin.png"), EntityType.PIGLIN_BRUTE, new ResourceLocation("textures/entity/piglin/piglin_brute.png"));
+      TEXTURES = ImmutableMap.of(EntityType.PIGLIN, ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin.png"), EntityType.ZOMBIFIED_PIGLIN, ResourceLocation.withDefaultNamespace("textures/entity/piglin/zombified_piglin.png"), EntityType.PIGLIN_BRUTE, ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin_brute.png"));
    }
 }

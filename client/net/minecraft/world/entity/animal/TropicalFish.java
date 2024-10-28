@@ -253,11 +253,11 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
          this(TropicalFish.getPattern(var1), TropicalFish.getBaseColor(var1), TropicalFish.getPatternColor(var1));
       }
 
-      public Variant(Pattern pattern, DyeColor baseColor, DyeColor patternColor) {
+      public Variant(Pattern var1, DyeColor var2, DyeColor var3) {
          super();
-         this.pattern = pattern;
-         this.baseColor = baseColor;
-         this.patternColor = patternColor;
+         this.pattern = var1;
+         this.baseColor = var2;
+         this.patternColor = var3;
       }
 
       public int getPackedId() {

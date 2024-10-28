@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -29,12 +30,12 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
    });
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
-   public AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceLocation> recipes, Optional<CacheableFunction> function) {
+   public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceLocation> var3, Optional<CacheableFunction> var4) {
       super();
-      this.experience = experience;
-      this.loot = loot;
-      this.recipes = recipes;
-      this.function = function;
+      this.experience = var1;
+      this.loot = var2;
+      this.recipes = var3;
+      this.function = var4;
    }
 
    public void grant(ServerPlayer var1) {
@@ -50,7 +51,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          while(var6.hasNext()) {
             ItemStack var7 = (ItemStack)var6.next();
             if (var1.addItem(var7)) {
-               var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+               var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                var3 = true;
             } else {
                ItemEntity var8 = var1.drop(var7, false);

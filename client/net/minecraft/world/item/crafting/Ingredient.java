@@ -203,9 +203,9 @@ public final class Ingredient implements Predicate<ItemStack> {
          })).apply(var0, TagValue::new);
       });
 
-      TagValue(TagKey<Item> tag) {
+      TagValue(TagKey<Item> var1) {
          super();
-         this.tag = tag;
+         this.tag = var1;
       }
 
       public boolean equals(Object var1) {
@@ -240,9 +240,9 @@ public final class Ingredient implements Predicate<ItemStack> {
          })).apply(var0, ItemValue::new);
       });
 
-      private ItemValue(ItemStack item) {
+      private ItemValue(ItemStack var1) {
          super();
-         this.item = item;
+         this.item = var1;
       }
 
       public boolean equals(Object var1) {

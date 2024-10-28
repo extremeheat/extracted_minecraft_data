@@ -8,7 +8,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.FoliageColor;
 
 public class FoliageColorReloadListener extends SimplePreparableReloadListener<int[]> {
-   private static final ResourceLocation LOCATION = new ResourceLocation("textures/colormap/foliage.png");
+   private static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("textures/colormap/foliage.png");
 
    public FoliageColorReloadListener() {
       super();

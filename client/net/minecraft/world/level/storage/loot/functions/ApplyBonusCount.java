@@ -110,9 +110,9 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       });
       public static final FormulaType TYPE;
 
-      UniformBonusCount(int bonusMultiplier) {
+      UniformBonusCount(int var1) {
          super();
-         this.bonusMultiplier = bonusMultiplier;
+         this.bonusMultiplier = var1;
       }
 
       public int calculateNewCount(RandomSource var1, int var2, int var3) {
@@ -128,7 +128,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
 
       static {
-         TYPE = new FormulaType(new ResourceLocation("uniform_bonus_count"), CODEC);
+         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("uniform_bonus_count"), CODEC);
       }
    }
 
@@ -158,7 +158,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
 
       static {
-         TYPE = new FormulaType(new ResourceLocation("ore_drops"), CODEC);
+         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("ore_drops"), CODEC);
       }
    }
 
@@ -168,10 +168,10 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       });
       public static final FormulaType TYPE;
 
-      BinomialWithBonusCount(int extraRounds, float probability) {
+      BinomialWithBonusCount(int var1, float var2) {
          super();
-         this.extraRounds = extraRounds;
-         this.probability = probability;
+         this.extraRounds = var1;
+         this.probability = var2;
       }
 
       public int calculateNewCount(RandomSource var1, int var2, int var3) {
@@ -197,15 +197,15 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
 
       static {
-         TYPE = new FormulaType(new ResourceLocation("binomial_with_bonus_count"), CODEC);
+         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("binomial_with_bonus_count"), CODEC);
       }
    }
 
    private static record FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
-      FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
+      FormulaType(ResourceLocation var1, Codec<? extends Formula> var2) {
          super();
-         this.id = id;
-         this.codec = codec;
+         this.id = var1;
+         this.codec = var2;
       }
 
       public ResourceLocation id() {

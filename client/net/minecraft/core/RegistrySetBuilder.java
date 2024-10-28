@@ -104,10 +104,10 @@ public class RegistrySetBuilder {
       };
 
       record 1Entry<T>(HolderLookup.RegistryLookup<T> lookup, RegistryOps.RegistryInfo<T> opsInfo) {
-         _Entry/* $FF was: 1Entry*/(HolderLookup.RegistryLookup<T> lookup, RegistryOps.RegistryInfo<T> opsInfo) {
+         _Entry/* $FF was: 1Entry*/(HolderLookup.RegistryLookup<T> var1, RegistryOps.RegistryInfo<T> var2) {
             super();
-            this.lookup = lookup;
-            this.opsInfo = opsInfo;
+            this.lookup = var1;
+            this.opsInfo = var2;
          }
 
          public static <T> 1Entry<T> createForContextRegistry(HolderLookup.RegistryLookup<T> var0) {
@@ -208,11 +208,11 @@ public class RegistrySetBuilder {
    }
 
    private static record RegistryStub<T>(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, RegistryBootstrap<T> bootstrap) {
-      RegistryStub(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, RegistryBootstrap<T> bootstrap) {
+      RegistryStub(ResourceKey<? extends Registry<T>> var1, Lifecycle var2, RegistryBootstrap<T> var3) {
          super();
-         this.key = key;
-         this.lifecycle = lifecycle;
-         this.bootstrap = bootstrap;
+         this.key = var1;
+         this.lifecycle = var2;
+         this.bootstrap = var3;
       }
 
       void apply(BuildState var1) {
@@ -262,13 +262,13 @@ public class RegistrySetBuilder {
       final Map<ResourceKey<?>, RegisteredValue<?>> registeredValues;
       final List<RuntimeException> errors;
 
-      private BuildState(UniversalOwner owner, UniversalLookup lookup, Map<ResourceLocation, HolderGetter<?>> registries, Map<ResourceKey<?>, RegisteredValue<?>> registeredValues, List<RuntimeException> errors) {
+      private BuildState(UniversalOwner var1, UniversalLookup var2, Map<ResourceLocation, HolderGetter<?>> var3, Map<ResourceKey<?>, RegisteredValue<?>> var4, List<RuntimeException> var5) {
          super();
-         this.owner = owner;
-         this.lookup = lookup;
-         this.registries = registries;
-         this.registeredValues = registeredValues;
-         this.errors = errors;
+         this.owner = var1;
+         this.lookup = var2;
+         this.registries = var3;
+         this.registeredValues = var4;
+         this.errors = var5;
       }
 
       public static BuildState create(RegistryAccess var0, Stream<ResourceKey<? extends Registry<?>>> var1) {
@@ -368,10 +368,10 @@ public class RegistrySetBuilder {
    }
 
    public static record PatchedRegistries(HolderLookup.Provider full, HolderLookup.Provider patches) {
-      public PatchedRegistries(HolderLookup.Provider full, HolderLookup.Provider patches) {
+      public PatchedRegistries(HolderLookup.Provider var1, HolderLookup.Provider var2) {
          super();
-         this.full = full;
-         this.patches = patches;
+         this.full = var1;
+         this.patches = var2;
       }
 
       public HolderLookup.Provider full() {
@@ -386,11 +386,11 @@ public class RegistrySetBuilder {
    private static record RegistryContents<T>(ResourceKey<? extends Registry<? extends T>> key, Lifecycle lifecycle, Map<ResourceKey<T>, ValueAndHolder<T>> values) {
       final ResourceKey<? extends Registry<? extends T>> key;
 
-      RegistryContents(ResourceKey<? extends Registry<? extends T>> key, Lifecycle lifecycle, Map<ResourceKey<T>, ValueAndHolder<T>> values) {
+      RegistryContents(ResourceKey<? extends Registry<? extends T>> var1, Lifecycle var2, Map<ResourceKey<T>, ValueAndHolder<T>> var3) {
          super();
-         this.key = key;
-         this.lifecycle = lifecycle;
-         this.values = values;
+         this.key = var1;
+         this.lifecycle = var2;
+         this.values = var3;
       }
 
       public HolderLookup.RegistryLookup<T> buildAsLookup(UniversalOwner var1) {
@@ -441,10 +441,10 @@ public class RegistrySetBuilder {
    }
 
    private static record ValueAndHolder<T>(RegisteredValue<T> value, Optional<Holder.Reference<T>> holder) {
-      ValueAndHolder(RegisteredValue<T> value, Optional<Holder.Reference<T>> holder) {
+      ValueAndHolder(RegisteredValue<T> var1, Optional<Holder.Reference<T>> var2) {
          super();
-         this.value = value;
-         this.holder = holder;
+         this.value = var1;
+         this.holder = var2;
       }
 
       public RegisteredValue<T> value() {
@@ -459,10 +459,10 @@ public class RegistrySetBuilder {
    private static record RegisteredValue<T>(T value, Lifecycle lifecycle) {
       final T value;
 
-      RegisteredValue(T value, Lifecycle lifecycle) {
+      RegisteredValue(T var1, Lifecycle var2) {
          super();
-         this.value = value;
-         this.lifecycle = lifecycle;
+         this.value = var1;
+         this.lifecycle = var2;
       }
 
       public T value() {

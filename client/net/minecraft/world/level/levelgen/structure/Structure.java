@@ -178,12 +178,12 @@ public abstract class Structure {
          return var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", TerrainAdjustment.NONE).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new);
       });
 
-      public StructureSettings(HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation) {
+      public StructureSettings(HolderSet<Biome> var1, Map<MobCategory, StructureSpawnOverride> var2, GenerationStep.Decoration var3, TerrainAdjustment var4) {
          super();
-         this.biomes = biomes;
-         this.spawnOverrides = spawnOverrides;
-         this.step = step;
-         this.terrainAdaptation = terrainAdaptation;
+         this.biomes = var1;
+         this.spawnOverrides = var2;
+         this.step = var3;
+         this.terrainAdaptation = var4;
       }
 
       public HolderSet<Biome> biomes() {
@@ -212,18 +212,18 @@ public abstract class Structure {
          this(var1, var2, var3, var4, var5, makeRandom(var6, var8), var6, var8, var9, var10);
       }
 
-      public GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
+      public GenerationContext(RegistryAccess var1, ChunkGenerator var2, BiomeSource var3, RandomState var4, StructureTemplateManager var5, WorldgenRandom var6, long var7, ChunkPos var9, LevelHeightAccessor var10, Predicate<Holder<Biome>> var11) {
          super();
-         this.registryAccess = registryAccess;
-         this.chunkGenerator = chunkGenerator;
-         this.biomeSource = biomeSource;
-         this.randomState = randomState;
-         this.structureTemplateManager = structureTemplateManager;
-         this.random = random;
-         this.seed = seed;
-         this.chunkPos = chunkPos;
-         this.heightAccessor = heightAccessor;
-         this.validBiome = validBiome;
+         this.registryAccess = var1;
+         this.chunkGenerator = var2;
+         this.biomeSource = var3;
+         this.randomState = var4;
+         this.structureTemplateManager = var5;
+         this.random = var6;
+         this.seed = var7;
+         this.chunkPos = var9;
+         this.heightAccessor = var10;
+         this.validBiome = var11;
       }
 
       private static WorldgenRandom makeRandom(long var0, ChunkPos var2) {
@@ -278,10 +278,10 @@ public abstract class Structure {
          this(var1, Either.left(var2));
       }
 
-      public GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
+      public GenerationStub(BlockPos var1, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> var2) {
          super();
-         this.position = position;
-         this.generator = generator;
+         this.position = var1;
+         this.generator = var2;
       }
 
       public StructurePiecesBuilder getPiecesBuilder() {

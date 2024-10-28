@@ -40,7 +40,7 @@ public class LootTableProvider implements DataProvider {
 
    public LootTableProvider(PackOutput var1, Set<ResourceKey<LootTable>> var2, List<SubProviderEntry> var3, CompletableFuture<HolderLookup.Provider> var4) {
       super();
-      this.pathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, "loot_tables");
+      this.pathProvider = var1.createRegistryElementsPathProvider(Registries.LOOT_TABLE);
       this.subProviders = var3;
       this.requiredTables = var2;
       this.registries = var4;
@@ -113,10 +113,10 @@ public class LootTableProvider implements DataProvider {
    public static record SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, LootContextParamSet paramSet) {
       final LootContextParamSet paramSet;
 
-      public SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, LootContextParamSet paramSet) {
+      public SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> var1, LootContextParamSet var2) {
          super();
-         this.provider = provider;
-         this.paramSet = paramSet;
+         this.provider = var1;
+         this.paramSet = var2;
       }
 
       public Function<HolderLookup.Provider, LootTableSubProvider> provider() {

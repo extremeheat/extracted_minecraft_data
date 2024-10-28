@@ -7,10 +7,10 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 
 public record ReportEnvironment(String clientVersion, @Nullable Server server) {
-   public ReportEnvironment(String clientVersion, @Nullable Server server) {
+   public ReportEnvironment(String var1, @Nullable Server var2) {
       super();
-      this.clientVersion = clientVersion;
-      this.server = server;
+      this.clientVersion = var1;
+      this.server = var2;
    }
 
    public static ReportEnvironment local() {
@@ -55,7 +55,7 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
 
    private static String getClientVersion() {
       StringBuilder var0 = new StringBuilder();
-      var0.append("24w18a");
+      var0.append("24w21b");
       if (Minecraft.checkModStatus().shouldReportAsModified()) {
          var0.append(" (modded)");
       }
@@ -78,10 +78,10 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
             this(var1.id, var1.activeSlot);
          }
 
-         public Realm(long realmId, int slotId) {
+         public Realm(long var1, int var3) {
             super();
-            this.realmId = realmId;
-            this.slotId = slotId;
+            this.realmId = var1;
+            this.slotId = var3;
          }
 
          public long realmId() {
@@ -96,9 +96,9 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
       public static record ThirdParty(String ip) implements Server {
          final String ip;
 
-         public ThirdParty(String ip) {
+         public ThirdParty(String var1) {
             super();
-            this.ip = ip;
+            this.ip = var1;
          }
 
          public String ip() {

@@ -60,11 +60,11 @@ public interface GuiSpriteScaling {
          return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(NineSlice::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(NineSlice::height), GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(NineSlice::border)).apply(var0, NineSlice::new);
       }).validate(NineSlice::validate);
 
-      public NineSlice(int width, int height, Border border) {
+      public NineSlice(int var1, int var2, Border var3) {
          super();
-         this.width = width;
-         this.height = height;
-         this.border = border;
+         this.width = var1;
+         this.height = var2;
+         this.border = var3;
       }
 
       private static DataResult<NineSlice> validate(NineSlice var0) {
@@ -103,12 +103,12 @@ public interface GuiSpriteScaling {
          private static final Codec<Border> RECORD_CODEC;
          static final Codec<Border> CODEC;
 
-         public Border(int left, int top, int right, int bottom) {
+         public Border(int var1, int var2, int var3, int var4) {
             super();
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
+            this.left = var1;
+            this.top = var2;
+            this.right = var3;
+            this.bottom = var4;
          }
 
          private OptionalInt unpackValue() {
@@ -155,10 +155,10 @@ public interface GuiSpriteScaling {
          return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(Tile::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(Tile::height)).apply(var0, Tile::new);
       });
 
-      public Tile(int width, int height) {
+      public Tile(int var1, int var2) {
          super();
-         this.width = width;
-         this.height = height;
+         this.width = var1;
+         this.height = var2;
       }
 
       public Type type() {

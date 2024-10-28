@@ -23,6 +23,7 @@ import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
@@ -54,8 +55,8 @@ public abstract class RecipeProvider implements DataProvider {
 
    public RecipeProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super();
-      this.recipePathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, "recipes");
-      this.advancementPathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, "advancements");
+      this.recipePathProvider = var1.createRegistryElementsPathProvider(Registries.RECIPE);
+      this.advancementPathProvider = var1.createRegistryElementsPathProvider(Registries.ADVANCEMENT);
       this.registries = var2;
    }
 
@@ -328,8 +329,8 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    private static void nineBlockStorageRecipes(RecipeOutput var0, RecipeCategory var1, ItemLike var2, RecipeCategory var3, ItemLike var4, String var5, @Nullable String var6, String var7, @Nullable String var8) {
-      ShapelessRecipeBuilder.shapeless(var1, var2, 9).requires(var4).group(var8).unlockedBy(getHasName(var4), has(var4)).save(var0, new ResourceLocation(var7));
-      ShapedRecipeBuilder.shaped(var3, var4).define('#', var2).pattern("###").pattern("###").pattern("###").group(var6).unlockedBy(getHasName(var2), has(var2)).save(var0, new ResourceLocation(var5));
+      ShapelessRecipeBuilder.shapeless(var1, var2, 9).requires(var4).group(var8).unlockedBy(getHasName(var4), has(var4)).save(var0, ResourceLocation.parse(var7));
+      ShapedRecipeBuilder.shaped(var3, var4).define('#', var2).pattern("###").pattern("###").pattern("###").group(var6).unlockedBy(getHasName(var2), has(var2)).save(var0, ResourceLocation.parse(var5));
    }
 
    protected static void copySmithingTemplate(RecipeOutput var0, ItemLike var1, TagKey<Item> var2) {
@@ -337,6 +338,10 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    protected static void copySmithingTemplate(RecipeOutput var0, ItemLike var1, ItemLike var2) {
+      ShapedRecipeBuilder.shaped(RecipeCategory.MISC, var1, 2).define('#', (ItemLike)Items.DIAMOND).define('C', var2).define('S', var1).pattern("#S#").pattern("#C#").pattern("###").unlockedBy(getHasName(var1), has(var1)).save(var0);
+   }
+
+   protected static void copySmithingTemplate(RecipeOutput var0, ItemLike var1, Ingredient var2) {
       ShapedRecipeBuilder.shaped(RecipeCategory.MISC, var1, 2).define('#', (ItemLike)Items.DIAMOND).define('C', var2).define('S', var1).pattern("#S#").pattern("#C#").pattern("###").unlockedBy(getHasName(var1), has(var1)).save(var0);
    }
 

@@ -4,6 +4,7 @@ import java.util.List;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -34,7 +35,7 @@ public class BottleItem extends Item {
       if (!var4.isEmpty()) {
          AreaEffectCloud var8 = (AreaEffectCloud)var4.get(0);
          var8.setRadius(var8.getRadius() - 0.5F);
-         var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
          var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var2.position());
          if (var2 instanceof ServerPlayer) {
             ServerPlayer var9 = (ServerPlayer)var2;

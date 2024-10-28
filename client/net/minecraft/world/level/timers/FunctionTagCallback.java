@@ -35,7 +35,7 @@ public class FunctionTagCallback implements TimerCallback<MinecraftServer> {
 
    public static class Serializer extends TimerCallback.Serializer<MinecraftServer, FunctionTagCallback> {
       public Serializer() {
-         super(new ResourceLocation("function_tag"), FunctionTagCallback.class);
+         super(ResourceLocation.withDefaultNamespace("function_tag"), FunctionTagCallback.class);
       }
 
       public void serialize(CompoundTag var1, FunctionTagCallback var2) {
@@ -43,7 +43,7 @@ public class FunctionTagCallback implements TimerCallback<MinecraftServer> {
       }
 
       public FunctionTagCallback deserialize(CompoundTag var1) {
-         ResourceLocation var2 = new ResourceLocation(var1.getString("Name"));
+         ResourceLocation var2 = ResourceLocation.parse(var1.getString("Name"));
          return new FunctionTagCallback(var2);
       }
 

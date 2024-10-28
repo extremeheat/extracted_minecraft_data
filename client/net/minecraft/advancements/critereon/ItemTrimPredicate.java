@@ -18,10 +18,10 @@ public record ItemTrimPredicate(Optional<HolderSet<TrimMaterial>> material, Opti
       return var0.group(RegistryCodecs.homogeneousList(Registries.TRIM_MATERIAL).optionalFieldOf("material").forGetter(ItemTrimPredicate::material), RegistryCodecs.homogeneousList(Registries.TRIM_PATTERN).optionalFieldOf("pattern").forGetter(ItemTrimPredicate::pattern)).apply(var0, ItemTrimPredicate::new);
    });
 
-   public ItemTrimPredicate(Optional<HolderSet<TrimMaterial>> material, Optional<HolderSet<TrimPattern>> pattern) {
+   public ItemTrimPredicate(Optional<HolderSet<TrimMaterial>> var1, Optional<HolderSet<TrimPattern>> var2) {
       super();
-      this.material = material;
-      this.pattern = pattern;
+      this.material = var1;
+      this.pattern = var2;
    }
 
    public DataComponentType<ArmorTrim> componentType() {

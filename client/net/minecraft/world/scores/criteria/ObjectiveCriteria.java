@@ -64,8 +64,8 @@ public class ObjectiveCriteria {
          return Optional.of(var1);
       } else {
          int var2 = var0.indexOf(58);
-         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.of(var0.substring(0, var2), '.')).flatMap((var2x) -> {
-            return getStat(var2x, ResourceLocation.of(var0.substring(var2 + 1), '.'));
+         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.bySeparator(var0.substring(0, var2), '.')).flatMap((var2x) -> {
+            return getStat(var2x, ResourceLocation.bySeparator(var0.substring(var2 + 1), '.'));
          });
       }
    }

@@ -22,17 +22,21 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -45,6 +49,7 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentAttributeEffect;
 import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
 import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
 import net.minecraft.world.item.enchantment.effects.EnchantmentValueEffect;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -54,17 +59,19 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
 public record Enchantment(Component description, EnchantmentDefinition definition, HolderSet<Enchantment> exclusiveSet, DataComponentMap effects) {
+   public static final int MAX_LEVEL = 255;
    public static final Codec<Enchantment> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
       return var0.group(ComponentSerialization.CODEC.fieldOf("description").forGetter(Enchantment::description), Enchantment.EnchantmentDefinition.CODEC.forGetter(Enchantment::definition), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("exclusive_set", HolderSet.direct()).forGetter(Enchantment::exclusiveSet), EnchantmentEffectComponents.CODEC.optionalFieldOf("effects", DataComponentMap.EMPTY).forGetter(Enchantment::effects)).apply(var0, Enchantment::new);
    });
    public static final Codec<Holder<Enchantment>> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Enchantment>> STREAM_CODEC;
 
-   public Enchantment(Component description, EnchantmentDefinition definition, HolderSet<Enchantment> exclusiveSet, DataComponentMap effects) {
+   public Enchantment(Component var1, EnchantmentDefinition var2, HolderSet<Enchantment> var3, DataComponentMap var4) {
       super();
-      this.description = description;
-      this.definition = definition;
-      this.exclusiveSet = exclusiveSet;
-      this.effects = effects;
+      this.description = var1;
+      this.definition = var2;
+      this.exclusiveSet = var3;
+      this.effects = var4;
    }
 
    public static Cost constantCost(int var0) {
@@ -197,7 +204,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       while(var8.hasNext()) {
          ConditionalEffect var9 = (ConditionalEffect)var8.next();
          if (var9.matches(var7)) {
-            var6.setValue(((EnchantmentValueEffect)var9.effect()).process(var3, var2, var4.getRandom(), var6.floatValue()));
+            var6.setValue(((EnchantmentValueEffect)var9.effect()).process(var2, var4.getRandom(), var6.floatValue()));
          }
       }
 
@@ -231,8 +238,8 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       this.modifyEntityFilteredValue(EnchantmentEffectComponents.TRIDENT_RETURN_ACCELERATION, var1, var2, var3, var4, var5);
    }
 
-   public void modifyTridentSpinAttackStrength(ServerLevel var1, int var2, ItemStack var3, Entity var4, MutableFloat var5) {
-      this.modifyEntityFilteredValue(EnchantmentEffectComponents.TRIDENT_SPIN_ATTACK_STRENGTH, var1, var2, var3, var4, var5);
+   public void modifyTridentSpinAttackStrength(RandomSource var1, int var2, MutableFloat var3) {
+      this.modifyUnfilteredValue(EnchantmentEffectComponents.TRIDENT_SPIN_ATTACK_STRENGTH, var1, var2, var3);
    }
 
    public void modifyFishingTimeReduction(ServerLevel var1, int var2, ItemStack var3, Entity var4, MutableFloat var5) {
@@ -297,8 +304,16 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       this.modifyEntityFilteredValue(EnchantmentEffectComponents.PROJECTILE_SPREAD, var1, var2, var3, var4, var5);
    }
 
-   public void modifyCrossbowChargeTime(ServerLevel var1, int var2, ItemStack var3, MutableFloat var4) {
-      this.modifyItemFilteredCount(EnchantmentEffectComponents.CROSSBOW_CHARGE_TIME, var1, var2, var3, var4);
+   public void modifyCrossbowChargeTime(RandomSource var1, int var2, MutableFloat var3) {
+      this.modifyUnfilteredValue(EnchantmentEffectComponents.CROSSBOW_CHARGE_TIME, var1, var2, var3);
+   }
+
+   public void modifyUnfilteredValue(DataComponentType<EnchantmentValueEffect> var1, RandomSource var2, int var3, MutableFloat var4) {
+      EnchantmentValueEffect var5 = (EnchantmentValueEffect)this.effects.get(var1);
+      if (var5 != null) {
+         var4.setValue(var5.process(var3, var2, var4.floatValue()));
+      }
+
    }
 
    public void tick(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4) {
@@ -313,27 +328,27 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       });
    }
 
-   public void onHitBlock(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      applyEffects(this.getEffects(EnchantmentEffectComponents.HIT_BLOCK), entityContext(var1, var2, var4, var5), (var5x) -> {
+   public void onHitBlock(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5, BlockState var6) {
+      applyEffects(this.getEffects(EnchantmentEffectComponents.HIT_BLOCK), blockHitContext(var1, var2, var4, var5, var6), (var5x) -> {
          var5x.apply(var1, var2, var3, var4, var5);
       });
    }
 
    private void modifyItemFilteredCount(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, MutableFloat var5) {
-      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), (var4x) -> {
-         var5.setValue(var4x.process(var4, var3, var2.getRandom(), var5.getValue()));
+      applyEffects(this.getEffects(var1), itemContext(var2, var3, var4), (var3x) -> {
+         var5.setValue(var3x.process(var3, var2.getRandom(), var5.getValue()));
       });
    }
 
    private void modifyEntityFilteredValue(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, Entity var5, MutableFloat var6) {
-      applyEffects(this.getEffects(var1), entityContext(var2, var3, var5, var5.position()), (var4x) -> {
-         var6.setValue(var4x.process(var4, var3, var5.getRandom(), var6.floatValue()));
+      applyEffects(this.getEffects(var1), entityContext(var2, var3, var5, var5.position()), (var3x) -> {
+         var6.setValue(var3x.process(var3, var5.getRandom(), var6.floatValue()));
       });
    }
 
    private void modifyDamageFilteredValue(DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> var1, ServerLevel var2, int var3, ItemStack var4, Entity var5, DamageSource var6, MutableFloat var7) {
-      applyEffects(this.getEffects(var1), damageContext(var2, var3, var5, var6), (var4x) -> {
-         var7.setValue(var4x.process(var4, var3, var5.getRandom(), var7.floatValue()));
+      applyEffects(this.getEffects(var1), damageContext(var2, var3, var5, var6), (var3x) -> {
+         var7.setValue(var3x.process(var3, var5.getRandom(), var7.floatValue()));
       });
    }
 
@@ -355,6 +370,11 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    private static LootContext entityContext(ServerLevel var0, int var1, Entity var2, Vec3 var3) {
       LootParams var4 = (new LootParams.Builder(var0)).withParameter(LootContextParams.THIS_ENTITY, var2).withParameter(LootContextParams.ENCHANTMENT_LEVEL, var1).withParameter(LootContextParams.ORIGIN, var3).create(LootContextParamSets.ENCHANTED_ENTITY);
       return (new LootContext.Builder(var4)).create(Optional.empty());
+   }
+
+   private static LootContext blockHitContext(ServerLevel var0, int var1, Entity var2, Vec3 var3, BlockState var4) {
+      LootParams var5 = (new LootParams.Builder(var0)).withParameter(LootContextParams.THIS_ENTITY, var2).withParameter(LootContextParams.ENCHANTMENT_LEVEL, var1).withParameter(LootContextParams.ORIGIN, var3).withParameter(LootContextParams.BLOCK_STATE, var4).create(LootContextParamSets.HIT_BLOCK);
+      return (new LootContext.Builder(var5)).create(Optional.empty());
    }
 
    private static <T> void applyEffects(List<ConditionalEffect<T>> var0, LootContext var1, Consumer<T> var2) {
@@ -444,25 +464,26 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
 
    static {
       CODEC = RegistryFixedCodec.create(Registries.ENCHANTMENT);
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ENCHANTMENT);
    }
 
    public static record EnchantmentDefinition(HolderSet<Item> supportedItems, Optional<HolderSet<Item>> primaryItems, int weight, int maxLevel, Cost minCost, Cost maxCost, int anvilCost, List<EquipmentSlotGroup> slots) {
       final HolderSet<Item> supportedItems;
       final Optional<HolderSet<Item>> primaryItems;
       public static final MapCodec<EnchantmentDefinition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("supported_items").forGetter(EnchantmentDefinition::supportedItems), RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("primary_items").forGetter(EnchantmentDefinition::primaryItems), ExtraCodecs.POSITIVE_INT.fieldOf("weight").forGetter(EnchantmentDefinition::weight), ExtraCodecs.POSITIVE_INT.fieldOf("max_level").forGetter(EnchantmentDefinition::maxLevel), Enchantment.Cost.CODEC.fieldOf("min_cost").forGetter(EnchantmentDefinition::minCost), Enchantment.Cost.CODEC.fieldOf("max_cost").forGetter(EnchantmentDefinition::maxCost), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anvil_cost").forGetter(EnchantmentDefinition::anvilCost), EquipmentSlotGroup.CODEC.listOf().fieldOf("slots").forGetter(EnchantmentDefinition::slots)).apply(var0, EnchantmentDefinition::new);
+         return var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("supported_items").forGetter(EnchantmentDefinition::supportedItems), RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("primary_items").forGetter(EnchantmentDefinition::primaryItems), ExtraCodecs.intRange(1, 1024).fieldOf("weight").forGetter(EnchantmentDefinition::weight), ExtraCodecs.intRange(1, 255).fieldOf("max_level").forGetter(EnchantmentDefinition::maxLevel), Enchantment.Cost.CODEC.fieldOf("min_cost").forGetter(EnchantmentDefinition::minCost), Enchantment.Cost.CODEC.fieldOf("max_cost").forGetter(EnchantmentDefinition::maxCost), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anvil_cost").forGetter(EnchantmentDefinition::anvilCost), EquipmentSlotGroup.CODEC.listOf().fieldOf("slots").forGetter(EnchantmentDefinition::slots)).apply(var0, EnchantmentDefinition::new);
       });
 
-      public EnchantmentDefinition(HolderSet<Item> supportedItems, Optional<HolderSet<Item>> primaryItems, int weight, int maxLevel, Cost minCost, Cost maxCost, int anvilCost, List<EquipmentSlotGroup> slots) {
+      public EnchantmentDefinition(HolderSet<Item> var1, Optional<HolderSet<Item>> var2, int var3, int var4, Cost var5, Cost var6, int var7, List<EquipmentSlotGroup> var8) {
          super();
-         this.supportedItems = supportedItems;
-         this.primaryItems = primaryItems;
-         this.weight = weight;
-         this.maxLevel = maxLevel;
-         this.minCost = minCost;
-         this.maxCost = maxCost;
-         this.anvilCost = anvilCost;
-         this.slots = slots;
+         this.supportedItems = var1;
+         this.primaryItems = var2;
+         this.weight = var3;
+         this.maxLevel = var4;
+         this.minCost = var5;
+         this.maxCost = var6;
+         this.anvilCost = var7;
+         this.slots = var8;
       }
 
       public HolderSet<Item> supportedItems() {
@@ -503,10 +524,10 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
          return var0.group(Codec.INT.fieldOf("base").forGetter(Cost::base), Codec.INT.fieldOf("per_level_above_first").forGetter(Cost::perLevelAboveFirst)).apply(var0, Cost::new);
       });
 
-      public Cost(int base, int perLevelAboveFirst) {
+      public Cost(int var1, int var2) {
          super();
-         this.base = base;
-         this.perLevelAboveFirst = perLevelAboveFirst;
+         this.base = var1;
+         this.perLevelAboveFirst = var2;
       }
 
       public int calculate(int var1) {

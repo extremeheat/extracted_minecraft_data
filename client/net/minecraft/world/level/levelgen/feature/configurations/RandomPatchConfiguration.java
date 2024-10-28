@@ -11,12 +11,12 @@ public record RandomPatchConfiguration(int tries, int xzSpread, int ySpread, Hol
       return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("tries").orElse(128).forGetter(RandomPatchConfiguration::tries), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("xz_spread").orElse(7).forGetter(RandomPatchConfiguration::xzSpread), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("y_spread").orElse(3).forGetter(RandomPatchConfiguration::ySpread), PlacedFeature.CODEC.fieldOf("feature").forGetter(RandomPatchConfiguration::feature)).apply(var0, RandomPatchConfiguration::new);
    });
 
-   public RandomPatchConfiguration(int tries, int xzSpread, int ySpread, Holder<PlacedFeature> feature) {
+   public RandomPatchConfiguration(int var1, int var2, int var3, Holder<PlacedFeature> var4) {
       super();
-      this.tries = tries;
-      this.xzSpread = xzSpread;
-      this.ySpread = ySpread;
-      this.feature = feature;
+      this.tries = var1;
+      this.xzSpread = var2;
+      this.ySpread = var3;
+      this.feature = var4;
    }
 
    public int tries() {

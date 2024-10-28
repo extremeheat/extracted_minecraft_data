@@ -356,10 +356,10 @@ public final class DensityFunctions {
    }
 
    protected static record Marker(Type type, DensityFunction wrapped) implements MarkerOrMarked {
-      protected Marker(Type type, DensityFunction wrapped) {
+      protected Marker(Type var1, DensityFunction var2) {
          super();
-         this.type = type;
-         this.wrapped = wrapped;
+         this.type = var1;
+         this.wrapped = var2;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -419,11 +419,11 @@ public final class DensityFunctions {
       });
       public static final KeyDispatchDataCodec<Noise> CODEC;
 
-      protected Noise(DensityFunction.NoiseHolder noise, @Deprecated double xzScale, double yScale) {
+      protected Noise(DensityFunction.NoiseHolder var1, @Deprecated double var2, double var4) {
          super();
-         this.noise = noise;
-         this.xzScale = xzScale;
-         this.yScale = yScale;
+         this.noise = var1;
+         this.xzScale = var2;
+         this.yScale = var4;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -530,11 +530,11 @@ public final class DensityFunctions {
       });
       public static final KeyDispatchDataCodec<WeirdScaledSampler> CODEC;
 
-      protected WeirdScaledSampler(DensityFunction input, DensityFunction.NoiseHolder noise, RarityValueMapper rarityValueMapper) {
+      protected WeirdScaledSampler(DensityFunction var1, DensityFunction.NoiseHolder var2, RarityValueMapper var3) {
          super();
-         this.input = input;
-         this.noise = noise;
-         this.rarityValueMapper = rarityValueMapper;
+         this.input = var1;
+         this.noise = var2;
+         this.rarityValueMapper = var3;
       }
 
       public double transform(DensityFunction.FunctionContext var1, double var2) {
@@ -606,14 +606,14 @@ public final class DensityFunctions {
       });
       public static final KeyDispatchDataCodec<ShiftedNoise> CODEC;
 
-      protected ShiftedNoise(DensityFunction shiftX, DensityFunction shiftY, DensityFunction shiftZ, double xzScale, double yScale, DensityFunction.NoiseHolder noise) {
+      protected ShiftedNoise(DensityFunction var1, DensityFunction var2, DensityFunction var3, double var4, double var6, DensityFunction.NoiseHolder var8) {
          super();
-         this.shiftX = shiftX;
-         this.shiftY = shiftY;
-         this.shiftZ = shiftZ;
-         this.xzScale = xzScale;
-         this.yScale = yScale;
-         this.noise = noise;
+         this.shiftX = var1;
+         this.shiftY = var2;
+         this.shiftZ = var3;
+         this.xzScale = var4;
+         this.yScale = var6;
+         this.noise = var8;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -678,13 +678,13 @@ public final class DensityFunctions {
       });
       public static final KeyDispatchDataCodec<RangeChoice> CODEC;
 
-      RangeChoice(DensityFunction input, double minInclusive, double maxExclusive, DensityFunction whenInRange, DensityFunction whenOutOfRange) {
+      RangeChoice(DensityFunction var1, double var2, double var4, DensityFunction var6, DensityFunction var7) {
          super();
-         this.input = input;
-         this.minInclusive = minInclusive;
-         this.maxExclusive = maxExclusive;
-         this.whenInRange = whenInRange;
-         this.whenOutOfRange = whenOutOfRange;
+         this.input = var1;
+         this.minInclusive = var2;
+         this.maxExclusive = var4;
+         this.whenInRange = var6;
+         this.whenOutOfRange = var7;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -750,9 +750,9 @@ public final class DensityFunctions {
    protected static record ShiftA(DensityFunction.NoiseHolder offsetNoise) implements ShiftNoise {
       static final KeyDispatchDataCodec<ShiftA> CODEC;
 
-      protected ShiftA(DensityFunction.NoiseHolder offsetNoise) {
+      protected ShiftA(DensityFunction.NoiseHolder var1) {
          super();
-         this.offsetNoise = offsetNoise;
+         this.offsetNoise = var1;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -779,9 +779,9 @@ public final class DensityFunctions {
    protected static record ShiftB(DensityFunction.NoiseHolder offsetNoise) implements ShiftNoise {
       static final KeyDispatchDataCodec<ShiftB> CODEC;
 
-      protected ShiftB(DensityFunction.NoiseHolder offsetNoise) {
+      protected ShiftB(DensityFunction.NoiseHolder var1) {
          super();
-         this.offsetNoise = offsetNoise;
+         this.offsetNoise = var1;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -808,9 +808,9 @@ public final class DensityFunctions {
    protected static record Shift(DensityFunction.NoiseHolder offsetNoise) implements ShiftNoise {
       static final KeyDispatchDataCodec<Shift> CODEC;
 
-      protected Shift(DensityFunction.NoiseHolder offsetNoise) {
+      protected Shift(DensityFunction.NoiseHolder var1) {
          super();
-         this.offsetNoise = offsetNoise;
+         this.offsetNoise = var1;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -837,9 +837,9 @@ public final class DensityFunctions {
    static record BlendDensity(DensityFunction input) implements TransformerWithContext {
       static final KeyDispatchDataCodec<BlendDensity> CODEC = DensityFunctions.singleFunctionArgumentCodec(BlendDensity::new, BlendDensity::input);
 
-      BlendDensity(DensityFunction input) {
+      BlendDensity(DensityFunction var1) {
          super();
-         this.input = input;
+         this.input = var1;
       }
 
       public double transform(DensityFunction.FunctionContext var1, double var2) {
@@ -873,11 +873,11 @@ public final class DensityFunctions {
       });
       public static final KeyDispatchDataCodec<Clamp> CODEC;
 
-      protected Clamp(DensityFunction input, double minValue, double maxValue) {
+      protected Clamp(DensityFunction var1, double var2, double var4) {
          super();
-         this.input = input;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
+         this.input = var1;
+         this.minValue = var2;
+         this.maxValue = var4;
       }
 
       public double transform(double var1) {
@@ -910,12 +910,12 @@ public final class DensityFunctions {
    }
 
    protected static record Mapped(Type type, DensityFunction input, double minValue, double maxValue) implements PureTransformer {
-      protected Mapped(Type type, DensityFunction input, double minValue, double maxValue) {
+      protected Mapped(Type var1, DensityFunction var2, double var3, double var5) {
          super();
-         this.type = type;
-         this.input = input;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
+         this.type = var1;
+         this.input = var2;
+         this.minValue = var3;
+         this.maxValue = var5;
       }
 
       public static Mapped create(Type var0, DensityFunction var1) {
@@ -1109,9 +1109,9 @@ public final class DensityFunctions {
       private static final MapCodec<Spline> DATA_CODEC;
       public static final KeyDispatchDataCodec<Spline> CODEC;
 
-      public Spline(CubicSpline<Point, Coordinate> spline) {
+      public Spline(CubicSpline<Point, Coordinate> var1) {
          super();
-         this.spline = spline;
+         this.spline = var1;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -1151,9 +1151,9 @@ public final class DensityFunctions {
       }
 
       public static record Point(DensityFunction.FunctionContext context) {
-         public Point(DensityFunction.FunctionContext context) {
+         public Point(DensityFunction.FunctionContext var1) {
             super();
-            this.context = context;
+            this.context = var1;
          }
 
          public DensityFunction.FunctionContext context() {
@@ -1164,9 +1164,9 @@ public final class DensityFunctions {
       public static record Coordinate(Holder<DensityFunction> function) implements ToFloatFunction<Point> {
          public static final Codec<Coordinate> CODEC;
 
-         public Coordinate(Holder<DensityFunction> function) {
+         public Coordinate(Holder<DensityFunction> var1) {
             super();
-            this.function = function;
+            this.function = var1;
          }
 
          public String toString() {
@@ -1224,9 +1224,9 @@ public final class DensityFunctions {
       static final KeyDispatchDataCodec<Constant> CODEC;
       static final Constant ZERO;
 
-      Constant(double value) {
+      Constant(double var1) {
          super();
-         this.value = value;
+         this.value = var1;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -1265,12 +1265,12 @@ public final class DensityFunctions {
       });
       public static final KeyDispatchDataCodec<YClampedGradient> CODEC;
 
-      YClampedGradient(int fromY, int toY, double fromValue, double toValue) {
+      YClampedGradient(int var1, int var2, double var3, double var5) {
          super();
-         this.fromY = fromY;
-         this.toY = toY;
-         this.fromValue = fromValue;
-         this.toValue = toValue;
+         this.fromY = var1;
+         this.toY = var2;
+         this.fromValue = var3;
+         this.toValue = var5;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -1311,13 +1311,13 @@ public final class DensityFunctions {
    }
 
    static record Ap2(TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue) implements TwoArgumentSimpleFunction {
-      Ap2(TwoArgumentSimpleFunction.Type type, DensityFunction argument1, DensityFunction argument2, double minValue, double maxValue) {
+      Ap2(TwoArgumentSimpleFunction.Type var1, DensityFunction var2, DensityFunction var3, double var4, double var6) {
          super();
-         this.type = type;
-         this.argument1 = argument1;
-         this.argument2 = argument2;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
+         this.type = var1;
+         this.argument1 = var2;
+         this.argument2 = var3;
+         this.minValue = var4;
+         this.maxValue = var6;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {
@@ -1402,13 +1402,13 @@ public final class DensityFunctions {
    }
 
    private static record MulOrAdd(Type specificType, DensityFunction input, double minValue, double maxValue, double argument) implements PureTransformer, TwoArgumentSimpleFunction {
-      MulOrAdd(Type specificType, DensityFunction input, double minValue, double maxValue, double argument) {
+      MulOrAdd(Type var1, DensityFunction var2, double var3, double var5, double var7) {
          super();
-         this.specificType = specificType;
-         this.input = input;
-         this.minValue = minValue;
-         this.maxValue = maxValue;
-         this.argument = argument;
+         this.specificType = var1;
+         this.input = var2;
+         this.minValue = var3;
+         this.maxValue = var5;
+         this.argument = var7;
       }
 
       public TwoArgumentSimpleFunction.Type type() {
@@ -1524,9 +1524,9 @@ public final class DensityFunctions {
 
    @VisibleForDebug
    public static record HolderHolder(Holder<DensityFunction> function) implements DensityFunction {
-      public HolderHolder(Holder<DensityFunction> function) {
+      public HolderHolder(Holder<DensityFunction> var1) {
          super();
-         this.function = function;
+         this.function = var1;
       }
 
       public double compute(DensityFunction.FunctionContext var1) {

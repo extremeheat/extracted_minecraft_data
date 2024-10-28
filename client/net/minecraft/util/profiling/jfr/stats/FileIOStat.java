@@ -9,11 +9,11 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
-   public FileIOStat(Duration duration, @Nullable String path, long bytes) {
+   public FileIOStat(Duration var1, @Nullable String var2, long var3) {
       super();
-      this.duration = duration;
-      this.path = path;
-      this.bytes = bytes;
+      this.duration = var1;
+      this.path = var2;
+      this.bytes = var3;
    }
 
    public static Summary summary(Duration var0, List<FileIOStat> var1) {
@@ -45,14 +45,14 @@ public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
    }
 
    public static record Summary(long totalBytes, double bytesPerSecond, long counts, double countsPerSecond, Duration timeSpentInIO, List<Pair<String, Long>> topTenContributorsByTotalBytes) {
-      public Summary(long totalBytes, double bytesPerSecond, long counts, double countsPerSecond, Duration timeSpentInIO, List<Pair<String, Long>> topTenContributorsByTotalBytes) {
+      public Summary(long var1, double var3, long var5, double var7, Duration var9, List<Pair<String, Long>> var10) {
          super();
-         this.totalBytes = totalBytes;
-         this.bytesPerSecond = bytesPerSecond;
-         this.counts = counts;
-         this.countsPerSecond = countsPerSecond;
-         this.timeSpentInIO = timeSpentInIO;
-         this.topTenContributorsByTotalBytes = topTenContributorsByTotalBytes;
+         this.totalBytes = var1;
+         this.bytesPerSecond = var3;
+         this.counts = var5;
+         this.countsPerSecond = var7;
+         this.timeSpentInIO = var9;
+         this.topTenContributorsByTotalBytes = var10;
       }
 
       public long totalBytes() {

@@ -28,19 +28,19 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    public static final ResourceKey<NoiseGeneratorSettings> CAVES;
    public static final ResourceKey<NoiseGeneratorSettings> FLOATING_ISLANDS;
 
-   public NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState defaultBlock, BlockState defaultFluid, NoiseRouter noiseRouter, SurfaceRules.RuleSource surfaceRule, List<Climate.ParameterPoint> spawnTarget, int seaLevel, boolean disableMobGeneration, boolean aquifersEnabled, boolean oreVeinsEnabled, boolean useLegacyRandomSource) {
+   public NoiseGeneratorSettings(NoiseSettings var1, BlockState var2, BlockState var3, NoiseRouter var4, SurfaceRules.RuleSource var5, List<Climate.ParameterPoint> var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11) {
       super();
-      this.noiseSettings = noiseSettings;
-      this.defaultBlock = defaultBlock;
-      this.defaultFluid = defaultFluid;
-      this.noiseRouter = noiseRouter;
-      this.surfaceRule = surfaceRule;
-      this.spawnTarget = spawnTarget;
-      this.seaLevel = seaLevel;
-      this.disableMobGeneration = disableMobGeneration;
-      this.aquifersEnabled = aquifersEnabled;
-      this.oreVeinsEnabled = oreVeinsEnabled;
-      this.useLegacyRandomSource = useLegacyRandomSource;
+      this.noiseSettings = var1;
+      this.defaultBlock = var2;
+      this.defaultFluid = var3;
+      this.noiseRouter = var4;
+      this.surfaceRule = var5;
+      this.spawnTarget = var6;
+      this.seaLevel = var7;
+      this.disableMobGeneration = var8;
+      this.aquifersEnabled = var9;
+      this.oreVeinsEnabled = var10;
+      this.useLegacyRandomSource = var11;
    }
 
    /** @deprecated */
@@ -133,12 +133,12 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
 
    static {
       CODEC = RegistryFileCodec.create(Registries.NOISE_SETTINGS, DIRECT_CODEC);
-      OVERWORLD = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("overworld"));
-      LARGE_BIOMES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("large_biomes"));
-      AMPLIFIED = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("amplified"));
-      NETHER = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("nether"));
-      END = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("end"));
-      CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("caves"));
-      FLOATING_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation("floating_islands"));
+      OVERWORLD = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("overworld"));
+      LARGE_BIOMES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("large_biomes"));
+      AMPLIFIED = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("amplified"));
+      NETHER = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("nether"));
+      END = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("end"));
+      CAVES = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("caves"));
+      FLOATING_ISLANDS = ResourceKey.create(Registries.NOISE_SETTINGS, ResourceLocation.withDefaultNamespace("floating_islands"));
    }
 }

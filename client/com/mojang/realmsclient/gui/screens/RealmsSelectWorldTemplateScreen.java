@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 
 public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    static final Logger LOGGER = LogUtils.getLogger();
-   static final ResourceLocation SLOT_FRAME_SPRITE = new ResourceLocation("widget/slot_frame");
+   static final ResourceLocation SLOT_FRAME_SPRITE = ResourceLocation.withDefaultNamespace("widget/slot_frame");
    private static final Component SELECT_BUTTON_NAME = Component.translatable("mco.template.button.select");
    private static final Component TRAILER_BUTTON_NAME = Component.translatable("mco.template.button.trailer");
    private static final Component PUBLISHER_BUTTON_NAME = Component.translatable("mco.template.button.publisher");
@@ -301,8 +301,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    private class Entry extends ObjectSelectionList.Entry<Entry> {
-      private static final WidgetSprites WEBSITE_LINK_SPRITES = new WidgetSprites(new ResourceLocation("icon/link"), new ResourceLocation("icon/link_highlighted"));
-      private static final WidgetSprites TRAILER_LINK_SPRITES = new WidgetSprites(new ResourceLocation("icon/video_link"), new ResourceLocation("icon/video_link_highlighted"));
+      private static final WidgetSprites WEBSITE_LINK_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("icon/link"), ResourceLocation.withDefaultNamespace("icon/link_highlighted"));
+      private static final WidgetSprites TRAILER_LINK_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("icon/video_link"), ResourceLocation.withDefaultNamespace("icon/video_link_highlighted"));
       private static final Component PUBLISHER_LINK_TOOLTIP = Component.translatable("mco.template.info.tooltip");
       private static final Component TRAILER_LINK_TOOLTIP = Component.translatable("mco.template.trailer.tooltip");
       public final WorldTemplate template;

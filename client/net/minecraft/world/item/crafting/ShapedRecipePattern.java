@@ -233,10 +233,10 @@ public final class ShapedRecipePattern {
       private static final Codec<Character> SYMBOL_CODEC;
       public static final MapCodec<Data> MAP_CODEC;
 
-      public Data(Map<Character, Ingredient> key, List<String> pattern) {
+      public Data(Map<Character, Ingredient> var1, List<String> var2) {
          super();
-         this.key = key;
-         this.pattern = pattern;
+         this.key = var1;
+         this.pattern = var2;
       }
 
       public Map<Character, Ingredient> key() {

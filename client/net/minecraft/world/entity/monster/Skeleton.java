@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -110,12 +111,12 @@ public class Skeleton extends AbstractSkeleton {
       return SoundEvents.SKELETON_STEP;
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      Entity var3 = var1.getEntity();
-      if (var3 instanceof Creeper var4) {
-         if (var4.canDropMobsSkull()) {
-            var4.increaseDroppedSkulls();
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      Entity var4 = var2.getEntity();
+      if (var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            var5.increaseDroppedSkulls();
             this.spawnAtLocation(Items.SKELETON_SKULL);
          }
       }

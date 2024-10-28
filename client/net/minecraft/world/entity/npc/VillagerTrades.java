@@ -52,6 +52,7 @@ import net.minecraft.world.item.enchantment.providers.TradeRebalanceEnchantmentP
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -141,9 +142,9 @@ public class VillagerTrades {
    }
 
    private static record TypeSpecificTrade(Map<VillagerType, ItemListing> trades) implements ItemListing {
-      TypeSpecificTrade(Map<VillagerType, ItemListing> trades) {
+      TypeSpecificTrade(Map<VillagerType, ItemListing> var1) {
          super();
-         this.trades = trades;
+         this.trades = var1;
       }
 
       public static TypeSpecificTrade oneTradeInBiomes(ItemListing var0, VillagerType... var1) {
@@ -299,8 +300,9 @@ public class VillagerTrades {
 
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemStack var3 = this.itemStack.copy();
-         this.enchantmentProvider.ifPresent((var3x) -> {
-            EnchantmentHelper.enchantItemFromProvider(var3, var3x, var1.level(), var1.blockPosition(), var2);
+         Level var4 = var1.level();
+         this.enchantmentProvider.ifPresent((var4x) -> {
+            EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2);
          });
          return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), var3, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
@@ -365,8 +367,9 @@ public class VillagerTrades {
       @Nullable
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemStack var3 = this.toItem.copy();
-         this.enchantmentProvider.ifPresent((var3x) -> {
-            EnchantmentHelper.enchantItemFromProvider(var3, var3x, var1.level(), var1.blockPosition(), var2);
+         Level var4 = var1.level();
+         this.enchantmentProvider.ifPresent((var4x) -> {
+            EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2);
          });
          return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var3, 0, this.maxUses, this.villagerXp, this.priceMultiplier);
       }

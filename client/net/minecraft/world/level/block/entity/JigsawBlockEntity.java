@@ -29,8 +29,8 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String SELECTION_PRIORITY = "selection_priority";
    public static final String NAME = "name";
    public static final String FINAL_STATE = "final_state";
-   private ResourceLocation name = new ResourceLocation("empty");
-   private ResourceLocation target = new ResourceLocation("empty");
+   private ResourceLocation name = ResourceLocation.withDefaultNamespace("empty");
+   private ResourceLocation target = ResourceLocation.withDefaultNamespace("empty");
    private ResourceKey<StructureTemplatePool> pool;
    private JointType joint;
    private String finalState;
@@ -39,7 +39,7 @@ public class JigsawBlockEntity extends BlockEntity {
 
    public JigsawBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.JIGSAW, var1, var2);
-      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation("empty"));
+      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.withDefaultNamespace("empty"));
       this.joint = JigsawBlockEntity.JointType.ROLLABLE;
       this.finalState = "minecraft:air";
    }
@@ -113,9 +113,9 @@ public class JigsawBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.name = new ResourceLocation(var1.getString("name"));
-      this.target = new ResourceLocation(var1.getString("target"));
-      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var1.getString("pool")));
+      this.name = ResourceLocation.parse(var1.getString("name"));
+      this.target = ResourceLocation.parse(var1.getString("target"));
+      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
       this.joint = (JointType)JigsawBlockEntity.JointType.byName(var1.getString("joint")).orElseGet(() -> {
          return JigsawBlock.getFrontFacing(this.getBlockState()).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;

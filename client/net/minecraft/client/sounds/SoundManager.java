@@ -42,6 +42,7 @@ import net.minecraft.util.valueproviders.SampledFloat;
 import org.slf4j.Logger;
 
 public class SoundManager extends SimplePreparableReloadListener<Preparations> {
+   public static final ResourceLocation EMPTY_SOUND_LOCATION = ResourceLocation.withDefaultNamespace("empty");
    public static final Sound EMPTY_SOUND;
    public static final ResourceLocation INTENTIONALLY_EMPTY_SOUND_LOCATION;
    public static final WeighedSoundEvents INTENTIONALLY_EMPTY_SOUND_EVENT;
@@ -71,7 +72,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
          var2.push(var5);
 
          try {
-            List var6 = var1.getResourceStack(new ResourceLocation(var5, "sounds.json"));
+            List var6 = var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"));
 
             for(Iterator var7 = var6.iterator(); var7.hasNext(); var2.pop()) {
                Resource var8 = (Resource)var7.next();
@@ -93,7 +94,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
                         }
 
                         Map.Entry var12 = (Map.Entry)var11.next();
-                        var3.handleRegistration(new ResourceLocation(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
+                        var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
                      }
                   } catch (Throwable var14) {
                      if (var9 != null) {
@@ -261,10 +262,10 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
    }
 
    static {
-      EMPTY_SOUND = new Sound("minecraft:empty", ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
-      INTENTIONALLY_EMPTY_SOUND_LOCATION = new ResourceLocation("minecraft", "intentionally_empty");
+      EMPTY_SOUND = new Sound(EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
+      INTENTIONALLY_EMPTY_SOUND_LOCATION = ResourceLocation.withDefaultNamespace("intentionally_empty");
       INTENTIONALLY_EMPTY_SOUND_EVENT = new WeighedSoundEvents(INTENTIONALLY_EMPTY_SOUND_LOCATION, (String)null);
-      INTENTIONALLY_EMPTY_SOUND = new Sound(INTENTIONALLY_EMPTY_SOUND_LOCATION.toString(), ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
+      INTENTIONALLY_EMPTY_SOUND = new Sound(INTENTIONALLY_EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
       LOGGER = LogUtils.getLogger();
       GSON = (new GsonBuilder()).registerTypeHierarchyAdapter(Component.class, new Component.SerializerAdapter(RegistryAccess.EMPTY)).registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer()).create();
       SOUND_EVENT_REGISTRATION_TYPE = new TypeToken<Map<String, SoundEventRegistration>>() {
@@ -323,7 +324,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
                            return SoundManager.EMPTY_SOUND;
                         } else {
                            Sound var3 = var2.getSound(var1);
-                           return new Sound(var3.getLocation().toString(), new MultipliedFloats(new SampledFloat[]{var3.getVolume(), var7.getVolume()}), new MultipliedFloats(new SampledFloat[]{var3.getPitch(), var7.getPitch()}), var7.getWeight(), Sound.Type.FILE, var3.shouldStream() || var7.shouldStream(), var3.shouldPreload(), var3.getAttenuationDistance());
+                           return new Sound(var3.getLocation(), new MultipliedFloats(new SampledFloat[]{var3.getVolume(), var7.getVolume()}), new MultipliedFloats(new SampledFloat[]{var3.getPitch(), var7.getPitch()}), var7.getWeight(), Sound.Type.FILE, var3.shouldStream() || var7.shouldStream(), var3.shouldPreload(), var3.getAttenuationDistance());
                         }
                      }
 

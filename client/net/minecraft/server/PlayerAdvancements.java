@@ -390,9 +390,9 @@ public class PlayerAdvancements {
    private static record Data(Map<ResourceLocation, AdvancementProgress> map) {
       public static final Codec<Data> CODEC;
 
-      Data(Map<ResourceLocation, AdvancementProgress> map) {
+      Data(Map<ResourceLocation, AdvancementProgress> var1) {
          super();
-         this.map = map;
+         this.map = var1;
       }
 
       public void forEach(BiConsumer<ResourceLocation, AdvancementProgress> var1) {

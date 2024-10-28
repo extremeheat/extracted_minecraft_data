@@ -11,9 +11,9 @@ import net.minecraft.server.packs.repository.KnownPack;
 public record ServerboundSelectKnownPacks(List<KnownPack> knownPacks) implements Packet<ServerConfigurationPacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundSelectKnownPacks> STREAM_CODEC;
 
-   public ServerboundSelectKnownPacks(List<KnownPack> knownPacks) {
+   public ServerboundSelectKnownPacks(List<KnownPack> var1) {
       super();
-      this.knownPacks = knownPacks;
+      this.knownPacks = var1;
    }
 
    public PacketType<ServerboundSelectKnownPacks> type() {

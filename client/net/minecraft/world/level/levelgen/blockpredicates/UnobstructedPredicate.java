@@ -13,9 +13,9 @@ record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
       return var0.group(Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(UnobstructedPredicate::offset)).apply(var0, UnobstructedPredicate::new);
    });
 
-   UnobstructedPredicate(Vec3i offset) {
+   UnobstructedPredicate(Vec3i var1) {
       super();
-      this.offset = offset;
+      this.offset = var1;
    }
 
    public BlockPredicateType<?> type() {

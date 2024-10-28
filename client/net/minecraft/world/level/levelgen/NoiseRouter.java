@@ -9,23 +9,23 @@ public record NoiseRouter(DensityFunction barrierNoise, DensityFunction fluidLev
       return var0.group(field("barrier", NoiseRouter::barrierNoise), field("fluid_level_floodedness", NoiseRouter::fluidLevelFloodednessNoise), field("fluid_level_spread", NoiseRouter::fluidLevelSpreadNoise), field("lava", NoiseRouter::lavaNoise), field("temperature", NoiseRouter::temperature), field("vegetation", NoiseRouter::vegetation), field("continents", NoiseRouter::continents), field("erosion", NoiseRouter::erosion), field("depth", NoiseRouter::depth), field("ridges", NoiseRouter::ridges), field("initial_density_without_jaggedness", NoiseRouter::initialDensityWithoutJaggedness), field("final_density", NoiseRouter::finalDensity), field("vein_toggle", NoiseRouter::veinToggle), field("vein_ridged", NoiseRouter::veinRidged), field("vein_gap", NoiseRouter::veinGap)).apply(var0, NoiseRouter::new);
    });
 
-   public NoiseRouter(DensityFunction barrierNoise, DensityFunction fluidLevelFloodednessNoise, DensityFunction fluidLevelSpreadNoise, DensityFunction lavaNoise, DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction depth, DensityFunction ridges, DensityFunction initialDensityWithoutJaggedness, DensityFunction finalDensity, DensityFunction veinToggle, DensityFunction veinRidged, DensityFunction veinGap) {
+   public NoiseRouter(DensityFunction var1, DensityFunction var2, DensityFunction var3, DensityFunction var4, DensityFunction var5, DensityFunction var6, DensityFunction var7, DensityFunction var8, DensityFunction var9, DensityFunction var10, DensityFunction var11, DensityFunction var12, DensityFunction var13, DensityFunction var14, DensityFunction var15) {
       super();
-      this.barrierNoise = barrierNoise;
-      this.fluidLevelFloodednessNoise = fluidLevelFloodednessNoise;
-      this.fluidLevelSpreadNoise = fluidLevelSpreadNoise;
-      this.lavaNoise = lavaNoise;
-      this.temperature = temperature;
-      this.vegetation = vegetation;
-      this.continents = continents;
-      this.erosion = erosion;
-      this.depth = depth;
-      this.ridges = ridges;
-      this.initialDensityWithoutJaggedness = initialDensityWithoutJaggedness;
-      this.finalDensity = finalDensity;
-      this.veinToggle = veinToggle;
-      this.veinRidged = veinRidged;
-      this.veinGap = veinGap;
+      this.barrierNoise = var1;
+      this.fluidLevelFloodednessNoise = var2;
+      this.fluidLevelSpreadNoise = var3;
+      this.lavaNoise = var4;
+      this.temperature = var5;
+      this.vegetation = var6;
+      this.continents = var7;
+      this.erosion = var8;
+      this.depth = var9;
+      this.ridges = var10;
+      this.initialDensityWithoutJaggedness = var11;
+      this.finalDensity = var12;
+      this.veinToggle = var13;
+      this.veinRidged = var14;
+      this.veinGap = var15;
    }
 
    private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(String var0, Function<NoiseRouter, DensityFunction> var1) {

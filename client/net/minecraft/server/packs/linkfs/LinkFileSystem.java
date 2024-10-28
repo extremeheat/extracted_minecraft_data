@@ -151,10 +151,10 @@ public class LinkFileSystem extends FileSystem {
          this(new HashMap(), new HashMap());
       }
 
-      private DirectoryEntry(Map<String, DirectoryEntry> children, Map<String, Path> files) {
+      private DirectoryEntry(Map<String, DirectoryEntry> var1, Map<String, Path> var2) {
          super();
-         this.children = children;
-         this.files = files;
+         this.children = var1;
+         this.files = var2;
       }
 
       public Map<String, DirectoryEntry> children() {

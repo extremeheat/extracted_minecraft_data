@@ -39,6 +39,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -870,15 +871,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    public void addDuringTeleport(Entity var1) {
-      this.addEntity(var1);
-   }
+      if (var1 instanceof ServerPlayer var2) {
+         this.addPlayer(var2);
+      } else {
+         this.addEntity(var1);
+      }
 
-   public void addDuringCommandTeleport(ServerPlayer var1) {
-      this.addPlayer(var1);
-   }
-
-   public void addDuringPortalTeleport(ServerPlayer var1) {
-      this.addPlayer(var1);
    }
 
    public void addNewPlayer(ServerPlayer var1) {
@@ -1344,8 +1342,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
          if (var3 != null) {
             try {
                ((Writer)var3).close();
-            } catch (Throwable var11) {
-               var22.addSuppressed(var11);
+            } catch (Throwable var13) {
+               var22.addSuppressed(var13);
             }
          }
 
@@ -1361,17 +1359,17 @@ public class ServerLevel extends Level implements WorldGenLevel {
       BufferedWriter var24 = Files.newBufferedWriter(var1.resolve("example_crash.txt"));
 
       try {
-         ((Writer)var24).write(var23.getFriendlyReport());
-      } catch (Throwable var18) {
+         ((Writer)var24).write(var23.getFriendlyReport(ReportType.TEST));
+      } catch (Throwable var20) {
          if (var24 != null) {
             try {
                ((Writer)var24).close();
-            } catch (Throwable var13) {
-               var18.addSuppressed(var13);
+            } catch (Throwable var16) {
+               var20.addSuppressed(var16);
             }
          }
 
-         throw var18;
+         throw var20;
       }
 
       if (var24 != null) {
@@ -1383,16 +1381,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          var2.dumpChunks(var26);
-      } catch (Throwable var17) {
+      } catch (Throwable var21) {
          if (var26 != null) {
             try {
                ((Writer)var26).close();
             } catch (Throwable var15) {
-               var17.addSuppressed(var15);
+               var21.addSuppressed(var15);
             }
          }
 
-         throw var17;
+         throw var21;
       }
 
       if (var26 != null) {
@@ -1404,16 +1402,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.entityManager.dumpSections(var28);
-      } catch (Throwable var20) {
+      } catch (Throwable var18) {
          if (var28 != null) {
             try {
                ((Writer)var28).close();
-            } catch (Throwable var16) {
-               var20.addSuppressed(var16);
+            } catch (Throwable var14) {
+               var18.addSuppressed(var14);
             }
          }
 
-         throw var20;
+         throw var18;
       }
 
       if (var28 != null) {
@@ -1425,16 +1423,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          dumpEntities(var7, this.getEntities().getAll());
-      } catch (Throwable var21) {
+      } catch (Throwable var19) {
          if (var7 != null) {
             try {
                ((Writer)var7).close();
-            } catch (Throwable var14) {
-               var21.addSuppressed(var14);
+            } catch (Throwable var12) {
+               var19.addSuppressed(var12);
             }
          }
 
-         throw var21;
+         throw var19;
       }
 
       if (var7 != null) {
@@ -1446,16 +1444,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.dumpBlockEntityTickers(var8);
-      } catch (Throwable var19) {
+      } catch (Throwable var17) {
          if (var8 != null) {
             try {
                ((Writer)var8).close();
-            } catch (Throwable var12) {
-               var19.addSuppressed(var12);
+            } catch (Throwable var11) {
+               var17.addSuppressed(var11);
             }
          }
 
-         throw var19;
+         throw var17;
       }
 
       if (var8 != null) {
@@ -1557,19 +1555,6 @@ public class ServerLevel extends Level implements WorldGenLevel {
       } catch (Exception var6) {
          return "";
       }
-   }
-
-   public static void makeObsidianPlatform(ServerLevel var0) {
-      BlockPos var1 = END_SPAWN_POINT;
-      int var2 = var1.getX();
-      int var3 = var1.getY() - 2;
-      int var4 = var1.getZ();
-      BlockPos.betweenClosed(var2 - 2, var3 + 1, var4 - 2, var2 + 2, var3 + 3, var4 + 2).forEach((var1x) -> {
-         var0.setBlockAndUpdate(var1x, Blocks.AIR.defaultBlockState());
-      });
-      BlockPos.betweenClosed(var2 - 2, var3, var4 - 2, var2 + 2, var3, var4 + 2).forEach((var1x) -> {
-         var0.setBlockAndUpdate(var1x, Blocks.OBSIDIAN.defaultBlockState());
-      });
    }
 
    protected LevelEntityGetter<Entity> getEntities() {

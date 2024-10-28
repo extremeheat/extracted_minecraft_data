@@ -16,9 +16,9 @@ public record LastSeenMessages(List<MessageSignature> entries) {
    public static LastSeenMessages EMPTY;
    public static final int LAST_SEEN_MESSAGES_MAX_LENGTH = 20;
 
-   public LastSeenMessages(List<MessageSignature> entries) {
+   public LastSeenMessages(List<MessageSignature> var1) {
       super();
-      this.entries = entries;
+      this.entries = var1;
    }
 
    public void updateSignature(SignatureUpdater.Output var1) throws SignatureException {
@@ -54,9 +54,9 @@ public record LastSeenMessages(List<MessageSignature> entries) {
          this((List)var1.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 20), MessageSignature.Packed::read));
       }
 
-      public Packed(List<MessageSignature.Packed> entries) {
+      public Packed(List<MessageSignature.Packed> var1) {
          super();
-         this.entries = entries;
+         this.entries = var1;
       }
 
       public void write(FriendlyByteBuf var1) {
@@ -90,10 +90,10 @@ public record LastSeenMessages(List<MessageSignature> entries) {
          this(var1.readVarInt(), var1.readFixedBitSet(20));
       }
 
-      public Update(int offset, BitSet acknowledged) {
+      public Update(int var1, BitSet var2) {
          super();
-         this.offset = offset;
-         this.acknowledged = acknowledged;
+         this.offset = var1;
+         this.acknowledged = var2;
       }
 
       public void write(FriendlyByteBuf var1) {

@@ -361,10 +361,10 @@ public class MultilineTextField {
       final int endIndex;
       static final StringView EMPTY = new StringView(0, 0);
 
-      protected StringView(int beginIndex, int endIndex) {
+      protected StringView(int var1, int var2) {
          super();
-         this.beginIndex = beginIndex;
-         this.endIndex = endIndex;
+         this.beginIndex = var1;
+         this.endIndex = var2;
       }
 
       public int beginIndex() {

@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,7 +41,7 @@ public class TridentItem extends Item implements ProjectileItem {
    }
 
    public static ItemAttributeModifiers createAttributes() {
-      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", 8.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", -2.9000000953674316, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
+      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 8.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -2.9000000953674316, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
    }
 
    public static Tool createToolProperties() {
@@ -65,17 +64,9 @@ public class TridentItem extends Item implements ProjectileItem {
       if (var3 instanceof Player var5) {
          int var6 = this.getUseDuration(var1, var3) - var4;
          if (var6 >= 10) {
-            float var10000;
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var8 = (ServerLevel)var2;
-               var10000 = EnchantmentHelper.getTridentSpinAttackStrength(var8, var1, var5);
-            } else {
-               var10000 = 0.0F;
-            }
-
-            float var7 = var10000;
+            float var7 = EnchantmentHelper.getTridentSpinAttackStrength(var5);
             if (!(var7 > 0.0F) || var5.isInWaterOrRain()) {
-               Holder var16 = (Holder)EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
+               Holder var8 = (Holder)EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
                if (!var2.isClientSide) {
                   var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var3.getUsedItemHand()));
                   if (var7 == 0.0F) {
@@ -86,7 +77,7 @@ public class TridentItem extends Item implements ProjectileItem {
                      }
 
                      var2.addFreshEntity(var9);
-                     var2.playSound((Player)null, (Entity)var9, (SoundEvent)var16.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                     var2.playSound((Player)null, (Entity)var9, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
                      if (!var5.hasInfiniteMaterials()) {
                         var5.getInventory().removeItem(var1);
                      }
@@ -95,11 +86,11 @@ public class TridentItem extends Item implements ProjectileItem {
 
                var5.awardStat(Stats.ITEM_USED.get(this));
                if (var7 > 0.0F) {
-                  float var17 = var5.getYRot();
+                  float var16 = var5.getYRot();
                   float var10 = var5.getXRot();
-                  float var11 = -Mth.sin(var17 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
+                  float var11 = -Mth.sin(var16 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
                   float var12 = -Mth.sin(var10 * 0.017453292F);
-                  float var13 = Mth.cos(var17 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
+                  float var13 = Mth.cos(var16 * 0.017453292F) * Mth.cos(var10 * 0.017453292F);
                   float var14 = Mth.sqrt(var11 * var11 + var12 * var12 + var13 * var13);
                   var11 *= var7 / var14;
                   var12 *= var7 / var14;
@@ -111,7 +102,7 @@ public class TridentItem extends Item implements ProjectileItem {
                      var5.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
                   }
 
-                  var2.playSound((Player)null, (Entity)var5, (SoundEvent)var16.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                  var2.playSound((Player)null, (Entity)var5, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
                }
 
             }
@@ -123,14 +114,9 @@ public class TridentItem extends Item implements ProjectileItem {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var4.getDamageValue() >= var4.getMaxDamage() - 1) {
          return InteractionResultHolder.fail(var4);
+      } else if (EnchantmentHelper.getTridentSpinAttackStrength(var2) > 0.0F && !var2.isInWaterOrRain()) {
+         return InteractionResultHolder.fail(var4);
       } else {
-         if (var1 instanceof ServerLevel) {
-            ServerLevel var5 = (ServerLevel)var1;
-            if (EnchantmentHelper.getTridentSpinAttackStrength(var5, var4, var2) > 0.0F && !var2.isInWaterOrRain()) {
-               return InteractionResultHolder.fail(var4);
-            }
-         }
-
          var2.startUsingItem(var3);
          return InteractionResultHolder.consume(var4);
       }

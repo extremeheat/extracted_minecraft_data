@@ -8,9 +8,9 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.NoiseChunk;
 
 public record MaterialRuleList(List<NoiseChunk.BlockStateFiller> materialRuleList) implements NoiseChunk.BlockStateFiller {
-   public MaterialRuleList(List<NoiseChunk.BlockStateFiller> materialRuleList) {
+   public MaterialRuleList(List<NoiseChunk.BlockStateFiller> var1) {
       super();
-      this.materialRuleList = materialRuleList;
+      this.materialRuleList = var1;
    }
 
    @Nullable

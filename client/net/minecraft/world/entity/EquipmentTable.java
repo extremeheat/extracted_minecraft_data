@@ -18,10 +18,10 @@ public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot
    public static final Codec<Map<EquipmentSlot, Float>> DROP_CHANCES_CODEC;
    public static final Codec<EquipmentTable> CODEC;
 
-   public EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot, Float> slotDropChances) {
+   public EquipmentTable(ResourceKey<LootTable> var1, Map<EquipmentSlot, Float> var2) {
       super();
-      this.lootTable = lootTable;
-      this.slotDropChances = slotDropChances;
+      this.lootTable = var1;
+      this.slotDropChances = var2;
    }
 
    private static Map<EquipmentSlot, Float> createForAllSlots(float var0) {

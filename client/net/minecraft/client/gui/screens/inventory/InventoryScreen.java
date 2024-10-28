@@ -124,8 +124,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       Lighting.setupForEntityInInventory();
       EntityRenderDispatcher var8 = Minecraft.getInstance().getEntityRenderDispatcher();
       if (var6 != null) {
-         var6.conjugate();
-         var8.overrideCameraOrientation(var6);
+         var8.overrideCameraOrientation(var6.conjugate(new Quaternionf()).rotateY(3.1415927F));
       }
 
       var8.setRenderShadow(false);

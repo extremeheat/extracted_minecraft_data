@@ -1,11 +1,10 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -44,11 +43,9 @@ public abstract class RenderType extends RenderStateShard {
    private static final BiFunction<ResourceLocation, RenderStateShard.TransparencyStateShard, RenderType> EYES;
    private static final RenderType LEASH;
    private static final RenderType WATER_MASK;
-   private static final RenderType ARMOR_GLINT;
    private static final RenderType ARMOR_ENTITY_GLINT;
    private static final RenderType GLINT_TRANSLUCENT;
    private static final RenderType GLINT;
-   private static final RenderType GLINT_DIRECT;
    private static final RenderType ENTITY_GLINT;
    private static final RenderType ENTITY_GLINT_DIRECT;
    private static final Function<ResourceLocation, RenderType> CRUMBLING;
@@ -82,7 +79,6 @@ public abstract class RenderType extends RenderStateShard {
    private final int bufferSize;
    private final boolean affectsCrumbling;
    private final boolean sortOnUpload;
-   private final Optional<RenderType> asOptional;
 
    public static RenderType solid() {
       return SOLID;
@@ -225,10 +221,6 @@ public abstract class RenderType extends RenderStateShard {
       return (RenderType)RenderType.CompositeRenderType.OUTLINE.apply(var0, NO_CULL);
    }
 
-   public static RenderType armorGlint() {
-      return ARMOR_GLINT;
-   }
-
    public static RenderType armorEntityGlint() {
       return ARMOR_ENTITY_GLINT;
    }
@@ -239,10 +231,6 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType glint() {
       return GLINT;
-   }
-
-   public static RenderType glintDirect() {
-      return GLINT_DIRECT;
    }
 
    public static RenderType entityGlint() {
@@ -368,7 +356,6 @@ public abstract class RenderType extends RenderStateShard {
       this.bufferSize = var4;
       this.affectsCrumbling = var5;
       this.sortOnUpload = var6;
-      this.asOptional = Optional.of(this);
    }
 
    static CompositeRenderType create(String var0, VertexFormat var1, VertexFormat.Mode var2, int var3, CompositeState var4) {
@@ -379,17 +366,10 @@ public abstract class RenderType extends RenderStateShard {
       return new CompositeRenderType(var0, var1, var2, var3, var4, var5, var6);
    }
 
-   public void end(BufferBuilder var1, VertexSorting var2) {
-      if (var1.building()) {
-         if (this.sortOnUpload) {
-            var1.setQuadSorting(var2);
-         }
-
-         BufferBuilder.RenderedBuffer var3 = var1.end();
-         this.setupRenderState();
-         BufferUploader.drawWithShader(var3);
-         this.clearRenderState();
-      }
+   public void draw(MeshData var1) {
+      this.setupRenderState();
+      BufferUploader.drawWithShader(var1);
+      this.clearRenderState();
    }
 
    public String toString() {
@@ -428,8 +408,8 @@ public abstract class RenderType extends RenderStateShard {
       return !this.mode.connectedPrimitives;
    }
 
-   public Optional<RenderType> asOptional() {
-      return this.asOptional;
+   public boolean sortOnUpload() {
+      return this.sortOnUpload;
    }
 
    static {
@@ -503,11 +483,9 @@ public abstract class RenderType extends RenderStateShard {
       });
       LEASH = create("leash", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.TRIANGLE_STRIP, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_LEASH_SHADER).setTextureState(NO_TEXTURE).setCullState(NO_CULL).setLightmapState(LIGHTMAP).createCompositeState(false));
       WATER_MASK = create("water_mask", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_WATER_MASK_SHADER).setTextureState(NO_TEXTURE).setWriteMaskState(DEPTH_WRITE).createCompositeState(false));
-      ARMOR_GLINT = create("armor_glint", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_ARMOR_GLINT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setTexturingState(GLINT_TEXTURING).setLayeringState(VIEW_OFFSET_Z_LAYERING).createCompositeState(false));
       ARMOR_ENTITY_GLINT = create("armor_entity_glint", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setTexturingState(ENTITY_GLINT_TEXTURING).setLayeringState(VIEW_OFFSET_Z_LAYERING).createCompositeState(false));
       GLINT_TRANSLUCENT = create("glint_translucent", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_GLINT_TRANSLUCENT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setTexturingState(GLINT_TEXTURING).setOutputState(ITEM_ENTITY_TARGET).createCompositeState(false));
       GLINT = create("glint", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_GLINT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setTexturingState(GLINT_TEXTURING).createCompositeState(false));
-      GLINT_DIRECT = create("glint_direct", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_GLINT_DIRECT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setTexturingState(GLINT_TEXTURING).createCompositeState(false));
       ENTITY_GLINT = create("entity_glint", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_ENTITY_GLINT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setOutputState(ITEM_ENTITY_TARGET).setTexturingState(ENTITY_GLINT_TEXTURING).createCompositeState(false));
       ENTITY_GLINT_DIRECT = create("entity_glint_direct", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_ENTITY_GLINT_DIRECT_SHADER).setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false)).setWriteMaskState(COLOR_WRITE).setCullState(NO_CULL).setDepthTestState(EQUAL_DEPTH_TEST).setTransparencyState(GLINT_TRANSPARENCY).setTexturingState(ENTITY_GLINT_TEXTURING).createCompositeState(false));
       CRUMBLING = Util.memoize((var0) -> {
@@ -709,7 +687,7 @@ public abstract class RenderType extends RenderStateShard {
 
    private static final class CompositeRenderType extends RenderType {
       static final BiFunction<ResourceLocation, RenderStateShard.CullStateShard, RenderType> OUTLINE = Util.memoize((var0, var1) -> {
-         return RenderType.create("outline", DefaultVertexFormat.POSITION_COLOR_TEX, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_OUTLINE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, false, false)).setCullState(var1).setDepthTestState(NO_DEPTH_TEST).setOutputState(OUTLINE_TARGET).createCompositeState(RenderType.OutlineProperty.IS_OUTLINE));
+         return RenderType.create("outline", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_OUTLINE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, false, false)).setCullState(var1).setDepthTestState(NO_DEPTH_TEST).setOutputState(OUTLINE_TARGET).createCompositeState(RenderType.OutlineProperty.IS_OUTLINE));
       });
       private final CompositeState state;
       private final Optional<RenderType> outline;

@@ -101,7 +101,7 @@ public class CommandStorage {
 
       public Stream<ResourceLocation> getKeys(String var1) {
          return this.storage.keySet().stream().map((var1x) -> {
-            return new ResourceLocation(var1, var1x);
+            return ResourceLocation.fromNamespaceAndPath(var1, var1x);
          });
       }
    }

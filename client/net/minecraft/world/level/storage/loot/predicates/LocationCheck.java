@@ -19,10 +19,10 @@ public record LocationCheck(Optional<LocationPredicate> predicate, BlockPos offs
       return var0.group(LocationPredicate.CODEC.optionalFieldOf("predicate").forGetter(LocationCheck::predicate), OFFSET_CODEC.forGetter(LocationCheck::offset)).apply(var0, LocationCheck::new);
    });
 
-   public LocationCheck(Optional<LocationPredicate> predicate, BlockPos offset) {
+   public LocationCheck(Optional<LocationPredicate> var1, BlockPos var2) {
       super();
-      this.predicate = predicate;
-      this.offset = offset;
+      this.predicate = var1;
+      this.offset = var2;
    }
 
    public LootItemConditionType getType() {

@@ -570,15 +570,15 @@ public class EndDragonFight {
       });
       public static final Data DEFAULT = new Data(true, false, false, false, Optional.empty(), Optional.empty(), Optional.empty());
 
-      public Data(boolean needsStateScanning, boolean dragonKilled, boolean previouslyKilled, boolean isRespawning, Optional<UUID> dragonUUID, Optional<BlockPos> exitPortalLocation, Optional<List<Integer>> gateways) {
+      public Data(boolean var1, boolean var2, boolean var3, boolean var4, Optional<UUID> var5, Optional<BlockPos> var6, Optional<List<Integer>> var7) {
          super();
-         this.needsStateScanning = needsStateScanning;
-         this.dragonKilled = dragonKilled;
-         this.previouslyKilled = previouslyKilled;
-         this.isRespawning = isRespawning;
-         this.dragonUUID = dragonUUID;
-         this.exitPortalLocation = exitPortalLocation;
-         this.gateways = gateways;
+         this.needsStateScanning = var1;
+         this.dragonKilled = var2;
+         this.previouslyKilled = var3;
+         this.isRespawning = var4;
+         this.dragonUUID = var5;
+         this.exitPortalLocation = var6;
+         this.gateways = var7;
       }
 
       public boolean needsStateScanning() {

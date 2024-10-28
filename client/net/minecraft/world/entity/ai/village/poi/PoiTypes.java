@@ -53,7 +53,7 @@ public class PoiTypes {
    }
 
    private static ResourceKey<PoiType> createKey(String var0) {
-      return ResourceKey.create(Registries.POINT_OF_INTEREST_TYPE, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.POINT_OF_INTEREST_TYPE, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static PoiType register(Registry<PoiType> var0, ResourceKey<PoiType> var1, Set<BlockState> var2, int var3, int var4) {

@@ -30,11 +30,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 
 public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry> {
-   private static final ResourceLocation DRAFT_REPORT_SPRITE = new ResourceLocation("icon/draft_report");
+   private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
    private static final Duration TOOLTIP_DELAY = Duration.ofMillis(500L);
-   private static final WidgetSprites REPORT_BUTTON_SPRITES = new WidgetSprites(new ResourceLocation("social_interactions/report_button"), new ResourceLocation("social_interactions/report_button_disabled"), new ResourceLocation("social_interactions/report_button_highlighted"));
-   private static final WidgetSprites MUTE_BUTTON_SPRITES = new WidgetSprites(new ResourceLocation("social_interactions/mute_button"), new ResourceLocation("social_interactions/mute_button_highlighted"));
-   private static final WidgetSprites UNMUTE_BUTTON_SPRITES = new WidgetSprites(new ResourceLocation("social_interactions/unmute_button"), new ResourceLocation("social_interactions/unmute_button_highlighted"));
+   private static final WidgetSprites REPORT_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("social_interactions/report_button"), ResourceLocation.withDefaultNamespace("social_interactions/report_button_disabled"), ResourceLocation.withDefaultNamespace("social_interactions/report_button_highlighted"));
+   private static final WidgetSprites MUTE_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("social_interactions/mute_button"), ResourceLocation.withDefaultNamespace("social_interactions/mute_button_highlighted"));
+   private static final WidgetSprites UNMUTE_BUTTON_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("social_interactions/unmute_button"), ResourceLocation.withDefaultNamespace("social_interactions/unmute_button_highlighted"));
    private final Minecraft minecraft;
    private final List<AbstractWidget> children;
    private final UUID id;

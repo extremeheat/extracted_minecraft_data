@@ -30,7 +30,7 @@ public class SpriteSources {
 
    private static SpriteSourceType register(String var0, MapCodec<? extends SpriteSource> var1) {
       SpriteSourceType var2 = new SpriteSourceType(var1);
-      ResourceLocation var3 = new ResourceLocation(var0);
+      ResourceLocation var3 = ResourceLocation.withDefaultNamespace(var0);
       SpriteSourceType var4 = (SpriteSourceType)TYPES.putIfAbsent(var3, var2);
       if (var4 != null) {
          throw new IllegalStateException("Duplicate registration " + String.valueOf(var3));

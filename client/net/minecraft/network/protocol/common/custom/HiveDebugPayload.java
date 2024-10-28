@@ -12,9 +12,9 @@ public record HiveDebugPayload(HiveInfo hiveInfo) implements CustomPacketPayload
       this(new HiveInfo(var1));
    }
 
-   public HiveDebugPayload(HiveInfo hiveInfo) {
+   public HiveDebugPayload(HiveInfo var1) {
       super();
-      this.hiveInfo = hiveInfo;
+      this.hiveInfo = var1;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -34,13 +34,13 @@ public record HiveDebugPayload(HiveInfo hiveInfo) implements CustomPacketPayload
          this(var1.readBlockPos(), var1.readUtf(), var1.readInt(), var1.readInt(), var1.readBoolean());
       }
 
-      public HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
+      public HiveInfo(BlockPos var1, String var2, int var3, int var4, boolean var5) {
          super();
-         this.pos = pos;
-         this.hiveType = hiveType;
-         this.occupantCount = occupantCount;
-         this.honeyLevel = honeyLevel;
-         this.sedated = sedated;
+         this.pos = var1;
+         this.hiveType = var2;
+         this.occupantCount = var3;
+         this.honeyLevel = var4;
+         this.sedated = var5;
       }
 
       public void write(FriendlyByteBuf var1) {

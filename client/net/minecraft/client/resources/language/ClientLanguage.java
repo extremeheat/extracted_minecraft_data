@@ -43,7 +43,7 @@ public class ClientLanguage extends Language {
             String var8 = (String)var7.next();
 
             try {
-               ResourceLocation var9 = new ResourceLocation(var8, var6);
+               ResourceLocation var9 = ResourceLocation.fromNamespaceAndPath(var8, var6);
                appendFrom(var5, var0.getResourceStack(var9), var3);
             } catch (Exception var10) {
                LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{var8, var6, var10.toString()});

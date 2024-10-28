@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Sheep;
 
 public class SheepRenderer extends MobRenderer<Sheep, SheepModel<Sheep>> {
-   private static final ResourceLocation SHEEP_LOCATION = new ResourceLocation("textures/entity/sheep/sheep.png");
+   private static final ResourceLocation SHEEP_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/sheep/sheep.png");
 
    public SheepRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SheepModel(var1.bakeLayer(ModelLayers.SHEEP)), 0.7F);

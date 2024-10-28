@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -68,7 +68,7 @@ public class Breeze extends Monster {
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return BreezeAi.makeBrain(this.brainProvider().makeBrain(var1));
+      return BreezeAi.makeBrain(this, this.brainProvider().makeBrain(var1));
    }
 
    public Brain<Breeze> getBrain() {
@@ -173,7 +173,11 @@ public class Breeze extends Monster {
    }
 
    public ProjectileDeflection deflection(Projectile var1) {
-      return var1.getType() != EntityType.BREEZE_WIND_CHARGE && var1.getType() != EntityType.WIND_CHARGE ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
+      if (var1.getType() != EntityType.BREEZE_WIND_CHARGE && var1.getType() != EntityType.WIND_CHARGE) {
+         return this.getType().is(EntityTypeTags.DEFLECTS_PROJECTILES) ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
+      } else {
+         return ProjectileDeflection.NONE;
+      }
    }
 
    public SoundSource getSoundSource() {
@@ -237,7 +241,7 @@ public class Breeze extends Monster {
    }
 
    public boolean isInvulnerableTo(DamageSource var1) {
-      return var1.is(DamageTypeTags.BREEZE_IMMUNE_TO) || var1.getEntity() instanceof Breeze || super.isInvulnerableTo(var1);
+      return var1.getEntity() instanceof Breeze || super.isInvulnerableTo(var1);
    }
 
    public double getFluidJumpThreshold() {

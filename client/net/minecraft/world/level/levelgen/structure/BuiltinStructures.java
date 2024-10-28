@@ -41,6 +41,6 @@ public interface BuiltinStructures {
    ResourceKey<Structure> TRIAL_CHAMBERS = createKey("trial_chambers");
 
    private static ResourceKey<Structure> createKey(String var0) {
-      return ResourceKey.create(Registries.STRUCTURE, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.STRUCTURE, ResourceLocation.withDefaultNamespace(var0));
    }
 }

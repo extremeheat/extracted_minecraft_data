@@ -16,9 +16,9 @@ interface PathContents {
    };
 
    public static record DirectoryContents(Map<String, LinkFSPath> children) implements PathContents {
-      public DirectoryContents(Map<String, LinkFSPath> children) {
+      public DirectoryContents(Map<String, LinkFSPath> var1) {
          super();
-         this.children = children;
+         this.children = var1;
       }
 
       public Map<String, LinkFSPath> children() {
@@ -27,9 +27,9 @@ interface PathContents {
    }
 
    public static record FileContents(Path contents) implements PathContents {
-      public FileContents(Path contents) {
+      public FileContents(Path var1) {
          super();
-         this.contents = contents;
+         this.contents = var1;
       }
 
       public Path contents() {

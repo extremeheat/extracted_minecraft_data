@@ -15,9 +15,9 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
    private static final int MAX_PAYLOAD_SIZE = 32767;
    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> STREAM_CODEC;
 
-   public ServerboundCustomPayloadPacket(CustomPacketPayload payload) {
+   public ServerboundCustomPayloadPacket(CustomPacketPayload var1) {
       super();
-      this.payload = payload;
+      this.payload = var1;
    }
 
    public PacketType<ServerboundCustomPayloadPacket> type() {

@@ -113,7 +113,7 @@ public class ServerRecipeBook extends RecipeBook {
          String var5 = var1.getString(var4);
 
          try {
-            ResourceLocation var6 = new ResourceLocation(var5);
+            ResourceLocation var6 = ResourceLocation.parse(var5);
             Optional var7 = var3.byKey(var6);
             if (var7.isEmpty()) {
                LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var6);

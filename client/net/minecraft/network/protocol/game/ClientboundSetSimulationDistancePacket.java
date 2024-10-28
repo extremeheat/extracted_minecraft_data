@@ -12,9 +12,9 @@ public record ClientboundSetSimulationDistancePacket(int simulationDistance) imp
       this(var1.readVarInt());
    }
 
-   public ClientboundSetSimulationDistancePacket(int simulationDistance) {
+   public ClientboundSetSimulationDistancePacket(int var1) {
       super();
-      this.simulationDistance = simulationDistance;
+      this.simulationDistance = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

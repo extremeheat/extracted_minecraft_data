@@ -101,11 +101,11 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
          boolean var8 = var3.brewTime == 0;
          if (var8 && var5) {
             doBrew(var0, var1, var3.items);
-            setChanged(var0, var1, var2);
          } else if (!var5 || !var7.is(var3.ingredient)) {
             var3.brewTime = 0;
-            setChanged(var0, var1, var2);
          }
+
+         setChanged(var0, var1, var2);
       } else if (var5 && var3.fuel > 0) {
          --var3.fuel;
          var3.brewTime = 400;
@@ -187,6 +187,10 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(var1, this.items, var2);
       this.brewTime = var1.getShort("BrewTime");
+      if (this.brewTime > 0) {
+         this.ingredient = ((ItemStack)this.items.get(3)).getItem();
+      }
+
       this.fuel = var1.getByte("Fuel");
    }
 

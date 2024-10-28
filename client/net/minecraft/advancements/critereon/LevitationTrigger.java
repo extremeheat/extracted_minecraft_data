@@ -28,11 +28,11 @@ public class LevitationTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::duration)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DistancePredicate> distance, MinMaxBounds.Ints duration) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DistancePredicate> var2, MinMaxBounds.Ints var3) {
          super();
-         this.player = player;
-         this.distance = distance;
-         this.duration = duration;
+         this.player = var1;
+         this.distance = var2;
+         this.duration = var3;
       }
 
       public static Criterion<TriggerInstance> levitated(DistancePredicate var0) {

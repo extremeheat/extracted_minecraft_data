@@ -28,12 +28,12 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::durability), MinMaxBounds.Ints.CODEC.optionalFieldOf("delta", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::delta)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints durability, MinMaxBounds.Ints delta) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, MinMaxBounds.Ints var3, MinMaxBounds.Ints var4) {
          super();
-         this.player = player;
-         this.item = item;
-         this.durability = durability;
-         this.delta = delta;
+         this.player = var1;
+         this.item = var2;
+         this.durability = var3;
+         this.delta = var4;
       }
 
       public static Criterion<TriggerInstance> changedDurability(Optional<ItemPredicate> var0, MinMaxBounds.Ints var1) {

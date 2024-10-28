@@ -8,7 +8,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -24,7 +23,7 @@ public interface Equipable {
 
    default InteractionResultHolder<ItemStack> swapWithEquipmentSlot(Item var1, Level var2, Player var3, InteractionHand var4) {
       ItemStack var5 = var3.getItemInHand(var4);
-      EquipmentSlot var6 = Mob.getEquipmentSlotForItem(var5);
+      EquipmentSlot var6 = var3.getEquipmentSlotForItem(var5);
       if (!var3.canUseSlot(var6)) {
          return InteractionResultHolder.pass(var5);
       } else {

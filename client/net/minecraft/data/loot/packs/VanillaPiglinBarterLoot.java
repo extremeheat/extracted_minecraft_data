@@ -19,9 +19,9 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 public record VanillaPiglinBarterLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
-   public VanillaPiglinBarterLoot(HolderLookup.Provider registries) {
+   public VanillaPiglinBarterLoot(HolderLookup.Provider var1) {
       super();
-      this.registries = registries;
+      this.registries = var1;
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {

@@ -88,11 +88,11 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       final int maxWidth;
       final OptionalInt maxRows;
 
-      CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
+      CacheKey(Component var1, int var2, OptionalInt var3) {
          super();
-         this.message = message;
-         this.maxWidth = maxWidth;
-         this.maxRows = maxRows;
+         this.message = var1;
+         this.maxWidth = var2;
+         this.maxRows = var3;
       }
 
       public Component message() {

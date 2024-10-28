@@ -5,9 +5,9 @@ public record ChainModifiers(byte flags) {
    private static final byte FLAG_FORKED = 1;
    private static final byte FLAG_IS_RETURN = 2;
 
-   public ChainModifiers(byte flags) {
+   public ChainModifiers(byte var1) {
       super();
-      this.flags = flags;
+      this.flags = var1;
    }
 
    private ChainModifiers setFlag(byte var1) {

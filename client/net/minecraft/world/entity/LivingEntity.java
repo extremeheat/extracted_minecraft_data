@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
@@ -53,6 +52,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -134,7 +134,8 @@ import org.slf4j.Logger;
 public abstract class LivingEntity extends Entity implements Attackable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_ACTIVE_EFFECTS = "active_effects";
-   private static final UUID SPEED_MODIFIER_POWDER_SNOW_UUID = UUID.fromString("1eaf83ff-7207-4596-b37a-d7a07b3ec4ce");
+   private static final ResourceLocation SPEED_MODIFIER_POWDER_SNOW_ID = ResourceLocation.withDefaultNamespace("powder_snow");
+   private static final ResourceLocation SPRINTING_MODIFIER_ID = ResourceLocation.withDefaultNamespace("sprinting");
    private static final AttributeModifier SPEED_MODIFIER_SPRINTING;
    public static final int HAND_SLOTS = 2;
    public static final int ARMOR_SLOTS = 4;
@@ -167,6 +168,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
    private static final float ITEM_USE_EFFECT_START_FRACTION = 0.21875F;
+   public static final String ATTRIBUTES_FIELD = "attributes";
    private final AttributeMap attributes;
    private final CombatTracker combatTracker = new CombatTracker(this);
    private final Map<Holder<MobEffect>, MobEffectInstance> activeEffects = Maps.newHashMap();
@@ -475,8 +477,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected void removeFrost() {
       AttributeInstance var1 = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (var1 != null) {
-         if (var1.getModifier(SPEED_MODIFIER_POWDER_SNOW_UUID) != null) {
-            var1.removeModifier(SPEED_MODIFIER_POWDER_SNOW_UUID);
+         if (var1.getModifier(SPEED_MODIFIER_POWDER_SNOW_ID) != null) {
+            var1.removeModifier(SPEED_MODIFIER_POWDER_SNOW_ID);
          }
 
       }
@@ -492,7 +494,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             }
 
             float var3 = -0.05F * this.getPercentFrozen();
-            var2.addTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_UUID, "Powder snow slow", (double)var3, AttributeModifier.Operation.ADD_VALUE));
+            var2.addTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_ID, (double)var3, AttributeModifier.Operation.ADD_VALUE));
          }
       }
 
@@ -649,16 +651,22 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    public void remove(Entity.RemovalReason var1) {
       if (var1 == Entity.RemovalReason.KILLED || var1 == Entity.RemovalReason.DISCARDED) {
-         Iterator var2 = this.getActiveEffects().iterator();
-
-         while(var2.hasNext()) {
-            MobEffectInstance var3 = (MobEffectInstance)var2.next();
-            var3.onMobRemoved(this, var1);
-         }
+         this.triggerOnDeathMobEffects(var1);
       }
 
       super.remove(var1);
       this.brain.clearMemories();
+   }
+
+   protected void triggerOnDeathMobEffects(Entity.RemovalReason var1) {
+      Iterator var2 = this.getActiveEffects().iterator();
+
+      while(var2.hasNext()) {
+         MobEffectInstance var3 = (MobEffectInstance)var2.next();
+         var3.onMobRemoved(this, var1);
+      }
+
+      this.activeEffects.clear();
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -667,7 +675,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       var1.putInt("HurtByTimestamp", this.lastHurtByMobTimestamp);
       var1.putShort("DeathTime", (short)this.deathTime);
       var1.putFloat("AbsorptionAmount", this.getAbsorptionAmount());
-      var1.put("Attributes", this.getAttributes().save());
+      var1.put("attributes", this.getAttributes().save());
       if (!this.activeEffects.isEmpty()) {
          ListTag var2 = new ListTag();
          Iterator var3 = this.activeEffects.values().iterator();
@@ -696,8 +704,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       this.internalSetAbsorptionAmount(var1.getFloat("AbsorptionAmount"));
-      if (var1.contains("Attributes", 9) && this.level() != null && !this.level().isClientSide) {
-         this.getAttributes().load(var1.getList("Attributes", 10));
+      if (var1.contains("attributes", 9) && this.level() != null && !this.level().isClientSide) {
+         this.getAttributes().load(var1.getList("attributes", 10));
       }
 
       if (var1.contains("active_effects", 9)) {
@@ -1032,13 +1040,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    private void refreshDirtyAttributes() {
-      Iterator var1 = this.getAttributes().getDirtyAttributes().iterator();
+      Set var1 = this.getAttributes().getAttributesToUpdate();
+      Iterator var2 = var1.iterator();
 
-      while(var1.hasNext()) {
-         AttributeInstance var2 = (AttributeInstance)var1.next();
-         this.onAttributeUpdated(var2.getAttribute());
+      while(var2.hasNext()) {
+         AttributeInstance var3 = (AttributeInstance)var2.next();
+         this.onAttributeUpdated(var3.getAttribute());
       }
 
+      var1.clear();
    }
 
    private void onAttributeUpdated(Holder<Attribute> var1) {
@@ -1185,9 +1195,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
                   DoubleDoubleImmutablePair var22 = var12.calculateHorizontalHurtKnockbackDirection(this, var1);
                   var17 = -var22.leftDouble();
                   var20 = -var22.rightDouble();
-               } else if (var15 != null) {
-                  var17 = var15.getX() - this.getX();
-                  var20 = var15.getZ() - this.getZ();
+               } else if (var1.getSourcePosition() != null) {
+                  var17 = var1.getSourcePosition().x() - this.getX();
+                  var20 = var1.getSourcePosition().z() - this.getZ();
                }
 
                this.knockback(0.4000000059604645, var17, var20);
@@ -1358,7 +1368,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             ServerLevel var4 = (ServerLevel)var5;
             if (var2 == null || var2.killedEntity(var4, this)) {
                this.gameEvent(GameEvent.ENTITY_DIE);
-               this.dropAllDeathLoot(var1);
+               this.dropAllDeathLoot(var4, var1);
                this.createWitherRose(var3);
             }
 
@@ -1391,15 +1401,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   protected void dropAllDeathLoot(DamageSource var1) {
-      boolean var2 = this.lastHurtByPlayerTime > 0;
-      if (this.shouldDropLoot() && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-         this.dropFromLootTable(var1, var2);
-         this.dropCustomDeathLoot(var1, var2);
+   protected void dropAllDeathLoot(ServerLevel var1, DamageSource var2) {
+      boolean var3 = this.lastHurtByPlayerTime > 0;
+      if (this.shouldDropLoot() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         this.dropFromLootTable(var2, var3);
+         this.dropCustomDeathLoot(var1, var2, var3);
       }
 
       this.dropEquipment();
-      this.dropExperience(var1.getEntity());
+      this.dropExperience(var2.getEntity());
    }
 
    protected void dropEquipment() {
@@ -1415,7 +1425,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
    }
 
    public ResourceKey<LootTable> getLootTable() {
@@ -2481,8 +2491,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          ItemStack var10000;
          switch (var5.getType()) {
             case HAND -> var10000 = this.getLastHandItem(var5);
-            case ARMOR -> var10000 = this.getLastArmorItem(var5);
-            case BODY -> var10000 = this.lastBodyItemStack;
+            case HUMANOID_ARMOR -> var10000 = this.getLastArmorItem(var5);
+            case ANIMAL_ARMOR -> var10000 = this.lastBodyItemStack;
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
@@ -2551,8 +2561,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          var2.add(Pair.of(var2x, var4));
          switch (var2x.getType()) {
             case HAND -> this.setLastHandItem(var2x, var4);
-            case ARMOR -> this.setLastArmorItem(var2x, var4);
-            case BODY -> this.lastBodyItemStack = var4;
+            case HUMANOID_ARMOR -> this.setLastArmorItem(var2x, var4);
+            case ANIMAL_ARMOR -> this.lastBodyItemStack = var4;
          }
 
       });
@@ -2824,7 +2834,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void doPush(Entity var1) {
-      var1.push(this);
+      var1.push((Entity)this);
    }
 
    protected void doAutoAttackOnTouch(LivingEntity var1) {
@@ -2950,7 +2960,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.yBodyRot = var1;
    }
 
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
+   public Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
    }
 
@@ -3369,15 +3379,16 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return ItemStack.EMPTY;
    }
 
-   public ItemStack eat(Level var1, ItemStack var2) {
+   public final ItemStack eat(Level var1, ItemStack var2) {
       FoodProperties var3 = (FoodProperties)var2.get(DataComponents.FOOD);
-      if (var3 != null) {
-         var1.playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(var2), SoundSource.NEUTRAL, 1.0F, 1.0F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.4F);
-         this.addEatEffect(var3);
-         var2.consume(1, this);
-         this.gameEvent(GameEvent.EAT);
-      }
+      return var3 != null ? this.eat(var1, var2, var3) : var2;
+   }
 
+   public ItemStack eat(Level var1, ItemStack var2, FoodProperties var3) {
+      var1.playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)this.getEatingSound(var2), SoundSource.NEUTRAL, 1.0F, 1.0F + (var1.random.nextFloat() - var1.random.nextFloat()) * 0.4F);
+      this.addEatEffect(var3);
+      var2.consume(1, this);
+      this.gameEvent(GameEvent.EAT);
       return var2;
    }
 
@@ -3412,8 +3423,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return var10000;
    }
 
-   public void broadcastBreakEvent(EquipmentSlot var1) {
-      this.level().broadcastEntityEvent(this, entityEventForEquipmentBreak(var1));
+   public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {
+      this.level().broadcastEntityEvent(this, entityEventForEquipmentBreak(var2));
    }
 
    public static EquipmentSlot getSlotForHand(InteractionHand var0) {
@@ -3429,14 +3440,21 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   public static EquipmentSlot getEquipmentSlotForItem(ItemStack var0) {
-      Equipable var1 = Equipable.get(var0);
-      return var1 != null ? var1.getEquipmentSlot() : EquipmentSlot.MAINHAND;
+   public EquipmentSlot getEquipmentSlotForItem(ItemStack var1) {
+      Equipable var2 = Equipable.get(var1);
+      if (var2 != null) {
+         EquipmentSlot var3 = var2.getEquipmentSlot();
+         if (this.canUseSlot(var3)) {
+            return var3;
+         }
+      }
+
+      return EquipmentSlot.MAINHAND;
    }
 
    private static SlotAccess createEquipmentSlotAccess(LivingEntity var0, EquipmentSlot var1) {
-      return var1 != EquipmentSlot.HEAD && var1 != EquipmentSlot.MAINHAND && var1 != EquipmentSlot.OFFHAND ? SlotAccess.forEquipmentSlot(var0, var1, (var1x) -> {
-         return var1x.isEmpty() || Mob.getEquipmentSlotForItem(var1x) == var1;
+      return var1 != EquipmentSlot.HEAD && var1 != EquipmentSlot.MAINHAND && var1 != EquipmentSlot.OFFHAND ? SlotAccess.forEquipmentSlot(var0, var1, (var2) -> {
+         return var2.isEmpty() || var0.getEquipmentSlotForItem(var2) == var1;
       }) : SlotAccess.forEquipmentSlot(var0, var1);
    }
 
@@ -3545,7 +3563,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    static {
-      SPEED_MODIFIER_SPRINTING = new AttributeModifier(UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D"), "Sprinting speed boost", 0.30000001192092896, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+      SPEED_MODIFIER_SPRINTING = new AttributeModifier(SPRINTING_MODIFIER_ID, 0.30000001192092896, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
       DATA_LIVING_ENTITY_FLAGS = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BYTE);
       DATA_HEALTH_ID = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
       DATA_EFFECT_PARTICLES = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.PARTICLES);
@@ -3557,10 +3575,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public static record Fallsounds(SoundEvent small, SoundEvent big) {
-      public Fallsounds(SoundEvent small, SoundEvent big) {
+      public Fallsounds(SoundEvent var1, SoundEvent var2) {
          super();
-         this.small = small;
-         this.big = big;
+         this.small = var1;
+         this.big = var2;
       }
 
       public SoundEvent small() {

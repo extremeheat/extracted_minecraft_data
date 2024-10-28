@@ -28,19 +28,19 @@ public record ExplodeEffect(boolean attributeToUser, Optional<Holder<DamageType>
       return var0.group(Codec.BOOL.optionalFieldOf("attribute_to_user", false).forGetter(ExplodeEffect::attributeToUser), DamageType.CODEC.optionalFieldOf("damage_type").forGetter(ExplodeEffect::damageType), LevelBasedValue.CODEC.optionalFieldOf("knockback_multiplier").forGetter(ExplodeEffect::knockbackMultiplier), RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("immune_blocks").forGetter(ExplodeEffect::immuneBlocks), Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(ExplodeEffect::offset), LevelBasedValue.CODEC.fieldOf("radius").forGetter(ExplodeEffect::radius), Codec.BOOL.optionalFieldOf("create_fire", false).forGetter(ExplodeEffect::createFire), Level.ExplosionInteraction.CODEC.fieldOf("block_interaction").forGetter(ExplodeEffect::blockInteraction), ParticleTypes.CODEC.fieldOf("small_particle").forGetter(ExplodeEffect::smallParticle), ParticleTypes.CODEC.fieldOf("large_particle").forGetter(ExplodeEffect::largeParticle), SoundEvent.CODEC.fieldOf("sound").forGetter(ExplodeEffect::sound)).apply(var0, ExplodeEffect::new);
    });
 
-   public ExplodeEffect(boolean attributeToUser, Optional<Holder<DamageType>> damageType, Optional<LevelBasedValue> knockbackMultiplier, Optional<HolderSet<Block>> immuneBlocks, Vec3 offset, LevelBasedValue radius, boolean createFire, Level.ExplosionInteraction blockInteraction, ParticleOptions smallParticle, ParticleOptions largeParticle, Holder<SoundEvent> sound) {
+   public ExplodeEffect(boolean var1, Optional<Holder<DamageType>> var2, Optional<LevelBasedValue> var3, Optional<HolderSet<Block>> var4, Vec3 var5, LevelBasedValue var6, boolean var7, Level.ExplosionInteraction var8, ParticleOptions var9, ParticleOptions var10, Holder<SoundEvent> var11) {
       super();
-      this.attributeToUser = attributeToUser;
-      this.damageType = damageType;
-      this.knockbackMultiplier = knockbackMultiplier;
-      this.immuneBlocks = immuneBlocks;
-      this.offset = offset;
-      this.radius = radius;
-      this.createFire = createFire;
-      this.blockInteraction = blockInteraction;
-      this.smallParticle = smallParticle;
-      this.largeParticle = largeParticle;
-      this.sound = sound;
+      this.attributeToUser = var1;
+      this.damageType = var2;
+      this.knockbackMultiplier = var3;
+      this.immuneBlocks = var4;
+      this.offset = var5;
+      this.radius = var6;
+      this.createFire = var7;
+      this.blockInteraction = var8;
+      this.smallParticle = var9;
+      this.largeParticle = var10;
+      this.sound = var11;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {

@@ -8,7 +8,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -17,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record VibrationInfo(Holder<GameEvent> gameEvent, float distance, Vec3 pos, @Nullable UUID uuid, @Nullable UUID projectileOwnerUuid, @Nullable Entity entity) {
    public static final Codec<VibrationInfo> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BuiltInRegistries.GAME_EVENT.holderByNameCodec().fieldOf("game_event").forGetter(VibrationInfo::gameEvent), Codec.floatRange(0.0F, 3.4028235E38F).fieldOf("distance").forGetter(VibrationInfo::distance), Vec3.CODEC.fieldOf("pos").forGetter(VibrationInfo::pos), UUIDUtil.CODEC.lenientOptionalFieldOf("source").forGetter((var0x) -> {
+      return var0.group(GameEvent.CODEC.fieldOf("game_event").forGetter(VibrationInfo::gameEvent), Codec.floatRange(0.0F, 3.4028235E38F).fieldOf("distance").forGetter(VibrationInfo::distance), Vec3.CODEC.fieldOf("pos").forGetter(VibrationInfo::pos), UUIDUtil.CODEC.lenientOptionalFieldOf("source").forGetter((var0x) -> {
          return Optional.ofNullable(var0x.uuid());
       }), UUIDUtil.CODEC.lenientOptionalFieldOf("projectile_owner").forGetter((var0x) -> {
          return Optional.ofNullable(var0x.projectileOwnerUuid());
@@ -34,14 +33,14 @@ public record VibrationInfo(Holder<GameEvent> gameEvent, float distance, Vec3 po
       this(var1, var2, var3, var4 == null ? null : var4.getUUID(), getProjectileOwner(var4), var4);
    }
 
-   public VibrationInfo(Holder<GameEvent> gameEvent, float distance, Vec3 pos, @Nullable UUID uuid, @Nullable UUID projectileOwnerUuid, @Nullable Entity entity) {
+   public VibrationInfo(Holder<GameEvent> var1, float var2, Vec3 var3, @Nullable UUID var4, @Nullable UUID var5, @Nullable Entity var6) {
       super();
-      this.gameEvent = gameEvent;
-      this.distance = distance;
-      this.pos = pos;
-      this.uuid = uuid;
-      this.projectileOwnerUuid = projectileOwnerUuid;
-      this.entity = entity;
+      this.gameEvent = var1;
+      this.distance = var2;
+      this.pos = var3;
+      this.uuid = var4;
+      this.projectileOwnerUuid = var5;
+      this.entity = var6;
    }
 
    @Nullable

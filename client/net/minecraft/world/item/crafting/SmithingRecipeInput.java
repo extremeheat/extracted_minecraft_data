@@ -3,11 +3,11 @@ package net.minecraft.world.item.crafting;
 import net.minecraft.world.item.ItemStack;
 
 public record SmithingRecipeInput(ItemStack template, ItemStack base, ItemStack addition) implements RecipeInput {
-   public SmithingRecipeInput(ItemStack template, ItemStack base, ItemStack addition) {
+   public SmithingRecipeInput(ItemStack var1, ItemStack var2, ItemStack var3) {
       super();
-      this.template = template;
-      this.base = base;
-      this.addition = addition;
+      this.template = var1;
+      this.base = var2;
+      this.addition = var3;
    }
 
    public ItemStack getItem(int var1) {

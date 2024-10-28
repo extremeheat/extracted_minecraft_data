@@ -13,9 +13,9 @@ public record ItemContainerPredicate(Optional<CollectionPredicate<ItemStack, Ite
       return var0.group(CollectionPredicate.codec(ItemPredicate.CODEC).optionalFieldOf("items").forGetter(ItemContainerPredicate::items)).apply(var0, ItemContainerPredicate::new);
    });
 
-   public ItemContainerPredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> items) {
+   public ItemContainerPredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> var1) {
       super();
-      this.items = items;
+      this.items = var1;
    }
 
    public DataComponentType<ItemContainerContents> componentType() {

@@ -15,9 +15,9 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
    });
    public static final MetadataSectionType<OverlayMetadataSection> TYPE;
 
-   public OverlayMetadataSection(List<OverlayEntry> overlays) {
+   public OverlayMetadataSection(List<OverlayEntry> var1) {
       super();
-      this.overlays = overlays;
+      this.overlays = var1;
    }
 
    private static DataResult<String> validateOverlayDir(String var0) {
@@ -45,10 +45,10 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
          return var0.group(InclusiveRange.codec(Codec.INT).fieldOf("formats").forGetter(OverlayEntry::format), Codec.STRING.validate(OverlayMetadataSection::validateOverlayDir).fieldOf("directory").forGetter(OverlayEntry::overlay)).apply(var0, OverlayEntry::new);
       });
 
-      public OverlayEntry(InclusiveRange<Integer> format, String overlay) {
+      public OverlayEntry(InclusiveRange<Integer> var1, String var2) {
          super();
-         this.format = format;
-         this.overlay = overlay;
+         this.format = var1;
+         this.overlay = var2;
       }
 
       public boolean isApplicable(int var1) {

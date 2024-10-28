@@ -10,9 +10,9 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundDisconnectPacket(Component reason) implements Packet<ClientCommonPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundDisconnectPacket> STREAM_CODEC;
 
-   public ClientboundDisconnectPacket(Component reason) {
+   public ClientboundDisconnectPacket(Component var1) {
       super();
-      this.reason = reason;
+      this.reason = var1;
    }
 
    public PacketType<ClientboundDisconnectPacket> type() {

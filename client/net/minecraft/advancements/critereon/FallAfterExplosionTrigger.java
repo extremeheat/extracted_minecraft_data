@@ -34,12 +34,12 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(TriggerInstance::cause)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance, Optional<ContextAwarePredicate> cause) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3, Optional<ContextAwarePredicate> var4) {
          super();
-         this.player = player;
-         this.startPosition = startPosition;
-         this.distance = distance;
-         this.cause = cause;
+         this.player = var1;
+         this.startPosition = var2;
+         this.distance = var3;
+         this.cause = var4;
       }
 
       public static Criterion<TriggerInstance> fallAfterExplosion(DistancePredicate var0, EntityPredicate.Builder var1) {

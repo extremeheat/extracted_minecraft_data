@@ -88,14 +88,14 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    }
 
    private static record ShapeUpdate(Direction direction, BlockState state, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) implements NeighborUpdates {
-      ShapeUpdate(Direction direction, BlockState state, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) {
+      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
          super();
-         this.direction = direction;
-         this.state = state;
-         this.pos = pos;
-         this.neighborPos = neighborPos;
-         this.updateFlags = updateFlags;
-         this.updateLimit = updateLimit;
+         this.direction = var1;
+         this.state = var2;
+         this.pos = var3;
+         this.neighborPos = var4;
+         this.updateFlags = var5;
+         this.updateLimit = var6;
       }
 
       public boolean runNext(Level var1) {
@@ -133,11 +133,11 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    }
 
    static record SimpleNeighborUpdate(BlockPos pos, Block block, BlockPos neighborPos) implements NeighborUpdates {
-      SimpleNeighborUpdate(BlockPos pos, Block block, BlockPos neighborPos) {
+      SimpleNeighborUpdate(BlockPos var1, Block var2, BlockPos var3) {
          super();
-         this.pos = pos;
-         this.block = block;
-         this.neighborPos = neighborPos;
+         this.pos = var1;
+         this.block = var2;
+         this.neighborPos = var3;
       }
 
       public boolean runNext(Level var1) {
@@ -160,13 +160,13 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    }
 
    static record FullNeighborUpdate(BlockState state, BlockPos pos, Block block, BlockPos neighborPos, boolean movedByPiston) implements NeighborUpdates {
-      FullNeighborUpdate(BlockState state, BlockPos pos, Block block, BlockPos neighborPos, boolean movedByPiston) {
+      FullNeighborUpdate(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
          super();
-         this.state = state;
-         this.pos = pos;
-         this.block = block;
-         this.neighborPos = neighborPos;
-         this.movedByPiston = movedByPiston;
+         this.state = var1;
+         this.pos = var2;
+         this.block = var3;
+         this.neighborPos = var4;
+         this.movedByPiston = var5;
       }
 
       public boolean runNext(Level var1) {

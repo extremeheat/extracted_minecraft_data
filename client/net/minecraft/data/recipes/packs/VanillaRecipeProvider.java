@@ -872,7 +872,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       copySmithingTemplate(var1, Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
       copySmithingTemplate(var1, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
       copySmithingTemplate(var1, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.BREEZE_ROD);
-      copySmithingTemplate(var1, Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COPPER_BLOCK);
+      copySmithingTemplate(var1, Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Ingredient.of(Items.COPPER_BLOCK, Items.WAXED_COPPER_BLOCK));
       threeByThreePacker(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.BAMBOO_BLOCK, Items.BAMBOO);
       planksFromLogs(var1, Blocks.BAMBOO_PLANKS, ItemTags.BAMBOO_BLOCKS, 2);
       mosaicBuilder(var1, RecipeCategory.DECORATIONS, Blocks.BAMBOO_MOSAIC, Blocks.BAMBOO_SLAB);
@@ -975,7 +975,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
 
    public static Stream<TrimTemplate> smithingTrims() {
       return Stream.of(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE, Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE, Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE).map((var0) -> {
-         return new TrimTemplate(var0, new ResourceLocation(getItemName(var0) + "_smithing_trim"));
+         return new TrimTemplate(var0, ResourceLocation.withDefaultNamespace(getItemName(var0) + "_smithing_trim"));
       });
    }
 
@@ -991,10 +991,10 @@ public class VanillaRecipeProvider extends RecipeProvider {
    }
 
    public static record TrimTemplate(Item template, ResourceLocation id) {
-      public TrimTemplate(Item template, ResourceLocation id) {
+      public TrimTemplate(Item var1, ResourceLocation var2) {
          super();
-         this.template = template;
-         this.id = id;
+         this.template = var1;
+         this.id = var2;
       }
 
       public Item template() {

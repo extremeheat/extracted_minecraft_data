@@ -204,7 +204,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          });
       });
       if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
-         var1 = var1.transmuteCopy(Items.BOOK, var1.getCount());
+         var1 = var1.transmuteCopy(Items.BOOK);
       }
 
       int var3 = 0;

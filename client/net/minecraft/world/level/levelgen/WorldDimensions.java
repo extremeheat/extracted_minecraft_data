@@ -38,13 +38,13 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER;
    private static final int VANILLA_DIMENSION_COUNT;
 
-   public WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
+   public WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> var1) {
       super();
-      LevelStem var2 = (LevelStem)dimensions.get(LevelStem.OVERWORLD);
+      LevelStem var2 = (LevelStem)var1.get(LevelStem.OVERWORLD);
       if (var2 == null) {
          throw new IllegalStateException("Overworld settings missing");
       } else {
-         this.dimensions = dimensions;
+         this.dimensions = var1;
       }
    }
 
@@ -191,10 +191,10 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
                final ResourceKey<LevelStem> key;
                final LevelStem value;
 
-               _Entry/* $FF was: 1Entry*/(ResourceKey<LevelStem> key, LevelStem value) {
+               _Entry/* $FF was: 1Entry*/(ResourceKey<LevelStem> var1, LevelStem var2) {
                   super();
-                  this.key = key;
-                  this.value = value;
+                  this.key = var1;
+                  this.value = var2;
                }
 
                RegistrationInfo registrationInfo() {
@@ -233,10 +233,10 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    public static record Complete(Registry<LevelStem> dimensions, PrimaryLevelData.SpecialWorldProperty specialWorldProperty) {
-      public Complete(Registry<LevelStem> dimensions, PrimaryLevelData.SpecialWorldProperty specialWorldProperty) {
+      public Complete(Registry<LevelStem> var1, PrimaryLevelData.SpecialWorldProperty var2) {
          super();
-         this.dimensions = dimensions;
-         this.specialWorldProperty = specialWorldProperty;
+         this.dimensions = var1;
+         this.specialWorldProperty = var2;
       }
 
       public Lifecycle lifecycle() {

@@ -35,11 +35,11 @@ public class DragonHeadModel extends SkullModelBase {
       this.head.xRot = var3 * 0.017453292F;
    }
 
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
       var1.pushPose();
       var1.translate(0.0F, -0.374375F, 0.0F);
       var1.scale(0.75F, 0.75F, 0.75F);
-      this.head.render(var1, var2, var3, var4, var5, var6, var7, var8);
+      this.head.render(var1, var2, var3, var4, var5);
       var1.popPose();
    }
 }

@@ -7,10 +7,10 @@ public record ColumnPos(int x, int z) {
    private static final long COORD_BITS = 32L;
    private static final long COORD_MASK = 4294967295L;
 
-   public ColumnPos(int x, int z) {
+   public ColumnPos(int var1, int var2) {
       super();
-      this.x = x;
-      this.z = z;
+      this.x = var1;
+      this.z = var2;
    }
 
    public ChunkPos toChunkPos() {

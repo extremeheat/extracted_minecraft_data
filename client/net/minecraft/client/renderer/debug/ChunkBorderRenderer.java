@@ -34,70 +34,70 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
       int var18;
       for(var17 = -16; var17 <= 32; var17 += 16) {
          for(var18 = -16; var18 <= 32; var18 += 16) {
-            var15.vertex(var16, var13 + (float)var17, var10, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.0F).endVertex();
-            var15.vertex(var16, var13 + (float)var17, var10, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-            var15.vertex(var16, var13 + (float)var17, var11, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-            var15.vertex(var16, var13 + (float)var17, var11, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.0F).endVertex();
+            var15.addVertex(var16, var13 + (float)var17, var10, var14 + (float)var18).setColor(1.0F, 0.0F, 0.0F, 0.0F);
+            var15.addVertex(var16, var13 + (float)var17, var10, var14 + (float)var18).setColor(1.0F, 0.0F, 0.0F, 0.5F);
+            var15.addVertex(var16, var13 + (float)var17, var11, var14 + (float)var18).setColor(1.0F, 0.0F, 0.0F, 0.5F);
+            var15.addVertex(var16, var13 + (float)var17, var11, var14 + (float)var18).setColor(1.0F, 0.0F, 0.0F, 0.0F);
          }
       }
 
       for(var17 = 2; var17 < 16; var17 += 2) {
          var18 = var17 % 4 == 0 ? CELL_BORDER : YELLOW;
-         var15.vertex(var16, var13 + (float)var17, var10, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var10, var14).color(var18).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var11, var14).color(var18).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var11, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var10, var14 + 16.0F).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var10, var14 + 16.0F).color(var18).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var11, var14 + 16.0F).color(var18).endVertex();
-         var15.vertex(var16, var13 + (float)var17, var11, var14 + 16.0F).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.addVertex(var16, var13 + (float)var17, var10, var14).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13 + (float)var17, var10, var14).setColor(var18);
+         var15.addVertex(var16, var13 + (float)var17, var11, var14).setColor(var18);
+         var15.addVertex(var16, var13 + (float)var17, var11, var14).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13 + (float)var17, var10, var14 + 16.0F).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13 + (float)var17, var10, var14 + 16.0F).setColor(var18);
+         var15.addVertex(var16, var13 + (float)var17, var11, var14 + 16.0F).setColor(var18);
+         var15.addVertex(var16, var13 + (float)var17, var11, var14 + 16.0F).setColor(1.0F, 1.0F, 0.0F, 0.0F);
       }
 
       for(var17 = 2; var17 < 16; var17 += 2) {
          var18 = var17 % 4 == 0 ? CELL_BORDER : YELLOW;
-         var15.vertex(var16, var13, var10, var14 + (float)var17).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13, var10, var14 + (float)var17).color(var18).endVertex();
-         var15.vertex(var16, var13, var11, var14 + (float)var17).color(var18).endVertex();
-         var15.vertex(var16, var13, var11, var14 + (float)var17).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var10, var14 + (float)var17).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var10, var14 + (float)var17).color(var18).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var11, var14 + (float)var17).color(var18).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var11, var14 + (float)var17).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.addVertex(var16, var13, var10, var14 + (float)var17).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13, var10, var14 + (float)var17).setColor(var18);
+         var15.addVertex(var16, var13, var11, var14 + (float)var17).setColor(var18);
+         var15.addVertex(var16, var13, var11, var14 + (float)var17).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13 + 16.0F, var10, var14 + (float)var17).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13 + 16.0F, var10, var14 + (float)var17).setColor(var18);
+         var15.addVertex(var16, var13 + 16.0F, var11, var14 + (float)var17).setColor(var18);
+         var15.addVertex(var16, var13 + 16.0F, var11, var14 + (float)var17).setColor(1.0F, 1.0F, 0.0F, 0.0F);
       }
 
       float var20;
       for(var17 = this.minecraft.level.getMinBuildHeight(); var17 <= this.minecraft.level.getMaxBuildHeight(); var17 += 2) {
          var20 = (float)((double)var17 - var5);
          int var19 = var17 % 8 == 0 ? CELL_BORDER : YELLOW;
-         var15.vertex(var16, var13, var20, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13, var20, var14).color(var19).endVertex();
-         var15.vertex(var16, var13, var20, var14 + 16.0F).color(var19).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var20, var14 + 16.0F).color(var19).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var20, var14).color(var19).endVertex();
-         var15.vertex(var16, var13, var20, var14).color(var19).endVertex();
-         var15.vertex(var16, var13, var20, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.addVertex(var16, var13, var20, var14).setColor(1.0F, 1.0F, 0.0F, 0.0F);
+         var15.addVertex(var16, var13, var20, var14).setColor(var19);
+         var15.addVertex(var16, var13, var20, var14 + 16.0F).setColor(var19);
+         var15.addVertex(var16, var13 + 16.0F, var20, var14 + 16.0F).setColor(var19);
+         var15.addVertex(var16, var13 + 16.0F, var20, var14).setColor(var19);
+         var15.addVertex(var16, var13, var20, var14).setColor(var19);
+         var15.addVertex(var16, var13, var20, var14).setColor(1.0F, 1.0F, 0.0F, 0.0F);
       }
 
       var15 = var2.getBuffer(RenderType.debugLineStrip(2.0));
 
       for(var17 = 0; var17 <= 16; var17 += 16) {
          for(var18 = 0; var18 <= 16; var18 += 16) {
-            var15.vertex(var16, var13 + (float)var17, var10, var14 + (float)var18).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
-            var15.vertex(var16, var13 + (float)var17, var10, var14 + (float)var18).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-            var15.vertex(var16, var13 + (float)var17, var11, var14 + (float)var18).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-            var15.vertex(var16, var13 + (float)var17, var11, var14 + (float)var18).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
+            var15.addVertex(var16, var13 + (float)var17, var10, var14 + (float)var18).setColor(0.25F, 0.25F, 1.0F, 0.0F);
+            var15.addVertex(var16, var13 + (float)var17, var10, var14 + (float)var18).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+            var15.addVertex(var16, var13 + (float)var17, var11, var14 + (float)var18).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+            var15.addVertex(var16, var13 + (float)var17, var11, var14 + (float)var18).setColor(0.25F, 0.25F, 1.0F, 0.0F);
          }
       }
 
       for(var17 = this.minecraft.level.getMinBuildHeight(); var17 <= this.minecraft.level.getMaxBuildHeight(); var17 += 16) {
          var20 = (float)((double)var17 - var5);
-         var15.vertex(var16, var13, var20, var14).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
-         var15.vertex(var16, var13, var20, var14).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var15.vertex(var16, var13, var20, var14 + 16.0F).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var20, var14 + 16.0F).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var15.vertex(var16, var13 + 16.0F, var20, var14).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var15.vertex(var16, var13, var20, var14).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var15.vertex(var16, var13, var20, var14).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
+         var15.addVertex(var16, var13, var20, var14).setColor(0.25F, 0.25F, 1.0F, 0.0F);
+         var15.addVertex(var16, var13, var20, var14).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+         var15.addVertex(var16, var13, var20, var14 + 16.0F).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+         var15.addVertex(var16, var13 + 16.0F, var20, var14 + 16.0F).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+         var15.addVertex(var16, var13 + 16.0F, var20, var14).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+         var15.addVertex(var16, var13, var20, var14).setColor(0.25F, 0.25F, 1.0F, 1.0F);
+         var15.addVertex(var16, var13, var20, var14).setColor(0.25F, 0.25F, 1.0F, 0.0F);
       }
 
    }

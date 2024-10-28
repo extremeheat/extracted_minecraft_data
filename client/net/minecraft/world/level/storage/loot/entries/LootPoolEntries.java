@@ -22,7 +22,7 @@ public class LootPoolEntries {
    }
 
    private static LootPoolEntryType register(String var0, MapCodec<? extends LootPoolEntryContainer> var1) {
-      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (ResourceLocation)(new ResourceLocation(var0)), new LootPoolEntryType(var1));
+      return (LootPoolEntryType)Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new LootPoolEntryType(var1));
    }
 
    static {

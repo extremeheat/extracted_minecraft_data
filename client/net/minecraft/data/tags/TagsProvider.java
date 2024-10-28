@@ -1,7 +1,6 @@
 package net.minecraft.data.tags;
 
 import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -24,11 +23,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
-import net.minecraft.tags.TagManager;
-import org.slf4j.Logger;
 
 public abstract class TagsProvider<T> implements DataProvider {
-   private static final Logger LOGGER = LogUtils.getLogger();
    protected final PackOutput.PathProvider pathProvider;
    private final CompletableFuture<HolderLookup.Provider> lookupProvider;
    private final CompletableFuture<Void> contentsDone;
@@ -44,7 +40,7 @@ public abstract class TagsProvider<T> implements DataProvider {
       super();
       this.contentsDone = new CompletableFuture();
       this.builders = Maps.newLinkedHashMap();
-      this.pathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, TagManager.getTagDir(var2));
+      this.pathProvider = var1.createRegistryTagsPathProvider(var2);
       this.registryKey = var2;
       this.parentProvider = var4;
       this.lookupProvider = var3;
@@ -65,10 +61,10 @@ public abstract class TagsProvider<T> implements DataProvider {
             final HolderLookup.Provider contents;
             final TagLookup<T> parent;
 
-            _CombinedData/* $FF was: 1CombinedData*/(HolderLookup.Provider contents, TagLookup<T> parent) {
+            _CombinedData/* $FF was: 1CombinedData*/(HolderLookup.Provider var1, TagLookup<T> var2) {
                super();
-               this.contents = contents;
-               this.parent = parent;
+               this.contents = var1;
+               this.parent = var2;
             }
 
             public HolderLookup.Provider contents() {

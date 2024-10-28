@@ -3,7 +3,6 @@ package net.minecraft.world.item.enchantment.effects;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 
 public record RemoveBinomial(LevelBasedValue chance) implements EnchantmentValueEffect {
@@ -11,22 +10,22 @@ public record RemoveBinomial(LevelBasedValue chance) implements EnchantmentValue
       return var0.group(LevelBasedValue.CODEC.fieldOf("chance").forGetter(RemoveBinomial::chance)).apply(var0, RemoveBinomial::new);
    });
 
-   public RemoveBinomial(LevelBasedValue chance) {
+   public RemoveBinomial(LevelBasedValue var1) {
       super();
-      this.chance = chance;
+      this.chance = var1;
    }
 
-   public float process(ItemStack var1, int var2, RandomSource var3, float var4) {
-      float var5 = this.chance.calculate(var2);
-      int var6 = 0;
+   public float process(int var1, RandomSource var2, float var3) {
+      float var4 = this.chance.calculate(var1);
+      int var5 = 0;
 
-      for(int var7 = 0; (float)var7 < var4; ++var7) {
-         if (var3.nextFloat() < var5) {
-            ++var6;
+      for(int var6 = 0; (float)var6 < var3; ++var6) {
+         if (var2.nextFloat() < var4) {
+            ++var5;
          }
       }
 
-      return var4 - (float)var6;
+      return var3 - (float)var5;
    }
 
    public MapCodec<RemoveBinomial> codec() {

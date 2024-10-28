@@ -30,10 +30,10 @@ public interface CollectionCountsPredicate<T, P extends Predicate<T>> extends Pr
    }
 
    public static record Entry<T, P extends Predicate<T>>(P test, MinMaxBounds.Ints count) {
-      public Entry(P test, MinMaxBounds.Ints count) {
+      public Entry(P var1, MinMaxBounds.Ints var2) {
          super();
-         this.test = test;
-         this.count = count;
+         this.test = var1;
+         this.count = var2;
       }
 
       public static <T, P extends Predicate<T>> Codec<Entry<T, P>> codec(Codec<P> var0) {
@@ -85,9 +85,9 @@ public interface CollectionCountsPredicate<T, P extends Predicate<T>> extends Pr
    }
 
    public static record Single<T, P extends Predicate<T>>(Entry<T, P> entry) implements CollectionCountsPredicate<T, P> {
-      public Single(Entry<T, P> entry) {
+      public Single(Entry<T, P> var1) {
          super();
-         this.entry = entry;
+         this.entry = var1;
       }
 
       public boolean test(Iterable<T> var1) {
@@ -109,9 +109,9 @@ public interface CollectionCountsPredicate<T, P extends Predicate<T>> extends Pr
    }
 
    public static record Multiple<T, P extends Predicate<T>>(List<Entry<T, P>> entries) implements CollectionCountsPredicate<T, P> {
-      public Multiple(List<Entry<T, P>> entries) {
+      public Multiple(List<Entry<T, P>> var1) {
          super();
-         this.entries = entries;
+         this.entries = var1;
       }
 
       public boolean test(Iterable<T> var1) {

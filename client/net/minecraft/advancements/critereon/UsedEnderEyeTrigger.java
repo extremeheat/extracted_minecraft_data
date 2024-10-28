@@ -29,10 +29,10 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<TriggerInstance>
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Doubles.CODEC.optionalFieldOf("distance", MinMaxBounds.Doubles.ANY).forGetter(TriggerInstance::distance)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Doubles distance) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Doubles var2) {
          super();
-         this.player = player;
-         this.distance = distance;
+         this.player = var1;
+         this.distance = var2;
       }
 
       public boolean matches(double var1) {

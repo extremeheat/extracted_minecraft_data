@@ -67,7 +67,7 @@ public class BlockStateParser {
    private final boolean allowNbt;
    private final Map<Property<?>, Comparable<?>> properties = Maps.newHashMap();
    private final Map<String, String> vagueProperties = Maps.newHashMap();
-   private ResourceLocation id = new ResourceLocation("");
+   private ResourceLocation id = ResourceLocation.withDefaultNamespace("");
    @Nullable
    private StateDefinition<Block, BlockState> definition;
    @Nullable
@@ -575,11 +575,11 @@ public class BlockStateParser {
    }
 
    public static record BlockResult(BlockState blockState, Map<Property<?>, Comparable<?>> properties, @Nullable CompoundTag nbt) {
-      public BlockResult(BlockState blockState, Map<Property<?>, Comparable<?>> properties, @Nullable CompoundTag nbt) {
+      public BlockResult(BlockState var1, Map<Property<?>, Comparable<?>> var2, @Nullable CompoundTag var3) {
          super();
-         this.blockState = blockState;
-         this.properties = properties;
-         this.nbt = nbt;
+         this.blockState = var1;
+         this.properties = var2;
+         this.nbt = var3;
       }
 
       public BlockState blockState() {
@@ -597,11 +597,11 @@ public class BlockStateParser {
    }
 
    public static record TagResult(HolderSet<Block> tag, Map<String, String> vagueProperties, @Nullable CompoundTag nbt) {
-      public TagResult(HolderSet<Block> tag, Map<String, String> vagueProperties, @Nullable CompoundTag nbt) {
+      public TagResult(HolderSet<Block> var1, Map<String, String> var2, @Nullable CompoundTag var3) {
          super();
-         this.tag = tag;
-         this.vagueProperties = vagueProperties;
-         this.nbt = nbt;
+         this.tag = var1;
+         this.vagueProperties = var2;
+         this.nbt = var3;
       }
 
       public HolderSet<Block> tag() {

@@ -11,10 +11,10 @@ public record SeededContainerLoot(ResourceKey<LootTable> lootTable, long seed) {
       return var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(SeededContainerLoot::lootTable), Codec.LONG.optionalFieldOf("seed", 0L).forGetter(SeededContainerLoot::seed)).apply(var0, SeededContainerLoot::new);
    });
 
-   public SeededContainerLoot(ResourceKey<LootTable> lootTable, long seed) {
+   public SeededContainerLoot(ResourceKey<LootTable> var1, long var2) {
       super();
-      this.lootTable = lootTable;
-      this.seed = seed;
+      this.lootTable = var1;
+      this.seed = var2;
    }
 
    public ResourceKey<LootTable> lootTable() {

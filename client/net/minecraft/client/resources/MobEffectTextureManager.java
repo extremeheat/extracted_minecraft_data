@@ -10,7 +10,7 @@ import net.minecraft.world.effect.MobEffect;
 
 public class MobEffectTextureManager extends TextureAtlasHolder {
    public MobEffectTextureManager(TextureManager var1) {
-      super(var1, new ResourceLocation("textures/atlas/mob_effects.png"), new ResourceLocation("mob_effects"));
+      super(var1, ResourceLocation.withDefaultNamespace("textures/atlas/mob_effects.png"), ResourceLocation.withDefaultNamespace("mob_effects"));
    }
 
    public TextureAtlasSprite get(Holder<MobEffect> var1) {

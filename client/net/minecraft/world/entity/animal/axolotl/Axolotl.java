@@ -56,6 +56,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
@@ -407,7 +408,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
 
    protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
       if (var3.is(Items.TROPICAL_FISH_BUCKET)) {
-         var1.setItemInHand(var2, new ItemStack(Items.WATER_BUCKET));
+         var1.setItemInHand(var2, ItemUtils.createFilledResult(var3, var1, new ItemStack(Items.WATER_BUCKET)));
       } else {
          super.usePlayerItem(var1, var2, var3);
       }

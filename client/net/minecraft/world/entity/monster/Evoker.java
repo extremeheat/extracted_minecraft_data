@@ -131,7 +131,7 @@ public class Evoker extends SpellcasterIllager {
       return SoundEvents.EVOKER_CAST_SPELL;
    }
 
-   public void applyRaidBuffs(int var1, boolean var2) {
+   public void applyRaidBuffs(ServerLevel var1, int var2, boolean var3) {
    }
 
    class EvokerCastingSpellGoal extends SpellcasterIllager.SpellcasterCastingSpellGoal {

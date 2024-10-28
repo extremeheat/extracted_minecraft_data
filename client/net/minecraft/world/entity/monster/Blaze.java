@@ -213,9 +213,10 @@ public class Blaze extends Monster {
                      }
 
                      for(int var13 = 0; var13 < 1; ++var13) {
-                        SmallFireball var14 = new SmallFireball(this.blaze.level(), this.blaze, this.blaze.getRandom().triangle(var5, 2.297 * var11), var7, this.blaze.getRandom().triangle(var9, 2.297 * var11));
-                        var14.setPos(var14.getX(), this.blaze.getY(0.5) + 0.5, var14.getZ());
-                        this.blaze.level().addFreshEntity(var14);
+                        Vec3 var14 = new Vec3(this.blaze.getRandom().triangle(var5, 2.297 * var11), var7, this.blaze.getRandom().triangle(var9, 2.297 * var11));
+                        SmallFireball var15 = new SmallFireball(this.blaze.level(), this.blaze, var14.normalize());
+                        var15.setPos(var15.getX(), this.blaze.getY(0.5) + 0.5, var15.getZ());
+                        this.blaze.level().addFreshEntity(var15);
                      }
                   }
                }

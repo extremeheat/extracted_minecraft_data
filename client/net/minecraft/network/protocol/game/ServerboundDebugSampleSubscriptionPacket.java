@@ -13,9 +13,9 @@ public record ServerboundDebugSampleSubscriptionPacket(RemoteDebugSampleType sam
       this((RemoteDebugSampleType)var1.readEnum(RemoteDebugSampleType.class));
    }
 
-   public ServerboundDebugSampleSubscriptionPacket(RemoteDebugSampleType sampleType) {
+   public ServerboundDebugSampleSubscriptionPacket(RemoteDebugSampleType var1) {
       super();
-      this.sampleType = sampleType;
+      this.sampleType = var1;
    }
 
    private void write(FriendlyByteBuf var1) {

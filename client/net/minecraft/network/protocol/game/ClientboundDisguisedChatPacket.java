@@ -11,10 +11,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDisguisedChatPacket> STREAM_CODEC;
 
-   public ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType) {
+   public ClientboundDisguisedChatPacket(Component var1, ChatType.Bound var2) {
       super();
-      this.message = message;
-      this.chatType = chatType;
+      this.message = var1;
+      this.chatType = var2;
    }
 
    public PacketType<ClientboundDisguisedChatPacket> type() {

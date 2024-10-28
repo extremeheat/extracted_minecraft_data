@@ -113,10 +113,10 @@ public class NormalNoise {
          }));
       }
 
-      public NoiseParameters(int firstOctave, DoubleList amplitudes) {
+      public NoiseParameters(int var1, DoubleList var2) {
          super();
-         this.firstOctave = firstOctave;
-         this.amplitudes = amplitudes;
+         this.firstOctave = var1;
+         this.amplitudes = var2;
       }
 
       public int firstOctave() {

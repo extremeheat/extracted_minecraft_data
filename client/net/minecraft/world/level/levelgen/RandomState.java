@@ -36,8 +36,8 @@ public final class RandomState {
       super();
       this.random = var1.getRandomSource().newInstance(var3).forkPositional();
       this.noises = var2;
-      this.aquiferRandom = this.random.fromHashOf(new ResourceLocation("aquifer")).forkPositional();
-      this.oreRandom = this.random.fromHashOf(new ResourceLocation("ore")).forkPositional();
+      this.aquiferRandom = this.random.fromHashOf(ResourceLocation.withDefaultNamespace("aquifer")).forkPositional();
+      this.oreRandom = this.random.fromHashOf(ResourceLocation.withDefaultNamespace("ore")).forkPositional();
       this.noiseIntances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
       this.surfaceSystem = new SurfaceSystem(this, var1.defaultBlock(), var1.seaLevel(), this.random);
@@ -80,7 +80,7 @@ public final class RandomState {
 
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof BlendedNoise var2) {
-               RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(new ResourceLocation("terrain"));
+               RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(ResourceLocation.withDefaultNamespace("terrain"));
                return var2.withNewRandom(var3x);
             } else {
                return (DensityFunction)(var1 instanceof DensityFunctions.EndIslandDensityFunction ? new DensityFunctions.EndIslandDensityFunction(var3) : var1);

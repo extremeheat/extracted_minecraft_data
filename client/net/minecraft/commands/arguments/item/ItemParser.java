@@ -134,10 +134,10 @@ public class ItemParser {
    }
 
    public static record ItemResult(Holder<Item> item, DataComponentPatch components) {
-      public ItemResult(Holder<Item> item, DataComponentPatch components) {
+      public ItemResult(Holder<Item> var1, DataComponentPatch var2) {
          super();
-         this.item = item;
-         this.components = components;
+         this.item = var1;
+         this.components = var2;
       }
 
       public Holder<Item> item() {

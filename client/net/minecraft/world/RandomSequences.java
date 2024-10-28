@@ -92,7 +92,7 @@ public class RandomSequences extends SavedData {
 
          try {
             RandomSequence var8 = (RandomSequence)((Pair)RandomSequence.CODEC.decode(NbtOps.INSTANCE, var4.get(var7)).result().get()).getFirst();
-            var3.sequences.put(new ResourceLocation(var7), var8);
+            var3.sequences.put(ResourceLocation.parse(var7), var8);
          } catch (Exception var9) {
             LOGGER.error("Failed to load random sequence {}", var7, var9);
          }

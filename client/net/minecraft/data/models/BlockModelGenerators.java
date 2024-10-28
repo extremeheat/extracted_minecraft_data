@@ -2546,10 +2546,10 @@ public class BlockModelGenerators {
    }
 
    private static record BookSlotModelCacheKey(ModelTemplate template, String modelSuffix) {
-      BookSlotModelCacheKey(ModelTemplate template, String modelSuffix) {
+      BookSlotModelCacheKey(ModelTemplate var1, String var2) {
          super();
-         this.template = template;
-         this.modelSuffix = modelSuffix;
+         this.template = var1;
+         this.modelSuffix = var2;
       }
 
       public ModelTemplate template() {

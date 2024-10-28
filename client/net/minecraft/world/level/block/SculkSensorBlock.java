@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -194,7 +195,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       tryResonateVibration(var1, var2, var3, var6);
       var2.gameEvent(var1, GameEvent.SCULK_SENSOR_TENDRILS_CLICKING, var3);
       if (!(Boolean)var4.getValue(WATERLOGGED)) {
-         var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.SCULK_CLICKING, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
+         var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (SoundEvent)SoundEvents.SCULK_CLICKING, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
       }
 
    }

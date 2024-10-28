@@ -186,9 +186,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this(var1.readFloat());
       }
 
-      UpdateProgressOperation(float progress) {
+      UpdateProgressOperation(float var1) {
          super();
-         this.progress = progress;
+         this.progress = var1;
       }
 
       public OperationType getType() {
@@ -213,9 +213,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this((Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1));
       }
 
-      UpdateNameOperation(Component name) {
+      UpdateNameOperation(Component var1) {
          super();
-         this.name = name;
+         this.name = var1;
       }
 
       public OperationType getType() {

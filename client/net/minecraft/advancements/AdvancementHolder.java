@@ -10,10 +10,10 @@ public record AdvancementHolder(ResourceLocation id, Advancement value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, AdvancementHolder> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, List<AdvancementHolder>> LIST_STREAM_CODEC;
 
-   public AdvancementHolder(ResourceLocation id, Advancement value) {
+   public AdvancementHolder(ResourceLocation var1, Advancement var2) {
       super();
-      this.id = id;
-      this.value = value;
+      this.id = var1;
+      this.value = var2;
    }
 
    public boolean equals(Object var1) {

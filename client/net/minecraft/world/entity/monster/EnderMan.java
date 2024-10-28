@@ -17,6 +17,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -69,7 +70,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class EnderMan extends Monster implements NeutralMob {
-   private static final UUID SPEED_MODIFIER_ATTACKING_UUID = UUID.fromString("020E0DFB-87AE-4653-9556-831010E291A0");
+   private static final ResourceLocation SPEED_MODIFIER_ATTACKING_ID = ResourceLocation.withDefaultNamespace("attacking");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING;
    private static final int DELAY_BETWEEN_CREEPY_STARE_SOUND = 400;
    private static final int MIN_DEAGGRESSION_TIME = 600;
@@ -114,11 +115,11 @@ public class EnderMan extends Monster implements NeutralMob {
          this.targetChangeTime = 0;
          this.entityData.set(DATA_CREEPY, false);
          this.entityData.set(DATA_STARED_AT, false);
-         var2.removeModifier(SPEED_MODIFIER_ATTACKING.id());
+         var2.removeModifier(SPEED_MODIFIER_ATTACKING_ID);
       } else {
          this.targetChangeTime = this.tickCount;
          this.entityData.set(DATA_CREEPY, true);
-         if (!var2.hasModifier(SPEED_MODIFIER_ATTACKING)) {
+         if (!var2.hasModifier(SPEED_MODIFIER_ATTACKING_ID)) {
             var2.addTransientModifier(SPEED_MODIFIER_ATTACKING);
          }
       }
@@ -277,7 +278,7 @@ public class EnderMan extends Monster implements NeutralMob {
          if (var12) {
             this.level().gameEvent(GameEvent.TELEPORT, var11, GameEvent.Context.of((Entity)this));
             if (!this.isSilent()) {
-               this.level().playSound((Player)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
+               this.level().playSound((Player)null, this.xo, this.yo, this.zo, (SoundEvent)SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
                this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             }
          }
@@ -300,19 +301,19 @@ public class EnderMan extends Monster implements NeutralMob {
       return SoundEvents.ENDERMAN_DEATH;
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      BlockState var3 = this.getCarriedBlock();
-      if (var3 != null) {
-         ItemStack var4 = new ItemStack(Items.DIAMOND_AXE);
-         EnchantmentHelper.enchantItemFromProvider(var4, VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, this.level(), this.blockPosition(), this.getRandom());
-         LootParams.Builder var5 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var4).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
-         List var6 = var3.getDrops(var5);
-         Iterator var7 = var6.iterator();
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      BlockState var4 = this.getCarriedBlock();
+      if (var4 != null) {
+         ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
+         EnchantmentHelper.enchantItemFromProvider(var5, var1.registryAccess(), VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
+         LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var5).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
+         List var7 = var4.getDrops(var6);
+         Iterator var8 = var7.iterator();
 
-         while(var7.hasNext()) {
-            ItemStack var8 = (ItemStack)var7.next();
-            this.spawnAtLocation(var8);
+         while(var8.hasNext()) {
+            ItemStack var9 = (ItemStack)var8.next();
+            this.spawnAtLocation(var9);
          }
       }
 
@@ -377,7 +378,7 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    static {
-      SPEED_MODIFIER_ATTACKING = new AttributeModifier(SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.15000000596046448, AttributeModifier.Operation.ADD_VALUE);
+      SPEED_MODIFIER_ATTACKING = new AttributeModifier(SPEED_MODIFIER_ATTACKING_ID, 0.15000000596046448, AttributeModifier.Operation.ADD_VALUE);
       DATA_CARRY_STATE = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.OPTIONAL_BLOCK_STATE);
       DATA_CREEPY = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
       DATA_STARED_AT = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);

@@ -60,6 +60,10 @@ public class EmptyLevelChunk extends LevelChunk {
       return true;
    }
 
+   public boolean isSectionEmpty(int var1) {
+      return true;
+   }
+
    public FullChunkStatus getFullStatus() {
       return FullChunkStatus.FULL;
    }

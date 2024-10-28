@@ -37,7 +37,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 public class ChatSelectionScreen extends Screen {
-   static final ResourceLocation CHECKMARK_SPRITE = new ResourceLocation("icon/checkmark");
+   static final ResourceLocation CHECKMARK_SPRITE = ResourceLocation.withDefaultNamespace("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
    private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context");
    @Nullable
@@ -365,10 +365,10 @@ public class ChatSelectionScreen extends Screen {
       }
 
       private static record Heading(UUID sender, Entry entry) {
-         Heading(UUID sender, Entry entry) {
+         Heading(UUID var1, Entry var2) {
             super();
-            this.sender = sender;
-            this.entry = entry;
+            this.sender = var1;
+            this.entry = var2;
          }
 
          public boolean canCombine(Heading var1) {

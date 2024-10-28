@@ -15,12 +15,12 @@ public record ServerboundEditBookPacket(int slot, List<String> pages, Optional<S
    private static final int MAX_PAGES_COUNT = 200;
    public static final StreamCodec<FriendlyByteBuf, ServerboundEditBookPacket> STREAM_CODEC;
 
-   public ServerboundEditBookPacket(int slot, List<String> pages, Optional<String> title) {
+   public ServerboundEditBookPacket(int var1, List<String> var2, Optional<String> var3) {
       super();
-      pages = List.copyOf(pages);
-      this.slot = slot;
-      this.pages = pages;
-      this.title = title;
+      var2 = List.copyOf(var2);
+      this.slot = var1;
+      this.pages = var2;
+      this.title = var3;
    }
 
    public PacketType<ServerboundEditBookPacket> type() {

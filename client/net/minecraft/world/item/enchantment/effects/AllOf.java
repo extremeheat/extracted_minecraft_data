@@ -9,7 +9,6 @@ import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
@@ -35,9 +34,9 @@ public interface AllOf {
    public static record EntityEffects(List<EnchantmentEntityEffect> effects) implements EnchantmentEntityEffect {
       public static final MapCodec<EntityEffects> CODEC;
 
-      public EntityEffects(List<EnchantmentEntityEffect> effects) {
+      public EntityEffects(List<EnchantmentEntityEffect> var1) {
          super();
-         this.effects = effects;
+         this.effects = var1;
       }
 
       public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
@@ -66,9 +65,9 @@ public interface AllOf {
    public static record LocationBasedEffects(List<EnchantmentLocationBasedEffect> effects) implements EnchantmentLocationBasedEffect {
       public static final MapCodec<LocationBasedEffects> CODEC;
 
-      public LocationBasedEffects(List<EnchantmentLocationBasedEffect> effects) {
+      public LocationBasedEffects(List<EnchantmentLocationBasedEffect> var1) {
          super();
-         this.effects = effects;
+         this.effects = var1;
       }
 
       public void onChangedBlock(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5, boolean var6) {
@@ -107,18 +106,18 @@ public interface AllOf {
    public static record ValueEffects(List<EnchantmentValueEffect> effects) implements EnchantmentValueEffect {
       public static final MapCodec<ValueEffects> CODEC;
 
-      public ValueEffects(List<EnchantmentValueEffect> effects) {
+      public ValueEffects(List<EnchantmentValueEffect> var1) {
          super();
-         this.effects = effects;
+         this.effects = var1;
       }
 
-      public float process(ItemStack var1, int var2, RandomSource var3, float var4) {
-         EnchantmentValueEffect var6;
-         for(Iterator var5 = this.effects.iterator(); var5.hasNext(); var4 = var6.process(var1, var2, var3, var4)) {
-            var6 = (EnchantmentValueEffect)var5.next();
+      public float process(int var1, RandomSource var2, float var3) {
+         EnchantmentValueEffect var5;
+         for(Iterator var4 = this.effects.iterator(); var4.hasNext(); var3 = var5.process(var1, var2, var3)) {
+            var5 = (EnchantmentValueEffect)var4.next();
          }
 
-         return var4;
+         return var3;
       }
 
       public MapCodec<ValueEffects> codec() {

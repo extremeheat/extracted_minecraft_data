@@ -126,11 +126,11 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
          return var0.group(NbtPathArgument.NbtPath.CODEC.fieldOf("source").forGetter(CopyOperation::sourcePath), NbtPathArgument.NbtPath.CODEC.fieldOf("target").forGetter(CopyOperation::targetPath), CopyCustomDataFunction.MergeStrategy.CODEC.fieldOf("op").forGetter(CopyOperation::op)).apply(var0, CopyOperation::new);
       });
 
-      CopyOperation(NbtPathArgument.NbtPath sourcePath, NbtPathArgument.NbtPath targetPath, MergeStrategy op) {
+      CopyOperation(NbtPathArgument.NbtPath var1, NbtPathArgument.NbtPath var2, MergeStrategy var3) {
          super();
-         this.sourcePath = sourcePath;
-         this.targetPath = targetPath;
-         this.op = op;
+         this.sourcePath = var1;
+         this.targetPath = var2;
+         this.op = var3;
       }
 
       public void apply(Supplier<Tag> var1, Tag var2) {

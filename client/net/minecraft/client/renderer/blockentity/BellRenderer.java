@@ -61,6 +61,6 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
    }
 
    static {
-      BELL_RESOURCE_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/bell/bell_body"));
+      BELL_RESOURCE_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/bell/bell_body"));
    }
 }

@@ -56,11 +56,11 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), InventoryChangeTrigger.TriggerInstance.Slots.CODEC.optionalFieldOf("slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY).forGetter(TriggerInstance::slots), ItemPredicate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(TriggerInstance::items)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Slots slots, List<ItemPredicate> items) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Slots var2, List<ItemPredicate> var3) {
          super();
-         this.player = player;
-         this.slots = slots;
-         this.items = items;
+         this.player = var1;
+         this.slots = var2;
+         this.items = var3;
       }
 
       public static Criterion<TriggerInstance> hasItems(ItemPredicate.Builder... var0) {
@@ -129,11 +129,11 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
          });
          public static final Slots ANY;
 
-         public Slots(MinMaxBounds.Ints occupied, MinMaxBounds.Ints full, MinMaxBounds.Ints empty) {
+         public Slots(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, MinMaxBounds.Ints var3) {
             super();
-            this.occupied = occupied;
-            this.full = full;
-            this.empty = empty;
+            this.occupied = var1;
+            this.full = var2;
+            this.empty = var3;
          }
 
          public boolean matches(int var1, int var2, int var3) {

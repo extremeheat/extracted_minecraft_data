@@ -9,6 +9,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -61,7 +62,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
 
    }
 
-   public void onDisconnect(Component var1) {
+   public void onDisconnect(DisconnectionDetails var1) {
       if (this.isSingleplayerOwner()) {
          LOGGER.info("Stopping singleplayer server as player logged out");
          this.server.halt(false);
@@ -90,7 +91,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
       if (var1.action() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
          LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().getName(), var1.id());
-         this.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
+         this.disconnect((Component)Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
       }
 
    }
@@ -161,7 +162,11 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void disconnect(Component var1) {
-      this.connection.send(new ClientboundDisconnectPacket(var1), PacketSendListener.thenRun(() -> {
+      this.disconnect(new DisconnectionDetails(var1));
+   }
+
+   public void disconnect(DisconnectionDetails var1) {
+      this.connection.send(new ClientboundDisconnectPacket(var1.reason()), PacketSendListener.thenRun(() -> {
          this.connection.disconnect(var1);
       }));
       this.connection.setReadOnly();

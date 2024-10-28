@@ -17,7 +17,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
@@ -54,6 +53,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import net.minecraft.CrashReport;
+import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
@@ -257,6 +257,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected final WorldData worldData;
    private final PotionBrewing potionBrewing;
    private volatile boolean isSaving;
+   private static final AtomicReference<RuntimeException> fatalException;
 
    public static <S extends MinecraftServer> S spin(Function<Thread, S> var0) {
       AtomicReference var1 = new AtomicReference();
@@ -735,9 +736,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          LOGGER.error("Encountered an unexpected exception", var46);
          CrashReport var2 = constructOrExtractCrashReport(var46);
          this.fillSystemReport(var2.getSystemReport());
-         File var3 = new File(new File(this.getServerDirectory(), "crash-reports"), "crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
-         if (var2.saveToFile(var3)) {
-            LOGGER.error("This crash report has been saved to: {}", var3.getAbsolutePath());
+         Path var3 = this.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
+         if (var2.saveToFile(var3, ReportType.CRASH)) {
+            LOGGER.error("This crash report has been saved to: {}", var3.toAbsolutePath());
          } else {
             LOGGER.error("We were unable to save this crash report to disk.");
          }
@@ -813,6 +814,25 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.runningTask() || Util.getNanos() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTimeNanos : this.nextTickTimeNanos);
    }
 
+   public static boolean throwIfFatalException() {
+      RuntimeException var0 = (RuntimeException)fatalException.get();
+      if (var0 != null) {
+         throw var0;
+      } else {
+         return true;
+      }
+   }
+
+   public static void setFatalException(RuntimeException var0) {
+      fatalException.compareAndSet((Object)null, var0);
+   }
+
+   public void managedBlock(BooleanSupplier var1) {
+      super.managedBlock(() -> {
+         return throwIfFatalException() && var1.getAsBoolean();
+      });
+   }
+
    protected void waitUntilNextTick() {
       this.runAllTasks();
       this.managedBlock(() -> {
@@ -869,7 +889,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private Optional<ServerStatus.Favicon> loadStatusIcon() {
-      Optional var1 = Optional.of(this.getFile("server-icon.png").toPath()).filter((var0) -> {
+      Optional var1 = Optional.of(this.getFile("server-icon.png")).filter((var0) -> {
          return Files.isRegularFile(var0, new LinkOption[0]);
       }).or(() -> {
          return this.storageSource.getIconFile().filter((var0) -> {
@@ -895,8 +915,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.storageSource.getIconFile();
    }
 
-   public File getServerDirectory() {
-      return new File(".");
+   public Path getServerDirectory() {
+      return Path.of("");
    }
 
    public void onServerCrash(CrashReport var1) {
@@ -1074,7 +1094,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.profiler.pop();
    }
 
-   public boolean isNetherEnabled() {
+   public boolean isLevelEnabled(Level var1) {
       return true;
    }
 
@@ -1090,8 +1110,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return !this.serverThread.isAlive();
    }
 
-   public File getFile(String var1) {
-      return new File(this.getServerDirectory(), var1);
+   public Path getFile(String var1) {
+      return this.getServerDirectory().resolve(var1);
    }
 
    public final ServerLevel overworld() {
@@ -2070,6 +2090,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.potionBrewing;
    }
 
+   public ServerLinks serverLinks() {
+      return ServerLinks.EMPTY;
+   }
+
    // $FF: synthetic method
    public void doRunTask(final Runnable var1) {
       this.doRunTask((TickTask)var1);
@@ -2092,16 +2116,17 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, false, Difficulty.NORMAL, false, new GameRules(), WorldDataConfiguration.DEFAULT);
       ANONYMOUS_PLAYER_PROFILE = new GameProfile(Util.NIL_UUID, "Anonymous Player");
+      fatalException = new AtomicReference();
    }
 
    private static record ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) implements AutoCloseable {
       final CloseableResourceManager resourceManager;
       final ReloadableServerResources managers;
 
-      ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) {
+      ReloadableResources(CloseableResourceManager var1, ReloadableServerResources var2) {
          super();
-         this.resourceManager = resourceManager;
-         this.managers = managers;
+         this.resourceManager = var1;
+         this.managers = var2;
       }
 
       public void close() {
@@ -2161,13 +2186,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
-      public ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
+      public ServerResourcePackInfo(UUID var1, String var2, String var3, boolean var4, @Nullable Component var5) {
          super();
-         this.id = id;
-         this.url = url;
-         this.hash = hash;
-         this.isRequired = isRequired;
-         this.prompt = prompt;
+         this.id = var1;
+         this.url = var2;
+         this.hash = var3;
+         this.isRequired = var4;
+         this.prompt = var5;
       }
 
       public UUID id() {

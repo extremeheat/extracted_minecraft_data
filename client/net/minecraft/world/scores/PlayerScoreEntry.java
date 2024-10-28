@@ -7,12 +7,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 
 public record PlayerScoreEntry(String owner, int value, @Nullable Component display, @Nullable NumberFormat numberFormatOverride) {
-   public PlayerScoreEntry(String owner, int value, @Nullable Component display, @Nullable NumberFormat numberFormatOverride) {
+   public PlayerScoreEntry(String var1, int var2, @Nullable Component var3, @Nullable NumberFormat var4) {
       super();
-      this.owner = owner;
-      this.value = value;
-      this.display = display;
-      this.numberFormatOverride = numberFormatOverride;
+      this.owner = var1;
+      this.value = var2;
+      this.display = var3;
+      this.numberFormatOverride = var4;
    }
 
    public boolean isHidden() {

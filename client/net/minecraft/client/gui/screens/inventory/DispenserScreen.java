@@ -8,7 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.DispenserMenu;
 
 public class DispenserScreen extends AbstractContainerScreen<DispenserMenu> {
-   private static final ResourceLocation CONTAINER_LOCATION = new ResourceLocation("textures/gui/container/dispenser.png");
+   private static final ResourceLocation CONTAINER_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/dispenser.png");
 
    public DispenserScreen(DispenserMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);

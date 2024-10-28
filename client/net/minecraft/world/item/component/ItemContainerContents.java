@@ -167,10 +167,10 @@ public final class ItemContainerContents {
          return var0.group(Codec.intRange(0, 255).fieldOf("slot").forGetter(Slot::index), ItemStack.CODEC.fieldOf("item").forGetter(Slot::item)).apply(var0, Slot::new);
       });
 
-      Slot(int index, ItemStack item) {
+      Slot(int var1, ItemStack var2) {
          super();
-         this.index = index;
-         this.item = item;
+         this.index = var1;
+         this.item = var2;
       }
 
       public int index() {

@@ -146,10 +146,10 @@ public class TagLoader<T> {
    public static record EntryWithSource(TagEntry entry, String source) {
       final TagEntry entry;
 
-      public EntryWithSource(TagEntry entry, String source) {
+      public EntryWithSource(TagEntry var1, String var2) {
          super();
-         this.entry = entry;
-         this.source = source;
+         this.entry = var1;
+         this.source = var2;
       }
 
       public String toString() {
@@ -169,9 +169,9 @@ public class TagLoader<T> {
    private static record SortingEntry(List<EntryWithSource> entries) implements DependencySorter.Entry<ResourceLocation> {
       final List<EntryWithSource> entries;
 
-      SortingEntry(List<EntryWithSource> entries) {
+      SortingEntry(List<EntryWithSource> var1) {
          super();
-         this.entries = entries;
+         this.entries = var1;
       }
 
       public void visitRequiredDependencies(Consumer<ResourceLocation> var1) {

@@ -11,9 +11,9 @@ public record SimpleBlockConfiguration(BlockStateProvider toPlace) implements Fe
       })).apply(var0, SimpleBlockConfiguration::new);
    });
 
-   public SimpleBlockConfiguration(BlockStateProvider toPlace) {
+   public SimpleBlockConfiguration(BlockStateProvider var1) {
       super();
-      this.toPlace = toPlace;
+      this.toPlace = var1;
    }
 
    public BlockStateProvider toPlace() {

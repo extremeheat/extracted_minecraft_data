@@ -18,6 +18,7 @@ public class ItemSubPredicates {
    public static final ItemSubPredicate.Type<ItemWrittenBookPredicate> WRITTEN_BOOK;
    public static final ItemSubPredicate.Type<ItemAttributeModifiersPredicate> ATTRIBUTE_MODIFIERS;
    public static final ItemSubPredicate.Type<ItemTrimPredicate> ARMOR_TRIM;
+   public static final ItemSubPredicate.Type<ItemJukeboxPlayablePredicate> JUKEBOX_PLAYABLE;
 
    public ItemSubPredicates() {
       super();
@@ -45,5 +46,6 @@ public class ItemSubPredicates {
       WRITTEN_BOOK = register("written_book_content", ItemWrittenBookPredicate.CODEC);
       ATTRIBUTE_MODIFIERS = register("attribute_modifiers", ItemAttributeModifiersPredicate.CODEC);
       ARMOR_TRIM = register("trim", ItemTrimPredicate.CODEC);
+      JUKEBOX_PLAYABLE = register("jukebox_playable", ItemJukeboxPlayablePredicate.CODEC);
    }
 }

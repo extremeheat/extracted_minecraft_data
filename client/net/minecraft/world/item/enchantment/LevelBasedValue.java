@@ -62,11 +62,11 @@ public interface LevelBasedValue {
          }) : DataResult.success(var0);
       });
 
-      public Clamped(LevelBasedValue value, float min, float max) {
+      public Clamped(LevelBasedValue var1, float var2, float var3) {
          super();
-         this.value = value;
-         this.min = min;
-         this.max = max;
+         this.value = var1;
+         this.min = var2;
+         this.max = var3;
       }
 
       public float calculate(int var1) {
@@ -95,14 +95,15 @@ public interface LevelBasedValue {
          return var0.group(LevelBasedValue.CODEC.fieldOf("numerator").forGetter(Fraction::numerator), LevelBasedValue.CODEC.fieldOf("denominator").forGetter(Fraction::denominator)).apply(var0, Fraction::new);
       });
 
-      public Fraction(LevelBasedValue numerator, LevelBasedValue denominator) {
+      public Fraction(LevelBasedValue var1, LevelBasedValue var2) {
          super();
-         this.numerator = numerator;
-         this.denominator = denominator;
+         this.numerator = var1;
+         this.denominator = var2;
       }
 
       public float calculate(int var1) {
-         return this.numerator.calculate(var1) / this.denominator.calculate(var1);
+         float var2 = this.denominator.calculate(var1);
+         return var2 == 0.0F ? 0.0F : this.numerator.calculate(var1) / var2;
       }
 
       public MapCodec<Fraction> codec() {
@@ -123,9 +124,9 @@ public interface LevelBasedValue {
          return var0.group(Codec.FLOAT.fieldOf("added").forGetter(LevelsSquared::added)).apply(var0, LevelsSquared::new);
       });
 
-      public LevelsSquared(float added) {
+      public LevelsSquared(float var1) {
          super();
-         this.added = added;
+         this.added = var1;
       }
 
       public float calculate(int var1) {
@@ -146,10 +147,10 @@ public interface LevelBasedValue {
          return var0.group(Codec.FLOAT.fieldOf("base").forGetter(Linear::base), Codec.FLOAT.fieldOf("per_level_above_first").forGetter(Linear::perLevelAboveFirst)).apply(var0, Linear::new);
       });
 
-      public Linear(float base, float perLevelAboveFirst) {
+      public Linear(float var1, float var2) {
          super();
-         this.base = base;
-         this.perLevelAboveFirst = perLevelAboveFirst;
+         this.base = var1;
+         this.perLevelAboveFirst = var2;
       }
 
       public float calculate(int var1) {
@@ -173,9 +174,9 @@ public interface LevelBasedValue {
       public static final Codec<Constant> CODEC;
       public static final MapCodec<Constant> TYPED_CODEC;
 
-      public Constant(float value) {
+      public Constant(float var1) {
          super();
-         this.value = value;
+         this.value = var1;
       }
 
       public float calculate(int var1) {

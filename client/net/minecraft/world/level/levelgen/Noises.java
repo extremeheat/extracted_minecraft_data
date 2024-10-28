@@ -74,7 +74,7 @@ public class Noises {
    }
 
    private static ResourceKey<NormalNoise.NoiseParameters> createKey(String var0) {
-      return ResourceKey.create(Registries.NOISE, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.NOISE, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static NormalNoise instantiate(HolderGetter<NormalNoise.NoiseParameters> var0, PositionalRandomFactory var1, ResourceKey<NormalNoise.NoiseParameters> var2) {

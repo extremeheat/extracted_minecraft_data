@@ -148,7 +148,7 @@ public class SkullBlockEntity extends BlockEntity {
       }
 
       if (var1.contains("custom_name", 8)) {
-         this.customName = Component.Serializer.fromJson(var1.getString("custom_name"), var2);
+         this.customName = parseCustomNameSafe(var1.getString("custom_name"), var2);
       } else {
          this.customName = null;
       }

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -54,7 +55,6 @@ public final class Window implements AutoCloseable {
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
-      RenderSystem.assertInInitPhase();
       this.screenManager = var2;
       this.setBootErrorCallback();
       this.setErrorSection("Pre startup");
@@ -103,6 +103,22 @@ public final class Window implements AutoCloseable {
       GLFW.glfwSetCursorEnterCallback(this.window, this::onEnter);
    }
 
+   public static String getPlatform() {
+      int var0 = GLFW.glfwGetPlatform();
+      String var10000;
+      switch (var0) {
+         case 0 -> var10000 = "<error>";
+         case 393217 -> var10000 = "win32";
+         case 393218 -> var10000 = "cocoa";
+         case 393219 -> var10000 = "wayland";
+         case 393220 -> var10000 = "x11";
+         case 393221 -> var10000 = "null";
+         default -> var10000 = String.format(Locale.ROOT, "unknown (%08X)", var0);
+      }
+
+      return var10000;
+   }
+
    public int getRefreshRate() {
       RenderSystem.assertOnRenderThread();
       return GLX._getRefreshRate(this);
@@ -113,7 +129,6 @@ public final class Window implements AutoCloseable {
    }
 
    public static void checkGlfwError(BiConsumer<Integer, String> var0) {
-      RenderSystem.assertInInitPhase();
       MemoryStack var1 = MemoryStack.stackPush();
 
       try {
@@ -143,7 +158,6 @@ public final class Window implements AutoCloseable {
    }
 
    public void setIcon(PackResources var1, IconSet var2) throws IOException {
-      RenderSystem.assertInInitPhase();
       int var3 = GLFW.glfwGetPlatform();
       switch (var3) {
          case 393217:
@@ -221,12 +235,10 @@ public final class Window implements AutoCloseable {
    }
 
    private void setBootErrorCallback() {
-      RenderSystem.assertInInitPhase();
       GLFW.glfwSetErrorCallback(Window::bootCrash);
    }
 
    private static void bootCrash(int var0, long var1) {
-      RenderSystem.assertInInitPhase();
       String var3 = "GLFW error " + var0 + ": " + MemoryUtil.memUTF8(var1);
       TinyFileDialogs.tinyfd_messageBox("Minecraft", var3 + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false);
       throw new WindowInitFailed(var3);
@@ -283,7 +295,6 @@ public final class Window implements AutoCloseable {
    }
 
    private void refreshFramebufferSize() {
-      RenderSystem.assertInInitPhase();
       int[] var1 = new int[1];
       int[] var2 = new int[1];
       GLFW.glfwGetFramebufferSize(this.window, var1, var2);
@@ -350,7 +361,6 @@ public final class Window implements AutoCloseable {
    }
 
    private void setMode() {
-      RenderSystem.assertInInitPhase();
       boolean var1 = GLFW.glfwGetWindowMonitor(this.window) != 0L;
       if (this.fullscreen) {
          Monitor var2 = this.screenManager.findBestMonitor(this);

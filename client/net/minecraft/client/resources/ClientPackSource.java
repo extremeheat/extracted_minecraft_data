@@ -94,6 +94,6 @@ public class ClientPackSource extends BuiltInPackSource {
       VANILLA_PACK_INFO = new PackLocationInfo("vanilla", Component.translatable("resourcePack.vanilla.name"), PackSource.BUILT_IN, Optional.of(CORE_PACK_INFO));
       VANILLA_SELECTION_CONFIG = new PackSelectionConfig(true, Pack.Position.BOTTOM, false);
       BUILT_IN_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
-      PACKS_DIR = new ResourceLocation("minecraft", "resourcepacks");
+      PACKS_DIR = ResourceLocation.withDefaultNamespace("resourcepacks");
    }
 }

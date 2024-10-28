@@ -28,13 +28,13 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
    public static final StreamCodec<ByteBuf, FireworkExplosion> STREAM_CODEC;
    private static final Component CUSTOM_COLOR_NAME;
 
-   public FireworkExplosion(Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle) {
+   public FireworkExplosion(Shape var1, IntList var2, IntList var3, boolean var4, boolean var5) {
       super();
-      this.shape = shape;
-      this.colors = colors;
-      this.fadeColors = fadeColors;
-      this.hasTrail = hasTrail;
-      this.hasTwinkle = hasTwinkle;
+      this.shape = var1;
+      this.colors = var2;
+      this.fadeColors = var3;
+      this.hasTrail = var4;
+      this.hasTwinkle = var5;
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {

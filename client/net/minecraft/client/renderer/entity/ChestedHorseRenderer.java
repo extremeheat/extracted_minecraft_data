@@ -21,6 +21,6 @@ public class ChestedHorseRenderer<T extends AbstractChestedHorse> extends Abstra
    }
 
    static {
-      MAP = Maps.newHashMap(ImmutableMap.of(EntityType.DONKEY, new ResourceLocation("textures/entity/horse/donkey.png"), EntityType.MULE, new ResourceLocation("textures/entity/horse/mule.png")));
+      MAP = Maps.newHashMap(ImmutableMap.of(EntityType.DONKEY, ResourceLocation.withDefaultNamespace("textures/entity/horse/donkey.png"), EntityType.MULE, ResourceLocation.withDefaultNamespace("textures/entity/horse/mule.png")));
    }
 }

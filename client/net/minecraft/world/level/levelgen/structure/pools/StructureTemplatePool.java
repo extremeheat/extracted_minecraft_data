@@ -94,7 +94,7 @@ public class StructureTemplatePool {
    }
 
    public StructurePoolElement getRandomTemplate(RandomSource var1) {
-      return (StructurePoolElement)this.templates.get(var1.nextInt(this.templates.size()));
+      return (StructurePoolElement)(this.templates.isEmpty() ? EmptyPoolElement.INSTANCE : (StructurePoolElement)this.templates.get(var1.nextInt(this.templates.size())));
    }
 
    public List<StructurePoolElement> getShuffledTemplates(RandomSource var1) {

@@ -65,7 +65,6 @@ public abstract class RenderStateShard {
    protected static final ShaderStateShard NO_SHADER = new ShaderStateShard();
    protected static final ShaderStateShard POSITION_COLOR_LIGHTMAP_SHADER = new ShaderStateShard(GameRenderer::getPositionColorLightmapShader);
    protected static final ShaderStateShard POSITION_SHADER = new ShaderStateShard(GameRenderer::getPositionShader);
-   protected static final ShaderStateShard POSITION_COLOR_TEX_SHADER = new ShaderStateShard(GameRenderer::getPositionColorTexShader);
    protected static final ShaderStateShard POSITION_TEX_SHADER = new ShaderStateShard(GameRenderer::getPositionTexShader);
    protected static final ShaderStateShard POSITION_COLOR_TEX_LIGHTMAP_SHADER = new ShaderStateShard(GameRenderer::getPositionColorTexLightmapShader);
    protected static final ShaderStateShard POSITION_COLOR_SHADER = new ShaderStateShard(GameRenderer::getPositionColorShader);
@@ -94,11 +93,9 @@ public abstract class RenderStateShard {
    protected static final ShaderStateShard RENDERTYPE_LEASH_SHADER = new ShaderStateShard(GameRenderer::getRendertypeLeashShader);
    protected static final ShaderStateShard RENDERTYPE_WATER_MASK_SHADER = new ShaderStateShard(GameRenderer::getRendertypeWaterMaskShader);
    protected static final ShaderStateShard RENDERTYPE_OUTLINE_SHADER = new ShaderStateShard(GameRenderer::getRendertypeOutlineShader);
-   protected static final ShaderStateShard RENDERTYPE_ARMOR_GLINT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeArmorGlintShader);
    protected static final ShaderStateShard RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeArmorEntityGlintShader);
    protected static final ShaderStateShard RENDERTYPE_GLINT_TRANSLUCENT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeGlintTranslucentShader);
    protected static final ShaderStateShard RENDERTYPE_GLINT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeGlintShader);
-   protected static final ShaderStateShard RENDERTYPE_GLINT_DIRECT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeGlintDirectShader);
    protected static final ShaderStateShard RENDERTYPE_ENTITY_GLINT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeEntityGlintShader);
    protected static final ShaderStateShard RENDERTYPE_ENTITY_GLINT_DIRECT_SHADER = new ShaderStateShard(GameRenderer::getRendertypeEntityGlintDirectShader);
    protected static final ShaderStateShard RENDERTYPE_CRUMBLING_SHADER = new ShaderStateShard(GameRenderer::getRendertypeCrumblingShader);

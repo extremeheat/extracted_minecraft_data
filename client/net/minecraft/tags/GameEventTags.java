@@ -16,6 +16,6 @@ public class GameEventTags {
    }
 
    private static TagKey<GameEvent> create(String var0) {
-      return TagKey.create(Registries.GAME_EVENT, new ResourceLocation(var0));
+      return TagKey.create(Registries.GAME_EVENT, ResourceLocation.withDefaultNamespace(var0));
    }
 }

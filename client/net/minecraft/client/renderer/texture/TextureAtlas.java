@@ -194,6 +194,6 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
    static {
       LOCATION_BLOCKS = InventoryMenu.BLOCK_ATLAS;
-      LOCATION_PARTICLES = new ResourceLocation("textures/atlas/particles.png");
+      LOCATION_PARTICLES = ResourceLocation.withDefaultNamespace("textures/atlas/particles.png");
    }
 }

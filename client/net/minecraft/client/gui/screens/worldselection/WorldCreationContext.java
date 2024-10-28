@@ -24,14 +24,14 @@ public record WorldCreationContext(WorldOptions options, Registry<LevelStem> dat
       this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).registryOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS, (RegistryAccess.Frozen[])()), var4, var5);
    }
 
-   public WorldCreationContext(WorldOptions options, Registry<LevelStem> datapackDimensions, WorldDimensions selectedDimensions, LayeredRegistryAccess<RegistryLayer> worldgenRegistries, ReloadableServerResources dataPackResources, WorldDataConfiguration dataConfiguration) {
+   public WorldCreationContext(WorldOptions var1, Registry<LevelStem> var2, WorldDimensions var3, LayeredRegistryAccess<RegistryLayer> var4, ReloadableServerResources var5, WorldDataConfiguration var6) {
       super();
-      this.options = options;
-      this.datapackDimensions = datapackDimensions;
-      this.selectedDimensions = selectedDimensions;
-      this.worldgenRegistries = worldgenRegistries;
-      this.dataPackResources = dataPackResources;
-      this.dataConfiguration = dataConfiguration;
+      this.options = var1;
+      this.datapackDimensions = var2;
+      this.selectedDimensions = var3;
+      this.worldgenRegistries = var4;
+      this.dataPackResources = var5;
+      this.dataConfiguration = var6;
    }
 
    public WorldCreationContext withSettings(WorldOptions var1, WorldDimensions var2) {

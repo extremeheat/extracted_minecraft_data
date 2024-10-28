@@ -13,10 +13,10 @@ public record ServerboundHelloPacket(String name, UUID profileId) implements Pac
       this(var1.readUtf(16), var1.readUUID());
    }
 
-   public ServerboundHelloPacket(String name, UUID profileId) {
+   public ServerboundHelloPacket(String var1, UUID var2) {
       super();
-      this.name = name;
-      this.profileId = profileId;
+      this.name = var1;
+      this.profileId = var2;
    }
 
    private void write(FriendlyByteBuf var1) {

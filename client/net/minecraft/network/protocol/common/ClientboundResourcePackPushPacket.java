@@ -15,16 +15,16 @@ public record ClientboundResourcePackPushPacket(UUID id, String url, String hash
    public static final int MAX_HASH_LENGTH = 40;
    public static final StreamCodec<ByteBuf, ClientboundResourcePackPushPacket> STREAM_CODEC;
 
-   public ClientboundResourcePackPushPacket(UUID id, String url, String hash, boolean required, Optional<Component> prompt) {
+   public ClientboundResourcePackPushPacket(UUID var1, String var2, String var3, boolean var4, Optional<Component> var5) {
       super();
-      if (hash.length() > 40) {
-         throw new IllegalArgumentException("Hash is too long (max 40, was " + hash.length() + ")");
+      if (var3.length() > 40) {
+         throw new IllegalArgumentException("Hash is too long (max 40, was " + var3.length() + ")");
       } else {
-         this.id = id;
-         this.url = url;
-         this.hash = hash;
-         this.required = required;
-         this.prompt = prompt;
+         this.id = var1;
+         this.url = var2;
+         this.hash = var3;
+         this.required = var4;
+         this.prompt = var5;
       }
    }
 

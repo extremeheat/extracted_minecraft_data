@@ -28,10 +28,10 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<TriggerInsta
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DamagePredicate> damage) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DamagePredicate> var2) {
          super();
-         this.player = player;
-         this.damage = damage;
+         this.player = var1;
+         this.damage = var2;
       }
 
       public static Criterion<TriggerInstance> entityHurtPlayer() {

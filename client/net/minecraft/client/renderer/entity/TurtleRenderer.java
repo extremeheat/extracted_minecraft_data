@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Turtle;
 
 public class TurtleRenderer extends MobRenderer<Turtle, TurtleModel<Turtle>> {
-   private static final ResourceLocation TURTLE_LOCATION = new ResourceLocation("textures/entity/turtle/big_sea_turtle.png");
+   private static final ResourceLocation TURTLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/turtle/big_sea_turtle.png");
 
    public TurtleRenderer(EntityRendererProvider.Context var1) {
       super(var1, new TurtleModel(var1.bakeLayer(ModelLayers.TURTLE)), 0.7F);

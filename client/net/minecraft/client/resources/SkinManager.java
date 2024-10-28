@@ -156,15 +156,15 @@ public class SkinManager {
          }
 
          String var2 = var10000;
-         return new ResourceLocation(var2 + "/" + var1);
+         return ResourceLocation.withDefaultNamespace(var2 + "/" + var1);
       }
    }
 
    private static record CacheKey(UUID profileId, @Nullable Property packedTextures) {
-      CacheKey(UUID profileId, @Nullable Property packedTextures) {
+      CacheKey(UUID var1, @Nullable Property var2) {
          super();
-         this.profileId = profileId;
-         this.packedTextures = packedTextures;
+         this.profileId = var1;
+         this.packedTextures = var2;
       }
 
       public UUID profileId() {

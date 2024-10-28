@@ -18,7 +18,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -116,10 +115,10 @@ public abstract class ChunkGenerator {
       return BuiltInRegistries.CHUNK_GENERATOR.getResourceKey(this.codec());
    }
 
-   public CompletableFuture<ChunkAccess> createBiomes(Executor var1, RandomState var2, Blender var3, StructureManager var4, ChunkAccess var5) {
+   public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
       return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("init_biomes", () -> {
-         var5.fillBiomesFromNoise(this.biomeSource, var2.sampler());
-         return var5;
+         var4.fillBiomesFromNoise(this.biomeSource, var1.sampler());
+         return var4;
       }), Util.backgroundExecutor());
    }
 
@@ -592,7 +591,7 @@ public abstract class ChunkGenerator {
 
    }
 
-   public abstract CompletableFuture<ChunkAccess> fillFromNoise(Executor var1, Blender var2, RandomState var3, StructureManager var4, ChunkAccess var5);
+   public abstract CompletableFuture<ChunkAccess> fillFromNoise(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4);
 
    public abstract int getSeaLevel();
 

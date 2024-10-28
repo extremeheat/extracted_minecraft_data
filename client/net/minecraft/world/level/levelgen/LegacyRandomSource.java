@@ -68,6 +68,10 @@ public class LegacyRandomSource implements BitRandomSource {
          return new LegacyRandomSource((long)var2 ^ this.seed);
       }
 
+      public RandomSource fromSeed(long var1) {
+         return new LegacyRandomSource(var1);
+      }
+
       @VisibleForTesting
       public void parityConfigString(StringBuilder var1) {
          var1.append("LegacyPositionalRandomFactory{").append(this.seed).append("}");

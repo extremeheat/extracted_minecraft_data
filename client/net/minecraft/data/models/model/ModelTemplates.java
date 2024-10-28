@@ -160,15 +160,15 @@ public class ModelTemplates {
    }
 
    private static ModelTemplate create(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(new ResourceLocation("minecraft", "block/" + var0)), Optional.empty(), var1);
+      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("block/" + var0)), Optional.empty(), var1);
    }
 
    private static ModelTemplate createItem(String var0, TextureSlot... var1) {
-      return new ModelTemplate(Optional.of(new ResourceLocation("minecraft", "item/" + var0)), Optional.empty(), var1);
+      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("item/" + var0)), Optional.empty(), var1);
    }
 
    private static ModelTemplate create(String var0, String var1, TextureSlot... var2) {
-      return new ModelTemplate(Optional.of(new ResourceLocation("minecraft", "block/" + var0)), Optional.of(var1), var2);
+      return new ModelTemplate(Optional.of(ResourceLocation.withDefaultNamespace("block/" + var0)), Optional.of(var1), var2);
    }
 
    static {

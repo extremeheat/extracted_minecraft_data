@@ -3,6 +3,7 @@ package net.minecraft.world.item;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -35,7 +36,7 @@ public class WindChargeItem extends Item implements ProjectileItem {
          var1.addFreshEntity(var5);
       }
 
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       ItemStack var6 = var2.getItemInHand(var3);
       var2.getCooldowns().addCooldown(this, 10);
       var2.awardStat(Stats.ITEM_USED.get(this));
@@ -48,7 +49,10 @@ public class WindChargeItem extends Item implements ProjectileItem {
       double var6 = var5.triangle((double)var4.getStepX(), 0.11485000000000001);
       double var8 = var5.triangle((double)var4.getStepY(), 0.11485000000000001);
       double var10 = var5.triangle((double)var4.getStepZ(), 0.11485000000000001);
-      return new WindCharge(var1, var2.x(), var2.y(), var2.z(), var6, var8, var10);
+      Vec3 var12 = new Vec3(var6, var8, var10);
+      WindCharge var13 = new WindCharge(var1, var2.x(), var2.y(), var2.z(), var12);
+      var13.setDeltaMovement(var12);
+      return var13;
    }
 
    public void shoot(Projectile var1, double var2, double var4, double var6, float var8, float var9) {

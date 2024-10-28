@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -51,12 +52,12 @@ public class WitherSkeleton extends AbstractSkeleton {
       return SoundEvents.WITHER_SKELETON_STEP;
    }
 
-   protected void dropCustomDeathLoot(DamageSource var1, boolean var2) {
-      super.dropCustomDeathLoot(var1, var2);
-      Entity var3 = var1.getEntity();
-      if (var3 instanceof Creeper var4) {
-         if (var4.canDropMobsSkull()) {
-            var4.increaseDroppedSkulls();
+   protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
+      super.dropCustomDeathLoot(var1, var2, var3);
+      Entity var4 = var2.getEntity();
+      if (var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            var5.increaseDroppedSkulls();
             this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
          }
       }
@@ -67,7 +68,7 @@ public class WitherSkeleton extends AbstractSkeleton {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
    }
 
-   protected void populateDefaultEquipmentEnchantments(RandomSource var1, DifficultyInstance var2) {
+   protected void populateDefaultEquipmentEnchantments(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
    }
 
    @Nullable

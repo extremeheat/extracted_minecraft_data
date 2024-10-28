@@ -10,18 +10,21 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.gui.screens.multiplayer.ServerLinksScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.ServerLinks;
 
 public class PauseScreen extends Screen {
-   private static final ResourceLocation DRAFT_REPORT_SPRITE = new ResourceLocation("icon/draft_report");
+   private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
    private static final int COLUMNS = 2;
    private static final int MENU_PADDING_TOP = 50;
    private static final int BUTTON_PADDING = 4;
@@ -32,6 +35,8 @@ public class PauseScreen extends Screen {
    private static final Component STATS = Component.translatable("gui.stats");
    private static final Component SEND_FEEDBACK = Component.translatable("menu.sendFeedback");
    private static final Component REPORT_BUGS = Component.translatable("menu.reportBugs");
+   private static final Component FEEDBACK_SUBSCREEN = Component.translatable("menu.feedback");
+   private static final Component SERVER_LINKS = Component.translatable("menu.server_links");
    private static final Component OPTIONS = Component.translatable("menu.options");
    private static final Component SHARE_TO_LAN = Component.translatable("menu.shareToLan");
    private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
@@ -77,8 +82,18 @@ public class PauseScreen extends Screen {
       var2.addChild(this.openScreenButton(STATS, () -> {
          return new StatsScreen(this, this.minecraft.player.getStats());
       }));
-      var2.addChild(this.openLinkButton(SEND_FEEDBACK, SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game"));
-      ((Button)var2.addChild(this.openLinkButton(REPORT_BUGS, "https://aka.ms/snapshotbugs?ref=game"))).active = !SharedConstants.getCurrentVersion().getDataVersion().isSideSeries();
+      ServerLinks var3 = this.minecraft.player.connection.serverLinks();
+      if (var3.isEmpty()) {
+         addFeedbackButtons(this, var2);
+      } else {
+         var2.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> {
+            return new FeedbackSubScreen(this);
+         }));
+         var2.addChild(this.openScreenButton(SERVER_LINKS, () -> {
+            return new ServerLinksScreen(this, var3);
+         }));
+      }
+
       var2.addChild(this.openScreenButton(OPTIONS, () -> {
          return new OptionsScreen(this, this.minecraft.options);
       }));
@@ -92,14 +107,19 @@ public class PauseScreen extends Screen {
          }));
       }
 
-      Component var3 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : CommonComponents.GUI_DISCONNECT;
-      this.disconnectButton = (Button)var2.addChild(Button.builder(var3, (var1x) -> {
+      Component var4 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : CommonComponents.GUI_DISCONNECT;
+      this.disconnectButton = (Button)var2.addChild(Button.builder(var4, (var1x) -> {
          var1x.active = false;
          this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::onDisconnect, true);
       }).width(204).build(), 2);
       var1.arrangeElements();
       FrameLayout.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.25F);
       var1.visitWidgets(this::addRenderableWidget);
+   }
+
+   static void addFeedbackButtons(Screen var0, GridLayout.RowHelper var1) {
+      var1.addChild(openLinkButton(var0, SEND_FEEDBACK, SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game"));
+      ((Button)var1.addChild(openLinkButton(var0, REPORT_BUGS, "https://aka.ms/snapshotbugs?ref=game"))).active = !SharedConstants.getCurrentVersion().getDataVersion().isSideSeries();
    }
 
    private void onDisconnect() {
@@ -148,7 +168,39 @@ public class PauseScreen extends Screen {
       }).width(98).build();
    }
 
-   private Button openLinkButton(Component var1, String var2) {
-      return Button.builder(var1, ConfirmLinkScreen.confirmLink(this, var2)).width(98).build();
+   private static Button openLinkButton(Screen var0, Component var1, String var2) {
+      return Button.builder(var1, ConfirmLinkScreen.confirmLink(var0, var2)).width(98).build();
+   }
+
+   static class FeedbackSubScreen extends Screen {
+      private static final Component TITLE = Component.translatable("menu.feedback.title");
+      public final Screen parent;
+      private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+
+      protected FeedbackSubScreen(Screen var1) {
+         super(TITLE);
+         this.parent = var1;
+      }
+
+      protected void init() {
+         this.layout.addTitleHeader(TITLE, this.font);
+         GridLayout var1 = (GridLayout)this.layout.addToContents(new GridLayout());
+         var1.defaultCellSetting().padding(4, 4, 4, 0);
+         GridLayout.RowHelper var2 = var1.createRowHelper(2);
+         PauseScreen.addFeedbackButtons(this, var2);
+         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
+            this.onClose();
+         }).width(200).build());
+         this.layout.visitWidgets(this::addRenderableWidget);
+         this.repositionElements();
+      }
+
+      protected void repositionElements() {
+         this.layout.arrangeElements();
+      }
+
+      public void onClose() {
+         this.minecraft.setScreen(this.parent);
+      }
    }
 }

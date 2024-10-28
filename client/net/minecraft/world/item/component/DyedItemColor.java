@@ -27,10 +27,10 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
    public static final StreamCodec<ByteBuf, DyedItemColor> STREAM_CODEC;
    public static final int LEATHER_COLOR = -6265536;
 
-   public DyedItemColor(int rgb, boolean showInTooltip) {
+   public DyedItemColor(int var1, boolean var2) {
       super();
-      this.rgb = rgb;
-      this.showInTooltip = showInTooltip;
+      this.rgb = var1;
+      this.showInTooltip = var2;
    }
 
    public static int getOrDefault(ItemStack var0, int var1) {
@@ -66,10 +66,10 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
          int var14;
          for(Iterator var16 = var1.iterator(); var16.hasNext(); ++var7) {
             DyeItem var17 = (DyeItem)var16.next();
-            float[] var18 = var17.getDyeColor().getTextureDiffuseColors();
-            int var12 = (int)(var18[0] * 255.0F);
-            int var13 = (int)(var18[1] * 255.0F);
-            var14 = (int)(var18[2] * 255.0F);
+            var11 = var17.getDyeColor().getTextureDiffuseColor();
+            int var12 = FastColor.ARGB32.red(var11);
+            int var13 = FastColor.ARGB32.green(var11);
+            var14 = FastColor.ARGB32.blue(var11);
             var6 += Math.max(var12, Math.max(var13, var14));
             var3 += var12;
             var4 += var13;
@@ -79,11 +79,11 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
          var9 = var3 / var7;
          var10 = var4 / var7;
          var11 = var5 / var7;
-         float var19 = (float)var6 / (float)var7;
-         float var20 = (float)Math.max(var9, Math.max(var10, var11));
-         var9 = (int)((float)var9 * var19 / var20);
-         var10 = (int)((float)var10 * var19 / var20);
-         var11 = (int)((float)var11 * var19 / var20);
+         float var18 = (float)var6 / (float)var7;
+         float var19 = (float)Math.max(var9, Math.max(var10, var11));
+         var9 = (int)((float)var9 * var18 / var19);
+         var10 = (int)((float)var10 * var18 / var19);
+         var11 = (int)((float)var11 * var18 / var19);
          var14 = FastColor.ARGB32.color(0, var9, var10, var11);
          boolean var15 = var8 == null || var8.showInTooltip();
          var2.set(DataComponents.DYED_COLOR, new DyedItemColor(var14, var15));

@@ -13,9 +13,9 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public record VanillaShearingLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
-   public VanillaShearingLoot(HolderLookup.Provider registries) {
+   public VanillaShearingLoot(HolderLookup.Provider var1) {
       super();
-      this.registries = registries;
+      this.registries = var1;
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {

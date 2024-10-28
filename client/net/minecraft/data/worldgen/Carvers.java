@@ -28,7 +28,7 @@ public class Carvers {
    }
 
    private static ResourceKey<ConfiguredWorldCarver<?>> createKey(String var0) {
-      return ResourceKey.create(Registries.CONFIGURED_CARVER, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.CONFIGURED_CARVER, ResourceLocation.withDefaultNamespace(var0));
    }
 
    public static void bootstrap(BootstrapContext<ConfiguredWorldCarver<?>> var0) {

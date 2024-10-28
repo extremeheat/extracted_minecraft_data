@@ -17,11 +17,11 @@ public record DamageEntity(LevelBasedValue minDamage, LevelBasedValue maxDamage,
       return var0.group(LevelBasedValue.CODEC.fieldOf("min_damage").forGetter(DamageEntity::minDamage), LevelBasedValue.CODEC.fieldOf("max_damage").forGetter(DamageEntity::maxDamage), DamageType.CODEC.fieldOf("damage_type").forGetter(DamageEntity::damageType)).apply(var0, DamageEntity::new);
    });
 
-   public DamageEntity(LevelBasedValue minDamage, LevelBasedValue maxDamage, Holder<DamageType> damageType) {
+   public DamageEntity(LevelBasedValue var1, LevelBasedValue var2, Holder<DamageType> var3) {
       super();
-      this.minDamage = minDamage;
-      this.maxDamage = maxDamage;
-      this.damageType = damageType;
+      this.minDamage = var1;
+      this.maxDamage = var2;
+      this.damageType = var3;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {

@@ -20,8 +20,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
-   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/page_forward"), new ResourceLocation("recipe_book/page_forward_highlighted"));
-   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/page_backward"), new ResourceLocation("recipe_book/page_backward_highlighted"));
+   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_forward"), ResourceLocation.withDefaultNamespace("recipe_book/page_forward_highlighted"));
+   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("recipe_book/page_backward"), ResourceLocation.withDefaultNamespace("recipe_book/page_backward_highlighted"));
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
    @Nullable
    private RecipeButton hoveredButton;

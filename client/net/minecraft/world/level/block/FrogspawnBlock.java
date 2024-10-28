@@ -111,8 +111,8 @@ public class FrogspawnBlock extends Block {
    }
 
    private double getRandomTadpolePositionOffset(RandomSource var1) {
-      double var2 = (double)(Tadpole.HITBOX_WIDTH / 2.0F);
-      return Mth.clamp(var1.nextDouble(), var2, 1.0 - var2);
+      double var2 = 0.20000000298023224;
+      return Mth.clamp(var1.nextDouble(), 0.20000000298023224, 0.7999999970197678);
    }
 
    @VisibleForTesting

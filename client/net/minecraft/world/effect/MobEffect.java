@@ -1,10 +1,10 @@
 package net.minecraft.world.effect;
 
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -14,7 +14,12 @@ import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -32,7 +37,9 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 
 public class MobEffect implements FeatureElement {
-   private static final int AMBIENT_ALPHA = Mth.floor(38.25F);
+   public static final Codec<Holder<MobEffect>> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<MobEffect>> STREAM_CODEC;
+   private static final int AMBIENT_ALPHA;
    private final Map<Holder<Attribute>, AttributeTemplate> attributeModifiers = new Object2ObjectOpenHashMap();
    private final MobEffectCategory category;
    private final int color;
@@ -85,7 +92,7 @@ public class MobEffect implements FeatureElement {
 
    public void onEffectAdded(LivingEntity var1, int var2) {
       this.soundOnAdded.ifPresent((var1x) -> {
-         var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F);
+         var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)var1x, var1.getSoundSource(), 1.0F, 1.0F);
       });
    }
 
@@ -123,8 +130,8 @@ public class MobEffect implements FeatureElement {
       return this.color;
    }
 
-   public MobEffect addAttributeModifier(Holder<Attribute> var1, String var2, double var3, AttributeModifier.Operation var5) {
-      this.attributeModifiers.put(var1, new AttributeTemplate(UUID.fromString(var2), var3, var5));
+   public MobEffect addAttributeModifier(Holder<Attribute> var1, ResourceLocation var2, double var3, AttributeModifier.Operation var5) {
+      this.attributeModifiers.put(var1, new AttributeTemplate(var2, var3, var5));
       return this;
    }
 
@@ -134,8 +141,8 @@ public class MobEffect implements FeatureElement {
    }
 
    public void createModifiers(int var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      this.attributeModifiers.forEach((var3, var4) -> {
-         var2.accept(var3, var4.create(this.getDescriptionId(), var1));
+      this.attributeModifiers.forEach((var2x, var3) -> {
+         var2.accept(var2x, var3.create(var1));
       });
    }
 
@@ -160,7 +167,7 @@ public class MobEffect implements FeatureElement {
          AttributeInstance var5 = var1.getInstance((Holder)var4.getKey());
          if (var5 != null) {
             var5.removeModifier(((AttributeTemplate)var4.getValue()).id());
-            var5.addPermanentModifier(((AttributeTemplate)var4.getValue()).create(this.getDescriptionId(), var2));
+            var5.addPermanentModifier(((AttributeTemplate)var4.getValue()).create(var2));
          }
       }
 
@@ -188,19 +195,25 @@ public class MobEffect implements FeatureElement {
       return this.requiredFeatures;
    }
 
-   static record AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
-      AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
+   static {
+      CODEC = BuiltInRegistries.MOB_EFFECT.holderByNameCodec();
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT);
+      AMBIENT_ALPHA = Mth.floor(38.25F);
+   }
+
+   static record AttributeTemplate(ResourceLocation id, double amount, AttributeModifier.Operation operation) {
+      AttributeTemplate(ResourceLocation var1, double var2, AttributeModifier.Operation var4) {
          super();
-         this.id = id;
-         this.amount = amount;
-         this.operation = operation;
+         this.id = var1;
+         this.amount = var2;
+         this.operation = var4;
       }
 
-      public AttributeModifier create(String var1, int var2) {
-         return new AttributeModifier(this.id, var1 + " " + var2, this.amount * (double)(var2 + 1), this.operation);
+      public AttributeModifier create(int var1) {
+         return new AttributeModifier(this.id, this.amount * (double)(var1 + 1), this.operation);
       }
 
-      public UUID id() {
+      public ResourceLocation id() {
          return this.id;
       }
 

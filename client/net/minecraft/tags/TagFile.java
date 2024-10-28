@@ -9,10 +9,10 @@ public record TagFile(List<TagEntry> entries, boolean replace) {
       return var0.group(TagEntry.CODEC.listOf().fieldOf("values").forGetter(TagFile::entries), Codec.BOOL.optionalFieldOf("replace", false).forGetter(TagFile::replace)).apply(var0, TagFile::new);
    });
 
-   public TagFile(List<TagEntry> entries, boolean replace) {
+   public TagFile(List<TagEntry> var1, boolean var2) {
       super();
-      this.entries = entries;
-      this.replace = replace;
+      this.entries = var1;
+      this.replace = var2;
    }
 
    public List<TagEntry> entries() {

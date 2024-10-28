@@ -11,10 +11,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSystemChatPacket(Component content, boolean overlay) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSystemChatPacket> STREAM_CODEC;
 
-   public ClientboundSystemChatPacket(Component content, boolean overlay) {
+   public ClientboundSystemChatPacket(Component var1, boolean var2) {
       super();
-      this.content = content;
-      this.overlay = overlay;
+      this.content = var1;
+      this.overlay = var2;
    }
 
    public PacketType<ClientboundSystemChatPacket> type() {

@@ -8,12 +8,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
+import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
@@ -23,6 +25,7 @@ import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurati
 import net.minecraft.network.protocol.configuration.ServerboundSelectKnownPacks;
 import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerLinks;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.config.JoinWorldTask;
@@ -54,8 +57,8 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       return this.gameProfile;
    }
 
-   public void onDisconnect(Component var1) {
-      LOGGER.info("{} lost connection: {}", this.gameProfile, var1.getString());
+   public void onDisconnect(DisconnectionDetails var1) {
+      LOGGER.info("{} lost connection: {}", this.gameProfile, var1.reason().getString());
       super.onDisconnect(var1);
    }
 
@@ -65,12 +68,17 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
 
    public void startConfiguration() {
       this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
-      LayeredRegistryAccess var1 = this.server.registries();
-      List var2 = this.server.getResourceManager().listPacks().flatMap((var0) -> {
+      ServerLinks var1 = this.server.serverLinks();
+      if (!var1.isEmpty()) {
+         this.send(new ClientboundServerLinksPacket(var1));
+      }
+
+      LayeredRegistryAccess var2 = this.server.registries();
+      List var3 = this.server.getResourceManager().listPacks().flatMap((var0) -> {
          return var0.location().knownPackInfo().stream();
       }).toList();
       this.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(this.server.getWorldData().enabledFeatures())));
-      this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var2, var1);
+      this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var3, var2);
       this.configurationTasks.add(this.synchronizeRegistriesTask);
       this.addOptionalTasks();
       this.configurationTasks.add(new JoinWorldTask());

@@ -30,12 +30,12 @@ public record ResolvableProfile(Optional<String> name, Optional<UUID> id, Proper
       this(Optional.of(var1.getName()), Optional.of(var1.getId()), var1.getProperties(), var1);
    }
 
-   public ResolvableProfile(Optional<String> name, Optional<UUID> id, PropertyMap properties, GameProfile gameProfile) {
+   public ResolvableProfile(Optional<String> var1, Optional<UUID> var2, PropertyMap var3, GameProfile var4) {
       super();
-      this.name = name;
-      this.id = id;
-      this.properties = properties;
-      this.gameProfile = gameProfile;
+      this.name = var1;
+      this.id = var2;
+      this.properties = var3;
+      this.gameProfile = var4;
    }
 
    public CompletableFuture<ResolvableProfile> resolve() {

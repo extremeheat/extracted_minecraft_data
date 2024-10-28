@@ -16,7 +16,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.ChunkPos;
 
 public class SystemToast implements Toast {
-   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("toast/system");
+   private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/system");
    private static final int MAX_LINE_SIZE = 200;
    private static final int LINE_SPACING = 12;
    private static final int MARGIN = 10;
@@ -160,6 +160,10 @@ public class SystemToast implements Toast {
       add(var0.getToasts(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(var1));
    }
 
+   public static void onFileDropFailure(Minecraft var0, int var1) {
+      add(var0.getToasts(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", var1));
+   }
+
    public static void onLowDiskSpace(Minecraft var0) {
       addOrUpdate(var0.getToasts(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
    }
@@ -183,6 +187,7 @@ public class SystemToast implements Toast {
       public static final SystemToastId PACK_LOAD_FAILURE = new SystemToastId();
       public static final SystemToastId WORLD_ACCESS_FAILURE = new SystemToastId();
       public static final SystemToastId PACK_COPY_FAILURE = new SystemToastId();
+      public static final SystemToastId FILE_DROP_FAILURE = new SystemToastId();
       public static final SystemToastId PERIODIC_NOTIFICATION = new SystemToastId();
       public static final SystemToastId LOW_DISK_SPACE = new SystemToastId(10000L);
       public static final SystemToastId CHUNK_LOAD_FAILURE = new SystemToastId();

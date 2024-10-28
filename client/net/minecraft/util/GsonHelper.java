@@ -117,7 +117,7 @@ public class GsonHelper {
    public static Holder<Item> convertToItem(JsonElement var0, String var1) {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
-         return (Holder)BuiltInRegistries.ITEM.getHolder(new ResourceLocation(var2)).orElseThrow(() -> {
+         return (Holder)BuiltInRegistries.ITEM.getHolder(ResourceLocation.parse(var2)).orElseThrow(() -> {
             return new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'");
          });
       } else {

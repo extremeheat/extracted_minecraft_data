@@ -7,10 +7,10 @@ import net.minecraft.network.chat.FilterMask;
 public record FilteredText(String raw, FilterMask mask) {
    public static final FilteredText EMPTY = passThrough("");
 
-   public FilteredText(String raw, FilterMask mask) {
+   public FilteredText(String var1, FilterMask var2) {
       super();
-      this.raw = raw;
-      this.mask = mask;
+      this.raw = var1;
+      this.mask = var2;
    }
 
    public static FilteredText passThrough(String var0) {

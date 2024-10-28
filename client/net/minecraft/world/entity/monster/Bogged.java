@@ -25,7 +25,6 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -128,15 +127,13 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    private void spawnShearedMushrooms() {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
-         if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-            LootTable var6 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.BOGGED_SHEAR);
-            LootParams var3 = (new LootParams.Builder(var1)).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.THIS_ENTITY, this).create(LootContextParamSets.SHEARING);
-            ObjectListIterator var4 = var6.getRandomItems(var3).iterator();
+         LootTable var6 = var1.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.BOGGED_SHEAR);
+         LootParams var3 = (new LootParams.Builder(var1)).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.THIS_ENTITY, this).create(LootContextParamSets.SHEARING);
+         ObjectListIterator var4 = var6.getRandomItems(var3).iterator();
 
-            while(var4.hasNext()) {
-               ItemStack var5 = (ItemStack)var4.next();
-               this.spawnAtLocation(var5);
-            }
+         while(var4.hasNext()) {
+            ItemStack var5 = (ItemStack)var4.next();
+            this.spawnAtLocation(var5, this.getBbHeight());
          }
       }
 

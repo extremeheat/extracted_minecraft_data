@@ -79,12 +79,12 @@ public class GameConfig {
    }
 
    public static record QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
-      public QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
+      public QuickPlayData(@Nullable String var1, @Nullable String var2, @Nullable String var3, @Nullable String var4) {
          super();
-         this.path = path;
-         this.singleplayer = singleplayer;
-         this.multiplayer = multiplayer;
-         this.realms = realms;
+         this.path = var1;
+         this.singleplayer = var2;
+         this.multiplayer = var3;
+         this.realms = var4;
       }
 
       public boolean isEnabled() {

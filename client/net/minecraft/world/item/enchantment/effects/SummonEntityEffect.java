@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.level.Level;
@@ -24,10 +25,10 @@ public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean j
       return var0.group(RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).fieldOf("entity").forGetter(SummonEntityEffect::entityTypes), Codec.BOOL.optionalFieldOf("join_team", false).forGetter(SummonEntityEffect::joinTeam)).apply(var0, SummonEntityEffect::new);
    });
 
-   public SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean joinTeam) {
+   public SummonEntityEffect(HolderSet<EntityType<?>> var1, boolean var2) {
       super();
-      this.entityTypes = entityTypes;
-      this.joinTeam = joinTeam;
+      this.entityTypes = var1;
+      this.joinTeam = var2;
    }
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
@@ -39,8 +40,9 @@ public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean j
             if (var8 != null) {
                if (var8 instanceof LightningBolt) {
                   LightningBolt var9 = (LightningBolt)var8;
-                  if (var4 instanceof ServerPlayer) {
-                     ServerPlayer var10 = (ServerPlayer)var4;
+                  LivingEntity var11 = var3.owner();
+                  if (var11 instanceof ServerPlayer) {
+                     ServerPlayer var10 = (ServerPlayer)var11;
                      var9.setCause(var10);
                   }
                }

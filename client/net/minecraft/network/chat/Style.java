@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class Style {
    public static final Style EMPTY = new Style((TextColor)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (ResourceLocation)null);
-   public static final ResourceLocation DEFAULT_FONT = new ResourceLocation("minecraft", "default");
+   public static final ResourceLocation DEFAULT_FONT = ResourceLocation.withDefaultNamespace("default");
    @Nullable
    final TextColor color;
    @Nullable

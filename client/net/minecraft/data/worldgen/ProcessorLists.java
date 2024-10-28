@@ -79,7 +79,7 @@ public class ProcessorLists {
    }
 
    private static ResourceKey<StructureProcessorList> createKey(String var0) {
-      return ResourceKey.create(Registries.PROCESSOR_LIST, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.PROCESSOR_LIST, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static void register(BootstrapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {

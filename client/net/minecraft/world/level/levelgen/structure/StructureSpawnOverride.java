@@ -11,10 +11,10 @@ public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedRandom
       return var0.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedRandomList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(var0, StructureSpawnOverride::new);
    });
 
-   public StructureSpawnOverride(BoundingBoxType boundingBox, WeightedRandomList<MobSpawnSettings.SpawnerData> spawns) {
+   public StructureSpawnOverride(BoundingBoxType var1, WeightedRandomList<MobSpawnSettings.SpawnerData> var2) {
       super();
-      this.boundingBox = boundingBox;
-      this.spawns = spawns;
+      this.boundingBox = var1;
+      this.spawns = var2;
    }
 
    public BoundingBoxType boundingBox() {

@@ -1044,7 +1044,7 @@ public class WoodlandMansionPieces {
       }
 
       private static ResourceLocation makeLocation(String var0) {
-         return new ResourceLocation("woodland_mansion/" + var0);
+         return ResourceLocation.withDefaultNamespace("woodland_mansion/" + var0);
       }
 
       private static StructurePlaceSettings makeSettings(Mirror var0, Rotation var1) {

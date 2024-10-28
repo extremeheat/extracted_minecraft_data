@@ -203,10 +203,10 @@ public class ChatListener {
    }
 
    private static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
-      Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
+      Message(@Nullable MessageSignature var1, BooleanSupplier var2) {
          super();
-         this.signature = signature;
-         this.handler = handler;
+         this.signature = var1;
+         this.handler = var2;
       }
 
       public boolean accept() {

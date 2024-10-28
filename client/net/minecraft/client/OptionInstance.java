@@ -167,10 +167,10 @@ public final class OptionInstance<T> {
    }
 
    public static record Enum<T>(List<T> values, Codec<T> codec) implements CycleableValueSet<T> {
-      public Enum(List<T> values, Codec<T> codec) {
+      public Enum(List<T> var1, Codec<T> var2) {
          super();
-         this.values = values;
-         this.codec = codec;
+         this.values = var1;
+         this.codec = var2;
       }
 
       public Optional<T> validateValue(T var1) {
@@ -263,11 +263,11 @@ public final class OptionInstance<T> {
    }
 
    public static record ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive) implements IntRangeBase, SliderableOrCyclableValueSet<Integer> {
-      public ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive) {
+      public ClampingLazyMaxIntRange(int var1, IntSupplier var2, int var3) {
          super();
-         this.minInclusive = minInclusive;
-         this.maxSupplier = maxSupplier;
-         this.encodableMaxInclusive = encodableMaxInclusive;
+         this.minInclusive = var1;
+         this.maxSupplier = var2;
+         this.encodableMaxInclusive = var3;
       }
 
       public Optional<Integer> validateValue(Integer var1) {
@@ -313,11 +313,11 @@ public final class OptionInstance<T> {
          this(var1, var2, true);
       }
 
-      public IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) {
+      public IntRange(int var1, int var2, boolean var3) {
          super();
-         this.minInclusive = minInclusive;
-         this.maxInclusive = maxInclusive;
-         this.applyValueImmediately = applyValueImmediately;
+         this.minInclusive = var1;
+         this.maxInclusive = var2;
+         this.applyValueImmediately = var3;
       }
 
       public Optional<Integer> validateValue(Integer var1) {
@@ -451,11 +451,11 @@ public final class OptionInstance<T> {
    }
 
    public static record LazyEnum<T>(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec) implements CycleableValueSet<T> {
-      public LazyEnum(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec) {
+      public LazyEnum(Supplier<List<T>> var1, Function<T, Optional<T>> var2, Codec<T> var3) {
          super();
-         this.values = values;
-         this.validateValue = validateValue;
-         this.codec = codec;
+         this.values = var1;
+         this.validateValue = var2;
+         this.codec = var3;
       }
 
       public Optional<T> validateValue(T var1) {
@@ -480,13 +480,13 @@ public final class OptionInstance<T> {
    }
 
    public static record AltEnum<T>(List<T> values, List<T> altValues, BooleanSupplier altCondition, CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec) implements CycleableValueSet<T> {
-      public AltEnum(List<T> values, List<T> altValues, BooleanSupplier altCondition, CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec) {
+      public AltEnum(List<T> var1, List<T> var2, BooleanSupplier var3, CycleableValueSet.ValueSetter<T> var4, Codec<T> var5) {
          super();
-         this.values = values;
-         this.altValues = altValues;
-         this.altCondition = altCondition;
-         this.valueSetter = valueSetter;
-         this.codec = codec;
+         this.values = var1;
+         this.altValues = var2;
+         this.altCondition = var3;
+         this.valueSetter = var4;
+         this.codec = var5;
       }
 
       public CycleButton.ValueListSupplier<T> valueListSupplier() {

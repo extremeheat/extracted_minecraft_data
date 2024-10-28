@@ -12,10 +12,10 @@ public record ServerboundCustomQueryAnswerPacket(int transactionId, @Nullable Cu
    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket> STREAM_CODEC = Packet.codec(ServerboundCustomQueryAnswerPacket::write, ServerboundCustomQueryAnswerPacket::read);
    private static final int MAX_PAYLOAD_SIZE = 1048576;
 
-   public ServerboundCustomQueryAnswerPacket(int transactionId, @Nullable CustomQueryAnswerPayload payload) {
+   public ServerboundCustomQueryAnswerPacket(int var1, @Nullable CustomQueryAnswerPayload var2) {
       super();
-      this.transactionId = transactionId;
-      this.payload = payload;
+      this.transactionId = var1;
+      this.payload = var2;
    }
 
    private static ServerboundCustomQueryAnswerPacket read(FriendlyByteBuf var0) {

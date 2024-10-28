@@ -16,6 +16,8 @@ public interface ClientTooltipComponent {
    static ClientTooltipComponent create(TooltipComponent var0) {
       if (var0 instanceof BundleTooltip var1) {
          return new ClientBundleTooltip(var1.contents());
+      } else if (var0 instanceof ClientActivePlayersTooltip.ActivePlayersTooltip var2) {
+         return new ClientActivePlayersTooltip(var2);
       } else {
          throw new IllegalArgumentException("Unknown TooltipComponent");
       }

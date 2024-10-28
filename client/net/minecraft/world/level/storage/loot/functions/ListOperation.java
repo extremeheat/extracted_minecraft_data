@@ -82,10 +82,10 @@ public interface ListOperation {
          this(var1, Optional.empty());
       }
 
-      public ReplaceSection(int offset, Optional<Integer> size) {
+      public ReplaceSection(int var1, Optional<Integer> var2) {
          super();
-         this.offset = offset;
-         this.size = size;
+         this.offset = var1;
+         this.size = var2;
       }
 
       public Type mode() {
@@ -126,10 +126,10 @@ public interface ListOperation {
    }
 
    public static record StandAlone<T>(List<T> value, ListOperation operation) {
-      public StandAlone(List<T> value, ListOperation operation) {
+      public StandAlone(List<T> var1, ListOperation var2) {
          super();
-         this.value = value;
-         this.operation = operation;
+         this.value = var1;
+         this.operation = var2;
       }
 
       public static <T> Codec<StandAlone<T>> codec(Codec<T> var0, int var1) {
@@ -186,9 +186,9 @@ public interface ListOperation {
          return var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(Insert::offset)).apply(var0, Insert::new);
       });
 
-      public Insert(int offset) {
+      public Insert(int var1) {
          super();
-         this.offset = offset;
+         this.offset = var1;
       }
 
       public Type mode() {

@@ -25,10 +25,10 @@ public record EnchantmentPredicate(Optional<HolderSet<Enchantment>> enchantments
       this(Optional.of(var1), var2);
    }
 
-   public EnchantmentPredicate(Optional<HolderSet<Enchantment>> enchantments, MinMaxBounds.Ints level) {
+   public EnchantmentPredicate(Optional<HolderSet<Enchantment>> var1, MinMaxBounds.Ints var2) {
       super();
-      this.enchantments = enchantments;
-      this.level = level;
+      this.enchantments = var1;
+      this.level = var2;
    }
 
    public boolean containedIn(ItemEnchantments var1) {

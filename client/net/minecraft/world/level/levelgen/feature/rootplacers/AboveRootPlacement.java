@@ -13,10 +13,10 @@ public record AboveRootPlacement(BlockStateProvider aboveRootProvider, float abo
       })).apply(var0, AboveRootPlacement::new);
    });
 
-   public AboveRootPlacement(BlockStateProvider aboveRootProvider, float aboveRootPlacementChance) {
+   public AboveRootPlacement(BlockStateProvider var1, float var2) {
       super();
-      this.aboveRootProvider = aboveRootProvider;
-      this.aboveRootPlacementChance = aboveRootPlacementChance;
+      this.aboveRootProvider = var1;
+      this.aboveRootPlacementChance = var2;
    }
 
    public BlockStateProvider aboveRootProvider() {

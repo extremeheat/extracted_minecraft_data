@@ -80,13 +80,13 @@ public class Unstitcher implements SpriteSource {
          return var0.group(ResourceLocation.CODEC.fieldOf("sprite").forGetter(Region::sprite), Codec.DOUBLE.fieldOf("x").forGetter(Region::x), Codec.DOUBLE.fieldOf("y").forGetter(Region::y), Codec.DOUBLE.fieldOf("width").forGetter(Region::width), Codec.DOUBLE.fieldOf("height").forGetter(Region::height)).apply(var0, Region::new);
       });
 
-      private Region(ResourceLocation sprite, double x, double y, double width, double height) {
+      private Region(ResourceLocation var1, double var2, double var4, double var6, double var8) {
          super();
-         this.sprite = sprite;
-         this.x = x;
-         this.y = y;
-         this.width = width;
-         this.height = height;
+         this.sprite = var1;
+         this.x = var2;
+         this.y = var4;
+         this.width = var6;
+         this.height = var8;
       }
 
       public ResourceLocation sprite() {

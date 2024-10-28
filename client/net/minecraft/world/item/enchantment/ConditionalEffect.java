@@ -10,10 +10,10 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> requirements) {
-   public ConditionalEffect(T effect, Optional<LootItemCondition> requirements) {
+   public ConditionalEffect(T var1, Optional<LootItemCondition> var2) {
       super();
-      this.effect = effect;
-      this.requirements = requirements;
+      this.effect = var1;
+      this.requirements = var2;
    }
 
    public static Codec<LootItemCondition> conditionCodec(LootContextParamSet var0) {

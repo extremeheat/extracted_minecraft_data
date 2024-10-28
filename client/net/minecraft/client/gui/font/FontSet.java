@@ -223,10 +223,10 @@ public class FontSet implements AutoCloseable {
    private static record GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
       static final GlyphInfoFilter MISSING;
 
-      GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
+      GlyphInfoFilter(GlyphInfo var1, GlyphInfo var2) {
          super();
-         this.glyphInfo = glyphInfo;
-         this.glyphInfoNotFishy = glyphInfoNotFishy;
+         this.glyphInfo = var1;
+         this.glyphInfoNotFishy = var2;
       }
 
       GlyphInfo select(boolean var1) {

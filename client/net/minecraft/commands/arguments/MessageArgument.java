@@ -92,10 +92,10 @@ public class MessageArgument implements SignedArgument<Message> {
    public static record Message(String text, Part[] parts) {
       final String text;
 
-      public Message(String text, Part[] parts) {
+      public Message(String var1, Part[] var2) {
          super();
-         this.text = text;
-         this.parts = parts;
+         this.text = var1;
+         this.parts = var2;
       }
 
       Component resolveComponent(CommandSourceStack var1) throws CommandSyntaxException {
@@ -186,11 +186,11 @@ public class MessageArgument implements SignedArgument<Message> {
    }
 
    public static record Part(int start, int end, EntitySelector selector) {
-      public Part(int start, int end, EntitySelector selector) {
+      public Part(int var1, int var2, EntitySelector var3) {
          super();
-         this.start = start;
-         this.end = end;
-         this.selector = selector;
+         this.start = var1;
+         this.end = var2;
+         this.selector = var3;
       }
 
       public Component toComponent(CommandSourceStack var1) throws CommandSyntaxException {

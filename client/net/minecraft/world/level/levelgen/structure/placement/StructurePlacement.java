@@ -147,10 +147,10 @@ public abstract class StructurePlacement {
          return var0.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(var0, ExclusionZone::new);
       });
 
-      public ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
+      public ExclusionZone(Holder<StructureSet> var1, int var2) {
          super();
-         this.otherSet = otherSet;
-         this.chunkCount = chunkCount;
+         this.otherSet = var1;
+         this.chunkCount = var2;
       }
 
       boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {

@@ -165,8 +165,8 @@ public class ServerPlayerGameMode {
             float var6 = 1.0F;
             var7 = this.level.getBlockState(var1);
             if (!var7.isAir()) {
-               EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(var1), () -> {
-                  this.player.broadcastBreakEvent(EquipmentSlot.MAINHAND);
+               EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(var1), var7, (var1x) -> {
+                  this.player.onEquippedItemBroken(var1x, EquipmentSlot.MAINHAND);
                });
                var7.attack(this.level, var1, this.player);
                var6 = var7.getDestroyProgress(this.player, this.player.level(), var1);

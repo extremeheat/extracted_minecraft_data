@@ -89,9 +89,9 @@ public class RuinedPortalStructure extends Structure {
          var2.replaceWithBlackstone = var4.replaceWithBlackstone();
          ResourceLocation var21;
          if (var3.nextFloat() < 0.05F) {
-            var21 = new ResourceLocation(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
+            var21 = ResourceLocation.withDefaultNamespace(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
          } else {
-            var21 = new ResourceLocation(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
+            var21 = ResourceLocation.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
          }
 
          StructureTemplate var23 = var1.structureTemplateManager().getOrCreate(var21);
@@ -196,16 +196,16 @@ public class RuinedPortalStructure extends Structure {
          return var0.group(RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(Setup::placement), Codec.floatRange(0.0F, 1.0F).fieldOf("air_pocket_probability").forGetter(Setup::airPocketProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("mossiness").forGetter(Setup::mossiness), Codec.BOOL.fieldOf("overgrown").forGetter(Setup::overgrown), Codec.BOOL.fieldOf("vines").forGetter(Setup::vines), Codec.BOOL.fieldOf("can_be_cold").forGetter(Setup::canBeCold), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(Setup::replaceWithBlackstone), ExtraCodecs.POSITIVE_FLOAT.fieldOf("weight").forGetter(Setup::weight)).apply(var0, Setup::new);
       });
 
-      public Setup(RuinedPortalPiece.VerticalPlacement placement, float airPocketProbability, float mossiness, boolean overgrown, boolean vines, boolean canBeCold, boolean replaceWithBlackstone, float weight) {
+      public Setup(RuinedPortalPiece.VerticalPlacement var1, float var2, float var3, boolean var4, boolean var5, boolean var6, boolean var7, float var8) {
          super();
-         this.placement = placement;
-         this.airPocketProbability = airPocketProbability;
-         this.mossiness = mossiness;
-         this.overgrown = overgrown;
-         this.vines = vines;
-         this.canBeCold = canBeCold;
-         this.replaceWithBlackstone = replaceWithBlackstone;
-         this.weight = weight;
+         this.placement = var1;
+         this.airPocketProbability = var2;
+         this.mossiness = var3;
+         this.overgrown = var4;
+         this.vines = var5;
+         this.canBeCold = var6;
+         this.replaceWithBlackstone = var7;
+         this.weight = var8;
       }
 
       public RuinedPortalPiece.VerticalPlacement placement() {

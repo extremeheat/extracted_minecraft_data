@@ -211,10 +211,10 @@ public class Interaction extends Entity implements Attackable, Targeting {
          return var0.group(UUIDUtil.CODEC.fieldOf("player").forGetter(PlayerAction::player), Codec.LONG.fieldOf("timestamp").forGetter(PlayerAction::timestamp)).apply(var0, PlayerAction::new);
       });
 
-      PlayerAction(UUID player, long timestamp) {
+      PlayerAction(UUID var1, long var2) {
          super();
-         this.player = player;
-         this.timestamp = timestamp;
+         this.player = var1;
+         this.timestamp = var2;
       }
 
       public UUID player() {

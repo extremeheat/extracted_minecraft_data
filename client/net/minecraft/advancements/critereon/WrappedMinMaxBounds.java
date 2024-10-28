@@ -16,10 +16,10 @@ public record WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
    public static final WrappedMinMaxBounds ANY = new WrappedMinMaxBounds((Float)null, (Float)null);
    public static final SimpleCommandExceptionType ERROR_INTS_ONLY = new SimpleCommandExceptionType(Component.translatable("argument.range.ints"));
 
-   public WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
+   public WrappedMinMaxBounds(@Nullable Float var1, @Nullable Float var2) {
       super();
-      this.min = min;
-      this.max = max;
+      this.min = var1;
+      this.max = var2;
    }
 
    public static WrappedMinMaxBounds exactly(float var0) {

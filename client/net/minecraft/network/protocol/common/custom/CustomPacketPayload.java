@@ -18,7 +18,7 @@ public interface CustomPacketPayload {
    }
 
    static <T extends CustomPacketPayload> Type<T> createType(String var0) {
-      return new Type(new ResourceLocation(var0));
+      return new Type(ResourceLocation.withDefaultNamespace(var0));
    }
 
    static <B extends FriendlyByteBuf> StreamCodec<B, CustomPacketPayload> codec(final FallbackProvider<B> var0, List<TypeAndCodec<? super B, ?>> var1) {
@@ -61,9 +61,9 @@ public interface CustomPacketPayload {
    public static record Type<T extends CustomPacketPayload>(ResourceLocation id) {
       final ResourceLocation id;
 
-      public Type(ResourceLocation id) {
+      public Type(ResourceLocation var1) {
          super();
-         this.id = id;
+         this.id = var1;
       }
 
       public ResourceLocation id() {
@@ -76,10 +76,10 @@ public interface CustomPacketPayload {
    }
 
    public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(Type<T> type, StreamCodec<B, T> codec) {
-      public TypeAndCodec(Type<T> type, StreamCodec<B, T> codec) {
+      public TypeAndCodec(Type<T> var1, StreamCodec<B, T> var2) {
          super();
-         this.type = type;
-         this.codec = codec;
+         this.type = var1;
+         this.codec = var2;
       }
 
       public Type<T> type() {

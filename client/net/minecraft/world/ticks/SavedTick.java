@@ -43,12 +43,12 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
       }
    };
 
-   public SavedTick(T type, BlockPos pos, int delay, TickPriority priority) {
+   public SavedTick(T var1, BlockPos var2, int var3, TickPriority var4) {
       super();
-      this.type = type;
-      this.pos = pos;
-      this.delay = delay;
-      this.priority = priority;
+      this.type = var1;
+      this.pos = var2;
+      this.delay = var3;
+      this.priority = var4;
    }
 
    public static <T> void loadTickList(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2, Consumer<SavedTick<T>> var3) {

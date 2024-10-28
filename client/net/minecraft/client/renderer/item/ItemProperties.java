@@ -32,8 +32,8 @@ import net.minecraft.world.level.block.LightBlock;
 
 public class ItemProperties {
    private static final Map<ResourceLocation, ItemPropertyFunction> GENERIC_PROPERTIES = Maps.newHashMap();
-   private static final ResourceLocation DAMAGED = new ResourceLocation("damaged");
-   private static final ResourceLocation DAMAGE = new ResourceLocation("damage");
+   private static final ResourceLocation DAMAGED = ResourceLocation.withDefaultNamespace("damaged");
+   private static final ResourceLocation DAMAGE = ResourceLocation.withDefaultNamespace("damage");
    private static final ClampedItemPropertyFunction PROPERTY_DAMAGED = (var0x, var1, var2, var3) -> {
       return var0x.isDamaged() ? 1.0F : 0.0F;
    };
@@ -52,7 +52,7 @@ public class ItemProperties {
    }
 
    private static void registerCustomModelData(ItemPropertyFunction var0) {
-      GENERIC_PROPERTIES.put(new ResourceLocation("custom_model_data"), var0);
+      GENERIC_PROPERTIES.put(ResourceLocation.withDefaultNamespace("custom_model_data"), var0);
    }
 
    private static void register(Item var0, ResourceLocation var1, ClampedItemPropertyFunction var2) {
@@ -83,10 +83,10 @@ public class ItemProperties {
    }
 
    static {
-      registerGeneric(new ResourceLocation("lefthanded"), (var0x, var1, var2, var3) -> {
+      registerGeneric(ResourceLocation.withDefaultNamespace("lefthanded"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.getMainArm() != HumanoidArm.RIGHT ? 1.0F : 0.0F;
       });
-      registerGeneric(new ResourceLocation("cooldown"), (var0x, var1, var2, var3) -> {
+      registerGeneric(ResourceLocation.withDefaultNamespace("cooldown"), (var0x, var1, var2, var3) -> {
          return var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0x.getItem(), 0.0F) : 0.0F;
       });
       ClampedItemPropertyFunction var0 = (var0x, var1, var2, var3) -> {
@@ -97,23 +97,23 @@ public class ItemProperties {
       registerCustomModelData((var0x, var1, var2, var3) -> {
          return (float)((CustomModelData)var0x.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT)).value();
       });
-      register(Items.BOW, new ResourceLocation("pull"), (var0x, var1, var2, var3) -> {
+      register(Items.BOW, ResourceLocation.withDefaultNamespace("pull"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
          } else {
             return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / 20.0F;
          }
       });
-      register(Items.BRUSH, new ResourceLocation("brushing"), (var0x, var1, var2, var3) -> {
+      register(Items.BRUSH, ResourceLocation.withDefaultNamespace("brushing"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.getUseItem() == var0x ? (float)(var2.getUseItemRemainingTicks() % 10) / 10.0F : 0.0F;
       });
-      register(Items.BOW, new ResourceLocation("pulling"), (var0x, var1, var2, var3) -> {
+      register(Items.BOW, ResourceLocation.withDefaultNamespace("pulling"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F;
       });
-      register(Items.BUNDLE, new ResourceLocation("filled"), (var0x, var1, var2, var3) -> {
+      register(Items.BUNDLE, ResourceLocation.withDefaultNamespace("filled"), (var0x, var1, var2, var3) -> {
          return BundleItem.getFullnessDisplay(var0x);
       });
-      register(Items.CLOCK, new ResourceLocation("time"), new ClampedItemPropertyFunction() {
+      register(Items.CLOCK, ResourceLocation.withDefaultNamespace("time"), new ClampedItemPropertyFunction() {
          private double rotation;
          private double rota;
          private long lastUpdateTick;
@@ -156,38 +156,38 @@ public class ItemProperties {
             return this.rotation;
          }
       });
-      register(Items.COMPASS, new ResourceLocation("angle"), new CompassItemPropertyFunction((var0x, var1, var2) -> {
+      register(Items.COMPASS, ResourceLocation.withDefaultNamespace("angle"), new CompassItemPropertyFunction((var0x, var1, var2) -> {
          LodestoneTracker var3 = (LodestoneTracker)var1.get(DataComponents.LODESTONE_TRACKER);
          return var3 != null ? (GlobalPos)var3.target().orElse((Object)null) : CompassItem.getSpawnPosition(var0x);
       }));
-      register(Items.RECOVERY_COMPASS, new ResourceLocation("angle"), new CompassItemPropertyFunction((var0x, var1, var2) -> {
+      register(Items.RECOVERY_COMPASS, ResourceLocation.withDefaultNamespace("angle"), new CompassItemPropertyFunction((var0x, var1, var2) -> {
          if (var2 instanceof Player var3) {
             return (GlobalPos)var3.getLastDeathLocation().orElse((Object)null);
          } else {
             return null;
          }
       }));
-      register(Items.CROSSBOW, new ResourceLocation("pull"), (var0x, var1, var2, var3) -> {
+      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("pull"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
          } else {
-            return CrossbowItem.isCharged(var0x) ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2);
+            return CrossbowItem.isCharged(var0x) ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var2);
          }
       });
-      register(Items.CROSSBOW, new ResourceLocation("pulling"), (var0x, var1, var2, var3) -> {
+      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("pulling"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x && !CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F;
       });
-      register(Items.CROSSBOW, new ResourceLocation("charged"), (var0x, var1, var2, var3) -> {
+      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("charged"), (var0x, var1, var2, var3) -> {
          return CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F;
       });
-      register(Items.CROSSBOW, new ResourceLocation("firework"), (var0x, var1, var2, var3) -> {
+      register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("firework"), (var0x, var1, var2, var3) -> {
          ChargedProjectiles var4 = (ChargedProjectiles)var0x.get(DataComponents.CHARGED_PROJECTILES);
          return var4 != null && var4.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
       });
-      register(Items.ELYTRA, new ResourceLocation("broken"), (var0x, var1, var2, var3) -> {
+      register(Items.ELYTRA, ResourceLocation.withDefaultNamespace("broken"), (var0x, var1, var2, var3) -> {
          return ElytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F;
       });
-      register(Items.FISHING_ROD, new ResourceLocation("cast"), (var0x, var1, var2, var3) -> {
+      register(Items.FISHING_ROD, ResourceLocation.withDefaultNamespace("cast"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
          } else {
@@ -200,18 +200,18 @@ public class ItemProperties {
             return (var4 || var5) && var2 instanceof Player && ((Player)var2).fishing != null ? 1.0F : 0.0F;
          }
       });
-      register(Items.SHIELD, new ResourceLocation("blocking"), (var0x, var1, var2, var3) -> {
+      register(Items.SHIELD, ResourceLocation.withDefaultNamespace("blocking"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F;
       });
-      register(Items.TRIDENT, new ResourceLocation("throwing"), (var0x, var1, var2, var3) -> {
+      register(Items.TRIDENT, ResourceLocation.withDefaultNamespace("throwing"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F;
       });
-      register(Items.LIGHT, new ResourceLocation("level"), (var0x, var1, var2, var3) -> {
+      register(Items.LIGHT, ResourceLocation.withDefaultNamespace("level"), (var0x, var1, var2, var3) -> {
          BlockItemStateProperties var4 = (BlockItemStateProperties)var0x.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
          Integer var5 = (Integer)var4.get(LightBlock.LEVEL);
          return var5 != null ? (float)var5 / 16.0F : 1.0F;
       });
-      register(Items.GOAT_HORN, new ResourceLocation("tooting"), (var0x, var1, var2, var3) -> {
+      register(Items.GOAT_HORN, ResourceLocation.withDefaultNamespace("tooting"), (var0x, var1, var2, var3) -> {
          return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F;
       });
    }

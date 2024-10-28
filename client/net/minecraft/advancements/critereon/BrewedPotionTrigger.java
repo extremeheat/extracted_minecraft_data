@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.alchemy.Potion;
 
@@ -27,13 +26,13 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance>
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion) implements SimpleCriterionTrigger.SimpleInstance {
       public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), BuiltInRegistries.POTION.holderByNameCodec().optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(var0, TriggerInstance::new);
+         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Potion.CODEC.optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Potion>> var2) {
          super();
-         this.player = player;
-         this.potion = potion;
+         this.player = var1;
+         this.potion = var2;
       }
 
       public static Criterion<TriggerInstance> brewedPotion() {

@@ -7,11 +7,9 @@ import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.NetherPortalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,7 +55,6 @@ public class PortalForcer {
       }).findFirst();
       return var6.map((var1x) -> {
          BlockPos var2 = var1x.getPos();
-         this.level.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var2), 3, var2);
          BlockState var3 = this.level.getBlockState(var2);
          return BlockUtil.getLargestRectangleAround(var2, (Direction.Axis)var3.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, (var2x) -> {
             return this.level.getBlockState(var2x) == var3;

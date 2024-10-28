@@ -12,15 +12,15 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
       return var0.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby)).apply(var0, EntityFlagsPredicate::new);
    });
 
-   public EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isFlying, Optional<Boolean> isBaby) {
+   public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<Boolean> var7) {
       super();
-      this.isOnGround = isOnGround;
-      this.isOnFire = isOnFire;
-      this.isCrouching = isCrouching;
-      this.isSprinting = isSprinting;
-      this.isSwimming = isSwimming;
-      this.isFlying = isFlying;
-      this.isBaby = isBaby;
+      this.isOnGround = var1;
+      this.isOnFire = var2;
+      this.isCrouching = var3;
+      this.isSprinting = var4;
+      this.isSwimming = var5;
+      this.isFlying = var6;
+      this.isBaby = var7;
    }
 
    public boolean matches(Entity var1) {

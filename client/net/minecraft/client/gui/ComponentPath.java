@@ -32,9 +32,9 @@ public interface ComponentPath {
    void applyFocus(boolean var1);
 
    public static record Leaf(GuiEventListener component) implements ComponentPath {
-      public Leaf(GuiEventListener component) {
+      public Leaf(GuiEventListener var1) {
          super();
-         this.component = component;
+         this.component = var1;
       }
 
       public void applyFocus(boolean var1) {
@@ -47,10 +47,10 @@ public interface ComponentPath {
    }
 
    public static record Path(ContainerEventHandler component, ComponentPath childPath) implements ComponentPath {
-      public Path(ContainerEventHandler component, ComponentPath childPath) {
+      public Path(ContainerEventHandler var1, ComponentPath var2) {
          super();
-         this.component = component;
-         this.childPath = childPath;
+         this.component = var1;
+         this.childPath = var2;
       }
 
       public void applyFocus(boolean var1) {

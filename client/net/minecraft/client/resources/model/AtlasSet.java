@@ -47,10 +47,10 @@ public class AtlasSet implements AutoCloseable {
       final TextureAtlas atlas;
       final ResourceLocation atlasInfoLocation;
 
-      AtlasEntry(TextureAtlas atlas, ResourceLocation atlasInfoLocation) {
+      AtlasEntry(TextureAtlas var1, ResourceLocation var2) {
          super();
-         this.atlas = atlas;
-         this.atlasInfoLocation = atlasInfoLocation;
+         this.atlas = var1;
+         this.atlasInfoLocation = var2;
       }
 
       public void close() {

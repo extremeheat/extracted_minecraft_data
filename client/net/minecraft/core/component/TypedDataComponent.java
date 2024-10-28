@@ -38,10 +38,10 @@ public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
       }
    };
 
-   public TypedDataComponent(DataComponentType<T> type, T value) {
+   public TypedDataComponent(DataComponentType<T> var1, T var2) {
       super();
-      this.type = type;
-      this.value = value;
+      this.type = var1;
+      this.value = var2;
    }
 
    static TypedDataComponent<?> fromEntryUnchecked(Map.Entry<DataComponentType<?>, Object> var0) {

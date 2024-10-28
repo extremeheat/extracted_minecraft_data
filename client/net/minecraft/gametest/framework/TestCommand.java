@@ -294,7 +294,7 @@ public class TestCommand {
 
    private static int exportTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir);
-      ResourceLocation var3 = new ResourceLocation(var1);
+      ResourceLocation var3 = ResourceLocation.parse(var1);
       Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
       Path var5 = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, var4, var3.getPath(), var2);
       if (var5 == null) {
@@ -315,7 +315,7 @@ public class TestCommand {
    }
 
    private static boolean verifyStructureExists(ServerLevel var0, String var1) {
-      if (var0.getStructureManager().get(new ResourceLocation(var1)).isEmpty()) {
+      if (var0.getStructureManager().get(ResourceLocation.parse(var1)).isEmpty()) {
          say(var0, "Test structure " + var1 + " could not be found", ChatFormatting.RED);
          return false;
       } else {
@@ -337,7 +337,7 @@ public class TestCommand {
 
    private static int importTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir, var1 + ".snbt");
-      ResourceLocation var3 = new ResourceLocation("minecraft", var1);
+      ResourceLocation var3 = ResourceLocation.withDefaultNamespace(var1);
       Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
 
       try {
@@ -382,9 +382,9 @@ public class TestCommand {
    }
 
    private static record TestBatchSummaryDisplayer(CommandSourceStack source) implements GameTestBatchListener {
-      TestBatchSummaryDisplayer(CommandSourceStack source) {
+      TestBatchSummaryDisplayer(CommandSourceStack var1) {
          super();
-         this.source = source;
+         this.source = var1;
       }
 
       public void testBatchStarting(GameTestBatch var1) {
@@ -400,10 +400,10 @@ public class TestCommand {
    }
 
    public static record TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) implements GameTestListener {
-      public TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) {
+      public TestSummaryDisplayer(ServerLevel var1, MultipleTestTracker var2) {
          super();
-         this.level = level;
-         this.tracker = tracker;
+         this.level = var1;
+         this.tracker = var2;
       }
 
       public void testStructureLoaded(GameTestInfo var1) {

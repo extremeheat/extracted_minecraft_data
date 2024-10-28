@@ -11,11 +11,10 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -30,10 +29,10 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemAttributeModifiers> STREAM_CODEC;
    public static final DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
-   public ItemAttributeModifiers(List<Entry> modifiers, boolean showInTooltip) {
+   public ItemAttributeModifiers(List<Entry> var1, boolean var2) {
       super();
-      this.modifiers = modifiers;
-      this.showInTooltip = showInTooltip;
+      this.modifiers = var1;
+      this.showInTooltip = var2;
    }
 
    public ItemAttributeModifiers withTooltip(boolean var1) {
@@ -50,13 +49,25 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
 
       while(var5.hasNext()) {
          Entry var6 = (Entry)var5.next();
-         if (!var6.modifier.id().equals(var2.id())) {
+         if (!var6.matches(var1, var2.id())) {
             var4.add(var6);
          }
       }
 
       var4.add(new Entry(var1, var2, var3));
       return new ItemAttributeModifiers(var4.build(), this.showInTooltip);
+   }
+
+   public void forEach(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
+      Iterator var3 = this.modifiers.iterator();
+
+      while(var3.hasNext()) {
+         Entry var4 = (Entry)var3.next();
+         if (var4.slot.equals(var1)) {
+            var2.accept(var4.attribute, var4.modifier);
+         }
+      }
+
    }
 
    public void forEach(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
@@ -134,15 +145,19 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
       final AttributeModifier modifier;
       final EquipmentSlotGroup slot;
       public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("type").forGetter(Entry::attribute), AttributeModifier.MAP_CODEC.forGetter(Entry::modifier), EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(Entry::slot)).apply(var0, Entry::new);
+         return var0.group(Attribute.CODEC.fieldOf("type").forGetter(Entry::attribute), AttributeModifier.MAP_CODEC.forGetter(Entry::modifier), EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(Entry::slot)).apply(var0, Entry::new);
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(Holder<Attribute> attribute, AttributeModifier modifier, EquipmentSlotGroup slot) {
+      public Entry(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3) {
          super();
-         this.attribute = attribute;
-         this.modifier = modifier;
-         this.slot = slot;
+         this.attribute = var1;
+         this.modifier = var2;
+         this.slot = var3;
+      }
+
+      public boolean matches(Holder<Attribute> var1, ResourceLocation var2) {
+         return var1.equals(this.attribute) && var2.equals(this.modifier);
       }
 
       public Holder<Attribute> attribute() {
@@ -158,7 +173,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.ATTRIBUTE), Entry::attribute, AttributeModifier.STREAM_CODEC, Entry::modifier, EquipmentSlotGroup.STREAM_CODEC, Entry::slot, Entry::new);
+         STREAM_CODEC = StreamCodec.composite(Attribute.STREAM_CODEC, Entry::attribute, AttributeModifier.STREAM_CODEC, Entry::modifier, EquipmentSlotGroup.STREAM_CODEC, Entry::slot, Entry::new);
       }
    }
 }

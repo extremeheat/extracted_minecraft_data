@@ -36,12 +36,12 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("rod").forGetter(TriggerInstance::rod), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> rod, Optional<ContextAwarePredicate> entity, Optional<ItemPredicate> item) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, Optional<ContextAwarePredicate> var3, Optional<ItemPredicate> var4) {
          super();
-         this.player = player;
-         this.rod = rod;
-         this.entity = entity;
-         this.item = item;
+         this.player = var1;
+         this.rod = var2;
+         this.entity = var3;
+         this.item = var4;
       }
 
       public static Criterion<TriggerInstance> fishedItem(Optional<ItemPredicate> var0, Optional<EntityPredicate> var1, Optional<ItemPredicate> var2) {

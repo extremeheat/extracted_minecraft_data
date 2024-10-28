@@ -2,17 +2,15 @@ package net.minecraft.world.item;
 
 import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Supplier;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
@@ -32,13 +30,6 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.AABB;
 
 public class ArmorItem extends Item implements Equipable {
-   private static final EnumMap<Type, UUID> ARMOR_MODIFIER_UUID_PER_TYPE = (EnumMap)Util.make(new EnumMap(Type.class), (var0) -> {
-      var0.put(ArmorItem.Type.BOOTS, UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"));
-      var0.put(ArmorItem.Type.LEGGINGS, UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"));
-      var0.put(ArmorItem.Type.CHESTPLATE, UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"));
-      var0.put(ArmorItem.Type.HELMET, UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150"));
-      var0.put(ArmorItem.Type.BODY, UUID.fromString("C1C72771-8B8E-BA4A-ACE0-81A93C8928B2"));
-   });
    public static final DispenseItemBehavior DISPENSE_ITEM_BEHAVIOR = new DefaultDispenseItemBehavior() {
       protected ItemStack execute(BlockSource var1, ItemStack var2) {
          return ArmorItem.dispenseArmor(var1, var2) ? var2 : super.execute(var1, var2);
@@ -55,7 +46,7 @@ public class ArmorItem extends Item implements Equipable {
          return false;
       } else {
          LivingEntity var4 = (LivingEntity)var3.get(0);
-         EquipmentSlot var5 = Mob.getEquipmentSlotForItem(var1);
+         EquipmentSlot var5 = var4.getEquipmentSlotForItem(var1);
          ItemStack var6 = var1.split(1);
          var4.setItemSlot(var5, var6);
          if (var4 instanceof Mob) {
@@ -77,12 +68,12 @@ public class ArmorItem extends Item implements Equipable {
          float var3 = ((ArmorMaterial)var1.value()).toughness();
          ItemAttributeModifiers.Builder var4 = ItemAttributeModifiers.builder();
          EquipmentSlotGroup var5 = EquipmentSlotGroup.bySlot(var2.getSlot());
-         UUID var6 = (UUID)ARMOR_MODIFIER_UUID_PER_TYPE.get(var2);
-         var4.add(Attributes.ARMOR, new AttributeModifier(var6, "Armor modifier", (double)var2x, AttributeModifier.Operation.ADD_VALUE), var5);
-         var4.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var6, "Armor toughness", (double)var3, AttributeModifier.Operation.ADD_VALUE), var5);
+         ResourceLocation var6 = ResourceLocation.withDefaultNamespace("armor." + var2.getName());
+         var4.add(Attributes.ARMOR, new AttributeModifier(var6, (double)var2x, AttributeModifier.Operation.ADD_VALUE), var5);
+         var4.add(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var6, (double)var3, AttributeModifier.Operation.ADD_VALUE), var5);
          float var7 = ((ArmorMaterial)var1.value()).knockbackResistance();
          if (var7 > 0.0F) {
-            var4.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(var6, "Armor knockback resistance", (double)var7, AttributeModifier.Operation.ADD_VALUE), var5);
+            var4.add(Attributes.KNOCKBACK_RESISTANCE, new AttributeModifier(var6, (double)var7, AttributeModifier.Operation.ADD_VALUE), var5);
          }
 
          return var4.build();

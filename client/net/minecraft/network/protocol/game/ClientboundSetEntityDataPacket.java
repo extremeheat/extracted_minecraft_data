@@ -17,10 +17,10 @@ public record ClientboundSetEntityDataPacket(int id, List<SynchedEntityData.Data
       this(var1.readVarInt(), unpack(var1));
    }
 
-   public ClientboundSetEntityDataPacket(int id, List<SynchedEntityData.DataValue<?>> packedItems) {
+   public ClientboundSetEntityDataPacket(int var1, List<SynchedEntityData.DataValue<?>> var2) {
       super();
-      this.id = id;
-      this.packedItems = packedItems;
+      this.id = var1;
+      this.packedItems = var2;
    }
 
    private static void pack(List<SynchedEntityData.DataValue<?>> var0, RegistryFriendlyByteBuf var1) {

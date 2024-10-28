@@ -90,10 +90,10 @@ public class LootContext {
    }
 
    public static record VisitedEntry<T>(LootDataType<T> type, T value) {
-      public VisitedEntry(LootDataType<T> type, T value) {
+      public VisitedEntry(LootDataType<T> var1, T var2) {
          super();
-         this.type = type;
-         this.value = value;
+         this.type = var1;
+         this.value = var2;
       }
 
       public LootDataType<T> type() {
@@ -158,6 +158,11 @@ public class LootContext {
             this.random = RandomSource.create(var1);
          }
 
+         return this;
+      }
+
+      public Builder withOptionalRandomSource(RandomSource var1) {
+         this.random = var1;
          return this;
       }
 

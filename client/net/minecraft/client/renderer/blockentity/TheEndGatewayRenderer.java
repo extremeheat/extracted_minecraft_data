@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 
 public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlockEntity> {
-   private static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/end_gateway_beam.png");
+   private static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/end_gateway_beam.png");
 
    public TheEndGatewayRenderer(BlockEntityRendererProvider.Context var1) {
       super(var1);
@@ -22,7 +22,7 @@ public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlo
          double var8 = var1.isSpawning() ? (double)var1.getLevel().getMaxBuildHeight() : 50.0;
          var7 = Mth.sin(var7 * 3.1415927F);
          int var10 = Mth.floor((double)var7 * var8);
-         float[] var11 = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColors() : DyeColor.PURPLE.getTextureDiffuseColors();
+         int var11 = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();
          long var12 = var1.getLevel().getGameTime();
          BeaconRenderer.renderBeaconBeam(var3, var4, BEAM_LOCATION, var2, var7, var12, -var10, var10 * 2, var11, 0.15F, 0.175F);
       }

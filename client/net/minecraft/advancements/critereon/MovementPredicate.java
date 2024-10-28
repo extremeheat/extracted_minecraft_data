@@ -9,15 +9,15 @@ public record MovementPredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, 
       return var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("x", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::x), MinMaxBounds.Doubles.CODEC.optionalFieldOf("y", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::y), MinMaxBounds.Doubles.CODEC.optionalFieldOf("z", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::z), MinMaxBounds.Doubles.CODEC.optionalFieldOf("speed", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::speed), MinMaxBounds.Doubles.CODEC.optionalFieldOf("horizontal_speed", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::horizontalSpeed), MinMaxBounds.Doubles.CODEC.optionalFieldOf("vertical_speed", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::verticalSpeed), MinMaxBounds.Doubles.CODEC.optionalFieldOf("fall_distance", MinMaxBounds.Doubles.ANY).forGetter(MovementPredicate::fallDistance)).apply(var0, MovementPredicate::new);
    });
 
-   public MovementPredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z, MinMaxBounds.Doubles speed, MinMaxBounds.Doubles horizontalSpeed, MinMaxBounds.Doubles verticalSpeed, MinMaxBounds.Doubles fallDistance) {
+   public MovementPredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, MinMaxBounds.Doubles var3, MinMaxBounds.Doubles var4, MinMaxBounds.Doubles var5, MinMaxBounds.Doubles var6, MinMaxBounds.Doubles var7) {
       super();
-      this.x = x;
-      this.y = y;
-      this.z = z;
-      this.speed = speed;
-      this.horizontalSpeed = horizontalSpeed;
-      this.verticalSpeed = verticalSpeed;
-      this.fallDistance = fallDistance;
+      this.x = var1;
+      this.y = var2;
+      this.z = var3;
+      this.speed = var4;
+      this.horizontalSpeed = var5;
+      this.verticalSpeed = var6;
+      this.fallDistance = var7;
    }
 
    public static MovementPredicate speed(MinMaxBounds.Doubles var0) {

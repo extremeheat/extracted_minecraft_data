@@ -63,10 +63,10 @@ public abstract class ParseState<S> {
    public abstract void restore(int var1);
 
    static record CacheKey<T>(Atom<T> name, int mark) {
-      CacheKey(Atom<T> name, int mark) {
+      CacheKey(Atom<T> var1, int var2) {
          super();
-         this.name = name;
-         this.mark = mark;
+         this.name = var1;
+         this.mark = var2;
       }
 
       public Atom<T> name() {
@@ -81,10 +81,10 @@ public abstract class ParseState<S> {
    static record CacheEntry<T>(Optional<T> value, int mark) {
       final Optional<T> value;
 
-      CacheEntry(Optional<T> value, int mark) {
+      CacheEntry(Optional<T> var1, int var2) {
          super();
-         this.value = value;
-         this.mark = mark;
+         this.value = var1;
+         this.mark = var2;
       }
 
       public Optional<T> value() {

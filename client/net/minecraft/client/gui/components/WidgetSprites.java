@@ -11,12 +11,12 @@ public record WidgetSprites(ResourceLocation enabled, ResourceLocation disabled,
       this(var1, var2, var3, var2);
    }
 
-   public WidgetSprites(ResourceLocation enabled, ResourceLocation disabled, ResourceLocation enabledFocused, ResourceLocation disabledFocused) {
+   public WidgetSprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4) {
       super();
-      this.enabled = enabled;
-      this.disabled = disabled;
-      this.enabledFocused = enabledFocused;
-      this.disabledFocused = disabledFocused;
+      this.enabled = var1;
+      this.disabled = var2;
+      this.enabledFocused = var3;
+      this.disabledFocused = var4;
    }
 
    public ResourceLocation get(boolean var1, boolean var2) {

@@ -446,7 +446,7 @@ public class Fox extends Animal implements VariantHolder<Type> {
    }
 
    public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = Mob.getEquipmentSlotForItem(var1);
+      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       if (!this.getItemBySlot(var2).isEmpty()) {
          return false;
       } else {
@@ -644,14 +644,14 @@ public class Fox extends Animal implements VariantHolder<Type> {
       return this.getTrustedUUIDs().contains(var1);
    }
 
-   protected void dropAllDeathLoot(DamageSource var1) {
-      ItemStack var2 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-      if (!var2.isEmpty()) {
-         this.spawnAtLocation(var2);
+   protected void dropAllDeathLoot(ServerLevel var1, DamageSource var2) {
+      ItemStack var3 = this.getItemBySlot(EquipmentSlot.MAINHAND);
+      if (!var3.isEmpty()) {
+         this.spawnAtLocation(var3);
          this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
       }
 
-      super.dropAllDeathLoot(var1);
+      super.dropAllDeathLoot(var1, var2);
    }
 
    public static boolean isPathClear(Fox var0, LivingEntity var1) {

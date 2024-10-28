@@ -57,12 +57,12 @@ public class ItemCombinerMenuSlotDefinition {
          return true;
       });
 
-      public SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
+      public SlotDefinition(int var1, int var2, int var3, Predicate<ItemStack> var4) {
          super();
-         this.slotIndex = slotIndex;
-         this.x = x;
-         this.y = y;
-         this.mayPlace = mayPlace;
+         this.slotIndex = var1;
+         this.x = var2;
+         this.y = var3;
+         this.mayPlace = var4;
       }
 
       public int slotIndex() {

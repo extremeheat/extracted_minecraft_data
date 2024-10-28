@@ -608,11 +608,11 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       final Fluid fluid;
       final BlockState sourceState;
 
-      FluidInfo(BlockPos pos, Fluid fluid, BlockState sourceState) {
+      FluidInfo(BlockPos var1, Fluid var2, BlockState var3) {
          super();
-         this.pos = pos;
-         this.fluid = fluid;
-         this.sourceState = sourceState;
+         this.pos = var1;
+         this.fluid = var2;
+         this.sourceState = var3;
       }
 
       public BlockPos pos() {

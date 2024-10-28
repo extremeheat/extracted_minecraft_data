@@ -62,11 +62,11 @@ public class WorldLoader {
    public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
       final PackConfig packConfig;
 
-      public InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
+      public InitConfig(PackConfig var1, Commands.CommandSelection var2, int var3) {
          super();
-         this.packConfig = packConfig;
-         this.commandSelection = commandSelection;
-         this.functionCompilationLevel = functionCompilationLevel;
+         this.packConfig = var1;
+         this.commandSelection = var2;
+         this.functionCompilationLevel = var3;
       }
 
       public PackConfig packConfig() {
@@ -83,12 +83,12 @@ public class WorldLoader {
    }
 
    public static record PackConfig(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean safeMode, boolean initMode) {
-      public PackConfig(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean safeMode, boolean initMode) {
+      public PackConfig(PackRepository var1, WorldDataConfiguration var2, boolean var3, boolean var4) {
          super();
-         this.packRepository = packRepository;
-         this.initialDataConfig = initialDataConfig;
-         this.safeMode = safeMode;
-         this.initMode = initMode;
+         this.packRepository = var1;
+         this.initialDataConfig = var2;
+         this.safeMode = var3;
+         this.initMode = var4;
       }
 
       public Pair<WorldDataConfiguration, CloseableResourceManager> createResourceManager() {
@@ -116,12 +116,12 @@ public class WorldLoader {
    }
 
    public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, RegistryAccess.Frozen datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
-      public DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, RegistryAccess.Frozen datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
+      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, RegistryAccess.Frozen var3, RegistryAccess.Frozen var4) {
          super();
-         this.resources = resources;
-         this.dataConfiguration = dataConfiguration;
-         this.datapackWorldgen = datapackWorldgen;
-         this.datapackDimensions = datapackDimensions;
+         this.resources = var1;
+         this.dataConfiguration = var2;
+         this.datapackWorldgen = var3;
+         this.datapackDimensions = var4;
       }
 
       public ResourceManager resources() {
@@ -150,10 +150,10 @@ public class WorldLoader {
       final D cookie;
       final RegistryAccess.Frozen finalDimensions;
 
-      public DataLoadOutput(D cookie, RegistryAccess.Frozen finalDimensions) {
+      public DataLoadOutput(D var1, RegistryAccess.Frozen var2) {
          super();
-         this.cookie = cookie;
-         this.finalDimensions = finalDimensions;
+         this.cookie = var1;
+         this.finalDimensions = var2;
       }
 
       public D cookie() {

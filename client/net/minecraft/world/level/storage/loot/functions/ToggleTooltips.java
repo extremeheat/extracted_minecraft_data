@@ -13,6 +13,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -44,7 +45,7 @@ public class ToggleTooltips extends LootItemConditionalFunction {
    }
 
    static {
-      TOGGLES = (Map)Stream.of(new ComponentToggle(DataComponents.TRIM, ArmorTrim::withTooltip), new ComponentToggle(DataComponents.DYED_COLOR, DyedItemColor::withTooltip), new ComponentToggle(DataComponents.ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.UNBREAKABLE, Unbreakable::withTooltip), new ComponentToggle(DataComponents.CAN_BREAK, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.CAN_PLACE_ON, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers::withTooltip)).collect(Collectors.toMap(ComponentToggle::type, (var0) -> {
+      TOGGLES = (Map)Stream.of(new ComponentToggle(DataComponents.TRIM, ArmorTrim::withTooltip), new ComponentToggle(DataComponents.DYED_COLOR, DyedItemColor::withTooltip), new ComponentToggle(DataComponents.ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.UNBREAKABLE, Unbreakable::withTooltip), new ComponentToggle(DataComponents.CAN_BREAK, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.CAN_PLACE_ON, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers::withTooltip), new ComponentToggle(DataComponents.JUKEBOX_PLAYABLE, JukeboxPlayable::withTooltip)).collect(Collectors.toMap(ComponentToggle::type, (var0) -> {
          return var0;
       }));
       TOGGLE_CODEC = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().comapFlatMap((var0) -> {
@@ -61,10 +62,10 @@ public class ToggleTooltips extends LootItemConditionalFunction {
    }
 
    private static record ComponentToggle<T>(DataComponentType<T> type, TooltipWither<T> setter) {
-      ComponentToggle(DataComponentType<T> type, TooltipWither<T> setter) {
+      ComponentToggle(DataComponentType<T> var1, TooltipWither<T> var2) {
          super();
-         this.type = type;
-         this.setter = setter;
+         this.type = var1;
+         this.setter = var2;
       }
 
       public void applyIfPresent(ItemStack var1, boolean var2) {

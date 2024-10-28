@@ -324,7 +324,7 @@ public class TitleScreen extends Screen {
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, this.advancePanoramaTime());
+      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, var2);
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -382,12 +382,12 @@ public class TitleScreen extends Screen {
    }
 
    private static record WarningLabel(Font font, MultiLineLabel label, int x, int y) {
-      private WarningLabel(Font font, MultiLineLabel label, int x, int y) {
+      private WarningLabel(Font var1, MultiLineLabel var2, int var3, int var4) {
          super();
-         this.font = font;
-         this.label = label;
-         this.x = x;
-         this.y = y;
+         this.font = var1;
+         this.label = var2;
+         this.x = var3;
+         this.y = var4;
       }
 
       public void render(GuiGraphics var1, int var2) {

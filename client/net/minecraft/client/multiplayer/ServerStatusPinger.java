@@ -26,6 +26,7 @@ import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
 import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -65,7 +66,7 @@ public class ServerStatusPinger {
 
             public void handleStatusResponse(ClientboundStatusResponsePacket var1x) {
                if (this.receivedPing) {
-                  var7.disconnect(Component.translatable("multiplayer.status.unrequested"));
+                  var7.disconnect((Component)Component.translatable("multiplayer.status.unrequested"));
                } else {
                   this.receivedPing = true;
                   ServerStatus var2x = var1x.status();
@@ -118,13 +119,13 @@ public class ServerStatusPinger {
                long var2x = this.pingStart;
                long var4x = Util.getMillis();
                var1.ping = var4x - var2x;
-               var7.disconnect(Component.translatable("multiplayer.status.finished"));
+               var7.disconnect((Component)Component.translatable("multiplayer.status.finished"));
                var3.run();
             }
 
-            public void onDisconnect(Component var1x) {
+            public void onDisconnect(DisconnectionDetails var1x) {
                if (!this.success) {
-                  ServerStatusPinger.this.onPingFailed(var1x, var1);
+                  ServerStatusPinger.this.onPingFailed(var1x.reason(), var1);
                   ServerStatusPinger.this.pingLegacyServer(var6, var4, var1);
                }
 
@@ -201,7 +202,7 @@ public class ServerStatusPinger {
             Connection var3 = (Connection)var2.next();
             if (var3.isConnected()) {
                var2.remove();
-               var3.disconnect(Component.translatable("multiplayer.status.cancelled"));
+               var3.disconnect((Component)Component.translatable("multiplayer.status.cancelled"));
             }
          }
 

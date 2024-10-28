@@ -149,7 +149,7 @@ public class RealmsNotification {
       public static InfoPopup parse(RealmsNotification var0, JsonObject var1) {
          RealmsText var2 = (RealmsText)JsonUtils.getRequired("title", var1, RealmsText::parse);
          RealmsText var3 = (RealmsText)JsonUtils.getRequired("message", var1, RealmsText::parse);
-         ResourceLocation var4 = new ResourceLocation(JsonUtils.getRequiredString("image", var1));
+         ResourceLocation var4 = ResourceLocation.parse(JsonUtils.getRequiredString("image", var1));
          UrlButton var5 = (UrlButton)JsonUtils.getOptional("urlButton", var1, UrlButton::parse);
          return new InfoPopup(var0, var2, var3, var4, var5);
       }
@@ -196,10 +196,10 @@ public class RealmsNotification {
       private static final String URL = "url";
       private static final String URL_TEXT = "urlText";
 
-      private UrlButton(String url, RealmsText urlText) {
+      private UrlButton(String var1, RealmsText var2) {
          super();
-         this.url = url;
-         this.urlText = urlText;
+         this.url = var1;
+         this.urlText = var2;
       }
 
       public static UrlButton parse(JsonObject var0) {

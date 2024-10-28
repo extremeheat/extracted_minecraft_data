@@ -13,7 +13,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Pufferfish;
 
 public class PufferfishRenderer extends MobRenderer<Pufferfish, EntityModel<Pufferfish>> {
-   private static final ResourceLocation PUFFER_LOCATION = new ResourceLocation("textures/entity/fish/pufferfish.png");
+   private static final ResourceLocation PUFFER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fish/pufferfish.png");
    private int puffStateO = 3;
    private final EntityModel<Pufferfish> small;
    private final EntityModel<Pufferfish> mid;

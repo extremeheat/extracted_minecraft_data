@@ -18,15 +18,15 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
       return var0.group(ItemPredicate.CODEC.optionalFieldOf("head").forGetter(EntityEquipmentPredicate::head), ItemPredicate.CODEC.optionalFieldOf("chest").forGetter(EntityEquipmentPredicate::chest), ItemPredicate.CODEC.optionalFieldOf("legs").forGetter(EntityEquipmentPredicate::legs), ItemPredicate.CODEC.optionalFieldOf("feet").forGetter(EntityEquipmentPredicate::feet), ItemPredicate.CODEC.optionalFieldOf("body").forGetter(EntityEquipmentPredicate::body), ItemPredicate.CODEC.optionalFieldOf("mainhand").forGetter(EntityEquipmentPredicate::mainhand), ItemPredicate.CODEC.optionalFieldOf("offhand").forGetter(EntityEquipmentPredicate::offhand)).apply(var0, EntityEquipmentPredicate::new);
    });
 
-   public EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<ItemPredicate> chest, Optional<ItemPredicate> legs, Optional<ItemPredicate> feet, Optional<ItemPredicate> body, Optional<ItemPredicate> mainhand, Optional<ItemPredicate> offhand) {
+   public EntityEquipmentPredicate(Optional<ItemPredicate> var1, Optional<ItemPredicate> var2, Optional<ItemPredicate> var3, Optional<ItemPredicate> var4, Optional<ItemPredicate> var5, Optional<ItemPredicate> var6, Optional<ItemPredicate> var7) {
       super();
-      this.head = head;
-      this.chest = chest;
-      this.legs = legs;
-      this.feet = feet;
-      this.body = body;
-      this.mainhand = mainhand;
-      this.offhand = offhand;
+      this.head = var1;
+      this.chest = var2;
+      this.legs = var3;
+      this.feet = var4;
+      this.body = var5;
+      this.mainhand = var6;
+      this.offhand = var7;
    }
 
    public static EntityEquipmentPredicate captainPredicate(HolderGetter<BannerPattern> var0) {

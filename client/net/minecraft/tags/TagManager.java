@@ -18,7 +18,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public class TagManager implements PreparableReloadListener {
-   private static final Map<ResourceKey<? extends Registry<?>>, String> CUSTOM_REGISTRY_DIRECTORIES;
    private final RegistryAccess registryAccess;
    private List<LoadResult<?>> results = List.of();
 
@@ -29,11 +28,6 @@ public class TagManager implements PreparableReloadListener {
 
    public List<LoadResult<?>> getResult() {
       return this.results;
-   }
-
-   public static String getTagDir(ResourceKey<? extends Registry<?>> var0) {
-      String var1 = (String)CUSTOM_REGISTRY_DIRECTORIES.get(var0);
-      return var1 != null ? var1 : "tags/" + var0.location().getPath();
    }
 
    public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
@@ -53,21 +47,17 @@ public class TagManager implements PreparableReloadListener {
       ResourceKey var4 = var3.key();
       Registry var5 = var3.value();
       Objects.requireNonNull(var5);
-      TagLoader var6 = new TagLoader(var5::getHolder, getTagDir(var4));
+      TagLoader var6 = new TagLoader(var5::getHolder, Registries.tagsDirPath(var4));
       return CompletableFuture.supplyAsync(() -> {
          return new LoadResult(var4, var6.loadAndBuild(var1));
       }, var2);
    }
 
-   static {
-      CUSTOM_REGISTRY_DIRECTORIES = Map.of(Registries.BLOCK, "tags/blocks", Registries.ENTITY_TYPE, "tags/entity_types", Registries.FLUID, "tags/fluids", Registries.GAME_EVENT, "tags/game_events", Registries.ITEM, "tags/items");
-   }
-
    public static record LoadResult<T>(ResourceKey<? extends Registry<T>> key, Map<ResourceLocation, Collection<Holder<T>>> tags) {
-      public LoadResult(ResourceKey<? extends Registry<T>> key, Map<ResourceLocation, Collection<Holder<T>>> tags) {
+      public LoadResult(ResourceKey<? extends Registry<T>> var1, Map<ResourceLocation, Collection<Holder<T>>> var2) {
          super();
-         this.key = key;
-         this.tags = tags;
+         this.key = var1;
+         this.tags = var2;
       }
 
       public ResourceKey<? extends Registry<T>> key() {

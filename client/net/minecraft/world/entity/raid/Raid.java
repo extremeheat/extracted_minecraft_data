@@ -612,7 +612,7 @@ public class Raid {
          if (!var4 && var3 != null) {
             var2.setPos((double)var3.getX() + 0.5, (double)var3.getY() + 1.0, (double)var3.getZ() + 0.5);
             var2.finalizeSpawn(this.level, this.level.getCurrentDifficultyAt(var3), MobSpawnType.EVENT, (SpawnGroupData)null);
-            var2.applyRaidBuffs(var1, false);
+            var2.applyRaidBuffs(this.level, var1, false);
             var2.setOnGround(true);
             this.level.addFreshEntityWithPassengers(var2);
          }

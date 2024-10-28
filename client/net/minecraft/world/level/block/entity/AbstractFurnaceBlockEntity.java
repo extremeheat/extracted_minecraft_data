@@ -235,7 +235,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
       while(var4.hasNext()) {
          String var5 = (String)var4.next();
-         this.recipesUsed.put(new ResourceLocation(var5), var3.getInt(var5));
+         this.recipesUsed.put(ResourceLocation.parse(var5), var3.getInt(var5));
       }
 
    }

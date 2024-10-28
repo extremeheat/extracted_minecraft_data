@@ -13,10 +13,10 @@ public record ClientboundCustomChatCompletionsPacket(Action action, List<String>
       this((Action)var1.readEnum(Action.class), var1.readList(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundCustomChatCompletionsPacket(Action action, List<String> entries) {
+   public ClientboundCustomChatCompletionsPacket(Action var1, List<String> var2) {
       super();
-      this.action = action;
-      this.entries = entries;
+      this.action = var1;
+      this.entries = var2;
    }
 
    private void write(FriendlyByteBuf var1) {

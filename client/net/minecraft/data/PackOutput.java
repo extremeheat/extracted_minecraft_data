@@ -1,6 +1,9 @@
 package net.minecraft.data;
 
 import java.nio.file.Path;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 public class PackOutput {
@@ -21,6 +24,14 @@ public class PackOutput {
 
    public PathProvider createPathProvider(Target var1, String var2) {
       return new PathProvider(this, var1, var2);
+   }
+
+   public PathProvider createRegistryElementsPathProvider(ResourceKey<? extends Registry<?>> var1) {
+      return this.createPathProvider(PackOutput.Target.DATA_PACK, Registries.elementsDirPath(var1));
+   }
+
+   public PathProvider createRegistryTagsPathProvider(ResourceKey<? extends Registry<?>> var1) {
+      return this.createPathProvider(PackOutput.Target.DATA_PACK, Registries.tagsDirPath(var1));
    }
 
    public static enum Target {

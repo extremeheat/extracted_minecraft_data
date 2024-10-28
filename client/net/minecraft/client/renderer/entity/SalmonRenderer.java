@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Salmon;
 
 public class SalmonRenderer extends MobRenderer<Salmon, SalmonModel<Salmon>> {
-   private static final ResourceLocation SALMON_LOCATION = new ResourceLocation("textures/entity/fish/salmon.png");
+   private static final ResourceLocation SALMON_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fish/salmon.png");
 
    public SalmonRenderer(EntityRendererProvider.Context var1) {
       super(var1, new SalmonModel(var1.bakeLayer(ModelLayers.SALMON)), 0.4F);

@@ -256,6 +256,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return true;
    }
 
+   public boolean isSectionEmpty(int var1) {
+      return this.getSection(this.getSectionIndexFromSectionY(var1)).hasOnlyAir();
+   }
+
    public void setUnsaved(boolean var1) {
       this.unsaved = var1;
    }
@@ -264,14 +268,14 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.unsaved;
    }
 
-   public abstract ChunkStatus getStatus();
+   public abstract ChunkStatus getPersistedStatus();
 
    public ChunkStatus getHighestGeneratedStatus() {
-      ChunkStatus var1 = this.getStatus();
+      ChunkStatus var1 = this.getPersistedStatus();
       BelowZeroRetrogen var2 = this.getBelowZeroRetrogen();
       if (var2 != null) {
          ChunkStatus var3 = var2.targetStatus();
-         return var3.isOrAfter(var1) ? var3 : var1;
+         return ChunkStatus.max(var3, var1);
       } else {
          return var1;
       }
@@ -467,10 +471,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    }
 
    public static record TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
-      public TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
+      public TicksToSave(SerializableTickContainer<Block> var1, SerializableTickContainer<Fluid> var2) {
          super();
-         this.blocks = blocks;
-         this.fluids = fluids;
+         this.blocks = var1;
+         this.fluids = var2;
       }
 
       public SerializableTickContainer<Block> blocks() {

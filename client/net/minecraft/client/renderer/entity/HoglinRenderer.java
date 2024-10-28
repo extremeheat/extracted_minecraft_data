@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 
 public class HoglinRenderer extends MobRenderer<Hoglin, HoglinModel<Hoglin>> {
-   private static final ResourceLocation HOGLIN_LOCATION = new ResourceLocation("textures/entity/hoglin/hoglin.png");
+   private static final ResourceLocation HOGLIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/hoglin/hoglin.png");
 
    public HoglinRenderer(EntityRendererProvider.Context var1) {
       super(var1, new HoglinModel(var1.bakeLayer(ModelLayers.HOGLIN)), 0.7F);

@@ -115,7 +115,7 @@ public class ExperienceOrb extends Entity {
 
    }
 
-   protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
+   public BlockPos getBlockPosBelowThatAffectsMyMovement() {
       return this.getOnPos(0.999999F);
    }
 

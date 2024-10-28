@@ -8,33 +8,45 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.ItemLike;
 
 public class CreativeModeTab {
+   static final ResourceLocation DEFAULT_BACKGROUND = createTextureLocation("items");
    private final Component displayName;
-   String backgroundSuffix = "items.png";
-   boolean canScroll = true;
-   boolean showTitle = true;
-   boolean alignedRight = false;
+   ResourceLocation backgroundTexture;
+   boolean canScroll;
+   boolean showTitle;
+   boolean alignedRight;
    private final Row row;
    private final int column;
    private final Type type;
    @Nullable
    private ItemStack iconItemStack;
-   private Collection<ItemStack> displayItems = ItemStackLinkedSet.createTypeAndComponentsSet();
-   private Set<ItemStack> displayItemsSearchTab = ItemStackLinkedSet.createTypeAndComponentsSet();
+   private Collection<ItemStack> displayItems;
+   private Set<ItemStack> displayItemsSearchTab;
    private final Supplier<ItemStack> iconGenerator;
    private final DisplayItemsGenerator displayItemsGenerator;
 
    CreativeModeTab(Row var1, int var2, Type var3, Component var4, Supplier<ItemStack> var5, DisplayItemsGenerator var6) {
       super();
+      this.backgroundTexture = DEFAULT_BACKGROUND;
+      this.canScroll = true;
+      this.showTitle = true;
+      this.alignedRight = false;
+      this.displayItems = ItemStackLinkedSet.createTypeAndComponentsSet();
+      this.displayItemsSearchTab = ItemStackLinkedSet.createTypeAndComponentsSet();
       this.row = var1;
       this.column = var2;
       this.displayName = var4;
       this.iconGenerator = var5;
       this.displayItemsGenerator = var6;
       this.type = var3;
+   }
+
+   public static ResourceLocation createTextureLocation(String var0) {
+      return ResourceLocation.withDefaultNamespace("textures/gui/container/creative_inventory/tab_" + var0 + ".png");
    }
 
    public static Builder builder(Row var0, int var1) {
@@ -53,8 +65,8 @@ public class CreativeModeTab {
       return this.iconItemStack;
    }
 
-   public String getBackgroundSuffix() {
-      return this.backgroundSuffix;
+   public ResourceLocation getBackgroundTexture() {
+      return this.backgroundTexture;
    }
 
    public boolean showTitle() {
@@ -158,7 +170,7 @@ public class CreativeModeTab {
       private boolean showTitle;
       private boolean alignedRight;
       private Type type;
-      private String backgroundSuffix;
+      private ResourceLocation backgroundTexture;
 
       public Builder(Row var1, int var2) {
          super();
@@ -167,7 +179,7 @@ public class CreativeModeTab {
          this.showTitle = true;
          this.alignedRight = false;
          this.type = CreativeModeTab.Type.CATEGORY;
-         this.backgroundSuffix = "items.png";
+         this.backgroundTexture = CreativeModeTab.DEFAULT_BACKGROUND;
          this.row = var1;
          this.column = var2;
       }
@@ -207,8 +219,8 @@ public class CreativeModeTab {
          return this;
       }
 
-      public Builder backgroundSuffix(String var1) {
-         this.backgroundSuffix = var1;
+      public Builder backgroundTexture(ResourceLocation var1) {
+         this.backgroundTexture = var1;
          return this;
       }
 
@@ -220,7 +232,7 @@ public class CreativeModeTab {
             var1.alignedRight = this.alignedRight;
             var1.showTitle = this.showTitle;
             var1.canScroll = this.canScroll;
-            var1.backgroundSuffix = this.backgroundSuffix;
+            var1.backgroundTexture = this.backgroundTexture;
             return var1;
          }
       }
@@ -269,11 +281,11 @@ public class CreativeModeTab {
    public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
       final FeatureFlagSet enabledFeatures;
 
-      public ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
+      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
          super();
-         this.enabledFeatures = enabledFeatures;
-         this.hasPermissions = hasPermissions;
-         this.holders = holders;
+         this.enabledFeatures = var1;
+         this.hasPermissions = var2;
+         this.holders = var3;
       }
 
       public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {

@@ -60,7 +60,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Set<String> ALLOWED_PROTOCOLS = Sets.newHashSet(new String[]{"http", "https"});
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   protected static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
+   protected static final CubeMap CUBE_MAP = new CubeMap(ResourceLocation.withDefaultNamespace("textures/gui/title/background/panorama"));
    protected static final PanoramaRenderer PANORAMA;
    public static final ResourceLocation MENU_BACKGROUND;
    public static final ResourceLocation HEADER_SEPARATOR;
@@ -77,7 +77,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public int width;
    public int height;
    private final List<Renderable> renderables = Lists.newArrayList();
-   private long lastPanoramaRenderTime = Util.getMillis();
    protected Font font;
    @Nullable
    private URI clickedLink;
@@ -391,16 +390,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.minecraft.getMainRenderTarget().bindWrite(false);
    }
 
-   protected float advancePanoramaTime() {
-      long var1 = Util.getMillis();
-      long var3 = 50L;
-      float var5 = (float)(var1 - this.lastPanoramaRenderTime) / 50.0F;
-      this.lastPanoramaRenderTime = var1;
-      return var5 > 7.0F ? 0.5F : var5;
-   }
-
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, this.advancePanoramaTime());
+      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -666,21 +657,21 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    static {
       PANORAMA = new PanoramaRenderer(CUBE_MAP);
-      MENU_BACKGROUND = new ResourceLocation("textures/gui/menu_background.png");
-      HEADER_SEPARATOR = new ResourceLocation("textures/gui/header_separator.png");
-      FOOTER_SEPARATOR = new ResourceLocation("textures/gui/footer_separator.png");
-      INWORLD_MENU_BACKGROUND = new ResourceLocation("textures/gui/inworld_menu_background.png");
-      INWORLD_HEADER_SEPARATOR = new ResourceLocation("textures/gui/inworld_header_separator.png");
-      INWORLD_FOOTER_SEPARATOR = new ResourceLocation("textures/gui/inworld_footer_separator.png");
+      MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_background.png");
+      HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/header_separator.png");
+      FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/footer_separator.png");
+      INWORLD_MENU_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_background.png");
+      INWORLD_HEADER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_header_separator.png");
+      INWORLD_FOOTER_SEPARATOR = ResourceLocation.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
       NARRATE_SUPPRESS_AFTER_INIT_TIME = TimeUnit.SECONDS.toMillis(2L);
       NARRATE_DELAY_NARRATOR_ENABLED = NARRATE_SUPPRESS_AFTER_INIT_TIME;
    }
 
    private static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-      DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
+      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
          super();
-         this.tooltip = tooltip;
-         this.positioner = positioner;
+         this.tooltip = var1;
+         this.positioner = var2;
       }
 
       public List<FormattedCharSequence> tooltip() {

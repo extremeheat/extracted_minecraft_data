@@ -137,10 +137,10 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
    }
 
    private static record Content(Layout container, Component narration) {
-      Content(Layout container, Component narration) {
+      Content(Layout var1, Component var2) {
          super();
-         this.container = container;
-         this.narration = narration;
+         this.container = var1;
+         this.narration = var2;
       }
 
       public Layout container() {

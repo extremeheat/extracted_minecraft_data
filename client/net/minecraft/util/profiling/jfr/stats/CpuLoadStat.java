@@ -3,11 +3,11 @@ package net.minecraft.util.profiling.jfr.stats;
 import jdk.jfr.consumer.RecordedEvent;
 
 public record CpuLoadStat(double jvm, double userJvm, double system) {
-   public CpuLoadStat(double jvm, double userJvm, double system) {
+   public CpuLoadStat(double var1, double var3, double var5) {
       super();
-      this.jvm = jvm;
-      this.userJvm = userJvm;
-      this.system = system;
+      this.jvm = var1;
+      this.userJvm = var3;
+      this.system = var5;
    }
 
    public static CpuLoadStat from(RecordedEvent var0) {

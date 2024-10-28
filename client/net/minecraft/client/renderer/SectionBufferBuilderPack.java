@@ -1,34 +1,47 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import net.minecraft.Util;
 
 public class SectionBufferBuilderPack implements AutoCloseable {
-   public static final int TOTAL_BUFFERS_SIZE = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::bufferSize).sum();
-   private final Map<RenderType, BufferBuilder> builders = (Map)RenderType.chunkBufferLayers().stream().collect(Collectors.toMap((var0) -> {
-      return var0;
-   }, (var0) -> {
-      return new BufferBuilder(var0.bufferSize());
-   }));
+   private static final List<RenderType> RENDER_TYPES = RenderType.chunkBufferLayers();
+   public static final int TOTAL_BUFFERS_SIZE;
+   private final Map<RenderType, ByteBufferBuilder> buffers;
 
    public SectionBufferBuilderPack() {
       super();
+      this.buffers = (Map)Util.make(new Reference2ObjectArrayMap(RENDER_TYPES.size()), (var0) -> {
+         Iterator var1 = RENDER_TYPES.iterator();
+
+         while(var1.hasNext()) {
+            RenderType var2 = (RenderType)var1.next();
+            var0.put(var2, new ByteBufferBuilder(var2.bufferSize()));
+         }
+
+      });
    }
 
-   public BufferBuilder builder(RenderType var1) {
-      return (BufferBuilder)this.builders.get(var1);
+   public ByteBufferBuilder buffer(RenderType var1) {
+      return (ByteBufferBuilder)this.buffers.get(var1);
    }
 
    public void clearAll() {
-      this.builders.values().forEach(BufferBuilder::clear);
+      this.buffers.values().forEach(ByteBufferBuilder::clear);
    }
 
    public void discardAll() {
-      this.builders.values().forEach(BufferBuilder::discard);
+      this.buffers.values().forEach(ByteBufferBuilder::discard);
    }
 
    public void close() {
-      this.builders.values().forEach(BufferBuilder::release);
+      this.buffers.values().forEach(ByteBufferBuilder::close);
+   }
+
+   static {
+      TOTAL_BUFFERS_SIZE = RENDER_TYPES.stream().mapToInt(RenderType::bufferSize).sum();
    }
 }

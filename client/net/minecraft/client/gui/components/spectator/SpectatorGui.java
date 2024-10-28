@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.spectator;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -13,11 +12,12 @@ import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 
 public class SpectatorGui implements SpectatorMenuListener {
-   private static final ResourceLocation HOTBAR_SPRITE = new ResourceLocation("hud/hotbar");
-   private static final ResourceLocation HOTBAR_SELECTION_SPRITE = new ResourceLocation("hud/hotbar_selection");
+   private static final ResourceLocation HOTBAR_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar");
+   private static final ResourceLocation HOTBAR_SELECTION_SPRITE = ResourceLocation.withDefaultNamespace("hud/hotbar_selection");
    private static final long FADE_OUT_DELAY = 5000L;
    private static final long FADE_OUT_TIME = 2000L;
    private final Minecraft minecraft;
@@ -106,12 +106,7 @@ public class SpectatorGui implements SpectatorMenuListener {
             int var5 = this.minecraft.font.width((FormattedText)var4);
             int var6 = (var1.guiWidth() - var5) / 2;
             int var7 = var1.guiHeight() - 35;
-            int var10001 = var6 - 2;
-            int var10002 = var7 - 2;
-            int var10003 = var6 + var5 + 2;
-            Objects.requireNonNull(this.minecraft.font);
-            var1.fill(var10001, var10002, var10003, var7 + 9 + 2, this.minecraft.options.getBackgroundColor(0));
-            var1.drawString(this.minecraft.font, var4, var6, var7, 16777215 + (var2 << 24));
+            var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, FastColor.ARGB32.color(var2, -1));
          }
       }
 

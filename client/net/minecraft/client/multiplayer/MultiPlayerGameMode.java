@@ -21,7 +21,6 @@ import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPickItemPacket;
 import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
@@ -355,10 +354,9 @@ public class MultiPlayerGameMode {
          return InteractionResult.PASS;
       } else {
          this.ensureHasSentCarriedItem();
-         this.connection.send(new ServerboundMovePlayerPacket.PosRot(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot(), var1.onGround()));
          MutableObject var3 = new MutableObject();
          this.startPrediction(this.minecraft.level, (var4) -> {
-            ServerboundUseItemPacket var5 = new ServerboundUseItemPacket(var2, var4);
+            ServerboundUseItemPacket var5 = new ServerboundUseItemPacket(var2, var4, var1.getYRot(), var1.getXRot());
             ItemStack var6 = var1.getItemInHand(var2);
             if (var1.getCooldowns().isOnCooldown(var6.getItem())) {
                var3.setValue(InteractionResult.PASS);

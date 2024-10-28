@@ -18,7 +18,7 @@ import net.minecraft.world.entity.EntityType;
 
 public class SuggestionProviders {
    private static final Map<ResourceLocation, SuggestionProvider<SharedSuggestionProvider>> PROVIDERS_BY_NAME = Maps.newHashMap();
-   private static final ResourceLocation DEFAULT_NAME = new ResourceLocation("ask_server");
+   private static final ResourceLocation DEFAULT_NAME = ResourceLocation.withDefaultNamespace("ask_server");
    public static final SuggestionProvider<SharedSuggestionProvider> ASK_SERVER;
    public static final SuggestionProvider<CommandSourceStack> ALL_RECIPES;
    public static final SuggestionProvider<CommandSourceStack> AVAILABLE_SOUNDS;
@@ -53,13 +53,13 @@ public class SuggestionProviders {
       ASK_SERVER = register(DEFAULT_NAME, (var0, var1) -> {
          return ((SharedSuggestionProvider)var0.getSource()).customSuggestion(var0);
       });
-      ALL_RECIPES = register(new ResourceLocation("all_recipes"), (var0, var1) -> {
+      ALL_RECIPES = register(ResourceLocation.withDefaultNamespace("all_recipes"), (var0, var1) -> {
          return SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getRecipeNames(), var1);
       });
-      AVAILABLE_SOUNDS = register(new ResourceLocation("available_sounds"), (var0, var1) -> {
+      AVAILABLE_SOUNDS = register(ResourceLocation.withDefaultNamespace("available_sounds"), (var0, var1) -> {
          return SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSounds(), var1);
       });
-      SUMMONABLE_ENTITIES = register(new ResourceLocation("summonable_entities"), (var0, var1) -> {
+      SUMMONABLE_ENTITIES = register(ResourceLocation.withDefaultNamespace("summonable_entities"), (var0, var1) -> {
          return SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.stream().filter((var1x) -> {
             return var1x.isEnabled(((SharedSuggestionProvider)var0.getSource()).enabledFeatures()) && var1x.canSummon();
          }), var1, EntityType::getKey, (var0x) -> {

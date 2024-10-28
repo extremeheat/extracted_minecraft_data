@@ -12,9 +12,9 @@ import net.minecraft.world.item.component.FireworkExplosion;
 public record ItemFireworkExplosionPredicate(FireworkPredicate predicate) implements SingleComponentItemPredicate<FireworkExplosion> {
    public static final Codec<ItemFireworkExplosionPredicate> CODEC;
 
-   public ItemFireworkExplosionPredicate(FireworkPredicate predicate) {
+   public ItemFireworkExplosionPredicate(FireworkPredicate var1) {
       super();
-      this.predicate = predicate;
+      this.predicate = var1;
    }
 
    public DataComponentType<FireworkExplosion> componentType() {
@@ -38,11 +38,11 @@ public record ItemFireworkExplosionPredicate(FireworkPredicate predicate) implem
          return var0.group(FireworkExplosion.Shape.CODEC.optionalFieldOf("shape").forGetter(FireworkPredicate::shape), Codec.BOOL.optionalFieldOf("has_twinkle").forGetter(FireworkPredicate::twinkle), Codec.BOOL.optionalFieldOf("has_trail").forGetter(FireworkPredicate::trail)).apply(var0, FireworkPredicate::new);
       });
 
-      public FireworkPredicate(Optional<FireworkExplosion.Shape> shape, Optional<Boolean> twinkle, Optional<Boolean> trail) {
+      public FireworkPredicate(Optional<FireworkExplosion.Shape> var1, Optional<Boolean> var2, Optional<Boolean> var3) {
          super();
-         this.shape = shape;
-         this.twinkle = twinkle;
-         this.trail = trail;
+         this.shape = var1;
+         this.twinkle = var2;
+         this.trail = var3;
       }
 
       public boolean test(FireworkExplosion var1) {

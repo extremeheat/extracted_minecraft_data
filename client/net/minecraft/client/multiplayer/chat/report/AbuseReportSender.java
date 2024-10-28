@@ -32,10 +32,10 @@ public interface AbuseReportSender {
       private static final Component HTTP_ERROR_TEXT = Component.translatable("gui.abuseReport.send.http_error");
       private static final Component JSON_ERROR_TEXT = Component.translatable("gui.abuseReport.send.json_error");
 
-      public Services(ReportEnvironment environment, UserApiService userApiService) {
+      public Services(ReportEnvironment var1, UserApiService var2) {
          super();
-         this.environment = environment;
-         this.userApiService = userApiService;
+         this.environment = var1;
+         this.userApiService = var2;
       }
 
       public CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3) {

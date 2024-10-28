@@ -129,7 +129,7 @@ public class BuiltInLootTables {
    }
 
    private static ResourceKey<LootTable> register(String var0) {
-      return register(ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var0)));
+      return register(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace(var0)));
    }
 
    private static ResourceKey<LootTable> register(ResourceKey<LootTable> var0) {
@@ -146,7 +146,7 @@ public class BuiltInLootTables {
 
    static {
       IMMUTABLE_LOCATIONS = Collections.unmodifiableSet(LOCATIONS);
-      EMPTY = ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation("empty"));
+      EMPTY = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace("empty"));
       SPAWN_BONUS_CHEST = register("chests/spawn_bonus_chest");
       END_CITY_TREASURE = register("chests/end_city_treasure");
       SIMPLE_DUNGEON = register("chests/simple_dungeon");

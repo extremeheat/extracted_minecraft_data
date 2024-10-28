@@ -834,6 +834,7 @@ public class Items {
    public static final Item ARMADILLO_SCUTE;
    public static final Item WOLF_ARMOR;
    public static final Item FLINT_AND_STEEL;
+   public static final Item BOWL;
    public static final Item APPLE;
    public static final Item BOW;
    public static final Item ARROW;
@@ -883,7 +884,6 @@ public class Items {
    public static final Item NETHERITE_AXE;
    public static final Item NETHERITE_HOE;
    public static final Item STICK;
-   public static final Item BOWL;
    public static final Item MUSHROOM_STEW;
    public static final Item STRING;
    public static final Item FEATHER;
@@ -1403,7 +1403,7 @@ public class Items {
    }
 
    public static Item registerItem(String var0, Item var1) {
-      return registerItem(new ResourceLocation(var0), var1);
+      return registerItem(ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
    public static Item registerItem(ResourceLocation var0, Item var1) {
@@ -2234,6 +2234,7 @@ public class Items {
       ARMADILLO_SCUTE = registerItem("armadillo_scute", new Item(new Item.Properties()));
       WOLF_ARMOR = registerItem((String)"wolf_armor", new AnimalArmorItem(ArmorMaterials.ARMADILLO, AnimalArmorItem.BodyType.CANINE, true, (new Item.Properties()).durability(ArmorItem.Type.BODY.getDurability(4))));
       FLINT_AND_STEEL = registerItem((String)"flint_and_steel", new FlintAndSteelItem((new Item.Properties()).durability(64)));
+      BOWL = registerItem("bowl", new Item(new Item.Properties()));
       APPLE = registerItem("apple", new Item((new Item.Properties()).food(Foods.APPLE)));
       BOW = registerItem((String)"bow", new BowItem((new Item.Properties()).durability(384)));
       ARROW = registerItem((String)"arrow", new ArrowItem(new Item.Properties()));
@@ -2283,8 +2284,7 @@ public class Items {
       NETHERITE_AXE = registerItem((String)"netherite_axe", new AxeItem(Tiers.NETHERITE, (new Item.Properties()).fireResistant().attributes(AxeItem.createAttributes(Tiers.NETHERITE, 5.0F, -3.0F))));
       NETHERITE_HOE = registerItem((String)"netherite_hoe", new HoeItem(Tiers.NETHERITE, (new Item.Properties()).fireResistant().attributes(HoeItem.createAttributes(Tiers.NETHERITE, -4.0F, 0.0F))));
       STICK = registerItem("stick", new Item(new Item.Properties()));
-      BOWL = registerItem("bowl", new Item(new Item.Properties()));
-      MUSHROOM_STEW = registerItem((String)"mushroom_stew", new BowlFoodItem((new Item.Properties()).stacksTo(1).food(Foods.MUSHROOM_STEW)));
+      MUSHROOM_STEW = registerItem("mushroom_stew", new Item((new Item.Properties()).stacksTo(1).food(Foods.MUSHROOM_STEW)));
       STRING = registerItem((String)"string", new ItemNameBlockItem(Blocks.TRIPWIRE, new Item.Properties()));
       FEATHER = registerItem("feather", new Item(new Item.Properties()));
       GUNPOWDER = registerItem("gunpowder", new Item(new Item.Properties()));
@@ -2559,7 +2559,7 @@ public class Items {
       PRISMARINE_CRYSTALS = registerItem("prismarine_crystals", new Item(new Item.Properties()));
       RABBIT = registerItem("rabbit", new Item((new Item.Properties()).food(Foods.RABBIT)));
       COOKED_RABBIT = registerItem("cooked_rabbit", new Item((new Item.Properties()).food(Foods.COOKED_RABBIT)));
-      RABBIT_STEW = registerItem((String)"rabbit_stew", new BowlFoodItem((new Item.Properties()).stacksTo(1).food(Foods.RABBIT_STEW)));
+      RABBIT_STEW = registerItem("rabbit_stew", new Item((new Item.Properties()).stacksTo(1).food(Foods.RABBIT_STEW)));
       RABBIT_FOOT = registerItem("rabbit_foot", new Item(new Item.Properties()));
       RABBIT_HIDE = registerItem("rabbit_hide", new Item(new Item.Properties()));
       ARMOR_STAND = registerItem((String)"armor_stand", new ArmorStandItem((new Item.Properties()).stacksTo(16)));
@@ -2595,7 +2595,7 @@ public class Items {
       PITCHER_POD = registerItem((String)"pitcher_pod", new ItemNameBlockItem(Blocks.PITCHER_CROP, new Item.Properties()));
       BEETROOT = registerItem("beetroot", new Item((new Item.Properties()).food(Foods.BEETROOT)));
       BEETROOT_SEEDS = registerItem((String)"beetroot_seeds", new ItemNameBlockItem(Blocks.BEETROOTS, new Item.Properties()));
-      BEETROOT_SOUP = registerItem((String)"beetroot_soup", new BowlFoodItem((new Item.Properties()).stacksTo(1).food(Foods.BEETROOT_SOUP)));
+      BEETROOT_SOUP = registerItem("beetroot_soup", new Item((new Item.Properties()).stacksTo(1).food(Foods.BEETROOT_SOUP)));
       DRAGON_BREATH = registerItem("dragon_breath", new Item((new Item.Properties()).craftRemainder(GLASS_BOTTLE).rarity(Rarity.UNCOMMON)));
       SPLASH_POTION = registerItem((String)"splash_potion", new SplashPotionItem((new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)));
       SPECTRAL_ARROW = registerItem((String)"spectral_arrow", new SpectralArrowItem(new Item.Properties()));
@@ -2607,25 +2607,25 @@ public class Items {
       IRON_NUGGET = registerItem("iron_nugget", new Item(new Item.Properties()));
       KNOWLEDGE_BOOK = registerItem((String)"knowledge_book", new KnowledgeBookItem((new Item.Properties()).stacksTo(1).rarity(Rarity.EPIC).component(DataComponents.RECIPES, List.of())));
       DEBUG_STICK = registerItem((String)"debug_stick", new DebugStickItem((new Item.Properties()).stacksTo(1).rarity(Rarity.EPIC).component(DataComponents.DEBUG_STICK_STATE, DebugStickState.EMPTY).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)));
-      MUSIC_DISC_13 = registerItem((String)"music_disc_13", new RecordItem(1, SoundEvents.MUSIC_DISC_13, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 178));
-      MUSIC_DISC_CAT = registerItem((String)"music_disc_cat", new RecordItem(2, SoundEvents.MUSIC_DISC_CAT, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 185));
-      MUSIC_DISC_BLOCKS = registerItem((String)"music_disc_blocks", new RecordItem(3, SoundEvents.MUSIC_DISC_BLOCKS, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 345));
-      MUSIC_DISC_CHIRP = registerItem((String)"music_disc_chirp", new RecordItem(4, SoundEvents.MUSIC_DISC_CHIRP, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 185));
-      MUSIC_DISC_CREATOR = registerItem((String)"music_disc_creator", new RecordItem(12, SoundEvents.MUSIC_DISC_CREATOR, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 176));
-      MUSIC_DISC_CREATOR_MUSIC_BOX = registerItem((String)"music_disc_creator_music_box", new RecordItem(11, SoundEvents.MUSIC_DISC_CREATOR_MUSIC_BOX, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 73));
-      MUSIC_DISC_FAR = registerItem((String)"music_disc_far", new RecordItem(5, SoundEvents.MUSIC_DISC_FAR, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 174));
-      MUSIC_DISC_MALL = registerItem((String)"music_disc_mall", new RecordItem(6, SoundEvents.MUSIC_DISC_MALL, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 197));
-      MUSIC_DISC_MELLOHI = registerItem((String)"music_disc_mellohi", new RecordItem(7, SoundEvents.MUSIC_DISC_MELLOHI, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 96));
-      MUSIC_DISC_STAL = registerItem((String)"music_disc_stal", new RecordItem(8, SoundEvents.MUSIC_DISC_STAL, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 150));
-      MUSIC_DISC_STRAD = registerItem((String)"music_disc_strad", new RecordItem(9, SoundEvents.MUSIC_DISC_STRAD, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 188));
-      MUSIC_DISC_WARD = registerItem((String)"music_disc_ward", new RecordItem(10, SoundEvents.MUSIC_DISC_WARD, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 251));
-      MUSIC_DISC_11 = registerItem((String)"music_disc_11", new RecordItem(11, SoundEvents.MUSIC_DISC_11, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 71));
-      MUSIC_DISC_WAIT = registerItem((String)"music_disc_wait", new RecordItem(12, SoundEvents.MUSIC_DISC_WAIT, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 238));
-      MUSIC_DISC_OTHERSIDE = registerItem((String)"music_disc_otherside", new RecordItem(14, SoundEvents.MUSIC_DISC_OTHERSIDE, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 195));
-      MUSIC_DISC_RELIC = registerItem((String)"music_disc_relic", new RecordItem(14, SoundEvents.MUSIC_DISC_RELIC, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 218));
-      MUSIC_DISC_5 = registerItem((String)"music_disc_5", new RecordItem(15, SoundEvents.MUSIC_DISC_5, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 178));
-      MUSIC_DISC_PIGSTEP = registerItem((String)"music_disc_pigstep", new RecordItem(13, SoundEvents.MUSIC_DISC_PIGSTEP, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 149));
-      MUSIC_DISC_PRECIPICE = registerItem((String)"music_disc_precipice", new RecordItem(13, SoundEvents.MUSIC_DISC_PRECIPICE, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE), 299));
+      MUSIC_DISC_13 = registerItem("music_disc_13", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.THIRTEEN)));
+      MUSIC_DISC_CAT = registerItem("music_disc_cat", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CAT)));
+      MUSIC_DISC_BLOCKS = registerItem("music_disc_blocks", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.BLOCKS)));
+      MUSIC_DISC_CHIRP = registerItem("music_disc_chirp", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CHIRP)));
+      MUSIC_DISC_CREATOR = registerItem("music_disc_creator", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CREATOR)));
+      MUSIC_DISC_CREATOR_MUSIC_BOX = registerItem("music_disc_creator_music_box", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.CREATOR_MUSIC_BOX)));
+      MUSIC_DISC_FAR = registerItem("music_disc_far", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.FAR)));
+      MUSIC_DISC_MALL = registerItem("music_disc_mall", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.MALL)));
+      MUSIC_DISC_MELLOHI = registerItem("music_disc_mellohi", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.MELLOHI)));
+      MUSIC_DISC_STAL = registerItem("music_disc_stal", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.STAL)));
+      MUSIC_DISC_STRAD = registerItem("music_disc_strad", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.STRAD)));
+      MUSIC_DISC_WARD = registerItem("music_disc_ward", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.WARD)));
+      MUSIC_DISC_11 = registerItem("music_disc_11", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.ELEVEN)));
+      MUSIC_DISC_WAIT = registerItem("music_disc_wait", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.WAIT)));
+      MUSIC_DISC_OTHERSIDE = registerItem("music_disc_otherside", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.OTHERSIDE)));
+      MUSIC_DISC_RELIC = registerItem("music_disc_relic", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.RELIC)));
+      MUSIC_DISC_5 = registerItem("music_disc_5", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.FIVE)));
+      MUSIC_DISC_PIGSTEP = registerItem("music_disc_pigstep", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PIGSTEP)));
+      MUSIC_DISC_PRECIPICE = registerItem("music_disc_precipice", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PRECIPICE)));
       DISC_FRAGMENT_5 = registerItem((String)"disc_fragment_5", new DiscFragmentItem(new Item.Properties()));
       TRIDENT = registerItem((String)"trident", new TridentItem((new Item.Properties()).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties())));
       PHANTOM_MEMBRANE = registerItem("phantom_membrane", new Item(new Item.Properties()));
