@@ -13,7 +13,9 @@ public class V3078 extends NamespacedSchema {
    }
 
    protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> V100.equipment(var0));
+      var0.register(var1, var2, () -> {
+         return V100.equipment(var0);
+      });
    }
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
@@ -25,11 +27,9 @@ public class V3078 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
-      var1.register(
-         var2,
-         "minecraft:sculk_shrieker",
-         () -> DSL.optionalFields("listener", DSL.optionalFields("event", DSL.optionalFields("game_event", References.GAME_EVENT_NAME.in(var1))))
-      );
+      var1.register(var2, "minecraft:sculk_shrieker", () -> {
+         return DSL.optionalFields("listener", DSL.optionalFields("event", DSL.optionalFields("game_event", References.GAME_EVENT_NAME.in(var1))));
+      });
       return var2;
    }
 }

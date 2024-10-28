@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.Collection;
+import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -42,9 +43,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class Creeper extends Monster implements PowerableMob {
-   private static final EntityDataAccessor<Integer> DATA_SWELL_DIR = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Boolean> DATA_IS_POWERED = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
-   private static final EntityDataAccessor<Boolean> DATA_IS_IGNITED = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Integer> DATA_SWELL_DIR;
+   private static final EntityDataAccessor<Boolean> DATA_IS_POWERED;
+   private static final EntityDataAccessor<Boolean> DATA_IS_IGNITED;
    private int oldSwell;
    private int swell;
    private int maxSwell = 30;
@@ -55,35 +56,27 @@ public class Creeper extends Monster implements PowerableMob {
       super(var1, var2);
    }
 
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new SwellGoal(this));
-      this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Ocelot.class, 6.0F, 1.0, 1.2));
-      this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Cat.class, 6.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Ocelot.class, 6.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Cat.class, 6.0F, 1.0, 1.2));
       this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
       this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
-      this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, true));
+      this.targetSelector.addGoal(2, new HurtByTargetGoal(this, new Class[0]));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.25);
    }
 
-   @Override
    public int getMaxFallDistance() {
       return this.getTarget() == null ? this.getComfortableFallDistance(0.0F) : this.getComfortableFallDistance(this.getHealth() - 1.0F);
    }
 
-   @Override
    public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
       boolean var4 = super.causeFallDamage(var1, var2, var3);
       this.swell += (int)(var1 * 1.5F);
@@ -94,7 +87,6 @@ public class Creeper extends Monster implements PowerableMob {
       return var4;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_SWELL_DIR, -1);
@@ -102,10 +94,9 @@ public class Creeper extends Monster implements PowerableMob {
       var1.define(DATA_IS_IGNITED, false);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.entityData.get(DATA_IS_POWERED)) {
+      if ((Boolean)this.entityData.get(DATA_IS_POWERED)) {
          var1.putBoolean("powered", true);
       }
 
@@ -114,7 +105,6 @@ public class Creeper extends Monster implements PowerableMob {
       var1.putBoolean("ignited", this.isIgnited());
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.entityData.set(DATA_IS_POWERED, var1.getBoolean("powered"));
@@ -129,9 +119,9 @@ public class Creeper extends Monster implements PowerableMob {
       if (var1.getBoolean("ignited")) {
          this.ignite();
       }
+
    }
 
-   @Override
    public void tick() {
       if (this.isAlive()) {
          this.oldSwell = this.swell;
@@ -159,43 +149,38 @@ public class Creeper extends Monster implements PowerableMob {
       super.tick();
    }
 
-   @Override
    public void setTarget(@Nullable LivingEntity var1) {
       if (!(var1 instanceof Goat)) {
          super.setTarget(var1);
       }
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.CREEPER_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.CREEPER_DEATH;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
       Entity var4 = var1.getEntity();
-      if (var4 != this && var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
-         var5.increaseDroppedSkulls();
-         this.spawnAtLocation(Items.CREEPER_HEAD);
+      if (var4 != this && var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            var5.increaseDroppedSkulls();
+            this.spawnAtLocation(Items.CREEPER_HEAD);
+         }
       }
+
    }
 
-   @Override
    public boolean doHurtTarget(Entity var1) {
       return true;
    }
 
-   @Override
    public boolean isPowered() {
-      return this.entityData.get(DATA_IS_POWERED);
+      return (Boolean)this.entityData.get(DATA_IS_POWERED);
    }
 
    public float getSwelling(float var1) {
@@ -203,20 +188,18 @@ public class Creeper extends Monster implements PowerableMob {
    }
 
    public int getSwellDir() {
-      return this.entityData.get(DATA_SWELL_DIR);
+      return (Integer)this.entityData.get(DATA_SWELL_DIR);
    }
 
    public void setSwellDir(int var1) {
       this.entityData.set(DATA_SWELL_DIR, var1);
    }
 
-   @Override
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       super.thunderHit(var1, var2);
       this.entityData.set(DATA_IS_POWERED, true);
    }
 
-   @Override
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(ItemTags.CREEPER_IGNITERS)) {
@@ -245,6 +228,7 @@ public class Creeper extends Monster implements PowerableMob {
          this.discard();
          this.spawnLingeringCloud();
       }
+
    }
 
    private void spawnLingeringCloud() {
@@ -256,17 +240,20 @@ public class Creeper extends Monster implements PowerableMob {
          var2.setWaitTime(10);
          var2.setDuration(var2.getDuration() / 2);
          var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
+         Iterator var3 = var1.iterator();
 
-         for(MobEffectInstance var4 : var1) {
+         while(var3.hasNext()) {
+            MobEffectInstance var4 = (MobEffectInstance)var3.next();
             var2.addEffect(new MobEffectInstance(var4));
          }
 
          this.level().addFreshEntity(var2);
       }
+
    }
 
    public boolean isIgnited() {
-      return this.entityData.get(DATA_IS_IGNITED);
+      return (Boolean)this.entityData.get(DATA_IS_IGNITED);
    }
 
    public void ignite() {
@@ -279,5 +266,11 @@ public class Creeper extends Monster implements PowerableMob {
 
    public void increaseDroppedSkulls() {
       ++this.droppedSkulls;
+   }
+
+   static {
+      DATA_SWELL_DIR = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.INT);
+      DATA_IS_POWERED = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_IGNITED = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
    }
 }

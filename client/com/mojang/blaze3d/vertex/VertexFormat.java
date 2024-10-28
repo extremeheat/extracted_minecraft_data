@@ -32,12 +32,9 @@ public class VertexFormat {
       this.vertexSize = var2;
    }
 
-   @Override
    public String toString() {
-      return "format: "
-         + this.elementMapping.size()
-         + " elements: "
-         + (String)this.elementMapping.entrySet().stream().map(Object::toString).collect(Collectors.joining(" "));
+      int var10000 = this.elementMapping.size();
+      return "format: " + var10000 + " elements: " + (String)this.elementMapping.entrySet().stream().map(Object::toString).collect(Collectors.joining(" "));
    }
 
    public int getIntegerSize() {
@@ -56,7 +53,6 @@ public class VertexFormat {
       return this.elementMapping.keySet().asList();
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -68,7 +64,6 @@ public class VertexFormat {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.elementMapping.hashCode();
    }
@@ -88,6 +83,7 @@ public class VertexFormat {
       for(int var3 = 0; var3 < var2.size(); ++var3) {
          ((VertexFormatElement)var2.get(var3)).setupBufferState(var3, (long)this.offsets.getInt(var3), var1);
       }
+
    }
 
    public void clearBufferState() {
@@ -105,6 +101,7 @@ public class VertexFormat {
          VertexFormatElement var3 = (VertexFormatElement)var1.get(var2);
          var3.clearBufferState(var2);
       }
+
    }
 
    public VertexBuffer getImmediateDrawVertexBuffer() {
@@ -114,23 +111,6 @@ public class VertexFormat {
       }
 
       return var1;
-   }
-
-   public static enum IndexType {
-      SHORT(5123, 2),
-      INT(5125, 4);
-
-      public final int asGLType;
-      public final int bytes;
-
-      private IndexType(int var3, int var4) {
-         this.asGLType = var3;
-         this.bytes = var4;
-      }
-
-      public static VertexFormat.IndexType least(int var0) {
-         return (var0 & -65536) != 0 ? INT : SHORT;
-      }
    }
 
    public static enum Mode {
@@ -156,11 +136,52 @@ public class VertexFormat {
       }
 
       public int indexCount(int var1) {
-         return switch(this) {
-            case LINE_STRIP, DEBUG_LINES, DEBUG_LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN -> var1;
-            case LINES, QUADS -> var1 / 4 * 6;
-            default -> 0;
-         };
+         int var2;
+         switch (this.ordinal()) {
+            case 0:
+            case 7:
+               var2 = var1 / 4 * 6;
+               break;
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+               var2 = var1;
+               break;
+            default:
+               var2 = 0;
+         }
+
+         return var2;
+      }
+
+      // $FF: synthetic method
+      private static Mode[] $values() {
+         return new Mode[]{LINES, LINE_STRIP, DEBUG_LINES, DEBUG_LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN, QUADS};
+      }
+   }
+
+   public static enum IndexType {
+      SHORT(5123, 2),
+      INT(5125, 4);
+
+      public final int asGLType;
+      public final int bytes;
+
+      private IndexType(int var3, int var4) {
+         this.asGLType = var3;
+         this.bytes = var4;
+      }
+
+      public static IndexType least(int var0) {
+         return (var0 & -65536) != 0 ? INT : SHORT;
+      }
+
+      // $FF: synthetic method
+      private static IndexType[] $values() {
+         return new IndexType[]{SHORT, INT};
       }
    }
 }

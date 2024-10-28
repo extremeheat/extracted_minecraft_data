@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class FurnaceBlock extends AbstractFurnaceBlock {
    public static final MapCodec<FurnaceBlock> CODEC = simpleCodec(FurnaceBlock::new);
 
-   @Override
    public MapCodec<FurnaceBlock> codec() {
       return CODEC;
    }
@@ -31,29 +30,26 @@ public class FurnaceBlock extends AbstractFurnaceBlock {
       super(var1);
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new FurnaceBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createFurnaceTicker(var1, var3, BlockEntityType.FURNACE);
    }
 
-   @Override
    protected void openContainer(Level var1, BlockPos var2, Player var3) {
       BlockEntity var4 = var1.getBlockEntity(var2);
       if (var4 instanceof FurnaceBlockEntity) {
          var3.openMenu((MenuProvider)var4);
          var3.awardStat(Stats.INTERACT_WITH_FURNACE);
       }
+
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(LIT)) {
+      if ((Boolean)var1.getValue(LIT)) {
          double var5 = (double)var3.getX() + 0.5;
          double var7 = (double)var3.getY();
          double var9 = (double)var3.getZ() + 0.5;
@@ -61,7 +57,7 @@ public class FurnaceBlock extends AbstractFurnaceBlock {
             var2.playLocalSound(var5, var7, var9, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
-         Direction var11 = var1.getValue(FACING);
+         Direction var11 = (Direction)var1.getValue(FACING);
          Direction.Axis var12 = var11.getAxis();
          double var13 = 0.52;
          double var15 = var4.nextDouble() * 0.6 - 0.3;

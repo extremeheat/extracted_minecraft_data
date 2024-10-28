@@ -18,34 +18,28 @@ public class WorldCoordinates implements Coordinates {
       this.z = var3;
    }
 
-   @Override
    public Vec3 getPosition(CommandSourceStack var1) {
       Vec3 var2 = var1.getPosition();
       return new Vec3(this.x.get(var2.x), this.y.get(var2.y), this.z.get(var2.z));
    }
 
-   @Override
    public Vec2 getRotation(CommandSourceStack var1) {
       Vec2 var2 = var1.getRotation();
       return new Vec2((float)this.x.get((double)var2.x), (float)this.y.get((double)var2.y));
    }
 
-   @Override
    public boolean isXRelative() {
       return this.x.isRelative();
    }
 
-   @Override
    public boolean isYRelative() {
       return this.y.isRelative();
    }
 
-   @Override
    public boolean isZRelative() {
       return this.z.isRelative();
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -113,10 +107,10 @@ public class WorldCoordinates implements Coordinates {
       return new WorldCoordinates(new WorldCoordinate(true, 0.0), new WorldCoordinate(true, 0.0), new WorldCoordinate(true, 0.0));
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.x.hashCode();
       var1 = 31 * var1 + this.y.hashCode();
-      return 31 * var1 + this.z.hashCode();
+      var1 = 31 * var1 + this.z.hashCode();
+      return var1;
    }
 }

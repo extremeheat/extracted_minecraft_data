@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TallFlowerBlock extends DoublePlantBlock implements BonemealableBlock {
    public static final MapCodec<TallFlowerBlock> CODEC = simpleCodec(TallFlowerBlock::new);
 
-   @Override
    public MapCodec<TallFlowerBlock> codec() {
       return CODEC;
    }
@@ -22,17 +21,14 @@ public class TallFlowerBlock extends DoublePlantBlock implements BonemealableBlo
       super(var1);
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return true;
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       popResource(var1, var3, new ItemStack(this));
    }

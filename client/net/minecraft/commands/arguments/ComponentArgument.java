@@ -16,9 +16,9 @@ import net.minecraft.network.chat.ComponentSerialization;
 
 public class ComponentArgument implements ArgumentType<Component> {
    private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "\"\"", "\"{\"text\":\"hello world\"}", "[\"\"]");
-   public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.component.invalid", var0)
-   );
+   public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.component.invalid", var0);
+   });
    private final HolderLookup.Provider registries;
 
    private ComponentArgument(HolderLookup.Provider var1) {
@@ -36,7 +36,7 @@ public class ComponentArgument implements ArgumentType<Component> {
 
    public Component parse(StringReader var1) throws CommandSyntaxException {
       try {
-         return ParserUtils.parseJson(this.registries, var1, ComponentSerialization.CODEC);
+         return (Component)ParserUtils.parseJson(this.registries, var1, ComponentSerialization.CODEC);
       } catch (Exception var4) {
          String var3 = var4.getCause() != null ? var4.getCause().getMessage() : var4.getMessage();
          throw ERROR_INVALID_JSON.createWithContext(var1, var3);
@@ -45,5 +45,10 @@ public class ComponentArgument implements ArgumentType<Component> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

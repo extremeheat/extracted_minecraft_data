@@ -12,12 +12,7 @@ public class ArrayVoxelShape extends VoxelShape {
    private final DoubleList zs;
 
    protected ArrayVoxelShape(DiscreteVoxelShape var1, double[] var2, double[] var3, double[] var4) {
-      this(
-         var1,
-         DoubleArrayList.wrap(Arrays.copyOf(var2, var1.getXSize() + 1)),
-         DoubleArrayList.wrap(Arrays.copyOf(var3, var1.getYSize() + 1)),
-         DoubleArrayList.wrap(Arrays.copyOf(var4, var1.getZSize() + 1))
-      );
+      this(var1, (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var2, var1.getXSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var3, var1.getYSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var4, var1.getZSize() + 1)));
    }
 
    ArrayVoxelShape(DiscreteVoxelShape var1, DoubleList var2, DoubleList var3, DoubleList var4) {
@@ -30,23 +25,22 @@ public class ArrayVoxelShape extends VoxelShape {
          this.ys = var3;
          this.zs = var4;
       } else {
-         throw (IllegalArgumentException)Util.pauseInIde(
-            new IllegalArgumentException("Lengths of point arrays must be consistent with the size of the VoxelShape.")
-         );
+         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("Lengths of point arrays must be consistent with the size of the VoxelShape."));
       }
    }
 
-   @Override
    protected DoubleList getCoords(Direction.Axis var1) {
-      switch(var1) {
-         case X:
+      switch (var1) {
+         case X -> {
             return this.xs;
-         case Y:
+         }
+         case Y -> {
             return this.ys;
-         case Z:
+         }
+         case Z -> {
             return this.zs;
-         default:
-            throw new IllegalArgumentException();
+         }
+         default -> throw new IllegalArgumentException();
       }
    }
 }

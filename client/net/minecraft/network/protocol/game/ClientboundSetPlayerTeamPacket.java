@@ -15,9 +15,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.PlayerTeam;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
    private static final int METHOD_ADD = 0;
    private static final int METHOD_REMOVE = 1;
    private static final int METHOD_CHANGE = 2;
@@ -28,9 +26,9 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
    private final int method;
    private final String name;
    private final Collection<String> players;
-   private final Optional<ClientboundSetPlayerTeamPacket.Parameters> parameters;
+   private final Optional<Parameters> parameters;
 
-   private ClientboundSetPlayerTeamPacket(String var1, int var2, Optional<ClientboundSetPlayerTeamPacket.Parameters> var3, Collection<String> var4) {
+   private ClientboundSetPlayerTeamPacket(String var1, int var2, Optional<Parameters> var3, Collection<String> var4) {
       super();
       this.name = var1;
       this.method = var2;
@@ -39,22 +37,15 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
    }
 
    public static ClientboundSetPlayerTeamPacket createAddOrModifyPacket(PlayerTeam var0, boolean var1) {
-      return new ClientboundSetPlayerTeamPacket(
-         var0.getName(),
-         var1 ? 0 : 2,
-         Optional.of(new ClientboundSetPlayerTeamPacket.Parameters(var0)),
-         (Collection<String>)(var1 ? var0.getPlayers() : ImmutableList.of())
-      );
+      return new ClientboundSetPlayerTeamPacket(var0.getName(), var1 ? 0 : 2, Optional.of(new Parameters(var0)), (Collection)(var1 ? var0.getPlayers() : ImmutableList.of()));
    }
 
    public static ClientboundSetPlayerTeamPacket createRemovePacket(PlayerTeam var0) {
       return new ClientboundSetPlayerTeamPacket(var0.getName(), 1, Optional.empty(), ImmutableList.of());
    }
 
-   public static ClientboundSetPlayerTeamPacket createPlayerPacket(PlayerTeam var0, String var1, ClientboundSetPlayerTeamPacket.Action var2) {
-      return new ClientboundSetPlayerTeamPacket(
-         var0.getName(), var2 == ClientboundSetPlayerTeamPacket.Action.ADD ? 3 : 4, Optional.empty(), ImmutableList.of(var1)
-      );
+   public static ClientboundSetPlayerTeamPacket createPlayerPacket(PlayerTeam var0, String var1, Action var2) {
+      return new ClientboundSetPlayerTeamPacket(var0.getName(), var2 == ClientboundSetPlayerTeamPacket.Action.ADD ? 3 : 4, Optional.empty(), ImmutableList.of(var1));
    }
 
    private ClientboundSetPlayerTeamPacket(RegistryFriendlyByteBuf var1) {
@@ -62,7 +53,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       this.name = var1.readUtf();
       this.method = var1.readByte();
       if (shouldHaveParameters(this.method)) {
-         this.parameters = Optional.of(new ClientboundSetPlayerTeamPacket.Parameters(var1));
+         this.parameters = Optional.of(new Parameters(var1));
       } else {
          this.parameters = Optional.empty();
       }
@@ -72,18 +63,22 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       } else {
          this.players = ImmutableList.of();
       }
+
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
       var1.writeUtf(this.name);
       var1.writeByte(this.method);
       if (shouldHaveParameters(this.method)) {
-         this.parameters.orElseThrow(() -> new IllegalStateException("Parameters not present, but method is" + this.method)).write(var1);
+         ((Parameters)this.parameters.orElseThrow(() -> {
+            return new IllegalStateException("Parameters not present, but method is" + this.method);
+         })).write(var1);
       }
 
       if (shouldHavePlayerList(this.method)) {
          var1.writeCollection(this.players, FriendlyByteBuf::writeUtf);
       }
+
    }
 
    private static boolean shouldHavePlayerList(int var0) {
@@ -95,24 +90,37 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
    }
 
    @Nullable
-   public ClientboundSetPlayerTeamPacket.Action getPlayerAction() {
-      return switch(this.method) {
-         case 0, 3 -> ClientboundSetPlayerTeamPacket.Action.ADD;
-         default -> null;
-         case 4 -> ClientboundSetPlayerTeamPacket.Action.REMOVE;
-      };
+   public Action getPlayerAction() {
+      Action var10000;
+      switch (this.method) {
+         case 0:
+         case 3:
+            var10000 = ClientboundSetPlayerTeamPacket.Action.ADD;
+            break;
+         case 1:
+         case 2:
+         default:
+            var10000 = null;
+            break;
+         case 4:
+            var10000 = ClientboundSetPlayerTeamPacket.Action.REMOVE;
+      }
+
+      return var10000;
    }
 
    @Nullable
-   public ClientboundSetPlayerTeamPacket.Action getTeamAction() {
-      return switch(this.method) {
-         case 0 -> ClientboundSetPlayerTeamPacket.Action.ADD;
-         case 1 -> ClientboundSetPlayerTeamPacket.Action.REMOVE;
-         default -> null;
-      };
+   public Action getTeamAction() {
+      Action var10000;
+      switch (this.method) {
+         case 0 -> var10000 = ClientboundSetPlayerTeamPacket.Action.ADD;
+         case 1 -> var10000 = ClientboundSetPlayerTeamPacket.Action.REMOVE;
+         default -> var10000 = null;
+      }
+
+      return var10000;
    }
 
-   @Override
    public PacketType<ClientboundSetPlayerTeamPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_PLAYER_TEAM;
    }
@@ -129,16 +137,8 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       return this.players;
    }
 
-   public Optional<ClientboundSetPlayerTeamPacket.Parameters> getParameters() {
+   public Optional<Parameters> getParameters() {
       return this.parameters;
-   }
-
-   public static enum Action {
-      ADD,
-      REMOVE;
-
-      private Action() {
-      }
    }
 
    public static class Parameters {
@@ -163,13 +163,13 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
       public Parameters(RegistryFriendlyByteBuf var1) {
          super();
-         this.displayName = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
+         this.displayName = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
          this.options = var1.readByte();
          this.nametagVisibility = var1.readUtf(40);
          this.collisionRule = var1.readUtf(40);
-         this.color = var1.readEnum(ChatFormatting.class);
-         this.playerPrefix = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
-         this.playerSuffix = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
+         this.color = (ChatFormatting)var1.readEnum(ChatFormatting.class);
+         this.playerPrefix = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
+         this.playerSuffix = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
       }
 
       public Component getDisplayName() {
@@ -208,6 +208,19 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          var1.writeEnum(this.color);
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerPrefix);
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerSuffix);
+      }
+   }
+
+   public static enum Action {
+      ADD,
+      REMOVE;
+
+      private Action() {
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{ADD, REMOVE};
       }
    }
 }

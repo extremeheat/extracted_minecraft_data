@@ -7,21 +7,19 @@ import com.mojang.datafixers.RewriteResult;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.View;
-import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.functions.PointFreeRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.BitSet;
 import net.minecraft.Util;
 
 public abstract class NamedEntityWriteReadFix extends DataFix {
    private final String name;
    private final String entityName;
-   private final TypeReference type;
+   private final DSL.TypeReference type;
 
-   public NamedEntityWriteReadFix(Schema var1, boolean var2, String var3, TypeReference var4, String var5) {
+   public NamedEntityWriteReadFix(Schema var1, boolean var2, String var3, DSL.TypeReference var4, String var5) {
       super(var1, var2);
       this.name = var3;
       this.type = var4;
@@ -39,19 +37,23 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
    }
 
    private <S, T, A, B> TypeRewriteRule fix(Type<S> var1, Type<T> var2, OpticFinder<A> var3, Type<B> var4, Type<?> var5) {
-      return this.fixTypeEverywhere(this.name, var1, var2, var5x -> var6 -> {
+      return this.fixTypeEverywhere(this.name, var1, var2, (var5x) -> {
+         return (var6) -> {
             Typed var7 = new Typed(var1, var5x, var6);
-            return var7.update(var3, var4, var4xxx -> {
-               Typed var5xxxx = new Typed(var5, var5x, var4xxx);
-               return Util.writeAndReadTypedOrThrow(var5xxxx, var4, this::fix).getValue();
+            return var7.update(var3, var4, (var4x) -> {
+               Typed var5xx = new Typed(var5, var5x, var4x);
+               return Util.writeAndReadTypedOrThrow(var5xx, var4, this::fix).getValue();
             }).getValue();
-         });
+         };
+      });
    }
 
    private static <A, B> TypeRewriteRule typePatcher(Type<A> var0, Type<B> var1) {
-      RewriteResult var2 = RewriteResult.create(View.create("Patcher", var0, var1, var0x -> var0xx -> {
+      RewriteResult var2 = RewriteResult.create(View.create("Patcher", var0, var1, (var0x) -> {
+         return (var0) -> {
             throw new UnsupportedOperationException();
-         }), new BitSet());
+         };
+      }), new BitSet());
       return TypeRewriteRule.everywhere(TypeRewriteRule.ifSame(var0, var2), PointFreeRule.nop(), true, true);
    }
 

@@ -60,32 +60,7 @@ public class DecoratedPotPatterns {
    private static final ResourceKey<String> SHELTER = create("shelter_pottery_pattern");
    private static final ResourceKey<String> SKULL = create("skull_pottery_pattern");
    private static final ResourceKey<String> SNORT = create("snort_pottery_pattern");
-   private static final Map<Item, ResourceKey<String>> ITEM_TO_POT_TEXTURE = Map.ofEntries(
-      Map.entry(Items.BRICK, BRICK),
-      Map.entry(Items.ANGLER_POTTERY_SHERD, ANGLER),
-      Map.entry(Items.ARCHER_POTTERY_SHERD, ARCHER),
-      Map.entry(Items.ARMS_UP_POTTERY_SHERD, ARMS_UP),
-      Map.entry(Items.BLADE_POTTERY_SHERD, BLADE),
-      Map.entry(Items.BREWER_POTTERY_SHERD, BREWER),
-      Map.entry(Items.BURN_POTTERY_SHERD, BURN),
-      Map.entry(Items.DANGER_POTTERY_SHERD, DANGER),
-      Map.entry(Items.EXPLORER_POTTERY_SHERD, EXPLORER),
-      Map.entry(Items.FLOW_POTTERY_SHERD, FLOW),
-      Map.entry(Items.FRIEND_POTTERY_SHERD, FRIEND),
-      Map.entry(Items.GUSTER_POTTERY_SHERD, GUSTER),
-      Map.entry(Items.HEART_POTTERY_SHERD, HEART),
-      Map.entry(Items.HEARTBREAK_POTTERY_SHERD, HEARTBREAK),
-      Map.entry(Items.HOWL_POTTERY_SHERD, HOWL),
-      Map.entry(Items.MINER_POTTERY_SHERD, MINER),
-      Map.entry(Items.MOURNER_POTTERY_SHERD, MOURNER),
-      Map.entry(Items.PLENTY_POTTERY_SHERD, PLENTY),
-      Map.entry(Items.PRIZE_POTTERY_SHERD, PRIZE),
-      Map.entry(Items.SCRAPE_POTTERY_SHERD, SCRAPE),
-      Map.entry(Items.SHEAF_POTTERY_SHERD, SHEAF),
-      Map.entry(Items.SHELTER_POTTERY_SHERD, SHELTER),
-      Map.entry(Items.SKULL_POTTERY_SHERD, SKULL),
-      Map.entry(Items.SNORT_POTTERY_SHERD, SNORT)
-   );
+   private static final Map<Item, ResourceKey<String>> ITEM_TO_POT_TEXTURE;
 
    public DecoratedPotPatterns() {
       super();
@@ -101,34 +76,38 @@ public class DecoratedPotPatterns {
 
    @Nullable
    public static ResourceKey<String> getResourceKey(Item var0) {
-      return ITEM_TO_POT_TEXTURE.get(var0);
+      return (ResourceKey)ITEM_TO_POT_TEXTURE.get(var0);
    }
 
    public static String bootstrap(Registry<String> var0) {
-      Registry.register(var0, BRICK, "decorated_pot_side");
-      Registry.register(var0, ANGLER, "angler_pottery_pattern");
-      Registry.register(var0, ARCHER, "archer_pottery_pattern");
-      Registry.register(var0, ARMS_UP, "arms_up_pottery_pattern");
-      Registry.register(var0, BLADE, "blade_pottery_pattern");
-      Registry.register(var0, BREWER, "brewer_pottery_pattern");
-      Registry.register(var0, BURN, "burn_pottery_pattern");
-      Registry.register(var0, DANGER, "danger_pottery_pattern");
-      Registry.register(var0, EXPLORER, "explorer_pottery_pattern");
-      Registry.register(var0, FLOW, "flow_pottery_pattern");
-      Registry.register(var0, FRIEND, "friend_pottery_pattern");
-      Registry.register(var0, GUSTER, "guster_pottery_pattern");
-      Registry.register(var0, HEART, "heart_pottery_pattern");
-      Registry.register(var0, HEARTBREAK, "heartbreak_pottery_pattern");
-      Registry.register(var0, HOWL, "howl_pottery_pattern");
-      Registry.register(var0, MINER, "miner_pottery_pattern");
-      Registry.register(var0, MOURNER, "mourner_pottery_pattern");
-      Registry.register(var0, PLENTY, "plenty_pottery_pattern");
-      Registry.register(var0, PRIZE, "prize_pottery_pattern");
-      Registry.register(var0, SCRAPE, "scrape_pottery_pattern");
-      Registry.register(var0, SHEAF, "sheaf_pottery_pattern");
-      Registry.register(var0, SHELTER, "shelter_pottery_pattern");
-      Registry.register(var0, SKULL, "skull_pottery_pattern");
-      Registry.register(var0, SNORT, "snort_pottery_pattern");
-      return Registry.register(var0, BASE, "decorated_pot_base");
+      Registry.register(var0, (ResourceKey)BRICK, "decorated_pot_side");
+      Registry.register(var0, (ResourceKey)ANGLER, "angler_pottery_pattern");
+      Registry.register(var0, (ResourceKey)ARCHER, "archer_pottery_pattern");
+      Registry.register(var0, (ResourceKey)ARMS_UP, "arms_up_pottery_pattern");
+      Registry.register(var0, (ResourceKey)BLADE, "blade_pottery_pattern");
+      Registry.register(var0, (ResourceKey)BREWER, "brewer_pottery_pattern");
+      Registry.register(var0, (ResourceKey)BURN, "burn_pottery_pattern");
+      Registry.register(var0, (ResourceKey)DANGER, "danger_pottery_pattern");
+      Registry.register(var0, (ResourceKey)EXPLORER, "explorer_pottery_pattern");
+      Registry.register(var0, (ResourceKey)FLOW, "flow_pottery_pattern");
+      Registry.register(var0, (ResourceKey)FRIEND, "friend_pottery_pattern");
+      Registry.register(var0, (ResourceKey)GUSTER, "guster_pottery_pattern");
+      Registry.register(var0, (ResourceKey)HEART, "heart_pottery_pattern");
+      Registry.register(var0, (ResourceKey)HEARTBREAK, "heartbreak_pottery_pattern");
+      Registry.register(var0, (ResourceKey)HOWL, "howl_pottery_pattern");
+      Registry.register(var0, (ResourceKey)MINER, "miner_pottery_pattern");
+      Registry.register(var0, (ResourceKey)MOURNER, "mourner_pottery_pattern");
+      Registry.register(var0, (ResourceKey)PLENTY, "plenty_pottery_pattern");
+      Registry.register(var0, (ResourceKey)PRIZE, "prize_pottery_pattern");
+      Registry.register(var0, (ResourceKey)SCRAPE, "scrape_pottery_pattern");
+      Registry.register(var0, (ResourceKey)SHEAF, "sheaf_pottery_pattern");
+      Registry.register(var0, (ResourceKey)SHELTER, "shelter_pottery_pattern");
+      Registry.register(var0, (ResourceKey)SKULL, "skull_pottery_pattern");
+      Registry.register(var0, (ResourceKey)SNORT, "snort_pottery_pattern");
+      return (String)Registry.register(var0, (ResourceKey)BASE, "decorated_pot_base");
+   }
+
+   static {
+      ITEM_TO_POT_TEXTURE = Map.ofEntries(Map.entry(Items.BRICK, BRICK), Map.entry(Items.ANGLER_POTTERY_SHERD, ANGLER), Map.entry(Items.ARCHER_POTTERY_SHERD, ARCHER), Map.entry(Items.ARMS_UP_POTTERY_SHERD, ARMS_UP), Map.entry(Items.BLADE_POTTERY_SHERD, BLADE), Map.entry(Items.BREWER_POTTERY_SHERD, BREWER), Map.entry(Items.BURN_POTTERY_SHERD, BURN), Map.entry(Items.DANGER_POTTERY_SHERD, DANGER), Map.entry(Items.EXPLORER_POTTERY_SHERD, EXPLORER), Map.entry(Items.FLOW_POTTERY_SHERD, FLOW), Map.entry(Items.FRIEND_POTTERY_SHERD, FRIEND), Map.entry(Items.GUSTER_POTTERY_SHERD, GUSTER), Map.entry(Items.HEART_POTTERY_SHERD, HEART), Map.entry(Items.HEARTBREAK_POTTERY_SHERD, HEARTBREAK), Map.entry(Items.HOWL_POTTERY_SHERD, HOWL), Map.entry(Items.MINER_POTTERY_SHERD, MINER), Map.entry(Items.MOURNER_POTTERY_SHERD, MOURNER), Map.entry(Items.PLENTY_POTTERY_SHERD, PLENTY), Map.entry(Items.PRIZE_POTTERY_SHERD, PRIZE), Map.entry(Items.SCRAPE_POTTERY_SHERD, SCRAPE), Map.entry(Items.SHEAF_POTTERY_SHERD, SHEAF), Map.entry(Items.SHELTER_POTTERY_SHERD, SHELTER), Map.entry(Items.SKULL_POTTERY_SHERD, SKULL), Map.entry(Items.SNORT_POTTERY_SHERD, SNORT));
    }
 }

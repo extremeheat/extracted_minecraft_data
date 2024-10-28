@@ -19,7 +19,6 @@ public class UnderwaterAmbientSoundHandler implements AmbientSoundHandler {
       this.soundManager = var2;
    }
 
-   @Override
    public void tick() {
       --this.tickDelay;
       if (this.tickDelay <= 0 && this.player.isUnderWater()) {
@@ -35,5 +34,6 @@ public class UnderwaterAmbientSoundHandler implements AmbientSoundHandler {
             this.soundManager.play(new UnderwaterAmbientSoundInstances.SubSound(this.player, SoundEvents.AMBIENT_UNDERWATER_LOOP_ADDITIONS));
          }
       }
+
    }
 }

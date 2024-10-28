@@ -12,7 +12,6 @@ public class RandomPatchFeature extends Feature<RandomPatchConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<RandomPatchConfiguration> var1) {
       RandomPatchConfiguration var2 = (RandomPatchConfiguration)var1.config();
       RandomSource var3 = var1.random();

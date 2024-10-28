@@ -29,9 +29,13 @@ public class NameReport extends Report {
       return var1;
    }
 
-   @Override
    public Screen createScreen(Screen var1, ReportingContext var2) {
       return new NameReportScreen(var1, var2, this);
+   }
+
+   // $FF: synthetic method
+   public Report copy() {
+      return this.copy();
    }
 
    public static class Builder extends Report.Builder<NameReport> {
@@ -43,26 +47,23 @@ public class NameReport extends Report {
          super(new NameReport(UUID.randomUUID(), Instant.now(), var1, var2), var3);
       }
 
-      @Override
       public boolean hasContent() {
          return StringUtils.isNotEmpty(this.comments());
       }
 
       @Nullable
-      @Override
       public Report.CannotBuildReason checkBuildable() {
-         return this.report.comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : null;
+         return ((NameReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : null;
       }
 
-      @Override
       public Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1) {
          Report.CannotBuildReason var2 = this.checkBuildable();
          if (var2 != null) {
             return Either.right(var2);
          } else {
-            ReportedEntity var3 = new ReportedEntity(this.report.reportedProfileId);
-            AbuseReport var4 = AbuseReport.name(this.report.comments, var3, this.report.createdAt);
-            return Either.left(new Report.Result(this.report.reportId, ReportType.USERNAME, var4));
+            ReportedEntity var3 = new ReportedEntity(((NameReport)this.report).reportedProfileId);
+            AbuseReport var4 = AbuseReport.name(((NameReport)this.report).comments, var3, ((NameReport)this.report).createdAt);
+            return Either.left(new Report.Result(((NameReport)this.report).reportId, ReportType.USERNAME, var4));
          }
       }
    }

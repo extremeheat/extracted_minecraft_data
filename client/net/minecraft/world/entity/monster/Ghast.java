@@ -32,26 +32,26 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class Ghast extends FlyingMob implements Enemy {
-   private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING = SynchedEntityData.defineId(Ghast.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING;
    private int explosionPower = 1;
 
    public Ghast(EntityType<? extends Ghast> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 5;
-      this.moveControl = new Ghast.GhastMoveControl(this);
+      this.moveControl = new GhastMoveControl(this);
    }
 
-   @Override
    protected void registerGoals() {
-      this.goalSelector.addGoal(5, new Ghast.RandomFloatAroundGoal(this));
-      this.goalSelector.addGoal(7, new Ghast.GhastLookGoal(this));
-      this.goalSelector.addGoal(7, new Ghast.GhastShootFireballGoal(this));
-      this.targetSelector
-         .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, var1 -> Math.abs(var1.getY() - this.getY()) <= 4.0));
+      this.goalSelector.addGoal(5, new RandomFloatAroundGoal(this));
+      this.goalSelector.addGoal(7, new GhastLookGoal(this));
+      this.goalSelector.addGoal(7, new GhastShootFireballGoal(this));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1) -> {
+         return Math.abs(var1.getY() - this.getY()) <= 4.0;
+      }));
    }
 
    public boolean isCharging() {
-      return this.entityData.get(DATA_IS_CHARGING);
+      return (Boolean)this.entityData.get(DATA_IS_CHARGING);
    }
 
    public void setCharging(boolean var1) {
@@ -62,7 +62,6 @@ public class Ghast extends FlyingMob implements Enemy {
       return this.explosionPower;
    }
 
-   @Override
    protected boolean shouldDespawnInPeaceful() {
       return true;
    }
@@ -71,12 +70,10 @@ public class Ghast extends FlyingMob implements Enemy {
       return var0.getDirectEntity() instanceof LargeFireball && var0.getEntity() instanceof Player;
    }
 
-   @Override
    public boolean isInvulnerableTo(DamageSource var1) {
       return this.isInvulnerable() && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var1) && super.isInvulnerableTo(var1);
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (isReflectedFireball(var1)) {
          super.hurt(var1, 1000.0F);
@@ -86,7 +83,6 @@ public class Ghast extends FlyingMob implements Enemy {
       }
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_IS_CHARGING, false);
@@ -96,27 +92,22 @@ public class Ghast extends FlyingMob implements Enemy {
       return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0).add(Attributes.FOLLOW_RANGE, 100.0);
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.GHAST_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.GHAST_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.GHAST_DEATH;
    }
 
-   @Override
    protected float getSoundVolume() {
       return 5.0F;
    }
@@ -125,61 +116,25 @@ public class Ghast extends FlyingMob implements Enemy {
       return var1.getDifficulty() != Difficulty.PEACEFUL && var4.nextInt(20) == 0 && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 
-   @Override
    public int getMaxSpawnClusterSize() {
       return 1;
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("ExplosionPower", (byte)this.explosionPower);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("ExplosionPower", 99)) {
          this.explosionPower = var1.getByte("ExplosionPower");
       }
+
    }
 
-   static class GhastLookGoal extends Goal {
-      private final Ghast ghast;
-
-      public GhastLookGoal(Ghast var1) {
-         super();
-         this.ghast = var1;
-         this.setFlags(EnumSet.of(Goal.Flag.LOOK));
-      }
-
-      @Override
-      public boolean canUse() {
-         return true;
-      }
-
-      @Override
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      @Override
-      public void tick() {
-         if (this.ghast.getTarget() == null) {
-            Vec3 var1 = this.ghast.getDeltaMovement();
-            this.ghast.setYRot(-((float)Mth.atan2(var1.x, var1.z)) * 57.295776F);
-            this.ghast.yBodyRot = this.ghast.getYRot();
-         } else {
-            LivingEntity var8 = this.ghast.getTarget();
-            double var2 = 64.0;
-            if (var8.distanceToSqr(this.ghast) < 4096.0) {
-               double var4 = var8.getX() - this.ghast.getX();
-               double var6 = var8.getZ() - this.ghast.getZ();
-               this.ghast.setYRot(-((float)Mth.atan2(var4, var6)) * 57.295776F);
-               this.ghast.yBodyRot = this.ghast.getYRot();
-            }
-         }
-      }
+   static {
+      DATA_IS_CHARGING = SynchedEntityData.defineId(Ghast.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class GhastMoveControl extends MoveControl {
@@ -191,7 +146,6 @@ public class Ghast extends FlyingMob implements Enemy {
          this.ghast = var1;
       }
 
-      @Override
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
             if (this.floatDuration-- <= 0) {
@@ -205,6 +159,7 @@ public class Ghast extends FlyingMob implements Enemy {
                   this.operation = MoveControl.Operation.WAIT;
                }
             }
+
          }
       }
 
@@ -222,71 +177,6 @@ public class Ghast extends FlyingMob implements Enemy {
       }
    }
 
-   static class GhastShootFireballGoal extends Goal {
-      private final Ghast ghast;
-      public int chargeTime;
-
-      public GhastShootFireballGoal(Ghast var1) {
-         super();
-         this.ghast = var1;
-      }
-
-      @Override
-      public boolean canUse() {
-         return this.ghast.getTarget() != null;
-      }
-
-      @Override
-      public void start() {
-         this.chargeTime = 0;
-      }
-
-      @Override
-      public void stop() {
-         this.ghast.setCharging(false);
-      }
-
-      @Override
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      @Override
-      public void tick() {
-         LivingEntity var1 = this.ghast.getTarget();
-         if (var1 != null) {
-            double var2 = 64.0;
-            if (var1.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(var1)) {
-               Level var4 = this.ghast.level();
-               ++this.chargeTime;
-               if (this.chargeTime == 10 && !this.ghast.isSilent()) {
-                  var4.levelEvent(null, 1015, this.ghast.blockPosition(), 0);
-               }
-
-               if (this.chargeTime == 20) {
-                  double var5 = 4.0;
-                  Vec3 var7 = this.ghast.getViewVector(1.0F);
-                  double var8 = var1.getX() - (this.ghast.getX() + var7.x * 4.0);
-                  double var10 = var1.getY(0.5) - (0.5 + this.ghast.getY(0.5));
-                  double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0);
-                  if (!this.ghast.isSilent()) {
-                     var4.levelEvent(null, 1016, this.ghast.blockPosition(), 0);
-                  }
-
-                  LargeFireball var14 = new LargeFireball(var4, this.ghast, var8, var10, var12, this.ghast.getExplosionPower());
-                  var14.setPos(this.ghast.getX() + var7.x * 4.0, this.ghast.getY(0.5) + 0.5, var14.getZ() + var7.z * 4.0);
-                  var4.addFreshEntity(var14);
-                  this.chargeTime = -40;
-               }
-            } else if (this.chargeTime > 0) {
-               --this.chargeTime;
-            }
-
-            this.ghast.setCharging(this.chargeTime > 10);
-         }
-      }
-   }
-
    static class RandomFloatAroundGoal extends Goal {
       private final Ghast ghast;
 
@@ -296,7 +186,6 @@ public class Ghast extends FlyingMob implements Enemy {
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
-      @Override
       public boolean canUse() {
          MoveControl var1 = this.ghast.getMoveControl();
          if (!var1.hasWanted()) {
@@ -310,18 +199,112 @@ public class Ghast extends FlyingMob implements Enemy {
          }
       }
 
-      @Override
       public boolean canContinueToUse() {
          return false;
       }
 
-      @Override
       public void start() {
          RandomSource var1 = this.ghast.getRandom();
          double var2 = this.ghast.getX() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
          double var4 = this.ghast.getY() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
          double var6 = this.ghast.getZ() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
          this.ghast.getMoveControl().setWantedPosition(var2, var4, var6, 1.0);
+      }
+   }
+
+   static class GhastLookGoal extends Goal {
+      private final Ghast ghast;
+
+      public GhastLookGoal(Ghast var1) {
+         super();
+         this.ghast = var1;
+         this.setFlags(EnumSet.of(Goal.Flag.LOOK));
+      }
+
+      public boolean canUse() {
+         return true;
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         if (this.ghast.getTarget() == null) {
+            Vec3 var1 = this.ghast.getDeltaMovement();
+            this.ghast.setYRot(-((float)Mth.atan2(var1.x, var1.z)) * 57.295776F);
+            this.ghast.yBodyRot = this.ghast.getYRot();
+         } else {
+            LivingEntity var8 = this.ghast.getTarget();
+            double var2 = 64.0;
+            if (var8.distanceToSqr(this.ghast) < 4096.0) {
+               double var4 = var8.getX() - this.ghast.getX();
+               double var6 = var8.getZ() - this.ghast.getZ();
+               this.ghast.setYRot(-((float)Mth.atan2(var4, var6)) * 57.295776F);
+               this.ghast.yBodyRot = this.ghast.getYRot();
+            }
+         }
+
+      }
+   }
+
+   static class GhastShootFireballGoal extends Goal {
+      private final Ghast ghast;
+      public int chargeTime;
+
+      public GhastShootFireballGoal(Ghast var1) {
+         super();
+         this.ghast = var1;
+      }
+
+      public boolean canUse() {
+         return this.ghast.getTarget() != null;
+      }
+
+      public void start() {
+         this.chargeTime = 0;
+      }
+
+      public void stop() {
+         this.ghast.setCharging(false);
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         LivingEntity var1 = this.ghast.getTarget();
+         if (var1 != null) {
+            double var2 = 64.0;
+            if (var1.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(var1)) {
+               Level var4 = this.ghast.level();
+               ++this.chargeTime;
+               if (this.chargeTime == 10 && !this.ghast.isSilent()) {
+                  var4.levelEvent((Player)null, 1015, this.ghast.blockPosition(), 0);
+               }
+
+               if (this.chargeTime == 20) {
+                  double var5 = 4.0;
+                  Vec3 var7 = this.ghast.getViewVector(1.0F);
+                  double var8 = var1.getX() - (this.ghast.getX() + var7.x * 4.0);
+                  double var10 = var1.getY(0.5) - (0.5 + this.ghast.getY(0.5));
+                  double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0);
+                  if (!this.ghast.isSilent()) {
+                     var4.levelEvent((Player)null, 1016, this.ghast.blockPosition(), 0);
+                  }
+
+                  LargeFireball var14 = new LargeFireball(var4, this.ghast, var8, var10, var12, this.ghast.getExplosionPower());
+                  var14.setPos(this.ghast.getX() + var7.x * 4.0, this.ghast.getY(0.5) + 0.5, var14.getZ() + var7.z * 4.0);
+                  var4.addFreshEntity(var14);
+                  this.chargeTime = -40;
+               }
+            } else if (this.chargeTime > 0) {
+               --this.chargeTime;
+            }
+
+            this.ghast.setCharging(this.chargeTime > 10);
+         }
       }
    }
 }

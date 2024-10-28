@@ -23,9 +23,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 
 public class EditBox extends AbstractWidget implements Renderable {
-   private static final WidgetSprites SPRITES = new WidgetSprites(
-      new ResourceLocation("widget/text_field"), new ResourceLocation("widget/text_field_highlighted")
-   );
+   private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("widget/text_field"), new ResourceLocation("widget/text_field_highlighted"));
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
    private static final int CURSOR_INSERT_WIDTH = 1;
@@ -34,40 +32,53 @@ public class EditBox extends AbstractWidget implements Renderable {
    public static final int DEFAULT_TEXT_COLOR = 14737632;
    private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
-   private String value = "";
-   private int maxLength = 32;
-   private boolean bordered = true;
-   private boolean canLoseFocus = true;
-   private boolean isEditable = true;
+   private String value;
+   private int maxLength;
+   private boolean bordered;
+   private boolean canLoseFocus;
+   private boolean isEditable;
    private int displayPos;
    private int cursorPos;
    private int highlightPos;
-   private int textColor = 14737632;
-   private int textColorUneditable = 7368816;
+   private int textColor;
+   private int textColorUneditable;
    @Nullable
    private String suggestion;
    @Nullable
    private Consumer<String> responder;
-   private Predicate<String> filter = Objects::nonNull;
-   private BiFunction<String, Integer, FormattedCharSequence> formatter = (var0, var1x) -> FormattedCharSequence.forward(var0, Style.EMPTY);
+   private Predicate<String> filter;
+   private BiFunction<String, Integer, FormattedCharSequence> formatter;
    @Nullable
    private Component hint;
-   private long focusedTime = Util.getMillis();
+   private long focusedTime;
 
    public EditBox(Font var1, int var2, int var3, Component var4) {
       this(var1, 0, 0, var2, var3, var4);
    }
 
    public EditBox(Font var1, int var2, int var3, int var4, int var5, Component var6) {
-      this(var1, var2, var3, var4, var5, null, var6);
+      this(var1, var2, var3, var4, var5, (EditBox)null, var6);
    }
 
    public EditBox(Font var1, int var2, int var3, int var4, int var5, @Nullable EditBox var6, Component var7) {
       super(var2, var3, var4, var5, var7);
+      this.value = "";
+      this.maxLength = 32;
+      this.bordered = true;
+      this.canLoseFocus = true;
+      this.isEditable = true;
+      this.textColor = 14737632;
+      this.textColorUneditable = 7368816;
+      this.filter = Objects::nonNull;
+      this.formatter = (var0, var1x) -> {
+         return FormattedCharSequence.forward(var0, Style.EMPTY);
+      };
+      this.focusedTime = Util.getMillis();
       this.font = var1;
       if (var6 != null) {
          this.setValue(var6.getValue());
       }
+
    }
 
    public void setResponder(Consumer<String> var1) {
@@ -78,7 +89,6 @@ public class EditBox extends AbstractWidget implements Renderable {
       this.formatter = var1;
    }
 
-   @Override
    protected MutableComponent createNarrationMessage() {
       Component var1 = this.getMessage();
       return Component.translatable("gui.narrate.editBox", var1, this.value);
@@ -128,7 +138,7 @@ public class EditBox extends AbstractWidget implements Renderable {
             var6 = var4;
          }
 
-         String var7 = new StringBuilder(this.value).replace(var2, var3, var5).toString();
+         String var7 = (new StringBuilder(this.value)).replace(var2, var3, var5).toString();
          if (this.filter.test(var7)) {
             this.value = var7;
             this.setCursorPosition(var2 + var6);
@@ -142,6 +152,7 @@ public class EditBox extends AbstractWidget implements Renderable {
       if (this.responder != null) {
          this.responder.accept(var1);
       }
+
    }
 
    private void deleteText(int var1) {
@@ -150,6 +161,7 @@ public class EditBox extends AbstractWidget implements Renderable {
       } else {
          this.deleteChars(var1);
       }
+
    }
 
    public void deleteWords(int var1) {
@@ -174,7 +186,7 @@ public class EditBox extends AbstractWidget implements Renderable {
             int var2 = Math.min(var1, this.cursorPos);
             int var3 = Math.max(var1, this.cursorPos);
             if (var2 != var3) {
-               String var4 = new StringBuilder(this.value).delete(var2, var3).toString();
+               String var4 = (new StringBuilder(this.value)).delete(var2, var3).toString();
                if (this.filter.test(var4)) {
                   this.value = var4;
                   this.moveCursorTo(var2, false);
@@ -252,10 +264,9 @@ public class EditBox extends AbstractWidget implements Renderable {
       this.moveCursorTo(this.value.length(), var1);
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.isActive() && this.isFocused()) {
-         switch(var1) {
+         switch (var1) {
             case 259:
                if (this.isEditable) {
                   this.deleteText(-1);
@@ -331,7 +342,6 @@ public class EditBox extends AbstractWidget implements Renderable {
       return this.isActive() && this.isFocused() && this.isEditable();
    }
 
-   @Override
    public boolean charTyped(char var1, int var2) {
       if (!this.canConsumeInput()) {
          return false;
@@ -346,7 +356,6 @@ public class EditBox extends AbstractWidget implements Renderable {
       }
    }
 
-   @Override
    public void onClick(double var1, double var3) {
       int var5 = Mth.floor(var1) - this.getX();
       if (this.bordered) {
@@ -357,11 +366,9 @@ public class EditBox extends AbstractWidget implements Renderable {
       this.moveCursorTo(this.font.plainSubstrByWidth(var6, var5).length() + this.displayPos, Screen.hasShiftDown());
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
          if (this.isBordered()) {
@@ -380,7 +387,7 @@ public class EditBox extends AbstractWidget implements Renderable {
          int var13 = Mth.clamp(this.highlightPos - this.displayPos, 0, var7.length());
          if (!var7.isEmpty()) {
             String var14 = var8 ? var7.substring(0, var6) : var7;
-            var12 = var1.drawString(this.font, this.formatter.apply(var14, this.displayPos), var10, var11, var17);
+            var12 = var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var14, this.displayPos), var10, var11, var17);
          }
 
          boolean var18 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
@@ -393,7 +400,7 @@ public class EditBox extends AbstractWidget implements Renderable {
          }
 
          if (!var7.isEmpty() && var8 && var6 < var7.length()) {
-            var1.drawString(this.font, this.formatter.apply(var7.substring(var6), this.cursorPos), var12, var11, var17);
+            var1.drawString(this.font, (FormattedCharSequence)this.formatter.apply(var7.substring(var6), this.cursorPos), var12, var11, var17);
          }
 
          if (this.hint != null && var7.isEmpty() && !this.isFocused()) {
@@ -404,9 +411,17 @@ public class EditBox extends AbstractWidget implements Renderable {
             var1.drawString(this.font, this.suggestion, var15 - 1, var11, -8355712);
          }
 
+         int var10003;
+         int var10004;
+         int var10005;
          if (var9) {
             if (var18) {
-               var1.fill(RenderType.guiOverlay(), var15, var11 - 1, var15 + 1, var11 + 1 + 9, -3092272);
+               RenderType var10001 = RenderType.guiOverlay();
+               var10003 = var11 - 1;
+               var10004 = var15 + 1;
+               var10005 = var11 + 1;
+               Objects.requireNonNull(this.font);
+               var1.fill(var10001, var15, var10003, var10004, var10005 + 9, -3092272);
             } else {
                var1.drawString(this.font, "_", var15, var11, var17);
             }
@@ -414,22 +429,28 @@ public class EditBox extends AbstractWidget implements Renderable {
 
          if (var13 != var6) {
             int var16 = var10 + this.font.width(var7.substring(0, var13));
-            this.renderHighlight(var1, var15, var11 - 1, var16 - 1, var11 + 1 + 9);
+            var10003 = var11 - 1;
+            var10004 = var16 - 1;
+            var10005 = var11 + 1;
+            Objects.requireNonNull(this.font);
+            this.renderHighlight(var1, var15, var10003, var10004, var10005 + 9);
          }
+
       }
    }
 
    private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      int var6;
       if (var2 < var4) {
-         int var6 = var2;
+         var6 = var2;
          var2 = var4;
          var4 = var6;
       }
 
       if (var3 < var5) {
-         int var7 = var3;
+         var6 = var3;
          var3 = var5;
-         var5 = var7;
+         var5 = var6;
       }
 
       if (var4 > this.getX() + this.width) {
@@ -449,6 +470,7 @@ public class EditBox extends AbstractWidget implements Renderable {
          this.value = this.value.substring(0, var1);
          this.onValueChange(this.value);
       }
+
    }
 
    private int getMaxLength() {
@@ -475,13 +497,13 @@ public class EditBox extends AbstractWidget implements Renderable {
       this.textColorUneditable = var1;
    }
 
-   @Override
    public void setFocused(boolean var1) {
       if (this.canLoseFocus || var1) {
          super.setFocused(var1);
          if (var1) {
             this.focusedTime = Util.getMillis();
          }
+
       }
    }
 
@@ -542,9 +564,8 @@ public class EditBox extends AbstractWidget implements Renderable {
       return var1 > this.value.length() ? this.getX() : this.getX() + this.font.width(this.value.substring(0, var1));
    }
 
-   @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
+      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
    }
 
    public void setHint(Component var1) {

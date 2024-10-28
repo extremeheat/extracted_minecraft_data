@@ -24,47 +24,54 @@ public final class RandomSupport {
       return var0 ^ var0 >>> 31;
    }
 
-   public static RandomSupport.Seed128bit upgradeSeedTo128bitUnmixed(long var0) {
+   public static Seed128bit upgradeSeedTo128bitUnmixed(long var0) {
       long var2 = var0 ^ 7640891576956012809L;
       long var4 = var2 + -7046029254386353131L;
-      return new RandomSupport.Seed128bit(var2, var4);
+      return new Seed128bit(var2, var4);
    }
 
-   public static RandomSupport.Seed128bit upgradeSeedTo128bit(long var0) {
+   public static Seed128bit upgradeSeedTo128bit(long var0) {
       return upgradeSeedTo128bitUnmixed(var0).mixed();
    }
 
-   public static RandomSupport.Seed128bit seedFromHashOf(String var0) {
+   public static Seed128bit seedFromHashOf(String var0) {
       byte[] var1 = MD5_128.hashString(var0, Charsets.UTF_8).asBytes();
       long var2 = Longs.fromBytes(var1[0], var1[1], var1[2], var1[3], var1[4], var1[5], var1[6], var1[7]);
       long var4 = Longs.fromBytes(var1[8], var1[9], var1[10], var1[11], var1[12], var1[13], var1[14], var1[15]);
-      return new RandomSupport.Seed128bit(var2, var4);
+      return new Seed128bit(var2, var4);
    }
 
    public static long generateUniqueSeed() {
-      return SEED_UNIQUIFIER.updateAndGet(var0 -> var0 * 1181783497276652981L) ^ System.nanoTime();
+      return SEED_UNIQUIFIER.updateAndGet((var0) -> {
+         return var0 * 1181783497276652981L;
+      }) ^ System.nanoTime();
    }
 
-   public static record Seed128bit(long a, long b) {
-      private final long seedLo;
-      private final long seedHi;
-
+   public static record Seed128bit(long seedLo, long seedHi) {
       public Seed128bit(long var1, long var3) {
          super();
          this.seedLo = var1;
          this.seedHi = var3;
       }
 
-      public RandomSupport.Seed128bit xor(long var1, long var3) {
-         return new RandomSupport.Seed128bit(this.seedLo ^ var1, this.seedHi ^ var3);
+      public Seed128bit xor(long var1, long var3) {
+         return new Seed128bit(this.seedLo ^ var1, this.seedHi ^ var3);
       }
 
-      public RandomSupport.Seed128bit xor(RandomSupport.Seed128bit var1) {
+      public Seed128bit xor(Seed128bit var1) {
          return this.xor(var1.seedLo, var1.seedHi);
       }
 
-      public RandomSupport.Seed128bit mixed() {
-         return new RandomSupport.Seed128bit(RandomSupport.mixStafford13(this.seedLo), RandomSupport.mixStafford13(this.seedHi));
+      public Seed128bit mixed() {
+         return new Seed128bit(RandomSupport.mixStafford13(this.seedLo), RandomSupport.mixStafford13(this.seedHi));
+      }
+
+      public long seedLo() {
+         return this.seedLo;
+      }
+
+      public long seedHi() {
+         return this.seedHi;
       }
    }
 }

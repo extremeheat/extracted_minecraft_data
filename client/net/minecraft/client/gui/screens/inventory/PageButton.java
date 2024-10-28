@@ -22,7 +22,6 @@ public class PageButton extends Button {
       this.playTurnSound = var5;
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       ResourceLocation var5;
       if (this.isForward) {
@@ -34,10 +33,10 @@ public class PageButton extends Button {
       var1.blitSprite(var5, this.getX(), this.getY(), 23, 13);
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
       if (this.playTurnSound) {
          var1.play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
       }
+
    }
 }

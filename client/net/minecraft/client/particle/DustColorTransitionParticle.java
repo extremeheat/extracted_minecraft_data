@@ -4,15 +4,14 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.DustColorTransitionOptions;
+import net.minecraft.core.particles.ParticleOptions;
 import org.joml.Vector3f;
 
 public class DustColorTransitionParticle extends DustParticleBase<DustColorTransitionOptions> {
    private final Vector3f fromColor;
    private final Vector3f toColor;
 
-   protected DustColorTransitionParticle(
-      ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, DustColorTransitionOptions var14, SpriteSet var15
-   ) {
+   protected DustColorTransitionParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, DustColorTransitionOptions var14, SpriteSet var15) {
       super(var1, var2, var4, var6, var8, var10, var12, var14, var15);
       float var16 = this.random.nextFloat() * 0.4F + 0.6F;
       this.fromColor = this.randomizeColor(var14.getFromColor(), var16);
@@ -25,13 +24,12 @@ public class DustColorTransitionParticle extends DustParticleBase<DustColorTrans
 
    private void lerpColors(float var1) {
       float var2 = ((float)this.age + var1) / ((float)this.lifetime + 1.0F);
-      Vector3f var3 = new Vector3f(this.fromColor).lerp(this.toColor, var2);
+      Vector3f var3 = (new Vector3f(this.fromColor)).lerp(this.toColor, var2);
       this.rCol = var3.x();
       this.gCol = var3.y();
       this.bCol = var3.z();
    }
 
-   @Override
    public void render(VertexConsumer var1, Camera var2, float var3) {
       this.lerpColors(var3);
       super.render(var1, var2, var3);
@@ -45,10 +43,13 @@ public class DustColorTransitionParticle extends DustParticleBase<DustColorTrans
          this.sprites = var1;
       }
 
-      public Particle createParticle(
-         DustColorTransitionOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13
-      ) {
+      public Particle createParticle(DustColorTransitionOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new DustColorTransitionParticle(var2, var3, var5, var7, var9, var11, var13, var1, this.sprites);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((DustColorTransitionOptions)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

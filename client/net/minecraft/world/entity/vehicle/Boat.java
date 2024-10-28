@@ -3,6 +3,7 @@ package net.minecraft.world.entity.vehicle;
 import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
@@ -53,18 +54,18 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
-   private static final EntityDataAccessor<Integer> DATA_ID_TYPE = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_LEFT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.BOOLEAN);
-   private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_RIGHT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.BOOLEAN);
-   private static final EntityDataAccessor<Integer> DATA_ID_BUBBLE_TIME = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
+public class Boat extends VehicleEntity implements VariantHolder<Type> {
+   private static final EntityDataAccessor<Integer> DATA_ID_TYPE;
+   private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_LEFT;
+   private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_RIGHT;
+   private static final EntityDataAccessor<Integer> DATA_ID_BUBBLE_TIME;
    public static final int PADDLE_LEFT = 0;
    public static final int PADDLE_RIGHT = 1;
    private static final int TIME_TO_EJECT = 60;
    private static final float PADDLE_SPEED = 0.3926991F;
    public static final double PADDLE_SOUND_TIME = 0.7853981852531433;
    public static final int BUBBLE_TIME = 60;
-   private final float[] paddlePositions = new float[2];
+   private final float[] paddlePositions;
    private float invFriction;
    private float outOfControlTicks;
    private float deltaRotation;
@@ -80,8 +81,8 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    private boolean inputDown;
    private double waterLevel;
    private float landFriction;
-   private Boat.Status status;
-   private Boat.Status oldStatus;
+   private Status status;
+   private Status oldStatus;
    private double lastYd;
    private boolean isAboveBubbleColumn;
    private boolean bubbleColumnDirectionIsDown;
@@ -91,6 +92,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
    public Boat(EntityType<? extends Boat> var1, Level var2) {
       super(var1, var2);
+      this.paddlePositions = new float[2];
       this.blocksBuilding = true;
    }
 
@@ -102,12 +104,10 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       this.zo = var6;
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_ID_TYPE, Boat.Type.OAK.ordinal());
@@ -116,7 +116,6 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       var1.define(DATA_ID_BUBBLE_TIME, 0);
    }
 
-   @Override
    public boolean canCollideWith(Entity var1) {
       return canVehicleCollide(this, var1);
    }
@@ -125,22 +124,18 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       return (var1.canBeCollidedWith() || var1.isPushable()) && !var0.isPassengerOfSameVehicle(var1);
    }
 
-   @Override
    public boolean canBeCollidedWith() {
       return true;
    }
 
-   @Override
    public boolean isPushable() {
       return true;
    }
 
-   @Override
    protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
       return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
    }
 
-   @Override
    protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
       float var4 = this.getSinglePassengerXOffset();
       if (this.getPassengers().size() > 1) {
@@ -156,11 +151,9 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          }
       }
 
-      return new Vec3(0.0, this.getVariant() == Boat.Type.BAMBOO ? (double)(var2.height() * 0.8888889F) : (double)(var2.height() / 3.0F), (double)var4)
-         .yRot(-this.getYRot() * 0.017453292F);
+      return (new Vec3(0.0, this.getVariant() == Boat.Type.BAMBOO ? (double)(var2.height() * 0.8888889F) : (double)(var2.height() / 3.0F), (double)var4)).yRot(-this.getYRot() * 0.017453292F);
    }
 
-   @Override
    public void onAboveBubbleCol(boolean var1) {
       if (!this.level().isClientSide) {
          this.isAboveBubbleColumn = true;
@@ -170,26 +163,14 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          }
       }
 
-      this.level()
-         .addParticle(
-            ParticleTypes.SPLASH,
-            this.getX() + (double)this.random.nextFloat(),
-            this.getY() + 0.7,
-            this.getZ() + (double)this.random.nextFloat(),
-            0.0,
-            0.0,
-            0.0
-         );
+      this.level().addParticle(ParticleTypes.SPLASH, this.getX() + (double)this.random.nextFloat(), this.getY() + 0.7, this.getZ() + (double)this.random.nextFloat(), 0.0, 0.0, 0.0);
       if (this.random.nextInt(20) == 0) {
-         this.level()
-            .playLocalSound(
-               this.getX(), this.getY(), this.getZ(), this.getSwimSplashSound(), this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false
-            );
+         this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getSwimSplashSound(), this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false);
          this.gameEvent(GameEvent.SPLASH, this.getControllingPassenger());
       }
+
    }
 
-   @Override
    public void push(Entity var1) {
       if (var1 instanceof Boat) {
          if (var1.getBoundingBox().minY < this.getBoundingBox().maxY) {
@@ -198,36 +179,36 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       } else if (var1.getBoundingBox().minY <= this.getBoundingBox().minY) {
          super.push(var1);
       }
+
    }
 
-   @Override
    public Item getDropItem() {
-      return switch(this.getVariant()) {
-         case SPRUCE -> Items.SPRUCE_BOAT;
-         case BIRCH -> Items.BIRCH_BOAT;
-         case JUNGLE -> Items.JUNGLE_BOAT;
-         case ACACIA -> Items.ACACIA_BOAT;
-         case CHERRY -> Items.CHERRY_BOAT;
-         case DARK_OAK -> Items.DARK_OAK_BOAT;
-         case MANGROVE -> Items.MANGROVE_BOAT;
-         case BAMBOO -> Items.BAMBOO_RAFT;
-         default -> Items.OAK_BOAT;
-      };
+      Item var10000;
+      switch (this.getVariant().ordinal()) {
+         case 1 -> var10000 = Items.SPRUCE_BOAT;
+         case 2 -> var10000 = Items.BIRCH_BOAT;
+         case 3 -> var10000 = Items.JUNGLE_BOAT;
+         case 4 -> var10000 = Items.ACACIA_BOAT;
+         case 5 -> var10000 = Items.CHERRY_BOAT;
+         case 6 -> var10000 = Items.DARK_OAK_BOAT;
+         case 7 -> var10000 = Items.MANGROVE_BOAT;
+         case 8 -> var10000 = Items.BAMBOO_RAFT;
+         default -> var10000 = Items.OAK_BOAT;
+      }
+
+      return var10000;
    }
 
-   @Override
    public void animateHurt(float var1) {
       this.setHurtDir(-this.getHurtDir());
       this.setHurtTime(10);
       this.setDamage(this.getDamage() * 11.0F);
    }
 
-   @Override
    public boolean isPickable() {
       return !this.isRemoved();
    }
 
-   @Override
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.lerpX = var1;
       this.lerpY = var3;
@@ -237,37 +218,30 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       this.lerpSteps = 10;
    }
 
-   @Override
    public double lerpTargetX() {
       return this.lerpSteps > 0 ? this.lerpX : this.getX();
    }
 
-   @Override
    public double lerpTargetY() {
       return this.lerpSteps > 0 ? this.lerpY : this.getY();
    }
 
-   @Override
    public double lerpTargetZ() {
       return this.lerpSteps > 0 ? this.lerpZ : this.getZ();
    }
 
-   @Override
    public float lerpTargetXRot() {
       return this.lerpSteps > 0 ? (float)this.lerpXRot : this.getXRot();
    }
 
-   @Override
    public float lerpTargetYRot() {
       return this.lerpSteps > 0 ? (float)this.lerpYRot : this.getYRot();
    }
 
-   @Override
    public Direction getMotionDirection() {
       return this.getDirection().getClockWise();
    }
 
-   @Override
    public void tick() {
       this.oldStatus = this.status;
       this.status = this.getStatus();
@@ -311,42 +285,41 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
       for(int var1 = 0; var1 <= 1; ++var1) {
          if (this.getPaddleState(var1)) {
-            if (!this.isSilent()
-               && (double)(this.paddlePositions[var1] % 6.2831855F) <= 0.7853981852531433
-               && (double)((this.paddlePositions[var1] + 0.3926991F) % 6.2831855F) >= 0.7853981852531433) {
+            if (!this.isSilent() && (double)(this.paddlePositions[var1] % 6.2831855F) <= 0.7853981852531433 && (double)((this.paddlePositions[var1] + 0.3926991F) % 6.2831855F) >= 0.7853981852531433) {
                SoundEvent var2 = this.getPaddleSound();
                if (var2 != null) {
                   Vec3 var3 = this.getViewVector(1.0F);
                   double var4 = var1 == 1 ? -var3.z : var3.z;
                   double var6 = var1 == 1 ? var3.x : -var3.x;
-                  this.level()
-                     .playSound(
-                        null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat()
-                     );
+                  this.level().playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
                }
             }
 
-            this.paddlePositions[var1] += 0.3926991F;
+            float[] var10000 = this.paddlePositions;
+            var10000[var1] += 0.3926991F;
          } else {
             this.paddlePositions[var1] = 0.0F;
          }
       }
 
       this.checkInsideBlocks();
-      List var8 = this.level()
-         .getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntitySelector.pushableBy(this));
+      List var8 = this.level().getEntities((Entity)this, this.getBoundingBox().inflate(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntitySelector.pushableBy(this));
       if (!var8.isEmpty()) {
          boolean var9 = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
+         Iterator var10 = var8.iterator();
 
-         for(Entity var11 : var8) {
-            if (!var11.hasPassenger(this)) {
-               if (var9
-                  && this.getPassengers().size() < this.getMaxPassengers()
-                  && !var11.isPassenger()
-                  && this.hasEnoughSpaceFor(var11)
-                  && var11 instanceof LivingEntity
-                  && !(var11 instanceof WaterAnimal)
-                  && !(var11 instanceof Player)) {
+         while(true) {
+            while(true) {
+               Entity var11;
+               do {
+                  if (!var10.hasNext()) {
+                     return;
+                  }
+
+                  var11 = (Entity)var10.next();
+               } while(var11.hasPassenger((Entity)this));
+
+               if (var9 && this.getPassengers().size() < this.getMaxPassengers() && !var11.isPassenger() && this.hasEnoughSpaceFor(var11) && var11 instanceof LivingEntity && !(var11 instanceof WaterAnimal) && !(var11 instanceof Player)) {
                   var11.startRiding(this);
                } else {
                   this.push(var11);
@@ -357,8 +330,9 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    private void tickBubbleColumn() {
+      int var1;
       if (this.level().isClientSide) {
-         int var1 = this.getBubbleTime();
+         var1 = this.getBubbleTime();
          if (var1 > 0) {
             this.bubbleMultiplier += 0.05F;
          } else {
@@ -373,36 +347,40 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
             this.setBubbleTime(0);
          }
 
-         int var4 = this.getBubbleTime();
-         if (var4 > 0) {
-            this.setBubbleTime(--var4);
-            int var2 = 60 - var4 - 1;
-            if (var2 > 0 && var4 == 0) {
+         var1 = this.getBubbleTime();
+         if (var1 > 0) {
+            --var1;
+            this.setBubbleTime(var1);
+            int var2 = 60 - var1 - 1;
+            if (var2 > 0 && var1 == 0) {
                this.setBubbleTime(0);
                Vec3 var3 = this.getDeltaMovement();
                if (this.bubbleColumnDirectionIsDown) {
                   this.setDeltaMovement(var3.add(0.0, -0.7, 0.0));
                   this.ejectPassengers();
                } else {
-                  this.setDeltaMovement(var3.x, this.hasPassenger(var0 -> var0 instanceof Player) ? 2.7 : 0.6, var3.z);
+                  this.setDeltaMovement(var3.x, this.hasPassenger((var0) -> {
+                     return var0 instanceof Player;
+                  }) ? 2.7 : 0.6, var3.z);
                }
             }
 
             this.isAboveBubbleColumn = false;
          }
       }
+
    }
 
    @Nullable
    protected SoundEvent getPaddleSound() {
-      switch(this.getStatus()) {
-         case IN_WATER:
-         case UNDER_WATER:
-         case UNDER_FLOWING_WATER:
+      switch (this.getStatus().ordinal()) {
+         case 0:
+         case 1:
+         case 2:
             return SoundEvents.BOAT_PADDLE_WATER;
-         case ON_LAND:
+         case 3:
             return SoundEvents.BOAT_PADDLE_LAND;
-         case IN_AIR:
+         case 4:
          default:
             return null;
       }
@@ -429,8 +407,8 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       return this.getPaddleState(var1) ? Mth.clampedLerp(this.paddlePositions[var1] - 0.3926991F, this.paddlePositions[var1], var2) : 0.0F;
    }
 
-   private Boat.Status getStatus() {
-      Boat.Status var1 = this.isUnderwater();
+   private Status getStatus() {
+      Status var1 = this.isUnderwater();
       if (var1 != null) {
          this.waterLevel = this.getBoundingBox().maxY;
          return var1;
@@ -505,10 +483,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
                   if (var15 <= 0 || var16 != var5 && var16 != var6 - 1) {
                      var12.set(var13, var16, var14);
                      BlockState var17 = this.level().getBlockState(var12);
-                     if (!(var17.getBlock() instanceof WaterlilyBlock)
-                        && Shapes.joinIsNotEmpty(
-                           var17.getCollisionShape(this.level(), var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND
-                        )) {
+                     if (!(var17.getBlock() instanceof WaterlilyBlock) && Shapes.joinIsNotEmpty(var17.getCollisionShape(this.level(), var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND)) {
                         var10 += var17.getBlock().getFriction();
                         ++var11;
                      }
@@ -551,7 +526,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    @Nullable
-   private Boat.Status isUnderwater() {
+   private Status isUnderwater() {
       AABB var1 = this.getBoundingBox();
       double var2 = var1.maxY + 0.001;
       int var4 = Mth.floor(var1.minX);
@@ -582,7 +557,6 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       return var10 ? Boat.Status.UNDER_WATER : null;
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.04;
    }
@@ -624,6 +598,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
             this.setDeltaMovement(var6.x, (var6.y + var3 * (this.getDefaultGravity() / 0.65)) * 0.75, var6.z);
          }
       }
+
    }
 
    private void controlBoat() {
@@ -650,9 +625,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
             var1 -= 0.005F;
          }
 
-         this.setDeltaMovement(
-            this.getDeltaMovement().add((double)(Mth.sin(-this.getYRot() * 0.017453292F) * var1), 0.0, (double)(Mth.cos(this.getYRot() * 0.017453292F) * var1))
-         );
+         this.setDeltaMovement(this.getDeltaMovement().add((double)(Mth.sin(-this.getYRot() * 0.017453292F) * var1), 0.0, (double)(Mth.cos(this.getYRot() * 0.017453292F) * var1)));
          this.setPaddleState(this.inputRight && !this.inputLeft || this.inputUp, this.inputLeft && !this.inputRight || this.inputUp);
       }
    }
@@ -665,7 +638,6 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       return var1.getBbWidth() < this.getBbWidth();
    }
 
-   @Override
    protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       super.positionRider(var1, var2);
       if (!var1.getType().is(EntityTypeTags.CAN_TURN_IN_BOATS)) {
@@ -677,10 +649,10 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
             var1.setYBodyRot(((Animal)var1).yBodyRot + (float)var3);
             var1.setYHeadRot(var1.getYHeadRot() + (float)var3);
          }
+
       }
    }
 
-   @Override
    public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
       Vec3 var2 = getCollisionHorizontalEscapeVector((double)(this.getBbWidth() * Mth.SQRT_OF_TWO), (double)var1.getBbWidth(), var1.getYRot());
       double var3 = this.getX() + var2.x;
@@ -703,8 +675,10 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
          while(var14.hasNext()) {
             Pose var15 = (Pose)var14.next();
+            Iterator var16 = var9.iterator();
 
-            for(Vec3 var17 : var9) {
+            while(var16.hasNext()) {
+               Vec3 var17 = (Vec3)var16.next();
                if (DismountHelper.canDismountTo(this.level(), var17, var1, var15)) {
                   var1.setPose(var15);
                   return var17;
@@ -725,24 +699,21 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       var1.setYHeadRot(var1.getYRot());
    }
 
-   @Override
    public void onPassengerTurned(Entity var1) {
       this.clampRotation(var1);
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putString("Type", this.getVariant().getSerializedName());
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       if (var1.contains("Type", 8)) {
          this.setVariant(Boat.Type.byName(var1.getString("Type")));
       }
+
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       if (var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
@@ -757,7 +728,6 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       }
    }
 
-   @Override
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
       this.lastYd = this.getDeltaMovement().y;
       if (!this.isPassenger()) {
@@ -772,11 +742,12 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
                if (!this.level().isClientSide && !this.isRemoved()) {
                   this.kill();
                   if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-                     for(int var6 = 0; var6 < 3; ++var6) {
+                     int var6;
+                     for(var6 = 0; var6 < 3; ++var6) {
                         this.spawnAtLocation(this.getVariant().getPlanks());
                      }
 
-                     for(int var7 = 0; var7 < 2; ++var7) {
+                     for(var6 = 0; var6 < 2; ++var6) {
                         this.spawnAtLocation(Items.STICK);
                      }
                   }
@@ -787,11 +758,12 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          } else if (!this.level().getFluidState(this.blockPosition().below()).is(FluidTags.WATER) && var1 < 0.0) {
             this.fallDistance -= (float)var1;
          }
+
       }
    }
 
    public boolean getPaddleState(int var1) {
-      return this.entityData.<Boolean>get(var1 == 0 ? DATA_ID_PADDLE_LEFT : DATA_ID_PADDLE_RIGHT) && this.getControllingPassenger() != null;
+      return (Boolean)this.entityData.get(var1 == 0 ? DATA_ID_PADDLE_LEFT : DATA_ID_PADDLE_RIGHT) && this.getControllingPassenger() != null;
    }
 
    private void setBubbleTime(int var1) {
@@ -799,22 +771,21 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    private int getBubbleTime() {
-      return this.entityData.get(DATA_ID_BUBBLE_TIME);
+      return (Integer)this.entityData.get(DATA_ID_BUBBLE_TIME);
    }
 
    public float getBubbleAngle(float var1) {
       return Mth.lerp(var1, this.bubbleAngleO, this.bubbleAngle);
    }
 
-   public void setVariant(Boat.Type var1) {
+   public void setVariant(Type var1) {
       this.entityData.set(DATA_ID_TYPE, var1.ordinal());
    }
 
-   public Boat.Type getVariant() {
-      return Boat.Type.byId(this.entityData.get(DATA_ID_TYPE));
+   public Type getVariant() {
+      return Boat.Type.byId((Integer)this.entityData.get(DATA_ID_TYPE));
    }
 
-   @Override
    protected boolean canAddPassenger(Entity var1) {
       return this.getPassengers().size() < this.getMaxPassengers() && !this.isEyeInFluid(FluidTags.WATER);
    }
@@ -824,10 +795,16 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    @Nullable
-   @Override
    public LivingEntity getControllingPassenger() {
       Entity var2 = this.getFirstPassenger();
-      return var2 instanceof LivingEntity var1 ? var1 : super.getControllingPassenger();
+      LivingEntity var10000;
+      if (var2 instanceof LivingEntity var1) {
+         var10000 = var1;
+      } else {
+         var10000 = super.getControllingPassenger();
+      }
+
+      return var10000;
    }
 
    public void setInput(boolean var1, boolean var2, boolean var3, boolean var4) {
@@ -837,30 +814,28 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       this.inputDown = var4;
    }
 
-   @Override
    protected Component getTypeName() {
       return Component.translatable(this.getDropItem().getDescriptionId());
    }
 
-   @Override
    public boolean isUnderWater() {
       return this.status == Boat.Status.UNDER_WATER || this.status == Boat.Status.UNDER_FLOWING_WATER;
    }
 
-   @Override
    public ItemStack getPickResult() {
       return new ItemStack(this.getDropItem());
    }
 
-   public static enum Status {
-      IN_WATER,
-      UNDER_WATER,
-      UNDER_FLOWING_WATER,
-      ON_LAND,
-      IN_AIR;
+   // $FF: synthetic method
+   public Object getVariant() {
+      return this.getVariant();
+   }
 
-      private Status() {
-      }
+   static {
+      DATA_ID_TYPE = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
+      DATA_ID_PADDLE_LEFT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_PADDLE_RIGHT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_BUBBLE_TIME = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
    }
 
    public static enum Type implements StringRepresentable {
@@ -876,15 +851,14 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
 
       private final String name;
       private final Block planks;
-      public static final StringRepresentable.EnumCodec<Boat.Type> CODEC = StringRepresentable.fromEnum(Boat.Type::values);
-      private static final IntFunction<Boat.Type> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StringRepresentable.EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
+      private static final IntFunction<Type> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
 
       private Type(Block var3, String var4) {
          this.name = var4;
          this.planks = var3;
       }
 
-      @Override
       public String getSerializedName() {
          return this.name;
       }
@@ -897,17 +871,37 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          return this.planks;
       }
 
-      @Override
       public String toString() {
          return this.name;
       }
 
-      public static Boat.Type byId(int var0) {
-         return BY_ID.apply(var0);
+      public static Type byId(int var0) {
+         return (Type)BY_ID.apply(var0);
       }
 
-      public static Boat.Type byName(String var0) {
-         return CODEC.byName(var0, OAK);
+      public static Type byName(String var0) {
+         return (Type)CODEC.byName(var0, OAK);
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{OAK, SPRUCE, BIRCH, JUNGLE, ACACIA, CHERRY, DARK_OAK, MANGROVE, BAMBOO};
+      }
+   }
+
+   public static enum Status {
+      IN_WATER,
+      UNDER_WATER,
+      UNDER_FLOWING_WATER,
+      ON_LAND,
+      IN_AIR;
+
+      private Status() {
+      }
+
+      // $FF: synthetic method
+      private static Status[] $values() {
+         return new Status[]{IN_WATER, UNDER_WATER, UNDER_FLOWING_WATER, ON_LAND, IN_AIR};
       }
    }
 }

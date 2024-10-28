@@ -21,29 +21,22 @@ public class ItemWaterPotionFix extends DataFix {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped(
-         "ItemWaterPotionFix",
-         var1,
-         var2x -> {
-            Optional var3xx = var2x.getOptional(var2);
-            if (var3xx.isPresent()) {
-               String var4 = (String)((Pair)var3xx.get()).getSecond();
-               if ("minecraft:potion".equals(var4)
-                  || "minecraft:splash_potion".equals(var4)
-                  || "minecraft:lingering_potion".equals(var4)
-                  || "minecraft:tipped_arrow".equals(var4)) {
-                  Typed var5 = var2x.getOrCreateTyped(var3);
-                  Dynamic var6 = (Dynamic)var5.get(DSL.remainderFinder());
-                  if (var6.get("Potion").asString().result().isEmpty()) {
-                     var6 = var6.set("Potion", var6.createString("minecraft:water"));
-                  }
-   
-                  return var2x.set(var3, var5.set(DSL.remainderFinder(), var6));
+      return this.fixTypeEverywhereTyped("ItemWaterPotionFix", var1, (var2x) -> {
+         Optional var3x = var2x.getOptional(var2);
+         if (var3x.isPresent()) {
+            String var4 = (String)((Pair)var3x.get()).getSecond();
+            if ("minecraft:potion".equals(var4) || "minecraft:splash_potion".equals(var4) || "minecraft:lingering_potion".equals(var4) || "minecraft:tipped_arrow".equals(var4)) {
+               Typed var5 = var2x.getOrCreateTyped(var3);
+               Dynamic var6 = (Dynamic)var5.get(DSL.remainderFinder());
+               if (var6.get("Potion").asString().result().isEmpty()) {
+                  var6 = var6.set("Potion", var6.createString("minecraft:water"));
                }
+
+               return var2x.set(var3, var5.set(DSL.remainderFinder(), var6));
             }
-   
-            return var2x;
          }
-      );
+
+         return var2x;
+      });
    }
 }

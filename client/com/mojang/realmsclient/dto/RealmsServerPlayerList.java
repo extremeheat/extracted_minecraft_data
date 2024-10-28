@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class RealmsServerPlayerList extends ValueObject {
 
       try {
          var1.serverId = JsonUtils.getLongOr("serverId", var0, -1L);
-         String var2 = JsonUtils.getStringOr("playerList", var0, null);
+         String var2 = JsonUtils.getStringOr("playerList", var0, (String)null);
          if (var2 != null) {
             JsonElement var3 = JsonParser.parseString(var2);
             if (var3.isJsonArray()) {
@@ -46,10 +47,12 @@ public class RealmsServerPlayerList extends ValueObject {
 
    private static List<UUID> parsePlayers(JsonArray var0) {
       ArrayList var1 = new ArrayList(var0.size());
+      Iterator var2 = var0.iterator();
 
-      for(JsonElement var3 : var0) {
+      while(var2.hasNext()) {
+         JsonElement var3 = (JsonElement)var2.next();
          if (var3.isJsonObject()) {
-            UUID var4 = JsonUtils.getUuidOr("playerId", var3.getAsJsonObject(), null);
+            UUID var4 = JsonUtils.getUuidOr("playerId", var3.getAsJsonObject(), (UUID)null);
             if (var4 != null) {
                var1.add(var4);
             }

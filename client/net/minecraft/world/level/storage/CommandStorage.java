@@ -1,8 +1,8 @@
 package net.minecraft.world.level.storage;
 
 import com.google.common.collect.Maps;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Stream;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -12,7 +12,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 public class CommandStorage {
    private static final String ID_PREFIX = "command_storage_";
-   private final Map<String, CommandStorage.Container> namespaces = Maps.newHashMap();
+   private final Map<String, Container> namespaces = Maps.newHashMap();
    private final DimensionDataStorage storage;
 
    public CommandStorage(DimensionDataStorage var1) {
@@ -20,36 +20,42 @@ public class CommandStorage {
       this.storage = var1;
    }
 
-   private CommandStorage.Container newStorage(String var1) {
-      CommandStorage.Container var2 = new CommandStorage.Container();
+   private Container newStorage(String var1) {
+      Container var2 = new Container();
       this.namespaces.put(var1, var2);
       return var2;
    }
 
-   private SavedData.Factory<CommandStorage.Container> factory(String var1) {
-      return new SavedData.Factory<>(() -> this.newStorage(var1), (var2, var3) -> this.newStorage(var1).load(var2), DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
+   private SavedData.Factory<Container> factory(String var1) {
+      return new SavedData.Factory(() -> {
+         return this.newStorage(var1);
+      }, (var2, var3) -> {
+         return this.newStorage(var1).load(var2);
+      }, DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
    }
 
    public CompoundTag get(ResourceLocation var1) {
       String var2 = var1.getNamespace();
-      CommandStorage.Container var3 = this.storage.get(this.factory(var2), createId(var2));
+      Container var3 = (Container)this.storage.get(this.factory(var2), createId(var2));
       return var3 != null ? var3.get(var1.getPath()) : new CompoundTag();
    }
 
    public void set(ResourceLocation var1, CompoundTag var2) {
       String var3 = var1.getNamespace();
-      this.storage.computeIfAbsent(this.factory(var3), createId(var3)).put(var1.getPath(), var2);
+      ((Container)this.storage.computeIfAbsent(this.factory(var3), createId(var3))).put(var1.getPath(), var2);
    }
 
    public Stream<ResourceLocation> keys() {
-      return this.namespaces.entrySet().stream().flatMap(var0 -> var0.getValue().getKeys(var0.getKey()));
+      return this.namespaces.entrySet().stream().flatMap((var0) -> {
+         return ((Container)var0.getValue()).getKeys((String)var0.getKey());
+      });
    }
 
    private static String createId(String var0) {
       return "command_storage_" + var0;
    }
 
-   static class Container extends SavedData {
+   private static class Container extends SavedData {
       private static final String TAG_CONTENTS = "contents";
       private final Map<String, CompoundTag> storage = Maps.newHashMap();
 
@@ -57,26 +63,29 @@ public class CommandStorage {
          super();
       }
 
-      CommandStorage.Container load(CompoundTag var1) {
+      Container load(CompoundTag var1) {
          CompoundTag var2 = var1.getCompound("contents");
+         Iterator var3 = var2.getAllKeys().iterator();
 
-         for(String var4 : var2.getAllKeys()) {
+         while(var3.hasNext()) {
+            String var4 = (String)var3.next();
             this.storage.put(var4, var2.getCompound(var4));
          }
 
          return this;
       }
 
-      @Override
       public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
          CompoundTag var3 = new CompoundTag();
-         this.storage.forEach((var1x, var2x) -> var3.put(var1x, var2x.copy()));
+         this.storage.forEach((var1x, var2x) -> {
+            var3.put(var1x, var2x.copy());
+         });
          var1.put("contents", var3);
          return var1;
       }
 
       public CompoundTag get(String var1) {
-         CompoundTag var2 = this.storage.get(var1);
+         CompoundTag var2 = (CompoundTag)this.storage.get(var1);
          return var2 != null ? var2 : new CompoundTag();
       }
 
@@ -91,7 +100,9 @@ public class CommandStorage {
       }
 
       public Stream<ResourceLocation> getKeys(String var1) {
-         return this.storage.keySet().stream().map(var1x -> new ResourceLocation(var1, var1x));
+         return this.storage.keySet().stream().map((var1x) -> {
+            return new ResourceLocation(var1, var1x);
+         });
       }
    }
 }

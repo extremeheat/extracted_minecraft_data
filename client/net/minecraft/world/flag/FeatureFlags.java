@@ -11,9 +11,9 @@ public class FeatureFlags {
    public static final FeatureFlag UPDATE_1_21;
    public static final FeatureFlag TRADE_REBALANCE;
    public static final FeatureFlagRegistry REGISTRY;
-   public static final Codec<FeatureFlagSet> CODEC = REGISTRY.codec();
-   public static final FeatureFlagSet VANILLA_SET = FeatureFlagSet.of(VANILLA);
-   public static final FeatureFlagSet DEFAULT_FLAGS = VANILLA_SET;
+   public static final Codec<FeatureFlagSet> CODEC;
+   public static final FeatureFlagSet VANILLA_SET;
+   public static final FeatureFlagSet DEFAULT_FLAGS;
 
    public FeatureFlags() {
       super();
@@ -26,7 +26,9 @@ public class FeatureFlags {
    public static String printMissingFlags(FeatureFlagRegistry var0, FeatureFlagSet var1, FeatureFlagSet var2) {
       Set var3 = var0.toNames(var2);
       Set var4 = var0.toNames(var1);
-      return var3.stream().filter(var1x -> !var4.contains(var1x)).map(ResourceLocation::toString).collect(Collectors.joining(", "));
+      return (String)var3.stream().filter((var1x) -> {
+         return !var4.contains(var1x);
+      }).map(ResourceLocation::toString).collect(Collectors.joining(", "));
    }
 
    public static boolean isExperimental(FeatureFlagSet var0) {
@@ -40,5 +42,8 @@ public class FeatureFlags {
       TRADE_REBALANCE = var0.createVanilla("trade_rebalance");
       UPDATE_1_21 = var0.createVanilla("update_1_21");
       REGISTRY = var0.build();
+      CODEC = REGISTRY.codec();
+      VANILLA_SET = FeatureFlagSet.of(VANILLA);
+      DEFAULT_FLAGS = VANILLA_SET;
    }
 }

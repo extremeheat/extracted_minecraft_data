@@ -15,13 +15,16 @@ public enum StairsShape implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static StairsShape[] $values() {
+      return new StairsShape[]{STRAIGHT, INNER_LEFT, INNER_RIGHT, OUTER_LEFT, OUTER_RIGHT};
    }
 }

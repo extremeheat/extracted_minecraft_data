@@ -1,10 +1,10 @@
 package net.minecraft.world.ticks;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -16,27 +16,35 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.ChunkPos;
 
 public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
-   private final Queue<ScheduledTick<T>> tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
+   private final Queue<ScheduledTick<T>> tickQueue;
    @Nullable
    private List<SavedTick<T>> pendingTicks;
-   private final Set<ScheduledTick<?>> ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
+   private final Set<ScheduledTick<?>> ticksPerPosition;
    @Nullable
    private BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> onTickAdded;
 
    public LevelChunkTicks() {
       super();
+      this.tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
+      this.ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
    }
 
    public LevelChunkTicks(List<SavedTick<T>> var1) {
       super();
+      this.tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
+      this.ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
       this.pendingTicks = var1;
+      Iterator var2 = var1.iterator();
 
-      for(SavedTick var3 : var1) {
-         this.ticksPerPosition.add(ScheduledTick.<Object>probe(var3.type(), var3.pos()));
+      while(var2.hasNext()) {
+         SavedTick var3 = (SavedTick)var2.next();
+         this.ticksPerPosition.add(ScheduledTick.probe(var3.type(), var3.pos()));
       }
+
    }
 
    public void setOnTickAdded(@Nullable BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> var1) {
@@ -45,7 +53,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    @Nullable
    public ScheduledTick<T> peek() {
-      return (ScheduledTick<T>)this.tickQueue.peek();
+      return (ScheduledTick)this.tickQueue.peek();
    }
 
    @Nullable
@@ -58,11 +66,11 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       return var1;
    }
 
-   @Override
    public void schedule(ScheduledTick<T> var1) {
       if (this.ticksPerPosition.add(var1)) {
          this.scheduleUnchecked(var1);
       }
+
    }
 
    private void scheduleUnchecked(ScheduledTick<T> var1) {
@@ -70,11 +78,11 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       if (this.onTickAdded != null) {
          this.onTickAdded.accept(this, var1);
       }
+
    }
 
-   @Override
    public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.ticksPerPosition.contains(ScheduledTick.<Object>probe(var2, var1));
+      return this.ticksPerPosition.contains(ScheduledTick.probe(var2, var1));
    }
 
    public void removeIf(Predicate<ScheduledTick<T>> var1) {
@@ -82,32 +90,39 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
       while(var2.hasNext()) {
          ScheduledTick var3 = (ScheduledTick)var2.next();
-         if (var1.test((T)var3)) {
+         if (var1.test(var3)) {
             var2.remove();
             this.ticksPerPosition.remove(var3);
          }
       }
+
    }
 
    public Stream<ScheduledTick<T>> getAll() {
       return this.tickQueue.stream();
    }
 
-   @Override
    public int count() {
       return this.tickQueue.size() + (this.pendingTicks != null ? this.pendingTicks.size() : 0);
    }
 
    public ListTag save(long var1, Function<T, String> var3) {
       ListTag var4 = new ListTag();
+      Iterator var5;
       if (this.pendingTicks != null) {
-         for(SavedTick var6 : this.pendingTicks) {
+         var5 = this.pendingTicks.iterator();
+
+         while(var5.hasNext()) {
+            SavedTick var6 = (SavedTick)var5.next();
             var4.add(var6.save(var3));
          }
       }
 
-      for(ScheduledTick var8 : this.tickQueue) {
-         var4.add(SavedTick.saveTick(var8, var3, var1));
+      var5 = this.tickQueue.iterator();
+
+      while(var5.hasNext()) {
+         ScheduledTick var7 = (ScheduledTick)var5.next();
+         var4.add(SavedTick.saveTick(var7, var3, var1));
       }
 
       return var4;
@@ -116,8 +131,10 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    public void unpack(long var1) {
       if (this.pendingTicks != null) {
          int var3 = -this.pendingTicks.size();
+         Iterator var4 = this.pendingTicks.iterator();
 
-         for(SavedTick var5 : this.pendingTicks) {
+         while(var4.hasNext()) {
+            SavedTick var5 = (SavedTick)var4.next();
             this.scheduleUnchecked(var5.unpack(var1, (long)(var3++)));
          }
       }
@@ -126,8 +143,14 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    }
 
    public static <T> LevelChunkTicks<T> load(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2) {
-      Builder var3 = ImmutableList.builder();
+      ImmutableList.Builder var3 = ImmutableList.builder();
+      Objects.requireNonNull(var3);
       SavedTick.loadTickList(var0, var1, var2, var3::add);
-      return new LevelChunkTicks<>(var3.build());
+      return new LevelChunkTicks(var3.build());
+   }
+
+   // $FF: synthetic method
+   public Tag save(long var1, Function var3) {
+      return this.save(var1, var3);
    }
 }

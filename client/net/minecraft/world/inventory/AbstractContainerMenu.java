@@ -8,7 +8,9 @@ import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -16,9 +18,7 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -28,7 +28,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.slf4j.Logger;
@@ -46,35 +45,39 @@ public abstract class AbstractContainerMenu {
    private final NonNullList<ItemStack> lastSlots = NonNullList.create();
    public final NonNullList<Slot> slots = NonNullList.create();
    private final List<DataSlot> dataSlots = Lists.newArrayList();
-   private ItemStack carried = ItemStack.EMPTY;
-   private final NonNullList<ItemStack> remoteSlots = NonNullList.create();
-   private final IntList remoteDataSlots = new IntArrayList();
-   private ItemStack remoteCarried = ItemStack.EMPTY;
+   private ItemStack carried;
+   private final NonNullList<ItemStack> remoteSlots;
+   private final IntList remoteDataSlots;
+   private ItemStack remoteCarried;
    private int stateId;
    @Nullable
    private final MenuType<?> menuType;
    public final int containerId;
-   private int quickcraftType = -1;
+   private int quickcraftType;
    private int quickcraftStatus;
-   private final Set<Slot> quickcraftSlots = Sets.newHashSet();
-   private final List<ContainerListener> containerListeners = Lists.newArrayList();
+   private final Set<Slot> quickcraftSlots;
+   private final List<ContainerListener> containerListeners;
    @Nullable
    private ContainerSynchronizer synchronizer;
    private boolean suppressRemoteUpdates;
 
    protected AbstractContainerMenu(@Nullable MenuType<?> var1, int var2) {
       super();
+      this.carried = ItemStack.EMPTY;
+      this.remoteSlots = NonNullList.create();
+      this.remoteDataSlots = new IntArrayList();
+      this.remoteCarried = ItemStack.EMPTY;
+      this.quickcraftType = -1;
+      this.quickcraftSlots = Sets.newHashSet();
+      this.containerListeners = Lists.newArrayList();
       this.menuType = var1;
       this.containerId = var2;
    }
 
    protected static boolean stillValid(ContainerLevelAccess var0, Player var1, Block var2) {
-      return var0.evaluate(
-         (var2x, var3) -> !var2x.getBlockState(var3).is(var2)
-               ? false
-               : var1.distanceToSqr((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5) <= 64.0,
-         true
-      );
+      return (Boolean)var0.evaluate((var2x, var3) -> {
+         return !var2x.getBlockState(var3).is(var2) ? false : var1.canInteractWithBlock(var3, 4.0);
+      }, true);
    }
 
    public MenuType<?> getType() {
@@ -121,6 +124,7 @@ public abstract class AbstractContainerMenu {
       for(int var2 = 0; var2 < var1.getCount(); ++var2) {
          this.addDataSlot(DataSlot.forContainer(var1, var2));
       }
+
    }
 
    public void addSlotListener(ContainerListener var1) {
@@ -138,20 +142,22 @@ public abstract class AbstractContainerMenu {
    public void sendAllDataToRemote() {
       int var1 = 0;
 
-      for(int var2 = this.slots.size(); var1 < var2; ++var1) {
-         this.remoteSlots.set(var1, this.slots.get(var1).getItem().copy());
+      int var2;
+      for(var2 = this.slots.size(); var1 < var2; ++var1) {
+         this.remoteSlots.set(var1, ((Slot)this.slots.get(var1)).getItem().copy());
       }
 
       this.remoteCarried = this.getCarried().copy();
       var1 = 0;
 
-      for(int var4 = this.dataSlots.size(); var1 < var4; ++var1) {
-         this.remoteDataSlots.set(var1, this.dataSlots.get(var1).get());
+      for(var2 = this.dataSlots.size(); var1 < var2; ++var1) {
+         this.remoteDataSlots.set(var1, ((DataSlot)this.dataSlots.get(var1)).get());
       }
 
       if (this.synchronizer != null) {
          this.synchronizer.sendInitialData(this, this.remoteSlots, this.remoteCarried, this.remoteDataSlots.toIntArray());
       }
+
    }
 
    public void removeSlotListener(ContainerListener var1) {
@@ -160,8 +166,10 @@ public abstract class AbstractContainerMenu {
 
    public NonNullList<ItemStack> getItems() {
       NonNullList var1 = NonNullList.create();
+      Iterator var2 = this.slots.iterator();
 
-      for(Slot var3 : this.slots) {
+      while(var2.hasNext()) {
+         Slot var3 = (Slot)var2.next();
          var1.add(var3.getItem());
       }
 
@@ -169,8 +177,10 @@ public abstract class AbstractContainerMenu {
    }
 
    public void broadcastChanges() {
-      for(int var1 = 0; var1 < this.slots.size(); ++var1) {
-         ItemStack var2 = this.slots.get(var1).getItem();
+      int var1;
+      for(var1 = 0; var1 < this.slots.size(); ++var1) {
+         ItemStack var2 = ((Slot)this.slots.get(var1)).getItem();
+         Objects.requireNonNull(var2);
          Supplier var3 = Suppliers.memoize(var2::copy);
          this.triggerSlotListeners(var1, var2, var3);
          this.synchronizeSlotToRemote(var1, var2, var3);
@@ -178,27 +188,30 @@ public abstract class AbstractContainerMenu {
 
       this.synchronizeCarriedToRemote();
 
-      for(int var4 = 0; var4 < this.dataSlots.size(); ++var4) {
-         DataSlot var5 = this.dataSlots.get(var4);
-         int var6 = var5.get();
-         if (var5.checkAndClearUpdateFlag()) {
-            this.updateDataSlotListeners(var4, var6);
+      for(var1 = 0; var1 < this.dataSlots.size(); ++var1) {
+         DataSlot var4 = (DataSlot)this.dataSlots.get(var1);
+         int var5 = var4.get();
+         if (var4.checkAndClearUpdateFlag()) {
+            this.updateDataSlotListeners(var1, var5);
          }
 
-         this.synchronizeDataSlotToRemote(var4, var6);
+         this.synchronizeDataSlotToRemote(var1, var5);
       }
+
    }
 
    public void broadcastFullState() {
-      for(int var1 = 0; var1 < this.slots.size(); ++var1) {
-         ItemStack var2 = this.slots.get(var1).getItem();
+      int var1;
+      for(var1 = 0; var1 < this.slots.size(); ++var1) {
+         ItemStack var2 = ((Slot)this.slots.get(var1)).getItem();
+         Objects.requireNonNull(var2);
          this.triggerSlotListeners(var1, var2, var2::copy);
       }
 
-      for(int var3 = 0; var3 < this.dataSlots.size(); ++var3) {
-         DataSlot var4 = this.dataSlots.get(var3);
-         if (var4.checkAndClearUpdateFlag()) {
-            this.updateDataSlotListeners(var3, var4.get());
+      for(var1 = 0; var1 < this.dataSlots.size(); ++var1) {
+         DataSlot var3 = (DataSlot)this.dataSlots.get(var1);
+         if (var3.checkAndClearUpdateFlag()) {
+            this.updateDataSlotListeners(var1, var3.get());
          }
       }
 
@@ -206,26 +219,33 @@ public abstract class AbstractContainerMenu {
    }
 
    private void updateDataSlotListeners(int var1, int var2) {
-      for(ContainerListener var4 : this.containerListeners) {
+      Iterator var3 = this.containerListeners.iterator();
+
+      while(var3.hasNext()) {
+         ContainerListener var4 = (ContainerListener)var3.next();
          var4.dataChanged(this, var1, var2);
       }
+
    }
 
    private void triggerSlotListeners(int var1, ItemStack var2, java.util.function.Supplier<ItemStack> var3) {
-      ItemStack var4 = this.lastSlots.get(var1);
+      ItemStack var4 = (ItemStack)this.lastSlots.get(var1);
       if (!ItemStack.matches(var4, var2)) {
          ItemStack var5 = (ItemStack)var3.get();
          this.lastSlots.set(var1, var5);
+         Iterator var6 = this.containerListeners.iterator();
 
-         for(ContainerListener var7 : this.containerListeners) {
+         while(var6.hasNext()) {
+            ContainerListener var7 = (ContainerListener)var6.next();
             var7.slotChanged(this, var1, var5);
          }
       }
+
    }
 
    private void synchronizeSlotToRemote(int var1, ItemStack var2, java.util.function.Supplier<ItemStack> var3) {
       if (!this.suppressRemoteUpdates) {
-         ItemStack var4 = this.remoteSlots.get(var1);
+         ItemStack var4 = (ItemStack)this.remoteSlots.get(var1);
          if (!ItemStack.matches(var4, var2)) {
             ItemStack var5 = (ItemStack)var3.get();
             this.remoteSlots.set(var1, var5);
@@ -233,6 +253,7 @@ public abstract class AbstractContainerMenu {
                this.synchronizer.sendSlotChange(this, var1, var5);
             }
          }
+
       }
    }
 
@@ -245,6 +266,7 @@ public abstract class AbstractContainerMenu {
                this.synchronizer.sendDataChange(this, var1, var2);
             }
          }
+
       }
    }
 
@@ -256,6 +278,7 @@ public abstract class AbstractContainerMenu {
                this.synchronizer.sendCarriedChange(this, this.remoteCarried);
             }
          }
+
       }
    }
 
@@ -280,7 +303,7 @@ public abstract class AbstractContainerMenu {
    }
 
    public Slot getSlot(int var1) {
-      return this.slots.get(var1);
+      return (Slot)this.slots.get(var1);
    }
 
    public abstract ItemStack quickMoveStack(Player var1, int var2);
@@ -291,18 +314,27 @@ public abstract class AbstractContainerMenu {
       } catch (Exception var8) {
          CrashReport var6 = CrashReport.forThrowable(var8, "Container click");
          CrashReportCategory var7 = var6.addCategory("Click info");
-         var7.setDetail("Menu Type", () -> this.menuType != null ? BuiltInRegistries.MENU.getKey(this.menuType).toString() : "<no type>");
-         var7.setDetail("Menu Class", () -> this.getClass().getCanonicalName());
-         var7.setDetail("Slot Count", this.slots.size());
-         var7.setDetail("Slot", var1);
-         var7.setDetail("Button", var2);
-         var7.setDetail("Type", var3);
+         var7.setDetail("Menu Type", () -> {
+            return this.menuType != null ? BuiltInRegistries.MENU.getKey(this.menuType).toString() : "<no type>";
+         });
+         var7.setDetail("Menu Class", () -> {
+            return this.getClass().getCanonicalName();
+         });
+         var7.setDetail("Slot Count", (Object)this.slots.size());
+         var7.setDetail("Slot", (Object)var1);
+         var7.setDetail("Button", (Object)var2);
+         var7.setDetail("Type", (Object)var3);
          throw new ReportedException(var6);
       }
    }
 
    private void doClick(int var1, int var2, ClickType var3, Player var4) {
       Inventory var5 = var4.getInventory();
+      Slot var7;
+      ItemStack var8;
+      ItemStack var17;
+      int var19;
+      int var20;
       if (var3 == ClickType.QUICK_CRAFT) {
          int var6 = this.quickcraftStatus;
          this.quickcraftStatus = getQuickcraftHeader(var2);
@@ -319,48 +351,58 @@ public abstract class AbstractContainerMenu {
                this.resetQuickCraft();
             }
          } else if (this.quickcraftStatus == 1) {
-            Slot var7 = this.slots.get(var1);
-            ItemStack var8 = this.getCarried();
-            if (canItemQuickReplace(var7, var8, true)
-               && var7.mayPlace(var8)
-               && (this.quickcraftType == 2 || var8.getCount() > this.quickcraftSlots.size())
-               && this.canDragTo(var7)) {
+            var7 = (Slot)this.slots.get(var1);
+            var8 = this.getCarried();
+            if (canItemQuickReplace(var7, var8, true) && var7.mayPlace(var8) && (this.quickcraftType == 2 || var8.getCount() > this.quickcraftSlots.size()) && this.canDragTo(var7)) {
                this.quickcraftSlots.add(var7);
             }
          } else if (this.quickcraftStatus == 2) {
             if (!this.quickcraftSlots.isEmpty()) {
                if (this.quickcraftSlots.size() == 1) {
-                  int var21 = this.quickcraftSlots.iterator().next().index;
+                  var19 = ((Slot)this.quickcraftSlots.iterator().next()).index;
                   this.resetQuickCraft();
-                  this.doClick(var21, this.quickcraftType, ClickType.PICKUP, var4);
+                  this.doClick(var19, this.quickcraftType, ClickType.PICKUP, var4);
                   return;
                }
 
-               ItemStack var20 = this.getCarried().copy();
-               if (var20.isEmpty()) {
+               var17 = this.getCarried().copy();
+               if (var17.isEmpty()) {
                   this.resetQuickCraft();
                   return;
                }
 
-               int var28 = this.getCarried().getCount();
+               var20 = this.getCarried().getCount();
+               Iterator var9 = this.quickcraftSlots.iterator();
 
-               for(Slot var10 : this.quickcraftSlots) {
-                  ItemStack var11 = this.getCarried();
-                  if (var10 != null
-                     && canItemQuickReplace(var10, var11, true)
-                     && var10.mayPlace(var11)
-                     && (this.quickcraftType == 2 || var11.getCount() >= this.quickcraftSlots.size())
-                     && this.canDragTo(var10)) {
+               label316:
+               while(true) {
+                  Slot var10;
+                  ItemStack var11;
+                  do {
+                     do {
+                        do {
+                           do {
+                              if (!var9.hasNext()) {
+                                 var17.setCount(var20);
+                                 this.setCarried(var17);
+                                 break label316;
+                              }
+
+                              var10 = (Slot)var9.next();
+                              var11 = this.getCarried();
+                           } while(var10 == null);
+                        } while(!canItemQuickReplace(var10, var11, true));
+                     } while(!var10.mayPlace(var11));
+                  } while(this.quickcraftType != 2 && var11.getCount() < this.quickcraftSlots.size());
+
+                  if (this.canDragTo(var10)) {
                      int var12 = var10.hasItem() ? var10.getItem().getCount() : 0;
-                     int var13 = Math.min(var20.getMaxStackSize(), var10.getMaxStackSize(var20));
-                     int var14 = Math.min(getQuickCraftPlaceCount(this.quickcraftSlots, this.quickcraftType, var20) + var12, var13);
-                     var28 -= var14 - var12;
-                     var10.setByPlayer(var20.copyWithCount(var14));
+                     int var13 = Math.min(var17.getMaxStackSize(), var10.getMaxStackSize(var17));
+                     int var14 = Math.min(getQuickCraftPlaceCount(this.quickcraftSlots, this.quickcraftType, var17) + var12, var13);
+                     var20 -= var14 - var12;
+                     var10.setByPlayer(var17.copyWithCount(var14));
                   }
                }
-
-               var20.setCount(var28);
-               this.setCarried(var20);
             }
 
             this.resetQuickCraft();
@@ -369,148 +411,151 @@ public abstract class AbstractContainerMenu {
          }
       } else if (this.quickcraftStatus != 0) {
          this.resetQuickCraft();
-      } else if ((var3 == ClickType.PICKUP || var3 == ClickType.QUICK_MOVE) && (var2 == 0 || var2 == 1)) {
-         ClickAction var19 = var2 == 0 ? ClickAction.PRIMARY : ClickAction.SECONDARY;
-         if (var1 == -999) {
-            if (!this.getCarried().isEmpty()) {
-               if (var19 == ClickAction.PRIMARY) {
-                  var4.drop(this.getCarried(), true);
-                  this.setCarried(ItemStack.EMPTY);
-               } else {
-                  var4.drop(this.getCarried().split(1), true);
+      } else {
+         int var23;
+         if ((var3 == ClickType.PICKUP || var3 == ClickType.QUICK_MOVE) && (var2 == 0 || var2 == 1)) {
+            ClickAction var18 = var2 == 0 ? ClickAction.PRIMARY : ClickAction.SECONDARY;
+            if (var1 == -999) {
+               if (!this.getCarried().isEmpty()) {
+                  if (var18 == ClickAction.PRIMARY) {
+                     var4.drop(this.getCarried(), true);
+                     this.setCarried(ItemStack.EMPTY);
+                  } else {
+                     var4.drop(this.getCarried().split(1), true);
+                  }
                }
-            }
-         } else if (var3 == ClickType.QUICK_MOVE) {
-            if (var1 < 0) {
-               return;
-            }
+            } else if (var3 == ClickType.QUICK_MOVE) {
+               if (var1 < 0) {
+                  return;
+               }
 
-            Slot var26 = this.slots.get(var1);
-            if (!var26.mayPickup(var4)) {
-               return;
-            }
+               var7 = (Slot)this.slots.get(var1);
+               if (!var7.mayPickup(var4)) {
+                  return;
+               }
 
-            ItemStack var32 = this.quickMoveStack(var4, var1);
+               for(var8 = this.quickMoveStack(var4, var1); !var8.isEmpty() && ItemStack.isSameItem(var7.getItem(), var8); var8 = this.quickMoveStack(var4, var1)) {
+               }
+            } else {
+               if (var1 < 0) {
+                  return;
+               }
 
-            while(!var32.isEmpty() && ItemStack.isSameItem(var26.getItem(), var32)) {
-               var32 = this.quickMoveStack(var4, var1);
+               var7 = (Slot)this.slots.get(var1);
+               var8 = var7.getItem();
+               ItemStack var22 = this.getCarried();
+               var4.updateTutorialInventoryAction(var22, var7.getItem(), var18);
+               if (!this.tryItemClickBehaviourOverride(var4, var18, var7, var8, var22)) {
+                  if (var8.isEmpty()) {
+                     if (!var22.isEmpty()) {
+                        var23 = var18 == ClickAction.PRIMARY ? var22.getCount() : 1;
+                        this.setCarried(var7.safeInsert(var22, var23));
+                     }
+                  } else if (var7.mayPickup(var4)) {
+                     if (var22.isEmpty()) {
+                        var23 = var18 == ClickAction.PRIMARY ? var8.getCount() : (var8.getCount() + 1) / 2;
+                        Optional var25 = var7.tryRemove(var23, 2147483647, var4);
+                        var25.ifPresent((var3x) -> {
+                           this.setCarried(var3x);
+                           var7.onTake(var4, var3x);
+                        });
+                     } else if (var7.mayPlace(var22)) {
+                        if (ItemStack.isSameItemSameComponents(var8, var22)) {
+                           var23 = var18 == ClickAction.PRIMARY ? var22.getCount() : 1;
+                           this.setCarried(var7.safeInsert(var22, var23));
+                        } else if (var22.getCount() <= var7.getMaxStackSize(var22)) {
+                           this.setCarried(var8);
+                           var7.setByPlayer(var22);
+                        }
+                     } else if (ItemStack.isSameItemSameComponents(var8, var22)) {
+                        Optional var26 = var7.tryRemove(var8.getCount(), var22.getMaxStackSize() - var22.getCount(), var4);
+                        var26.ifPresent((var3x) -> {
+                           var22.grow(var3x.getCount());
+                           var7.onTake(var4, var3x);
+                        });
+                     }
+                  }
+               }
+
+               var7.setChanged();
             }
          } else {
-            if (var1 < 0) {
-               return;
-            }
-
-            Slot var27 = this.slots.get(var1);
-            ItemStack var33 = var27.getItem();
-            if (var33.has(DataComponents.CLICKS)) {
-               var33.set(DataComponents.CLICKS, var33.getOrDefault(DataComponents.CLICKS, Integer.valueOf(0)) + 1);
-            }
-
-            ItemStack var37 = this.getCarried();
-            var4.updateTutorialInventoryAction(var37, var27.getItem(), var19);
-            if (!this.tryItemClickBehaviourOverride(var4, var19, var27, var33, var37)) {
-               if (var33.isEmpty()) {
-                  if (!var37.isEmpty()) {
-                     int var39 = var19 == ClickAction.PRIMARY ? var37.getCount() : 1;
-                     this.setCarried(var27.safeInsert(var37, var39));
-                  }
-               } else if (var27.mayPickup(var4)) {
-                  if (var37.isEmpty()) {
-                     int var40 = var19 == ClickAction.PRIMARY ? var33.getCount() : (var33.getCount() + 1) / 2;
-                     Optional var44 = var27.tryRemove(var40, 2147483647, var4);
-                     var44.ifPresent(var3x -> {
-                        this.setCarried(var3x);
-                        var27.onTake(var4, var3x);
-                     });
-                  } else if (var27.mayPlace(var37)) {
-                     if (ItemStack.isSameItemSameComponents(var33, var37)) {
-                        int var41 = var19 == ClickAction.PRIMARY ? var37.getCount() : 1;
-                        this.setCarried(var27.safeInsert(var37, var41));
-                     } else if (var37.getCount() <= var27.getMaxStackSize(var37)) {
-                        this.setCarried(var33);
-                        var27.setByPlayer(var37);
+            int var21;
+            if (var3 == ClickType.SWAP && (var2 >= 0 && var2 < 9 || var2 == 40)) {
+               ItemStack var16 = var5.getItem(var2);
+               var7 = (Slot)this.slots.get(var1);
+               var8 = var7.getItem();
+               if (!var16.isEmpty() || !var8.isEmpty()) {
+                  if (var16.isEmpty()) {
+                     if (var7.mayPickup(var4)) {
+                        var5.setItem(var2, var8);
+                        var7.onSwapCraft(var8.getCount());
+                        var7.setByPlayer(ItemStack.EMPTY);
+                        var7.onTake(var4, var8);
                      }
-                  } else if (ItemStack.isSameItemSameComponents(var33, var37)) {
-                     Optional var42 = var27.tryRemove(var33.getCount(), var37.getMaxStackSize() - var37.getCount(), var4);
-                     var42.ifPresent(var3x -> {
-                        var37.grow(var3x.getCount());
-                        var27.onTake(var4, var3x);
-                     });
+                  } else if (var8.isEmpty()) {
+                     if (var7.mayPlace(var16)) {
+                        var21 = var7.getMaxStackSize(var16);
+                        if (var16.getCount() > var21) {
+                           var7.setByPlayer(var16.split(var21));
+                        } else {
+                           var5.setItem(var2, ItemStack.EMPTY);
+                           var7.setByPlayer(var16);
+                        }
+                     }
+                  } else if (var7.mayPickup(var4) && var7.mayPlace(var16)) {
+                     var21 = var7.getMaxStackSize(var16);
+                     if (var16.getCount() > var21) {
+                        var7.setByPlayer(var16.split(var21));
+                        var7.onTake(var4, var8);
+                        if (!var5.add(var8)) {
+                           var4.drop(var8, true);
+                        }
+                     } else {
+                        var5.setItem(var2, var8);
+                        var7.setByPlayer(var16);
+                        var7.onTake(var4, var8);
+                     }
                   }
                }
-            }
+            } else {
+               Slot var15;
+               if (var3 == ClickType.CLONE && var4.hasInfiniteMaterials() && this.getCarried().isEmpty() && var1 >= 0) {
+                  var15 = (Slot)this.slots.get(var1);
+                  if (var15.hasItem()) {
+                     var17 = var15.getItem();
+                     this.setCarried(var17.copyWithCount(var17.getMaxStackSize()));
+                  }
+               } else if (var3 == ClickType.THROW && this.getCarried().isEmpty() && var1 >= 0) {
+                  var15 = (Slot)this.slots.get(var1);
+                  var19 = var2 == 0 ? 1 : var15.getItem().getCount();
+                  var8 = var15.safeTake(var19, 2147483647, var4);
+                  var4.drop(var8, true);
+               } else if (var3 == ClickType.PICKUP_ALL && var1 >= 0) {
+                  var15 = (Slot)this.slots.get(var1);
+                  var17 = this.getCarried();
+                  if (!var17.isEmpty() && (!var15.hasItem() || !var15.mayPickup(var4))) {
+                     var20 = var2 == 0 ? 0 : this.slots.size() - 1;
+                     var21 = var2 == 0 ? 1 : -1;
 
-            var27.setChanged();
-         }
-      } else if (var3 == ClickType.SWAP && (var2 >= 0 && var2 < 9 || var2 == 40)) {
-         ItemStack var18 = var5.getItem(var2);
-         Slot var25 = this.slots.get(var1);
-         ItemStack var31 = var25.getItem();
-         if (!var18.isEmpty() || !var31.isEmpty()) {
-            if (var18.isEmpty()) {
-               if (var25.mayPickup(var4)) {
-                  var5.setItem(var2, var31);
-                  var25.onSwapCraft(var31.getCount());
-                  var25.setByPlayer(ItemStack.EMPTY);
-                  var25.onTake(var4, var31);
-               }
-            } else if (var31.isEmpty()) {
-               if (var25.mayPlace(var18)) {
-                  int var35 = var25.getMaxStackSize(var18);
-                  if (var18.getCount() > var35) {
-                     var25.setByPlayer(var18.split(var35));
-                  } else {
-                     var5.setItem(var2, ItemStack.EMPTY);
-                     var25.setByPlayer(var18);
-                  }
-               }
-            } else if (var25.mayPickup(var4) && var25.mayPlace(var18)) {
-               int var36 = var25.getMaxStackSize(var18);
-               if (var18.getCount() > var36) {
-                  var25.setByPlayer(var18.split(var36));
-                  var25.onTake(var4, var31);
-                  if (!var5.add(var31)) {
-                     var4.drop(var31, true);
-                  }
-               } else {
-                  var5.setItem(var2, var31);
-                  var25.setByPlayer(var18);
-                  var25.onTake(var4, var31);
-               }
-            }
-         }
-      } else if (var3 == ClickType.CLONE && var4.hasInfiniteMaterials() && this.getCarried().isEmpty() && var1 >= 0) {
-         Slot var17 = this.slots.get(var1);
-         if (var17.hasItem()) {
-            ItemStack var24 = var17.getItem();
-            this.setCarried(var24.copyWithCount(var24.getMaxStackSize()));
-         }
-      } else if (var3 == ClickType.THROW && this.getCarried().isEmpty() && var1 >= 0) {
-         Slot var16 = this.slots.get(var1);
-         int var23 = var2 == 0 ? 1 : var16.getItem().getCount();
-         ItemStack var30 = var16.safeTake(var23, 2147483647, var4);
-         var4.drop(var30, true);
-      } else if (var3 == ClickType.PICKUP_ALL && var1 >= 0) {
-         Slot var15 = this.slots.get(var1);
-         ItemStack var22 = this.getCarried();
-         if (!var22.isEmpty() && (!var15.hasItem() || !var15.mayPickup(var4))) {
-            int var29 = var2 == 0 ? 0 : this.slots.size() - 1;
-            int var34 = var2 == 0 ? 1 : -1;
-
-            for(int var38 = 0; var38 < 2; ++var38) {
-               for(int var43 = var29; var43 >= 0 && var43 < this.slots.size() && var22.getCount() < var22.getMaxStackSize(); var43 += var34) {
-                  Slot var45 = this.slots.get(var43);
-                  if (var45.hasItem() && canItemQuickReplace(var45, var22, true) && var45.mayPickup(var4) && this.canTakeItemForPickAll(var22, var45)) {
-                     ItemStack var46 = var45.getItem();
-                     if (var38 != 0 || var46.getCount() != var46.getMaxStackSize()) {
-                        ItemStack var47 = var45.safeTake(var46.getCount(), var22.getMaxStackSize() - var22.getCount(), var4);
-                        var22.grow(var47.getCount());
+                     for(var23 = 0; var23 < 2; ++var23) {
+                        for(int var24 = var20; var24 >= 0 && var24 < this.slots.size() && var17.getCount() < var17.getMaxStackSize(); var24 += var21) {
+                           Slot var27 = (Slot)this.slots.get(var24);
+                           if (var27.hasItem() && canItemQuickReplace(var27, var17, true) && var27.mayPickup(var4) && this.canTakeItemForPickAll(var17, var27)) {
+                              ItemStack var28 = var27.getItem();
+                              if (var23 != 0 || var28.getCount() != var28.getMaxStackSize()) {
+                                 ItemStack var29 = var27.safeTake(var28.getCount(), var17.getMaxStackSize() - var17.getCount(), var4);
+                                 var17.grow(var29.getCount());
+                              }
+                           }
+                        }
                      }
                   }
                }
             }
          }
       }
+
    }
 
    private boolean tryItemClickBehaviourOverride(Player var1, ClickAction var2, Slot var3, ItemStack var4, ItemStack var5) {
@@ -524,12 +569,10 @@ public abstract class AbstractContainerMenu {
 
    private SlotAccess createCarriedSlotAccess() {
       return new SlotAccess() {
-         @Override
          public ItemStack get() {
             return AbstractContainerMenu.this.getCarried();
          }
 
-         @Override
          public boolean set(ItemStack var1) {
             AbstractContainerMenu.this.setCarried(var1);
             return true;
@@ -554,20 +597,24 @@ public abstract class AbstractContainerMenu {
             this.setCarried(ItemStack.EMPTY);
          }
       }
+
    }
 
    protected void clearContainer(Player var1, Container var2) {
+      int var3;
       if (!var1.isAlive() || var1 instanceof ServerPlayer && ((ServerPlayer)var1).hasDisconnected()) {
-         for(int var5 = 0; var5 < var2.getContainerSize(); ++var5) {
-            var1.drop(var2.removeItemNoUpdate(var5), false);
+         for(var3 = 0; var3 < var2.getContainerSize(); ++var3) {
+            var1.drop(var2.removeItemNoUpdate(var3), false);
          }
+
       } else {
-         for(int var3 = 0; var3 < var2.getContainerSize(); ++var3) {
+         for(var3 = 0; var3 < var2.getContainerSize(); ++var3) {
             Inventory var4 = var1.getInventory();
             if (var4.player instanceof ServerPlayer) {
                var4.placeItemBackInInventory(var2.removeItemNoUpdate(var3));
             }
          }
+
       }
    }
 
@@ -590,7 +637,7 @@ public abstract class AbstractContainerMenu {
    }
 
    public void setData(int var1, int var2) {
-      this.dataSlots.get(var1).set(var2);
+      ((DataSlot)this.dataSlots.get(var1)).set(var2);
    }
 
    public abstract boolean stillValid(Player var1);
@@ -602,19 +649,29 @@ public abstract class AbstractContainerMenu {
          var6 = var3 - 1;
       }
 
+      Slot var7;
+      ItemStack var8;
+      int var9;
       if (var1.isStackable()) {
-         while(!var1.isEmpty() && (var4 ? var6 >= var2 : var6 < var3)) {
-            Slot var7 = this.slots.get(var6);
-            ItemStack var8 = var7.getItem();
+         while(!var1.isEmpty()) {
+            if (var4) {
+               if (var6 < var2) {
+                  break;
+               }
+            } else if (var6 >= var3) {
+               break;
+            }
+
+            var7 = (Slot)this.slots.get(var6);
+            var8 = var7.getItem();
             if (!var8.isEmpty() && ItemStack.isSameItemSameComponents(var1, var8)) {
-               int var9 = var8.getCount() + var1.getCount();
-               int var10 = var7.getMaxStackSize(var1);
-               if (var9 <= var10) {
+               var9 = var8.getCount() + var1.getCount();
+               if (var9 <= var1.getMaxStackSize()) {
                   var1.setCount(0);
                   var8.setCount(var9);
                   var7.setChanged();
                   var5 = true;
-               } else if (var8.getCount() < var10) {
+               } else if (var8.getCount() < var1.getMaxStackSize()) {
                   var1.shrink(var1.getMaxStackSize() - var8.getCount());
                   var8.setCount(var1.getMaxStackSize());
                   var7.setChanged();
@@ -637,13 +694,21 @@ public abstract class AbstractContainerMenu {
             var6 = var2;
          }
 
-         while(var4 ? var6 >= var2 : var6 < var3) {
-            Slot var12 = this.slots.get(var6);
-            ItemStack var13 = var12.getItem();
-            if (var13.isEmpty() && var12.mayPlace(var1)) {
-               int var14 = var12.getMaxStackSize(var1);
-               var12.setByPlayer(var1.split(Math.min(var1.getCount(), var14)));
-               var12.setChanged();
+         while(true) {
+            if (var4) {
+               if (var6 < var2) {
+                  break;
+               }
+            } else if (var6 >= var3) {
+               break;
+            }
+
+            var7 = (Slot)this.slots.get(var6);
+            var8 = var7.getItem();
+            if (var8.isEmpty() && var7.mayPlace(var1)) {
+               var9 = var7.getMaxStackSize(var1);
+               var7.setByPlayer(var1.split(Math.min(var1.getCount(), var9)));
+               var7.setChanged();
                var5 = true;
                break;
             }
@@ -696,12 +761,15 @@ public abstract class AbstractContainerMenu {
    }
 
    public static int getQuickCraftPlaceCount(Set<Slot> var0, int var1, ItemStack var2) {
-      return switch(var1) {
-         case 0 -> Mth.floor((float)var2.getCount() / (float)var0.size());
-         case 1 -> 1;
-         case 2 -> var2.getMaxStackSize();
-         default -> var2.getCount();
-      };
+      int var10000;
+      switch (var1) {
+         case 0 -> var10000 = Mth.floor((float)var2.getCount() / (float)var0.size());
+         case 1 -> var10000 = 1;
+         case 2 -> var10000 = var2.getMaxStackSize();
+         default -> var10000 = var2.getCount();
+      }
+
+      return var10000;
    }
 
    public boolean canDragTo(Slot var1) {
@@ -749,24 +817,27 @@ public abstract class AbstractContainerMenu {
    public void transferState(AbstractContainerMenu var1) {
       HashBasedTable var2 = HashBasedTable.create();
 
-      for(int var3 = 0; var3 < var1.slots.size(); ++var3) {
-         Slot var4 = var1.slots.get(var3);
+      int var3;
+      Slot var4;
+      for(var3 = 0; var3 < var1.slots.size(); ++var3) {
+         var4 = (Slot)var1.slots.get(var3);
          var2.put(var4.container, var4.getContainerSlot(), var3);
       }
 
-      for(int var6 = 0; var6 < this.slots.size(); ++var6) {
-         Slot var7 = this.slots.get(var6);
-         Integer var5 = (Integer)var2.get(var7.container, var7.getContainerSlot());
+      for(var3 = 0; var3 < this.slots.size(); ++var3) {
+         var4 = (Slot)this.slots.get(var3);
+         Integer var5 = (Integer)var2.get(var4.container, var4.getContainerSlot());
          if (var5 != null) {
-            this.lastSlots.set(var6, var1.lastSlots.get(var5));
-            this.remoteSlots.set(var6, var1.remoteSlots.get(var5));
+            this.lastSlots.set(var3, (ItemStack)var1.lastSlots.get(var5));
+            this.remoteSlots.set(var3, (ItemStack)var1.remoteSlots.get(var5));
          }
       }
+
    }
 
    public OptionalInt findSlot(Container var1, int var2) {
       for(int var3 = 0; var3 < this.slots.size(); ++var3) {
-         Slot var4 = this.slots.get(var3);
+         Slot var4 = (Slot)this.slots.get(var3);
          if (var4.container == var1 && var2 == var4.getContainerSlot()) {
             return OptionalInt.of(var3);
          }

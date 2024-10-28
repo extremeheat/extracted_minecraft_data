@@ -16,24 +16,7 @@ public class MatrixUtil {
    }
 
    public static Matrix4f mulComponentWise(Matrix4f var0, float var1) {
-      return var0.set(
-         var0.m00() * var1,
-         var0.m01() * var1,
-         var0.m02() * var1,
-         var0.m03() * var1,
-         var0.m10() * var1,
-         var0.m11() * var1,
-         var0.m12() * var1,
-         var0.m13() * var1,
-         var0.m20() * var1,
-         var0.m21() * var1,
-         var0.m22() * var1,
-         var0.m23() * var1,
-         var0.m30() * var1,
-         var0.m31() * var1,
-         var0.m32() * var1,
-         var0.m33() * var1
-      );
+      return var0.set(var0.m00() * var1, var0.m01() * var1, var0.m02() * var1, var0.m03() * var1, var0.m10() * var1, var0.m11() * var1, var0.m12() * var1, var0.m13() * var1, var0.m20() * var1, var0.m21() * var1, var0.m22() * var1, var0.m23() * var1, var0.m30() * var1, var0.m31() * var1, var0.m32() * var1, var0.m33() * var1);
    }
 
    private static GivensParameters approxGivensQuat(float var0, float var1, float var2) {
@@ -62,29 +45,32 @@ public class MatrixUtil {
    }
 
    private static void stepJacobi(Matrix3f var0, Matrix3f var1, Quaternionf var2, Quaternionf var3) {
+      GivensParameters var4;
+      Quaternionf var5;
       if (var0.m01 * var0.m01 + var0.m10 * var0.m10 > 1.0E-6F) {
-         GivensParameters var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m01 + var0.m10), var0.m11);
-         Quaternionf var5 = var4.aroundZ(var2);
+         var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m01 + var0.m10), var0.m11);
+         var5 = var4.aroundZ(var2);
          var3.mul(var5);
          var4.aroundZ(var1);
          similarityTransform(var0, var1);
       }
 
       if (var0.m02 * var0.m02 + var0.m20 * var0.m20 > 1.0E-6F) {
-         GivensParameters var6 = approxGivensQuat(var0.m00, 0.5F * (var0.m02 + var0.m20), var0.m22).inverse();
-         Quaternionf var8 = var6.aroundY(var2);
-         var3.mul(var8);
-         var6.aroundY(var1);
+         var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m02 + var0.m20), var0.m22).inverse();
+         var5 = var4.aroundY(var2);
+         var3.mul(var5);
+         var4.aroundY(var1);
          similarityTransform(var0, var1);
       }
 
       if (var0.m12 * var0.m12 + var0.m21 * var0.m21 > 1.0E-6F) {
-         GivensParameters var7 = approxGivensQuat(var0.m11, 0.5F * (var0.m12 + var0.m21), var0.m22);
-         Quaternionf var9 = var7.aroundX(var2);
-         var3.mul(var9);
-         var7.aroundX(var1);
+         var4 = approxGivensQuat(var0.m11, 0.5F * (var0.m12 + var0.m21), var0.m22);
+         var5 = var4.aroundX(var2);
+         var3.mul(var5);
+         var4.aroundX(var1);
          similarityTransform(var0, var1);
       }
+
    }
 
    public static Quaternionf eigenvalueJacobi(Matrix3f var0, int var1) {

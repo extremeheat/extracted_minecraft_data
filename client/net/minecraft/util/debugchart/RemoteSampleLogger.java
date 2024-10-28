@@ -16,7 +16,6 @@ public class RemoteSampleLogger extends AbstractSampleLogger {
       this.sampleType = var3;
    }
 
-   @Override
    protected void useSample() {
       this.subscriptionTracker.broadcast(new ClientboundDebugSamplePacket((long[])this.sample.clone(), this.sampleType));
    }

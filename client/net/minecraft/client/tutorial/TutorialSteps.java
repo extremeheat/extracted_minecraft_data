@@ -13,13 +13,13 @@ public enum TutorialSteps {
    private final String name;
    private final Function<Tutorial, ? extends TutorialStepInstance> constructor;
 
-   private <T extends TutorialStepInstance> TutorialSteps(String var3, Function<Tutorial, T> var4) {
+   private TutorialSteps(String var3, Function var4) {
       this.name = var3;
       this.constructor = var4;
    }
 
    public TutorialStepInstance create(Tutorial var1) {
-      return this.constructor.apply(var1);
+      return (TutorialStepInstance)this.constructor.apply(var1);
    }
 
    public String getName() {
@@ -27,12 +27,21 @@ public enum TutorialSteps {
    }
 
    public static TutorialSteps getByName(String var0) {
-      for(TutorialSteps var4 : values()) {
+      TutorialSteps[] var1 = values();
+      int var2 = var1.length;
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         TutorialSteps var4 = var1[var3];
          if (var4.name.equals(var0)) {
             return var4;
          }
       }
 
       return NONE;
+   }
+
+   // $FF: synthetic method
+   private static TutorialSteps[] $values() {
+      return new TutorialSteps[]{MOVEMENT, FIND_TREE, PUNCH_TREE, OPEN_INVENTORY, CRAFT_PLANKS, NONE};
    }
 }

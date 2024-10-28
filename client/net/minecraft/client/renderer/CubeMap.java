@@ -22,14 +22,17 @@ public class CubeMap {
       super();
 
       for(int var2 = 0; var2 < 6; ++var2) {
-         this.images[var2] = var1.withPath(var1.getPath() + "_" + var2 + ".png");
+         ResourceLocation[] var10000 = this.images;
+         String var10003 = var1.getPath();
+         var10000[var2] = var1.withPath(var10003 + "_" + var2 + ".png");
       }
+
    }
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
       Tesselator var5 = Tesselator.getInstance();
       BufferBuilder var6 = var5.getBuilder();
-      Matrix4f var7 = new Matrix4f().setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
+      Matrix4f var7 = (new Matrix4f()).setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
       RenderSystem.backupProjectionMatrix();
       RenderSystem.setProjectionMatrix(var7, VertexSorting.DISTANCE_TO_ORIGIN);
       Matrix4fStack var8 = RenderSystem.getModelViewStack();

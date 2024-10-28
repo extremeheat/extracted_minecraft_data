@@ -8,7 +8,6 @@ public class EntityTippedArrowFix extends SimplestEntityRenameFix {
       super("EntityTippedArrowFix", var1, var2);
    }
 
-   @Override
    protected String rename(String var1) {
       return Objects.equals(var1, "TippedArrow") ? "Arrow" : var1;
    }

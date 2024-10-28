@@ -19,25 +19,22 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 
 public abstract class AbstractSkullBlock extends BaseEntityBlock implements Equipable {
-   public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+   public static final BooleanProperty POWERED;
    private final SkullBlock.Type type;
 
    public AbstractSkullBlock(SkullBlock.Type var1, BlockBehaviour.Properties var2) {
       super(var2);
       this.type = var1;
-      this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false));
    }
 
-   @Override
    protected abstract MapCodec<? extends AbstractSkullBlock> codec();
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new SkullBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       if (var1.isClientSide) {
          boolean var4 = var2.is(Blocks.DRAGON_HEAD) || var2.is(Blocks.DRAGON_WALL_HEAD) || var2.is(Blocks.PIGLIN_HEAD) || var2.is(Blocks.PIGLIN_WALL_HEAD);
@@ -53,33 +50,33 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock implements Equi
       return this.type;
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
-   @Override
    public EquipmentSlot getEquipmentSlot() {
       return EquipmentSlot.HEAD;
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(POWERED);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(POWERED, Boolean.valueOf(var1.getLevel().hasNeighborSignal(var1.getClickedPos())));
+      return (BlockState)this.defaultBlockState().setValue(POWERED, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
    }
 
-   @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
          boolean var7 = var2.hasNeighborSignal(var3);
-         if (var7 != var1.getValue(POWERED)) {
-            var2.setBlock(var3, var1.setValue(POWERED, Boolean.valueOf(var7)), 2);
+         if (var7 != (Boolean)var1.getValue(POWERED)) {
+            var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var7), 2);
          }
+
       }
+   }
+
+   static {
+      POWERED = BlockStateProperties.POWERED;
    }
 }

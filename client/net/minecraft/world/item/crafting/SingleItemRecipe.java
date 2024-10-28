@@ -1,14 +1,16 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.Objects;
+import java.util.function.Function;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
@@ -28,39 +30,32 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
       this.result = var5;
    }
 
-   @Override
    public RecipeType<?> getType() {
       return this.type;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return this.serializer;
    }
 
-   @Override
    public String getGroup() {
       return this.group;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 
-   @Override
    public NonNullList<Ingredient> getIngredients() {
       NonNullList var1 = NonNullList.create();
       var1.add(this.ingredient);
       return var1;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return true;
    }
 
-   @Override
    public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
       return this.result.copy();
    }
@@ -70,38 +65,44 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
    }
 
    public static class Serializer<T extends SingleItemRecipe> implements RecipeSerializer<T> {
-      final SingleItemRecipe.Factory<T> factory;
-      private final Codec<T> codec;
+      final Factory<T> factory;
+      private final MapCodec<T> codec;
       private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
 
-      protected Serializer(SingleItemRecipe.Factory<T> var1) {
+      protected Serializer(Factory<T> var1) {
          super();
          this.factory = var1;
-         this.codec = RecordCodecBuilder.create(
-            var1x -> var1x.group(
-                     ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
-                     Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
-                     ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
-                  )
-                  .apply(var1x, var1::create)
-         );
-         this.streamCodec = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8,
-            var0 -> var0.group,
-            Ingredient.CONTENTS_STREAM_CODEC,
-            var0 -> var0.ingredient,
-            ItemStack.STREAM_CODEC,
-            var0 -> var0.result,
-            var1::create
-         );
+         this.codec = RecordCodecBuilder.mapCodec((var1x) -> {
+            Products.P3 var10000 = var1x.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0) -> {
+               return var0.group;
+            }), Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter((var0) -> {
+               return var0.ingredient;
+            }), ItemStack.CODEC.fieldOf("result").forGetter((var0) -> {
+               return var0.result;
+            }));
+            Objects.requireNonNull(var1);
+            return var10000.apply(var1x, var1::create);
+         });
+         StreamCodec var10001 = ByteBufCodecs.STRING_UTF8;
+         Function var10002 = (var0) -> {
+            return var0.group;
+         };
+         StreamCodec var10003 = Ingredient.CONTENTS_STREAM_CODEC;
+         Function var10004 = (var0) -> {
+            return var0.ingredient;
+         };
+         StreamCodec var10005 = ItemStack.STREAM_CODEC;
+         Function var10006 = (var0) -> {
+            return var0.result;
+         };
+         Objects.requireNonNull(var1);
+         this.streamCodec = StreamCodec.composite(var10001, var10002, var10003, var10004, var10005, var10006, var1::create);
       }
 
-      @Override
-      public Codec<T> codec() {
+      public MapCodec<T> codec() {
          return this.codec;
       }
 
-      @Override
       public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
          return this.streamCodec;
       }

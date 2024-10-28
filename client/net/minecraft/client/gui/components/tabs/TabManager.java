@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvents;
 
 public class TabManager {
@@ -29,6 +30,7 @@ public class TabManager {
       if (var2 != null) {
          var2.doLayout(var1);
       }
+
    }
 
    public void setCurrentTab(Tab var1, boolean var2) {
@@ -44,9 +46,10 @@ public class TabManager {
          }
 
          if (var2) {
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
          }
       }
+
    }
 
    @Nullable

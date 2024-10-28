@@ -31,12 +31,16 @@ public class ChunkLevel {
    }
 
    public static int byStatus(FullChunkStatus var0) {
-      return switch(var0) {
-         case INACCESSIBLE -> MAX_LEVEL;
-         case FULL -> 33;
-         case BLOCK_TICKING -> 32;
-         case ENTITY_TICKING -> 31;
-      };
+      int var10000;
+      switch (var0) {
+         case INACCESSIBLE -> var10000 = MAX_LEVEL;
+         case FULL -> var10000 = 33;
+         case BLOCK_TICKING -> var10000 = 32;
+         case ENTITY_TICKING -> var10000 = 31;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public static boolean isEntityTicking(int var0) {

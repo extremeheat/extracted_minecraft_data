@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class WaterDropParticle extends TextureSheetParticle {
@@ -16,12 +17,10 @@ public class WaterDropParticle extends TextureSheetParticle {
       this.lifetime = (int)(8.0 / (Math.random() * 0.8 + 0.2));
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -44,16 +43,11 @@ public class WaterDropParticle extends TextureSheetParticle {
          }
 
          BlockPos var1 = BlockPos.containing(this.x, this.y, this.z);
-         double var2 = Math.max(
-            this.level
-               .getBlockState(var1)
-               .getCollisionShape(this.level, var1)
-               .max(Direction.Axis.Y, this.x - (double)var1.getX(), this.z - (double)var1.getZ()),
-            (double)this.level.getFluidState(var1).getHeight(this.level, var1)
-         );
+         double var2 = Math.max(this.level.getBlockState(var1).getCollisionShape(this.level, var1).max(Direction.Axis.Y, this.x - (double)var1.getX(), this.z - (double)var1.getZ()), (double)this.level.getFluidState(var1).getHeight(this.level, var1));
          if (var2 > 0.0 && this.y < (double)var1.getY() + var2) {
             this.remove();
          }
+
       }
    }
 
@@ -68,11 +62,12 @@ public class WaterDropParticle extends TextureSheetParticle {
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          WaterDropParticle var15 = new WaterDropParticle(var2, var3, var5, var7);
          var15.pickSprite(this.sprite);
-         if (var2.isPotato()) {
-            var15.setColor(1.0F, 1.0F, 0.0F);
-         }
-
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

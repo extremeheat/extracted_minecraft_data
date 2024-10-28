@@ -14,13 +14,12 @@ public class EntityBasedExplosionDamageCalculator extends ExplosionDamageCalcula
       this.source = var1;
    }
 
-   @Override
    public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5) {
-      return super.getBlockExplosionResistance(var1, var2, var3, var4, var5)
-         .map(var6 -> this.source.getBlockExplosionResistance(var1, var2, var3, var4, var5, var6));
+      return super.getBlockExplosionResistance(var1, var2, var3, var4, var5).map((var6) -> {
+         return this.source.getBlockExplosionResistance(var1, var2, var3, var4, var5, var6);
+      });
    }
 
-   @Override
    public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
       return this.source.shouldBlockExplode(var1, var2, var3, var4, var5);
    }

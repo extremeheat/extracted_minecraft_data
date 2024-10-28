@@ -16,12 +16,12 @@ import net.minecraft.world.item.crafting.RecipeManager;
 
 public class ResourceLocationArgument implements ArgumentType<ResourceLocation> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_ADVANCEMENT = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("advancement.advancementNotFound", var0)
-   );
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_RECIPE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("recipe.notFound", var0)
-   );
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_ADVANCEMENT = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("advancement.advancementNotFound", var0);
+   });
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_RECIPE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("recipe.notFound", var0);
+   });
 
    public ResourceLocationArgument() {
       super();
@@ -44,7 +44,9 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
    public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
       ResourceLocation var3 = getId(var0, var1);
-      return (RecipeHolder<?>)var2.byKey(var3).orElseThrow(() -> ERROR_UNKNOWN_RECIPE.create(var3));
+      return (RecipeHolder)var2.byKey(var3).orElseThrow(() -> {
+         return ERROR_UNKNOWN_RECIPE.create(var3);
+      });
    }
 
    public static ResourceLocation getId(CommandContext<CommandSourceStack> var0, String var1) {
@@ -57,5 +59,10 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

@@ -11,15 +11,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.inventory.MenuType;
 
 public class ClientboundOpenScreenPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundOpenScreenPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.VAR_INT,
-      ClientboundOpenScreenPacket::getContainerId,
-      ByteBufCodecs.registry(Registries.MENU),
-      ClientboundOpenScreenPacket::getType,
-      ComponentSerialization.TRUSTED_STREAM_CODEC,
-      ClientboundOpenScreenPacket::getTitle,
-      ClientboundOpenScreenPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundOpenScreenPacket> STREAM_CODEC;
    private final int containerId;
    private final MenuType<?> type;
    private final Component title;
@@ -31,7 +23,6 @@ public class ClientboundOpenScreenPacket implements Packet<ClientGamePacketListe
       this.title = var3;
    }
 
-   @Override
    public PacketType<ClientboundOpenScreenPacket> type() {
       return GamePacketTypes.CLIENTBOUND_OPEN_SCREEN;
    }
@@ -50,5 +41,9 @@ public class ClientboundOpenScreenPacket implements Packet<ClientGamePacketListe
 
    public Component getTitle() {
       return this.title;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundOpenScreenPacket::getContainerId, ByteBufCodecs.registry(Registries.MENU), ClientboundOpenScreenPacket::getType, ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundOpenScreenPacket::getTitle, ClientboundOpenScreenPacket::new);
    }
 }

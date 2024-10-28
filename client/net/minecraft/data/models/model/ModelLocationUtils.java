@@ -10,6 +10,7 @@ public class ModelLocationUtils {
       super();
    }
 
+   /** @deprecated */
    @Deprecated
    public static ResourceLocation decorateBlockModelLocation(String var0) {
       return new ResourceLocation("minecraft", "block/" + var0);
@@ -21,7 +22,9 @@ public class ModelLocationUtils {
 
    public static ResourceLocation getModelLocation(Block var0, String var1) {
       ResourceLocation var2 = BuiltInRegistries.BLOCK.getKey(var0);
-      return var2.withPath(var1x -> "block/" + var1x + var1);
+      return var2.withPath((var1x) -> {
+         return "block/" + var1x + var1;
+      });
    }
 
    public static ResourceLocation getModelLocation(Block var0) {
@@ -36,6 +39,8 @@ public class ModelLocationUtils {
 
    public static ResourceLocation getModelLocation(Item var0, String var1) {
       ResourceLocation var2 = BuiltInRegistries.ITEM.getKey(var0);
-      return var2.withPath(var1x -> "item/" + var1x + var1);
+      return var2.withPath((var1x) -> {
+         return "item/" + var1x + var1;
+      });
    }
 }

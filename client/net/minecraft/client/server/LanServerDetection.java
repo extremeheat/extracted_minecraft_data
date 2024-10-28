@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
@@ -23,11 +24,11 @@ public class LanServerDetection {
    }
 
    public static class LanServerDetector extends Thread {
-      private final LanServerDetection.LanServerList serverList;
+      private final LanServerList serverList;
       private final InetAddress pingGroup;
       private final MulticastSocket socket;
 
-      public LanServerDetector(LanServerDetection.LanServerList var1) throws IOException {
+      public LanServerDetector(LanServerList var1) throws IOException {
          super("LanServerDetector #" + LanServerDetection.UNIQUE_THREAD_ID.incrementAndGet());
          this.serverList = var1;
          this.setDaemon(true);
@@ -38,7 +39,6 @@ public class LanServerDetection {
          this.socket.joinGroup(this.pingGroup);
       }
 
-      @Override
       public void run() {
          byte[] var2 = new byte[1024];
 
@@ -91,10 +91,13 @@ public class LanServerDetection {
          String var3 = LanServerPinger.parseMotd(var1);
          String var4 = LanServerPinger.parseAddress(var1);
          if (var4 != null) {
-            var4 = var2.getHostAddress() + ":" + var4;
+            String var10000 = var2.getHostAddress();
+            var4 = var10000 + ":" + var4;
             boolean var5 = false;
+            Iterator var6 = this.servers.iterator();
 
-            for(LanServer var7 : this.servers) {
+            while(var6.hasNext()) {
+               LanServer var7 = (LanServer)var6.next();
                if (var7.getAddress().equals(var4)) {
                   var7.updatePingTime();
                   var5 = true;
@@ -106,6 +109,7 @@ public class LanServerDetection {
                this.servers.add(new LanServer(var3, var4));
                this.isDirty = true;
             }
+
          }
       }
    }

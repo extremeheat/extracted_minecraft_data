@@ -21,12 +21,10 @@ public class GolemSensor extends Sensor<LivingEntity> {
       super(var1);
    }
 
-   @Override
    protected void doTick(ServerLevel var1, LivingEntity var2) {
       checkForNearbyGolem(var2);
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of(MemoryModuleType.NEAREST_LIVING_ENTITIES);
    }
@@ -34,10 +32,13 @@ public class GolemSensor extends Sensor<LivingEntity> {
    public static void checkForNearbyGolem(LivingEntity var0) {
       Optional var1 = var0.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
       if (!var1.isEmpty()) {
-         boolean var2 = ((List)var1.get()).stream().anyMatch(var0x -> var0x.getType().equals(EntityType.IRON_GOLEM));
+         boolean var2 = ((List)var1.get()).stream().anyMatch((var0x) -> {
+            return var0x.getType().equals(EntityType.IRON_GOLEM);
+         });
          if (var2) {
             golemDetected(var0);
          }
+
       }
    }
 

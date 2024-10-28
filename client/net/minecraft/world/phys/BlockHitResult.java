@@ -41,7 +41,6 @@ public class BlockHitResult extends HitResult {
       return this.direction;
    }
 
-   @Override
    public HitResult.Type getType() {
       return this.miss ? HitResult.Type.MISS : HitResult.Type.BLOCK;
    }

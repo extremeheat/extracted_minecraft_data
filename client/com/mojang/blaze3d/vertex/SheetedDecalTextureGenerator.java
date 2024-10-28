@@ -24,8 +24,8 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
    public SheetedDecalTextureGenerator(VertexConsumer var1, PoseStack.Pose var2, float var3) {
       super();
       this.delegate = var1;
-      this.cameraInversePose = new Matrix4f(var2.pose()).invert();
-      this.normalInversePose = new Matrix3f(var2.normal()).invert();
+      this.cameraInversePose = (new Matrix4f(var2.pose())).invert();
+      this.normalInversePose = (new Matrix3f(var2.normal())).invert();
       this.textureScale = var3;
       this.resetState();
    }
@@ -42,7 +42,6 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
       this.nz = 0.0F;
    }
 
-   @Override
    public void endVertex() {
       Vector3f var1 = this.normalInversePose.transform(new Vector3f(this.nx, this.ny, this.nz));
       Direction var2 = Direction.getNearest(var1.x(), var1.y(), var1.z());
@@ -52,18 +51,10 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
       var3.rotate(var2.getRotation());
       float var4 = -var3.x() * this.textureScale;
       float var5 = -var3.y() * this.textureScale;
-      this.delegate
-         .vertex((double)this.x, (double)this.y, (double)this.z)
-         .color(1.0F, 1.0F, 1.0F, 1.0F)
-         .uv(var4, var5)
-         .overlayCoords(this.overlayU, this.overlayV)
-         .uv2(this.lightCoords)
-         .normal(this.nx, this.ny, this.nz)
-         .endVertex();
+      this.delegate.vertex((double)this.x, (double)this.y, (double)this.z).color(1.0F, 1.0F, 1.0F, 1.0F).uv(var4, var5).overlayCoords(this.overlayU, this.overlayV).uv2(this.lightCoords).normal(this.nx, this.ny, this.nz).endVertex();
       this.resetState();
    }
 
-   @Override
    public VertexConsumer vertex(double var1, double var3, double var5) {
       this.x = (float)var1;
       this.y = (float)var3;
@@ -71,30 +62,25 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
       return this;
    }
 
-   @Override
    public VertexConsumer color(int var1, int var2, int var3, int var4) {
       return this;
    }
 
-   @Override
    public VertexConsumer uv(float var1, float var2) {
       return this;
    }
 
-   @Override
    public VertexConsumer overlayCoords(int var1, int var2) {
       this.overlayU = var1;
       this.overlayV = var2;
       return this;
    }
 
-   @Override
    public VertexConsumer uv2(int var1, int var2) {
       this.lightCoords = var1 | var2 << 16;
       return this;
    }
 
-   @Override
    public VertexConsumer normal(float var1, float var2, float var3) {
       this.nx = var1;
       this.ny = var2;

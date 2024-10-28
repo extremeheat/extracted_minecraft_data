@@ -6,9 +6,11 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -30,11 +32,16 @@ public class ClientLanguage extends Language {
 
    public static ClientLanguage loadFrom(ResourceManager var0, List<String> var1, boolean var2) {
       HashMap var3 = Maps.newHashMap();
+      Iterator var4 = var1.iterator();
 
-      for(String var5 : var1) {
+      while(var4.hasNext()) {
+         String var5 = (String)var4.next();
          String var6 = String.format(Locale.ROOT, "lang/%s.json", var5);
+         Iterator var7 = var0.getNamespaces().iterator();
 
-         for(String var8 : var0.getNamespaces()) {
+         while(var7.hasNext()) {
+            String var8 = (String)var7.next();
+
             try {
                ResourceLocation var9 = new ResourceLocation(var8, var6);
                appendFrom(var5, var0.getResourceStack(var9), var3);
@@ -48,31 +55,51 @@ public class ClientLanguage extends Language {
    }
 
    private static void appendFrom(String var0, List<Resource> var1, Map<String, String> var2) {
-      for(Resource var4 : var1) {
-         try (InputStream var5 = var4.open()) {
-            Language.loadFromJson(var5, var2::put);
+      Iterator var3 = var1.iterator();
+
+      while(var3.hasNext()) {
+         Resource var4 = (Resource)var3.next();
+
+         try {
+            InputStream var5 = var4.open();
+
+            try {
+               Objects.requireNonNull(var2);
+               Language.loadFromJson(var5, var2::put);
+            } catch (Throwable var9) {
+               if (var5 != null) {
+                  try {
+                     var5.close();
+                  } catch (Throwable var8) {
+                     var9.addSuppressed(var8);
+                  }
+               }
+
+               throw var9;
+            }
+
+            if (var5 != null) {
+               var5.close();
+            }
          } catch (IOException var10) {
             LOGGER.warn("Failed to load translations for {} from pack {}", new Object[]{var0, var4.sourcePackId(), var10});
          }
       }
+
    }
 
-   @Override
    public String getOrDefault(String var1, String var2) {
-      return this.storage.getOrDefault(var1, var2);
+      return (String)this.storage.getOrDefault(var1, var2);
    }
 
-   @Override
    public boolean has(String var1) {
       return this.storage.containsKey(var1);
    }
 
-   @Override
    public boolean isDefaultRightToLeft() {
       return this.defaultRightToLeft;
    }
 
-   @Override
    public FormattedCharSequence getVisualOrder(FormattedText var1) {
       return FormattedBidiReorder.reorder(var1, this.defaultRightToLeft);
    }

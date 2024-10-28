@@ -1,24 +1,27 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class AxisAlignedLinearPosTest extends PosRuleTest {
-   public static final Codec<AxisAlignedLinearPosTest> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter(var0x -> var0x.minChance),
-               Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter(var0x -> var0x.maxChance),
-               Codec.INT.fieldOf("min_dist").orElse(0).forGetter(var0x -> var0x.minDist),
-               Codec.INT.fieldOf("max_dist").orElse(0).forGetter(var0x -> var0x.maxDist),
-               Direction.Axis.CODEC.fieldOf("axis").orElse(Direction.Axis.Y).forGetter(var0x -> var0x.axis)
-            )
-            .apply(var0, AxisAlignedLinearPosTest::new)
-   );
+   public static final MapCodec<AxisAlignedLinearPosTest> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter((var0x) -> {
+         return var0x.minChance;
+      }), Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter((var0x) -> {
+         return var0x.maxChance;
+      }), Codec.INT.fieldOf("min_dist").orElse(0).forGetter((var0x) -> {
+         return var0x.minDist;
+      }), Codec.INT.fieldOf("max_dist").orElse(0).forGetter((var0x) -> {
+         return var0x.maxDist;
+      }), Direction.Axis.CODEC.fieldOf("axis").orElse(Direction.Axis.Y).forGetter((var0x) -> {
+         return var0x.axis;
+      })).apply(var0, AxisAlignedLinearPosTest::new);
+   });
    private final float minChance;
    private final float maxChance;
    private final int minDist;
@@ -38,7 +41,6 @@ public class AxisAlignedLinearPosTest extends PosRuleTest {
       }
    }
 
-   @Override
    public boolean test(BlockPos var1, BlockPos var2, BlockPos var3, RandomSource var4) {
       Direction var5 = Direction.get(Direction.AxisDirection.POSITIVE, this.axis);
       float var6 = (float)Math.abs((var2.getX() - var3.getX()) * var5.getStepX());
@@ -49,7 +51,6 @@ public class AxisAlignedLinearPosTest extends PosRuleTest {
       return var10 <= Mth.clampedLerp(this.minChance, this.maxChance, Mth.inverseLerp((float)var9, (float)this.minDist, (float)this.maxDist));
    }
 
-   @Override
    protected PosRuleTestType<?> getType() {
       return PosRuleTestType.AXIS_ALIGNED_LINEAR_POS_TEST;
    }

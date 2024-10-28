@@ -21,29 +21,32 @@ public class CreditsAndAttributionScreen extends Screen {
       this.lastScreen = var1;
    }
 
-   @Override
    protected void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical()).spacing(8);
+      LinearLayout var1 = ((LinearLayout)this.layout.addToContents(LinearLayout.vertical())).spacing(8);
       var1.defaultCellSetting().alignHorizontallyCenter();
-      var1.addChild(Button.builder(CREDITS_BUTTON, var1x -> this.openCreditsScreen()).width(210).build());
+      var1.addChild(Button.builder(CREDITS_BUTTON, (var1x) -> {
+         this.openCreditsScreen();
+      }).width(210).build());
       var1.addChild(Button.builder(ATTRIBUTION_BUTTON, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/MinecraftJavaAttribution")).width(210).build());
       var1.addChild(Button.builder(LICENSES_BUTTON, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/MinecraftJavaLicenses")).width(210).build());
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+         this.onClose();
+      }).width(200).build());
       this.layout.arrangeElements();
       this.layout.visitWidgets(this::addRenderableWidget);
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
    }
 
    private void openCreditsScreen() {
-      this.minecraft.setScreen(new WinScreen(false, () -> this.minecraft.setScreen(this)));
+      this.minecraft.setScreen(new WinScreen(false, () -> {
+         this.minecraft.setScreen(this);
+      }));
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }

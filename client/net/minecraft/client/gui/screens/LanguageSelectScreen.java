@@ -16,9 +16,9 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class LanguageSelectScreen extends OptionsSubScreen {
-   private static final Component WARNING_LABEL = Component.translatable("options.languageAccuracyWarning").withStyle(ChatFormatting.GRAY);
+   private static final Component WARNING_LABEL;
    private static final int FOOTER_HEIGHT = 53;
-   private LanguageSelectScreen.LanguageSelectionList packSelectionList;
+   private LanguageSelectionList packSelectionList;
    final LanguageManager languageManager;
 
    public LanguageSelectScreen(Screen var1, Options var2, LanguageManager var3) {
@@ -26,33 +26,32 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       this.languageManager = var3;
    }
 
-   @Override
    protected void init() {
-      this.packSelectionList = this.addRenderableWidget(new LanguageSelectScreen.LanguageSelectionList(this.minecraft));
+      this.packSelectionList = (LanguageSelectionList)this.addRenderableWidget(new LanguageSelectionList(this.minecraft));
       this.layout.setFooterHeight(53);
       super.init();
    }
 
-   @Override
    protected void repositionElements() {
       super.repositionElements();
       this.packSelectionList.updateSize(this.width, this.layout);
    }
 
-   @Override
    protected void addFooter() {
-      LinearLayout var1 = this.layout.addToFooter(LinearLayout.vertical()).spacing(8);
+      LinearLayout var1 = ((LinearLayout)this.layout.addToFooter(LinearLayout.vertical())).spacing(8);
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(WARNING_LABEL, this.font));
-      LinearLayout var2 = var1.addChild(LinearLayout.horizontal().spacing(8));
-      var2.addChild(
-         Button.builder(Component.translatable("options.font"), var1x -> this.minecraft.setScreen(new FontOptionsScreen(this, this.options))).build()
-      );
-      var2.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onDone()).build());
+      LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
+      var2.addChild(Button.builder(Component.translatable("options.font"), (var1x) -> {
+         this.minecraft.setScreen(new FontOptionsScreen(this, this.options));
+      }).build());
+      var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+         this.onDone();
+      }).build());
    }
 
    void onDone() {
-      LanguageSelectScreen.LanguageSelectionList.Entry var1 = this.packSelectionList.getSelected();
+      LanguageSelectionList.Entry var1 = (LanguageSelectionList.Entry)this.packSelectionList.getSelected();
       if (var1 != null && !var1.code.equals(this.languageManager.getSelected())) {
          this.languageManager.setSelected(var1.code);
          this.options.languageCode = var1.code;
@@ -62,28 +61,33 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   class LanguageSelectionList extends ObjectSelectionList<LanguageSelectScreen.LanguageSelectionList.Entry> {
+   static {
+      WARNING_LABEL = Component.translatable("options.languageAccuracyWarning").withStyle(ChatFormatting.GRAY);
+   }
+
+   private class LanguageSelectionList extends ObjectSelectionList<Entry> {
       public LanguageSelectionList(Minecraft var2) {
          super(var2, LanguageSelectScreen.this.width, LanguageSelectScreen.this.height - 33 - 53, 33, 18);
          String var3 = LanguageSelectScreen.this.languageManager.getSelected();
          LanguageSelectScreen.this.languageManager.getLanguages().forEach((var2x, var3x) -> {
-            LanguageSelectScreen.LanguageSelectionList.Entry var4 = new LanguageSelectScreen.LanguageSelectionList.Entry(var2x, var3x);
+            Entry var4 = new Entry(var2x, var3x);
             this.addEntry(var4);
             if (var3.equals(var2x)) {
                this.setSelected(var4);
             }
+
          });
          if (this.getSelected() != null) {
-            this.centerScrollOn(this.getSelected());
+            this.centerScrollOn((Entry)this.getSelected());
          }
+
       }
 
-      @Override
       public int getRowWidth() {
          return super.getRowWidth() + 50;
       }
 
-      public class Entry extends ObjectSelectionList.Entry<LanguageSelectScreen.LanguageSelectionList.Entry> {
+      public class Entry extends ObjectSelectionList.Entry<Entry> {
          final String code;
          private final Component language;
          private long lastClickTime;
@@ -94,12 +98,10 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             this.language = var3.toComponent();
          }
 
-         @Override
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.drawCenteredString(LanguageSelectScreen.this.font, this.language, LanguageSelectionList.this.width / 2, var3 + 1, -1);
+            var1.drawCenteredString(LanguageSelectScreen.this.font, (Component)this.language, LanguageSelectionList.this.width / 2, var3 + 1, -1);
          }
 
-         @Override
          public boolean keyPressed(int var1, int var2, int var3) {
             if (CommonInputs.selected(var1)) {
                this.select();
@@ -110,7 +112,6 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             }
          }
 
-         @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
             this.select();
             if (Util.getMillis() - this.lastClickTime < 250L) {
@@ -125,7 +126,6 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             LanguageSelectionList.this.setSelected(this);
          }
 
-         @Override
          public Component getNarration() {
             return Component.translatable("narrator.select", this.language);
          }

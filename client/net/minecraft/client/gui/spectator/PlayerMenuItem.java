@@ -21,24 +21,20 @@ public class PlayerMenuItem implements SpectatorMenuItem {
       this.name = Component.literal(var1.getName());
    }
 
-   @Override
    public void selectItem(SpectatorMenu var1) {
       Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.profile.getId()));
    }
 
-   @Override
    public Component getName() {
       return this.name;
    }
 
-   @Override
    public void renderIcon(GuiGraphics var1, float var2, int var3) {
       var1.setColor(1.0F, 1.0F, 1.0F, (float)var3 / 255.0F);
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), 2, 2, 12);
+      PlayerFaceRenderer.draw(var1, (PlayerSkin)((PlayerSkin)this.skin.get()), 2, 2, 12);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
-   @Override
    public boolean isEnabled() {
       return true;
    }

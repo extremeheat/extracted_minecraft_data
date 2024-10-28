@@ -20,5 +20,6 @@ public class RealmsClientConfig {
       if (proxy == null) {
          proxy = var0;
       }
+
    }
 }

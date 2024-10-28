@@ -21,18 +21,7 @@ public class AncientCityStructurePieces {
       Holder.Reference var2 = var1.getOrThrow(ProcessorLists.ANCIENT_CITY_START_DEGRADATION);
       HolderGetter var3 = var0.lookup(Registries.TEMPLATE_POOL);
       Holder.Reference var4 = var3.getOrThrow(Pools.EMPTY);
-      var0.register(
-         START,
-         new StructureTemplatePool(
-            var4,
-            ImmutableList.of(
-               Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_1", var2), 1),
-               Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_2", var2), 1),
-               Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_3", var2), 1)
-            ),
-            StructureTemplatePool.Projection.RIGID
-         )
-      );
+      var0.register(START, new StructureTemplatePool(var4, ImmutableList.of(Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_1", var2), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_2", var2), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_3", var2), 1)), StructureTemplatePool.Projection.RIGID));
       AncientCityStructurePools.bootstrap(var0);
    }
 }

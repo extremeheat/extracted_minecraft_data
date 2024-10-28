@@ -13,32 +13,26 @@ public class Salmon extends AbstractSchoolingFish {
       super(var1, var2);
    }
 
-   @Override
    public int getMaxSchoolSize() {
       return 5;
    }
 
-   @Override
    public ItemStack getBucketItemStack() {
       return new ItemStack(Items.SALMON_BUCKET);
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.SALMON_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.SALMON_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.SALMON_HURT;
    }
 
-   @Override
    protected SoundEvent getFlopSound() {
       return SoundEvents.SALMON_FLOP;
    }

@@ -13,8 +13,12 @@ public enum AttachFace implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static AttachFace[] $values() {
+      return new AttachFace[]{FLOOR, WALL, CEILING};
    }
 }

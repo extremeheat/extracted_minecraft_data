@@ -18,11 +18,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
 public class GameModeArgument implements ArgumentType<GameType> {
-   private static final Collection<String> EXAMPLES = Stream.of(GameType.SURVIVAL, GameType.CREATIVE).map(GameType::getName).collect(Collectors.toList());
-   private static final GameType[] VALUES = GameType.values();
-   private static final DynamicCommandExceptionType ERROR_INVALID = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.gamemode.invalid", var0)
-   );
+   private static final Collection<String> EXAMPLES;
+   private static final GameType[] VALUES;
+   private static final DynamicCommandExceptionType ERROR_INVALID;
 
    public GameModeArgument() {
       super();
@@ -30,7 +28,7 @@ public class GameModeArgument implements ArgumentType<GameType> {
 
    public GameType parse(StringReader var1) throws CommandSyntaxException {
       String var2 = var1.readUnquotedString();
-      GameType var3 = GameType.byName(var2, null);
+      GameType var3 = GameType.byName(var2, (GameType)null);
       if (var3 == null) {
          throw ERROR_INVALID.createWithContext(var1, var2);
       } else {
@@ -39,9 +37,7 @@ public class GameModeArgument implements ArgumentType<GameType> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return var1.getSource() instanceof SharedSuggestionProvider
-         ? SharedSuggestionProvider.suggest(Arrays.stream(VALUES).map(GameType::getName), var2)
-         : Suggestions.empty();
+      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest(Arrays.stream(VALUES).map(GameType::getName), var2) : Suggestions.empty();
    }
 
    public Collection<String> getExamples() {
@@ -54,5 +50,18 @@ public class GameModeArgument implements ArgumentType<GameType> {
 
    public static GameType getGameMode(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return (GameType)var0.getArgument(var1, GameType.class);
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
+
+   static {
+      EXAMPLES = (Collection)Stream.of(GameType.SURVIVAL, GameType.CREATIVE).map(GameType::getName).collect(Collectors.toList());
+      VALUES = GameType.values();
+      ERROR_INVALID = new DynamicCommandExceptionType((var0) -> {
+         return Component.translatableEscape("argument.gamemode.invalid", var0);
+      });
    }
 }

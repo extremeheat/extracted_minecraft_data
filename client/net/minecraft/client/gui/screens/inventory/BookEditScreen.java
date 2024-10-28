@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -16,6 +18,7 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
@@ -23,6 +26,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.server.network.Filterable;
@@ -43,8 +47,8 @@ public class BookEditScreen extends Screen {
    private static final int IMAGE_HEIGHT = 192;
    private static final Component EDIT_TITLE_LABEL = Component.translatable("book.editTitle");
    private static final Component FINALIZE_WARNING_LABEL = Component.translatable("book.finalizeWarning");
-   private static final FormattedCharSequence BLACK_CURSOR = FormattedCharSequence.forward("_", Style.EMPTY.withColor(ChatFormatting.BLACK));
-   private static final FormattedCharSequence GRAY_CURSOR = FormattedCharSequence.forward("_", Style.EMPTY.withColor(ChatFormatting.GRAY));
+   private static final FormattedCharSequence BLACK_CURSOR;
+   private static final FormattedCharSequence GRAY_CURSOR;
    private final Player owner;
    private final ItemStack book;
    private boolean isModified;
@@ -53,16 +57,16 @@ public class BookEditScreen extends Screen {
    private int currentPage;
    private final List<String> pages = Lists.newArrayList();
    private String title = "";
-   private final TextFieldHelper pageEdit = new TextFieldHelper(
-      this::getCurrentPageText,
-      this::setCurrentPageText,
-      this::getClipboard,
-      this::setClipboard,
-      var1x -> var1x.length() < 1024 && this.font.wordWrapHeight(var1x, 114) <= 128
-   );
-   private final TextFieldHelper titleEdit = new TextFieldHelper(
-      () -> this.title, var1x -> this.title = var1x, this::getClipboard, this::setClipboard, var0 -> var0.length() < 16
-   );
+   private final TextFieldHelper pageEdit = new TextFieldHelper(this::getCurrentPageText, this::setCurrentPageText, this::getClipboard, this::setClipboard, (var1x) -> {
+      return var1x.length() < 1024 && this.font.wordWrapHeight((String)var1x, 114) <= 128;
+   });
+   private final TextFieldHelper titleEdit = new TextFieldHelper(() -> {
+      return this.title;
+   }, (var1x) -> {
+      this.title = var1x;
+   }, this::getClipboard, this::setClipboard, (var0) -> {
+      return var0.length() < 16;
+   });
    private long lastClickTime;
    private int lastIndex = -1;
    private PageButton forwardButton;
@@ -73,18 +77,23 @@ public class BookEditScreen extends Screen {
    private Button cancelButton;
    private final InteractionHand hand;
    @Nullable
-   private BookEditScreen.DisplayCache displayCache = BookEditScreen.DisplayCache.EMPTY;
-   private Component pageMsg = CommonComponents.EMPTY;
+   private DisplayCache displayCache;
+   private Component pageMsg;
    private final Component ownerText;
 
    public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3) {
       super(GameNarrator.NO_TITLE);
+      this.displayCache = BookEditScreen.DisplayCache.EMPTY;
+      this.pageMsg = CommonComponents.EMPTY;
       this.owner = var1;
       this.book = var2;
       this.hand = var3;
-      WritableBookContent var4 = var2.get(DataComponents.WRITABLE_BOOK_CONTENT);
+      WritableBookContent var4 = (WritableBookContent)var2.get(DataComponents.WRITABLE_BOOK_CONTENT);
       if (var4 != null) {
-         var4.getPages(Minecraft.getInstance().isTextFilteringEnabled()).forEach(this.pages::add);
+         Stream var10000 = var4.getPages(Minecraft.getInstance().isTextFilteringEnabled());
+         List var10001 = this.pages;
+         Objects.requireNonNull(var10001);
+         var10000.forEach(var10001::add);
       }
 
       if (this.pages.isEmpty()) {
@@ -98,6 +107,7 @@ public class BookEditScreen extends Screen {
       if (this.minecraft != null) {
          TextFieldHelper.setClipboardContents(this.minecraft, var1);
       }
+
    }
 
    private String getClipboard() {
@@ -108,30 +118,29 @@ public class BookEditScreen extends Screen {
       return this.pages.size();
    }
 
-   @Override
    public void tick() {
       super.tick();
       ++this.frameTick;
    }
 
-   @Override
    protected void init() {
       this.clearDisplayCache();
-      this.signButton = this.addRenderableWidget(Button.builder(Component.translatable("book.signButton"), var1x -> {
+      this.signButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("book.signButton"), (var1x) -> {
          this.isSigning = true;
          this.updateButtonVisibility();
       }).bounds(this.width / 2 - 100, 196, 98, 20).build());
-      this.doneButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1x -> {
-         this.minecraft.setScreen(null);
+      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+         this.minecraft.setScreen((Screen)null);
          this.saveChanges(false);
       }).bounds(this.width / 2 + 2, 196, 98, 20).build());
-      this.finalizeButton = this.addRenderableWidget(Button.builder(Component.translatable("book.finalizeButton"), var1x -> {
+      this.finalizeButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("book.finalizeButton"), (var1x) -> {
          if (this.isSigning) {
             this.saveChanges(true);
-            this.minecraft.setScreen(null);
+            this.minecraft.setScreen((Screen)null);
          }
+
       }).bounds(this.width / 2 - 100, 196, 98, 20).build());
-      this.cancelButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1x -> {
+      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
          if (this.isSigning) {
             this.isSigning = false;
          }
@@ -140,8 +149,12 @@ public class BookEditScreen extends Screen {
       }).bounds(this.width / 2 + 2, 196, 98, 20).build());
       int var1 = (this.width - 192) / 2;
       boolean var2 = true;
-      this.forwardButton = this.addRenderableWidget(new PageButton(var1 + 116, 159, true, var1x -> this.pageForward(), true));
-      this.backButton = this.addRenderableWidget(new PageButton(var1 + 43, 159, false, var1x -> this.pageBack(), true));
+      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, 159, true, (var1x) -> {
+         this.pageForward();
+      }, true));
+      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, 159, false, (var1x) -> {
+         this.pageBack();
+      }, true));
       this.updateButtonVisibility();
    }
 
@@ -184,6 +197,7 @@ public class BookEditScreen extends Screen {
       while(var1.hasPrevious() && ((String)var1.previous()).isEmpty()) {
          var1.remove();
       }
+
    }
 
    private void saveChanges(boolean var1) {
@@ -206,7 +220,6 @@ public class BookEditScreen extends Screen {
       }
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (super.keyPressed(var1, var2, var3)) {
          return true;
@@ -223,7 +236,6 @@ public class BookEditScreen extends Screen {
       }
    }
 
-   @Override
    public boolean charTyped(char var1, int var2) {
       if (super.charTyped(var1, var2)) {
          return true;
@@ -260,7 +272,7 @@ public class BookEditScreen extends Screen {
          return true;
       } else {
          TextFieldHelper.CursorStep var4 = Screen.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
-         switch(var1) {
+         switch (var1) {
             case 257:
             case 335:
                this.pageEdit.insertText("\n");
@@ -323,26 +335,28 @@ public class BookEditScreen extends Screen {
          int var2 = this.getDisplayCache().findLineStart(var1);
          this.pageEdit.setCursorPos(var2, Screen.hasShiftDown());
       }
+
    }
 
    private void keyEnd() {
       if (Screen.hasControlDown()) {
          this.pageEdit.setCursorToEnd(Screen.hasShiftDown());
       } else {
-         BookEditScreen.DisplayCache var1 = this.getDisplayCache();
+         DisplayCache var1 = this.getDisplayCache();
          int var2 = this.pageEdit.getCursorPos();
          int var3 = var1.findLineEnd(var2);
          this.pageEdit.setCursorPos(var3, Screen.hasShiftDown());
       }
+
    }
 
    private boolean titleKeyPressed(int var1, int var2, int var3) {
-      switch(var1) {
+      switch (var1) {
          case 257:
          case 335:
             if (!this.title.isEmpty()) {
                this.saveChanges(true);
-               this.minecraft.setScreen(null);
+               this.minecraft.setScreen((Screen)null);
             }
 
             return true;
@@ -357,7 +371,7 @@ public class BookEditScreen extends Screen {
    }
 
    private String getCurrentPageText() {
-      return this.currentPage >= 0 && this.currentPage < this.pages.size() ? this.pages.get(this.currentPage) : "";
+      return this.currentPage >= 0 && this.currentPage < this.pages.size() ? (String)this.pages.get(this.currentPage) : "";
    }
 
    private void setCurrentPageText(String var1) {
@@ -366,89 +380,106 @@ public class BookEditScreen extends Screen {
          this.isModified = true;
          this.clearDisplayCache();
       }
+
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.setFocused(null);
+      this.setFocused((GuiEventListener)null);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
+      int var10;
+      int var11;
       if (this.isSigning) {
          boolean var7 = this.frameTick / 6 % 2 == 0;
          FormattedCharSequence var8 = FormattedCharSequence.composite(FormattedCharSequence.forward(this.title, Style.EMPTY), var7 ? BLACK_CURSOR : GRAY_CURSOR);
-         int var9 = this.font.width(EDIT_TITLE_LABEL);
-         var1.drawString(this.font, EDIT_TITLE_LABEL, var5 + 36 + (114 - var9) / 2, 34, 0, false);
-         int var10 = this.font.width(var8);
-         var1.drawString(this.font, var8, var5 + 36 + (114 - var10) / 2, 50, 0, false);
-         int var11 = this.font.width(this.ownerText);
-         var1.drawString(this.font, this.ownerText, var5 + 36 + (114 - var11) / 2, 60, 0, false);
+         int var9 = this.font.width((FormattedText)EDIT_TITLE_LABEL);
+         var1.drawString(this.font, (Component)EDIT_TITLE_LABEL, var5 + 36 + (114 - var9) / 2, 34, 0, false);
+         var10 = this.font.width(var8);
+         var1.drawString(this.font, (FormattedCharSequence)var8, var5 + 36 + (114 - var10) / 2, 50, 0, false);
+         var11 = this.font.width((FormattedText)this.ownerText);
+         var1.drawString(this.font, (Component)this.ownerText, var5 + 36 + (114 - var11) / 2, 60, 0, false);
          var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0);
       } else {
-         int var13 = this.font.width(this.pageMsg);
-         var1.drawString(this.font, this.pageMsg, var5 - var13 + 192 - 44, 18, 0, false);
-         BookEditScreen.DisplayCache var14 = this.getDisplayCache();
+         int var13 = this.font.width((FormattedText)this.pageMsg);
+         var1.drawString(this.font, (Component)this.pageMsg, var5 - var13 + 192 - 44, 18, 0, false);
+         DisplayCache var14 = this.getDisplayCache();
+         LineInfo[] var15 = var14.lines;
+         var10 = var15.length;
 
-         for(BookEditScreen.LineInfo var12 : var14.lines) {
+         for(var11 = 0; var11 < var10; ++var11) {
+            LineInfo var12 = var15[var11];
             var1.drawString(this.font, var12.asComponent, var12.x, var12.y, -16777216, false);
          }
 
          this.renderHighlight(var1, var14.selection);
          this.renderCursor(var1, var14.cursor, var14.cursorAtEnd);
       }
+
    }
 
-   @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
       var1.blit(BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0, 0, 192, 192);
    }
 
-   private void renderCursor(GuiGraphics var1, BookEditScreen.Pos2i var2, boolean var3) {
+   private void renderCursor(GuiGraphics var1, Pos2i var2, boolean var3) {
       if (this.frameTick / 6 % 2 == 0) {
          var2 = this.convertLocalToScreen(var2);
          if (!var3) {
-            var1.fill(var2.x, var2.y - 1, var2.x + 1, var2.y + 9, -16777216);
+            int var10001 = var2.x;
+            int var10002 = var2.y - 1;
+            int var10003 = var2.x + 1;
+            int var10004 = var2.y;
+            Objects.requireNonNull(this.font);
+            var1.fill(var10001, var10002, var10003, var10004 + 9, -16777216);
          } else {
-            var1.drawString(this.font, "_", var2.x, var2.y, 0, false);
+            var1.drawString(this.font, (String)"_", var2.x, var2.y, 0, false);
          }
       }
+
    }
 
    private void renderHighlight(GuiGraphics var1, Rect2i[] var2) {
-      for(Rect2i var6 : var2) {
+      Rect2i[] var3 = var2;
+      int var4 = var2.length;
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         Rect2i var6 = var3[var5];
          int var7 = var6.getX();
          int var8 = var6.getY();
          int var9 = var7 + var6.getWidth();
          int var10 = var8 + var6.getHeight();
          var1.fill(RenderType.guiTextHighlight(), var7, var8, var9, var10, -16776961);
       }
+
    }
 
-   private BookEditScreen.Pos2i convertScreenToLocal(BookEditScreen.Pos2i var1) {
-      return new BookEditScreen.Pos2i(var1.x - (this.width - 192) / 2 - 36, var1.y - 32);
+   private Pos2i convertScreenToLocal(Pos2i var1) {
+      return new Pos2i(var1.x - (this.width - 192) / 2 - 36, var1.y - 32);
    }
 
-   private BookEditScreen.Pos2i convertLocalToScreen(BookEditScreen.Pos2i var1) {
-      return new BookEditScreen.Pos2i(var1.x + (this.width - 192) / 2 + 36, var1.y + 32);
+   private Pos2i convertLocalToScreen(Pos2i var1) {
+      return new Pos2i(var1.x + (this.width - 192) / 2 + 36, var1.y + 32);
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (super.mouseClicked(var1, var3, var5)) {
          return true;
       } else {
          if (var5 == 0) {
             long var6 = Util.getMillis();
-            BookEditScreen.DisplayCache var8 = this.getDisplayCache();
-            int var9 = var8.getIndexAtPosition(this.font, this.convertScreenToLocal(new BookEditScreen.Pos2i((int)var1, (int)var3)));
+            DisplayCache var8 = this.getDisplayCache();
+            int var9 = var8.getIndexAtPosition(this.font, this.convertScreenToLocal(new Pos2i((int)var1, (int)var3)));
             if (var9 >= 0) {
-               if (var9 != this.lastIndex || var6 - this.lastClickTime >= 250L) {
-                  this.pageEdit.setCursorPos(var9, Screen.hasShiftDown());
-               } else if (!this.pageEdit.isSelecting()) {
-                  this.selectWord(var9);
+               if (var9 == this.lastIndex && var6 - this.lastClickTime < 250L) {
+                  if (!this.pageEdit.isSelecting()) {
+                     this.selectWord(var9);
+                  } else {
+                     this.pageEdit.selectAll();
+                  }
                } else {
-                  this.pageEdit.selectAll();
+                  this.pageEdit.setCursorPos(var9, Screen.hasShiftDown());
                }
 
                this.clearDisplayCache();
@@ -467,14 +498,13 @@ public class BookEditScreen extends Screen {
       this.pageEdit.setSelectionRange(StringSplitter.getWordPosition(var2, -1, var1, false), StringSplitter.getWordPosition(var2, 1, var1, false));
    }
 
-   @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
       if (super.mouseDragged(var1, var3, var5, var6, var8)) {
          return true;
       } else {
          if (var5 == 0) {
-            BookEditScreen.DisplayCache var10 = this.getDisplayCache();
-            int var11 = var10.getIndexAtPosition(this.font, this.convertScreenToLocal(new BookEditScreen.Pos2i((int)var1, (int)var3)));
+            DisplayCache var10 = this.getDisplayCache();
+            int var11 = var10.getIndexAtPosition(this.font, this.convertScreenToLocal(new Pos2i((int)var1, (int)var3)));
             this.pageEdit.setCursorPos(var11, true);
             this.clearDisplayCache();
          }
@@ -483,7 +513,7 @@ public class BookEditScreen extends Screen {
       }
    }
 
-   private BookEditScreen.DisplayCache getDisplayCache() {
+   private DisplayCache getDisplayCache() {
       if (this.displayCache == null) {
          this.displayCache = this.rebuildDisplayCache();
          this.pageMsg = Component.translatable("book.pageIndicator", this.currentPage + 1, this.getNumPages());
@@ -501,7 +531,7 @@ public class BookEditScreen extends Screen {
       this.clearDisplayCache();
    }
 
-   private BookEditScreen.DisplayCache rebuildDisplayCache() {
+   private DisplayCache rebuildDisplayCache() {
       String var1 = this.getCurrentPageText();
       if (var1.isEmpty()) {
          return BookEditScreen.DisplayCache.EMPTY;
@@ -514,52 +544,66 @@ public class BookEditScreen extends Screen {
          MutableBoolean var7 = new MutableBoolean();
          StringSplitter var8 = this.font.getSplitter();
          var8.splitLines(var1, 114, Style.EMPTY, true, (var6x, var7x, var8x) -> {
-            int var9xx = var6.getAndIncrement();
-            String var10xx = var1.substring(var7x, var8x);
-            var7.setValue(var10xx.endsWith("\n"));
-            String var11xx = StringUtils.stripEnd(var10xx, " \n");
-            int var12xx = var9xx * 9;
-            BookEditScreen.Pos2i var13xx = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, var12xx));
+            int var9 = var6.getAndIncrement();
+            String var10 = var1.substring(var7x, var8x);
+            var7.setValue(var10.endsWith("\n"));
+            String var11 = StringUtils.stripEnd(var10, " \n");
+            Objects.requireNonNull(this.font);
+            int var12 = var9 * 9;
+            Pos2i var13 = this.convertLocalToScreen(new Pos2i(0, var12));
             var4.add(var7x);
-            var5.add(new BookEditScreen.LineInfo(var6x, var11xx, var13xx.x, var13xx.y));
+            var5.add(new LineInfo(var6x, var11, var13.x, var13.y));
          });
          int[] var9 = var4.toIntArray();
          boolean var10 = var2 == var1.length();
-         BookEditScreen.Pos2i var11;
+         Pos2i var11;
+         int var13;
          if (var10 && var7.isTrue()) {
-            var11 = new BookEditScreen.Pos2i(0, var5.size() * 9);
+            int var10003 = var5.size();
+            Objects.requireNonNull(this.font);
+            var11 = new Pos2i(0, var10003 * 9);
          } else {
             int var12 = findLineFromPos(var9, var2);
-            int var13 = this.font.width(var1.substring(var9[var12], var2));
-            var11 = new BookEditScreen.Pos2i(var13, var12 * 9);
+            var13 = this.font.width(var1.substring(var9[var12], var2));
+            Objects.requireNonNull(this.font);
+            var11 = new Pos2i(var13, var12 * 9);
          }
 
          ArrayList var22 = Lists.newArrayList();
          if (var2 != var3) {
-            int var23 = Math.min(var2, var3);
+            var13 = Math.min(var2, var3);
             int var14 = Math.max(var2, var3);
-            int var15 = findLineFromPos(var9, var23);
+            int var15 = findLineFromPos(var9, var13);
             int var16 = findLineFromPos(var9, var14);
+            int var17;
+            int var18;
             if (var15 == var16) {
-               int var17 = var15 * 9;
-               int var18 = var9[var15];
-               var22.add(this.createPartialLineSelection(var1, var8, var23, var14, var17, var18));
+               Objects.requireNonNull(this.font);
+               var17 = var15 * 9;
+               var18 = var9[var15];
+               var22.add(this.createPartialLineSelection(var1, var8, var13, var14, var17, var18));
             } else {
-               int var24 = var15 + 1 > var9.length ? var1.length() : var9[var15 + 1];
-               var22.add(this.createPartialLineSelection(var1, var8, var23, var24, var15 * 9, var9[var15]));
+               var17 = var15 + 1 > var9.length ? var1.length() : var9[var15 + 1];
+               Objects.requireNonNull(this.font);
+               var22.add(this.createPartialLineSelection(var1, var8, var13, var17, var15 * 9, var9[var15]));
 
-               for(int var25 = var15 + 1; var25 < var16; ++var25) {
-                  int var19 = var25 * 9;
-                  String var20 = var1.substring(var9[var25], var9[var25 + 1]);
+               for(var18 = var15 + 1; var18 < var16; ++var18) {
+                  Objects.requireNonNull(this.font);
+                  int var19 = var18 * 9;
+                  String var20 = var1.substring(var9[var18], var9[var18 + 1]);
                   int var21 = (int)var8.stringWidth(var20);
-                  var22.add(this.createSelection(new BookEditScreen.Pos2i(0, var19), new BookEditScreen.Pos2i(var21, var19 + 9)));
+                  Pos2i var10002 = new Pos2i(0, var19);
+                  Objects.requireNonNull(this.font);
+                  var22.add(this.createSelection(var10002, new Pos2i(var21, var19 + 9)));
                }
 
-               var22.add(this.createPartialLineSelection(var1, var8, var9[var16], var14, var16 * 9, var9[var16]));
+               int var10004 = var9[var16];
+               Objects.requireNonNull(this.font);
+               var22.add(this.createPartialLineSelection(var1, var8, var10004, var14, var16 * 9, var9[var16]));
             }
          }
 
-         return new BookEditScreen.DisplayCache(var1, var11, var10, var9, var5.toArray(new BookEditScreen.LineInfo[0]), var22.toArray(new Rect2i[0]));
+         return new DisplayCache(var1, var11, var10, var9, (LineInfo[])var5.toArray(new LineInfo[0]), (Rect2i[])var22.toArray(new Rect2i[0]));
       }
    }
 
@@ -571,14 +615,16 @@ public class BookEditScreen extends Screen {
    private Rect2i createPartialLineSelection(String var1, StringSplitter var2, int var3, int var4, int var5, int var6) {
       String var7 = var1.substring(var6, var3);
       String var8 = var1.substring(var6, var4);
-      BookEditScreen.Pos2i var9 = new BookEditScreen.Pos2i((int)var2.stringWidth(var7), var5);
-      BookEditScreen.Pos2i var10 = new BookEditScreen.Pos2i((int)var2.stringWidth(var8), var5 + 9);
+      Pos2i var9 = new Pos2i((int)var2.stringWidth(var7), var5);
+      int var10002 = (int)var2.stringWidth(var8);
+      Objects.requireNonNull(this.font);
+      Pos2i var10 = new Pos2i(var10002, var5 + 9);
       return this.createSelection(var9, var10);
    }
 
-   private Rect2i createSelection(BookEditScreen.Pos2i var1, BookEditScreen.Pos2i var2) {
-      BookEditScreen.Pos2i var3 = this.convertLocalToScreen(var1);
-      BookEditScreen.Pos2i var4 = this.convertLocalToScreen(var2);
+   private Rect2i createSelection(Pos2i var1, Pos2i var2) {
+      Pos2i var3 = this.convertLocalToScreen(var1);
+      Pos2i var4 = this.convertLocalToScreen(var2);
       int var5 = Math.min(var3.x, var4.x);
       int var6 = Math.max(var3.x, var4.x);
       int var7 = Math.min(var3.y, var4.y);
@@ -586,23 +632,21 @@ public class BookEditScreen extends Screen {
       return new Rect2i(var5, var7, var6 - var5, var8 - var7);
    }
 
+   static {
+      BLACK_CURSOR = FormattedCharSequence.forward("_", Style.EMPTY.withColor(ChatFormatting.BLACK));
+      GRAY_CURSOR = FormattedCharSequence.forward("_", Style.EMPTY.withColor(ChatFormatting.GRAY));
+   }
+
    static class DisplayCache {
-      static final BookEditScreen.DisplayCache EMPTY = new BookEditScreen.DisplayCache(
-         "",
-         new BookEditScreen.Pos2i(0, 0),
-         true,
-         new int[]{0},
-         new BookEditScreen.LineInfo[]{new BookEditScreen.LineInfo(Style.EMPTY, "", 0, 0)},
-         new Rect2i[0]
-      );
+      static final DisplayCache EMPTY;
       private final String fullText;
-      final BookEditScreen.Pos2i cursor;
+      final Pos2i cursor;
       final boolean cursorAtEnd;
       private final int[] lineStarts;
-      final BookEditScreen.LineInfo[] lines;
+      final LineInfo[] lines;
       final Rect2i[] selection;
 
-      public DisplayCache(String var1, BookEditScreen.Pos2i var2, boolean var3, int[] var4, BookEditScreen.LineInfo[] var5, Rect2i[] var6) {
+      public DisplayCache(String var1, Pos2i var2, boolean var3, int[] var4, LineInfo[] var5, Rect2i[] var6) {
          super();
          this.fullText = var1;
          this.cursor = var2;
@@ -612,14 +656,16 @@ public class BookEditScreen extends Screen {
          this.selection = var6;
       }
 
-      public int getIndexAtPosition(Font var1, BookEditScreen.Pos2i var2) {
-         int var3 = var2.y / 9;
+      public int getIndexAtPosition(Font var1, Pos2i var2) {
+         int var10000 = var2.y;
+         Objects.requireNonNull(var1);
+         int var3 = var10000 / 9;
          if (var3 < 0) {
             return 0;
          } else if (var3 >= this.lines.length) {
             return this.fullText.length();
          } else {
-            BookEditScreen.LineInfo var4 = this.lines[var3];
+            LineInfo var4 = this.lines[var3];
             return this.lineStarts[var3] + var1.getSplitter().plainIndexAtWidth(var4.contents, var2.x, var4.style);
          }
       }
@@ -648,9 +694,13 @@ public class BookEditScreen extends Screen {
          int var2 = BookEditScreen.findLineFromPos(this.lineStarts, var1);
          return this.lineStarts[var2] + this.lines[var2].contents.length();
       }
+
+      static {
+         EMPTY = new DisplayCache("", new Pos2i(0, 0), true, new int[]{0}, new LineInfo[]{new LineInfo(Style.EMPTY, "", 0, 0)}, new Rect2i[0]);
+      }
    }
 
-   static class LineInfo {
+   private static class LineInfo {
       final Style style;
       final String contents;
       final Component asComponent;
@@ -667,7 +717,7 @@ public class BookEditScreen extends Screen {
       }
    }
 
-   static class Pos2i {
+   private static class Pos2i {
       public final int x;
       public final int y;
 

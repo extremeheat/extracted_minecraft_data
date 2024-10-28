@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -30,7 +31,6 @@ public class MeleeAttackGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
-   @Override
    public boolean canUse() {
       long var1 = this.mob.level().getGameTime();
       if (var1 - this.lastCanUseCheck < 20L) {
@@ -43,7 +43,7 @@ public class MeleeAttackGoal extends Goal {
          } else if (!var3.isAlive()) {
             return false;
          } else {
-            this.path = this.mob.getNavigation().createPath(var3, 0);
+            this.path = this.mob.getNavigation().createPath((Entity)var3, 0);
             if (this.path != null) {
                return true;
             } else {
@@ -53,7 +53,6 @@ public class MeleeAttackGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       LivingEntity var1 = this.mob.getTarget();
       if (var1 == null) {
@@ -69,7 +68,6 @@ public class MeleeAttackGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().moveTo(this.path, this.speedModifier);
       this.mob.setAggressive(true);
@@ -77,35 +75,26 @@ public class MeleeAttackGoal extends Goal {
       this.ticksUntilNextAttack = 0;
    }
 
-   @Override
    public void stop() {
       LivingEntity var1 = this.mob.getTarget();
       if (!EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(var1)) {
-         this.mob.setTarget(null);
+         this.mob.setTarget((LivingEntity)null);
       }
 
       this.mob.setAggressive(false);
       this.mob.getNavigation().stop();
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   @Override
    public void tick() {
       LivingEntity var1 = this.mob.getTarget();
       if (var1 != null) {
          this.mob.getLookControl().setLookAt(var1, 30.0F, 30.0F);
          this.ticksUntilNextPathRecalculation = Math.max(this.ticksUntilNextPathRecalculation - 1, 0);
-         if ((this.followingTargetEvenIfNotSeen || this.mob.getSensing().hasLineOfSight(var1))
-            && this.ticksUntilNextPathRecalculation <= 0
-            && (
-               this.pathedTargetX == 0.0 && this.pathedTargetY == 0.0 && this.pathedTargetZ == 0.0
-                  || var1.distanceToSqr(this.pathedTargetX, this.pathedTargetY, this.pathedTargetZ) >= 1.0
-                  || this.mob.getRandom().nextFloat() < 0.05F
-            )) {
+         if ((this.followingTargetEvenIfNotSeen || this.mob.getSensing().hasLineOfSight(var1)) && this.ticksUntilNextPathRecalculation <= 0 && (this.pathedTargetX == 0.0 && this.pathedTargetY == 0.0 && this.pathedTargetZ == 0.0 || var1.distanceToSqr(this.pathedTargetX, this.pathedTargetY, this.pathedTargetZ) >= 1.0 || this.mob.getRandom().nextFloat() < 0.05F)) {
             this.pathedTargetX = var1.getX();
             this.pathedTargetY = var1.getY();
             this.pathedTargetZ = var1.getZ();
@@ -117,7 +106,7 @@ public class MeleeAttackGoal extends Goal {
                this.ticksUntilNextPathRecalculation += 5;
             }
 
-            if (!this.mob.getNavigation().moveTo(var1, this.speedModifier)) {
+            if (!this.mob.getNavigation().moveTo((Entity)var1, this.speedModifier)) {
                this.ticksUntilNextPathRecalculation += 15;
             }
 
@@ -135,6 +124,7 @@ public class MeleeAttackGoal extends Goal {
          this.mob.swing(InteractionHand.MAIN_HAND);
          this.mob.doHurtTarget(var1);
       }
+
    }
 
    protected void resetAttackCooldown() {

@@ -36,38 +36,46 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 
 public class ChunkHolder {
    public static final ChunkResult<ChunkAccess> UNLOADED_CHUNK = ChunkResult.error("Unloaded chunk");
-   public static final CompletableFuture<ChunkResult<ChunkAccess>> UNLOADED_CHUNK_FUTURE = CompletableFuture.completedFuture(UNLOADED_CHUNK);
-   public static final ChunkResult<LevelChunk> UNLOADED_LEVEL_CHUNK = ChunkResult.error("Unloaded level chunk");
-   public static final ChunkResult<ChunkAccess> NOT_DONE_YET = ChunkResult.error("Not done yet");
-   private static final CompletableFuture<ChunkResult<LevelChunk>> UNLOADED_LEVEL_CHUNK_FUTURE = CompletableFuture.completedFuture(UNLOADED_LEVEL_CHUNK);
-   private static final List<ChunkStatus> CHUNK_STATUSES = ChunkStatus.getStatusList();
-   private final AtomicReferenceArray<CompletableFuture<ChunkResult<ChunkAccess>>> futures = new AtomicReferenceArray<>(CHUNK_STATUSES.size());
+   public static final CompletableFuture<ChunkResult<ChunkAccess>> UNLOADED_CHUNK_FUTURE;
+   public static final ChunkResult<LevelChunk> UNLOADED_LEVEL_CHUNK;
+   public static final ChunkResult<ChunkAccess> NOT_DONE_YET;
+   private static final CompletableFuture<ChunkResult<LevelChunk>> UNLOADED_LEVEL_CHUNK_FUTURE;
+   private static final List<ChunkStatus> CHUNK_STATUSES;
+   private final AtomicReferenceArray<CompletableFuture<ChunkResult<ChunkAccess>>> futures;
    private final LevelHeightAccessor levelHeightAccessor;
-   private volatile CompletableFuture<ChunkResult<LevelChunk>> fullChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
-   private volatile CompletableFuture<ChunkResult<LevelChunk>> tickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
-   private volatile CompletableFuture<ChunkResult<LevelChunk>> entityTickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
-   private CompletableFuture<ChunkAccess> chunkToSave = CompletableFuture.completedFuture(null);
+   private volatile CompletableFuture<ChunkResult<LevelChunk>> fullChunkFuture;
+   private volatile CompletableFuture<ChunkResult<LevelChunk>> tickingChunkFuture;
+   private volatile CompletableFuture<ChunkResult<LevelChunk>> entityTickingChunkFuture;
+   private CompletableFuture<ChunkAccess> chunkToSave;
    @Nullable
-   private final DebugBuffer<ChunkHolder.ChunkSaveDebug> chunkToSaveHistory = null;
+   private final DebugBuffer<ChunkSaveDebug> chunkToSaveHistory;
    private int oldTicketLevel;
    private int ticketLevel;
    private int queueLevel;
    private final ChunkPos pos;
    private boolean hasChangedSections;
    private final ShortSet[] changedBlocksPerSection;
-   private final BitSet blockChangedLightSectionFilter = new BitSet();
-   private final BitSet skyChangedLightSectionFilter = new BitSet();
+   private final BitSet blockChangedLightSectionFilter;
+   private final BitSet skyChangedLightSectionFilter;
    private final LevelLightEngine lightEngine;
-   private final ChunkHolder.LevelChangeListener onLevelChange;
-   private final ChunkHolder.PlayerProvider playerProvider;
+   private final LevelChangeListener onLevelChange;
+   private final PlayerProvider playerProvider;
    private boolean wasAccessibleSinceLastSave;
-   private CompletableFuture<Void> pendingFullStateConfirmation = CompletableFuture.completedFuture(null);
-   private CompletableFuture<?> sendSync = CompletableFuture.completedFuture(null);
+   private CompletableFuture<Void> pendingFullStateConfirmation;
+   private CompletableFuture<?> sendSync;
 
-   public ChunkHolder(
-      ChunkPos var1, int var2, LevelHeightAccessor var3, LevelLightEngine var4, ChunkHolder.LevelChangeListener var5, ChunkHolder.PlayerProvider var6
-   ) {
+   public ChunkHolder(ChunkPos var1, int var2, LevelHeightAccessor var3, LevelLightEngine var4, LevelChangeListener var5, PlayerProvider var6) {
       super();
+      this.futures = new AtomicReferenceArray(CHUNK_STATUSES.size());
+      this.fullChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+      this.tickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+      this.entityTickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+      this.chunkToSave = CompletableFuture.completedFuture((Object)null);
+      this.chunkToSaveHistory = null;
+      this.blockChangedLightSectionFilter = new BitSet();
+      this.skyChangedLightSectionFilter = new BitSet();
+      this.pendingFullStateConfirmation = CompletableFuture.completedFuture((Object)null);
+      this.sendSync = CompletableFuture.completedFuture((Object)null);
       this.pos = var1;
       this.levelHeightAccessor = var3;
       this.lightEngine = var4;
@@ -81,7 +89,7 @@ public class ChunkHolder {
    }
 
    public CompletableFuture<ChunkResult<ChunkAccess>> getFutureIfPresentUnchecked(ChunkStatus var1) {
-      CompletableFuture var2 = this.futures.get(var1.getIndex());
+      CompletableFuture var2 = (CompletableFuture)this.futures.get(var1.getIndex());
       return var2 == null ? UNLOADED_CHUNK_FUTURE : var2;
    }
 
@@ -103,7 +111,7 @@ public class ChunkHolder {
 
    @Nullable
    public LevelChunk getTickingChunk() {
-      return this.getTickingChunkFuture().getNow(UNLOADED_LEVEL_CHUNK).orElse(null);
+      return (LevelChunk)((ChunkResult)this.getTickingChunkFuture().getNow(UNLOADED_LEVEL_CHUNK)).orElse((Object)null);
    }
 
    public CompletableFuture<?> getChunkSendSyncFuture() {
@@ -118,9 +126,9 @@ public class ChunkHolder {
    @Nullable
    public ChunkStatus getLastAvailableStatus() {
       for(int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; --var1) {
-         ChunkStatus var2 = CHUNK_STATUSES.get(var1);
+         ChunkStatus var2 = (ChunkStatus)CHUNK_STATUSES.get(var1);
          CompletableFuture var3 = this.getFutureIfPresentUnchecked(var2);
-         if (var3.getNow(UNLOADED_CHUNK).isSuccess()) {
+         if (((ChunkResult)var3.getNow(UNLOADED_CHUNK)).isSuccess()) {
             return var2;
          }
       }
@@ -131,10 +139,10 @@ public class ChunkHolder {
    @Nullable
    public ChunkAccess getLastAvailable() {
       for(int var1 = CHUNK_STATUSES.size() - 1; var1 >= 0; --var1) {
-         ChunkStatus var2 = CHUNK_STATUSES.get(var1);
+         ChunkStatus var2 = (ChunkStatus)CHUNK_STATUSES.get(var1);
          CompletableFuture var3 = this.getFutureIfPresentUnchecked(var2);
          if (!var3.isCompletedExceptionally()) {
-            ChunkAccess var4 = var3.getNow(UNLOADED_CHUNK).orElse(null);
+            ChunkAccess var4 = (ChunkAccess)((ChunkResult)var3.getNow(UNLOADED_CHUNK)).orElse((Object)null);
             if (var4 != null) {
                return var4;
             }
@@ -162,7 +170,7 @@ public class ChunkHolder {
    }
 
    public void sectionLightChanged(LightLayer var1, int var2) {
-      ChunkAccess var3 = this.getFutureIfPresent(ChunkStatus.INITIALIZE_LIGHT).getNow(UNLOADED_CHUNK).orElse(null);
+      ChunkAccess var3 = (ChunkAccess)((ChunkResult)this.getFutureIfPresent(ChunkStatus.INITIALIZE_LIGHT).getNow(UNLOADED_CHUNK)).orElse((Object)null);
       if (var3 != null) {
          var3.setUnsaved(true);
          LevelChunk var4 = this.getTickingChunk();
@@ -176,6 +184,7 @@ public class ChunkHolder {
                } else {
                   this.blockChangedLightSectionFilter.set(var7);
                }
+
             }
          }
       }
@@ -184,12 +193,11 @@ public class ChunkHolder {
    public void broadcastChanges(LevelChunk var1) {
       if (this.hasChangedSections || !this.skyChangedLightSectionFilter.isEmpty() || !this.blockChangedLightSectionFilter.isEmpty()) {
          Level var2 = var1.getLevel();
+         List var3;
          if (!this.skyChangedLightSectionFilter.isEmpty() || !this.blockChangedLightSectionFilter.isEmpty()) {
-            List var3 = this.playerProvider.getPlayers(this.pos, true);
+            var3 = this.playerProvider.getPlayers(this.pos, true);
             if (!var3.isEmpty()) {
-               ClientboundLightUpdatePacket var4 = new ClientboundLightUpdatePacket(
-                  var1.getPos(), this.lightEngine, this.skyChangedLightSectionFilter, this.blockChangedLightSectionFilter
-               );
+               ClientboundLightUpdatePacket var4 = new ClientboundLightUpdatePacket(var1.getPos(), this.lightEngine, this.skyChangedLightSectionFilter, this.blockChangedLightSectionFilter);
                this.broadcast(var3, var4);
             }
 
@@ -198,25 +206,27 @@ public class ChunkHolder {
          }
 
          if (this.hasChangedSections) {
-            List var10 = this.playerProvider.getPlayers(this.pos, false);
+            var3 = this.playerProvider.getPlayers(this.pos, false);
 
-            for(int var11 = 0; var11 < this.changedBlocksPerSection.length; ++var11) {
-               ShortSet var5 = this.changedBlocksPerSection[var11];
+            for(int var10 = 0; var10 < this.changedBlocksPerSection.length; ++var10) {
+               ShortSet var5 = this.changedBlocksPerSection[var10];
                if (var5 != null) {
-                  this.changedBlocksPerSection[var11] = null;
-                  if (!var10.isEmpty()) {
-                     int var6 = this.levelHeightAccessor.getSectionYFromSectionIndex(var11);
+                  this.changedBlocksPerSection[var10] = null;
+                  if (!var3.isEmpty()) {
+                     int var6 = this.levelHeightAccessor.getSectionYFromSectionIndex(var10);
                      SectionPos var7 = SectionPos.of(var1.getPos(), var6);
                      if (var5.size() == 1) {
                         BlockPos var8 = var7.relativeToBlockPos(var5.iterator().nextShort());
                         BlockState var9 = var2.getBlockState(var8);
-                        this.broadcast(var10, new ClientboundBlockUpdatePacket(var8, var9));
-                        this.broadcastBlockEntityIfNeeded(var10, var2, var8, var9);
+                        this.broadcast(var3, new ClientboundBlockUpdatePacket(var8, var9));
+                        this.broadcastBlockEntityIfNeeded(var3, var2, var8, var9);
                      } else {
-                        LevelChunkSection var12 = var1.getSection(var11);
-                        ClientboundSectionBlocksUpdatePacket var13 = new ClientboundSectionBlocksUpdatePacket(var7, var5, var12);
-                        this.broadcast(var10, var13);
-                        var13.runUpdates((var3x, var4x) -> this.broadcastBlockEntityIfNeeded(var10, var2, var3x, var4x));
+                        LevelChunkSection var11 = var1.getSection(var10);
+                        ClientboundSectionBlocksUpdatePacket var12 = new ClientboundSectionBlocksUpdatePacket(var7, var5, var11);
+                        this.broadcast(var3, var12);
+                        var12.runUpdates((var3x, var4x) -> {
+                           this.broadcastBlockEntityIfNeeded(var3, var2, var3x, var4x);
+                        });
                      }
                   }
                }
@@ -231,6 +241,7 @@ public class ChunkHolder {
       if (var4.hasBlockEntity()) {
          this.broadcastBlockEntity(var1, var2, var3);
       }
+
    }
 
    private void broadcastBlockEntity(List<ServerPlayer> var1, Level var2, BlockPos var3) {
@@ -241,19 +252,23 @@ public class ChunkHolder {
             this.broadcast(var1, var5);
          }
       }
+
    }
 
    private void broadcast(List<ServerPlayer> var1, Packet<?> var2) {
-      var1.forEach(var1x -> var1x.connection.send(var2));
+      var1.forEach((var1x) -> {
+         var1x.connection.send(var2);
+      });
    }
 
    public CompletableFuture<ChunkResult<ChunkAccess>> getOrScheduleFuture(ChunkStatus var1, ChunkMap var2) {
       int var3 = var1.getIndex();
-      CompletableFuture var4 = this.futures.get(var3);
+      CompletableFuture var4 = (CompletableFuture)this.futures.get(var3);
       if (var4 != null) {
-         ChunkResult var5 = var4.getNow(NOT_DONE_YET);
+         ChunkResult var5 = (ChunkResult)var4.getNow(NOT_DONE_YET);
          if (var5 == null) {
-            String var6 = "value in future for status: " + var1 + " was incorrectly set to null at chunk: " + this.pos;
+            String var10000 = String.valueOf(var1);
+            String var6 = "value in future for status: " + var10000 + " was incorrectly set to null at chunk: " + String.valueOf(this.pos);
             throw var2.debugFuturesAndCreateReportedException(new IllegalStateException("null value previously set for chunk status"), var6);
          }
 
@@ -264,7 +279,7 @@ public class ChunkHolder {
 
       if (ChunkLevel.generationStatus(this.ticketLevel).isOrAfter(var1)) {
          CompletableFuture var7 = var2.schedule(this, var1);
-         this.updateChunkToSave(var7, "schedule " + var1);
+         this.updateChunkToSave(var7, "schedule " + String.valueOf(var1));
          this.futures.set(var3, var7);
          return var7;
       } else {
@@ -274,26 +289,33 @@ public class ChunkHolder {
 
    protected void addSaveDependency(String var1, CompletableFuture<?> var2) {
       if (this.chunkToSaveHistory != null) {
-         this.chunkToSaveHistory.push(new ChunkHolder.ChunkSaveDebug(Thread.currentThread(), var2, var1));
+         this.chunkToSaveHistory.push(new ChunkSaveDebug(Thread.currentThread(), var2, var1));
       }
 
-      this.chunkToSave = this.chunkToSave.thenCombine(var2, (var0, var1x) -> var0);
+      this.chunkToSave = this.chunkToSave.thenCombine(var2, (var0, var1x) -> {
+         return var0;
+      });
    }
 
    private void updateChunkToSave(CompletableFuture<? extends ChunkResult<? extends ChunkAccess>> var1, String var2) {
       if (this.chunkToSaveHistory != null) {
-         this.chunkToSaveHistory.push(new ChunkHolder.ChunkSaveDebug(Thread.currentThread(), var1, var2));
+         this.chunkToSaveHistory.push(new ChunkSaveDebug(Thread.currentThread(), var1, var2));
       }
 
-      this.chunkToSave = this.chunkToSave.thenCombine(var1, (var0, var1x) -> ChunkResult.orElse(var1x, var0));
+      this.chunkToSave = this.chunkToSave.thenCombine(var1, (var0, var1x) -> {
+         return (ChunkAccess)ChunkResult.orElse(var1x, var0);
+      });
    }
 
    public void addSendDependency(CompletableFuture<?> var1) {
       if (this.sendSync.isDone()) {
          this.sendSync = var1;
       } else {
-         this.sendSync = this.sendSync.thenCombine(var1, (var0, var1x) -> null);
+         this.sendSync = this.sendSync.thenCombine(var1, (var0, var1x) -> {
+            return null;
+         });
       }
+
    }
 
    public FullChunkStatus getFullStatus() {
@@ -323,9 +345,15 @@ public class ChunkHolder {
    private void scheduleFullChunkPromotion(ChunkMap var1, CompletableFuture<ChunkResult<LevelChunk>> var2, Executor var3, FullChunkStatus var4) {
       this.pendingFullStateConfirmation.cancel(false);
       CompletableFuture var5 = new CompletableFuture();
-      var5.thenRunAsync(() -> var1.onFullChunkStatusChange(this.pos, var4), var3);
+      var5.thenRunAsync(() -> {
+         var1.onFullChunkStatusChange(this.pos, var4);
+      }, var3);
       this.pendingFullStateConfirmation = var5;
-      var2.thenAccept(var1x -> var1x.ifSuccess(var1xx -> var5.complete(null)));
+      var2.thenAccept((var1x) -> {
+         var1x.ifSuccess((var1) -> {
+            var5.complete((Object)null);
+         });
+      });
    }
 
    private void demoteFullChunk(ChunkMap var1, FullChunkStatus var2) {
@@ -341,10 +369,12 @@ public class ChunkHolder {
       FullChunkStatus var7 = ChunkLevel.fullStatus(this.oldTicketLevel);
       FullChunkStatus var8 = ChunkLevel.fullStatus(this.ticketLevel);
       if (var5) {
-         ChunkResult var9 = ChunkResult.error(() -> "Unloaded ticket level " + this.pos);
+         ChunkResult var9 = ChunkResult.error(() -> {
+            return "Unloaded ticket level " + String.valueOf(this.pos);
+         });
 
          for(int var10 = var6 ? var4.getIndex() + 1 : 0; var10 <= var3.getIndex(); ++var10) {
-            CompletableFuture var11 = this.futures.get(var10);
+            CompletableFuture var11 = (CompletableFuture)this.futures.get(var10);
             if (var11 == null) {
                this.futures.set(var10, CompletableFuture.completedFuture(var9));
             }
@@ -413,9 +443,9 @@ public class ChunkHolder {
 
    public void replaceProtoChunk(ImposterProtoChunk var1) {
       for(int var2 = 0; var2 < this.futures.length(); ++var2) {
-         CompletableFuture var3 = this.futures.get(var2);
+         CompletableFuture var3 = (CompletableFuture)this.futures.get(var2);
          if (var3 != null) {
-            ChunkAccess var4 = var3.getNow(UNLOADED_CHUNK).orElse(null);
+            ChunkAccess var4 = (ChunkAccess)((ChunkResult)var3.getNow(UNLOADED_CHUNK)).orElse((Object)null);
             if (var4 instanceof ProtoChunk) {
                this.futures.set(var2, CompletableFuture.completedFuture(ChunkResult.of(var1)));
             }
@@ -429,23 +459,18 @@ public class ChunkHolder {
       ArrayList var1 = new ArrayList();
 
       for(int var2 = 0; var2 < CHUNK_STATUSES.size(); ++var2) {
-         var1.add(Pair.of(CHUNK_STATUSES.get(var2), this.futures.get(var2)));
+         var1.add(Pair.of((ChunkStatus)CHUNK_STATUSES.get(var2), (CompletableFuture)this.futures.get(var2)));
       }
 
       return var1;
    }
 
-   static record ChunkSaveDebug(Thread a, CompletableFuture<?> b, String c) {
-      private final Thread thread;
-      private final CompletableFuture<?> future;
-      private final String source;
-
-      ChunkSaveDebug(Thread var1, CompletableFuture<?> var2, String var3) {
-         super();
-         this.thread = var1;
-         this.future = var2;
-         this.source = var3;
-      }
+   static {
+      UNLOADED_CHUNK_FUTURE = CompletableFuture.completedFuture(UNLOADED_CHUNK);
+      UNLOADED_LEVEL_CHUNK = ChunkResult.error("Unloaded level chunk");
+      NOT_DONE_YET = ChunkResult.error("Not done yet");
+      UNLOADED_LEVEL_CHUNK_FUTURE = CompletableFuture.completedFuture(UNLOADED_LEVEL_CHUNK);
+      CHUNK_STATUSES = ChunkStatus.getStatusList();
    }
 
    @FunctionalInterface
@@ -455,5 +480,26 @@ public class ChunkHolder {
 
    public interface PlayerProvider {
       List<ServerPlayer> getPlayers(ChunkPos var1, boolean var2);
+   }
+
+   static record ChunkSaveDebug(Thread thread, CompletableFuture<?> future, String source) {
+      ChunkSaveDebug(Thread var1, CompletableFuture<?> var2, String var3) {
+         super();
+         this.thread = var1;
+         this.future = var2;
+         this.source = var3;
+      }
+
+      public Thread thread() {
+         return this.thread;
+      }
+
+      public CompletableFuture<?> future() {
+         return this.future;
+      }
+
+      public String source() {
+         return this.source;
+      }
    }
 }

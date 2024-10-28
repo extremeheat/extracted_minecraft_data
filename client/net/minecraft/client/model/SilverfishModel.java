@@ -21,8 +21,12 @@ public class SilverfishModel<T extends Entity> extends HierarchicalModel<T> {
    public SilverfishModel(ModelPart var1) {
       super();
       this.root = var1;
-      Arrays.setAll(this.bodyParts, var1x -> var1.getChild(getSegmentName(var1x)));
-      Arrays.setAll(this.bodyLayers, var1x -> var1.getChild(getLayerName(var1x)));
+      Arrays.setAll(this.bodyParts, (var1x) -> {
+         return var1.getChild(getSegmentName(var1x));
+      });
+      Arrays.setAll(this.bodyLayers, (var1x) -> {
+         return var1.getChild(getLayerName(var1x));
+      });
    }
 
    private static String getLayerName(int var0) {
@@ -40,50 +44,23 @@ public class SilverfishModel<T extends Entity> extends HierarchicalModel<T> {
       float var3 = -3.5F;
 
       for(int var4 = 0; var4 < 7; ++var4) {
-         var1.addOrReplaceChild(
-            getSegmentName(var4),
-            CubeListBuilder.create()
-               .texOffs(BODY_TEXS[var4][0], BODY_TEXS[var4][1])
-               .addBox(
-                  (float)BODY_SIZES[var4][0] * -0.5F,
-                  0.0F,
-                  (float)BODY_SIZES[var4][2] * -0.5F,
-                  (float)BODY_SIZES[var4][0],
-                  (float)BODY_SIZES[var4][1],
-                  (float)BODY_SIZES[var4][2]
-               ),
-            PartPose.offset(0.0F, (float)(24 - BODY_SIZES[var4][1]), var3)
-         );
+         var1.addOrReplaceChild(getSegmentName(var4), CubeListBuilder.create().texOffs(BODY_TEXS[var4][0], BODY_TEXS[var4][1]).addBox((float)BODY_SIZES[var4][0] * -0.5F, 0.0F, (float)BODY_SIZES[var4][2] * -0.5F, (float)BODY_SIZES[var4][0], (float)BODY_SIZES[var4][1], (float)BODY_SIZES[var4][2]), PartPose.offset(0.0F, (float)(24 - BODY_SIZES[var4][1]), var3));
          var2[var4] = var3;
          if (var4 < 6) {
             var3 += (float)(BODY_SIZES[var4][2] + BODY_SIZES[var4 + 1][2]) * 0.5F;
          }
       }
 
-      var1.addOrReplaceChild(
-         getLayerName(0),
-         CubeListBuilder.create().texOffs(20, 0).addBox(-5.0F, 0.0F, (float)BODY_SIZES[2][2] * -0.5F, 10.0F, 8.0F, (float)BODY_SIZES[2][2]),
-         PartPose.offset(0.0F, 16.0F, var2[2])
-      );
-      var1.addOrReplaceChild(
-         getLayerName(1),
-         CubeListBuilder.create().texOffs(20, 11).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 4.0F, (float)BODY_SIZES[4][2]),
-         PartPose.offset(0.0F, 20.0F, var2[4])
-      );
-      var1.addOrReplaceChild(
-         getLayerName(2),
-         CubeListBuilder.create().texOffs(20, 18).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 5.0F, (float)BODY_SIZES[1][2]),
-         PartPose.offset(0.0F, 19.0F, var2[1])
-      );
+      var1.addOrReplaceChild(getLayerName(0), CubeListBuilder.create().texOffs(20, 0).addBox(-5.0F, 0.0F, (float)BODY_SIZES[2][2] * -0.5F, 10.0F, 8.0F, (float)BODY_SIZES[2][2]), PartPose.offset(0.0F, 16.0F, var2[2]));
+      var1.addOrReplaceChild(getLayerName(1), CubeListBuilder.create().texOffs(20, 11).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 4.0F, (float)BODY_SIZES[4][2]), PartPose.offset(0.0F, 20.0F, var2[4]));
+      var1.addOrReplaceChild(getLayerName(2), CubeListBuilder.create().texOffs(20, 18).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 5.0F, (float)BODY_SIZES[1][2]), PartPose.offset(0.0F, 19.0F, var2[1]));
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       for(int var7 = 0; var7 < this.bodyParts.length; ++var7) {
          this.bodyParts[var7].yRot = Mth.cos(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var7 - 2));

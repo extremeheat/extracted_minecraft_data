@@ -9,7 +9,7 @@ public class GoatRenderer extends MobRenderer<Goat, GoatModel<Goat>> {
    private static final ResourceLocation GOAT_LOCATION = new ResourceLocation("textures/entity/goat/goat.png");
 
    public GoatRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new GoatModel<>(var1.bakeLayer(ModelLayers.GOAT)), 0.7F);
+      super(var1, new GoatModel(var1.bakeLayer(ModelLayers.GOAT)), 0.7F);
    }
 
    public ResourceLocation getTextureLocation(Goat var1) {

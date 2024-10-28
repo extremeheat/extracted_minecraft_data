@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.frog.Tadpole;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -33,7 +34,6 @@ public class FrogspawnBlock extends Block {
    private static int minHatchTickDelay = 3600;
    private static int maxHatchTickDelay = 12000;
 
-   @Override
    public MapCodec<FrogspawnBlock> codec() {
       return CODEC;
    }
@@ -42,17 +42,14 @@ public class FrogspawnBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return mayPlaceOn(var2, var3.below());
    }
 
-   @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       var2.scheduleTick(var3, this, getFrogspawnHatchDelay(var2.getRandom()));
    }
@@ -61,12 +58,10 @@ public class FrogspawnBlock extends Block {
       return var0.nextInt(minHatchTickDelay, maxHatchTickDelay);
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return !this.canSurvive(var1, var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!this.canSurvive(var1, var2, var3)) {
          this.destroyBlock(var2, var3);
@@ -75,11 +70,11 @@ public class FrogspawnBlock extends Block {
       }
    }
 
-   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4.getType().equals(EntityType.FALLING_BLOCK)) {
          this.destroyBlock(var2, var3);
       }
+
    }
 
    private static boolean mayPlaceOn(BlockGetter var0, BlockPos var1) {
@@ -90,7 +85,7 @@ public class FrogspawnBlock extends Block {
 
    private void hatchFrogspawn(ServerLevel var1, BlockPos var2, RandomSource var3) {
       this.destroyBlock(var1, var2);
-      var1.playSound(null, var2, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var1.playSound((Player)null, var2, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 1.0F, 1.0F);
       this.spawnTadpoles(var1, var2, var3);
    }
 
@@ -102,7 +97,7 @@ public class FrogspawnBlock extends Block {
       int var4 = var3.nextInt(2, 6);
 
       for(int var5 = 1; var5 <= var4; ++var5) {
-         Tadpole var6 = EntityType.TADPOLE.create(var1);
+         Tadpole var6 = (Tadpole)EntityType.TADPOLE.create(var1);
          if (var6 != null) {
             double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);
             double var9 = (double)var2.getZ() + this.getRandomTadpolePositionOffset(var3);
@@ -112,6 +107,7 @@ public class FrogspawnBlock extends Block {
             var1.addFreshEntity(var6);
          }
       }
+
    }
 
    private double getRandomTadpolePositionOffset(RandomSource var1) {

@@ -2,7 +2,6 @@ package net.minecraft.world.entity.npc;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -13,27 +12,20 @@ public class VillagerData {
    public static final int MIN_VILLAGER_LEVEL = 1;
    public static final int MAX_VILLAGER_LEVEL = 5;
    private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
-   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               BuiltInRegistries.VILLAGER_TYPE.byNameCodec().fieldOf("type").orElseGet(() -> VillagerType.PLAINS).forGetter(var0x -> var0x.type),
-               BuiltInRegistries.VILLAGER_PROFESSION
-                  .byNameCodec()
-                  .fieldOf("profession")
-                  .orElseGet(() -> VillagerProfession.NONE)
-                  .forGetter(var0x -> var0x.profession),
-               Codec.INT.fieldOf("level").orElse(1).forGetter(var0x -> var0x.level)
-            )
-            .apply(var0, VillagerData::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.registry(Registries.VILLAGER_TYPE),
-      var0 -> var0.type,
-      ByteBufCodecs.registry(Registries.VILLAGER_PROFESSION),
-      var0 -> var0.profession,
-      ByteBufCodecs.VAR_INT,
-      var0 -> var0.level,
-      VillagerData::new
-   );
+   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(BuiltInRegistries.VILLAGER_TYPE.byNameCodec().fieldOf("type").orElseGet(() -> {
+         return VillagerType.PLAINS;
+      }).forGetter((var0x) -> {
+         return var0x.type;
+      }), BuiltInRegistries.VILLAGER_PROFESSION.byNameCodec().fieldOf("profession").orElseGet(() -> {
+         return VillagerProfession.NONE;
+      }).forGetter((var0x) -> {
+         return var0x.profession;
+      }), Codec.INT.fieldOf("level").orElse(1).forGetter((var0x) -> {
+         return var0x.level;
+      })).apply(var0, VillagerData::new);
+   });
+   public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC;
    private final VillagerType type;
    private final VillagerProfession profession;
    private final int level;
@@ -79,5 +71,15 @@ public class VillagerData {
 
    public static boolean canLevelUp(int var0) {
       return var0 >= 1 && var0 < 5;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.registry(Registries.VILLAGER_TYPE), (var0) -> {
+         return var0.type;
+      }, ByteBufCodecs.registry(Registries.VILLAGER_PROFESSION), (var0) -> {
+         return var0.profession;
+      }, ByteBufCodecs.VAR_INT, (var0) -> {
+         return var0.level;
+      }, VillagerData::new);
    }
 }

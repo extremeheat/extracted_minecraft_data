@@ -14,16 +14,6 @@ public class UpdateOneTwentyOneLootTableProvider {
    }
 
    public static LootTableProvider create(PackOutput var0, CompletableFuture<HolderLookup.Provider> var1) {
-      return new LootTableProvider(
-         var0,
-         Set.of(),
-         List.of(
-            new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneBlockLoot::new, LootContextParamSets.BLOCK),
-            new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneChestLoot::new, LootContextParamSets.CHEST),
-            new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneEntityLoot::new, LootContextParamSets.ENTITY),
-            new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneShearingLoot::new, LootContextParamSets.SHEARING)
-         ),
-         var1
-      );
+      return new LootTableProvider(var0, Set.of(), List.of(new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneBlockLoot::new, LootContextParamSets.BLOCK), new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneChestLoot::new, LootContextParamSets.CHEST), new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneEntityLoot::new, LootContextParamSets.ENTITY), new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneShearingLoot::new, LootContextParamSets.SHEARING), new LootTableProvider.SubProviderEntry(UpdateOneTwentyOneEquipmentLoot::new, LootContextParamSets.EQUIPMENT)), var1);
    }
 }

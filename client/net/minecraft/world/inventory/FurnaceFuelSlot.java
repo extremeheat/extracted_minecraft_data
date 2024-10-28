@@ -12,12 +12,10 @@ public class FurnaceFuelSlot extends Slot {
       this.menu = var1;
    }
 
-   @Override
    public boolean mayPlace(ItemStack var1) {
       return this.menu.isFuel(var1) || isBucket(var1);
    }
 
-   @Override
    public int getMaxStackSize(ItemStack var1) {
       return isBucket(var1) ? 1 : super.getMaxStackSize(var1);
    }

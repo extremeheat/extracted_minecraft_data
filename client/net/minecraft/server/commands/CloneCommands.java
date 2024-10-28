@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -21,6 +22,7 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -34,189 +36,85 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class CloneCommands {
    private static final SimpleCommandExceptionType ERROR_OVERLAP = new SimpleCommandExceptionType(Component.translatable("commands.clone.overlap"));
-   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("commands.clone.toobig", var0, var1)
-   );
+   private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("commands.clone.toobig", var0, var1);
+   });
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.clone.failed"));
-   public static final Predicate<BlockInWorld> FILTER_AIR = var0 -> !var0.getState().isAir();
+   public static final Predicate<BlockInWorld> FILTER_AIR = (var0) -> {
+      return !var0.getState().isAir();
+   };
 
    public CloneCommands() {
       super();
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(var0x -> var0x.hasPermission(2)))
-               .then(beginEndDestinationAndModeSuffix(var1, var0x -> ((CommandSourceStack)var0x.getSource()).getLevel())))
-            .then(
-               Commands.literal("from")
-                  .then(
-                     Commands.argument("sourceDimension", DimensionArgument.dimension())
-                        .then(beginEndDestinationAndModeSuffix(var1, var0x -> DimensionArgument.getDimension(var0x, "sourceDimension")))
-                  )
-            )
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires((var0x) -> {
+         return var0x.hasPermission(2);
+      })).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> {
+         return ((CommandSourceStack)var0x.getSource()).getLevel();
+      }))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> {
+         return DimensionArgument.getDimension(var0x, "sourceDimension");
+      })))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(
-      CommandBuildContext var0, CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1
-   ) {
-      return Commands.argument("begin", BlockPosArgument.blockPos())
-         .then(
-            ((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos())
-                  .then(destinationAndModeSuffix(var0, var1, var0x -> ((CommandSourceStack)var0x.getSource()).getLevel())))
-               .then(
-                  Commands.literal("to")
-                     .then(
-                        Commands.argument("targetDimension", DimensionArgument.dimension())
-                           .then(destinationAndModeSuffix(var0, var1, var0x -> DimensionArgument.getDimension(var0x, "targetDimension")))
-                     )
-               )
-         );
+   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(CommandBuildContext var0, CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1) {
+      return Commands.argument("begin", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos()).then(destinationAndModeSuffix(var0, var1, (var0x) -> {
+         return ((CommandSourceStack)var0x.getSource()).getLevel();
+      }))).then(Commands.literal("to").then(Commands.argument("targetDimension", DimensionArgument.dimension()).then(destinationAndModeSuffix(var0, var1, (var0x) -> {
+         return DimensionArgument.getDimension(var0x, "targetDimension");
+      })))));
    }
 
-   private static CloneCommands.DimensionAndPosition getLoadedDimensionAndPosition(CommandContext<CommandSourceStack> var0, ServerLevel var1, String var2) throws CommandSyntaxException {
+   private static DimensionAndPosition getLoadedDimensionAndPosition(CommandContext<CommandSourceStack> var0, ServerLevel var1, String var2) throws CommandSyntaxException {
       BlockPos var3 = BlockPosArgument.getLoadedBlockPos(var0, var1, var2);
-      return new CloneCommands.DimensionAndPosition(var1, var3);
+      return new DimensionAndPosition(var1, var3);
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndModeSuffix(
-      CommandBuildContext var0,
-      CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1,
-      CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var2
-   ) {
-      CloneCommands.CommandFunction var3 = var1x -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "begin");
-      CloneCommands.CommandFunction var4 = var1x -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "end");
-      CloneCommands.CommandFunction var5 = var1x -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var2.apply(var1x), "destination");
-      return ((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos())
-                  .executes(
-                     var3x -> clone(
-                           (CommandSourceStack)var3x.getSource(),
-                           (CloneCommands.DimensionAndPosition)var3.apply(var3x),
-                           (CloneCommands.DimensionAndPosition)var4.apply(var3x),
-                           (CloneCommands.DimensionAndPosition)var5.apply(var3x),
-                           var0xx -> true,
-                           CloneCommands.Mode.NORMAL
-                        )
-                  ))
-               .then(
-                  wrapWithCloneMode(
-                     var3,
-                     var4,
-                     var5,
-                     var0x -> var0xx -> true,
-                     Commands.literal("replace")
-                        .executes(
-                           var3x -> clone(
-                                 (CommandSourceStack)var3x.getSource(),
-                                 (CloneCommands.DimensionAndPosition)var3.apply(var3x),
-                                 (CloneCommands.DimensionAndPosition)var4.apply(var3x),
-                                 (CloneCommands.DimensionAndPosition)var5.apply(var3x),
-                                 var0xx -> true,
-                                 CloneCommands.Mode.NORMAL
-                              )
-                        )
-                  )
-               ))
-            .then(
-               wrapWithCloneMode(
-                  var3,
-                  var4,
-                  var5,
-                  var0x -> FILTER_AIR,
-                  Commands.literal("masked")
-                     .executes(
-                        var3x -> clone(
-                              (CommandSourceStack)var3x.getSource(),
-                              (CloneCommands.DimensionAndPosition)var3.apply(var3x),
-                              (CloneCommands.DimensionAndPosition)var4.apply(var3x),
-                              (CloneCommands.DimensionAndPosition)var5.apply(var3x),
-                              FILTER_AIR,
-                              CloneCommands.Mode.NORMAL
-                           )
-                     )
-               )
-            ))
-         .then(
-            Commands.literal("filtered")
-               .then(
-                  wrapWithCloneMode(
-                     var3,
-                     var4,
-                     var5,
-                     var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "filter"),
-                     Commands.argument("filter", BlockPredicateArgument.blockPredicate(var0))
-                        .executes(
-                           var3x -> clone(
-                                 (CommandSourceStack)var3x.getSource(),
-                                 (CloneCommands.DimensionAndPosition)var3.apply(var3x),
-                                 (CloneCommands.DimensionAndPosition)var4.apply(var3x),
-                                 (CloneCommands.DimensionAndPosition)var5.apply(var3x),
-                                 BlockPredicateArgument.getBlockPredicate(var3x, "filter"),
-                                 CloneCommands.Mode.NORMAL
-                              )
-                        )
-                  )
-               )
-         );
+   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndModeSuffix(CommandBuildContext var0, CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1, CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var2) {
+      CommandFunction var3 = (var1x) -> {
+         return getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "begin");
+      };
+      CommandFunction var4 = (var1x) -> {
+         return getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "end");
+      };
+      CommandFunction var5 = (var1x) -> {
+         return getLoadedDimensionAndPosition(var1x, (ServerLevel)var2.apply(var1x), "destination");
+      };
+      return ((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos()).executes((var3x) -> {
+         return clone((CommandSourceStack)var3x.getSource(), (DimensionAndPosition)var3.apply(var3x), (DimensionAndPosition)var4.apply(var3x), (DimensionAndPosition)var5.apply(var3x), (var0) -> {
+            return true;
+         }, CloneCommands.Mode.NORMAL);
+      })).then(wrapWithCloneMode(var3, var4, var5, (var0x) -> {
+         return (var0) -> {
+            return true;
+         };
+      }, Commands.literal("replace").executes((var3x) -> {
+         return clone((CommandSourceStack)var3x.getSource(), (DimensionAndPosition)var3.apply(var3x), (DimensionAndPosition)var4.apply(var3x), (DimensionAndPosition)var5.apply(var3x), (var0) -> {
+            return true;
+         }, CloneCommands.Mode.NORMAL);
+      })))).then(wrapWithCloneMode(var3, var4, var5, (var0x) -> {
+         return FILTER_AIR;
+      }, Commands.literal("masked").executes((var3x) -> {
+         return clone((CommandSourceStack)var3x.getSource(), (DimensionAndPosition)var3.apply(var3x), (DimensionAndPosition)var4.apply(var3x), (DimensionAndPosition)var5.apply(var3x), FILTER_AIR, CloneCommands.Mode.NORMAL);
+      })))).then(Commands.literal("filtered").then(wrapWithCloneMode(var3, var4, var5, (var0x) -> {
+         return BlockPredicateArgument.getBlockPredicate(var0x, "filter");
+      }, Commands.argument("filter", BlockPredicateArgument.blockPredicate(var0)).executes((var3x) -> {
+         return clone((CommandSourceStack)var3x.getSource(), (DimensionAndPosition)var3.apply(var3x), (DimensionAndPosition)var4.apply(var3x), (DimensionAndPosition)var5.apply(var3x), BlockPredicateArgument.getBlockPredicate(var3x, "filter"), CloneCommands.Mode.NORMAL);
+      }))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(
-      CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, CloneCommands.DimensionAndPosition> var0,
-      CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, CloneCommands.DimensionAndPosition> var1,
-      CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, CloneCommands.DimensionAndPosition> var2,
-      CloneCommands.CommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var3,
-      ArgumentBuilder<CommandSourceStack, ?> var4
-   ) {
-      return var4.then(
-            Commands.literal("force")
-               .executes(
-                  var4x -> clone(
-                        (CommandSourceStack)var4x.getSource(),
-                        (CloneCommands.DimensionAndPosition)var0.apply(var4x),
-                        (CloneCommands.DimensionAndPosition)var1.apply(var4x),
-                        (CloneCommands.DimensionAndPosition)var2.apply(var4x),
-                        (Predicate<BlockInWorld>)var3.apply(var4x),
-                        CloneCommands.Mode.FORCE
-                     )
-               )
-         )
-         .then(
-            Commands.literal("move")
-               .executes(
-                  var4x -> clone(
-                        (CommandSourceStack)var4x.getSource(),
-                        (CloneCommands.DimensionAndPosition)var0.apply(var4x),
-                        (CloneCommands.DimensionAndPosition)var1.apply(var4x),
-                        (CloneCommands.DimensionAndPosition)var2.apply(var4x),
-                        (Predicate<BlockInWorld>)var3.apply(var4x),
-                        CloneCommands.Mode.MOVE
-                     )
-               )
-         )
-         .then(
-            Commands.literal("normal")
-               .executes(
-                  var4x -> clone(
-                        (CommandSourceStack)var4x.getSource(),
-                        (CloneCommands.DimensionAndPosition)var0.apply(var4x),
-                        (CloneCommands.DimensionAndPosition)var1.apply(var4x),
-                        (CloneCommands.DimensionAndPosition)var2.apply(var4x),
-                        (Predicate<BlockInWorld>)var3.apply(var4x),
-                        CloneCommands.Mode.NORMAL
-                     )
-               )
-         );
+   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var0, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, CommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var3, ArgumentBuilder<CommandSourceStack, ?> var4) {
+      return var4.then(Commands.literal("force").executes((var4x) -> {
+         return clone((CommandSourceStack)var4x.getSource(), (DimensionAndPosition)var0.apply(var4x), (DimensionAndPosition)var1.apply(var4x), (DimensionAndPosition)var2.apply(var4x), (Predicate)var3.apply(var4x), CloneCommands.Mode.FORCE);
+      })).then(Commands.literal("move").executes((var4x) -> {
+         return clone((CommandSourceStack)var4x.getSource(), (DimensionAndPosition)var0.apply(var4x), (DimensionAndPosition)var1.apply(var4x), (DimensionAndPosition)var2.apply(var4x), (Predicate)var3.apply(var4x), CloneCommands.Mode.MOVE);
+      })).then(Commands.literal("normal").executes((var4x) -> {
+         return clone((CommandSourceStack)var4x.getSource(), (DimensionAndPosition)var0.apply(var4x), (DimensionAndPosition)var1.apply(var4x), (DimensionAndPosition)var2.apply(var4x), (Predicate)var3.apply(var4x), CloneCommands.Mode.NORMAL);
+      }));
    }
 
-   private static int clone(
-      CommandSourceStack var0,
-      CloneCommands.DimensionAndPosition var1,
-      CloneCommands.DimensionAndPosition var2,
-      CloneCommands.DimensionAndPosition var3,
-      Predicate<BlockInWorld> var4,
-      CloneCommands.Mode var5
-   ) throws CommandSyntaxException {
+   private static int clone(CommandSourceStack var0, DimensionAndPosition var1, DimensionAndPosition var2, DimensionAndPosition var3, Predicate<BlockInWorld> var4, Mode var5) throws CommandSyntaxException {
       BlockPos var6 = var1.position();
       BlockPos var7 = var2.position();
       BoundingBox var8 = BoundingBox.fromCorners(var6, var7);
@@ -239,9 +137,10 @@ public class CloneCommands {
             LinkedList var19 = Lists.newLinkedList();
             BlockPos var20 = new BlockPos(var11.minX() - var8.minX(), var11.minY() - var8.minY(), var11.minZ() - var8.minZ());
 
+            int var23;
             for(int var21 = var8.minZ(); var21 <= var8.maxZ(); ++var21) {
                for(int var22 = var8.minY(); var22 <= var8.maxY(); ++var22) {
-                  for(int var23 = var8.minX(); var23 <= var8.maxX(); ++var23) {
+                  for(var23 = var8.minX(); var23 <= var8.maxX(); ++var23) {
                      BlockPos var24 = new BlockPos(var23, var22, var21);
                      BlockPos var25 = var24.offset(var20);
                      BlockInWorld var26 = new BlockInWorld(var12, var24, false);
@@ -249,14 +148,14 @@ public class CloneCommands {
                      if (var4.test(var26)) {
                         BlockEntity var28 = var12.getBlockEntity(var24);
                         if (var28 != null) {
-                           CompoundTag var29 = var28.saveWithoutMetadata(var0.registryAccess());
-                           var17.add(new CloneCommands.CloneBlockInfo(var25, var27, var29));
+                           CloneBlockEntityInfo var29 = new CloneBlockEntityInfo(var28.saveCustomOnly(var0.registryAccess()), var28.components());
+                           var17.add(new CloneBlockInfo(var25, var27, var29));
                            var19.addLast(var24);
                         } else if (!var27.isSolidRender(var12, var24) && !var27.isCollisionShapeFullBlock(var12, var24)) {
-                           var18.add(new CloneCommands.CloneBlockInfo(var25, var27, null));
+                           var18.add(new CloneBlockInfo(var25, var27, (CloneBlockEntityInfo)null));
                            var19.addFirst(var24);
                         } else {
-                           var16.add(new CloneCommands.CloneBlockInfo(var25, var27, null));
+                           var16.add(new CloneBlockInfo(var25, var27, (CloneBlockEntityInfo)null));
                            var19.addLast(var24);
                         }
                      }
@@ -265,76 +164,78 @@ public class CloneCommands {
             }
 
             if (var5 == CloneCommands.Mode.MOVE) {
-               for(BlockPos var33 : var19) {
-                  BlockEntity var36 = var12.getBlockEntity(var33);
-                  Clearable.tryClear(var36);
-                  var12.setBlock(var33, Blocks.BARRIER.defaultBlockState(), 2);
+               Iterator var30 = var19.iterator();
+
+               BlockPos var32;
+               while(var30.hasNext()) {
+                  var32 = (BlockPos)var30.next();
+                  BlockEntity var34 = var12.getBlockEntity(var32);
+                  Clearable.tryClear(var34);
+                  var12.setBlock(var32, Blocks.BARRIER.defaultBlockState(), 2);
                }
 
-               for(BlockPos var34 : var19) {
-                  var12.setBlock(var34, Blocks.AIR.defaultBlockState(), 3);
-               }
-            }
+               var30 = var19.iterator();
 
-            ArrayList var32 = Lists.newArrayList();
-            var32.addAll(var16);
-            var32.addAll(var17);
-            var32.addAll(var18);
-            List var35 = Lists.reverse(var32);
-
-            for(CloneCommands.CloneBlockInfo var39 : var35) {
-               BlockEntity var44 = var13.getBlockEntity(var39.pos);
-               Clearable.tryClear(var44);
-               var13.setBlock(var39.pos, Blocks.BARRIER.defaultBlockState(), 2);
-            }
-
-            int var38 = 0;
-
-            for(CloneCommands.CloneBlockInfo var45 : var32) {
-               if (var13.setBlock(var45.pos, var45.state, 2)) {
-                  ++var38;
+               while(var30.hasNext()) {
+                  var32 = (BlockPos)var30.next();
+                  var12.setBlock(var32, Blocks.AIR.defaultBlockState(), 3);
                }
             }
 
-            for(CloneCommands.CloneBlockInfo var46 : var17) {
-               BlockEntity var48 = var13.getBlockEntity(var46.pos);
-               if (var46.tag != null && var48 != null) {
-                  var48.load(var46.tag, var13.registryAccess());
-                  var48.setChanged();
-               }
+            ArrayList var31 = Lists.newArrayList();
+            var31.addAll(var16);
+            var31.addAll(var17);
+            var31.addAll(var18);
+            List var33 = Lists.reverse(var31);
+            Iterator var35 = var33.iterator();
 
-               var13.setBlock(var46.pos, var46.state, 2);
+            while(var35.hasNext()) {
+               CloneBlockInfo var36 = (CloneBlockInfo)var35.next();
+               BlockEntity var38 = var13.getBlockEntity(var36.pos);
+               Clearable.tryClear(var38);
+               var13.setBlock(var36.pos, Blocks.BARRIER.defaultBlockState(), 2);
             }
 
-            for(CloneCommands.CloneBlockInfo var47 : var35) {
-               var13.blockUpdated(var47.pos, var47.state.getBlock());
+            var23 = 0;
+            Iterator var37 = var31.iterator();
+
+            CloneBlockInfo var39;
+            while(var37.hasNext()) {
+               var39 = (CloneBlockInfo)var37.next();
+               if (var13.setBlock(var39.pos, var39.state, 2)) {
+                  ++var23;
+               }
+            }
+
+            for(var37 = var17.iterator(); var37.hasNext(); var13.setBlock(var39.pos, var39.state, 2)) {
+               var39 = (CloneBlockInfo)var37.next();
+               BlockEntity var40 = var13.getBlockEntity(var39.pos);
+               if (var39.blockEntityInfo != null && var40 != null) {
+                  var40.loadCustomOnly(var39.blockEntityInfo.tag, var13.registryAccess());
+                  var40.setComponents(var39.blockEntityInfo.components);
+                  var40.setChanged();
+               }
+            }
+
+            var37 = var33.iterator();
+
+            while(var37.hasNext()) {
+               var39 = (CloneBlockInfo)var37.next();
+               var13.blockUpdated(var39.pos, var39.state.getBlock());
             }
 
             var13.getBlockTicks().copyAreaFrom(var12.getBlockTicks(), var8, var20);
-            if (var38 == 0) {
+            if (var23 == 0) {
                throw ERROR_FAILED.create();
             } else {
-               int var43 = var38;
-               var0.sendSuccess(() -> Component.translatable("commands.clone.success", var43), true);
-               return var38;
+               var0.sendSuccess(() -> {
+                  return Component.translatable("commands.clone.success", var23);
+               }, true);
+               return var23;
             }
          } else {
             throw BlockPosArgument.ERROR_NOT_LOADED.create();
          }
-      }
-   }
-
-   static class CloneBlockInfo {
-      public final BlockPos pos;
-      public final BlockState state;
-      @Nullable
-      public final CompoundTag tag;
-
-      public CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
-         super();
-         this.pos = var1;
-         this.state = var2;
-         this.tag = var3;
       }
    }
 
@@ -343,18 +244,23 @@ public class CloneCommands {
       R apply(T var1) throws CommandSyntaxException;
    }
 
-   static record DimensionAndPosition(ServerLevel a, BlockPos b) {
-      private final ServerLevel dimension;
-      private final BlockPos position;
-
+   private static record DimensionAndPosition(ServerLevel dimension, BlockPos position) {
       DimensionAndPosition(ServerLevel var1, BlockPos var2) {
          super();
          this.dimension = var1;
          this.position = var2;
       }
+
+      public ServerLevel dimension() {
+         return this.dimension;
+      }
+
+      public BlockPos position() {
+         return this.position;
+      }
    }
 
-   static enum Mode {
+   private static enum Mode {
       FORCE(true),
       MOVE(true),
       NORMAL(false);
@@ -367,6 +273,57 @@ public class CloneCommands {
 
       public boolean canOverlap() {
          return this.canOverlap;
+      }
+
+      // $FF: synthetic method
+      private static Mode[] $values() {
+         return new Mode[]{FORCE, MOVE, NORMAL};
+      }
+   }
+
+   private static record CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
+      final CompoundTag tag;
+      final DataComponentMap components;
+
+      CloneBlockEntityInfo(CompoundTag var1, DataComponentMap var2) {
+         super();
+         this.tag = var1;
+         this.components = var2;
+      }
+
+      public CompoundTag tag() {
+         return this.tag;
+      }
+
+      public DataComponentMap components() {
+         return this.components;
+      }
+   }
+
+   static record CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo) {
+      final BlockPos pos;
+      final BlockState state;
+      @Nullable
+      final CloneBlockEntityInfo blockEntityInfo;
+
+      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3) {
+         super();
+         this.pos = var1;
+         this.state = var2;
+         this.blockEntityInfo = var3;
+      }
+
+      public BlockPos pos() {
+         return this.pos;
+      }
+
+      public BlockState state() {
+         return this.state;
+      }
+
+      @Nullable
+      public CloneBlockEntityInfo blockEntityInfo() {
+         return this.blockEntityInfo;
       }
    }
 }

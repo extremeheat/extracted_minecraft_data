@@ -13,7 +13,6 @@ public class NetherForestVegetationFeature extends Feature<NetherForestVegetatio
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NetherForestVegetationConfig> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -28,14 +27,10 @@ public class NetherForestVegetationFeature extends Feature<NetherForestVegetatio
             int var8 = 0;
 
             for(int var9 = 0; var9 < var5.spreadWidth * var5.spreadWidth; ++var9) {
-               BlockPos var10 = var3.offset(
-                  var6.nextInt(var5.spreadWidth) - var6.nextInt(var5.spreadWidth),
-                  var6.nextInt(var5.spreadHeight) - var6.nextInt(var5.spreadHeight),
-                  var6.nextInt(var5.spreadWidth) - var6.nextInt(var5.spreadWidth)
-               );
+               BlockPos var10 = var3.offset(var6.nextInt(var5.spreadWidth) - var6.nextInt(var5.spreadWidth), var6.nextInt(var5.spreadHeight) - var6.nextInt(var5.spreadHeight), var6.nextInt(var5.spreadWidth) - var6.nextInt(var5.spreadWidth));
                BlockState var11 = var5.stateProvider.getState(var6, var10);
                if (var2.isEmptyBlock(var10) && var10.getY() > var2.getMinBuildHeight() && var11.canSurvive(var2, var10)) {
-                  SimpleBlockFeature.place(var11, var2, var10);
+                  var2.setBlock(var10, var11, 2);
                   ++var8;
                }
             }

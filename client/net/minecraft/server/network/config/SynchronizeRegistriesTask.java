@@ -11,7 +11,6 @@ import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
 import net.minecraft.network.protocol.configuration.ClientboundSelectKnownPacks;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.packs.repository.KnownPack;
@@ -28,16 +27,15 @@ public class SynchronizeRegistriesTask implements ConfigurationTask {
       this.registries = var2;
    }
 
-   @Override
    public void start(Consumer<Packet<?>> var1) {
       var1.accept(new ClientboundSelectKnownPacks(this.requestedPacks));
    }
 
    private void sendRegistries(Consumer<Packet<?>> var1, Set<KnownPack> var2) {
       RegistryOps var3 = this.registries.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
-      RegistrySynchronization.packRegistries(
-         var3, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), var2, (var1x, var2x) -> var1.accept(new ClientboundRegistryDataPacket(var1x, var2x))
-      );
+      RegistrySynchronization.packRegistries(var3, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), var2, (var1x, var2x) -> {
+         var1.accept(new ClientboundRegistryDataPacket(var1x, var2x));
+      });
       var1.accept(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
    }
 
@@ -47,9 +45,9 @@ public class SynchronizeRegistriesTask implements ConfigurationTask {
       } else {
          this.sendRegistries(var2, Set.of());
       }
+
    }
 
-   @Override
    public ConfigurationTask.Type type() {
       return TYPE;
    }

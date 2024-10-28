@@ -11,11 +11,9 @@ public class DummySensor extends Sensor<LivingEntity> {
       super();
    }
 
-   @Override
    protected void doTick(ServerLevel var1, LivingEntity var2) {
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of();
    }

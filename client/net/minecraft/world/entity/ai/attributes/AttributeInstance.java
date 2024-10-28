@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -50,7 +51,9 @@ public class AttributeInstance {
 
    @VisibleForTesting
    Map<UUID, AttributeModifier> getModifiers(AttributeModifier.Operation var1) {
-      return this.modifiersByOperation.computeIfAbsent(var1, var0 -> new Object2ObjectOpenHashMap());
+      return (Map)this.modifiersByOperation.computeIfAbsent(var1, (var0) -> {
+         return new Object2ObjectOpenHashMap();
+      });
    }
 
    public Set<AttributeModifier> getModifiers() {
@@ -124,9 +127,13 @@ public class AttributeInstance {
    }
 
    public void removeModifiers() {
-      for(AttributeModifier var2 : this.getModifiers()) {
+      Iterator var1 = this.getModifiers().iterator();
+
+      while(var1.hasNext()) {
+         AttributeModifier var2 = (AttributeModifier)var1.next();
          this.removeModifier(var2);
       }
+
    }
 
    public double getValue() {
@@ -141,25 +148,28 @@ public class AttributeInstance {
    private double calculateValue() {
       double var1 = this.getBaseValue();
 
-      for(AttributeModifier var4 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE)) {
-         var1 += var4.amount();
+      AttributeModifier var4;
+      for(Iterator var3 = this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_VALUE).iterator(); var3.hasNext(); var1 += var4.amount()) {
+         var4 = (AttributeModifier)var3.next();
       }
 
       double var7 = var1;
 
-      for(AttributeModifier var6 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE)) {
-         var7 += var1 * var6.amount();
+      Iterator var5;
+      AttributeModifier var6;
+      for(var5 = this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_BASE).iterator(); var5.hasNext(); var7 += var1 * var6.amount()) {
+         var6 = (AttributeModifier)var5.next();
       }
 
-      for(AttributeModifier var9 : this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)) {
-         var7 *= 1.0 + var9.amount();
+      for(var5 = this.getModifiersOrEmpty(AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL).iterator(); var5.hasNext(); var7 *= 1.0 + var6.amount()) {
+         var6 = (AttributeModifier)var5.next();
       }
 
-      return this.attribute.value().sanitizeValue(var7);
+      return ((Attribute)this.attribute.value()).sanitizeValue(var7);
    }
 
    private Collection<AttributeModifier> getModifiersOrEmpty(AttributeModifier.Operation var1) {
-      return this.modifiersByOperation.getOrDefault(var1, Map.of()).values();
+      return ((Map)this.modifiersByOperation.getOrDefault(var1, Map.of())).values();
    }
 
    public void replaceFrom(AttributeInstance var1) {
@@ -169,19 +179,25 @@ public class AttributeInstance {
       this.permanentModifiers.clear();
       this.permanentModifiers.putAll(var1.permanentModifiers);
       this.modifiersByOperation.clear();
-      var1.modifiersByOperation.forEach((var1x, var2) -> this.getModifiers(var1x).putAll(var2));
+      var1.modifiersByOperation.forEach((var1x, var2) -> {
+         this.getModifiers(var1x).putAll(var2);
+      });
       this.setDirty();
    }
 
    public CompoundTag save() {
       CompoundTag var1 = new CompoundTag();
-      ResourceKey var2 = this.attribute.unwrapKey().orElseThrow(() -> new IllegalStateException("Tried to serialize unregistered attribute"));
+      ResourceKey var2 = (ResourceKey)this.attribute.unwrapKey().orElseThrow(() -> {
+         return new IllegalStateException("Tried to serialize unregistered attribute");
+      });
       var1.putString("Name", var2.location().toString());
       var1.putDouble("Base", this.baseValue);
       if (!this.permanentModifiers.isEmpty()) {
          ListTag var3 = new ListTag();
+         Iterator var4 = this.permanentModifiers.values().iterator();
 
-         for(AttributeModifier var5 : this.permanentModifiers.values()) {
+         while(var4.hasNext()) {
+            AttributeModifier var5 = (AttributeModifier)var4.next();
             var3.add(var5.save());
          }
 

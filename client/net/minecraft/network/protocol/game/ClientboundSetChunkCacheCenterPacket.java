@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetChunkCacheCenterPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetChunkCacheCenterPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetChunkCacheCenterPacket::write, ClientboundSetChunkCacheCenterPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetChunkCacheCenterPacket> STREAM_CODEC = Packet.codec(ClientboundSetChunkCacheCenterPacket::write, ClientboundSetChunkCacheCenterPacket::new);
    private final int x;
    private final int z;
 
@@ -29,7 +27,6 @@ public class ClientboundSetChunkCacheCenterPacket implements Packet<ClientGamePa
       var1.writeVarInt(this.z);
    }
 
-   @Override
    public PacketType<ClientboundSetChunkCacheCenterPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CHUNK_CACHE_CENTER;
    }

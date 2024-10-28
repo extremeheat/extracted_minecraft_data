@@ -26,6 +26,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class Animal extends AgeableMob {
@@ -40,7 +41,6 @@ public abstract class Animal extends AgeableMob {
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
-   @Override
    protected void customServerAiStep() {
       if (this.getAge() != 0) {
          this.inLove = 0;
@@ -49,7 +49,6 @@ public abstract class Animal extends AgeableMob {
       super.customServerAiStep();
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       if (this.getAge() != 0) {
@@ -65,9 +64,9 @@ public abstract class Animal extends AgeableMob {
             this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var1, var3, var5);
          }
       }
+
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
@@ -77,21 +76,19 @@ public abstract class Animal extends AgeableMob {
       }
    }
 
-   @Override
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return var2.getBlockState(var1.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
+      return var2.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("InLove", this.inLove);
       if (this.loveCause != null) {
          var1.putUUID("LoveCause", this.loveCause);
       }
+
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.inLove = var1.getInt("InLove");
@@ -107,24 +104,20 @@ public abstract class Animal extends AgeableMob {
       return var0.getRawBrightness(var1, 0) > 8;
    }
 
-   @Override
    public int getAmbientSoundInterval() {
       return 120;
    }
 
-   @Override
    public boolean removeWhenFarAway(double var1) {
       return false;
    }
 
-   @Override
    public int getExperienceReward() {
       return 1 + this.level().random.nextInt(3);
    }
 
    public abstract boolean isFood(ItemStack var1);
 
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (this.isFood(var3)) {
@@ -213,7 +206,9 @@ public abstract class Animal extends AgeableMob {
    }
 
    public void finalizeSpawnChildFromBreeding(ServerLevel var1, Animal var2, @Nullable AgeableMob var3) {
-      Optional.ofNullable(this.getLoveCause()).or(() -> Optional.ofNullable(var2.getLoveCause())).ifPresent(var3x -> {
+      Optional.ofNullable(this.getLoveCause()).or(() -> {
+         return Optional.ofNullable(var2.getLoveCause());
+      }).ifPresent((var3x) -> {
          var3x.awardStat(Stats.ANIMALS_BRED);
          CriteriaTriggers.BRED_ANIMALS.trigger(var3x, this, var2, var3);
       });
@@ -225,9 +220,9 @@ public abstract class Animal extends AgeableMob {
       if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
          var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
       }
+
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 18) {
          for(int var2 = 0; var2 < 7; ++var2) {
@@ -239,5 +234,6 @@ public abstract class Animal extends AgeableMob {
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 }

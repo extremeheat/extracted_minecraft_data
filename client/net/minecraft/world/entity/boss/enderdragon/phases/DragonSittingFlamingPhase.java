@@ -23,7 +23,6 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
       super(var1);
    }
 
-   @Override
    public void doClientTick() {
       ++this.flameTicks;
       if (this.flameTicks % 2 == 0 && this.flameTicks < 10) {
@@ -39,25 +38,15 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
             double var13 = var6 + this.dragon.getRandom().nextGaussian() / 2.0;
 
             for(int var15 = 0; var15 < 6; ++var15) {
-               this.dragon
-                  .level()
-                  .addParticle(
-                     ParticleTypes.DRAGON_BREATH,
-                     var9,
-                     var11,
-                     var13,
-                     -var1.x * 0.07999999821186066 * (double)var15,
-                     -var1.y * 0.6000000238418579,
-                     -var1.z * 0.07999999821186066 * (double)var15
-                  );
+               this.dragon.level().addParticle(ParticleTypes.DRAGON_BREATH, var9, var11, var13, -var1.x * 0.07999999821186066 * (double)var15, -var1.y * 0.6000000238418579, -var1.z * 0.07999999821186066 * (double)var15);
             }
 
             var1.yRot(0.19634955F);
          }
       }
+
    }
 
-   @Override
    public void doServerTick() {
       ++this.flameTicks;
       if (this.flameTicks >= 200) {
@@ -67,7 +56,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_SCANNING);
          }
       } else if (this.flameTicks == 10) {
-         Vec3 var1 = new Vec3(this.dragon.head.getX() - this.dragon.getX(), 0.0, this.dragon.head.getZ() - this.dragon.getZ()).normalize();
+         Vec3 var1 = (new Vec3(this.dragon.head.getX() - this.dragon.getX(), 0.0, this.dragon.head.getZ() - this.dragon.getZ())).normalize();
          float var2 = 5.0F;
          double var3 = this.dragon.head.getX() + var1.x * 5.0 / 2.0;
          double var5 = this.dragon.head.getZ() + var1.z * 5.0 / 2.0;
@@ -76,7 +65,8 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos(var3, var7, var5);
 
          while(this.dragon.level().isEmptyBlock(var11)) {
-            if (--var9 < 0.0) {
+            --var9;
+            if (var9 < 0.0) {
                var9 = var7;
                break;
             }
@@ -93,23 +83,22 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          this.flame.addEffect(new MobEffectInstance(MobEffects.HARM));
          this.dragon.level().addFreshEntity(this.flame);
       }
+
    }
 
-   @Override
    public void begin() {
       this.flameTicks = 0;
       ++this.flameCount;
    }
 
-   @Override
    public void end() {
       if (this.flame != null) {
          this.flame.discard();
          this.flame = null;
       }
+
    }
 
-   @Override
    public EnderDragonPhase<DragonSittingFlamingPhase> getPhase() {
       return EnderDragonPhase.SITTING_FLAMING;
    }

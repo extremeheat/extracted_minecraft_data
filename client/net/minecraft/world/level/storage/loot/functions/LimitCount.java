@@ -1,8 +1,7 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.world.item.ItemStack;
@@ -12,9 +11,11 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LimitCount extends LootItemConditionalFunction {
-   public static final Codec<LimitCount> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0).and(IntRange.CODEC.fieldOf("limit").forGetter(var0x -> var0x.limiter)).apply(var0, LimitCount::new)
-   );
+   public static final MapCodec<LimitCount> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return commonFields(var0).and(IntRange.CODEC.fieldOf("limit").forGetter((var0x) -> {
+         return var0x.limiter;
+      })).apply(var0, LimitCount::new);
+   });
    private final IntRange limiter;
 
    private LimitCount(List<LootItemCondition> var1, IntRange var2) {
@@ -22,17 +23,14 @@ public class LimitCount extends LootItemConditionalFunction {
       this.limiter = var2;
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.LIMIT_COUNT;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return this.limiter.getReferencedContextParams();
    }
 
-   @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       int var3 = this.limiter.clamp(var2, var1.getCount());
       var1.setCount(var3);
@@ -40,6 +38,8 @@ public class LimitCount extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> limitCount(IntRange var0) {
-      return simpleBuilder(var1 -> new LimitCount(var1, var0));
+      return simpleBuilder((var1) -> {
+         return new LimitCount(var1, var0);
+      });
    }
 }

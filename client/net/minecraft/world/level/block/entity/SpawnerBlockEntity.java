@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -16,19 +17,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SpawnerBlockEntity extends BlockEntity implements Spawner {
-   private final BaseSpawner spawner = new BaseSpawner() {
-      @Override
+   private final BaseSpawner spawner = new BaseSpawner(this) {
       public void broadcastEvent(Level var1, BlockPos var2, int var3) {
          var1.blockEvent(var2, Blocks.SPAWNER, var3, 0);
       }
 
-      @Override
       public void setNextSpawnData(@Nullable Level var1, BlockPos var2, SpawnData var3) {
          super.setNextSpawnData(var1, var2, var3);
          if (var1 != null) {
             BlockState var4 = var1.getBlockState(var2);
             var1.sendBlockUpdated(var2, var4, var4, 4);
          }
+
       }
    };
 
@@ -36,13 +36,11 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
       super(BlockEntityType.MOB_SPAWNER, var1, var2);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.spawner.load(this.level, this.worldPosition, var1);
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       this.spawner.save(var1);
@@ -60,24 +58,20 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      CompoundTag var2 = this.saveWithoutMetadata(var1);
+      CompoundTag var2 = this.saveCustomOnly(var1);
       var2.remove("SpawnPotentials");
       return var2;
    }
 
-   @Override
    public boolean triggerEvent(int var1, int var2) {
       return this.spawner.onEventTriggered(this.level, var1) ? true : super.triggerEvent(var1, var2);
    }
 
-   @Override
    public boolean onlyOpCanSetNbt() {
       return true;
    }
 
-   @Override
    public void setEntityId(EntityType<?> var1, RandomSource var2) {
       this.spawner.setEntityId(var1, this.level, var2, this.worldPosition);
       this.setChanged();
@@ -85,5 +79,10 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
 
    public BaseSpawner getSpawner() {
       return this.spawner;
+   }
+
+   // $FF: synthetic method
+   public Packet getUpdatePacket() {
+      return this.getUpdatePacket();
    }
 }

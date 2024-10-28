@@ -18,8 +18,8 @@ public abstract class SpriteIconButton extends Button {
       this.sprite = var6;
    }
 
-   public static SpriteIconButton.Builder builder(Component var0, Button.OnPress var1, boolean var2) {
-      return new SpriteIconButton.Builder(var0, var1, var2);
+   public static Builder builder(Component var0, Button.OnPress var1, boolean var2) {
+      return new Builder(var0, var1, var2);
    }
 
    public static class Builder {
@@ -42,25 +42,25 @@ public abstract class SpriteIconButton extends Button {
          this.iconOnly = var3;
       }
 
-      public SpriteIconButton.Builder width(int var1) {
+      public Builder width(int var1) {
          this.width = var1;
          return this;
       }
 
-      public SpriteIconButton.Builder size(int var1, int var2) {
+      public Builder size(int var1, int var2) {
          this.width = var1;
          this.height = var2;
          return this;
       }
 
-      public SpriteIconButton.Builder sprite(ResourceLocation var1, int var2, int var3) {
+      public Builder sprite(ResourceLocation var1, int var2, int var3) {
          this.sprite = var1;
          this.spriteWidth = var2;
          this.spriteHeight = var3;
          return this;
       }
 
-      public SpriteIconButton.Builder narration(Button.CreateNarration var1) {
+      public Builder narration(Button.CreateNarration var1) {
          this.narration = var1;
          return this;
       }
@@ -69,45 +69,16 @@ public abstract class SpriteIconButton extends Button {
          if (this.sprite == null) {
             throw new IllegalStateException("Sprite not set");
          } else {
-            return (SpriteIconButton)(this.iconOnly
-               ? new SpriteIconButton.CenteredIcon(
-                  this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration
-               )
-               : new SpriteIconButton.TextAndIcon(
-                  this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration
-               ));
+            return (SpriteIconButton)(this.iconOnly ? new CenteredIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration) : new TextAndIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration));
          }
       }
    }
 
-   public static class CenteredIcon extends SpriteIconButton {
-      protected CenteredIcon(
-         int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8
-      ) {
-         super(var1, var2, var3, var4, var5, var6, var7, var8);
-      }
-
-      @Override
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
-         int var5 = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
-         int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         var1.blitSprite(this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
-      }
-
-      @Override
-      public void renderString(GuiGraphics var1, Font var2, int var3) {
-      }
-   }
-
    public static class TextAndIcon extends SpriteIconButton {
-      protected TextAndIcon(
-         int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8
-      ) {
+      protected TextAndIcon(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8) {
          super(var1, var2, var3, var4, var5, var6, var7, var8);
       }
 
-      @Override
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          super.renderWidget(var1, var2, var3, var4);
          int var5 = this.getX() + this.getWidth() - this.spriteWidth - 2;
@@ -115,12 +86,27 @@ public abstract class SpriteIconButton extends Button {
          var1.blitSprite(this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
       }
 
-      @Override
       public void renderString(GuiGraphics var1, Font var2, int var3) {
          int var4 = this.getX() + 2;
          int var5 = this.getX() + this.getWidth() - this.spriteWidth - 4;
          int var6 = this.getX() + this.getWidth() / 2;
          renderScrollingString(var1, var2, this.getMessage(), var6, var4, this.getY(), var5, this.getY() + this.getHeight(), var3);
+      }
+   }
+
+   public static class CenteredIcon extends SpriteIconButton {
+      protected CenteredIcon(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8) {
+         super(var1, var2, var3, var4, var5, var6, var7, var8);
+      }
+
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         super.renderWidget(var1, var2, var3, var4);
+         int var5 = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
+         int var6 = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
+         var1.blitSprite(this.sprite, var5, var6, this.spriteWidth, this.spriteHeight);
+      }
+
+      public void renderString(GuiGraphics var1, Font var2, int var3) {
       }
    }
 }

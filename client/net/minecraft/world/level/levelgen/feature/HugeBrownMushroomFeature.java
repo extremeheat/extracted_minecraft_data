@@ -13,7 +13,6 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
       super(var1);
    }
 
-   @Override
    protected void makeCap(LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6) {
       int var7 = var6.foliageRadius;
 
@@ -33,14 +32,8 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
                   boolean var18 = var12 || var14 && var9 == 1 - var7;
                   boolean var19 = var13 || var14 && var9 == var7 - 1;
                   BlockState var20 = var6.capProvider.getState(var2, var3);
-                  if (var20.hasProperty(HugeMushroomBlock.WEST)
-                     && var20.hasProperty(HugeMushroomBlock.EAST)
-                     && var20.hasProperty(HugeMushroomBlock.NORTH)
-                     && var20.hasProperty(HugeMushroomBlock.SOUTH)) {
-                     var20 = var20.setValue(HugeMushroomBlock.WEST, Boolean.valueOf(var16))
-                        .setValue(HugeMushroomBlock.EAST, Boolean.valueOf(var17))
-                        .setValue(HugeMushroomBlock.NORTH, Boolean.valueOf(var18))
-                        .setValue(HugeMushroomBlock.SOUTH, Boolean.valueOf(var19));
+                  if (var20.hasProperty(HugeMushroomBlock.WEST) && var20.hasProperty(HugeMushroomBlock.EAST) && var20.hasProperty(HugeMushroomBlock.NORTH) && var20.hasProperty(HugeMushroomBlock.SOUTH)) {
+                     var20 = (BlockState)((BlockState)((BlockState)((BlockState)var20.setValue(HugeMushroomBlock.WEST, var16)).setValue(HugeMushroomBlock.EAST, var17)).setValue(HugeMushroomBlock.NORTH, var18)).setValue(HugeMushroomBlock.SOUTH, var19);
                   }
 
                   this.setBlock(var1, var5, var20);
@@ -48,9 +41,9 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
             }
          }
       }
+
    }
 
-   @Override
    protected int getTreeRadiusForHeight(int var1, int var2, int var3, int var4) {
       return var4 <= 3 ? 0 : var3;
    }

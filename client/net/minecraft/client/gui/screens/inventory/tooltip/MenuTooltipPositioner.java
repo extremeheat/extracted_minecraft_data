@@ -17,7 +17,6 @@ public class MenuTooltipPositioner implements ClientTooltipPositioner {
       this.screenRectangle = var1;
    }
 
-   @Override
    public Vector2ic positionTooltip(int var1, int var2, int var3, int var4, int var5, int var6) {
       Vector2i var7 = new Vector2i(var3 + 12, var4);
       if (var7.x + var5 > var1 - 5) {

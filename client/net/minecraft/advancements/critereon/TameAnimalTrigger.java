@@ -2,40 +2,33 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public class TameAnimalTrigger extends SimpleCriterionTrigger<TameAnimalTrigger.TriggerInstance> {
+public class TameAnimalTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public TameAnimalTrigger() {
       super();
    }
 
-   @Override
-   public Codec<TameAnimalTrigger.TriggerInstance> codec() {
+   public Codec<TriggerInstance> codec() {
       return TameAnimalTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, Animal var2) {
       LootContext var3 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, var1x -> var1x.matches(var3));
+      this.trigger(var1, (var1x) -> {
+         return var1x.matches(var3);
+      });
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ContextAwarePredicate> c) implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final Optional<ContextAwarePredicate> entity;
-      public static final Codec<TameAnimalTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(TameAnimalTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "entity").forGetter(TameAnimalTrigger.TriggerInstance::entity)
-               )
-               .apply(var0, TameAnimalTrigger.TriggerInstance::new)
-      );
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> entity) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new);
+      });
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
          super();
@@ -43,22 +36,29 @@ public class TameAnimalTrigger extends SimpleCriterionTrigger<TameAnimalTrigger.
          this.entity = var2;
       }
 
-      public static Criterion<TameAnimalTrigger.TriggerInstance> tamedAnimal() {
-         return CriteriaTriggers.TAME_ANIMAL.createCriterion(new TameAnimalTrigger.TriggerInstance(Optional.empty(), Optional.empty()));
+      public static Criterion<TriggerInstance> tamedAnimal() {
+         return CriteriaTriggers.TAME_ANIMAL.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty()));
       }
 
-      public static Criterion<TameAnimalTrigger.TriggerInstance> tamedAnimal(EntityPredicate.Builder var0) {
-         return CriteriaTriggers.TAME_ANIMAL.createCriterion(new TameAnimalTrigger.TriggerInstance(Optional.empty(), Optional.of(EntityPredicate.wrap(var0))));
+      public static Criterion<TriggerInstance> tamedAnimal(EntityPredicate.Builder var0) {
+         return CriteriaTriggers.TAME_ANIMAL.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(EntityPredicate.wrap(var0))));
       }
 
       public boolean matches(LootContext var1) {
-         return this.entity.isEmpty() || this.entity.get().matches(var1);
+         return this.entity.isEmpty() || ((ContextAwarePredicate)this.entity.get()).matches(var1);
       }
 
-      @Override
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.entity, ".entity");
+      }
+
+      public Optional<ContextAwarePredicate> player() {
+         return this.player;
+      }
+
+      public Optional<ContextAwarePredicate> entity() {
+         return this.entity;
       }
    }
 }

@@ -2,6 +2,7 @@ package net.minecraft.world.item;
 
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
@@ -22,22 +23,23 @@ public class KnowledgeBookItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (!var2.hasInfiniteMaterials()) {
          var2.setItemInHand(var3, ItemStack.EMPTY);
       }
 
-      List var5 = var4.getOrDefault(DataComponents.RECIPES, List.of());
+      List var5 = (List)var4.getOrDefault(DataComponents.RECIPES, List.of());
       if (var5.isEmpty()) {
          return InteractionResultHolder.fail(var4);
       } else {
          if (!var1.isClientSide) {
             RecipeManager var6 = var1.getServer().getRecipeManager();
             ArrayList var7 = new ArrayList(var5.size());
+            Iterator var8 = var5.iterator();
 
-            for(ResourceLocation var9 : var5) {
+            while(var8.hasNext()) {
+               ResourceLocation var9 = (ResourceLocation)var8.next();
                Optional var10 = var6.byKey(var9);
                if (!var10.isPresent()) {
                   LOGGER.error("Invalid recipe: {}", var9);

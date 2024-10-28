@@ -16,17 +16,14 @@ public class GridLayoutTab implements Tab {
       this.title = var1;
    }
 
-   @Override
    public Component getTabTitle() {
       return this.title;
    }
 
-   @Override
    public void visitChildren(Consumer<AbstractWidget> var1) {
       this.layout.visitWidgets(var1);
    }
 
-   @Override
    public void doLayout(ScreenRectangle var1) {
       this.layout.arrangeElements();
       FrameLayout.alignInRectangle(this.layout, var1, 0.5F, 0.16666667F);

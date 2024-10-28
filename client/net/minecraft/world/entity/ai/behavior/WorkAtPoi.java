@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -32,13 +33,16 @@ public class WorkAtPoi extends Behavior<Villager> {
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.LAST_WORKED_AT_POI, var3);
-      var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent(var1x -> var5.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(var1x.pos())));
+      var5.setMemory(MemoryModuleType.LAST_WORKED_AT_POI, (Object)var3);
+      var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent((var1x) -> {
+         var5.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosTracker(var1x.pos())));
+      });
       var2.playWorkSound();
       this.useWorkstation(var1, var2);
       if (var2.shouldRestock()) {
          var2.restock();
       }
+
    }
 
    protected void useWorkstation(ServerLevel var1, Villager var2) {
@@ -52,5 +56,20 @@ public class WorkAtPoi extends Behavior<Villager> {
          GlobalPos var6 = (GlobalPos)var5.get();
          return var6.dimension() == var1.dimension() && var6.pos().closerToCenterThan(var2.position(), 1.73);
       }
+   }
+
+   // $FF: synthetic method
+   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
+      return this.checkExtraStartConditions(var1, (Villager)var2);
+   }
+
+   // $FF: synthetic method
+   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+      return this.canStillUse(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

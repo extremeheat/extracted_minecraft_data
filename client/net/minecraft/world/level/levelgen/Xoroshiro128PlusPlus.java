@@ -7,8 +7,7 @@ import net.minecraft.Util;
 public class Xoroshiro128PlusPlus {
    private long seedLo;
    private long seedHi;
-   public static final Codec<Xoroshiro128PlusPlus> CODEC = Codec.LONG_STREAM
-      .comapFlatMap(var0 -> Util.fixedSize(var0, 2).map(var0x -> new Xoroshiro128PlusPlus(var0x[0], var0x[1])), var0 -> LongStream.of(var0.seedLo, var0.seedHi));
+   public static final Codec<Xoroshiro128PlusPlus> CODEC;
 
    public Xoroshiro128PlusPlus(RandomSupport.Seed128bit var1) {
       this(var1.seedLo(), var1.seedHi());
@@ -22,6 +21,7 @@ public class Xoroshiro128PlusPlus {
          this.seedLo = -7046029254386353131L;
          this.seedHi = 7640891576956012809L;
       }
+
    }
 
    public long nextLong() {
@@ -32,5 +32,15 @@ public class Xoroshiro128PlusPlus {
       this.seedLo = Long.rotateLeft(var1, 49) ^ var3 ^ var3 << 21;
       this.seedHi = Long.rotateLeft(var3, 28);
       return var5;
+   }
+
+   static {
+      CODEC = Codec.LONG_STREAM.comapFlatMap((var0) -> {
+         return Util.fixedSize((LongStream)var0, 2).map((var0x) -> {
+            return new Xoroshiro128PlusPlus(var0x[0], var0x[1]);
+         });
+      }, (var0) -> {
+         return LongStream.of(new long[]{var0.seedLo, var0.seedHi});
+      });
    }
 }

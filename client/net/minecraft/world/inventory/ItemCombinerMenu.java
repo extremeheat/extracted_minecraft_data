@@ -1,14 +1,13 @@
 package net.minecraft.world.inventory;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class ItemCombinerMenu extends AbstractContainerMenu {
@@ -41,29 +40,29 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    private void createInputSlots(ItemCombinerMenuSlotDefinition var1) {
-      for(final ItemCombinerMenuSlotDefinition.SlotDefinition var3 : var1.getSlots()) {
-         this.addSlot(new Slot(this.inputSlots, var3.slotIndex(), var3.x(), var3.y()) {
-            @Override
+      Iterator var2 = var1.getSlots().iterator();
+
+      while(var2.hasNext()) {
+         final ItemCombinerMenuSlotDefinition.SlotDefinition var3 = (ItemCombinerMenuSlotDefinition.SlotDefinition)var2.next();
+         this.addSlot(new Slot(this, this.inputSlots, var3.slotIndex(), var3.x(), var3.y()) {
             public boolean mayPlace(ItemStack var1) {
                return var3.mayPlace().test(var1);
             }
          });
       }
+
    }
 
    private void createResultSlot(ItemCombinerMenuSlotDefinition var1) {
       this.addSlot(new Slot(this.resultSlots, var1.getResultSlot().slotIndex(), var1.getResultSlot().x(), var1.getResultSlot().y()) {
-         @Override
          public boolean mayPlace(ItemStack var1) {
             return false;
          }
 
-         @Override
          public boolean mayPickup(Player var1) {
             return ItemCombinerMenu.this.mayPickup(var1, this.hasItem());
          }
 
-         @Override
          public void onTake(Player var1, ItemStack var2) {
             ItemCombinerMenu.this.onTake(var1, var2);
          }
@@ -71,15 +70,17 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    private void createInventorySlots(Inventory var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
+      int var2;
+      for(var2 = 0; var2 < 3; ++var2) {
          for(int var3 = 0; var3 < 9; ++var3) {
             this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
          }
       }
 
-      for(int var4 = 0; var4 < 9; ++var4) {
-         this.addSlot(new Slot(var1, var4, 8 + var4 * 18, 142));
+      for(var2 = 0; var2 < 9; ++var2) {
+         this.addSlot(new Slot(var1, var2, 8 + var2 * 18, 142));
       }
+
    }
 
    public abstract void createResult();
@@ -88,7 +89,6 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
 
    private SimpleContainer createContainer(int var1) {
       return new SimpleContainer(var1) {
-         @Override
          public void setChanged() {
             super.setChanged();
             ItemCombinerMenu.this.slotsChanged(this);
@@ -96,35 +96,30 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
       };
    }
 
-   @Override
    public void slotsChanged(Container var1) {
       super.slotsChanged(var1);
       if (var1 == this.inputSlots) {
          this.createResult();
       }
+
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.inputSlots));
+      this.access.execute((var2, var3) -> {
+         this.clearContainer(var1, this.inputSlots);
+      });
    }
 
-   @Override
    public boolean stillValid(Player var1) {
-      return this.access
-         .evaluate(
-            (var2, var3) -> !this.isValidBlock(var2.getBlockState(var3))
-                  ? false
-                  : var1.distanceToSqr((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5) <= 64.0,
-            true
-         );
+      return (Boolean)this.access.evaluate((var2, var3) -> {
+         return !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.canInteractWithBlock(var3, 4.0);
+      }, true);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -149,9 +144,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(var5, this.getUseRowStart(), this.getUseRowEnd(), false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= this.getUseRowStart()
-            && var2 < this.getUseRowEnd()
-            && !this.moveItemStackTo(var5, this.getInventorySlotStart(), this.getInventorySlotEnd(), false)) {
+         } else if (var2 >= this.getUseRowStart() && var2 < this.getUseRowEnd() && !this.moveItemStackTo(var5, this.getInventorySlotStart(), this.getInventorySlotEnd(), false)) {
             return ItemStack.EMPTY;
          }
 
@@ -176,7 +169,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    public int getSlotToQuickMoveTo(ItemStack var1) {
-      return this.inputSlots.isEmpty() ? 0 : this.inputSlotIndexes.get(0);
+      return this.inputSlots.isEmpty() ? 0 : (Integer)this.inputSlotIndexes.get(0);
    }
 
    public int getResultSlot() {

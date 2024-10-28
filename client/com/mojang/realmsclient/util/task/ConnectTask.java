@@ -21,24 +21,20 @@ public class ConnectTask extends LongRunningTask {
       this.realmsConnect = new RealmsConnect(var1);
    }
 
-   @Override
    public void run() {
       this.realmsConnect.connect(this.server, ServerAddress.parseString(this.address.address));
    }
 
-   @Override
    public void abortTask() {
       super.abortTask();
       this.realmsConnect.abort();
       Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
    }
 
-   @Override
    public void tick() {
       this.realmsConnect.tick();
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

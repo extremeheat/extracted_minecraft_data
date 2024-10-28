@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public abstract class AgeableMob extends PathfinderMob {
-   private static final EntityDataAccessor<Boolean> DATA_BABY_ID = SynchedEntityData.defineId(AgeableMob.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    public static final int BABY_START_AGE = -24000;
    private static final int FORCED_AGE_PARTICLE_TICKS = 40;
    protected int age;
@@ -24,13 +24,12 @@ public abstract class AgeableMob extends PathfinderMob {
       super(var1, var2);
    }
 
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(true);
+         var4 = new AgeableMobGroupData(true);
       }
 
-      AgeableMob.AgeableMobGroupData var5 = (AgeableMob.AgeableMobGroupData)var4;
+      AgeableMobGroupData var5 = (AgeableMobGroupData)var4;
       if (var5.isShouldSpawnBaby() && var5.getGroupSize() > 0 && var1.getRandom().nextFloat() <= var5.getBabySpawnChance()) {
          this.setAge(-24000);
       }
@@ -42,7 +41,6 @@ public abstract class AgeableMob extends PathfinderMob {
    @Nullable
    public abstract AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2);
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_BABY_ID, false);
@@ -54,7 +52,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
    public int getAge() {
       if (this.level().isClientSide) {
-         return this.entityData.get(DATA_BABY_ID) ? -1 : 1;
+         return (Boolean)this.entityData.get(DATA_BABY_ID) ? -1 : 1;
       } else {
          return this.age;
       }
@@ -62,12 +60,13 @@ public abstract class AgeableMob extends PathfinderMob {
 
    public void ageUp(int var1, boolean var2) {
       int var3 = this.getAge();
+      int var4 = var3;
       var3 += var1 * 20;
       if (var3 > 0) {
          var3 = 0;
       }
 
-      int var5 = var3 - var3;
+      int var5 = var3 - var4;
       this.setAge(var3);
       if (var2) {
          this.forcedAge += var5;
@@ -79,6 +78,7 @@ public abstract class AgeableMob extends PathfinderMob {
       if (this.getAge() == 0) {
          this.setAge(this.forcedAge);
       }
+
    }
 
    public void ageUp(int var1) {
@@ -92,23 +92,21 @@ public abstract class AgeableMob extends PathfinderMob {
          this.entityData.set(DATA_BABY_ID, var1 < 0);
          this.ageBoundaryReached();
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Age", this.getAge());
       var1.putInt("ForcedAge", this.forcedAge);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setAge(var1.getInt("Age"));
       this.forcedAge = var1.getInt("ForcedAge");
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (DATA_BABY_ID.equals(var1)) {
          this.refreshDimensions();
@@ -117,7 +115,6 @@ public abstract class AgeableMob extends PathfinderMob {
       super.onSyncedDataUpdated(var1);
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       if (this.level().isClientSide) {
@@ -131,34 +128,43 @@ public abstract class AgeableMob extends PathfinderMob {
       } else if (this.isAlive()) {
          int var1 = this.getAge();
          if (var1 < 0) {
-            this.setAge(++var1);
+            ++var1;
+            this.setAge(var1);
          } else if (var1 > 0) {
-            this.setAge(--var1);
+            --var1;
+            this.setAge(var1);
          }
       }
+
    }
 
    protected void ageBoundaryReached() {
       if (!this.isBaby() && this.isPassenger()) {
          Entity var2 = this.getVehicle();
-         if (var2 instanceof Boat var1 && !var1.hasEnoughSpaceFor(this)) {
-            this.stopRiding();
+         if (var2 instanceof Boat) {
+            Boat var1 = (Boat)var2;
+            if (!var1.hasEnoughSpaceFor(this)) {
+               this.stopRiding();
+            }
          }
       }
+
    }
 
-   @Override
    public boolean isBaby() {
       return this.getAge() < 0;
    }
 
-   @Override
    public void setBaby(boolean var1) {
       this.setAge(var1 ? -24000 : 0);
    }
 
    public static int getSpeedUpSecondsWhenFeeding(int var0) {
       return (int)((float)(var0 / 20) * 0.1F);
+   }
+
+   static {
+      DATA_BABY_ID = SynchedEntityData.defineId(AgeableMob.class, EntityDataSerializers.BOOLEAN);
    }
 
    public static class AgeableMobGroupData implements SpawnGroupData {

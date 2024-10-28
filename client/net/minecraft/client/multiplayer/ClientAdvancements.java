@@ -2,9 +2,9 @@ package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -26,7 +26,7 @@ public class ClientAdvancements {
    private final AdvancementTree tree = new AdvancementTree();
    private final Map<AdvancementHolder, AdvancementProgress> progress = new Object2ObjectOpenHashMap();
    @Nullable
-   private ClientAdvancements.Listener listener;
+   private Listener listener;
    @Nullable
    private AdvancementHolder selectedTab;
 
@@ -44,8 +44,10 @@ public class ClientAdvancements {
 
       this.tree.remove(var1.getRemoved());
       this.tree.addAll(var1.getAdded());
+      Iterator var2 = var1.getProgress().entrySet().iterator();
 
-      for(Entry var3 : var1.getProgress().entrySet()) {
+      while(var2.hasNext()) {
+         Map.Entry var3 = (Map.Entry)var2.next();
          AdvancementNode var4 = this.tree.get((ResourceLocation)var3.getKey());
          if (var4 != null) {
             AdvancementProgress var5 = (AdvancementProgress)var3.getValue();
@@ -69,6 +71,7 @@ public class ClientAdvancements {
             LOGGER.warn("Server informed client about progress for unknown advancement {}", var3.getKey());
          }
       }
+
    }
 
    public AdvancementTree getTree() {
@@ -87,9 +90,10 @@ public class ClientAdvancements {
             this.listener.onSelectedTabChanged(var1);
          }
       }
+
    }
 
-   public void setListener(@Nullable ClientAdvancements.Listener var1) {
+   public void setListener(@Nullable Listener var1) {
       this.listener = var1;
       this.tree.setListener(var1);
       if (var1 != null) {
@@ -98,9 +102,11 @@ public class ClientAdvancements {
             if (var4 != null) {
                var1.onUpdateAdvancementProgress(var4, var3);
             }
+
          });
          var1.onSelectedTabChanged(this.selectedTab);
       }
+
    }
 
    @Nullable

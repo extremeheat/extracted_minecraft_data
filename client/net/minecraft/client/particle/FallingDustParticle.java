@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -29,17 +30,14 @@ public class FallingDustParticle extends TextureSheetParticle {
       this.roll = (float)Math.random() * 6.2831855F;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public float getQuadSize(float var1) {
       return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -80,11 +78,17 @@ public class FallingDustParticle extends TextureSheetParticle {
                var17 = ((FallingBlock)var15.getBlock()).getDustColor(var15, var2, var16);
             }
 
-            float var18 = (float)(var17 >> 16 & 0xFF) / 255.0F;
-            float var19 = (float)(var17 >> 8 & 0xFF) / 255.0F;
-            float var20 = (float)(var17 & 0xFF) / 255.0F;
+            float var18 = (float)(var17 >> 16 & 255) / 255.0F;
+            float var19 = (float)(var17 >> 8 & 255) / 255.0F;
+            float var20 = (float)(var17 & 255) / 255.0F;
             return new FallingDustParticle(var2, var3, var5, var7, var18, var19, var20, this.sprite);
          }
+      }
+
+      // $FF: synthetic method
+      @Nullable
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

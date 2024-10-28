@@ -2,22 +2,23 @@ package net.minecraft.world.level.levelgen.heightproviders;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class BiasedToBottomHeight extends HeightProvider {
-   public static final Codec<BiasedToBottomHeight> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter(var0x -> var0x.minInclusive),
-               VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter(var0x -> var0x.maxInclusive),
-               Codec.intRange(1, 2147483647).optionalFieldOf("inner", 1).forGetter(var0x -> var0x.inner)
-            )
-            .apply(var0, BiasedToBottomHeight::new)
-   );
+   public static final MapCodec<BiasedToBottomHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> {
+         return var0x.minInclusive;
+      }), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> {
+         return var0x.maxInclusive;
+      }), Codec.intRange(1, 2147483647).optionalFieldOf("inner", 1).forGetter((var0x) -> {
+         return var0x.inner;
+      })).apply(var0, BiasedToBottomHeight::new);
+   });
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;
@@ -34,7 +35,6 @@ public class BiasedToBottomHeight extends HeightProvider {
       return new BiasedToBottomHeight(var0, var1, var2);
    }
 
-   @Override
    public int sample(RandomSource var1, WorldGenerationContext var2) {
       int var3 = this.minInclusive.resolveY(var2);
       int var4 = this.maxInclusive.resolveY(var2);
@@ -47,13 +47,12 @@ public class BiasedToBottomHeight extends HeightProvider {
       }
    }
 
-   @Override
    public HeightProviderType<?> getType() {
       return HeightProviderType.BIASED_TO_BOTTOM;
    }
 
-   @Override
    public String toString() {
-      return "biased[" + this.minInclusive + "-" + this.maxInclusive + " inner: " + this.inner + "]";
+      String var10000 = String.valueOf(this.minInclusive);
+      return "biased[" + var10000 + "-" + String.valueOf(this.maxInclusive) + " inner: " + this.inner + "]";
    }
 }

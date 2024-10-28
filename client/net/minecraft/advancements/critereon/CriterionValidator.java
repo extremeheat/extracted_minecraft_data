@@ -19,7 +19,9 @@ public class CriterionValidator {
    }
 
    public void validateEntity(Optional<ContextAwarePredicate> var1, String var2) {
-      var1.ifPresent(var2x -> this.validateEntity(var2x, var2));
+      var1.ifPresent((var2x) -> {
+         this.validateEntity(var2x, var2);
+      });
    }
 
    public void validateEntities(List<ContextAwarePredicate> var1, String var2) {
@@ -39,5 +41,6 @@ public class CriterionValidator {
          ContextAwarePredicate var5 = (ContextAwarePredicate)var1.get(var4);
          var5.validate(new ValidationContext(this.reporter.forChild(var3 + "[" + var4 + "]"), var2, this.lootData));
       }
+
    }
 }

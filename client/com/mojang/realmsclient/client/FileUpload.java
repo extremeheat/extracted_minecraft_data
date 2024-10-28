@@ -47,13 +47,11 @@ public class FileUpload {
    private final AtomicBoolean cancelled = new AtomicBoolean(false);
    @Nullable
    private CompletableFuture<UploadResult> uploadTask;
-   private final RequestConfig requestConfig = RequestConfig.custom()
-      .setSocketTimeout((int)TimeUnit.MINUTES.toMillis(10L))
-      .setConnectTimeout((int)TimeUnit.SECONDS.toMillis(15L))
-      .build();
+   private final RequestConfig requestConfig;
 
    public FileUpload(File var1, long var2, int var4, UploadInfo var5, User var6, String var7, String var8, UploadStatus var9) {
       super();
+      this.requestConfig = RequestConfig.custom().setSocketTimeout((int)TimeUnit.MINUTES.toMillis(10L)).setConnectTimeout((int)TimeUnit.SECONDS.toMillis(15L)).build();
       this.file = var1;
       this.realmId = var2;
       this.slotId = var4;
@@ -67,7 +65,9 @@ public class FileUpload {
 
    public void upload(Consumer<UploadResult> var1) {
       if (this.uploadTask == null) {
-         this.uploadTask = CompletableFuture.supplyAsync(() -> this.requestUpload(0));
+         this.uploadTask = CompletableFuture.supplyAsync(() -> {
+            return this.requestUpload(0);
+         });
          this.uploadTask.thenAccept(var1);
       }
    }
@@ -78,6 +78,7 @@ public class FileUpload {
          this.uploadTask.cancel(false);
          this.uploadTask = null;
       }
+
    }
 
    private UploadResult requestUpload(int var1) {
@@ -89,28 +90,25 @@ public class FileUpload {
          HttpPost var3 = new HttpPost(this.uploadInfo.getUploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId));
          CloseableHttpClient var4 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
 
-         UploadResult var8;
          try {
             this.setupRequest(var3);
             CloseableHttpResponse var5 = var4.execute(var3);
             long var6 = this.getRetryDelaySeconds(var5);
-            if (!this.shouldRetry(var6, var1)) {
-               this.handleResponse(var5, var2);
-               return var2.build();
+            if (this.shouldRetry(var6, var1)) {
+               UploadResult var8 = this.retryUploadAfter(var6, var1);
+               return var8;
             }
 
-            var8 = this.retryUploadAfter(var6, var1);
+            this.handleResponse(var5, var2);
          } catch (Exception var12) {
             if (!this.cancelled.get()) {
                LOGGER.error("Caught exception while uploading: ", var12);
             }
-
-            return var2.build();
          } finally {
             this.cleanup(var3, var4);
          }
 
-         return var8;
+         return var2.build();
       }
    }
 
@@ -123,23 +121,13 @@ public class FileUpload {
             LOGGER.error("Failed to close Realms upload client");
          }
       }
+
    }
 
    private void setupRequest(HttpPost var1) throws FileNotFoundException {
-      var1.setHeader(
-         "Cookie",
-         "sid="
-            + this.sessionId
-            + ";token="
-            + this.uploadInfo.getToken()
-            + ";user="
-            + this.username
-            + ";version="
-            + this.clientVersion
-            + ";worldVersion="
-            + this.worldVersion
-      );
-      FileUpload.CustomInputStreamEntity var2 = new FileUpload.CustomInputStreamEntity(new FileInputStream(this.file), this.file.length(), this.uploadStatus);
+      String var10002 = this.sessionId;
+      var1.setHeader("Cookie", "sid=" + var10002 + ";token=" + this.uploadInfo.getToken() + ";user=" + this.username + ";version=" + this.clientVersion + ";worldVersion=" + this.worldVersion);
+      CustomInputStreamEntity var2 = new CustomInputStreamEntity(new FileInputStream(this.file), this.file.length(), this.uploadStatus);
       var2.setContentType("application/octet-stream");
       var1.setEntity(var2);
    }
@@ -158,11 +146,12 @@ public class FileUpload {
                JsonParser var5 = new JsonParser();
                JsonElement var6 = var5.parse(var4).getAsJsonObject().get("errorMsg");
                Optional var7 = Optional.ofNullable(var6).map(JsonElement::getAsString);
-               var2.withErrorMessage((String)var7.orElse(null));
+               var2.withErrorMessage((String)var7.orElse((Object)null));
             } catch (Exception var8) {
             }
          }
       }
+
    }
 
    private boolean shouldRetry(long var1, int var3) {
@@ -175,7 +164,7 @@ public class FileUpload {
    }
 
    private long getRetryDelaySeconds(HttpResponse var1) {
-      return Optional.ofNullable(var1.getFirstHeader("Retry-After")).<String>map(NameValuePair::getValue).map(Long::valueOf).orElse(0L);
+      return (Long)Optional.ofNullable(var1.getFirstHeader("Retry-After")).map(NameValuePair::getValue).map(Long::valueOf).orElse(0L);
    }
 
    public boolean isFinished() {
@@ -200,30 +189,34 @@ public class FileUpload {
 
          try {
             byte[] var3 = new byte[4096];
-            int var10;
+            UploadStatus var10000;
+            int var4;
             if (this.length < 0L) {
-               while((var10 = var2.read(var3)) != -1) {
-                  var1.write(var3, 0, var10);
-                  this.uploadStatus.bytesWritten += (long)var10;
+               while((var4 = var2.read(var3)) != -1) {
+                  var1.write(var3, 0, var4);
+                  var10000 = this.uploadStatus;
+                  var10000.bytesWritten += (long)var4;
                }
             } else {
                long var5 = this.length;
 
                while(var5 > 0L) {
-                  var10 = var2.read(var3, 0, (int)Math.min(4096L, var5));
-                  if (var10 == -1) {
+                  var4 = var2.read(var3, 0, (int)Math.min(4096L, var5));
+                  if (var4 == -1) {
                      break;
                   }
 
-                  var1.write(var3, 0, var10);
-                  this.uploadStatus.bytesWritten += (long)var10;
-                  var5 -= (long)var10;
+                  var1.write(var3, 0, var4);
+                  var10000 = this.uploadStatus;
+                  var10000.bytesWritten += (long)var4;
+                  var5 -= (long)var4;
                   var1.flush();
                }
             }
          } finally {
             var2.close();
          }
+
       }
    }
 }

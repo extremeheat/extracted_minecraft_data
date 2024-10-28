@@ -1,21 +1,23 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
    public static final MapCodec<SculkBlock> CODEC = simpleCodec(SculkBlock::new);
 
-   @Override
    public MapCodec<SculkBlock> codec() {
       return CODEC;
    }
@@ -24,7 +26,6 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
       super(ConstantInt.of(1), var1);
    }
 
-   @Override
    public int attemptUseCharge(SculkSpreader.ChargeCursor var1, LevelAccessor var2, BlockPos var3, RandomSource var4, SculkSpreader var5, boolean var6) {
       int var7 = var1.getCharge();
       if (var7 != 0 && var4.nextInt(var5.chargeDecayRate()) == 0) {
@@ -36,7 +37,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
                BlockPos var11 = var8.above();
                BlockState var12 = this.getRandomGrowthState(var2, var11, var4, var5.isWorldGeneration());
                var2.setBlock(var11, var12, 3);
-               var2.playSound(null, var8, var12.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+               var2.playSound((Player)null, var8, var12.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
             return Math.max(0, var7 - var10);
@@ -59,39 +60,38 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
    private BlockState getRandomGrowthState(LevelAccessor var1, BlockPos var2, RandomSource var3, boolean var4) {
       BlockState var5;
       if (var3.nextInt(11) == 0) {
-         var5 = Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, Boolean.valueOf(var4));
+         var5 = (BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, var4);
       } else {
          var5 = Blocks.SCULK_SENSOR.defaultBlockState();
       }
 
-      return var5.hasProperty(BlockStateProperties.WATERLOGGED) && !var1.getFluidState(var2).isEmpty()
-         ? var5.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(true))
-         : var5;
+      return var5.hasProperty(BlockStateProperties.WATERLOGGED) && !var1.getFluidState(var2).isEmpty() ? (BlockState)var5.setValue(BlockStateProperties.WATERLOGGED, true) : var5;
    }
 
    private static boolean canPlaceGrowth(LevelAccessor var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1.above());
-      if (var2.isAir() || var2.is(Blocks.WATER) && var2.getFluidState().is(Fluids.WATER)) {
+      if (var2.isAir() || var2.is(Blocks.WATER) && var2.getFluidState().is((Fluid)Fluids.WATER)) {
          int var3 = 0;
+         Iterator var4 = BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 2, 4)).iterator();
 
-         for(BlockPos var5 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 2, 4))) {
+         do {
+            if (!var4.hasNext()) {
+               return true;
+            }
+
+            BlockPos var5 = (BlockPos)var4.next();
             BlockState var6 = var0.getBlockState(var5);
             if (var6.is(Blocks.SCULK_SENSOR) || var6.is(Blocks.SCULK_SHRIEKER)) {
                ++var3;
             }
+         } while(var3 <= 2);
 
-            if (var3 > 2) {
-               return false;
-            }
-         }
-
-         return true;
+         return false;
       } else {
          return false;
       }
    }
 
-   @Override
    public boolean canChangeBlockStateOnSpread() {
       return false;
    }

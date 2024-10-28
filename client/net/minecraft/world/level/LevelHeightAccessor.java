@@ -46,12 +46,10 @@ public interface LevelHeightAccessor {
 
    static LevelHeightAccessor create(final int var0, final int var1) {
       return new LevelHeightAccessor() {
-         @Override
          public int getHeight() {
             return var1;
          }
 
-         @Override
          public int getMinBuildHeight() {
             return var0;
          }

@@ -3,11 +3,10 @@ package net.minecraft.world.item;
 import com.google.common.collect.Maps;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import net.minecraft.util.Mth;
 
 public class ItemCooldowns {
-   private final Map<Item, ItemCooldowns.CooldownInstance> cooldowns = Maps.newHashMap();
+   private final Map<Item, CooldownInstance> cooldowns = Maps.newHashMap();
    private int tickCount;
 
    public ItemCooldowns() {
@@ -19,7 +18,7 @@ public class ItemCooldowns {
    }
 
    public float getCooldownPercent(Item var1, float var2) {
-      ItemCooldowns.CooldownInstance var3 = this.cooldowns.get(var1);
+      CooldownInstance var3 = (CooldownInstance)this.cooldowns.get(var1);
       if (var3 != null) {
          float var4 = (float)(var3.endTime - var3.startTime);
          float var5 = (float)var3.endTime - ((float)this.tickCount + var2);
@@ -35,17 +34,18 @@ public class ItemCooldowns {
          Iterator var1 = this.cooldowns.entrySet().iterator();
 
          while(var1.hasNext()) {
-            Entry var2 = (Entry)var1.next();
-            if (((ItemCooldowns.CooldownInstance)var2.getValue()).endTime <= this.tickCount) {
+            Map.Entry var2 = (Map.Entry)var1.next();
+            if (((CooldownInstance)var2.getValue()).endTime <= this.tickCount) {
                var1.remove();
                this.onCooldownEnded((Item)var2.getKey());
             }
          }
       }
+
    }
 
    public void addCooldown(Item var1, int var2) {
-      this.cooldowns.put(var1, new ItemCooldowns.CooldownInstance(this.tickCount, this.tickCount + var2));
+      this.cooldowns.put(var1, new CooldownInstance(this.tickCount, this.tickCount + var2));
       this.onCooldownStarted(var1, var2);
    }
 
@@ -60,7 +60,7 @@ public class ItemCooldowns {
    protected void onCooldownEnded(Item var1) {
    }
 
-   static class CooldownInstance {
+   private static class CooldownInstance {
       final int startTime;
       final int endTime;
 

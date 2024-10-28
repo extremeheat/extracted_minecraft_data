@@ -12,10 +12,10 @@ public class BiomeManager {
    private static final int ZOOM_BITS = 2;
    private static final int ZOOM = 4;
    private static final int ZOOM_MASK = 3;
-   private final BiomeManager.NoiseBiomeSource noiseBiomeSource;
+   private final NoiseBiomeSource noiseBiomeSource;
    private final long biomeZoomSeed;
 
-   public BiomeManager(BiomeManager.NoiseBiomeSource var1, long var2) {
+   public BiomeManager(NoiseBiomeSource var1, long var2) {
       super();
       this.noiseBiomeSource = var1;
       this.biomeZoomSeed = var2;
@@ -25,7 +25,7 @@ public class BiomeManager {
       return Hashing.sha256().hashLong(var0).asLong();
    }
 
-   public BiomeManager withDifferentSource(BiomeManager.NoiseBiomeSource var1) {
+   public BiomeManager withDifferentSource(NoiseBiomeSource var1) {
       return new BiomeManager(var1, this.biomeZoomSeed);
    }
 
@@ -42,7 +42,8 @@ public class BiomeManager {
       int var14 = 0;
       double var15 = 1.0 / 0.0;
 
-      for(int var17 = 0; var17 < 8; ++var17) {
+      int var17;
+      for(var17 = 0; var17 < 8; ++var17) {
          boolean var18 = (var17 & 4) == 0;
          boolean var19 = (var17 & 2) == 0;
          boolean var20 = (var17 & 1) == 0;
@@ -59,10 +60,10 @@ public class BiomeManager {
          }
       }
 
-      int var32 = (var14 & 4) == 0 ? var5 : var5 + 1;
-      int var33 = (var14 & 2) == 0 ? var6 : var6 + 1;
-      int var34 = (var14 & 1) == 0 ? var7 : var7 + 1;
-      return this.noiseBiomeSource.getNoiseBiome(var32, var33, var34);
+      var17 = (var14 & 4) == 0 ? var5 : var5 + 1;
+      int var32 = (var14 & 2) == 0 ? var6 : var6 + 1;
+      int var33 = (var14 & 1) == 0 ? var7 : var7 + 1;
+      return this.noiseBiomeSource.getNoiseBiome(var17, var32, var33);
    }
 
    public Holder<Biome> getNoiseBiomeAtPosition(double var1, double var3, double var5) {

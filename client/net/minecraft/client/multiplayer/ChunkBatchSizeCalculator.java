@@ -26,6 +26,7 @@ public class ChunkBatchSizeCalculator {
          this.aggregatedNanosPerChunk = (this.aggregatedNanosPerChunk * (double)this.oldSamplesWeight + var6) / (double)(this.oldSamplesWeight + 1);
          this.oldSamplesWeight = Math.min(49, this.oldSamplesWeight + 1);
       }
+
    }
 
    public float getDesiredChunksPerTick() {

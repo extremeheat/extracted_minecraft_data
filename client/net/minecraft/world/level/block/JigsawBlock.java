@@ -20,34 +20,29 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
    public static final MapCodec<JigsawBlock> CODEC = simpleCodec(JigsawBlock::new);
-   public static final EnumProperty<FrontAndTop> ORIENTATION = BlockStateProperties.ORIENTATION;
+   public static final EnumProperty<FrontAndTop> ORIENTATION;
 
-   @Override
    public MapCodec<JigsawBlock> codec() {
       return CODEC;
    }
 
    protected JigsawBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(ORIENTATION, FrontAndTop.NORTH_UP));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(ORIENTATION, FrontAndTop.NORTH_UP));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(ORIENTATION);
    }
 
-   @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(ORIENTATION, var2.rotation().rotate(var1.getValue(ORIENTATION)));
+      return (BlockState)var1.setValue(ORIENTATION, var2.rotation().rotate((FrontAndTop)var1.getValue(ORIENTATION)));
    }
 
-   @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.setValue(ORIENTATION, var2.rotation().rotate(var1.getValue(ORIENTATION)));
+      return (BlockState)var1.setValue(ORIENTATION, var2.rotation().rotate((FrontAndTop)var1.getValue(ORIENTATION)));
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       Direction var2 = var1.getClickedFace();
       Direction var3;
@@ -57,15 +52,13 @@ public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
          var3 = Direction.UP;
       }
 
-      return this.defaultBlockState().setValue(ORIENTATION, FrontAndTop.fromFrontAndTop(var2, var3));
+      return (BlockState)this.defaultBlockState().setValue(ORIENTATION, FrontAndTop.fromFrontAndTop(var2, var3));
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new JigsawBlockEntity(var1, var2);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof JigsawBlockEntity && var4.canUseGameMasterBlocks()) {
@@ -81,17 +74,22 @@ public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
       Direction var3 = getFrontFacing(var1.state());
       Direction var4 = getTopFacing(var0.state());
       Direction var5 = getTopFacing(var1.state());
-      JigsawBlockEntity.JointType var6 = JigsawBlockEntity.JointType.byName(var0.nbt().getString("joint"))
-         .orElseGet(() -> var2.getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE);
+      JigsawBlockEntity.JointType var6 = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.byName(var0.nbt().getString("joint")).orElseGet(() -> {
+         return var2.getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
+      });
       boolean var7 = var6 == JigsawBlockEntity.JointType.ROLLABLE;
       return var2 == var3.getOpposite() && (var7 || var4 == var5) && var0.nbt().getString("target").equals(var1.nbt().getString("name"));
    }
 
    public static Direction getFrontFacing(BlockState var0) {
-      return var0.getValue(ORIENTATION).front();
+      return ((FrontAndTop)var0.getValue(ORIENTATION)).front();
    }
 
    public static Direction getTopFacing(BlockState var0) {
-      return var0.getValue(ORIENTATION).top();
+      return ((FrontAndTop)var0.getValue(ORIENTATION)).top();
+   }
+
+   static {
+      ORIENTATION = BlockStateProperties.ORIENTATION;
    }
 }

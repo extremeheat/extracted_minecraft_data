@@ -33,7 +33,6 @@ public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
       var1.writeByteArray(this.encryptedChallenge);
    }
 
-   @Override
    public PacketType<ServerboundKeyPacket> type() {
       return LoginPacketTypes.SERVERBOUND_KEY;
    }

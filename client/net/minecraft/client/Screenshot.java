@@ -16,7 +16,6 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import org.slf4j.Logger;
 
 public class Screenshot {
@@ -30,15 +29,18 @@ public class Screenshot {
    private File file;
 
    public static void grab(File var0, RenderTarget var1, Consumer<Component> var2) {
-      grab(var0, null, var1, var2);
+      grab(var0, (String)null, var1, var2);
    }
 
    public static void grab(File var0, @Nullable String var1, RenderTarget var2, Consumer<Component> var3) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> _grab(var0, var1, var2, var3));
+         RenderSystem.recordRenderCall(() -> {
+            _grab(var0, var1, var2, var3);
+         });
       } else {
          _grab(var0, var1, var2, var3);
       }
+
    }
 
    private static void _grab(File var0, @Nullable String var1, RenderTarget var2, Consumer<Component> var3) {
@@ -52,23 +54,21 @@ public class Screenshot {
          var6 = new File(var5, var1);
       }
 
-      Util.ioPool()
-         .execute(
-            () -> {
-               try {
-                  var4.writeToFile(var6);
-                  MutableComponent var3xx = Component.literal(var6.getName())
-                     .withStyle(ChatFormatting.UNDERLINE)
-                     .withStyle(var1xx -> var1xx.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath())));
-                  var3.accept(Component.translatable("screenshot.success", var3xx));
-               } catch (Exception var7) {
-                  LOGGER.warn("Couldn't save screenshot", var7);
-                  var3.accept(Component.translatable("screenshot.failure", var7.getMessage()));
-               } finally {
-                  var4.close();
-               }
-            }
-         );
+      Util.ioPool().execute(() -> {
+         try {
+            var4.writeToFile(var6);
+            MutableComponent var3x = Component.literal(var6.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((var1) -> {
+               return var1.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath()));
+            });
+            var3.accept(Component.translatable("screenshot.success", var3x));
+         } catch (Exception var7) {
+            LOGGER.warn("Couldn't save screenshot", var7);
+            var3.accept(Component.translatable("screenshot.failure", var7.getMessage()));
+         } finally {
+            var4.close();
+         }
+
+      });
    }
 
    public static NativeImage takeScreenshot(RenderTarget var0) {
@@ -103,10 +103,8 @@ public class Screenshot {
       File var5 = new File(var1, "screenshots");
       var5.mkdir();
       String var6 = "huge_" + Util.getFilenameFormattedDateTime();
-      int var7 = 1;
 
-      while((this.file = new File(var5, var6 + (var7 == 1 ? "" : "_" + var7) + ".tga")).exists()) {
-         ++var7;
+      for(int var7 = 1; (this.file = new File(var5, var6 + (var7 == 1 ? "" : "_" + var7) + ".tga")).exists(); ++var7) {
       }
 
       byte[] var8 = new byte[18];
@@ -139,6 +137,7 @@ public class Screenshot {
          int var9 = (var2 + var8 * this.width) * 3;
          var1.get(this.bytes, var9, var6 * 3);
       }
+
    }
 
    public void saveRow() throws IOException {

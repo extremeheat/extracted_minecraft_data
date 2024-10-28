@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundPingRequestPacket implements Packet<ServerPingPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPingRequestPacket> STREAM_CODEC = Packet.codec(
-      ServerboundPingRequestPacket::write, ServerboundPingRequestPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPingRequestPacket> STREAM_CODEC = Packet.codec(ServerboundPingRequestPacket::write, ServerboundPingRequestPacket::new);
    private final long time;
 
    public ServerboundPingRequestPacket(long var1) {
@@ -25,7 +23,6 @@ public class ServerboundPingRequestPacket implements Packet<ServerPingPacketList
       var1.writeLong(this.time);
    }
 
-   @Override
    public PacketType<ServerboundPingRequestPacket> type() {
       return PingPacketTypes.SERVERBOUND_PING_REQUEST;
    }

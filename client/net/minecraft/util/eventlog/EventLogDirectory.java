@@ -4,12 +4,14 @@ import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
@@ -46,31 +48,49 @@ public class EventLogDirectory {
       return new EventLogDirectory(var0, var1);
    }
 
-   public EventLogDirectory.FileList listFiles() throws IOException {
-      EventLogDirectory.FileList var2;
-      try (Stream var1 = Files.list(this.root)) {
-         var2 = new EventLogDirectory.FileList(var1.filter(var0 -> Files.isRegularFile(var0)).map(this::parseFile).filter(Objects::nonNull).toList());
+   public FileList listFiles() throws IOException {
+      Stream var1 = Files.list(this.root);
+
+      FileList var2;
+      try {
+         var2 = new FileList(var1.filter((var0) -> {
+            return Files.isRegularFile(var0, new LinkOption[0]);
+         }).map(this::parseFile).filter(Objects::nonNull).toList());
+      } catch (Throwable var5) {
+         if (var1 != null) {
+            try {
+               var1.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (var1 != null) {
+         var1.close();
       }
 
       return var2;
    }
 
    @Nullable
-   private EventLogDirectory.File parseFile(Path var1) {
+   private File parseFile(Path var1) {
       String var2 = var1.getFileName().toString();
       int var3 = var2.indexOf(46);
       if (var3 == -1) {
          return null;
       } else {
-         EventLogDirectory.FileId var4 = EventLogDirectory.FileId.parse(var2.substring(0, var3));
+         FileId var4 = EventLogDirectory.FileId.parse(var2.substring(0, var3));
          if (var4 != null) {
             String var5 = var2.substring(var3);
             if (var5.equals(this.extension)) {
-               return new EventLogDirectory.RawFile(var1, var4);
+               return new RawFile(var1, var4);
             }
 
             if (var5.equals(this.extension + ".gz")) {
-               return new EventLogDirectory.CompressedFile(var1, var4);
+               return new CompressedFile(var1, var4);
             }
          }
 
@@ -79,17 +99,33 @@ public class EventLogDirectory {
    }
 
    static void tryCompress(Path var0, Path var1) throws IOException {
-      if (Files.exists(var1)) {
-         throw new IOException("Compressed target file already exists: " + var1);
+      if (Files.exists(var1, new LinkOption[0])) {
+         throw new IOException("Compressed target file already exists: " + String.valueOf(var1));
       } else {
-         try (FileChannel var2 = FileChannel.open(var0, StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+         FileChannel var2 = FileChannel.open(var0, StandardOpenOption.WRITE, StandardOpenOption.READ);
+
+         try {
             FileLock var3 = var2.tryLock();
             if (var3 == null) {
-               throw new IOException("Raw log file is already locked, cannot compress: " + var0);
+               throw new IOException("Raw log file is already locked, cannot compress: " + String.valueOf(var0));
             }
 
             writeCompressed(var2, var1);
             var2.truncate(0L);
+         } catch (Throwable var6) {
+            if (var2 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var5) {
+                  var6.addSuppressed(var5);
+               }
+            }
+
+            throw var6;
+         }
+
+         if (var2 != null) {
+            var2.close();
          }
 
          Files.delete(var0);
@@ -97,113 +133,55 @@ public class EventLogDirectory {
    }
 
    private static void writeCompressed(ReadableByteChannel var0, Path var1) throws IOException {
-      try (GZIPOutputStream var2 = new GZIPOutputStream(Files.newOutputStream(var1))) {
+      GZIPOutputStream var2 = new GZIPOutputStream(Files.newOutputStream(var1));
+
+      try {
          byte[] var3 = new byte[4096];
          ByteBuffer var4 = ByteBuffer.wrap(var3);
 
          while(var0.read(var4) >= 0) {
             var4.flip();
-            var2.write(var3, 0, var4.limit());
+            ((OutputStream)var2).write(var3, 0, var4.limit());
             var4.clear();
          }
+      } catch (Throwable var6) {
+         try {
+            ((OutputStream)var2).close();
+         } catch (Throwable var5) {
+            var6.addSuppressed(var5);
+         }
+
+         throw var6;
       }
+
+      ((OutputStream)var2).close();
    }
 
-   public EventLogDirectory.RawFile createNewFile(LocalDate var1) throws IOException {
+   public RawFile createNewFile(LocalDate var1) throws IOException {
       int var2 = 1;
       Set var4 = this.listFiles().ids();
 
-      EventLogDirectory.FileId var3;
+      FileId var3;
       do {
-         var3 = new EventLogDirectory.FileId(var1, var2++);
+         var3 = new FileId(var1, var2++);
       } while(var4.contains(var3));
 
-      EventLogDirectory.RawFile var5 = new EventLogDirectory.RawFile(this.root.resolve(var3.toFileName(this.extension)), var3);
+      RawFile var5 = new RawFile(this.root.resolve(var3.toFileName(this.extension)), var3);
       Files.createFile(var5.path());
       return var5;
    }
 
-   public static record CompressedFile(Path a, EventLogDirectory.FileId b) implements EventLogDirectory.File {
-      private final Path path;
-      private final EventLogDirectory.FileId id;
+   public static class FileList implements Iterable<File> {
+      private final List<File> files;
 
-      public CompressedFile(Path var1, EventLogDirectory.FileId var2) {
+      FileList(List<File> var1) {
          super();
-         this.path = var1;
-         this.id = var2;
+         this.files = new ArrayList(var1);
       }
 
-      @Nullable
-      @Override
-      public Reader openReader() throws IOException {
-         return !Files.exists(this.path) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path))));
-      }
-
-      @Override
-      public EventLogDirectory.CompressedFile compress() {
-         return this;
-      }
-   }
-
-   public interface File {
-      Path path();
-
-      EventLogDirectory.FileId id();
-
-      @Nullable
-      Reader openReader() throws IOException;
-
-      EventLogDirectory.CompressedFile compress() throws IOException;
-   }
-
-   public static record FileId(LocalDate a, int b) {
-      private final LocalDate date;
-      private final int index;
-      private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
-
-      public FileId(LocalDate var1, int var2) {
-         super();
-         this.date = var1;
-         this.index = var2;
-      }
-
-      @Nullable
-      public static EventLogDirectory.FileId parse(String var0) {
-         int var1 = var0.indexOf("-");
-         if (var1 == -1) {
-            return null;
-         } else {
-            String var2 = var0.substring(0, var1);
-            String var3 = var0.substring(var1 + 1);
-
-            try {
-               return new EventLogDirectory.FileId(LocalDate.parse(var2, DATE_FORMATTER), Integer.parseInt(var3));
-            } catch (DateTimeParseException | NumberFormatException var5) {
-               return null;
-            }
-         }
-      }
-
-      public String toString() {
-         return DATE_FORMATTER.format(this.date) + "-" + this.index;
-      }
-
-      public String toFileName(String var1) {
-         return this + var1;
-      }
-   }
-
-   public static class FileList implements Iterable<EventLogDirectory.File> {
-      private final List<EventLogDirectory.File> files;
-
-      FileList(List<EventLogDirectory.File> var1) {
-         super();
-         this.files = new ArrayList<>(var1);
-      }
-
-      public EventLogDirectory.FileList prune(LocalDate var1, int var2) {
-         this.files.removeIf(var2x -> {
-            EventLogDirectory.FileId var3 = var2x.id();
+      public FileList prune(LocalDate var1, int var2) {
+         this.files.removeIf((var2x) -> {
+            FileId var3 = var2x.id();
             LocalDate var4 = var3.date().plusDays((long)var2);
             if (!var1.isBefore(var4)) {
                try {
@@ -219,11 +197,11 @@ public class EventLogDirectory {
          return this;
       }
 
-      public EventLogDirectory.FileList compressAll() {
+      public FileList compressAll() {
          ListIterator var1 = this.files.listIterator();
 
          while(var1.hasNext()) {
-            EventLogDirectory.File var2 = (EventLogDirectory.File)var1.next();
+            File var2 = (File)var1.next();
 
             try {
                var1.set(var2.compress());
@@ -235,25 +213,70 @@ public class EventLogDirectory {
          return this;
       }
 
-      @Override
-      public Iterator<EventLogDirectory.File> iterator() {
+      public Iterator<File> iterator() {
          return this.files.iterator();
       }
 
-      public Stream<EventLogDirectory.File> stream() {
+      public Stream<File> stream() {
          return this.files.stream();
       }
 
-      public Set<EventLogDirectory.FileId> ids() {
-         return this.files.stream().map(EventLogDirectory.File::id).collect(Collectors.toSet());
+      public Set<FileId> ids() {
+         return (Set)this.files.stream().map(File::id).collect(Collectors.toSet());
       }
    }
 
-   public static record RawFile(Path a, EventLogDirectory.FileId b) implements EventLogDirectory.File {
-      private final Path path;
-      private final EventLogDirectory.FileId id;
+   public static record FileId(LocalDate date, int index) {
+      private static final DateTimeFormatter DATE_FORMATTER;
 
-      public RawFile(Path var1, EventLogDirectory.FileId var2) {
+      public FileId(LocalDate var1, int var2) {
+         super();
+         this.date = var1;
+         this.index = var2;
+      }
+
+      @Nullable
+      public static FileId parse(String var0) {
+         int var1 = var0.indexOf("-");
+         if (var1 == -1) {
+            return null;
+         } else {
+            String var2 = var0.substring(0, var1);
+            String var3 = var0.substring(var1 + 1);
+
+            try {
+               return new FileId(LocalDate.parse(var2, DATE_FORMATTER), Integer.parseInt(var3));
+            } catch (DateTimeParseException | NumberFormatException var5) {
+               return null;
+            }
+         }
+      }
+
+      public String toString() {
+         String var10000 = DATE_FORMATTER.format(this.date);
+         return var10000 + "-" + this.index;
+      }
+
+      public String toFileName(String var1) {
+         String var10000 = String.valueOf(this);
+         return var10000 + var1;
+      }
+
+      public LocalDate date() {
+         return this.date;
+      }
+
+      public int index() {
+         return this.index;
+      }
+
+      static {
+         DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
+      }
+   }
+
+   public static record RawFile(Path path, FileId id) implements File {
+      public RawFile(Path var1, FileId var2) {
          super();
          this.path = var1;
          this.id = var2;
@@ -264,16 +287,58 @@ public class EventLogDirectory {
       }
 
       @Nullable
-      @Override
       public Reader openReader() throws IOException {
-         return Files.exists(this.path) ? Files.newBufferedReader(this.path) : null;
+         return Files.exists(this.path, new LinkOption[0]) ? Files.newBufferedReader(this.path) : null;
       }
 
-      @Override
-      public EventLogDirectory.CompressedFile compress() throws IOException {
+      public CompressedFile compress() throws IOException {
          Path var1 = this.path.resolveSibling(this.path.getFileName().toString() + ".gz");
          EventLogDirectory.tryCompress(this.path, var1);
-         return new EventLogDirectory.CompressedFile(var1, this.id);
+         return new CompressedFile(var1, this.id);
       }
+
+      public Path path() {
+         return this.path;
+      }
+
+      public FileId id() {
+         return this.id;
+      }
+   }
+
+   public static record CompressedFile(Path path, FileId id) implements File {
+      public CompressedFile(Path var1, FileId var2) {
+         super();
+         this.path = var1;
+         this.id = var2;
+      }
+
+      @Nullable
+      public Reader openReader() throws IOException {
+         return !Files.exists(this.path, new LinkOption[0]) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path))));
+      }
+
+      public CompressedFile compress() {
+         return this;
+      }
+
+      public Path path() {
+         return this.path;
+      }
+
+      public FileId id() {
+         return this.id;
+      }
+   }
+
+   public interface File {
+      Path path();
+
+      FileId id();
+
+      @Nullable
+      Reader openReader() throws IOException;
+
+      CompressedFile compress() throws IOException;
    }
 }

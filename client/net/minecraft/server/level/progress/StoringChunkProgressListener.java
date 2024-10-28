@@ -38,7 +38,6 @@ public class StoringChunkProgressListener implements ChunkProgressListener {
       return new StoringChunkProgressListener(LoggerChunkProgressListener.createCompleted(), 0, 0, 0);
    }
 
-   @Override
    public void updateSpawnPos(ChunkPos var1) {
       if (this.started) {
          this.delegate.updateSpawnPos(var1);
@@ -46,7 +45,6 @@ public class StoringChunkProgressListener implements ChunkProgressListener {
       }
    }
 
-   @Override
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
       if (this.started) {
          this.delegate.onStatusChange(var1, var2);
@@ -55,17 +53,16 @@ public class StoringChunkProgressListener implements ChunkProgressListener {
          } else {
             this.statuses.put(var1.toLong(), var2);
          }
+
       }
    }
 
-   @Override
    public void start() {
       this.started = true;
       this.statuses.clear();
       this.delegate.start();
    }
 
-   @Override
    public void stop() {
       this.started = false;
       this.delegate.stop();

@@ -1,6 +1,7 @@
 package net.minecraft.realms;
 
 import com.google.common.collect.Lists;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,10 +31,10 @@ public abstract class RealmsScreen extends Screen {
 
    protected RealmsLabel addLabel(RealmsLabel var1) {
       this.labels.add(var1);
-      return this.addRenderableOnly(var1);
+      return (RealmsLabel)this.addRenderableOnly(var1);
    }
 
    public Component createLabelNarration() {
-      return CommonComponents.joinLines(this.labels.stream().map(RealmsLabel::getText).collect(Collectors.toList()));
+      return CommonComponents.joinLines((Collection)this.labels.stream().map(RealmsLabel::getText).collect(Collectors.toList()));
    }
 }

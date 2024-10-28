@@ -5,12 +5,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.logging.LogUtils;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -35,21 +37,19 @@ public class ClientRecipeBook extends RecipeBook {
    public void setupCollections(Iterable<RecipeHolder<?>> var1, RegistryAccess var2) {
       Map var3 = categorizeAndGroupRecipes(var1);
       HashMap var4 = Maps.newHashMap();
-      Builder var5 = ImmutableList.builder();
-      var3.forEach(
-         (var3x, var4x) -> var4.put(
-               var3x, (List)var4x.stream().map(var1xx -> new RecipeCollection(var2, var1xx)).peek(var5::add).collect(ImmutableList.toImmutableList())
-            )
-      );
-      RecipeBookCategories.AGGREGATE_CATEGORIES
-         .forEach(
-            (var1x, var2x) -> var4.put(
-                  var1x,
-                  (List)var2x.stream()
-                     .flatMap(var1xx -> ((List)var4.getOrDefault(var1xx, ImmutableList.of())).stream())
-                     .collect(ImmutableList.toImmutableList())
-               )
-         );
+      ImmutableList.Builder var5 = ImmutableList.builder();
+      var3.forEach((var3x, var4x) -> {
+         Stream var10002 = var4x.stream().map((var1) -> {
+            return new RecipeCollection(var2, var1);
+         });
+         Objects.requireNonNull(var5);
+         var4.put(var3x, (List)var10002.peek(var5::add).collect(ImmutableList.toImmutableList()));
+      });
+      RecipeBookCategories.AGGREGATE_CATEGORIES.forEach((var1x, var2x) -> {
+         var4.put(var1x, (List)var2x.stream().flatMap((var1) -> {
+            return ((List)var4.getOrDefault(var1, ImmutableList.of())).stream();
+         }).collect(ImmutableList.toImmutableList()));
+      });
       this.collectionsByTab = ImmutableMap.copyOf(var4);
       this.allCollections = var5.build();
    }
@@ -57,23 +57,29 @@ public class ClientRecipeBook extends RecipeBook {
    private static Map<RecipeBookCategories, List<List<RecipeHolder<?>>>> categorizeAndGroupRecipes(Iterable<RecipeHolder<?>> var0) {
       HashMap var1 = Maps.newHashMap();
       HashBasedTable var2 = HashBasedTable.create();
+      Iterator var3 = var0.iterator();
 
-      for(RecipeHolder var4 : var0) {
+      while(var3.hasNext()) {
+         RecipeHolder var4 = (RecipeHolder)var3.next();
          Recipe var5 = var4.value();
          if (!var5.isSpecial() && !var5.isIncomplete()) {
             RecipeBookCategories var6 = getCategory(var4);
             String var7 = var5.getGroup();
             if (var7.isEmpty()) {
-               var1.computeIfAbsent(var6, var0x -> Lists.newArrayList()).add(ImmutableList.of(var4));
+               ((List)var1.computeIfAbsent(var6, (var0x) -> {
+                  return Lists.newArrayList();
+               })).add(ImmutableList.of(var4));
             } else {
                Object var8 = (List)var2.get(var6, var7);
                if (var8 == null) {
                   var8 = Lists.newArrayList();
                   var2.put(var6, var7, var8);
-                  var1.computeIfAbsent(var6, var0x -> Lists.newArrayList()).add(var8);
+                  ((List)var1.computeIfAbsent(var6, (var0x) -> {
+                     return Lists.newArrayList();
+                  })).add(var8);
                }
 
-               var8.add(var4);
+               ((List)var8).add(var4);
             }
          }
       }
@@ -81,27 +87,34 @@ public class ClientRecipeBook extends RecipeBook {
       return var1;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static RecipeBookCategories getCategory(RecipeHolder<?> var0) {
       Recipe var1 = var0.value();
-      if (var1 instanceof CraftingRecipe var5) {
-         return switch(var5.category()) {
-            case BUILDING -> RecipeBookCategories.CRAFTING_BUILDING_BLOCKS;
-            case EQUIPMENT -> RecipeBookCategories.CRAFTING_EQUIPMENT;
-            case REDSTONE -> RecipeBookCategories.CRAFTING_REDSTONE;
-            case MISC -> RecipeBookCategories.CRAFTING_MISC;
-         };
+      RecipeBookCategories var5;
+      if (var1 instanceof CraftingRecipe) {
+         CraftingRecipe var6 = (CraftingRecipe)var1;
+         switch (var6.category()) {
+            case BUILDING -> var5 = RecipeBookCategories.CRAFTING_BUILDING_BLOCKS;
+            case EQUIPMENT -> var5 = RecipeBookCategories.CRAFTING_EQUIPMENT;
+            case REDSTONE -> var5 = RecipeBookCategories.CRAFTING_REDSTONE;
+            case MISC -> var5 = RecipeBookCategories.CRAFTING_MISC;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var5;
       } else {
          RecipeType var2 = var1.getType();
-         if (var1 instanceof AbstractCookingRecipe var3) {
+         if (var1 instanceof AbstractCookingRecipe) {
+            AbstractCookingRecipe var3 = (AbstractCookingRecipe)var1;
             CookingBookCategory var4 = var3.category();
             if (var2 == RecipeType.SMELTING) {
-               return switch(var4) {
-                  case BLOCKS -> RecipeBookCategories.FURNACE_BLOCKS;
-                  case FOOD -> RecipeBookCategories.FURNACE_FOOD;
-                  case MISC -> RecipeBookCategories.FURNACE_MISC;
-               };
+               switch (var4) {
+                  case BLOCKS -> var5 = RecipeBookCategories.FURNACE_BLOCKS;
+                  case FOOD -> var5 = RecipeBookCategories.FURNACE_FOOD;
+                  case MISC -> var5 = RecipeBookCategories.FURNACE_MISC;
+                  default -> throw new MatchException((String)null, (Throwable)null);
+               }
+
+               return var5;
             }
 
             if (var2 == RecipeType.BLASTING) {
@@ -122,7 +135,12 @@ public class ClientRecipeBook extends RecipeBook {
          } else if (var2 == RecipeType.SMITHING) {
             return RecipeBookCategories.SMITHING;
          } else {
-            LOGGER.warn("Unknown recipe category: {}/{}", LogUtils.defer(() -> BuiltInRegistries.RECIPE_TYPE.getKey(var1.getType())), LogUtils.defer(var0::id));
+            Logger var10000 = LOGGER;
+            Object var10002 = LogUtils.defer(() -> {
+               return BuiltInRegistries.RECIPE_TYPE.getKey(var1.getType());
+            });
+            Objects.requireNonNull(var0);
+            var10000.warn("Unknown recipe category: {}/{}", var10002, LogUtils.defer(var0::id));
             return RecipeBookCategories.UNKNOWN;
          }
       }
@@ -133,6 +151,6 @@ public class ClientRecipeBook extends RecipeBook {
    }
 
    public List<RecipeCollection> getCollection(RecipeBookCategories var1) {
-      return this.collectionsByTab.getOrDefault(var1, Collections.emptyList());
+      return (List)this.collectionsByTab.getOrDefault(var1, Collections.emptyList());
    }
 }

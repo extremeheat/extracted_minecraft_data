@@ -6,7 +6,9 @@ import net.minecraft.Util;
 
 public class ClassTreeIdRegistry {
    public static final int NO_ID_VALUE = -1;
-   private final Object2IntMap<Class<?>> classToLastIdCache = Util.make(new Object2IntOpenHashMap(), var0 -> var0.defaultReturnValue(-1));
+   private final Object2IntMap<Class<?>> classToLastIdCache = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (var0) -> {
+      var0.defaultReturnValue(-1);
+   });
 
    public ClassTreeIdRegistry() {
       super();
@@ -19,14 +21,16 @@ public class ClassTreeIdRegistry {
       } else {
          Class var3 = var1;
 
-         while((var3 = var3.getSuperclass()) != Object.class) {
-            int var4 = this.classToLastIdCache.getInt(var3);
-            if (var4 != -1) {
-               return var4;
+         int var4;
+         do {
+            if ((var3 = var3.getSuperclass()) == Object.class) {
+               return -1;
             }
-         }
 
-         return -1;
+            var4 = this.classToLastIdCache.getInt(var3);
+         } while(var4 == -1);
+
+         return var4;
       }
    }
 

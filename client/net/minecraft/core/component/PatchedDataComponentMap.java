@@ -7,11 +7,12 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 public final class PatchedDataComponentMap implements DataComponentMap {
@@ -43,27 +44,28 @@ public final class PatchedDataComponentMap implements DataComponentMap {
    private static boolean isPatchSanitized(DataComponentMap var0, Reference2ObjectMap<DataComponentType<?>, Optional<?>> var1) {
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var1).iterator();
 
-      while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
-         Object var4 = var0.get((DataComponentType)var3.getKey());
-         Optional var5 = (Optional)var3.getValue();
+      Object var4;
+      Optional var5;
+      do {
+         if (!var2.hasNext()) {
+            return true;
+         }
+
+         Map.Entry var3 = (Map.Entry)var2.next();
+         var4 = var0.get((DataComponentType)var3.getKey());
+         var5 = (Optional)var3.getValue();
          if (var5.isPresent() && var5.get().equals(var4)) {
             return false;
          }
+      } while(!var5.isEmpty() || var4 != null);
 
-         if (var5.isEmpty() && var4 == null) {
-            return false;
-         }
-      }
-
-      return true;
+      return false;
    }
 
    @Nullable
-   @Override
    public <T> T get(DataComponentType<? extends T> var1) {
       Optional var2 = (Optional)this.patch.get(var1);
-      return (T)(var2 != null ? var2.orElse((T)null) : this.prototype.get(var1));
+      return var2 != null ? var2.orElse((Object)null) : this.prototype.get(var1);
    }
 
    @Nullable
@@ -77,7 +79,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          var4 = (Optional)this.patch.put(var1, Optional.ofNullable(var2));
       }
 
-      return (T)(var4 != null ? var4.orElse(var3) : var3);
+      return var4 != null ? var4.orElse(var3) : var3;
    }
 
    @Nullable
@@ -91,7 +93,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          var3 = (Optional)this.patch.remove(var1);
       }
 
-      return (T)(var3 != null ? var3.orElse((T)null) : var2);
+      return var3 != null ? var3.orElse((Object)null) : var2;
    }
 
    public void applyPatch(DataComponentPatch var1) {
@@ -99,9 +101,10 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var1.map).iterator();
 
       while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
-         this.applyPatch((DataComponentType<?>)var3.getKey(), (Optional<?>)var3.getValue());
+         Map.Entry var3 = (Map.Entry)var2.next();
+         this.applyPatch((DataComponentType)var3.getKey(), (Optional)var3.getValue());
       }
+
    }
 
    private void applyPatch(DataComponentType<?> var1, Optional<?> var2) {
@@ -117,12 +120,17 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       } else {
          this.patch.remove(var1);
       }
+
    }
 
    public void setAll(DataComponentMap var1) {
-      for(TypedDataComponent var3 : var1) {
+      Iterator var2 = var1.iterator();
+
+      while(var2.hasNext()) {
+         TypedDataComponent var3 = (TypedDataComponent)var2.next();
          var3.applyTo(this);
       }
+
    }
 
    private void ensureMapOwnership() {
@@ -130,9 +138,9 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          this.patch = new Reference2ObjectArrayMap(this.patch);
          this.copyOnWrite = false;
       }
+
    }
 
-   @Override
    public Set<DataComponentType<?>> keySet() {
       if (this.patch.isEmpty()) {
          return this.prototype.keySet();
@@ -141,7 +149,7 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
          while(var2.hasNext()) {
-            it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var2.next();
+            Reference2ObjectMap.Entry var3 = (Reference2ObjectMap.Entry)var2.next();
             Optional var4 = (Optional)var3.getValue();
             if (var4.isPresent()) {
                var1.add((DataComponentType)var3.getKey());
@@ -154,7 +162,6 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       }
    }
 
-   @Override
    public Iterator<TypedDataComponent<?>> iterator() {
       if (this.patch.isEmpty()) {
          return this.prototype.iterator();
@@ -163,13 +170,16 @@ public final class PatchedDataComponentMap implements DataComponentMap {
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
          while(var2.hasNext()) {
-            it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var2.next();
+            Reference2ObjectMap.Entry var3 = (Reference2ObjectMap.Entry)var2.next();
             if (((Optional)var3.getValue()).isPresent()) {
                var1.add(TypedDataComponent.createUnchecked((DataComponentType)var3.getKey(), ((Optional)var3.getValue()).get()));
             }
          }
 
-         for(TypedDataComponent var5 : this.prototype) {
+         Iterator var4 = this.prototype.iterator();
+
+         while(var4.hasNext()) {
+            TypedDataComponent var5 = (TypedDataComponent)var4.next();
             if (!this.patch.containsKey(var5.type())) {
                var1.add(var5);
             }
@@ -179,15 +189,14 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       }
    }
 
-   @Override
    public int size() {
       int var1 = this.prototype.size();
       ObjectIterator var2 = Reference2ObjectMaps.fastIterable(this.patch).iterator();
 
       while(var2.hasNext()) {
-         it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Reference2ObjectMap.Entry)var2.next();
+         Reference2ObjectMap.Entry var3 = (Reference2ObjectMap.Entry)var2.next();
          boolean var4 = ((Optional)var3.getValue()).isPresent();
-         boolean var5 = this.prototype.has((DataComponentType<?>)var3.getKey());
+         boolean var5 = this.prototype.has((DataComponentType)var3.getKey());
          if (var4 != var5) {
             var1 += var4 ? 1 : -1;
          }
@@ -210,26 +219,30 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return new PatchedDataComponentMap(this.prototype, this.patch, true);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof PatchedDataComponentMap var2 && this.prototype.equals(var2.prototype) && this.patch.equals(var2.patch)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof PatchedDataComponentMap) {
+            PatchedDataComponentMap var2 = (PatchedDataComponentMap)var1;
+            if (this.prototype.equals(var2.prototype) && this.patch.equals(var2.patch)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.prototype.hashCode() + this.patch.hashCode() * 31;
    }
 
-   @Override
    public String toString() {
-      return "{" + (String)this.stream().map(TypedDataComponent::toString).collect(Collectors.joining(", ")) + "}";
+      Stream var10000 = this.stream().map(TypedDataComponent::toString);
+      return "{" + (String)var10000.collect(Collectors.joining(", ")) + "}";
    }
 }

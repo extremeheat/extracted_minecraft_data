@@ -3,6 +3,7 @@ package net.minecraft.core.particles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Locale;
 import net.minecraft.core.HolderLookup;
@@ -19,24 +20,32 @@ public class ColorParticleOption implements ParticleOptions {
          Vector3f var4 = DustParticleOptionsBase.readVector3f(var2);
          var2.expect(' ');
          float var5 = var2.readFloat();
-         int var6 = FastColor.ARGB32.color(
-            ColorParticleOption.as32BitChannel(var5),
-            ColorParticleOption.as32BitChannel(var4.x),
-            ColorParticleOption.as32BitChannel(var4.y),
-            ColorParticleOption.as32BitChannel(var4.z)
-         );
+         int var6 = FastColor.ARGB32.color(ColorParticleOption.as32BitChannel(var5), ColorParticleOption.as32BitChannel(var4.x), ColorParticleOption.as32BitChannel(var4.y), ColorParticleOption.as32BitChannel(var4.z));
          return new ColorParticleOption(var1, var6);
+      }
+
+      // $FF: synthetic method
+      public ParticleOptions fromCommand(ParticleType var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException {
+         return this.fromCommand(var1, var2, var3);
       }
    };
    private final ParticleType<? extends ColorParticleOption> type;
    private final int color;
 
-   public static Codec<ColorParticleOption> codec(ParticleType<ColorParticleOption> var0) {
-      return Codec.INT.xmap(var1 -> new ColorParticleOption(var0, var1), var0x -> var0x.color);
+   public static MapCodec<ColorParticleOption> codec(ParticleType<ColorParticleOption> var0) {
+      return Codec.INT.xmap((var1) -> {
+         return new ColorParticleOption(var0, var1);
+      }, (var0x) -> {
+         return var0x.color;
+      }).fieldOf("value");
    }
 
    public static StreamCodec<? super ByteBuf, ColorParticleOption> streamCodec(ParticleType<ColorParticleOption> var0) {
-      return ByteBufCodecs.INT.map(var1 -> new ColorParticleOption(var0, var1), var0x -> var0x.color);
+      return ByteBufCodecs.INT.map((var1) -> {
+         return new ColorParticleOption(var0, var1);
+      }, (var0x) -> {
+         return var0x.color;
+      });
    }
 
    ColorParticleOption(ParticleType<? extends ColorParticleOption> var1, int var2) {
@@ -45,12 +54,10 @@ public class ColorParticleOption implements ParticleOptions {
       this.color = var2;
    }
 
-   @Override
-   public ParticleType<?> getType() {
+   public ParticleType<? extends ColorParticleOption> getType() {
       return this.type;
    }
 
-   @Override
    public String writeToString(HolderLookup.Provider var1) {
       return String.format(Locale.ROOT, "%s 0x%x", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), this.color);
    }

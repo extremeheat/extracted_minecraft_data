@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,36 +46,34 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    private volatile boolean killSwitch;
    private Set<MetricSampler> thisTickSamplers = ImmutableSet.of();
 
-   private ActiveMetricsRecorder(
-      MetricsSamplerProvider var1, LongSupplier var2, Executor var3, MetricsPersister var4, Consumer<ProfileResults> var5, Consumer<Path> var6
-   ) {
+   private ActiveMetricsRecorder(MetricsSamplerProvider var1, LongSupplier var2, Executor var3, MetricsPersister var4, Consumer<ProfileResults> var5, Consumer<Path> var6) {
       super();
       this.metricsSamplerProvider = var1;
       this.wallTimeSource = var2;
-      this.taskProfiler = new ContinuousProfiler(var2, () -> this.currentTick);
+      this.taskProfiler = new ContinuousProfiler(var2, () -> {
+         return this.currentTick;
+      });
       this.ioExecutor = var3;
       this.metricsPersister = var4;
       this.onProfilingEnd = var5;
       this.onReportFinished = globalOnReportFinished == null ? var6 : var6.andThen(globalOnReportFinished);
       this.deadlineNano = var2.getAsLong() + TimeUnit.NANOSECONDS.convert(10L, TimeUnit.SECONDS);
-      this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, false);
+      this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> {
+         return this.currentTick;
+      }, false);
       this.taskProfiler.enable();
    }
 
-   public static ActiveMetricsRecorder createStarted(
-      MetricsSamplerProvider var0, LongSupplier var1, Executor var2, MetricsPersister var3, Consumer<ProfileResults> var4, Consumer<Path> var5
-   ) {
+   public static ActiveMetricsRecorder createStarted(MetricsSamplerProvider var0, LongSupplier var1, Executor var2, MetricsPersister var3, Consumer<ProfileResults> var4, Consumer<Path> var5) {
       return new ActiveMetricsRecorder(var0, var1, var2, var3, var4, var5);
    }
 
-   @Override
    public synchronized void end() {
       if (this.isRecording()) {
          this.killSwitch = true;
       }
    }
 
-   @Override
    public synchronized void cancel() {
       if (this.isRecording()) {
          this.singleTickProfiler = InactiveProfiler.INSTANCE;
@@ -83,32 +82,41 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       }
    }
 
-   @Override
    public void startTick() {
       this.verifyStarted();
-      this.thisTickSamplers = this.metricsSamplerProvider.samplers(() -> this.singleTickProfiler);
+      this.thisTickSamplers = this.metricsSamplerProvider.samplers(() -> {
+         return this.singleTickProfiler;
+      });
+      Iterator var1 = this.thisTickSamplers.iterator();
 
-      for(MetricSampler var2 : this.thisTickSamplers) {
+      while(var1.hasNext()) {
+         MetricSampler var2 = (MetricSampler)var1.next();
          var2.onStartTick();
       }
 
       ++this.currentTick;
    }
 
-   @Override
    public void endTick() {
       this.verifyStarted();
       if (this.currentTick != 0) {
-         for(MetricSampler var2 : this.thisTickSamplers) {
+         Iterator var1 = this.thisTickSamplers.iterator();
+
+         while(var1.hasNext()) {
+            MetricSampler var2 = (MetricSampler)var1.next();
             var2.onEndTick(this.currentTick);
             if (var2.triggersThreshold()) {
                RecordedDeviation var3 = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
-               this.deviationsBySampler.computeIfAbsent(var2, var0 -> Lists.newArrayList()).add(var3);
+               ((List)this.deviationsBySampler.computeIfAbsent(var2, (var0) -> {
+                  return Lists.newArrayList();
+               })).add(var3);
             }
          }
 
          if (!this.killSwitch && this.wallTimeSource.getAsLong() <= this.deadlineNano) {
-            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, false);
+            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> {
+               return this.currentTick;
+            }, false);
          } else {
             this.killSwitch = false;
             ProfileResults var4 = this.taskProfiler.getResults();
@@ -119,12 +127,10 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       }
    }
 
-   @Override
    public boolean isRecording() {
       return this.taskProfiler.isEnabled();
    }
 
-   @Override
    public ProfilerFiller getProfiler() {
       return ProfilerFiller.tee(this.taskProfiler.getFiller(), this.singleTickProfiler);
    }
@@ -136,7 +142,7 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    }
 
    private void scheduleSaveResults(ProfileResults var1) {
-      HashSet var2 = new HashSet<>(this.thisTickSamplers);
+      HashSet var2 = new HashSet(this.thisTickSamplers);
       this.ioExecutor.execute(() -> {
          Path var3 = this.metricsPersister.saveReports(var2, this.deviationsBySampler, var1);
          this.cleanup(var2);
@@ -145,7 +151,10 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    }
 
    private void cleanup(Collection<MetricSampler> var1) {
-      for(MetricSampler var3 : var1) {
+      Iterator var2 = var1.iterator();
+
+      while(var2.hasNext()) {
+         MetricSampler var3 = (MetricSampler)var2.next();
          var3.onFinished();
       }
 

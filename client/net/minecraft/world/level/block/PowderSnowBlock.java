@@ -41,7 +41,6 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    private static final double MINIMUM_FALL_DISTANCE_FOR_SOUND = 4.0;
    private static final double MINIMUM_FALL_DISTANCE_FOR_BIG_SOUND = 7.0;
 
-   @Override
    public MapCodec<PowderSnowBlock> codec() {
       return CODEC;
    }
@@ -50,17 +49,14 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       super(var1);
    }
 
-   @Override
    protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       return var2.is(this) ? true : super.skipRendering(var1, var2, var3);
    }
 
-   @Override
    protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Shapes.empty();
    }
 
-   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!(var4 instanceof LivingEntity) || var4.getInBlockState().is(this)) {
          var4.makeStuckInBlock(var1, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
@@ -68,15 +64,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
             RandomSource var5 = var2.getRandom();
             boolean var6 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
             if (var6 && var5.nextBoolean()) {
-               var2.addParticle(
-                  ParticleTypes.SNOWFLAKE,
-                  var4.getX(),
-                  (double)(var3.getY() + 1),
-                  var4.getZ(),
-                  (double)(Mth.randomBetween(var5, -1.0F, 1.0F) * 0.083333336F),
-                  0.05000000074505806,
-                  (double)(Mth.randomBetween(var5, -1.0F, 1.0F) * 0.083333336F)
-               );
+               var2.addParticle(ParticleTypes.SNOWFLAKE, var4.getX(), (double)(var3.getY() + 1), var4.getZ(), (double)(Mth.randomBetween(var5, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(var5, -1.0F, 1.0F) * 0.083333336F));
             }
          }
       }
@@ -89,11 +77,9 @@ public class PowderSnowBlock extends Block implements BucketPickup {
 
          var4.setSharedFlagOnFire(false);
       }
+
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
       if (!((double)var5 < 4.0) && var4 instanceof LivingEntity var6) {
          LivingEntity.Fallsounds var7 = var6.getFallSounds();
@@ -102,9 +88,6 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var4 instanceof EntityCollisionContext var5) {
          Entity var6 = var5.getEntity();
@@ -123,7 +106,6 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return Shapes.empty();
    }
 
-   @Override
    protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
@@ -136,7 +118,6 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
-   @Override
    public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
       if (!var2.isClientSide()) {
@@ -146,12 +127,10 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return new ItemStack(Items.POWDER_SNOW_BUCKET);
    }
 
-   @Override
    public Optional<SoundEvent> getPickupSound() {
       return Optional.of(SoundEvents.BUCKET_FILL_POWDER_SNOW);
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return true;
    }

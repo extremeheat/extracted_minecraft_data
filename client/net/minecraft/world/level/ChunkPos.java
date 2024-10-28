@@ -1,6 +1,6 @@
 package net.minecraft.world.level;
 
-import java.util.Spliterators.AbstractSpliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -70,7 +70,6 @@ public class ChunkPos {
       return (int)(var0 >>> 32 & 4294967295L);
    }
 
-   @Override
    public int hashCode() {
       return hash(this.x, this.z);
    }
@@ -81,7 +80,6 @@ public class ChunkPos {
       return var2 ^ var3;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -149,7 +147,6 @@ public class ChunkPos {
       return new BlockPos(this.getMiddleBlockX(), var1, this.getMiddleBlockZ());
    }
 
-   @Override
    public String toString() {
       return "[" + this.x + ", " + this.z + "]";
    }
@@ -185,11 +182,10 @@ public class ChunkPos {
       int var3 = Math.abs(var0.z - var1.z) + 1;
       final int var4 = var0.x < var1.x ? 1 : -1;
       final int var5 = var0.z < var1.z ? 1 : -1;
-      return StreamSupport.stream(new AbstractSpliterator<ChunkPos>((long)(var2 * var3), 64) {
+      return StreamSupport.stream(new Spliterators.AbstractSpliterator<ChunkPos>((long)(var2 * var3), 64) {
          @Nullable
          private ChunkPos pos;
 
-         @Override
          public boolean tryAdvance(Consumer<? super ChunkPos> var1x) {
             if (this.pos == null) {
                this.pos = var0;

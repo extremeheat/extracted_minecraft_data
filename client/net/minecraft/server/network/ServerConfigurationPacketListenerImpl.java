@@ -28,8 +28,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.config.JoinWorldTask;
 import net.minecraft.server.network.config.ServerResourcePackConfigurationTask;
 import net.minecraft.server.network.config.SynchronizeRegistriesTask;
-import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
 
@@ -37,7 +37,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component DISCONNECT_REASON_INVALID_DATA = Component.translatable("multiplayer.disconnect.invalid_player_data");
    private final GameProfile gameProfile;
-   private final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue<>();
+   private final Queue<ConfigurationTask> configurationTasks = new ConcurrentLinkedQueue();
    @Nullable
    private ConfigurationTask currentTask;
    private ClientInformation clientInformation;
@@ -50,18 +50,15 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       this.clientInformation = var3.clientInformation();
    }
 
-   @Override
    protected GameProfile playerProfile() {
       return this.gameProfile;
    }
 
-   @Override
    public void onDisconnect(Component var1) {
       LOGGER.info("{} lost connection: {}", this.gameProfile, var1.getString());
       super.onDisconnect(var1);
    }
 
-   @Override
    public boolean isAcceptingMessages() {
       return this.connection.isConnected();
    }
@@ -69,7 +66,9 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    public void startConfiguration() {
       this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
       LayeredRegistryAccess var1 = this.server.registries();
-      List var2 = this.server.getResourceManager().listPacks().flatMap(var0 -> var0.location().knownPackInfo().stream()).toList();
+      List var2 = this.server.getResourceManager().listPacks().flatMap((var0) -> {
+         return var0.location().knownPackInfo().stream();
+      }).toList();
       this.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(this.server.getWorldData().enabledFeatures())));
       this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var2, var1);
       this.configurationTasks.add(this.synchronizeRegistriesTask);
@@ -84,25 +83,25 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    private void addOptionalTasks() {
-      this.server.getServerResourcePack().ifPresent(var1 -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1)));
+      this.server.getServerResourcePack().ifPresent((var1) -> {
+         this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1));
+      });
    }
 
-   @Override
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
       this.clientInformation = var1.information();
    }
 
-   @Override
    public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
       super.handleResourcePackResponse(var1);
       if (var1.action().isTerminal()) {
          this.finishCurrentTask(ServerResourcePackConfigurationTask.TYPE);
       }
+
    }
 
-   @Override
    public void handleSelectKnownPacks(ServerboundSelectKnownPacks var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
       if (this.synchronizeRegistriesTask == null) {
          throw new IllegalStateException("Unexpected response from client: received pack selection, but no negotiation ongoing");
       } else {
@@ -111,9 +110,8 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       }
    }
 
-   @Override
    public void handleConfigurationFinished(ServerboundFinishConfigurationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.server);
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.server);
       this.finishCurrentTask(JoinWorldTask.TYPE);
       this.connection.setupOutboundProtocol(GameProtocols.CLIENTBOUND.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())));
 
@@ -137,9 +135,9 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
          this.connection.send(new ClientboundDisconnectPacket(DISCONNECT_REASON_INVALID_DATA));
          this.connection.disconnect(DISCONNECT_REASON_INVALID_DATA);
       }
+
    }
 
-   @Override
    public void tick() {
       this.keepConnectionAlive();
    }
@@ -148,18 +146,20 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       if (this.currentTask != null) {
          throw new IllegalStateException("Task " + this.currentTask.type().id() + " has not finished yet");
       } else if (this.isAcceptingMessages()) {
-         ConfigurationTask var1 = this.configurationTasks.poll();
+         ConfigurationTask var1 = (ConfigurationTask)this.configurationTasks.poll();
          if (var1 != null) {
             this.currentTask = var1;
             var1.start(this::send);
          }
+
       }
    }
 
    private void finishCurrentTask(ConfigurationTask.Type var1) {
       ConfigurationTask.Type var2 = this.currentTask != null ? this.currentTask.type() : null;
       if (!var1.equals(var2)) {
-         throw new IllegalStateException("Unexpected request for task finish, current task: " + var2 + ", requested: " + var1);
+         String var10002 = String.valueOf(var2);
+         throw new IllegalStateException("Unexpected request for task finish, current task: " + var10002 + ", requested: " + String.valueOf(var1));
       } else {
          this.currentTask = null;
          this.startNextTask();

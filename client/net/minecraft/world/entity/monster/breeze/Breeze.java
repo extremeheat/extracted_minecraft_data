@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -56,11 +55,7 @@ public class Breeze extends Monster {
    };
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes()
-         .add(Attributes.MOVEMENT_SPEED, 0.6299999952316284)
-         .add(Attributes.MAX_HEALTH, 30.0)
-         .add(Attributes.FOLLOW_RANGE, 24.0)
-         .add(Attributes.ATTACK_DAMAGE, 3.0);
+      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.6299999952316284).add(Attributes.MAX_HEALTH, 30.0).add(Attributes.FOLLOW_RANGE, 24.0).add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    public Breeze(EntityType<? extends Monster> var1, Level var2) {
@@ -70,35 +65,26 @@ public class Breeze extends Monster {
       this.xpReward = 10;
    }
 
-   @Override
    protected Brain<?> makeBrain(Dynamic<?> var1) {
       return BreezeAi.makeBrain(this.brainProvider().makeBrain(var1));
    }
 
-   @Override
    public Brain<Breeze> getBrain() {
       return super.getBrain();
    }
 
-   @Override
    protected Brain.Provider<Breeze> brainProvider() {
       return Brain.provider(BreezeAi.MEMORY_TYPES, BreezeAi.SENSOR_TYPES);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (this.level().isClientSide() && DATA_POSE.equals(var1)) {
          this.resetAnimations();
          Pose var2 = this.getPose();
-         switch(var2) {
-            case SHOOTING:
-               this.shoot.startIfStopped(this.tickCount);
-               break;
-            case INHALING:
-               this.longJump.startIfStopped(this.tickCount);
-               break;
-            case SLIDING:
-               this.slide.startIfStopped(this.tickCount);
+         switch (var2) {
+            case SHOOTING -> this.shoot.startIfStopped(this.tickCount);
+            case INHALING -> this.longJump.startIfStopped(this.tickCount);
+            case SLIDING -> this.slide.startIfStopped(this.tickCount);
          }
       }
 
@@ -112,10 +98,9 @@ public class Breeze extends Monster {
       this.longJump.stop();
    }
 
-   @Override
    public void tick() {
       Pose var1 = this.getPose();
-      switch(var1) {
+      switch (var1) {
          case SHOOTING:
          case INHALING:
          case STANDING:
@@ -155,6 +140,7 @@ public class Breeze extends Monster {
          for(int var4 = 0; var4 < 3; ++var4) {
             this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var1), var3.x, var3.y, var3.z, 0.0, 0.0, 0.0);
          }
+
       }
    }
 
@@ -167,11 +153,11 @@ public class Breeze extends Monster {
             for(int var5 = 0; var5 < var1; ++var5) {
                this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var4), var3.x, var3.y, var3.z, 0.0, 0.0, 0.0);
             }
+
          }
       }
    }
 
-   @Override
    public void playAmbientSound() {
       if (this.getTarget() == null || !this.onGround()) {
          this.level().playLocalSound(this, this.getAmbientSound(), this.getSoundSource(), 1.0F, 1.0F);
@@ -184,37 +170,32 @@ public class Breeze extends Monster {
       this.level().playLocalSound(this, SoundEvents.BREEZE_WHIRL, this.getSoundSource(), var2, var1);
    }
 
-   @Override
    public ProjectileDeflection deflection(Projectile var1) {
-      return var1.getType() == EntityType.BREEZE_WIND_CHARGE ? ProjectileDeflection.NONE : PROJECTILE_DEFLECTION;
+      return var1.getType() != EntityType.BREEZE_WIND_CHARGE && var1.getType() != EntityType.WIND_CHARGE ? PROJECTILE_DEFLECTION : ProjectileDeflection.NONE;
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.BREEZE_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.BREEZE_HURT;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return this.onGround() ? SoundEvents.BREEZE_IDLE_GROUND : SoundEvents.BREEZE_IDLE_AIR;
    }
 
    public Optional<LivingEntity> getHurtBy() {
-      return this.getBrain()
-         .getMemory(MemoryModuleType.HURT_BY)
-         .map(DamageSource::getEntity)
-         .filter(var0 -> var0 instanceof LivingEntity)
-         .map(var0 -> (LivingEntity)var0);
+      return this.getBrain().getMemory(MemoryModuleType.HURT_BY).map(DamageSource::getEntity).filter((var0) -> {
+         return var0 instanceof LivingEntity;
+      }).map((var0) -> {
+         return (LivingEntity)var0;
+      });
    }
 
    public boolean withinInnerCircleRange(Vec3 var1) {
@@ -222,7 +203,6 @@ public class Breeze extends Monster {
       return var1.closerThan(var2, 4.0, 10.0);
    }
 
-   @Override
    protected void customServerAiStep() {
       this.level().getProfiler().push("breezeBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
@@ -232,24 +212,20 @@ public class Breeze extends Monster {
       super.customServerAiStep();
    }
 
-   @Override
    protected void sendDebugPackets() {
       super.sendDebugPackets();
       DebugPackets.sendEntityBrain(this);
       DebugPackets.sendBreezeInfo(this);
    }
 
-   @Override
    public boolean canAttackType(EntityType<?> var1) {
       return var1 == EntityType.PLAYER || var1 == EntityType.IRON_GOLEM;
    }
 
-   @Override
    public int getMaxHeadYRot() {
       return 30;
    }
 
-   @Override
    public int getHeadRotSpeed() {
       return 25;
    }
@@ -258,17 +234,14 @@ public class Breeze extends Monster {
       return this.getEyeY() - 0.4;
    }
 
-   @Override
    public boolean isInvulnerableTo(DamageSource var1) {
       return var1.is(DamageTypeTags.BREEZE_IMMUNE_TO) || var1.getEntity() instanceof Breeze || super.isInvulnerableTo(var1);
    }
 
-   @Override
    public double getFluidJumpThreshold() {
       return (double)this.getEyeHeight();
    }
 
-   @Override
    public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
       if (var1 > 3.0F) {
          this.playSound(SoundEvents.BREEZE_LAND, 1.0F, 1.0F);
@@ -277,7 +250,6 @@ public class Breeze extends Monster {
       return super.causeFallDamage(var1, var2, var3);
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
    }

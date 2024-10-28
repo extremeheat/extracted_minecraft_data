@@ -10,7 +10,6 @@ public class IdenticalMerger implements IndexMerger {
       this.coords = var1;
    }
 
-   @Override
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.coords.size() - 1;
 
@@ -23,12 +22,10 @@ public class IdenticalMerger implements IndexMerger {
       return true;
    }
 
-   @Override
    public int size() {
       return this.coords.size();
    }
 
-   @Override
    public DoubleList getList() {
       return this.coords;
    }

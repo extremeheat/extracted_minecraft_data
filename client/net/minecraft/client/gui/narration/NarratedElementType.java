@@ -8,4 +8,9 @@ public enum NarratedElementType {
 
    private NarratedElementType() {
    }
+
+   // $FF: synthetic method
+   private static NarratedElementType[] $values() {
+      return new NarratedElementType[]{TITLE, POSITION, HINT, USAGE};
+   }
 }

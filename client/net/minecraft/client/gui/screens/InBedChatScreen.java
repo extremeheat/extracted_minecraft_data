@@ -13,16 +13,14 @@ public class InBedChatScreen extends ChatScreen {
       super("");
    }
 
-   @Override
    protected void init() {
       super.init();
-      this.leaveBedButton = Button.builder(Component.translatable("multiplayer.stopSleeping"), var1 -> this.sendWakeUp())
-         .bounds(this.width / 2 - 100, this.height - 40, 200, 20)
-         .build();
+      this.leaveBedButton = Button.builder(Component.translatable("multiplayer.stopSleeping"), (var1) -> {
+         this.sendWakeUp();
+      }).bounds(this.width / 2 - 100, this.height - 40, 200, 20).build();
       this.addRenderableWidget(this.leaveBedButton);
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (!this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
          this.leaveBedButton.render(var1, var2, var3, var4);
@@ -31,17 +29,14 @@ public class InBedChatScreen extends ChatScreen {
       }
    }
 
-   @Override
    public void onClose() {
       this.sendWakeUp();
    }
 
-   @Override
    public boolean charTyped(char var1, int var2) {
       return !this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer()) ? true : super.charTyped(var1, var2);
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
          this.sendWakeUp();
@@ -66,9 +61,10 @@ public class InBedChatScreen extends ChatScreen {
 
    public void onPlayerWokeUp() {
       if (this.input.getValue().isEmpty()) {
-         this.minecraft.setScreen(null);
+         this.minecraft.setScreen((Screen)null);
       } else {
          this.minecraft.setScreen(new ChatScreen(this.input.getValue()));
       }
+
    }
 }

@@ -28,7 +28,7 @@ import net.minecraft.world.phys.Vec3;
 public class Blaze extends Monster {
    private float allowedHeightOffset = 0.5F;
    private int nextHeightOffsetChangeTick;
-   private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(Blaze.class, EntityDataSerializers.BYTE);
+   private static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
 
    public Blaze(EntityType<? extends Blaze> var1, Level var2) {
       super(var1, var2);
@@ -39,51 +39,41 @@ public class Blaze extends Monster {
       this.xpReward = 10;
    }
 
-   @Override
    protected void registerGoals() {
-      this.goalSelector.addGoal(4, new Blaze.BlazeAttackGoal(this));
+      this.goalSelector.addGoal(4, new BlazeAttackGoal(this));
       this.goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 1.0));
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0, 0.0F));
       this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
       this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes()
-         .add(Attributes.ATTACK_DAMAGE, 6.0)
-         .add(Attributes.MOVEMENT_SPEED, 0.23000000417232513)
-         .add(Attributes.FOLLOW_RANGE, 48.0);
+      return Monster.createMonsterAttributes().add(Attributes.ATTACK_DAMAGE, 6.0).add(Attributes.MOVEMENT_SPEED, 0.23000000417232513).add(Attributes.FOLLOW_RANGE, 48.0);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.BLAZE_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.BLAZE_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.BLAZE_DEATH;
    }
 
-   @Override
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   @Override
    public void aiStep() {
       if (!this.onGround() && this.getDeltaMovement().y < 0.0) {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.6, 1.0));
@@ -91,17 +81,7 @@ public class Blaze extends Monster {
 
       if (this.level().isClientSide) {
          if (this.random.nextInt(24) == 0 && !this.isSilent()) {
-            this.level()
-               .playLocalSound(
-                  this.getX() + 0.5,
-                  this.getY() + 0.5,
-                  this.getZ() + 0.5,
-                  SoundEvents.BLAZE_BURN,
-                  this.getSoundSource(),
-                  1.0F + this.random.nextFloat(),
-                  this.random.nextFloat() * 0.7F + 0.3F,
-                  false
-               );
+            this.level().playLocalSound(this.getX() + 0.5, this.getY() + 0.5, this.getZ() + 0.5, SoundEvents.BLAZE_BURN, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
          }
 
          for(int var1 = 0; var1 < 2; ++var1) {
@@ -112,12 +92,10 @@ public class Blaze extends Monster {
       super.aiStep();
    }
 
-   @Override
    public boolean isSensitiveToWater() {
       return true;
    }
 
-   @Override
    protected void customServerAiStep() {
       --this.nextHeightOffsetChangeTick;
       if (this.nextHeightOffsetChangeTick <= 0) {
@@ -135,24 +113,27 @@ public class Blaze extends Monster {
       super.customServerAiStep();
    }
 
-   @Override
    public boolean isOnFire() {
       return this.isCharged();
    }
 
    private boolean isCharged() {
-      return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
+      return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }
 
    void setCharged(boolean var1) {
-      byte var2 = this.entityData.get(DATA_FLAGS_ID);
+      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       if (var1) {
          var2 = (byte)(var2 | 1);
       } else {
-         var2 = (byte)(var2 & -2);
+         var2 &= -2;
       }
 
       this.entityData.set(DATA_FLAGS_ID, var2);
+   }
+
+   static {
+      DATA_FLAGS_ID = SynchedEntityData.defineId(Blaze.class, EntityDataSerializers.BYTE);
    }
 
    static class BlazeAttackGoal extends Goal {
@@ -167,29 +148,24 @@ public class Blaze extends Monster {
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       }
 
-      @Override
       public boolean canUse() {
          LivingEntity var1 = this.blaze.getTarget();
          return var1 != null && var1.isAlive() && this.blaze.canAttack(var1);
       }
 
-      @Override
       public void start() {
          this.attackStep = 0;
       }
 
-      @Override
       public void stop() {
          this.blaze.setCharged(false);
          this.lastSeen = 0;
       }
 
-      @Override
       public boolean requiresUpdateEveryTick() {
          return true;
       }
 
-      @Override
       public void tick() {
          --this.attackTime;
          LivingEntity var1 = this.blaze.getTarget();
@@ -233,17 +209,11 @@ public class Blaze extends Monster {
                   if (this.attackStep > 1) {
                      double var11 = Math.sqrt(Math.sqrt(var3)) * 0.5;
                      if (!this.blaze.isSilent()) {
-                        this.blaze.level().levelEvent(null, 1018, this.blaze.blockPosition(), 0);
+                        this.blaze.level().levelEvent((Player)null, 1018, this.blaze.blockPosition(), 0);
                      }
 
                      for(int var13 = 0; var13 < 1; ++var13) {
-                        SmallFireball var14 = new SmallFireball(
-                           this.blaze.level(),
-                           this.blaze,
-                           this.blaze.getRandom().triangle(var5, 2.297 * var11),
-                           var7,
-                           this.blaze.getRandom().triangle(var9, 2.297 * var11)
-                        );
+                        SmallFireball var14 = new SmallFireball(this.blaze.level(), this.blaze, this.blaze.getRandom().triangle(var5, 2.297 * var11), var7, this.blaze.getRandom().triangle(var9, 2.297 * var11));
                         var14.setPos(var14.getX(), this.blaze.getY(0.5) + 0.5, var14.getZ());
                         this.blaze.level().addFreshEntity(var14);
                      }

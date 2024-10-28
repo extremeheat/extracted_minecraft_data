@@ -1,9 +1,8 @@
 package net.minecraft.client.multiplayer.chat;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -17,12 +16,12 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.util.ExtraCodecs;
 
 public interface LoggedChatMessage extends LoggedChatEvent {
-   static LoggedChatMessage.Player player(GameProfile var0, PlayerChatMessage var1, ChatTrustLevel var2) {
-      return new LoggedChatMessage.Player(var0, var1, var2);
+   static Player player(GameProfile var0, PlayerChatMessage var1, ChatTrustLevel var2) {
+      return new Player(var0, var1, var2);
    }
 
-   static LoggedChatMessage.System system(Component var0, Instant var1) {
-      return new LoggedChatMessage.System(var0, var1);
+   static System system(Component var0, Instant var1) {
+      return new System(var0, var1);
    }
 
    Component toContentComponent();
@@ -33,19 +32,11 @@ public interface LoggedChatMessage extends LoggedChatEvent {
 
    boolean canReport(UUID var1);
 
-   public static record Player(GameProfile c, PlayerChatMessage d, ChatTrustLevel e) implements LoggedChatMessage {
-      private final GameProfile profile;
-      private final PlayerChatMessage message;
-      private final ChatTrustLevel trustLevel;
-      public static final Codec<LoggedChatMessage.Player> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(LoggedChatMessage.Player::profile),
-                  PlayerChatMessage.MAP_CODEC.forGetter(LoggedChatMessage.Player::message),
-                  ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(LoggedChatMessage.Player::trustLevel)
-               )
-               .apply(var0, LoggedChatMessage.Player::new)
-      );
-      private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
+   public static record Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) implements LoggedChatMessage {
+      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return var0.group(ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new);
+      });
+      private static final DateTimeFormatter TIME_FORMATTER;
 
       public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {
          super();
@@ -54,7 +45,6 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          this.trustLevel = var3;
       }
 
-      @Override
       public Component toContentComponent() {
          if (!this.message.filterMask().isEmpty()) {
             Component var1 = this.message.filterMask().applyWithFormatting(this.message.signedContent());
@@ -64,7 +54,6 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          }
       }
 
-      @Override
       public Component toNarrationComponent() {
          Component var1 = this.toContentComponent();
          Component var2 = this.getTimeComponent();
@@ -81,7 +70,6 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          return Component.literal(var1.format(TIME_FORMATTER)).withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
       }
 
-      @Override
       public boolean canReport(UUID var1) {
          return this.message.hasSignatureFrom(var1);
       }
@@ -90,22 +78,31 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          return this.profile.getId();
       }
 
-      @Override
       public LoggedChatEvent.Type type() {
          return LoggedChatEvent.Type.PLAYER;
       }
+
+      public GameProfile profile() {
+         return this.profile;
+      }
+
+      public PlayerChatMessage message() {
+         return this.message;
+      }
+
+      public ChatTrustLevel trustLevel() {
+         return this.trustLevel;
+      }
+
+      static {
+         TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
+      }
    }
 
-   public static record System(Component c, Instant d) implements LoggedChatMessage {
-      private final Component message;
-      private final Instant timeStamp;
-      public static final Codec<LoggedChatMessage.System> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ComponentSerialization.CODEC.fieldOf("message").forGetter(LoggedChatMessage.System::message),
-                  ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(LoggedChatMessage.System::timeStamp)
-               )
-               .apply(var0, LoggedChatMessage.System::new)
-      );
+   public static record System(Component message, Instant timeStamp) implements LoggedChatMessage {
+      public static final MapCodec<System> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return var0.group(ComponentSerialization.CODEC.fieldOf("message").forGetter(System::message), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(System::timeStamp)).apply(var0, System::new);
+      });
 
       public System(Component var1, Instant var2) {
          super();
@@ -113,19 +110,24 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          this.timeStamp = var2;
       }
 
-      @Override
       public Component toContentComponent() {
          return this.message;
       }
 
-      @Override
       public boolean canReport(UUID var1) {
          return false;
       }
 
-      @Override
       public LoggedChatEvent.Type type() {
          return LoggedChatEvent.Type.SYSTEM;
+      }
+
+      public Component message() {
+         return this.message;
+      }
+
+      public Instant timeStamp() {
+         return this.timeStamp;
       }
    }
 }

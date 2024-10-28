@@ -6,12 +6,13 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -43,21 +44,27 @@ public class ChunkGeneratorStructureState {
    private final List<Holder<StructureSet>> possibleStructureSets;
 
    public static ChunkGeneratorStructureState createForFlat(RandomState var0, long var1, BiomeSource var3, Stream<Holder<StructureSet>> var4) {
-      List var5 = var4.filter(var1x -> hasBiomesForStructureSet((StructureSet)var1x.value(), var3)).toList();
+      List var5 = var4.filter((var1x) -> {
+         return hasBiomesForStructureSet((StructureSet)var1x.value(), var3);
+      }).toList();
       return new ChunkGeneratorStructureState(var0, var3, var1, 0L, var5);
    }
 
    public static ChunkGeneratorStructureState createForNormal(RandomState var0, long var1, BiomeSource var3, HolderLookup<StructureSet> var4) {
-      List var5 = var4.listElements().filter(var1x -> hasBiomesForStructureSet((StructureSet)var1x.value(), var3)).collect(Collectors.toUnmodifiableList());
+      List var5 = (List)var4.listElements().filter((var1x) -> {
+         return hasBiomesForStructureSet((StructureSet)var1x.value(), var3);
+      }).collect(Collectors.toUnmodifiableList());
       return new ChunkGeneratorStructureState(var0, var3, var1, var1, var5);
    }
 
    private static boolean hasBiomesForStructureSet(StructureSet var0, BiomeSource var1) {
-      Stream var2 = var0.structures().stream().flatMap(var0x -> {
-         Structure var1xx = var0x.structure().value();
-         return var1xx.biomes().stream();
+      Stream var2 = var0.structures().stream().flatMap((var0x) -> {
+         Structure var1 = (Structure)var0x.structure().value();
+         return var1.biomes().stream();
       });
-      return var2.anyMatch(var1.possibleBiomes()::contains);
+      Set var10001 = var1.possibleBiomes();
+      Objects.requireNonNull(var10001);
+      return var2.anyMatch(var10001::contains);
    }
 
    private ChunkGeneratorStructureState(RandomState var1, BiomeSource var2, long var3, long var5, List<Holder<StructureSet>> var7) {
@@ -75,24 +82,32 @@ public class ChunkGeneratorStructureState {
 
    private void generatePositions() {
       Set var1 = this.biomeSource.possibleBiomes();
-      this.possibleStructureSets().forEach(var2 -> {
+      this.possibleStructureSets().forEach((var2) -> {
          StructureSet var3 = (StructureSet)var2.value();
          boolean var4 = false;
+         Iterator var5 = var3.structures().iterator();
 
-         for(StructureSet.StructureSelectionEntry var6 : var3.structures()) {
-            Structure var7 = var6.structure().value();
-            if (var7.biomes().stream().anyMatch(var1::contains)) {
-               this.placementsForStructure.computeIfAbsent(var7, var0 -> new ArrayList()).add(var3.placement());
+         while(var5.hasNext()) {
+            StructureSet.StructureSelectionEntry var6 = (StructureSet.StructureSelectionEntry)var5.next();
+            Structure var7 = (Structure)var6.structure().value();
+            Stream var10000 = var7.biomes().stream();
+            Objects.requireNonNull(var1);
+            if (var10000.anyMatch(var1::contains)) {
+               ((List)this.placementsForStructure.computeIfAbsent(var7, (var0) -> {
+                  return new ArrayList();
+               })).add(var3.placement());
                var4 = true;
             }
          }
 
          if (var4) {
             StructurePlacement var9 = var3.placement();
-            if (var9 instanceof ConcentricRingsStructurePlacement var8) {
-               this.ringPositions.put((ConcentricRingsStructurePlacement)var8, this.generateRingPositions(var2, (ConcentricRingsStructurePlacement)var8));
+            if (var9 instanceof ConcentricRingsStructurePlacement) {
+               ConcentricRingsStructurePlacement var8 = (ConcentricRingsStructurePlacement)var9;
+               this.ringPositions.put(var8, this.generateRingPositions(var2, var8));
             }
          }
+
       });
    }
 
@@ -117,31 +132,22 @@ public class ChunkGeneratorStructureState {
             int var17 = (int)Math.round(Math.cos(var10) * var15);
             int var18 = (int)Math.round(Math.sin(var10) * var15);
             RandomSource var19 = var9.fork();
-            var6.add(
-               CompletableFuture.supplyAsync(
-                  () -> {
-                     Pair var5xx = this.biomeSource
-                        .findBiomeHorizontal(
-                           SectionPos.sectionToBlockCoord(var17, 8),
-                           0,
-                           SectionPos.sectionToBlockCoord(var18, 8),
-                           112,
-                           var8::contains,
-                           var19,
-                           this.randomState.sampler()
-                        );
-                     if (var5xx != null) {
-                        BlockPos var6xx = (BlockPos)var5xx.getFirst();
-                        return new ChunkPos(SectionPos.blockToSectionCoord(var6xx.getX()), SectionPos.blockToSectionCoord(var6xx.getZ()));
-                     } else {
-                        return new ChunkPos(var17, var18);
-                     }
-                  },
-                  Util.backgroundExecutor()
-               )
-            );
+            var6.add(CompletableFuture.supplyAsync(() -> {
+               BiomeSource var10000 = this.biomeSource;
+               int var10001 = SectionPos.sectionToBlockCoord(var17, 8);
+               int var10003 = SectionPos.sectionToBlockCoord(var18, 8);
+               Objects.requireNonNull(var8);
+               Pair var5 = var10000.findBiomeHorizontal(var10001, 0, var10003, 112, var8::contains, var19, this.randomState.sampler());
+               if (var5 != null) {
+                  BlockPos var6 = (BlockPos)var5.getFirst();
+                  return new ChunkPos(SectionPos.blockToSectionCoord(var6.getX()), SectionPos.blockToSectionCoord(var6.getZ()));
+               } else {
+                  return new ChunkPos(var17, var18);
+               }
+            }, Util.backgroundExecutor()));
             var10 += 6.283185307179586 / (double)var7;
-            if (++var12 == var7) {
+            ++var12;
+            if (var12 == var7) {
                ++var13;
                var12 = 0;
                var7 += 2 * var7 / (var13 + 1);
@@ -150,11 +156,11 @@ public class ChunkGeneratorStructureState {
             }
          }
 
-         return Util.sequence(var6).thenApply((Function<? super List, ? extends List<ChunkPos>>)(var2x -> {
-            double var3xx = (double)var3.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
-            LOGGER.debug("Calculation for {} took {}s", var1, var3xx);
+         return Util.sequence(var6).thenApply((var2x) -> {
+            double var3x = (double)var3.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
+            LOGGER.debug("Calculation for {} took {}s", var1, var3x);
             return var2x;
-         }));
+         });
       }
    }
 
@@ -163,18 +169,19 @@ public class ChunkGeneratorStructureState {
          this.generatePositions();
          this.hasGeneratedPositions = true;
       }
+
    }
 
    @Nullable
    public List<ChunkPos> getRingPositionsFor(ConcentricRingsStructurePlacement var1) {
       this.ensureStructuresGenerated();
-      CompletableFuture var2 = this.ringPositions.get(var1);
+      CompletableFuture var2 = (CompletableFuture)this.ringPositions.get(var1);
       return var2 != null ? (List)var2.join() : null;
    }
 
    public List<StructurePlacement> getPlacementsForStructure(Holder<Structure> var1) {
       this.ensureStructuresGenerated();
-      return this.placementsForStructure.getOrDefault(var1.value(), List.of());
+      return (List)this.placementsForStructure.getOrDefault(var1.value(), List.of());
    }
 
    public RandomState randomState() {

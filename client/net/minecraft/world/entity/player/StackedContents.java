@@ -9,8 +9,10 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import java.util.BitSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
@@ -31,6 +33,7 @@ public class StackedContents {
       if (!var1.isDamaged() && !var1.isEnchanted() && !var1.has(DataComponents.CUSTOM_NAME)) {
          this.accountStack(var1);
       }
+
    }
 
    public void accountStack(ItemStack var1) {
@@ -43,6 +46,7 @@ public class StackedContents {
          int var4 = Math.min(var2, var1.getCount());
          this.put(var3, var4);
       }
+
    }
 
    public static int getStackingIndex(ItemStack var0) {
@@ -72,7 +76,7 @@ public class StackedContents {
    }
 
    public boolean canCraft(Recipe<?> var1, @Nullable IntList var2, int var3) {
-      return new StackedContents.RecipePicker(var1).tryPick(var3, var2);
+      return (new RecipePicker(var1)).tryPick(var3, var2);
    }
 
    public int getBiggestCraftableStack(RecipeHolder<?> var1, @Nullable IntList var2) {
@@ -80,7 +84,7 @@ public class StackedContents {
    }
 
    public int getBiggestCraftableStack(RecipeHolder<?> var1, int var2, @Nullable IntList var3) {
-      return new StackedContents.RecipePicker(var1.value()).tryPickAll(var2, var3);
+      return (new RecipePicker(var1.value())).tryPickAll(var2, var3);
    }
 
    public static ItemStack fromStackingIndex(int var0) {
@@ -91,7 +95,7 @@ public class StackedContents {
       this.contents.clear();
    }
 
-   class RecipePicker {
+   private class RecipePicker {
       private final Recipe<?> recipe;
       private final List<Ingredient> ingredients = Lists.newArrayList();
       private final int ingredientCount;
@@ -111,7 +115,7 @@ public class StackedContents {
          this.data = new BitSet(this.ingredientCount + this.itemCount + this.ingredientCount + this.ingredientCount * this.itemCount);
 
          for(int var3 = 0; var3 < this.ingredients.size(); ++var3) {
-            IntList var4 = this.ingredients.get(var3).getStackingIds();
+            IntList var4 = ((Ingredient)this.ingredients.get(var3)).getStackingIds();
 
             for(int var5 = 0; var5 < this.itemCount; ++var5) {
                if (var4.contains(this.items[var5])) {
@@ -119,6 +123,7 @@ public class StackedContents {
                }
             }
          }
+
       }
 
       public boolean tryPick(int var1, @Nullable IntList var2) {
@@ -147,33 +152,40 @@ public class StackedContents {
 
             this.data.clear(0, this.ingredientCount + this.itemCount + this.ingredientCount);
             int var6 = 0;
+            NonNullList var7 = this.recipe.getIngredients();
+            Iterator var8 = var7.iterator();
 
-            for(Ingredient var9 : this.recipe.getIngredients()) {
-               if (var12 && var9.isEmpty()) {
-                  var2.add(0);
-               } else {
-                  for(int var10 = 0; var10 < this.itemCount; ++var10) {
-                     if (this.hasResidual(false, var6, var10)) {
-                        this.toggleResidual(true, var10, var6);
-                        StackedContents.this.put(this.items[var10], var1);
-                        if (var12) {
-                           var2.add(this.items[var10]);
+            while(true) {
+               while(var8.hasNext()) {
+                  Ingredient var9 = (Ingredient)var8.next();
+                  if (var12 && var9.isEmpty()) {
+                     var2.add(0);
+                  } else {
+                     for(int var10 = 0; var10 < this.itemCount; ++var10) {
+                        if (this.hasResidual(false, var6, var10)) {
+                           this.toggleResidual(true, var10, var6);
+                           StackedContents.this.put(this.items[var10], var1);
+                           if (var12) {
+                              var2.add(this.items[var10]);
+                           }
                         }
                      }
+
+                     ++var6;
                   }
-
-                  ++var6;
                }
-            }
 
-            return var11;
+               return var11;
+            }
          }
       }
 
       private int[] getUniqueAvailableIngredientItems() {
          IntAVLTreeSet var1 = new IntAVLTreeSet();
+         Iterator var2 = this.ingredients.iterator();
 
-         for(Ingredient var3 : this.ingredients) {
+         while(var2.hasNext()) {
+            Ingredient var3 = (Ingredient)var2.next();
             var1.addAll(var3.getStackingIds());
          }
 
@@ -204,23 +216,18 @@ public class StackedContents {
                   }
 
                   int var7 = var5 ? this.ingredientCount : var2;
-                  int var8 = 0;
 
-                  while(true) {
-                     if (var8 < var7) {
-                        if (this.hasVisited(var5, var8) || !this.hasConnection(var5, var6, var8) || !this.hasResidual(var5, var6, var8)) {
-                           ++var8;
-                           continue;
-                        }
-
+                  int var8;
+                  for(var8 = 0; var8 < var7; ++var8) {
+                     if (!this.hasVisited(var5, var8) && this.hasConnection(var5, var6, var8) && this.hasResidual(var5, var6, var8)) {
                         this.visit(var5, var8);
+                        break;
                      }
+                  }
 
-                     var8 = this.path.size();
-                     if (var8 == var4) {
-                        this.path.removeInt(var8 - 1);
-                     }
-                     break;
+                  var8 = this.path.size();
+                  if (var8 == var4) {
+                     this.path.removeInt(var8 - 1);
                   }
                }
 
@@ -280,32 +287,36 @@ public class StackedContents {
          int var4 = Math.min(var1, this.getMinIngredientCount()) + 1;
 
          while(true) {
-            int var5 = (var3 + var4) / 2;
-            if (this.tryPick(var5, null)) {
-               if (var4 - var3 <= 1) {
-                  if (var5 > 0) {
-                     this.tryPick(var5, var2);
+            while(true) {
+               int var5 = (var3 + var4) / 2;
+               if (this.tryPick(var5, (IntList)null)) {
+                  if (var4 - var3 <= 1) {
+                     if (var5 > 0) {
+                        this.tryPick(var5, var2);
+                     }
+
+                     return var5;
                   }
 
-                  return var5;
+                  var3 = var5;
+               } else {
+                  var4 = var5;
                }
-
-               var3 = var5;
-            } else {
-               var4 = var5;
             }
          }
       }
 
       private int getMinIngredientCount() {
          int var1 = 2147483647;
+         Iterator var2 = this.ingredients.iterator();
 
-         for(Ingredient var3 : this.ingredients) {
+         while(var2.hasNext()) {
+            Ingredient var3 = (Ingredient)var2.next();
             int var4 = 0;
 
             int var6;
             for(IntListIterator var5 = var3.getStackingIds().iterator(); var5.hasNext(); var4 = Math.max(var4, StackedContents.this.contents.get(var6))) {
-               var6 = var5.next();
+               var6 = (Integer)var5.next();
             }
 
             if (var1 > 0) {

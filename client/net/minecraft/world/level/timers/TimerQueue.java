@@ -8,6 +8,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -24,12 +25,16 @@ public class TimerQueue<T> {
    private static final String TIMER_NAME_TAG = "Name";
    private static final String TIMER_TRIGGER_TIME_TAG = "TriggerTime";
    private final TimerCallbacks<T> callbacksRegistry;
-   private final Queue<TimerQueue.Event<T>> queue = new PriorityQueue<>(createComparator());
-   private UnsignedLong sequentialId = UnsignedLong.ZERO;
-   private final Table<String, Long, TimerQueue.Event<T>> events = HashBasedTable.create();
+   private final Queue<Event<T>> queue;
+   private UnsignedLong sequentialId;
+   private final Table<String, Long, Event<T>> events;
 
-   private static <T> Comparator<TimerQueue.Event<T>> createComparator() {
-      return Comparator.<TimerQueue.Event<T>>comparingLong(var0 -> var0.triggerTime).thenComparing(var0 -> var0.sequentialId);
+   private static <T> Comparator<Event<T>> createComparator() {
+      return Comparator.comparingLong((var0) -> {
+         return var0.triggerTime;
+      }).thenComparing((var0) -> {
+         return var0.sequentialId;
+      });
    }
 
    public TimerQueue(TimerCallbacks<T> var1, Stream<? extends Dynamic<?>> var2) {
@@ -37,38 +42,42 @@ public class TimerQueue<T> {
       this.queue.clear();
       this.events.clear();
       this.sequentialId = UnsignedLong.ZERO;
-      var2.forEach(var1x -> {
-         Tag var2xx = (Tag)var1x.convert(NbtOps.INSTANCE).getValue();
-         if (var2xx instanceof CompoundTag var3) {
-            this.loadEvent((CompoundTag)var3);
+      var2.forEach((var1x) -> {
+         Tag var2 = (Tag)var1x.convert(NbtOps.INSTANCE).getValue();
+         if (var2 instanceof CompoundTag var3) {
+            this.loadEvent(var3);
          } else {
-            LOGGER.warn("Invalid format of events: {}", var2xx);
+            LOGGER.warn("Invalid format of events: {}", var2);
          }
+
       });
    }
 
    public TimerQueue(TimerCallbacks<T> var1) {
       super();
+      this.queue = new PriorityQueue(createComparator());
+      this.sequentialId = UnsignedLong.ZERO;
+      this.events = HashBasedTable.create();
       this.callbacksRegistry = var1;
    }
 
    public void tick(T var1, long var2) {
       while(true) {
-         TimerQueue.Event var4 = this.queue.peek();
+         Event var4 = (Event)this.queue.peek();
          if (var4 == null || var4.triggerTime > var2) {
             return;
          }
 
          this.queue.remove();
          this.events.remove(var4.id, var2);
-         var4.callback.handle((T)var1, this, var2);
+         var4.callback.handle(var1, this, var2);
       }
    }
 
    public void schedule(String var1, long var2, TimerCallback<T> var4) {
       if (!this.events.contains(var1, var2)) {
          this.sequentialId = this.sequentialId.plus(UnsignedLong.ONE);
-         TimerQueue.Event var5 = new TimerQueue.Event(var2, this.sequentialId, var1, var4);
+         Event var5 = new Event(var2, this.sequentialId, var1, var4);
          this.events.put(var1, var2, var5);
          this.queue.add(var5);
       }
@@ -76,7 +85,9 @@ public class TimerQueue<T> {
 
    public int remove(String var1) {
       Collection var2 = this.events.row(var1).values();
-      var2.forEach(this.queue::remove);
+      Queue var10001 = this.queue;
+      Objects.requireNonNull(var10001);
+      var2.forEach(var10001::remove);
       int var3 = var2.size();
       var2.clear();
       return var3;
@@ -94,9 +105,10 @@ public class TimerQueue<T> {
          long var5 = var1.getLong("TriggerTime");
          this.schedule(var4, var5, var3);
       }
+
    }
 
-   private CompoundTag storeEvent(TimerQueue.Event<T> var1) {
+   private CompoundTag storeEvent(Event<T> var1) {
       CompoundTag var2 = new CompoundTag();
       var2.putString("Name", var1.id);
       var2.putLong("TriggerTime", var1.triggerTime);
@@ -106,7 +118,9 @@ public class TimerQueue<T> {
 
    public ListTag store() {
       ListTag var1 = new ListTag();
-      this.queue.stream().sorted(createComparator()).map(this::storeEvent).forEach(var1::add);
+      Stream var10000 = this.queue.stream().sorted(createComparator()).map(this::storeEvent);
+      Objects.requireNonNull(var1);
+      var10000.forEach(var1::add);
       return var1;
    }
 

@@ -26,7 +26,6 @@ public abstract class ShoulderRidingEntity extends TamableAnimal {
       }
    }
 
-   @Override
    public void tick() {
       ++this.rideCooldownCounter;
       super.tick();

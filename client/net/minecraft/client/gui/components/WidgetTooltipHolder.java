@@ -14,12 +14,13 @@ import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
 public class WidgetTooltipHolder {
    @Nullable
    private Tooltip tooltip;
-   private Duration delay = Duration.ZERO;
+   private Duration delay;
    private long displayStartTime;
    private boolean wasDisplayed;
 
    public WidgetTooltipHolder() {
       super();
+      this.delay = Duration.ZERO;
    }
 
    public void setDelay(Duration var1) {
@@ -54,18 +55,18 @@ public class WidgetTooltipHolder {
                var5.setTooltipForNextRenderPass(this.tooltip, this.createTooltipPositioner(var3, var1, var2), var2);
             }
          }
+
       }
    }
 
    private ClientTooltipPositioner createTooltipPositioner(ScreenRectangle var1, boolean var2, boolean var3) {
-      return (ClientTooltipPositioner)(!var2 && var3 && Minecraft.getInstance().getLastInputType().isKeyboard()
-         ? new BelowOrAboveWidgetTooltipPositioner(var1)
-         : new MenuTooltipPositioner(var1));
+      return (ClientTooltipPositioner)(!var2 && var3 && Minecraft.getInstance().getLastInputType().isKeyboard() ? new BelowOrAboveWidgetTooltipPositioner(var1) : new MenuTooltipPositioner(var1));
    }
 
    public void updateNarration(NarrationElementOutput var1) {
       if (this.tooltip != null) {
          this.tooltip.updateNarration(var1);
       }
+
    }
 }

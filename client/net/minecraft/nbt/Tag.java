@@ -26,7 +26,6 @@ public interface Tag {
 
    void write(DataOutput var1) throws IOException;
 
-   @Override
    String toString();
 
    byte getId();
@@ -38,7 +37,7 @@ public interface Tag {
    int sizeInBytes();
 
    default String getAsString() {
-      return new StringTagVisitor().visit(this);
+      return (new StringTagVisitor()).visit(this);
    }
 
    void accept(TagVisitor var1);
@@ -50,5 +49,6 @@ public interface Tag {
       if (var2 == StreamTagVisitor.ValueResult.CONTINUE) {
          this.accept(var1);
       }
+
    }
 }

@@ -15,29 +15,33 @@ public class JsonUtils {
 
    public static <T> T getRequired(String var0, JsonObject var1, Function<JsonObject, T> var2) {
       JsonElement var3 = var1.get(var0);
-      if (var3 == null || var3.isJsonNull()) {
-         throw new IllegalStateException("Missing required property: " + var0);
-      } else if (!var3.isJsonObject()) {
-         throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+      if (var3 != null && !var3.isJsonNull()) {
+         if (!var3.isJsonObject()) {
+            throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+         } else {
+            return var2.apply(var3.getAsJsonObject());
+         }
       } else {
-         return (T)var2.apply((T)var3.getAsJsonObject());
+         throw new IllegalStateException("Missing required property: " + var0);
       }
    }
 
    @Nullable
    public static <T> T getOptional(String var0, JsonObject var1, Function<JsonObject, T> var2) {
       JsonElement var3 = var1.get(var0);
-      if (var3 == null || var3.isJsonNull()) {
-         return null;
-      } else if (!var3.isJsonObject()) {
-         throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+      if (var3 != null && !var3.isJsonNull()) {
+         if (!var3.isJsonObject()) {
+            throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+         } else {
+            return var2.apply(var3.getAsJsonObject());
+         }
       } else {
-         return (T)var2.apply((T)var3.getAsJsonObject());
+         return null;
       }
    }
 
    public static String getRequiredString(String var0, JsonObject var1) {
-      String var2 = getStringOr(var0, var1, null);
+      String var2 = getStringOr(var0, var1, (String)null);
       if (var2 == null) {
          throw new IllegalStateException("Missing required property: " + var0);
       } else {
@@ -66,7 +70,7 @@ public class JsonUtils {
 
    @Nullable
    public static UUID getUuidOr(String var0, JsonObject var1, @Nullable UUID var2) {
-      String var3 = getStringOr(var0, var1, null);
+      String var3 = getStringOr(var0, var1, (String)null);
       return var3 == null ? var2 : UndashedUuid.fromStringLenient(var3);
    }
 

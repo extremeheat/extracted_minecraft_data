@@ -11,7 +11,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public abstract class Fireball extends AbstractHurtingProjectile implements ItemSupplier {
-   private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(Fireball.class, EntityDataSerializers.ITEM_STACK);
+   private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
 
    public Fireball(EntityType<? extends Fireball> var1, Level var2) {
       super(var1, var2);
@@ -31,35 +31,37 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
       } else {
          this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
+
    }
 
-   @Override
    public ItemStack getItem() {
-      return this.getEntityData().get(DATA_ITEM_STACK);
+      return (ItemStack)this.getEntityData().get(DATA_ITEM_STACK);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.put("Item", this.getItem().save(this.registryAccess()));
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("Item", 10)) {
-         this.setItem(ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
+         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
       } else {
          this.setItem(this.getDefaultItem());
       }
+
    }
 
    private ItemStack getDefaultItem() {
       return new ItemStack(Items.FIRE_CHARGE);
+   }
+
+   static {
+      DATA_ITEM_STACK = SynchedEntityData.defineId(Fireball.class, EntityDataSerializers.ITEM_STACK);
    }
 }

@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.ExecutionCommandSource;
@@ -39,23 +40,21 @@ public class ExecutionContext<T> implements AutoCloseable {
 
    private static <T extends ExecutionCommandSource<T>> Frame createTopFrame(ExecutionContext<T> var0, CommandResultCallback var1) {
       if (var0.currentFrameDepth == 0) {
-         return new Frame(0, var1, var0.commandQueue::clear);
+         Deque var10004 = var0.commandQueue;
+         Objects.requireNonNull(var10004);
+         return new Frame(0, var1, var10004::clear);
       } else {
          int var2 = var0.currentFrameDepth + 1;
          return new Frame(var2, var1, var0.frameControlForDepth(var2));
       }
    }
 
-   public static <T extends ExecutionCommandSource<T>> void queueInitialFunctionCall(
-      ExecutionContext<T> var0, InstantiatedFunction<T> var1, T var2, CommandResultCallback var3
-   ) {
-      var0.queueNext(new CommandQueueEntry<>(createTopFrame(var0, var3), new CallFunction<T>(var1, var2.callback(), false).bind((T)var2)));
+   public static <T extends ExecutionCommandSource<T>> void queueInitialFunctionCall(ExecutionContext<T> var0, InstantiatedFunction<T> var1, T var2, CommandResultCallback var3) {
+      var0.queueNext(new CommandQueueEntry(createTopFrame(var0, var3), (new CallFunction(var1, var2.callback(), false)).bind(var2)));
    }
 
-   public static <T extends ExecutionCommandSource<T>> void queueInitialCommandExecution(
-      ExecutionContext<T> var0, String var1, ContextChain<T> var2, T var3, CommandResultCallback var4
-   ) {
-      var0.queueNext(new CommandQueueEntry<>(createTopFrame(var0, var4), new BuildContexts.TopLevel<>(var1, var2, (T)var3)));
+   public static <T extends ExecutionCommandSource<T>> void queueInitialCommandExecution(ExecutionContext<T> var0, String var1, ContextChain<T> var2, T var3, CommandResultCallback var4) {
+      var0.queueNext(new CommandQueueEntry(createTopFrame(var0, var4), new BuildContexts.TopLevel(var1, var2, var3)));
    }
 
    private void handleQueueOverflow() {
@@ -72,16 +71,20 @@ public class ExecutionContext<T> implements AutoCloseable {
       if (!this.queueOverflow) {
          this.newTopCommands.add(var1);
       }
+
    }
 
    public void discardAtDepthOrHigher(int var1) {
       while(!this.commandQueue.isEmpty() && ((CommandQueueEntry)this.commandQueue.peek()).frame().depth() >= var1) {
          this.commandQueue.removeFirst();
       }
+
    }
 
    public Frame.FrameControl frameControlForDepth(int var1) {
-      return () -> this.discardAtDepthOrHigher(var1);
+      return () -> {
+         this.discardAtDepthOrHigher(var1);
+      };
    }
 
    public void runCommandQueue() {
@@ -140,10 +143,10 @@ public class ExecutionContext<T> implements AutoCloseable {
       --this.commandQuota;
    }
 
-   @Override
    public void close() {
       if (this.tracer != null) {
          this.tracer.close();
       }
+
    }
 }

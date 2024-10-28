@@ -8,4 +8,9 @@ public enum FogType {
 
    private FogType() {
    }
+
+   // $FF: synthetic method
+   private static FogType[] $values() {
+      return new FogType[]{LAVA, WATER, POWDER_SNOW, NONE};
+   }
 }

@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -20,7 +21,6 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableBlock {
    public static final MapCodec<GrassBlock> CODEC = simpleCodec(GrassBlock::new);
 
-   @Override
    public MapCodec<GrassBlock> codec() {
       return CODEC;
    }
@@ -29,17 +29,14 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
       super(var1);
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return var1.getBlockState(var2.above()).isAir();
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       BlockPos var5 = var3.above();
       BlockState var6 = Blocks.SHORT_GRASS.defaultBlockState();
@@ -64,7 +61,7 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
          if (var13.isAir()) {
             Holder var11;
             if (var2.nextInt(8) == 0) {
-               List var12 = var1.getBiome(var9).value().getGenerationSettings().getFlowerFeatures();
+               List var12 = ((Biome)var1.getBiome(var9).value()).getGenerationSettings().getFlowerFeatures();
                if (var12.isEmpty()) {
                   continue;
                }
@@ -81,9 +78,9 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
             ((PlacedFeature)var11.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var9);
          }
       }
+
    }
 
-   @Override
    public BonemealableBlock.Type getType() {
       return BonemealableBlock.Type.NEIGHBOR_SPREADER;
    }

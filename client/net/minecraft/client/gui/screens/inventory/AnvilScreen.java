@@ -30,7 +30,6 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.titleLabelX = 60;
    }
 
-   @Override
    protected void subInit() {
       int var1 = (this.width - this.imageWidth) / 2;
       int var2 = (this.height - this.imageHeight) / 2;
@@ -43,22 +42,19 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setResponder(this::onNameChanged);
       this.name.setValue("");
       this.addWidget(this.name);
-      this.name.setEditable(this.menu.getSlot(0).hasItem());
+      this.name.setEditable(((AnvilMenu)this.menu).getSlot(0).hasItem());
    }
 
-   @Override
    protected void setInitialFocus() {
       this.setInitialFocus(this.name);
    }
 
-   @Override
    public void resize(Minecraft var1, int var2, int var3) {
       String var4 = this.name.getValue();
       this.init(var1, var2, var3);
       this.name.setValue(var4);
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
          this.minecraft.player.closeContainer();
@@ -68,34 +64,34 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    }
 
    private void onNameChanged(String var1) {
-      Slot var2 = this.menu.getSlot(0);
+      Slot var2 = ((AnvilMenu)this.menu).getSlot(0);
       if (var2.hasItem()) {
          String var3 = var1;
          if (!var2.getItem().has(DataComponents.CUSTOM_NAME) && var1.equals(var2.getItem().getHoverName().getString())) {
             var3 = "";
          }
 
-         if (this.menu.setItemName(var3)) {
+         if (((AnvilMenu)this.menu).setItemName(var3)) {
             this.minecraft.player.connection.send(new ServerboundRenameItemPacket(var3));
          }
+
       }
    }
 
-   @Override
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
       super.renderLabels(var1, var2, var3);
-      int var4 = this.menu.getCost();
+      int var4 = ((AnvilMenu)this.menu).getCost();
       if (var4 > 0) {
          int var5 = 8453920;
          Object var6;
          if (var4 >= 40 && !this.minecraft.player.getAbilities().instabuild) {
             var6 = TOO_EXPENSIVE_TEXT;
             var5 = 16736352;
-         } else if (!this.menu.getSlot(2).hasItem()) {
+         } else if (!((AnvilMenu)this.menu).getSlot(2).hasItem()) {
             var6 = null;
          } else {
             var6 = Component.translatable("container.repair.cost", var4);
-            if (!this.menu.getSlot(2).mayPickup(this.player)) {
+            if (!((AnvilMenu)this.menu).getSlot(2).mayPickup(this.player)) {
                var5 = 16736352;
             }
          }
@@ -107,32 +103,31 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
             var1.drawString(this.font, (Component)var6, var7, 69, var5);
          }
       }
+
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.blitSprite(this.menu.getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE, this.leftPos + 59, this.topPos + 20, 110, 16);
+      var1.blitSprite(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE, this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 
-   @Override
    public void renderFg(GuiGraphics var1, int var2, int var3, float var4) {
       this.name.render(var1, var2, var3, var4);
    }
 
-   @Override
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
-      if ((this.menu.getSlot(0).hasItem() || this.menu.getSlot(1).hasItem()) && !this.menu.getSlot(this.menu.getResultSlot()).hasItem()) {
+      if ((((AnvilMenu)this.menu).getSlot(0).hasItem() || ((AnvilMenu)this.menu).getSlot(1).hasItem()) && !((AnvilMenu)this.menu).getSlot(((AnvilMenu)this.menu).getResultSlot()).hasItem()) {
          var1.blitSprite(ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
       }
+
    }
 
-   @Override
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
       if (var2 == 0) {
          this.name.setValue(var3.isEmpty() ? "" : var3.getHoverName().getString());
          this.name.setEditable(!var3.isEmpty());
          this.setFocused(this.name);
       }
+
    }
 }

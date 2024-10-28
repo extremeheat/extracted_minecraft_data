@@ -25,4 +25,9 @@ public class FoliageColorReloadListener extends SimplePreparableReloadListener<i
    protected void apply(int[] var1, ResourceManager var2, ProfilerFiller var3) {
       FoliageColor.init(var1);
    }
+
+   // $FF: synthetic method
+   protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+      return this.prepare(var1, var2);
+   }
 }

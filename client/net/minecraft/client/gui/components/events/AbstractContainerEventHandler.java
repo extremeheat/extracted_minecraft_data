@@ -11,23 +11,19 @@ public abstract class AbstractContainerEventHandler implements ContainerEventHan
       super();
    }
 
-   @Override
    public final boolean isDragging() {
       return this.isDragging;
    }
 
-   @Override
    public final void setDragging(boolean var1) {
       this.isDragging = var1;
    }
 
    @Nullable
-   @Override
    public GuiEventListener getFocused() {
       return this.focused;
    }
 
-   @Override
    public void setFocused(@Nullable GuiEventListener var1) {
       if (this.focused != null) {
          this.focused.setFocused(false);

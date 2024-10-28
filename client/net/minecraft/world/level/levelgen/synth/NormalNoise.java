@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.synth;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
@@ -21,22 +20,23 @@ public class NormalNoise {
    private final PerlinNoise first;
    private final PerlinNoise second;
    private final double maxValue;
-   private final NormalNoise.NoiseParameters parameters;
+   private final NoiseParameters parameters;
 
+   /** @deprecated */
    @Deprecated
-   public static NormalNoise createLegacyNetherBiome(RandomSource var0, NormalNoise.NoiseParameters var1) {
+   public static NormalNoise createLegacyNetherBiome(RandomSource var0, NoiseParameters var1) {
       return new NormalNoise(var0, var1, false);
    }
 
    public static NormalNoise create(RandomSource var0, int var1, double... var2) {
-      return create(var0, new NormalNoise.NoiseParameters(var1, new DoubleArrayList(var2)));
+      return create(var0, new NoiseParameters(var1, new DoubleArrayList(var2)));
    }
 
-   public static NormalNoise create(RandomSource var0, NormalNoise.NoiseParameters var1) {
+   public static NormalNoise create(RandomSource var0, NoiseParameters var1) {
       return new NormalNoise(var0, var1, true);
    }
 
-   private NormalNoise(RandomSource var1, NormalNoise.NoiseParameters var2, boolean var3) {
+   private NormalNoise(RandomSource var1, NoiseParameters var2, boolean var3) {
       super();
       int var4 = var2.firstOctave;
       DoubleList var5 = var2.amplitudes;
@@ -81,7 +81,7 @@ public class NormalNoise {
       return (this.first.getValue(var1, var3, var5) + this.second.getValue(var7, var9, var11)) * this.valueFactor;
    }
 
-   public NormalNoise.NoiseParameters parameters() {
+   public NoiseParameters parameters() {
       return this.parameters;
    }
 
@@ -95,30 +95,40 @@ public class NormalNoise {
       var1.append("}");
    }
 
-   public static record NoiseParameters(int c, DoubleList d) {
+   public static record NoiseParameters(int firstOctave, DoubleList amplitudes) {
       final int firstOctave;
       final DoubleList amplitudes;
-      public static final Codec<NormalNoise.NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Codec.INT.fieldOf("firstOctave").forGetter(NormalNoise.NoiseParameters::firstOctave),
-                  Codec.DOUBLE.listOf().fieldOf("amplitudes").forGetter(NormalNoise.NoiseParameters::amplitudes)
-               )
-               .apply(var0, NormalNoise.NoiseParameters::new)
-      );
-      public static final Codec<Holder<NormalNoise.NoiseParameters>> CODEC = RegistryFileCodec.create(Registries.NOISE, DIRECT_CODEC);
+      public static final Codec<NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(Codec.INT.fieldOf("firstOctave").forGetter(NoiseParameters::firstOctave), Codec.DOUBLE.listOf().fieldOf("amplitudes").forGetter(NoiseParameters::amplitudes)).apply(var0, NoiseParameters::new);
+      });
+      public static final Codec<Holder<NoiseParameters>> CODEC;
 
       public NoiseParameters(int var1, List<Double> var2) {
-         this(var1, new DoubleArrayList(var2));
+         this(var1, (DoubleList)(new DoubleArrayList(var2)));
       }
 
       public NoiseParameters(int var1, double var2, double... var4) {
-         this(var1, Util.make(new DoubleArrayList(var4), var2x -> var2x.add(0, var2)));
+         this(var1, (DoubleList)Util.make(new DoubleArrayList(var4), (var2x) -> {
+            var2x.add(0, var2);
+         }));
       }
 
       public NoiseParameters(int var1, DoubleList var2) {
          super();
          this.firstOctave = var1;
          this.amplitudes = var2;
+      }
+
+      public int firstOctave() {
+         return this.firstOctave;
+      }
+
+      public DoubleList amplitudes() {
+         return this.amplitudes;
+      }
+
+      static {
+         CODEC = RegistryFileCodec.create(Registries.NOISE, DIRECT_CODEC);
       }
    }
 }

@@ -7,9 +7,9 @@ import net.minecraft.Util;
 import org.slf4j.Logger;
 
 public class Weight {
-   public static final Codec<Weight> CODEC = Codec.INT.xmap(Weight::of, Weight::asInt);
-   private static final Weight ONE = new Weight(1);
-   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Codec<Weight> CODEC;
+   private static final Weight ONE;
+   private static final Logger LOGGER;
    private final int value;
 
    private Weight(int var1) {
@@ -37,25 +37,29 @@ public class Weight {
          if (var0 == 0 && SharedConstants.IS_RUNNING_IN_IDE) {
             LOGGER.warn("Found 0 weight, make sure this is intentional!");
          }
+
       }
    }
 
-   @Override
    public String toString() {
       return Integer.toString(this.value);
    }
 
-   @Override
    public int hashCode() {
       return Integer.hashCode(this.value);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
          return var1 instanceof Weight && this.value == ((Weight)var1).value;
       }
+   }
+
+   static {
+      CODEC = Codec.INT.xmap(Weight::of, Weight::asInt);
+      ONE = new Weight(1);
+      LOGGER = LogUtils.getLogger();
    }
 }

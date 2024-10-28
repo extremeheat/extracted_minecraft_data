@@ -11,6 +11,5 @@ public interface TraceCallbacks extends AutoCloseable {
 
    void onCall(int var1, ResourceLocation var2, int var3);
 
-   @Override
    void close();
 }

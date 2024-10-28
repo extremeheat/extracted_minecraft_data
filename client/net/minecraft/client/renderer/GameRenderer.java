@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -251,7 +252,6 @@ public class GameRenderer implements AutoCloseable {
       this.postEffect = null;
    }
 
-   @Override
    public void close() {
       this.lightTexture.close();
       this.mapRenderer.close();
@@ -261,6 +261,7 @@ public class GameRenderer implements AutoCloseable {
       if (this.blitShader != null) {
          this.blitShader.close();
       }
+
    }
 
    public void setRenderHand(boolean var1) {
@@ -304,6 +305,7 @@ public class GameRenderer implements AutoCloseable {
       } else if (var1 instanceof EnderMan) {
          this.loadEffect(new ResourceLocation("shaders/post/invert.json"));
       }
+
    }
 
    private void loadEffect(ResourceLocation var1) {
@@ -322,6 +324,7 @@ public class GameRenderer implements AutoCloseable {
          LOGGER.warn("Failed to parse shader: {}", var1, var4);
          this.effectActive = false;
       }
+
    }
 
    public void loadBlurEffect() {
@@ -337,6 +340,7 @@ public class GameRenderer implements AutoCloseable {
       } catch (JsonSyntaxException var3) {
          LOGGER.warn("Failed to parse shader: {}", BLUR_LOCATION, var3);
       }
+
    }
 
    public void processBlurEffect(float var1) {
@@ -348,34 +352,50 @@ public class GameRenderer implements AutoCloseable {
          this.blurEffect.process(var1);
          RenderSystem.disableBlend();
       }
+
    }
 
    public PreparableReloadListener createReloadListener() {
-      return new SimplePreparableReloadListener<GameRenderer.ResourceCache>() {
-         protected GameRenderer.ResourceCache prepare(ResourceManager var1, ProfilerFiller var2) {
-            Map var3 = var1.listResources(
-               "shaders",
-               var0 -> {
-                  String var1xx = var0.getPath();
-                  return var1xx.endsWith(".json")
-                     || var1xx.endsWith(Program.Type.FRAGMENT.getExtension())
-                     || var1xx.endsWith(Program.Type.VERTEX.getExtension())
-                     || var1xx.endsWith(".glsl");
-               }
-            );
+      return new SimplePreparableReloadListener<ResourceCache>() {
+         protected ResourceCache prepare(ResourceManager var1, ProfilerFiller var2) {
+            Map var3 = var1.listResources("shaders", (var0) -> {
+               String var1 = var0.getPath();
+               return var1.endsWith(".json") || var1.endsWith(Program.Type.FRAGMENT.getExtension()) || var1.endsWith(Program.Type.VERTEX.getExtension()) || var1.endsWith(".glsl");
+            });
             HashMap var4 = new HashMap();
             var3.forEach((var1x, var2x) -> {
-               try (InputStream var3xx = var2x.open()) {
-                  byte[] var4xx = var3xx.readAllBytes();
-                  var4.put(var1x, new Resource(var2x.source(), () -> new ByteArrayInputStream(var4x)));
+               try {
+                  InputStream var3 = var2x.open();
+
+                  try {
+                     byte[] var4x = var3.readAllBytes();
+                     var4.put(var1x, new Resource(var2x.source(), () -> {
+                        return new ByteArrayInputStream(var4x);
+                     }));
+                  } catch (Throwable var7) {
+                     if (var3 != null) {
+                        try {
+                           var3.close();
+                        } catch (Throwable var6) {
+                           var7.addSuppressed(var6);
+                        }
+                     }
+
+                     throw var7;
+                  }
+
+                  if (var3 != null) {
+                     var3.close();
+                  }
                } catch (Exception var8) {
                   GameRenderer.LOGGER.warn("Failed to read resource {}", var1x, var8);
                }
+
             });
-            return new GameRenderer.ResourceCache(var1, var4);
+            return new ResourceCache(var1, var4);
          }
 
-         protected void apply(GameRenderer.ResourceCache var1, ResourceManager var2, ProfilerFiller var3) {
+         protected void apply(ResourceCache var1, ResourceManager var2, ProfilerFiller var3) {
             GameRenderer.this.reloadShaders(var1);
             if (GameRenderer.this.postEffect != null) {
                GameRenderer.this.postEffect.close();
@@ -385,9 +405,13 @@ public class GameRenderer implements AutoCloseable {
             GameRenderer.this.checkEntityPostEffect(GameRenderer.this.minecraft.getCameraEntity());
          }
 
-         @Override
          public String getName() {
             return "Shader Loader";
+         }
+
+         // $FF: synthetic method
+         protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+            return this.prepare(var1, var2);
          }
       };
    }
@@ -432,338 +456,193 @@ public class GameRenderer implements AutoCloseable {
       ArrayList var3 = Lists.newArrayListWithCapacity(this.shaders.size());
 
       try {
-         var3.add(Pair.of(new ShaderInstance(var1, "particle", DefaultVertexFormat.PARTICLE), (Consumer<ShaderInstance>)var0 -> particleShader = var0));
-         var3.add(Pair.of(new ShaderInstance(var1, "position", DefaultVertexFormat.POSITION), (Consumer<ShaderInstance>)var0 -> positionShader = var0));
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "position_color", DefaultVertexFormat.POSITION_COLOR), (Consumer<ShaderInstance>)var0 -> positionColorShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "position_color_lightmap", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> positionColorLightmapShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "position_color_tex", DefaultVertexFormat.POSITION_COLOR_TEX),
-               (Consumer<ShaderInstance>)var0 -> positionColorTexShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "position_color_tex_lightmap", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> positionColorTexLightmapShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(new ShaderInstance(var1, "position_tex", DefaultVertexFormat.POSITION_TEX), (Consumer<ShaderInstance>)var0 -> positionTexShader = var0)
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "position_tex_color", DefaultVertexFormat.POSITION_TEX_COLOR),
-               (Consumer<ShaderInstance>)var0 -> positionTexColorShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(new ShaderInstance(var1, "rendertype_solid", DefaultVertexFormat.BLOCK), (Consumer<ShaderInstance>)var0 -> rendertypeSolidShader = var0)
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_cutout_mipped", DefaultVertexFormat.BLOCK),
-               (Consumer<ShaderInstance>)var0 -> rendertypeCutoutMippedShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(new ShaderInstance(var1, "rendertype_cutout", DefaultVertexFormat.BLOCK), (Consumer<ShaderInstance>)var0 -> rendertypeCutoutShader = var0)
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_translucent", DefaultVertexFormat.BLOCK),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTranslucentShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_translucent_moving_block", DefaultVertexFormat.BLOCK),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTranslucentMovingBlockShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_armor_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeArmorCutoutNoCullShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_solid", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntitySolidShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_cutout", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityCutoutShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityCutoutNoCullShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_cutout_no_cull_z_offset", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityCutoutNoCullZOffsetShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_item_entity_translucent_cull", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeItemEntityTranslucentCullShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_translucent_cull", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityTranslucentCullShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_translucent", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityTranslucentShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_translucent_emissive", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityTranslucentEmissiveShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_smooth_cutout", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntitySmoothCutoutShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_beacon_beam", DefaultVertexFormat.BLOCK),
-               (Consumer<ShaderInstance>)var0 -> rendertypeBeaconBeamShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_decal", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityDecalShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_no_outline", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityNoOutlineShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_shadow", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityShadowShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_alpha", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityAlphaShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(new ShaderInstance(var1, "rendertype_eyes", DefaultVertexFormat.NEW_ENTITY), (Consumer<ShaderInstance>)var0 -> rendertypeEyesShader = var0)
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_energy_swirl", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEnergySwirlShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_leash", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeLeashShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_water_mask", DefaultVertexFormat.POSITION),
-               (Consumer<ShaderInstance>)var0 -> rendertypeWaterMaskShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_outline", DefaultVertexFormat.POSITION_COLOR_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeOutlineShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_armor_glint", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeArmorGlintShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_armor_entity_glint", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeArmorEntityGlintShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_glint_translucent", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeGlintTranslucentShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_glint", DefaultVertexFormat.POSITION_TEX), (Consumer<ShaderInstance>)var0 -> rendertypeGlintShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_glint_direct", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeGlintDirectShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_glint", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityGlintShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_entity_glint_direct", DefaultVertexFormat.POSITION_TEX),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEntityGlintDirectShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_text", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTextShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_text_background", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTextBackgroundShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_text_intensity", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTextIntensityShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_text_see_through", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTextSeeThroughShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_text_background_see_through", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTextBackgroundSeeThroughShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_text_intensity_see_through", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
-               (Consumer<ShaderInstance>)var0 -> rendertypeTextIntensitySeeThroughShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_lightning", DefaultVertexFormat.POSITION_COLOR),
-               (Consumer<ShaderInstance>)var0 -> rendertypeLightningShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_tripwire", DefaultVertexFormat.BLOCK), (Consumer<ShaderInstance>)var0 -> rendertypeTripwireShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_end_portal", DefaultVertexFormat.POSITION),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEndPortalShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_end_gateway", DefaultVertexFormat.POSITION),
-               (Consumer<ShaderInstance>)var0 -> rendertypeEndGatewayShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_clouds", DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL),
-               (Consumer<ShaderInstance>)var0 -> rendertypeCloudsShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL),
-               (Consumer<ShaderInstance>)var0 -> rendertypeLinesShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_crumbling", DefaultVertexFormat.BLOCK), (Consumer<ShaderInstance>)var0 -> rendertypeCrumblingShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_gui", DefaultVertexFormat.POSITION_COLOR), (Consumer<ShaderInstance>)var0 -> rendertypeGuiShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_gui_overlay", DefaultVertexFormat.POSITION_COLOR),
-               (Consumer<ShaderInstance>)var0 -> rendertypeGuiOverlayShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_gui_text_highlight", DefaultVertexFormat.POSITION_COLOR),
-               (Consumer<ShaderInstance>)var0 -> rendertypeGuiTextHighlightShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_gui_ghost_recipe_overlay", DefaultVertexFormat.POSITION_COLOR),
-               (Consumer<ShaderInstance>)var0 -> rendertypeGuiGhostRecipeOverlayShader = var0
-            )
-         );
-         var3.add(
-            Pair.of(
-               new ShaderInstance(var1, "rendertype_breeze_wind", DefaultVertexFormat.NEW_ENTITY),
-               (Consumer<ShaderInstance>)var0 -> rendertypeBreezeWindShader = var0
-            )
-         );
+         var3.add(Pair.of(new ShaderInstance(var1, "particle", DefaultVertexFormat.PARTICLE), (var0) -> {
+            particleShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position", DefaultVertexFormat.POSITION), (var0) -> {
+            positionShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position_color", DefaultVertexFormat.POSITION_COLOR), (var0) -> {
+            positionColorShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position_color_lightmap", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP), (var0) -> {
+            positionColorLightmapShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position_color_tex", DefaultVertexFormat.POSITION_COLOR_TEX), (var0) -> {
+            positionColorTexShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position_color_tex_lightmap", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP), (var0) -> {
+            positionColorTexLightmapShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position_tex", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            positionTexShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "position_tex_color", DefaultVertexFormat.POSITION_TEX_COLOR), (var0) -> {
+            positionTexColorShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_solid", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeSolidShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_cutout_mipped", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeCutoutMippedShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_cutout", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeCutoutShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_translucent", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeTranslucentShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_translucent_moving_block", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeTranslucentMovingBlockShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_armor_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeArmorCutoutNoCullShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_solid", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntitySolidShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_cutout", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityCutoutShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityCutoutNoCullShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_cutout_no_cull_z_offset", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityCutoutNoCullZOffsetShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_item_entity_translucent_cull", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeItemEntityTranslucentCullShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_translucent_cull", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityTranslucentCullShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_translucent", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityTranslucentShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_translucent_emissive", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityTranslucentEmissiveShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_smooth_cutout", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntitySmoothCutoutShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_beacon_beam", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeBeaconBeamShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_decal", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityDecalShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_no_outline", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityNoOutlineShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_shadow", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityShadowShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_alpha", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEntityAlphaShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_eyes", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEyesShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_energy_swirl", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeEnergySwirlShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_leash", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP), (var0) -> {
+            rendertypeLeashShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_water_mask", DefaultVertexFormat.POSITION), (var0) -> {
+            rendertypeWaterMaskShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_outline", DefaultVertexFormat.POSITION_COLOR_TEX), (var0) -> {
+            rendertypeOutlineShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_armor_glint", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeArmorGlintShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_armor_entity_glint", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeArmorEntityGlintShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_glint_translucent", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeGlintTranslucentShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_glint", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeGlintShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_glint_direct", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeGlintDirectShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_glint", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeEntityGlintShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_entity_glint_direct", DefaultVertexFormat.POSITION_TEX), (var0) -> {
+            rendertypeEntityGlintDirectShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_text", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP), (var0) -> {
+            rendertypeTextShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_text_background", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP), (var0) -> {
+            rendertypeTextBackgroundShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_text_intensity", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP), (var0) -> {
+            rendertypeTextIntensityShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_text_see_through", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP), (var0) -> {
+            rendertypeTextSeeThroughShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_text_background_see_through", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP), (var0) -> {
+            rendertypeTextBackgroundSeeThroughShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_text_intensity_see_through", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP), (var0) -> {
+            rendertypeTextIntensitySeeThroughShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_lightning", DefaultVertexFormat.POSITION_COLOR), (var0) -> {
+            rendertypeLightningShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_tripwire", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeTripwireShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_end_portal", DefaultVertexFormat.POSITION), (var0) -> {
+            rendertypeEndPortalShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_end_gateway", DefaultVertexFormat.POSITION), (var0) -> {
+            rendertypeEndGatewayShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_clouds", DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL), (var0) -> {
+            rendertypeCloudsShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL), (var0) -> {
+            rendertypeLinesShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_crumbling", DefaultVertexFormat.BLOCK), (var0) -> {
+            rendertypeCrumblingShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_gui", DefaultVertexFormat.POSITION_COLOR), (var0) -> {
+            rendertypeGuiShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_gui_overlay", DefaultVertexFormat.POSITION_COLOR), (var0) -> {
+            rendertypeGuiOverlayShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_gui_text_highlight", DefaultVertexFormat.POSITION_COLOR), (var0) -> {
+            rendertypeGuiTextHighlightShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_gui_ghost_recipe_overlay", DefaultVertexFormat.POSITION_COLOR), (var0) -> {
+            rendertypeGuiGhostRecipeOverlayShader = var0;
+         }));
+         var3.add(Pair.of(new ShaderInstance(var1, "rendertype_breeze_wind", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
+            rendertypeBreezeWindShader = var0;
+         }));
          this.loadBlurEffect();
       } catch (IOException var5) {
-         var3.forEach(var0 -> ((ShaderInstance)var0.getFirst()).close());
+         var3.forEach((var0) -> {
+            ((ShaderInstance)var0.getFirst()).close();
+         });
          throw new RuntimeException("could not reload shaders", var5);
       }
 
       this.shutdownShaders();
-      var3.forEach(var1x -> {
-         ShaderInstance var2xx = (ShaderInstance)var1x.getFirst();
-         this.shaders.put(var2xx.getName(), var2xx);
-         ((Consumer)var1x.getSecond()).accept(var2xx);
+      var3.forEach((var1x) -> {
+         ShaderInstance var2 = (ShaderInstance)var1x.getFirst();
+         this.shaders.put(var2.getName(), var2);
+         ((Consumer)var1x.getSecond()).accept(var2);
       });
    }
 
@@ -775,7 +654,7 @@ public class GameRenderer implements AutoCloseable {
 
    @Nullable
    public ShaderInstance getShader(@Nullable String var1) {
-      return var1 == null ? null : this.shaders.get(var1);
+      return var1 == null ? null : (ShaderInstance)this.shaders.get(var1);
    }
 
    public void tick() {
@@ -806,6 +685,7 @@ public class GameRenderer implements AutoCloseable {
                this.itemActivationItem = null;
             }
          }
+
       }
    }
 
@@ -835,7 +715,16 @@ public class GameRenderer implements AutoCloseable {
             double var5 = this.minecraft.player.entityInteractionRange();
             HitResult var7 = this.pick(var2, var3, var5, var1);
             this.minecraft.hitResult = var7;
-            this.minecraft.crosshairPickEntity = var7 instanceof EntityHitResult var8 ? var8.getEntity() : null;
+            Minecraft var10000 = this.minecraft;
+            Entity var10001;
+            if (var7 instanceof EntityHitResult) {
+               EntityHitResult var8 = (EntityHitResult)var7;
+               var10001 = var8.getEntity();
+            } else {
+               var10001 = null;
+            }
+
+            var10000.crosshairPickEntity = var10001;
             this.minecraft.getProfiler().pop();
          }
       }
@@ -856,7 +745,9 @@ public class GameRenderer implements AutoCloseable {
       Vec3 var16 = var11.add(var15.x * var7, var15.y * var7, var15.z * var7);
       float var17 = 1.0F;
       AABB var18 = var1.getBoundingBox().expandTowards(var15.scale(var7)).inflate(1.0, 1.0, 1.0);
-      EntityHitResult var19 = ProjectileUtil.getEntityHitResult(var1, var11, var16, var18, var0 -> !var0.isSpectator() && var0.isPickable(), var9);
+      EntityHitResult var19 = ProjectileUtil.getEntityHitResult(var1, var11, var16, var18, (var0) -> {
+         return !var0.isSpectator() && var0.isPickable();
+      }, var9);
       return var19 != null && var19.getLocation().distanceToSqr(var11) < var13 ? filterHitResult(var19, var11, var4) : filterHitResult(var12, var11, var2);
    }
 
@@ -871,8 +762,6 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void tickFov() {
       float var1 = 1.0F;
       Entity var3 = this.minecraft.getCameraEntity();
@@ -889,6 +778,7 @@ public class GameRenderer implements AutoCloseable {
       if (this.fov < 0.1F) {
          this.fov = 0.1F;
       }
+
    }
 
    private double getFov(Camera var1, float var2, boolean var3) {
@@ -897,7 +787,7 @@ public class GameRenderer implements AutoCloseable {
       } else {
          double var4 = 70.0;
          if (var3) {
-            var4 = (double)this.minecraft.options.fov().get().intValue();
+            var4 = (double)(Integer)this.minecraft.options.fov().get();
             var4 *= (double)Mth.lerp(var2, this.oldFov, this.fov);
          }
 
@@ -906,23 +796,22 @@ public class GameRenderer implements AutoCloseable {
             var4 /= (double)((1.0F - 500.0F / (var6 + 500.0F)) * 2.0F + 1.0F);
          }
 
-         FogType var8 = var1.getFluidInCamera();
-         if (var8 == FogType.LAVA || var8 == FogType.WATER) {
-            var4 *= Mth.lerp(this.minecraft.options.fovEffectScale().get(), 1.0, 0.8571428656578064);
+         FogType var7 = var1.getFluidInCamera();
+         if (var7 == FogType.LAVA || var7 == FogType.WATER) {
+            var4 *= Mth.lerp((Double)this.minecraft.options.fovEffectScale().get(), 1.0, 0.8571428656578064);
          }
 
          return var4;
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void bobHurt(PoseStack var1, float var2) {
       Entity var4 = this.minecraft.getCameraEntity();
       if (var4 instanceof LivingEntity var3) {
          float var7 = (float)var3.hurtTime - var2;
+         float var5;
          if (var3.isDeadOrDying()) {
-            float var5 = Math.min((float)var3.deathTime + var2, 20.0F);
+            var5 = Math.min((float)var3.deathTime + var2, 20.0F);
             var1.mulPose(Axis.ZP.rotationDegrees(40.0F - 8000.0F / (var5 + 200.0F)));
          }
 
@@ -930,30 +819,26 @@ public class GameRenderer implements AutoCloseable {
             return;
          }
 
-         float var8 = var7 / (float)var3.hurtDuration;
-         float var9 = Mth.sin(var8 * var8 * var8 * var8 * 3.1415927F);
-         float var10 = var3.getHurtDir();
-         var1.mulPose(Axis.YP.rotationDegrees(-var10));
-         float var6 = (float)((double)(-var9) * 14.0 * this.minecraft.options.damageTiltStrength().get());
+         var7 /= (float)var3.hurtDuration;
+         var7 = Mth.sin(var7 * var7 * var7 * var7 * 3.1415927F);
+         var5 = var3.getHurtDir();
+         var1.mulPose(Axis.YP.rotationDegrees(-var5));
+         float var6 = (float)((double)(-var7) * 14.0 * (Double)this.minecraft.options.damageTiltStrength().get());
          var1.mulPose(Axis.ZP.rotationDegrees(var6));
-         var1.mulPose(Axis.YP.rotationDegrees(var10));
+         var1.mulPose(Axis.YP.rotationDegrees(var5));
       }
+
    }
 
    private void bobView(PoseStack var1, float var2) {
-      Entity var3 = this.minecraft.getCameraEntity();
-      if (var3 != null) {
-         Vec3 var4 = var3.lastScreenShakeOffset.lerp(var3.screenShakeOffset, (double)var2);
-         var1.translate(var4.x, var4.y, var4.z);
-         if (var3 instanceof Player) {
-            Player var5 = (Player)var3;
-            float var6 = var5.walkDist - var5.walkDistO;
-            float var7 = -(var5.walkDist + var6 * var2);
-            float var8 = Mth.lerp(var2, var5.oBob, var5.bob);
-            var1.translate(Mth.sin(var7 * 3.1415927F) * var8 * 0.5F, -Math.abs(Mth.cos(var7 * 3.1415927F) * var8), 0.0F);
-            var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var7 * 3.1415927F) * var8 * 3.0F));
-            var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var7 * 3.1415927F - 0.2F) * var8) * 5.0F));
-         }
+      if (this.minecraft.getCameraEntity() instanceof Player) {
+         Player var3 = (Player)this.minecraft.getCameraEntity();
+         float var4 = var3.walkDist - var3.walkDistO;
+         float var5 = -(var3.walkDist + var4 * var2);
+         float var6 = Mth.lerp(var2, var3.oBob, var3.bob);
+         var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
+         var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
       }
    }
 
@@ -977,24 +862,14 @@ public class GameRenderer implements AutoCloseable {
          var5.pushMatrix().mul(var3);
          RenderSystem.applyModelViewMatrix();
          this.bobHurt(var4, var2);
-         if (this.minecraft.options.bobView().get()) {
+         if ((Boolean)this.minecraft.options.bobView().get()) {
             this.bobView(var4, var2);
          }
 
          boolean var6 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
-         if (this.minecraft.options.getCameraType().isFirstPerson()
-            && !var6
-            && !this.minecraft.options.hideGui
-            && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
+         if (this.minecraft.options.getCameraType().isFirstPerson() && !var6 && !this.minecraft.options.hideGui && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
             this.lightTexture.turnOnLightLayer();
-            this.itemInHandRenderer
-               .renderHandsWithItems(
-                  var2,
-                  var4,
-                  this.renderBuffers.bufferSource(),
-                  this.minecraft.player,
-                  this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var2)
-               );
+            this.itemInHandRenderer.renderHandsWithItems(var2, var4, this.renderBuffers.bufferSource(), this.minecraft.player, this.minecraft.getEntityRenderDispatcher().getPackedLightCoords(this.minecraft.player, var2));
             this.lightTexture.turnOffLightLayer();
          }
 
@@ -1004,6 +879,7 @@ public class GameRenderer implements AutoCloseable {
          if (this.minecraft.options.getCameraType().isFirstPerson() && !var6) {
             ScreenEffectRenderer.renderScreenEffect(this.minecraft, var4);
          }
+
       }
    }
 
@@ -1018,12 +894,7 @@ public class GameRenderer implements AutoCloseable {
          var3.scale(this.zoom, this.zoom, 1.0F);
       }
 
-      return var3.perspective(
-         (float)(var1 * 0.01745329238474369),
-         (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(),
-         0.05F,
-         this.getDepthFar()
-      );
+      return var3.perspective((float)(var1 * 0.01745329238474369), (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.getDepthFar());
    }
 
    public float getDepthFar() {
@@ -1036,9 +907,7 @@ public class GameRenderer implements AutoCloseable {
    }
 
    public void render(float var1, long var2, boolean var4) {
-      if (!this.minecraft.isWindowActive()
-         && this.minecraft.options.pauseOnLostFocus
-         && (!this.minecraft.options.touchscreen().get() || !this.minecraft.mouseHandler.isRightPressed())) {
+      if (!this.minecraft.isWindowActive() && this.minecraft.options.pauseOnLostFocus && (!(Boolean)this.minecraft.options.touchscreen().get() || !this.minecraft.mouseHandler.isRightPressed())) {
          if (Util.getMillis() - this.lastActiveTime > 500L) {
             this.minecraft.pauseGame(false);
          }
@@ -1049,12 +918,8 @@ public class GameRenderer implements AutoCloseable {
       if (!this.minecraft.noRender) {
          float var5 = this.minecraft.level != null && this.minecraft.level.tickRateManager().runsNormally() ? var1 : 1.0F;
          boolean var6 = this.minecraft.isGameLoadFinished();
-         int var7 = (int)(
-            this.minecraft.mouseHandler.xpos() * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth()
-         );
-         int var8 = (int)(
-            this.minecraft.mouseHandler.ypos() * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight()
-         );
+         int var7 = (int)(this.minecraft.mouseHandler.xpos() * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth());
+         int var8 = (int)(this.minecraft.mouseHandler.ypos() * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight());
          RenderSystem.viewport(0, 0, this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
          if (var6 && var4 && this.minecraft.level != null) {
             this.minecraft.getProfiler().push("level");
@@ -1073,10 +938,7 @@ public class GameRenderer implements AutoCloseable {
 
          Window var9 = this.minecraft.getWindow();
          RenderSystem.clear(256, Minecraft.ON_OSX);
-         Matrix4f var10 = new Matrix4f()
-            .setOrtho(
-               0.0F, (float)((double)var9.getWidth() / var9.getGuiScale()), (float)((double)var9.getHeight() / var9.getGuiScale()), 0.0F, 1000.0F, 21000.0F
-            );
+         Matrix4f var10 = (new Matrix4f()).setOrtho(0.0F, (float)((double)var9.getWidth() / var9.getGuiScale()), (float)((double)var9.getHeight() / var9.getGuiScale()), 0.0F, 1000.0F, 21000.0F);
          RenderSystem.setProjectionMatrix(var10, VertexSorting.ORTHOGRAPHIC_Z);
          Matrix4fStack var11 = RenderSystem.getModelViewStack();
          var11.pushMatrix();
@@ -1088,7 +950,7 @@ public class GameRenderer implements AutoCloseable {
             this.minecraft.getProfiler().popPush("gui");
             if (this.minecraft.player != null) {
                float var13 = Mth.lerp(var5, this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity);
-               float var14 = this.minecraft.options.screenEffectScale().get().floatValue();
+               float var14 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
                if (var13 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONFUSION) && var14 < 1.0F) {
                   this.renderConfusionOverlay(var12, var13 * (1.0F - var14));
                }
@@ -1103,41 +965,35 @@ public class GameRenderer implements AutoCloseable {
             this.minecraft.getProfiler().pop();
          }
 
+         CrashReportCategory var15;
+         CrashReport var19;
          if (this.minecraft.getOverlay() != null) {
             try {
                this.minecraft.getOverlay().render(var12, var7, var8, this.minecraft.getDeltaFrameTime());
             } catch (Throwable var18) {
-               CrashReport var19 = CrashReport.forThrowable(var18, "Rendering overlay");
-               CrashReportCategory var15 = var19.addCategory("Overlay render details");
-               var15.setDetail("Overlay name", () -> this.minecraft.getOverlay().getClass().getCanonicalName());
+               var19 = CrashReport.forThrowable(var18, "Rendering overlay");
+               var15 = var19.addCategory("Overlay render details");
+               var15.setDetail("Overlay name", () -> {
+                  return this.minecraft.getOverlay().getClass().getCanonicalName();
+               });
                throw new ReportedException(var19);
             }
          } else if (var6 && this.minecraft.screen != null) {
             try {
                this.minecraft.screen.renderWithTooltip(var12, var7, var8, this.minecraft.getDeltaFrameTime());
             } catch (Throwable var17) {
-               CrashReport var20 = CrashReport.forThrowable(var17, "Rendering screen");
-               CrashReportCategory var22 = var20.addCategory("Screen render details");
-               var22.setDetail("Screen name", () -> this.minecraft.screen.getClass().getCanonicalName());
-               var22.setDetail(
-                  "Mouse location",
-                  () -> String.format(
-                        Locale.ROOT, "Scaled: (%d, %d). Absolute: (%f, %f)", var7, var8, this.minecraft.mouseHandler.xpos(), this.minecraft.mouseHandler.ypos()
-                     )
-               );
-               var22.setDetail(
-                  "Screen size",
-                  () -> String.format(
-                        Locale.ROOT,
-                        "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %f",
-                        this.minecraft.getWindow().getGuiScaledWidth(),
-                        this.minecraft.getWindow().getGuiScaledHeight(),
-                        this.minecraft.getWindow().getWidth(),
-                        this.minecraft.getWindow().getHeight(),
-                        this.minecraft.getWindow().getGuiScale()
-                     )
-               );
-               throw new ReportedException(var20);
+               var19 = CrashReport.forThrowable(var17, "Rendering screen");
+               var15 = var19.addCategory("Screen render details");
+               var15.setDetail("Screen name", () -> {
+                  return this.minecraft.screen.getClass().getCanonicalName();
+               });
+               var15.setDetail("Mouse location", () -> {
+                  return String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%f, %f)", var7, var8, this.minecraft.mouseHandler.xpos(), this.minecraft.mouseHandler.ypos());
+               });
+               var15.setDetail("Screen size", () -> {
+                  return String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %f", this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight(), this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.minecraft.getWindow().getGuiScale());
+               });
+               throw new ReportedException(var19);
             }
 
             try {
@@ -1145,10 +1001,12 @@ public class GameRenderer implements AutoCloseable {
                   this.minecraft.screen.handleDelayedNarration();
                }
             } catch (Throwable var16) {
-               CrashReport var21 = CrashReport.forThrowable(var16, "Narrating screen");
-               CrashReportCategory var23 = var21.addCategory("Screen details");
-               var23.setDetail("Screen name", () -> this.minecraft.screen.getClass().getCanonicalName());
-               throw new ReportedException(var21);
+               var19 = CrashReport.forThrowable(var16, "Narrating screen");
+               var15 = var19.addCategory("Screen details");
+               var15.setDetail("Screen name", () -> {
+                  return this.minecraft.screen.getClass().getCanonicalName();
+               });
+               throw new ReportedException(var19);
             }
          }
 
@@ -1175,12 +1033,13 @@ public class GameRenderer implements AutoCloseable {
             this.lastScreenshotAttempt = var1;
             IntegratedServer var3 = this.minecraft.getSingleplayerServer();
             if (var3 != null && !var3.isStopped()) {
-               var3.getWorldScreenshotFile().ifPresent(var1x -> {
-                  if (Files.isRegularFile(var1x)) {
+               var3.getWorldScreenshotFile().ifPresent((var1x) -> {
+                  if (Files.isRegularFile(var1x, new LinkOption[0])) {
                      this.hasWorldScreenshot = true;
                   } else {
                      this.takeAutoScreenshot(var1x);
                   }
+
                });
             }
          }
@@ -1191,28 +1050,44 @@ public class GameRenderer implements AutoCloseable {
       if (this.minecraft.levelRenderer.countRenderedSections() > 10 && this.minecraft.levelRenderer.hasRenderedAllSections()) {
          NativeImage var2 = Screenshot.takeScreenshot(this.minecraft.getMainRenderTarget());
          Util.ioPool().execute(() -> {
-            int var2xx = var2.getWidth();
+            int var2x = var2.getWidth();
             int var3 = var2.getHeight();
             int var4 = 0;
             int var5 = 0;
-            if (var2xx > var3) {
-               var4 = (var2xx - var3) / 2;
-               var2xx = var3;
+            if (var2x > var3) {
+               var4 = (var2x - var3) / 2;
+               var2x = var3;
             } else {
-               var5 = (var3 - var2xx) / 2;
-               var3 = var2xx;
+               var5 = (var3 - var2x) / 2;
+               var3 = var2x;
             }
 
-            try (NativeImage var6 = new NativeImage(64, 64, false)) {
-               var2.resizeSubRectTo(var4, var5, var2xx, var3, var6);
-               var6.writeToFile(var1);
+            try {
+               NativeImage var6 = new NativeImage(64, 64, false);
+
+               try {
+                  var2.resizeSubRectTo(var4, var5, var2x, var3, var6);
+                  var6.writeToFile(var1);
+               } catch (Throwable var15) {
+                  try {
+                     var6.close();
+                  } catch (Throwable var14) {
+                     var15.addSuppressed(var14);
+                  }
+
+                  throw var15;
+               }
+
+               var6.close();
             } catch (IOException var16) {
                LOGGER.warn("Couldn't save auto screenshot", var16);
             } finally {
                var2.close();
             }
+
          });
       }
+
    }
 
    private boolean shouldRenderBlockOutline() {
@@ -1253,24 +1128,18 @@ public class GameRenderer implements AutoCloseable {
       this.minecraft.getProfiler().popPush("camera");
       Camera var5 = this.mainCamera;
       Object var6 = this.minecraft.getCameraEntity() == null ? this.minecraft.player : this.minecraft.getCameraEntity();
-      var5.setup(
-         this.minecraft.level,
-         (Entity)var6,
-         !this.minecraft.options.getCameraType().isFirstPerson(),
-         this.minecraft.options.getCameraType().isMirrored(),
-         this.minecraft.level.tickRateManager().isEntityFrozen((Entity)var6) ? 1.0F : var1
-      );
+      var5.setup(this.minecraft.level, (Entity)var6, !this.minecraft.options.getCameraType().isFirstPerson(), this.minecraft.options.getCameraType().isMirrored(), this.minecraft.level.tickRateManager().isEntityFrozen((Entity)var6) ? 1.0F : var1);
       this.renderDistance = (float)(this.minecraft.options.getEffectiveRenderDistance() * 16);
       double var7 = this.getFov(var5, var1, true);
       Matrix4f var9 = this.getProjectionMatrix(var7);
       PoseStack var10 = new PoseStack();
       this.bobHurt(var10, var5.getPartialTickTime());
-      if (this.minecraft.options.bobView().get()) {
+      if ((Boolean)this.minecraft.options.bobView().get()) {
          this.bobView(var10, var5.getPartialTickTime());
       }
 
       var9.mul(var10.last().pose());
-      float var11 = this.minecraft.options.screenEffectScale().get().floatValue();
+      float var11 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
       float var12 = Mth.lerp(var1, this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity) * var11 * var11;
       if (var12 > 0.0F) {
          int var13 = this.minecraft.player.hasEffect(MobEffects.CONFUSION) ? 7 : 20;
@@ -1284,10 +1153,8 @@ public class GameRenderer implements AutoCloseable {
       }
 
       this.resetProjectionMatrix(var9);
-      Matrix4f var17 = new Matrix4f().rotationXYZ(var5.getXRot() * 0.017453292F, var5.getYRot() * 0.017453292F + 3.1415927F, 0.0F);
-      this.minecraft
-         .levelRenderer
-         .prepareCullFrustum(var5.getPosition(), var17, this.getProjectionMatrix(Math.max(var7, (double)this.minecraft.options.fov().get().intValue())));
+      Matrix4f var17 = (new Matrix4f()).rotationXYZ(var5.getXRot() * 0.017453292F, var5.getYRot() * 0.017453292F + 3.1415927F, 0.0F);
+      this.minecraft.levelRenderer.prepareCullFrustum(var5.getPosition(), var17, this.getProjectionMatrix(Math.max(var7, (double)(Integer)this.minecraft.options.fov().get())));
       this.minecraft.levelRenderer.renderLevel(var1, var2, var4, var5, this, this.lightTexture, var17, var9);
       this.minecraft.getProfiler().popPush("hand");
       if (this.renderHand) {
@@ -1337,9 +1204,7 @@ public class GameRenderer implements AutoCloseable {
          var12.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
          var12.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
          MultiBufferSource.BufferSource var14 = this.renderBuffers.bufferSource();
-         this.minecraft
-            .getItemRenderer()
-            .renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var12, var14, this.minecraft.level, 0);
+         this.minecraft.getItemRenderer().renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var12, var14, this.minecraft.level, 0);
          var12.popPose();
          var14.endBatch();
          RenderSystem.enableCull();
@@ -1361,9 +1226,7 @@ public class GameRenderer implements AutoCloseable {
       RenderSystem.disableDepthTest();
       RenderSystem.depthMask(false);
       RenderSystem.enableBlend();
-      RenderSystem.blendFuncSeparate(
-         GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE
-      );
+      RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE);
       var1.setColor(var6, var7, var8, 1.0F);
       var1.blit(NAUSEA_LOCATION, 0, 0, -90, 0.0F, 0.0F, var3, var4, var3, var4);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -1688,20 +1551,24 @@ public class GameRenderer implements AutoCloseable {
       return rendertypeGuiGhostRecipeOverlayShader;
    }
 
-   public static record ResourceCache(ResourceProvider a, Map<ResourceLocation, Resource> c) implements ResourceProvider {
-      private final ResourceProvider original;
-      private final Map<ResourceLocation, Resource> cache;
-
+   public static record ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) implements ResourceProvider {
       public ResourceCache(ResourceProvider var1, Map<ResourceLocation, Resource> var2) {
          super();
          this.original = var1;
          this.cache = var2;
       }
 
-      @Override
       public Optional<Resource> getResource(ResourceLocation var1) {
-         Resource var2 = this.cache.get(var1);
+         Resource var2 = (Resource)this.cache.get(var1);
          return var2 != null ? Optional.of(var2) : this.original.getResource(var1);
+      }
+
+      public ResourceProvider original() {
+         return this.original;
+      }
+
+      public Map<ResourceLocation, Resource> cache() {
+         return this.cache;
       }
    }
 }

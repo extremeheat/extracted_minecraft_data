@@ -7,7 +7,6 @@ public class EnchantedBookItem extends Item {
       super(var1);
    }
 
-   @Override
    public boolean isEnchantable(ItemStack var1) {
       return false;
    }

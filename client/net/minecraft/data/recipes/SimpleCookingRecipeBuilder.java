@@ -31,14 +31,12 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
    private final Ingredient ingredient;
    private final float experience;
    private final int cookingTime;
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
+   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
    @Nullable
    private String group;
    private final AbstractCookingRecipe.Factory<?> factory;
 
-   private SimpleCookingRecipeBuilder(
-      RecipeCategory var1, CookingBookCategory var2, ItemLike var3, Ingredient var4, float var5, int var6, AbstractCookingRecipe.Factory<?> var7
-   ) {
+   private SimpleCookingRecipeBuilder(RecipeCategory var1, CookingBookCategory var2, ItemLike var3, Ingredient var4, float var5, int var6, AbstractCookingRecipe.Factory<?> var7) {
       super();
       this.category = var1;
       this.bookCategory = var2;
@@ -49,9 +47,7 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
       this.factory = var7;
    }
 
-   public static <T extends AbstractCookingRecipe> SimpleCookingRecipeBuilder generic(
-      Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4, RecipeSerializer<T> var5, AbstractCookingRecipe.Factory<T> var6
-   ) {
+   public static <T extends AbstractCookingRecipe> SimpleCookingRecipeBuilder generic(Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4, RecipeSerializer<T> var5, AbstractCookingRecipe.Factory<T> var6) {
       return new SimpleCookingRecipeBuilder(var1, determineRecipeCategory(var5, var2), var2, var0, var3, var4, var6);
    }
 
@@ -81,21 +77,17 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
       return this;
    }
 
-   @Override
    public Item getResult() {
       return this.result;
    }
 
-   @Override
    public void save(RecipeOutput var1, ResourceLocation var2) {
       this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement()
-         .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
-         .rewards(AdvancementRewards.Builder.recipe(var2))
-         .requirements(AdvancementRequirements.Strategy.OR);
-      this.criteria.forEach(var3::addCriterion);
-      AbstractCookingRecipe var4 = this.factory
-         .create(Objects.requireNonNullElse(this.group, ""), this.bookCategory, this.ingredient, new ItemStack(this.result), this.experience, this.cookingTime);
+      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
+      Map var10000 = this.criteria;
+      Objects.requireNonNull(var3);
+      var10000.forEach(var3::addCriterion);
+      AbstractCookingRecipe var4 = this.factory.create((String)Objects.requireNonNullElse(this.group, ""), this.bookCategory, this.ingredient, new ItemStack(this.result), this.experience, this.cookingTime);
       var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
@@ -125,7 +117,17 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
 
    private void ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1));
       }
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder group(@Nullable String var1) {
+      return this.group(var1);
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder unlockedBy(String var1, Criterion var2) {
+      return this.unlockedBy(var1, var2);
    }
 }

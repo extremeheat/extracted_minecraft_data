@@ -7,22 +7,21 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public abstract class SinglePieceStructure extends Structure {
-   private final SinglePieceStructure.PieceConstructor constructor;
+   private final PieceConstructor constructor;
    private final int width;
    private final int depth;
 
-   protected SinglePieceStructure(SinglePieceStructure.PieceConstructor var1, int var2, int var3, Structure.StructureSettings var4) {
+   protected SinglePieceStructure(PieceConstructor var1, int var2, int var3, Structure.StructureSettings var4) {
       super(var4);
       this.constructor = var1;
       this.width = var2;
       this.depth = var3;
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return getLowestY(var1, this.width, this.depth) < var1.chunkGenerator().getSeaLevel()
-         ? Optional.empty()
-         : onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, var2 -> this.generatePieces(var2, var1));
+      return getLowestY(var1, this.width, this.depth) < var1.chunkGenerator().getSeaLevel() ? Optional.empty() : onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> {
+         this.generatePieces(var2, var1);
+      });
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {

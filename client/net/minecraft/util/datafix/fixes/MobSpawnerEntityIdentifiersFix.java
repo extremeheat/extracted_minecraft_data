@@ -30,26 +30,17 @@ public class MobSpawnerEntityIdentifiersFix extends DataFix {
             var1 = var1.remove("EntityId");
          }
 
-         Optional var6 = var1.get("SpawnPotentials").asStreamOpt().result();
-         if (var6.isPresent()) {
-            var1 = var1.set(
-               "SpawnPotentials",
-               var1.createList(
-                  ((Stream)var6.get())
-                     .map(
-                        var0 -> {
-                           Optional var1xx = var0.get("Type").asString().result();
-                           if (var1xx.isPresent()) {
-                              Dynamic var2xx = ((Dynamic)DataFixUtils.orElse(var0.get("Properties").result(), var0.emptyMap()))
-                                 .set("id", var0.createString((String)var1xx.get()));
-                              return var0.set("Entity", var2xx).remove("Type").remove("Properties");
-                           } else {
-                              return var0;
-                           }
-                        }
-                     )
-               )
-            );
+         Optional var4 = var1.get("SpawnPotentials").asStreamOpt().result();
+         if (var4.isPresent()) {
+            var1 = var1.set("SpawnPotentials", var1.createList(((Stream)var4.get()).map((var0) -> {
+               Optional var1 = var0.get("Type").asString().result();
+               if (var1.isPresent()) {
+                  Dynamic var2 = ((Dynamic)DataFixUtils.orElse(var0.get("Properties").result(), var0.emptyMap())).set("id", var0.createString((String)var1.get()));
+                  return var0.set("Entity", var2).remove("Type").remove("Properties");
+               } else {
+                  return var0;
+               }
+            })));
          }
 
          return var1;
@@ -58,7 +49,7 @@ public class MobSpawnerEntityIdentifiersFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.UNTAGGED_SPAWNER);
-      return this.fixTypeEverywhereTyped("MobSpawnerEntityIdentifiersFix", this.getInputSchema().getType(References.UNTAGGED_SPAWNER), var1, var2 -> {
+      return this.fixTypeEverywhereTyped("MobSpawnerEntityIdentifiersFix", this.getInputSchema().getType(References.UNTAGGED_SPAWNER), var1, (var2) -> {
          Dynamic var3 = (Dynamic)var2.get(DSL.remainderFinder());
          var3 = var3.set("id", var3.createString("MobSpawner"));
          DataResult var4 = var1.readTyped(this.fix(var3));

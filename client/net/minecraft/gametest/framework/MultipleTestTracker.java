@@ -2,6 +2,7 @@ package net.minecraft.gametest.framework;
 
 import com.google.common.collect.Lists;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -25,30 +26,30 @@ public class MultipleTestTracker {
 
    public void addTestToTrack(GameTestInfo var1) {
       this.tests.add(var1);
-      this.listeners.forEach(var1::addListener);
+      Collection var10000 = this.listeners;
+      Objects.requireNonNull(var1);
+      var10000.forEach(var1::addListener);
    }
 
    public void addListener(GameTestListener var1) {
       this.listeners.add(var1);
-      this.tests.forEach(var1x -> var1x.addListener(var1));
+      this.tests.forEach((var1x) -> {
+         var1x.addListener(var1);
+      });
    }
 
    public void addFailureListener(final Consumer<GameTestInfo> var1) {
-      this.addListener(new GameTestListener() {
-         @Override
+      this.addListener(new GameTestListener(this) {
          public void testStructureLoaded(GameTestInfo var1x) {
          }
 
-         @Override
          public void testPassed(GameTestInfo var1x, GameTestRunner var2) {
          }
 
-         @Override
          public void testFailed(GameTestInfo var1x, GameTestRunner var2) {
             var1.accept(var1x);
          }
 
-         @Override
          public void testAddedForRerun(GameTestInfo var1x, GameTestInfo var2, GameTestRunner var3) {
          }
       });
@@ -75,11 +76,11 @@ public class MultipleTestTracker {
    }
 
    public Collection<GameTestInfo> getFailedRequired() {
-      return this.tests.stream().filter(GameTestInfo::hasFailed).filter(GameTestInfo::isRequired).collect(Collectors.toList());
+      return (Collection)this.tests.stream().filter(GameTestInfo::hasFailed).filter(GameTestInfo::isRequired).collect(Collectors.toList());
    }
 
    public Collection<GameTestInfo> getFailedOptional() {
-      return this.tests.stream().filter(GameTestInfo::hasFailed).filter(GameTestInfo::isOptional).collect(Collectors.toList());
+      return (Collection)this.tests.stream().filter(GameTestInfo::hasFailed).filter(GameTestInfo::isOptional).collect(Collectors.toList());
    }
 
    public int getTotalCount() {
@@ -93,7 +94,7 @@ public class MultipleTestTracker {
    public String getProgressBar() {
       StringBuffer var1 = new StringBuffer();
       var1.append('[');
-      this.tests.forEach(var1x -> {
+      this.tests.forEach((var1x) -> {
          if (!var1x.hasStarted()) {
             var1.append(' ');
          } else if (var1x.hasSucceeded()) {
@@ -103,12 +104,12 @@ public class MultipleTestTracker {
          } else {
             var1.append('_');
          }
+
       });
       var1.append(']');
       return var1.toString();
    }
 
-   @Override
    public String toString() {
       return this.getProgressBar();
    }

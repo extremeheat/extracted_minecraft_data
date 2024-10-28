@@ -12,51 +12,44 @@ public interface LayerLightEventListener extends LightEventListener {
 
    int getLightValue(BlockPos var1);
 
-   public static record ConstantLayer(int c) implements LayerLightEventListener {
-      private final int lightLevel;
-      public static final LayerLightEventListener.ConstantLayer ZERO = new LayerLightEventListener.ConstantLayer(0);
-      public static final LayerLightEventListener.ConstantLayer FULL_BRIGHT = new LayerLightEventListener.ConstantLayer(15);
+   public static enum DummyLightLayerEventListener implements LayerLightEventListener {
+      INSTANCE;
 
-      public ConstantLayer(int var1) {
-         super();
-         this.lightLevel = var1;
+      private DummyLightLayerEventListener() {
       }
 
       @Nullable
-      @Override
       public DataLayer getDataLayerData(SectionPos var1) {
          return null;
       }
 
-      @Override
       public int getLightValue(BlockPos var1) {
-         return this.lightLevel;
+         return 0;
       }
 
-      @Override
       public void checkBlock(BlockPos var1) {
       }
 
-      @Override
       public boolean hasLightWork() {
          return false;
       }
 
-      @Override
       public int runLightUpdates() {
          return 0;
       }
 
-      @Override
       public void updateSectionStatus(SectionPos var1, boolean var2) {
       }
 
-      @Override
       public void setLightEnabled(ChunkPos var1, boolean var2) {
       }
 
-      @Override
       public void propagateLightSources(ChunkPos var1) {
+      }
+
+      // $FF: synthetic method
+      private static DummyLightLayerEventListener[] $values() {
+         return new DummyLightLayerEventListener[]{INSTANCE};
       }
    }
 }

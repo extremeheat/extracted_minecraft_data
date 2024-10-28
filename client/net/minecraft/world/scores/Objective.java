@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
@@ -20,9 +19,7 @@ public class Objective {
    @Nullable
    private NumberFormat numberFormat;
 
-   public Objective(
-      Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5, boolean var6, @Nullable NumberFormat var7
-   ) {
+   public Objective(Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5, boolean var6, @Nullable NumberFormat var7) {
       super();
       this.scoreboard = var1;
       this.name = var2;
@@ -60,13 +57,13 @@ public class Objective {
    }
 
    public NumberFormat numberFormatOrDefault(NumberFormat var1) {
-      return Objects.requireNonNullElse(this.numberFormat, var1);
+      return (NumberFormat)Objects.requireNonNullElse(this.numberFormat, var1);
    }
 
    private Component createFormattedDisplayName() {
-      return ComponentUtils.wrapInSquareBrackets(
-         this.displayName.copy().withStyle(var1 -> var1.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.name))))
-      );
+      return ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle((var1) -> {
+         return var1.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.name)));
+      }));
    }
 
    public Component getFormattedDisplayName() {

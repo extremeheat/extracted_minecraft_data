@@ -14,8 +14,8 @@ public class V3818_4 extends NamespacedSchema {
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
-      var1.registerType(
-         true, References.ITEM_STACK, () -> DSL.optionalFields("id", References.ITEM_NAME.in(var1), "components", References.DATA_COMPONENTS.in(var1))
-      );
+      var1.registerType(true, References.ITEM_STACK, () -> {
+         return DSL.optionalFields("id", References.ITEM_NAME.in(var1), "components", References.DATA_COMPONENTS.in(var1));
+      });
    }
 }

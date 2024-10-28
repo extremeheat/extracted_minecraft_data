@@ -10,7 +10,6 @@ public class EntityElderGuardianSplitFix extends SimpleEntityRenameFix {
       super("EntityElderGuardianSplitFix", var1, var2);
    }
 
-   @Override
    protected Pair<String, Dynamic<?>> getNewNameAndTag(String var1, Dynamic<?> var2) {
       return Pair.of(Objects.equals(var1, "Guardian") && var2.get("Elder").asBoolean(false) ? "ElderGuardian" : var1, var2);
    }

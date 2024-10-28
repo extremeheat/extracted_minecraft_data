@@ -24,7 +24,6 @@ public class LevelLightEngine implements LightEventListener {
       this.skyEngine = var3 ? new SkyLightEngine(var1) : null;
    }
 
-   @Override
    public void checkBlock(BlockPos var1) {
       if (this.blockEngine != null) {
          this.blockEngine.checkBlock(var1);
@@ -33,9 +32,9 @@ public class LevelLightEngine implements LightEventListener {
       if (this.skyEngine != null) {
          this.skyEngine.checkBlock(var1);
       }
+
    }
 
-   @Override
    public boolean hasLightWork() {
       if (this.skyEngine != null && this.skyEngine.hasLightWork()) {
          return true;
@@ -44,7 +43,6 @@ public class LevelLightEngine implements LightEventListener {
       }
    }
 
-   @Override
    public int runLightUpdates() {
       int var1 = 0;
       if (this.blockEngine != null) {
@@ -58,7 +56,6 @@ public class LevelLightEngine implements LightEventListener {
       return var1;
    }
 
-   @Override
    public void updateSectionStatus(SectionPos var1, boolean var2) {
       if (this.blockEngine != null) {
          this.blockEngine.updateSectionStatus(var1, var2);
@@ -67,9 +64,9 @@ public class LevelLightEngine implements LightEventListener {
       if (this.skyEngine != null) {
          this.skyEngine.updateSectionStatus(var1, var2);
       }
+
    }
 
-   @Override
    public void setLightEnabled(ChunkPos var1, boolean var2) {
       if (this.blockEngine != null) {
          this.blockEngine.setLightEnabled(var1, var2);
@@ -78,9 +75,9 @@ public class LevelLightEngine implements LightEventListener {
       if (this.skyEngine != null) {
          this.skyEngine.setLightEnabled(var1, var2);
       }
+
    }
 
-   @Override
    public void propagateLightSources(ChunkPos var1) {
       if (this.blockEngine != null) {
          this.blockEngine.propagateLightSources(var1);
@@ -89,13 +86,14 @@ public class LevelLightEngine implements LightEventListener {
       if (this.skyEngine != null) {
          this.skyEngine.propagateLightSources(var1);
       }
+
    }
 
    public LayerLightEventListener getLayerListener(LightLayer var1) {
       if (var1 == LightLayer.BLOCK) {
-         return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.ConstantLayer.ZERO : this.blockEngine);
+         return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.blockEngine);
       } else {
-         return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.ConstantLayer.ZERO : this.skyEngine);
+         return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.skyEngine);
       }
    }
 
@@ -131,6 +129,7 @@ public class LevelLightEngine implements LightEventListener {
       } else if (this.skyEngine != null) {
          this.skyEngine.queueSectionData(var2.asLong(), var3);
       }
+
    }
 
    public void retainData(ChunkPos var1, boolean var2) {
@@ -141,6 +140,7 @@ public class LevelLightEngine implements LightEventListener {
       if (this.skyEngine != null) {
          this.skyEngine.retainData(var1, var2);
       }
+
    }
 
    public int getRawBrightness(BlockPos var1, int var2) {
@@ -151,8 +151,7 @@ public class LevelLightEngine implements LightEventListener {
 
    public boolean lightOnInSection(SectionPos var1) {
       long var2 = var1.asLong();
-      return this.blockEngine == null
-         || this.blockEngine.storage.lightOnInSection(var2) && (this.skyEngine == null || this.skyEngine.storage.lightOnInSection(var2));
+      return this.blockEngine == null || this.blockEngine.storage.lightOnInSection(var2) && (this.skyEngine == null || this.skyEngine.storage.lightOnInSection(var2));
    }
 
    public int getLightSectionCount() {

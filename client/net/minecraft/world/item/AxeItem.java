@@ -1,12 +1,13 @@
 package net.minecraft.world.item;
 
 import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -24,35 +25,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class AxeItem extends DiggerItem {
-   protected static final Map<Block, Block> STRIPPABLES = new Builder()
-      .put(Blocks.OAK_WOOD, Blocks.STRIPPED_OAK_WOOD)
-      .put(Blocks.OAK_LOG, Blocks.STRIPPED_OAK_LOG)
-      .put(Blocks.DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD)
-      .put(Blocks.DARK_OAK_LOG, Blocks.STRIPPED_DARK_OAK_LOG)
-      .put(Blocks.ACACIA_WOOD, Blocks.STRIPPED_ACACIA_WOOD)
-      .put(Blocks.ACACIA_LOG, Blocks.STRIPPED_ACACIA_LOG)
-      .put(Blocks.CHERRY_WOOD, Blocks.STRIPPED_CHERRY_WOOD)
-      .put(Blocks.CHERRY_LOG, Blocks.STRIPPED_CHERRY_LOG)
-      .put(Blocks.BIRCH_WOOD, Blocks.STRIPPED_BIRCH_WOOD)
-      .put(Blocks.BIRCH_LOG, Blocks.STRIPPED_BIRCH_LOG)
-      .put(Blocks.JUNGLE_WOOD, Blocks.STRIPPED_JUNGLE_WOOD)
-      .put(Blocks.JUNGLE_LOG, Blocks.STRIPPED_JUNGLE_LOG)
-      .put(Blocks.SPRUCE_WOOD, Blocks.STRIPPED_SPRUCE_WOOD)
-      .put(Blocks.SPRUCE_LOG, Blocks.STRIPPED_SPRUCE_LOG)
-      .put(Blocks.WARPED_STEM, Blocks.STRIPPED_WARPED_STEM)
-      .put(Blocks.WARPED_HYPHAE, Blocks.STRIPPED_WARPED_HYPHAE)
-      .put(Blocks.CRIMSON_STEM, Blocks.STRIPPED_CRIMSON_STEM)
-      .put(Blocks.CRIMSON_HYPHAE, Blocks.STRIPPED_CRIMSON_HYPHAE)
-      .put(Blocks.MANGROVE_WOOD, Blocks.STRIPPED_MANGROVE_WOOD)
-      .put(Blocks.MANGROVE_LOG, Blocks.STRIPPED_MANGROVE_LOG)
-      .put(Blocks.BAMBOO_BLOCK, Blocks.STRIPPED_BAMBOO_BLOCK)
-      .build();
+   protected static final Map<Block, Block> STRIPPABLES;
 
    public AxeItem(Tier var1, Item.Properties var2) {
       super(var1, BlockTags.MINEABLE_WITH_AXE, var2);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -88,8 +66,9 @@ public class AxeItem extends DiggerItem {
             var1.levelEvent(var3, 3005, var2, 0);
             return var6;
          } else {
-            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock()))
-               .map(var1x -> ((Block)var1x).withPropertiesOf(var4));
+            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock())).map((var1x) -> {
+               return var1x.withPropertiesOf(var4);
+            });
             if (var7.isPresent()) {
                var1.playSound(var3, var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
                var1.levelEvent(var3, 3004, var2, 0);
@@ -102,7 +81,12 @@ public class AxeItem extends DiggerItem {
    }
 
    private Optional<BlockState> getStripped(BlockState var1) {
-      return Optional.ofNullable(STRIPPABLES.get(var1.getBlock()))
-         .map(var1x -> var1x.defaultBlockState().setValue(RotatedPillarBlock.AXIS, var1.getValue(RotatedPillarBlock.AXIS)));
+      return Optional.ofNullable((Block)STRIPPABLES.get(var1.getBlock())).map((var1x) -> {
+         return (BlockState)var1x.defaultBlockState().setValue(RotatedPillarBlock.AXIS, (Direction.Axis)var1.getValue(RotatedPillarBlock.AXIS));
+      });
+   }
+
+   static {
+      STRIPPABLES = (new ImmutableMap.Builder()).put(Blocks.OAK_WOOD, Blocks.STRIPPED_OAK_WOOD).put(Blocks.OAK_LOG, Blocks.STRIPPED_OAK_LOG).put(Blocks.DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_WOOD).put(Blocks.DARK_OAK_LOG, Blocks.STRIPPED_DARK_OAK_LOG).put(Blocks.ACACIA_WOOD, Blocks.STRIPPED_ACACIA_WOOD).put(Blocks.ACACIA_LOG, Blocks.STRIPPED_ACACIA_LOG).put(Blocks.CHERRY_WOOD, Blocks.STRIPPED_CHERRY_WOOD).put(Blocks.CHERRY_LOG, Blocks.STRIPPED_CHERRY_LOG).put(Blocks.BIRCH_WOOD, Blocks.STRIPPED_BIRCH_WOOD).put(Blocks.BIRCH_LOG, Blocks.STRIPPED_BIRCH_LOG).put(Blocks.JUNGLE_WOOD, Blocks.STRIPPED_JUNGLE_WOOD).put(Blocks.JUNGLE_LOG, Blocks.STRIPPED_JUNGLE_LOG).put(Blocks.SPRUCE_WOOD, Blocks.STRIPPED_SPRUCE_WOOD).put(Blocks.SPRUCE_LOG, Blocks.STRIPPED_SPRUCE_LOG).put(Blocks.WARPED_STEM, Blocks.STRIPPED_WARPED_STEM).put(Blocks.WARPED_HYPHAE, Blocks.STRIPPED_WARPED_HYPHAE).put(Blocks.CRIMSON_STEM, Blocks.STRIPPED_CRIMSON_STEM).put(Blocks.CRIMSON_HYPHAE, Blocks.STRIPPED_CRIMSON_HYPHAE).put(Blocks.MANGROVE_WOOD, Blocks.STRIPPED_MANGROVE_WOOD).put(Blocks.MANGROVE_LOG, Blocks.STRIPPED_MANGROVE_LOG).put(Blocks.BAMBOO_BLOCK, Blocks.STRIPPED_BAMBOO_BLOCK).build();
    }
 }

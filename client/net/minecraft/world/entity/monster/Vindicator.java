@@ -43,32 +43,32 @@ import net.minecraft.world.level.ServerLevelAccessor;
 
 public class Vindicator extends AbstractIllager {
    private static final String TAG_JOHNNY = "Johnny";
-   static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = var0 -> var0 == Difficulty.NORMAL || var0 == Difficulty.HARD;
+   static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (var0) -> {
+      return var0 == Difficulty.NORMAL || var0 == Difficulty.HARD;
+   };
    boolean isJohnny;
 
    public Vindicator(EntityType<? extends Vindicator> var1, Level var2) {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(1, new Vindicator.VindicatorBreakDoorGoal(this));
+      this.goalSelector.addGoal(1, new VindicatorBreakDoorGoal(this));
       this.goalSelector.addGoal(2, new AbstractIllager.RaiderOpenDoorGoal(this));
       this.goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 10.0F));
       this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
-      this.targetSelector.addGoal(4, new Vindicator.VindicatorJohnnyAttackGoal(this));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, true));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
+      this.targetSelector.addGoal(4, new VindicatorJohnnyAttackGoal(this));
       this.goalSelector.addGoal(8, new RandomStrollGoal(this, 0.6));
       this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 3.0F, 1.0F));
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
    }
 
-   @Override
    protected void customServerAiStep() {
       if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
          boolean var1 = ((ServerLevel)this.level()).isRaided(this.blockPosition());
@@ -79,22 +79,17 @@ public class Vindicator extends AbstractIllager {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes()
-         .add(Attributes.MOVEMENT_SPEED, 0.3499999940395355)
-         .add(Attributes.FOLLOW_RANGE, 12.0)
-         .add(Attributes.MAX_HEALTH, 24.0)
-         .add(Attributes.ATTACK_DAMAGE, 5.0);
+      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.3499999940395355).add(Attributes.FOLLOW_RANGE, 12.0).add(Attributes.MAX_HEALTH, 24.0).add(Attributes.ATTACK_DAMAGE, 5.0);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.isJohnny) {
          var1.putBoolean("Johnny", true);
       }
+
    }
 
-   @Override
    public AbstractIllager.IllagerArmPose getArmPose() {
       if (this.isAggressive()) {
          return AbstractIllager.IllagerArmPose.ATTACKING;
@@ -103,21 +98,19 @@ public class Vindicator extends AbstractIllager {
       }
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("Johnny", 99)) {
          this.isJohnny = var1.getBoolean("Johnny");
       }
+
    }
 
-   @Override
    public SoundEvent getCelebrateSound() {
       return SoundEvents.VINDICATOR_CELEBRATE;
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
@@ -127,37 +120,33 @@ public class Vindicator extends AbstractIllager {
       return var5;
    }
 
-   @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       if (this.getCurrentRaid() == null) {
          this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
       }
+
    }
 
-   @Override
    public void setCustomName(@Nullable Component var1) {
       super.setCustomName(var1);
       if (!this.isJohnny && var1 != null && var1.getString().equals("Johnny")) {
          this.isJohnny = true;
       }
+
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.VINDICATOR_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.VINDICATOR_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.VINDICATOR_HURT;
    }
 
-   @Override
    public void applyRaidBuffs(int var1, boolean var2) {
       ItemStack var3 = new ItemStack(Items.IRON_AXE);
       Raid var4 = this.getCurrentRaid();
@@ -180,36 +169,31 @@ public class Vindicator extends AbstractIllager {
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
-      @Override
       public boolean canContinueToUse() {
          Vindicator var1 = (Vindicator)this.mob;
          return var1.hasActiveRaid() && super.canContinueToUse();
       }
 
-      @Override
       public boolean canUse() {
          Vindicator var1 = (Vindicator)this.mob;
          return var1.hasActiveRaid() && var1.random.nextInt(reducedTickDelay(10)) == 0 && super.canUse();
       }
 
-      @Override
       public void start() {
          super.start();
          this.mob.setNoActionTime(0);
       }
    }
 
-   static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
+   private static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public VindicatorJohnnyAttackGoal(Vindicator var1) {
          super(var1, LivingEntity.class, 0, true, true, LivingEntity::attackable);
       }
 
-      @Override
       public boolean canUse() {
          return ((Vindicator)this.mob).isJohnny && super.canUse();
       }
 
-      @Override
       public void start() {
          super.start();
          this.mob.setNoActionTime(0);

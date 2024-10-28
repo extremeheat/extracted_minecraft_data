@@ -17,9 +17,14 @@ public class OrCondition implements Condition {
       this.conditions = var1;
    }
 
-   @Override
    public Predicate<BlockState> getPredicate(StateDefinition<Block, BlockState> var1) {
-      List var2 = Streams.stream(this.conditions).map(var1x -> var1x.getPredicate(var1)).collect(Collectors.toList());
-      return var1x -> var2.stream().anyMatch(var1xx -> var1xx.test(var1x));
+      List var2 = (List)Streams.stream(this.conditions).map((var1x) -> {
+         return var1x.getPredicate(var1);
+      }).collect(Collectors.toList());
+      return (var1x) -> {
+         return var2.stream().anyMatch((var1) -> {
+            return var1.test(var1x);
+         });
+      };
    }
 }

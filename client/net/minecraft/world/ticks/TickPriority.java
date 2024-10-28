@@ -16,16 +16,29 @@ public enum TickPriority {
    }
 
    public static TickPriority byValue(int var0) {
-      for(TickPriority var4 : values()) {
+      TickPriority[] var1 = values();
+      int var2 = var1.length;
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         TickPriority var4 = var1[var3];
          if (var4.value == var0) {
             return var4;
          }
       }
 
-      return var0 < EXTREMELY_HIGH.value ? EXTREMELY_HIGH : EXTREMELY_LOW;
+      if (var0 < EXTREMELY_HIGH.value) {
+         return EXTREMELY_HIGH;
+      } else {
+         return EXTREMELY_LOW;
+      }
    }
 
    public int getValue() {
       return this.value;
+   }
+
+   // $FF: synthetic method
+   private static TickPriority[] $values() {
+      return new TickPriority[]{EXTREMELY_HIGH, VERY_HIGH, HIGH, NORMAL, LOW, VERY_LOW, EXTREMELY_LOW};
    }
 }

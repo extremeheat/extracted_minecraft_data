@@ -29,9 +29,9 @@ public abstract class Request<T extends Request<T>> {
          this.url = var1;
          Proxy var4 = RealmsClientConfig.getProxy();
          if (var4 != null) {
-            this.connection = (HttpURLConnection)new URL(var1).openConnection(var4);
+            this.connection = (HttpURLConnection)(new URL(var1)).openConnection(var4);
          } else {
-            this.connection = (HttpURLConnection)new URL(var1).openConnection();
+            this.connection = (HttpURLConnection)(new URL(var1)).openConnection();
          }
 
          this.connection.setConnectTimeout(var2);
@@ -54,6 +54,7 @@ public abstract class Request<T extends Request<T>> {
       } else {
          var0.setRequestProperty("Cookie", var3 + ";" + var1 + "=" + var2);
       }
+
    }
 
    public void addSnapshotHeader(boolean var1) {
@@ -143,47 +144,49 @@ public abstract class Request<T extends Request<T>> {
          if (this.connection != null) {
             this.connection.disconnect();
          }
+
       }
+
    }
 
    protected T connect() {
       if (this.connected) {
-         return (T)this;
+         return this;
       } else {
          Request var1 = this.doConnect();
          this.connected = true;
-         return (T)var1;
+         return var1;
       }
    }
 
    protected abstract T doConnect();
 
    public static Request<?> get(String var0) {
-      return new Request.Get(var0, 5000, 60000);
+      return new Get(var0, 5000, 60000);
    }
 
    public static Request<?> get(String var0, int var1, int var2) {
-      return new Request.Get(var0, var1, var2);
+      return new Get(var0, var1, var2);
    }
 
    public static Request<?> post(String var0, String var1) {
-      return new Request.Post(var0, var1, 5000, 60000);
+      return new Post(var0, var1, 5000, 60000);
    }
 
    public static Request<?> post(String var0, String var1, int var2, int var3) {
-      return new Request.Post(var0, var1, var2, var3);
+      return new Post(var0, var1, var2, var3);
    }
 
    public static Request<?> delete(String var0) {
-      return new Request.Delete(var0, 5000, 60000);
+      return new Delete(var0, 5000, 60000);
    }
 
    public static Request<?> put(String var0, String var1) {
-      return new Request.Put(var0, var1, 5000, 60000);
+      return new Put(var0, var1, 5000, 60000);
    }
 
    public static Request<?> put(String var0, String var1, int var2, int var3) {
-      return new Request.Put(var0, var1, var2, var3);
+      return new Put(var0, var1, var2, var3);
    }
 
    public String getHeader(String var1) {
@@ -198,29 +201,12 @@ public abstract class Request<T extends Request<T>> {
       }
    }
 
-   public static class Delete extends Request<Request.Delete> {
-      public Delete(String var1, int var2, int var3) {
-         super(var1, var2, var3);
-      }
-
-      public Request.Delete doConnect() {
-         try {
-            this.connection.setDoOutput(true);
-            this.connection.setRequestMethod("DELETE");
-            this.connection.connect();
-            return this;
-         } catch (Exception var2) {
-            throw new RealmsHttpException(var2.getMessage(), var2);
-         }
-      }
-   }
-
-   public static class Get extends Request<Request.Get> {
+   public static class Get extends Request<Get> {
       public Get(String var1, int var2, int var3) {
          super(var1, var2, var3);
       }
 
-      public Request.Get doConnect() {
+      public Get doConnect() {
          try {
             this.connection.setDoInput(true);
             this.connection.setDoOutput(true);
@@ -231,9 +217,14 @@ public abstract class Request<T extends Request<T>> {
             throw new RealmsHttpException(var2.getMessage(), var2);
          }
       }
+
+      // $FF: synthetic method
+      public Request doConnect() {
+         return this.doConnect();
+      }
    }
 
-   public static class Post extends Request<Request.Post> {
+   public static class Post extends Request<Post> {
       private final String content;
 
       public Post(String var1, String var2, int var3, int var4) {
@@ -241,7 +232,7 @@ public abstract class Request<T extends Request<T>> {
          this.content = var2;
       }
 
-      public Request.Post doConnect() {
+      public Post doConnect() {
          try {
             if (this.content != null) {
                this.connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
@@ -261,9 +252,36 @@ public abstract class Request<T extends Request<T>> {
             throw new RealmsHttpException(var3.getMessage(), var3);
          }
       }
+
+      // $FF: synthetic method
+      public Request doConnect() {
+         return this.doConnect();
+      }
    }
 
-   public static class Put extends Request<Request.Put> {
+   public static class Delete extends Request<Delete> {
+      public Delete(String var1, int var2, int var3) {
+         super(var1, var2, var3);
+      }
+
+      public Delete doConnect() {
+         try {
+            this.connection.setDoOutput(true);
+            this.connection.setRequestMethod("DELETE");
+            this.connection.connect();
+            return this;
+         } catch (Exception var2) {
+            throw new RealmsHttpException(var2.getMessage(), var2);
+         }
+      }
+
+      // $FF: synthetic method
+      public Request doConnect() {
+         return this.doConnect();
+      }
+   }
+
+   public static class Put extends Request<Put> {
       private final String content;
 
       public Put(String var1, String var2, int var3, int var4) {
@@ -271,7 +289,7 @@ public abstract class Request<T extends Request<T>> {
          this.content = var2;
       }
 
-      public Request.Put doConnect() {
+      public Put doConnect() {
          try {
             if (this.content != null) {
                this.connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
@@ -289,6 +307,11 @@ public abstract class Request<T extends Request<T>> {
          } catch (Exception var3) {
             throw new RealmsHttpException(var3.getMessage(), var3);
          }
+      }
+
+      // $FF: synthetic method
+      public Request doConnect() {
+         return this.doConnect();
       }
    }
 }

@@ -8,32 +8,60 @@ public enum ScreenDirection {
    LEFT,
    RIGHT;
 
-   private final IntComparator coordinateValueComparator = (var1x, var2x) -> var1x == var2x ? 0 : (this.isBefore(var1x, var2x) ? -1 : 1);
+   private final IntComparator coordinateValueComparator = (var1x, var2x) -> {
+      return var1x == var2x ? 0 : (this.isBefore(var1x, var2x) ? -1 : 1);
+   };
 
    private ScreenDirection() {
    }
 
    public ScreenAxis getAxis() {
-      return switch(this) {
-         case UP, DOWN -> ScreenAxis.VERTICAL;
-         case LEFT, RIGHT -> ScreenAxis.HORIZONTAL;
-      };
+      ScreenAxis var10000;
+      switch (this.ordinal()) {
+         case 0:
+         case 1:
+            var10000 = ScreenAxis.VERTICAL;
+            break;
+         case 2:
+         case 3:
+            var10000 = ScreenAxis.HORIZONTAL;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public ScreenDirection getOpposite() {
-      return switch(this) {
-         case UP -> DOWN;
-         case DOWN -> UP;
-         case LEFT -> RIGHT;
-         case RIGHT -> LEFT;
-      };
+      ScreenDirection var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = DOWN;
+         case 1 -> var10000 = UP;
+         case 2 -> var10000 = RIGHT;
+         case 3 -> var10000 = LEFT;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public boolean isPositive() {
-      return switch(this) {
-         case UP, LEFT -> false;
-         case DOWN, RIGHT -> true;
-      };
+      boolean var10000;
+      switch (this.ordinal()) {
+         case 0:
+         case 2:
+            var10000 = false;
+            break;
+         case 1:
+         case 3:
+            var10000 = true;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public boolean isAfter(int var1, int var2) {
@@ -54,5 +82,10 @@ public enum ScreenDirection {
 
    public IntComparator coordinateValueComparator() {
       return this.coordinateValueComparator;
+   }
+
+   // $FF: synthetic method
+   private static ScreenDirection[] $values() {
+      return new ScreenDirection[]{UP, DOWN, LEFT, RIGHT};
    }
 }

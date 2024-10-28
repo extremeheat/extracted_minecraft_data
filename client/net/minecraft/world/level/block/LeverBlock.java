@@ -28,36 +28,32 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    public static final MapCodec<LeverBlock> CODEC = simpleCodec(LeverBlock::new);
-   public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+   public static final BooleanProperty POWERED;
    protected static final int DEPTH = 6;
    protected static final int WIDTH = 6;
    protected static final int HEIGHT = 8;
-   protected static final VoxelShape NORTH_AABB = Block.box(5.0, 4.0, 10.0, 11.0, 12.0, 16.0);
-   protected static final VoxelShape SOUTH_AABB = Block.box(5.0, 4.0, 0.0, 11.0, 12.0, 6.0);
-   protected static final VoxelShape WEST_AABB = Block.box(10.0, 4.0, 5.0, 16.0, 12.0, 11.0);
-   protected static final VoxelShape EAST_AABB = Block.box(0.0, 4.0, 5.0, 6.0, 12.0, 11.0);
-   protected static final VoxelShape UP_AABB_Z = Block.box(5.0, 0.0, 4.0, 11.0, 6.0, 12.0);
-   protected static final VoxelShape UP_AABB_X = Block.box(4.0, 0.0, 5.0, 12.0, 6.0, 11.0);
-   protected static final VoxelShape DOWN_AABB_Z = Block.box(5.0, 10.0, 4.0, 11.0, 16.0, 12.0);
-   protected static final VoxelShape DOWN_AABB_X = Block.box(4.0, 10.0, 5.0, 12.0, 16.0, 11.0);
+   protected static final VoxelShape NORTH_AABB;
+   protected static final VoxelShape SOUTH_AABB;
+   protected static final VoxelShape WEST_AABB;
+   protected static final VoxelShape EAST_AABB;
+   protected static final VoxelShape UP_AABB_Z;
+   protected static final VoxelShape UP_AABB_X;
+   protected static final VoxelShape DOWN_AABB_Z;
+   protected static final VoxelShape DOWN_AABB_X;
 
-   @Override
    public MapCodec<LeverBlock> codec() {
       return CODEC;
    }
 
    protected LeverBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(
-         this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, Boolean.valueOf(false)).setValue(FACE, AttachFace.WALL)
-      );
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(FACE, AttachFace.WALL));
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((AttachFace)var1.getValue(FACE)) {
+      switch ((AttachFace)var1.getValue(FACE)) {
          case FLOOR:
-            switch(var1.getValue(FACING).getAxis()) {
+            switch (((Direction)var1.getValue(FACING)).getAxis()) {
                case X:
                   return UP_AABB_X;
                case Z:
@@ -65,7 +61,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
                   return UP_AABB_Z;
             }
          case WALL:
-            switch((Direction)var1.getValue(FACING)) {
+            switch ((Direction)var1.getValue(FACING)) {
                case EAST:
                   return EAST_AABB;
                case WEST:
@@ -78,7 +74,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
             }
          case CEILING:
          default:
-            switch(var1.getValue(FACING).getAxis()) {
+            switch (((Direction)var1.getValue(FACING)).getAxis()) {
                case X:
                   return DOWN_AABB_X;
                case Z:
@@ -88,25 +84,24 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       }
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      BlockState var6;
       if (var2.isClientSide) {
-         BlockState var8 = var1.cycle(POWERED);
-         if (var8.getValue(POWERED)) {
-            makeParticle(var8, var2, var3, 1.0F);
+         var6 = (BlockState)var1.cycle(POWERED);
+         if ((Boolean)var6.getValue(POWERED)) {
+            makeParticle(var6, var2, var3, 1.0F);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         BlockState var6 = this.pull(var1, var2, var3);
-         float var7 = var6.getValue(POWERED) ? 0.6F : 0.5F;
-         var2.playSound(null, var3, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var7);
-         var2.gameEvent(var4, var6.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
+         var6 = this.pull(var1, var2, var3);
+         float var7 = (Boolean)var6.getValue(POWERED) ? 0.6F : 0.5F;
+         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var7);
+         var2.gameEvent(var4, (Boolean)var6.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
          return InteractionResult.CONSUME;
       }
    }
 
-   @Override
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
          this.pull(var1, var2, var3);
@@ -116,14 +111,14 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    public BlockState pull(BlockState var1, Level var2, BlockPos var3) {
-      var1 = var1.cycle(POWERED);
+      var1 = (BlockState)var1.cycle(POWERED);
       var2.setBlock(var3, var1, 3);
       this.updateNeighbours(var1, var2, var3);
       return var1;
    }
 
    private static void makeParticle(BlockState var0, LevelAccessor var1, BlockPos var2, float var3) {
-      Direction var4 = var0.getValue(FACING).getOpposite();
+      Direction var4 = ((Direction)var0.getValue(FACING)).getOpposite();
       Direction var5 = getConnectedDirection(var0).getOpposite();
       double var6 = (double)var2.getX() + 0.5 + 0.1 * (double)var4.getStepX() + 0.2 * (double)var5.getStepX();
       double var8 = (double)var2.getY() + 0.5 + 0.1 * (double)var4.getStepY() + 0.2 * (double)var5.getStepY();
@@ -131,17 +126,16 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       var1.addParticle(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, var3), var6, var8, var10, 0.0, 0.0, 0.0);
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(POWERED) && var4.nextFloat() < 0.25F) {
+      if ((Boolean)var1.getValue(POWERED) && var4.nextFloat() < 0.25F) {
          makeParticle(var1, var2, var3, 0.5F);
       }
+
    }
 
-   @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
-         if (var1.getValue(POWERED)) {
+         if ((Boolean)var1.getValue(POWERED)) {
             this.updateNeighbours(var1, var2, var3);
          }
 
@@ -149,17 +143,14 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       }
    }
 
-   @Override
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var1.getValue(POWERED) ? 15 : 0;
+      return (Boolean)var1.getValue(POWERED) ? 15 : 0;
    }
 
-   @Override
    protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var1.getValue(POWERED) && getConnectedDirection(var1) == var4 ? 15 : 0;
+      return (Boolean)var1.getValue(POWERED) && getConnectedDirection(var1) == var4 ? 15 : 0;
    }
 
-   @Override
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }
@@ -169,8 +160,19 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       var2.updateNeighborsAt(var3.relative(getConnectedDirection(var1).getOpposite()), this);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACE, FACING, POWERED);
+   }
+
+   static {
+      POWERED = BlockStateProperties.POWERED;
+      NORTH_AABB = Block.box(5.0, 4.0, 10.0, 11.0, 12.0, 16.0);
+      SOUTH_AABB = Block.box(5.0, 4.0, 0.0, 11.0, 12.0, 6.0);
+      WEST_AABB = Block.box(10.0, 4.0, 5.0, 16.0, 12.0, 11.0);
+      EAST_AABB = Block.box(0.0, 4.0, 5.0, 6.0, 12.0, 11.0);
+      UP_AABB_Z = Block.box(5.0, 0.0, 4.0, 11.0, 6.0, 12.0);
+      UP_AABB_X = Block.box(4.0, 0.0, 5.0, 12.0, 6.0, 11.0);
+      DOWN_AABB_Z = Block.box(5.0, 10.0, 4.0, 11.0, 16.0, 12.0);
+      DOWN_AABB_X = Block.box(4.0, 10.0, 5.0, 12.0, 16.0, 11.0);
    }
 }

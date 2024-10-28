@@ -39,9 +39,9 @@ public class ClientMetricsSamplersProvider implements MetricsSamplerProvider {
       if (TimerQuery.getInstance().isPresent()) {
          this.samplers.add(MetricSampler.create("gpuUtilization", MetricCategory.GPU, Minecraft.getInstance(), Minecraft::getGpuUtilization));
       }
+
    }
 
-   @Override
    public Set<MetricSampler> samplers(Supplier<ProfileCollector> var1) {
       this.samplers.addAll(this.samplerFactory.newSamplersFoundInProfiler(var1));
       return this.samplers;

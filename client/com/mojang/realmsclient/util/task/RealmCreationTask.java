@@ -20,7 +20,6 @@ public class RealmCreationTask extends LongRunningTask {
       this.motd = var4;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
 
@@ -33,9 +32,9 @@ public class RealmCreationTask extends LongRunningTask {
          LOGGER.error("Could not create world", var4);
          this.error(var4);
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

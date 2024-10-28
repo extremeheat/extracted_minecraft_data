@@ -19,7 +19,6 @@ import net.minecraft.world.level.material.Fluid;
 public class EndGatewayBlock extends BaseEntityBlock {
    public static final MapCodec<EndGatewayBlock> CODEC = simpleCodec(EndGatewayBlock::new);
 
-   @Override
    public MapCodec<EndGatewayBlock> codec() {
       return CODEC;
    }
@@ -28,20 +27,15 @@ public class EndGatewayBlock extends BaseEntityBlock {
       super(var1);
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new TheEndGatewayBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(
-         var3, BlockEntityType.END_GATEWAY, var1.isClientSide ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::teleportTick
-      );
+      return createTickerHelper(var3, BlockEntityType.END_GATEWAY, var1.isClientSide ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::teleportTick);
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof TheEndGatewayBlockEntity) {
@@ -65,15 +59,14 @@ public class EndGatewayBlock extends BaseEntityBlock {
 
             var2.addParticle(ParticleTypes.PORTAL, var8, var10, var12, var14, var16, var18);
          }
+
       }
    }
 
-   @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return ItemStack.EMPTY;
    }
 
-   @Override
    protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return false;
    }

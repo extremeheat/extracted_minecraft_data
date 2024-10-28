@@ -19,7 +19,6 @@ public class PrimedTntBlockStateFixer extends NamedEntityWriteReadFix {
       return var0.set("block_state", var0.createMap(Map.of(var0.createString("Name"), var0.createString("minecraft:tnt"))));
    }
 
-   @Override
    protected <T> Dynamic<T> fix(Dynamic<T> var1) {
       return renameFuse(insertBlockState(var1));
    }

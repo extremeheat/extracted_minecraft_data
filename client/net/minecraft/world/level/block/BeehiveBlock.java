@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -57,34 +58,28 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BeehiveBlock extends BaseEntityBlock {
    public static final MapCodec<BeehiveBlock> CODEC = simpleCodec(BeehiveBlock::new);
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-   public static final IntegerProperty HONEY_LEVEL = BlockStateProperties.LEVEL_HONEY;
+   public static final DirectionProperty FACING;
+   public static final IntegerProperty HONEY_LEVEL;
    public static final int MAX_HONEY_LEVELS = 5;
    private static final int SHEARED_HONEYCOMB_COUNT = 3;
 
-   @Override
    public MapCodec<BeehiveBlock> codec() {
       return CODEC;
    }
 
    public BeehiveBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(HONEY_LEVEL, Integer.valueOf(0)).setValue(FACING, Direction.NORTH));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HONEY_LEVEL, 0)).setValue(FACING, Direction.NORTH));
    }
 
-   @Override
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      return var1.getValue(HONEY_LEVEL);
+      return (Integer)var1.getValue(HONEY_LEVEL);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
       super.playerDestroy(var1, var2, var3, var4, var5, var6);
       if (!var1.isClientSide && var5 instanceof BeehiveBlockEntity var7) {
@@ -96,10 +91,11 @@ public class BeehiveBlock extends BaseEntityBlock {
 
          CriteriaTriggers.BEE_NEST_DESTROYED.trigger((ServerPlayer)var2, var4, var6, var7.getOccupantCount());
       }
+
    }
 
    private void angerNearbyBees(Level var1, BlockPos var2) {
-      AABB var3 = new AABB(var2).inflate(8.0, 6.0, 8.0);
+      AABB var3 = (new AABB(var2)).inflate(8.0, 6.0, 8.0);
       List var4 = var1.getEntitiesOfClass(Bee.class, var3);
       if (!var4.isEmpty()) {
          List var5 = var1.getEntitiesOfClass(Player.class, var3);
@@ -107,22 +103,25 @@ public class BeehiveBlock extends BaseEntityBlock {
             return;
          }
 
-         for(Bee var7 : var4) {
+         Iterator var6 = var4.iterator();
+
+         while(var6.hasNext()) {
+            Bee var7 = (Bee)var6.next();
             if (var7.getTarget() == null) {
-               Player var8 = Util.getRandom(var5, var1.random);
+               Player var8 = (Player)Util.getRandom(var5, var1.random);
                var7.setTarget(var8);
             }
          }
       }
+
    }
 
    public static void dropHoneycomb(Level var0, BlockPos var1) {
       popResource(var0, var1, new ItemStack(Items.HONEYCOMB, 3));
    }
 
-   @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      int var8 = var2.getValue(HONEY_LEVEL);
+      int var8 = (Integer)var2.getValue(HONEY_LEVEL);
       boolean var9 = false;
       if (var8 >= 5) {
          Item var10 = var1.getItem();
@@ -167,8 +166,6 @@ public class BeehiveBlock extends BaseEntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private boolean hiveContainsBees(Level var1, BlockPos var2) {
       BlockEntity var3 = var1.getBlockEntity(var2);
       if (var3 instanceof BeehiveBlockEntity var4) {
@@ -178,27 +175,26 @@ public class BeehiveBlock extends BaseEntityBlock {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void releaseBeesAndResetHoneyLevel(Level var1, BlockState var2, BlockPos var3, @Nullable Player var4, BeehiveBlockEntity.BeeReleaseStatus var5) {
       this.resetHoneyLevel(var1, var2, var3);
       BlockEntity var6 = var1.getBlockEntity(var3);
       if (var6 instanceof BeehiveBlockEntity var7) {
          var7.emptyAllLivingFromHive(var4, var2, var5);
       }
+
    }
 
    public void resetHoneyLevel(Level var1, BlockState var2, BlockPos var3) {
-      var1.setBlock(var3, var2.setValue(HONEY_LEVEL, Integer.valueOf(0)), 3);
+      var1.setBlock(var3, (BlockState)var2.setValue(HONEY_LEVEL, 0), 3);
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(HONEY_LEVEL) >= 5) {
+      if ((Integer)var1.getValue(HONEY_LEVEL) >= 5) {
          for(int var5 = 0; var5 < var4.nextInt(1) + 1; ++var5) {
             this.trySpawnDripParticles(var2, var3, var1);
          }
       }
+
    }
 
    private void trySpawnDripParticles(Level var1, BlockPos var2, BlockState var3) {
@@ -219,66 +215,51 @@ public class BeehiveBlock extends BaseEntityBlock {
                }
             }
          }
+
       }
    }
 
    private void spawnParticle(Level var1, BlockPos var2, VoxelShape var3, double var4) {
-      this.spawnFluidParticle(
-         var1,
-         (double)var2.getX() + var3.min(Direction.Axis.X),
-         (double)var2.getX() + var3.max(Direction.Axis.X),
-         (double)var2.getZ() + var3.min(Direction.Axis.Z),
-         (double)var2.getZ() + var3.max(Direction.Axis.Z),
-         var4
-      );
+      this.spawnFluidParticle(var1, (double)var2.getX() + var3.min(Direction.Axis.X), (double)var2.getX() + var3.max(Direction.Axis.X), (double)var2.getZ() + var3.min(Direction.Axis.Z), (double)var2.getZ() + var3.max(Direction.Axis.Z), var4);
    }
 
    private void spawnFluidParticle(Level var1, double var2, double var4, double var6, double var8, double var10) {
-      var1.addParticle(
-         ParticleTypes.DRIPPING_HONEY, Mth.lerp(var1.random.nextDouble(), var2, var4), var10, Mth.lerp(var1.random.nextDouble(), var6, var8), 0.0, 0.0, 0.0
-      );
+      var1.addParticle(ParticleTypes.DRIPPING_HONEY, Mth.lerp(var1.random.nextDouble(), var2, var4), var10, Mth.lerp(var1.random.nextDouble(), var6, var8), 0.0, 0.0, 0.0);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(HONEY_LEVEL, FACING);
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
    @Nullable
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BeehiveBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.BEEHIVE, BeehiveBlockEntity::serverTick);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide && var4.isCreative() && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
          BlockEntity var5 = var1.getBlockEntity(var2);
-         if (var5 instanceof BeehiveBlockEntity var6) {
-            int var7 = var3.getValue(HONEY_LEVEL);
+         if (var5 instanceof BeehiveBlockEntity) {
+            BeehiveBlockEntity var6 = (BeehiveBlockEntity)var5;
+            int var7 = (Integer)var3.getValue(HONEY_LEVEL);
             boolean var8 = !var6.isEmpty();
             if (var8 || var7 > 0) {
                ItemStack var9 = new ItemStack(this);
                var9.applyComponents(var6.collectComponents());
-               var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var7));
+               var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, (Comparable)var7));
                ItemEntity var10 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var9);
                var10.setDefaultPickUpDelay();
                var1.addFreshEntity(var10);
@@ -289,42 +270,41 @@ public class BeehiveBlock extends BaseEntityBlock {
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      Entity var3 = var2.getOptionalParameter(LootContextParams.THIS_ENTITY);
+      Entity var3 = (Entity)var2.getOptionalParameter(LootContextParams.THIS_ENTITY);
       if (var3 instanceof PrimedTnt || var3 instanceof Creeper || var3 instanceof WitherSkull || var3 instanceof WitherBoss || var3 instanceof MinecartTNT) {
-         BlockEntity var4 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-         if (var4 instanceof BeehiveBlockEntity var5) {
-            var5.emptyAllLivingFromHive(null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
+         BlockEntity var4 = (BlockEntity)var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+         if (var4 instanceof BeehiveBlockEntity) {
+            BeehiveBlockEntity var5 = (BeehiveBlockEntity)var4;
+            var5.emptyAllLivingFromHive((Player)null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
          }
       }
 
       return super.getDrops(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var4.getBlockState(var6).getBlock() instanceof FireBlock) {
          BlockEntity var7 = var4.getBlockEntity(var5);
-         if (var7 instanceof BeehiveBlockEntity var8) {
-            var8.emptyAllLivingFromHive(null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
+         if (var7 instanceof BeehiveBlockEntity) {
+            BeehiveBlockEntity var8 = (BeehiveBlockEntity)var7;
+            var8.emptyAllLivingFromHive((Player)null, var1, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
          }
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    public BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
+      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   }
+
+   static {
+      FACING = HorizontalDirectionalBlock.FACING;
+      HONEY_LEVEL = BlockStateProperties.LEVEL_HONEY;
    }
 }

@@ -12,15 +12,13 @@ public class ComparatorBlockEntity extends BlockEntity {
       super(BlockEntityType.COMPARATOR, var1, var2);
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("OutputSignal", this.output);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.output = var1.getInt("OutputSignal");
    }
 

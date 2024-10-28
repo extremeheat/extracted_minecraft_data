@@ -17,12 +17,11 @@ public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
       super();
    }
 
-   @Override
    protected ItemStack execute(BlockSource var1, ItemStack var2) {
       this.setSuccess(false);
       Item var3 = var2.getItem();
       if (var3 instanceof BlockItem) {
-         Direction var4 = var1.state().getValue(DispenserBlock.FACING);
+         Direction var4 = (Direction)var1.state().getValue(DispenserBlock.FACING);
          BlockPos var5 = var1.pos().relative(var4);
          Direction var6 = var1.level().isEmptyBlock(var5.below()) ? var4 : Direction.UP;
 

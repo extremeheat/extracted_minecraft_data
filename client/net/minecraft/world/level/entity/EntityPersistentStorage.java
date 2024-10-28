@@ -11,7 +11,6 @@ public interface EntityPersistentStorage<T> extends AutoCloseable {
 
    void flush(boolean var1);
 
-   @Override
    default void close() throws IOException {
    }
 }

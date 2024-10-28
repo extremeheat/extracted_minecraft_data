@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -9,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -23,14 +25,16 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private static final int PANIC_MAX_DURATION = 120;
    private static final int PANIC_DISTANCE_HORIZONTAL = 5;
    private static final int PANIC_DISTANCE_VERTICAL = 4;
-   private static final Predicate<PathfinderMob> DEFAULT_SHOULD_PANIC_PREDICATE = var0 -> var0.getLastHurtByMob() != null
-         || var0.isFreezing()
-         || var0.isOnFire();
+   private static final Predicate<PathfinderMob> DEFAULT_SHOULD_PANIC_PREDICATE = (var0) -> {
+      return var0.getLastHurtByMob() != null || var0.isFreezing() || var0.isOnFire();
+   };
    private final float speedMultiplier;
    private final Predicate<E> shouldPanic;
 
    public AnimalPanic(float var1) {
-      this(var1, DEFAULT_SHOULD_PANIC_PREDICATE::test);
+      Predicate var10002 = DEFAULT_SHOULD_PANIC_PREDICATE;
+      Objects.requireNonNull(var10002);
+      this(var1, var10002::test);
    }
 
    public AnimalPanic(float var1, Predicate<E> var2) {
@@ -40,8 +44,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return this.shouldPanic.test((E)var2)
-         && (var2.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING));
+      return this.shouldPanic.test(var2) && (var2.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING));
    }
 
    protected boolean canStillUse(ServerLevel var1, E var2, long var3) {
@@ -49,7 +52,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    }
 
    protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+      var2.getBrain().setMemory(MemoryModuleType.IS_PANICKING, (Object)true);
       var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
    }
 
@@ -60,11 +63,12 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
 
    protected void tick(ServerLevel var1, E var2, long var3) {
       if (var2.getNavigation().isDone()) {
-         Vec3 var5 = this.getPanicPos((E)var2, var1);
+         Vec3 var5 = this.getPanicPos(var2, var1);
          if (var5 != null) {
-            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var5, this.speedMultiplier, 0));
+            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var5, this.speedMultiplier, 0)));
          }
       }
+
    }
 
    @Nullable
@@ -86,12 +90,33 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
       } else {
          Predicate var4;
          if (Mth.ceil(var2.getBbWidth()) == 2) {
-            var4 = var1x -> BlockPos.squareOutSouthEast(var1x).allMatch(var1xx -> var1.getFluidState(var1xx).is(FluidTags.WATER));
+            var4 = (var1x) -> {
+               return BlockPos.squareOutSouthEast(var1x).allMatch((var1xx) -> {
+                  return var1.getFluidState(var1xx).is(FluidTags.WATER);
+               });
+            };
          } else {
-            var4 = var1x -> var1.getFluidState(var1x).is(FluidTags.WATER);
+            var4 = (var1x) -> {
+               return var1.getFluidState(var1x).is(FluidTags.WATER);
+            };
          }
 
          return BlockPos.findClosestMatch(var3, 5, 1, var4);
       }
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (PathfinderMob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (PathfinderMob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (PathfinderMob)var2, var3);
    }
 }

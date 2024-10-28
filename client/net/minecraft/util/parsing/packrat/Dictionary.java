@@ -5,16 +5,16 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 public class Dictionary<S> {
-   private final Map<Atom<?>, Rule<S, ?>> terms = new HashMap<>();
+   private final Map<Atom<?>, Rule<S, ?>> terms = new HashMap();
 
    public Dictionary() {
       super();
    }
 
    public <T> void put(Atom<T> var1, Rule<S, T> var2) {
-      Rule var3 = this.terms.putIfAbsent(var1, var2);
+      Rule var3 = (Rule)this.terms.putIfAbsent(var1, var2);
       if (var3 != null) {
-         throw new IllegalArgumentException("Trying to override rule: " + var1);
+         throw new IllegalArgumentException("Trying to override rule: " + String.valueOf(var1));
       }
    }
 
@@ -28,6 +28,6 @@ public class Dictionary<S> {
 
    @Nullable
    public <T> Rule<S, T> get(Atom<T> var1) {
-      return (Rule<S, T>)this.terms.get(var1);
+      return (Rule)this.terms.get(var1);
    }
 }

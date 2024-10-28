@@ -16,7 +16,6 @@ public class NearestAttackableWitchTargetGoal<T extends LivingEntity> extends Ne
       this.canAttack = var1;
    }
 
-   @Override
    public boolean canUse() {
       return this.canAttack && super.canUse();
    }

@@ -22,7 +22,6 @@ public class SporeBlossomBlock extends Block {
    private static final int PARTICLE_XZ_RADIUS = 10;
    private static final int PARTICLE_Y_MAX = 10;
 
-   @Override
    public MapCodec<SporeBlossomBlock> codec() {
       return CODEC;
    }
@@ -31,19 +30,14 @@ public class SporeBlossomBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return Block.canSupportCenter(var2, var3.above(), Direction.DOWN) && !var2.isWaterAt(var3);
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2 == Direction.UP && !this.canSurvive(var1, var4, var5)
-         ? Blocks.AIR.defaultBlockState()
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+      return var2 == Direction.UP && !this.canSurvive(var1, var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       int var5 = var3.getX();
       int var6 = var3.getY();
@@ -58,20 +52,12 @@ public class SporeBlossomBlock extends Block {
          var14.set(var5 + Mth.nextInt(var4, -10, 10), var6 - var4.nextInt(10), var7 + Mth.nextInt(var4, -10, 10));
          BlockState var16 = var2.getBlockState(var14);
          if (!var16.isCollisionShapeFullBlock(var2, var14)) {
-            var2.addParticle(
-               ParticleTypes.SPORE_BLOSSOM_AIR,
-               (double)var14.getX() + var4.nextDouble(),
-               (double)var14.getY() + var4.nextDouble(),
-               (double)var14.getZ() + var4.nextDouble(),
-               0.0,
-               0.0,
-               0.0
-            );
+            var2.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR, (double)var14.getX() + var4.nextDouble(), (double)var14.getY() + var4.nextDouble(), (double)var14.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
          }
       }
+
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }

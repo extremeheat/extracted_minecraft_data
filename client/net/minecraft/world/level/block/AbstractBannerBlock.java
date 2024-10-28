@@ -18,23 +18,23 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
       this.color = var1;
    }
 
-   @Override
    protected abstract MapCodec<? extends AbstractBannerBlock> codec();
 
-   @Override
    public boolean isPossibleToRespawnInThis(BlockState var1) {
       return true;
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BannerBlockEntity(var1, var2, this.color);
    }
 
-   @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       BlockEntity var5 = var1.getBlockEntity(var2);
-      return var5 instanceof BannerBlockEntity var4 ? var4.getItem() : super.getCloneItemStack(var1, var2, var3);
+      if (var5 instanceof BannerBlockEntity var4) {
+         return var4.getItem();
+      } else {
+         return super.getCloneItemStack(var1, var2, var3);
+      }
    }
 
    public DyeColor getColor() {

@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import java.util.List;
@@ -14,13 +13,13 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class CappedProcessor extends StructureProcessor {
-   public static final Codec<CappedProcessor> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter(var0x -> var0x.delegate),
-               IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter(var0x -> var0x.limit)
-            )
-            .apply(var0, CappedProcessor::new)
-   );
+   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((var0x) -> {
+         return var0x.delegate;
+      }), IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter((var0x) -> {
+         return var0x.limit;
+      })).apply(var0, CappedProcessor::new);
+   });
    private final StructureProcessor delegate;
    private final IntProvider limit;
 
@@ -30,28 +29,15 @@ public class CappedProcessor extends StructureProcessor {
       this.limit = var2;
    }
 
-   @Override
    protected StructureProcessorType<?> getType() {
       return StructureProcessorType.CAPPED;
    }
 
-   @Override
-   public final List<StructureTemplate.StructureBlockInfo> finalizeProcessing(
-      ServerLevelAccessor var1,
-      BlockPos var2,
-      BlockPos var3,
-      List<StructureTemplate.StructureBlockInfo> var4,
-      List<StructureTemplate.StructureBlockInfo> var5,
-      StructurePlaceSettings var6
-   ) {
+   public final List<StructureTemplate.StructureBlockInfo> finalizeProcessing(ServerLevelAccessor var1, BlockPos var2, BlockPos var3, List<StructureTemplate.StructureBlockInfo> var4, List<StructureTemplate.StructureBlockInfo> var5, StructurePlaceSettings var6) {
       if (this.limit.getMaxValue() != 0 && !var5.isEmpty()) {
          if (var4.size() != var5.size()) {
-            Util.logAndPauseIfInIde(
-               "Original block info list not in sync with processed list, skipping processing. Original size: "
-                  + var4.size()
-                  + ", Processed size: "
-                  + var5.size()
-            );
+            int var10000 = var4.size();
+            Util.logAndPauseIfInIde("Original block info list not in sync with processed list, skipping processing. Original size: " + var10000 + ", Processed size: " + var5.size());
             return var5;
          } else {
             RandomSource var7 = RandomSource.create(var1.getLevel().getSeed()).forkPositional().at(var2);

@@ -20,7 +20,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
@@ -32,31 +31,17 @@ public class LoomMenu extends AbstractContainerMenu {
    private static final int USE_ROW_SLOT_START = 31;
    private static final int USE_ROW_SLOT_END = 40;
    private final ContainerLevelAccess access;
-   final DataSlot selectedBannerPatternIndex = DataSlot.standalone();
-   private List<Holder<BannerPattern>> selectablePatterns = List.of();
-   Runnable slotUpdateListener = () -> {
-   };
+   final DataSlot selectedBannerPatternIndex;
+   private List<Holder<BannerPattern>> selectablePatterns;
+   Runnable slotUpdateListener;
    private final HolderGetter<BannerPattern> patternGetter;
    final Slot bannerSlot;
    final Slot dyeSlot;
    private final Slot patternSlot;
    private final Slot resultSlot;
    long lastSoundTime;
-   private final Container inputContainer = new SimpleContainer(3) {
-      @Override
-      public void setChanged() {
-         super.setChanged();
-         LoomMenu.this.slotsChanged(this);
-         LoomMenu.this.slotUpdateListener.run();
-      }
-   };
-   private final Container outputContainer = new SimpleContainer(1) {
-      @Override
-      public void setChanged() {
-         super.setChanged();
-         LoomMenu.this.slotUpdateListener.run();
-      }
-   };
+   private final Container inputContainer;
+   private final Container outputContainer;
 
    public LoomMenu(int var1, Inventory var2) {
       this(var1, var2, ContainerLevelAccess.NULL);
@@ -64,32 +49,44 @@ public class LoomMenu extends AbstractContainerMenu {
 
    public LoomMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
       super(MenuType.LOOM, var1);
+      this.selectedBannerPatternIndex = DataSlot.standalone();
+      this.selectablePatterns = List.of();
+      this.slotUpdateListener = () -> {
+      };
+      this.inputContainer = new SimpleContainer(3) {
+         public void setChanged() {
+            super.setChanged();
+            LoomMenu.this.slotsChanged(this);
+            LoomMenu.this.slotUpdateListener.run();
+         }
+      };
+      this.outputContainer = new SimpleContainer(1) {
+         public void setChanged() {
+            super.setChanged();
+            LoomMenu.this.slotUpdateListener.run();
+         }
+      };
       this.access = var3;
-      this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
-         @Override
+      this.bannerSlot = this.addSlot(new Slot(this, this.inputContainer, 0, 13, 26) {
          public boolean mayPlace(ItemStack var1) {
             return var1.getItem() instanceof BannerItem;
          }
       });
-      this.dyeSlot = this.addSlot(new Slot(this.inputContainer, 1, 33, 26) {
-         @Override
+      this.dyeSlot = this.addSlot(new Slot(this, this.inputContainer, 1, 33, 26) {
          public boolean mayPlace(ItemStack var1) {
             return var1.getItem() instanceof DyeItem;
          }
       });
-      this.patternSlot = this.addSlot(new Slot(this.inputContainer, 2, 23, 45) {
-         @Override
+      this.patternSlot = this.addSlot(new Slot(this, this.inputContainer, 2, 23, 45) {
          public boolean mayPlace(ItemStack var1) {
             return var1.getItem() instanceof BannerPatternItem;
          }
       });
       this.resultSlot = this.addSlot(new Slot(this.outputContainer, 0, 143, 57) {
-         @Override
          public boolean mayPlace(ItemStack var1) {
             return false;
          }
 
-         @Override
          public void onTake(Player var1, ItemStack var2) {
             LoomMenu.this.bannerSlot.remove(1);
             LoomMenu.this.dyeSlot.remove(1);
@@ -98,40 +95,40 @@ public class LoomMenu extends AbstractContainerMenu {
             }
 
             var3.execute((var1x, var2x) -> {
-               long var3xx = var1x.getGameTime();
-               if (LoomMenu.this.lastSoundTime != var3xx) {
-                  var1x.playSound(null, var2x, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  LoomMenu.this.lastSoundTime = var3xx;
+               long var3x = var1x.getGameTime();
+               if (LoomMenu.this.lastSoundTime != var3x) {
+                  var1x.playSound((Player)null, (BlockPos)var2x, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  LoomMenu.this.lastSoundTime = var3x;
                }
+
             });
             super.onTake(var1, var2);
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
+      int var4;
+      for(var4 = 0; var4 < 3; ++var4) {
          for(int var5 = 0; var5 < 9; ++var5) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
-         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
+      for(var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var2, var4, 8 + var4 * 18, 142));
       }
 
       this.addDataSlot(this.selectedBannerPatternIndex);
       this.patternGetter = var2.player.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return stillValid(this.access, var1, Blocks.LOOM);
    }
 
-   @Override
    public boolean clickMenuButton(Player var1, int var2) {
       if (var2 >= 0 && var2 < this.selectablePatterns.size()) {
          this.selectedBannerPatternIndex.set(var2);
-         this.setupResultSlot(this.selectablePatterns.get(var2));
+         this.setupResultSlot((Holder)this.selectablePatterns.get(var2));
          return true;
       } else {
          return false;
@@ -140,12 +137,15 @@ public class LoomMenu extends AbstractContainerMenu {
 
    private List<Holder<BannerPattern>> getSelectablePatterns(ItemStack var1) {
       if (var1.isEmpty()) {
-         return this.patternGetter.get(BannerPatternTags.NO_ITEM_REQUIRED).<List<Holder<BannerPattern>>>map(ImmutableList::copyOf).orElse(ImmutableList.of());
+         return (List)this.patternGetter.get(BannerPatternTags.NO_ITEM_REQUIRED).map(ImmutableList::copyOf).orElse(ImmutableList.of());
       } else {
          Item var3 = var1.getItem();
-         return var3 instanceof BannerPatternItem var2
-            ? this.patternGetter.get(var2.getBannerPattern()).<List<Holder<BannerPattern>>>map(ImmutableList::copyOf).orElse(ImmutableList.of())
-            : List.of();
+         if (var3 instanceof BannerPatternItem) {
+            BannerPatternItem var2 = (BannerPatternItem)var3;
+            return (List)this.patternGetter.get(var2.getBannerPattern()).map(ImmutableList::copyOf).orElse(ImmutableList.of());
+         } else {
+            return List.of();
+         }
       }
    }
 
@@ -153,7 +153,6 @@ public class LoomMenu extends AbstractContainerMenu {
       return var1 >= 0 && var1 < this.selectablePatterns.size();
    }
 
-   @Override
    public void slotsChanged(Container var1) {
       ItemStack var2 = this.bannerSlot.getItem();
       ItemStack var3 = this.dyeSlot.getItem();
@@ -166,7 +165,7 @@ public class LoomMenu extends AbstractContainerMenu {
          Holder var8;
          if (this.selectablePatterns.size() == 1) {
             this.selectedBannerPatternIndex.set(0);
-            var8 = this.selectablePatterns.get(0);
+            var8 = (Holder)this.selectablePatterns.get(0);
          } else if (!var6) {
             this.selectedBannerPatternIndex.set(-1);
             var8 = null;
@@ -183,7 +182,7 @@ public class LoomMenu extends AbstractContainerMenu {
          }
 
          if (var8 != null) {
-            BannerPatternLayers var11 = var2.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+            BannerPatternLayers var11 = (BannerPatternLayers)var2.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
             boolean var12 = var11.layers().size() >= 6;
             if (var12) {
                this.selectedBannerPatternIndex.set(-1);
@@ -215,10 +214,9 @@ public class LoomMenu extends AbstractContainerMenu {
       this.slotUpdateListener = var1;
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -268,10 +266,11 @@ public class LoomMenu extends AbstractContainerMenu {
       return var3;
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.inputContainer));
+      this.access.execute((var2, var3) -> {
+         this.clearContainer(var1, this.inputContainer);
+      });
    }
 
    private void setupResultSlot(Holder<BannerPattern> var1) {
@@ -281,14 +280,15 @@ public class LoomMenu extends AbstractContainerMenu {
       if (!var2.isEmpty() && !var3.isEmpty()) {
          var4 = var2.copyWithCount(1);
          DyeColor var5 = ((DyeItem)var3.getItem()).getDyeColor();
-         var4.update(
-            DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, var2x -> new BannerPatternLayers.Builder().addAll(var2x).add(var1, var5).build()
-         );
+         var4.update(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, (var2x) -> {
+            return (new BannerPatternLayers.Builder()).addAll(var2x).add(var1, var5).build();
+         });
       }
 
       if (!ItemStack.matches(var4, this.resultSlot.getItem())) {
          this.resultSlot.set(var4);
       }
+
    }
 
    public Slot getBannerSlot() {

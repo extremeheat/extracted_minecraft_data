@@ -17,13 +17,12 @@ import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WorkAtComposter extends WorkAtPoi {
-   private static final List<Item> COMPOSTABLE_ITEMS = ImmutableList.of(Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS);
+   private static final List<Item> COMPOSTABLE_ITEMS;
 
    public WorkAtComposter() {
       super();
    }
 
-   @Override
    protected void useWorkstation(ServerLevel var1, Villager var2) {
       Optional var3 = var2.getBrain().getMemory(MemoryModuleType.JOB_SITE);
       if (!var3.isEmpty()) {
@@ -33,12 +32,13 @@ public class WorkAtComposter extends WorkAtPoi {
             this.makeBread(var2);
             this.compostItems(var1, var2, var4, var5);
          }
+
       }
    }
 
    private void compostItems(ServerLevel var1, Villager var2, GlobalPos var3, BlockState var4) {
       BlockPos var5 = var3.pos();
-      if (var4.getValue(ComposterBlock.LEVEL) == 8) {
+      if ((Integer)var4.getValue(ComposterBlock.LEVEL) == 8) {
          var4 = ComposterBlock.extractProduce(var2, var4, var1, var5);
       }
 
@@ -62,7 +62,7 @@ public class WorkAtComposter extends WorkAtPoi {
 
                for(int var18 = 0; var18 < var17; ++var18) {
                   var11 = ComposterBlock.insertItem(var2, var11, var1, var13, var5);
-                  if (var11.getValue(ComposterBlock.LEVEL) == 7) {
+                  if ((Integer)var11.getValue(ComposterBlock.LEVEL) == 7) {
                      this.spawnComposterFillEffects(var1, var4, var5, var11);
                      return;
                   }
@@ -92,7 +92,12 @@ public class WorkAtComposter extends WorkAtPoi {
             if (!var8.isEmpty()) {
                var1.spawnAtLocation(var8, 0.5F);
             }
+
          }
       }
+   }
+
+   static {
+      COMPOSTABLE_ITEMS = ImmutableList.of(Items.WHEAT_SEEDS, Items.BEETROOT_SEEDS);
    }
 }

@@ -26,7 +26,8 @@ public class Utf8String {
             String var5 = var0.toString(var0.readerIndex(), var3, StandardCharsets.UTF_8);
             var0.readerIndex(var0.readerIndex() + var3);
             if (var5.length() > var1) {
-               throw new DecoderException("The received string length is longer than maximum allowed (" + var5.length() + " > " + var1 + ")");
+               int var10002 = var5.length();
+               throw new DecoderException("The received string length is longer than maximum allowed (" + var10002 + " > " + var1 + ")");
             } else {
                return var5;
             }
@@ -36,7 +37,8 @@ public class Utf8String {
 
    public static void write(ByteBuf var0, CharSequence var1, int var2) {
       if (var1.length() > var2) {
-         throw new EncoderException("String too big (was " + var1.length() + " characters, max " + var2 + ")");
+         int var10002 = var1.length();
+         throw new EncoderException("String too big (was " + var10002 + " characters, max " + var2 + ")");
       } else {
          int var3 = ByteBufUtil.utf8MaxBytes(var1);
          ByteBuf var4 = var0.alloc().buffer(var3);
@@ -53,6 +55,7 @@ public class Utf8String {
          } finally {
             var4.release();
          }
+
       }
    }
 }

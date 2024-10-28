@@ -8,14 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
-public record GuiMessageTag(int a, @Nullable GuiMessageTag.Icon b, @Nullable Component c, @Nullable String d) {
-   private final int indicatorColor;
-   @Nullable
-   private final GuiMessageTag.Icon icon;
-   @Nullable
-   private final Component text;
-   @Nullable
-   private final String logTag;
+public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable Component text, @Nullable String logTag) {
    private static final Component SYSTEM_TEXT = Component.translatable("chat.tag.system");
    private static final Component SYSTEM_TEXT_SINGLE_PLAYER = Component.translatable("chat.tag.system_single_player");
    private static final Component CHAT_NOT_SECURE_TEXT = Component.translatable("chat.tag.not_secure");
@@ -23,12 +16,12 @@ public record GuiMessageTag(int a, @Nullable GuiMessageTag.Icon b, @Nullable Com
    private static final Component CHAT_ERROR_TEXT = Component.translatable("chat.tag.error");
    private static final int CHAT_NOT_SECURE_INDICATOR_COLOR = 13684944;
    private static final int CHAT_MODIFIED_INDICATOR_COLOR = 6316128;
-   private static final GuiMessageTag SYSTEM = new GuiMessageTag(13684944, null, SYSTEM_TEXT, "System");
-   private static final GuiMessageTag SYSTEM_SINGLE_PLAYER = new GuiMessageTag(13684944, null, SYSTEM_TEXT_SINGLE_PLAYER, "System");
-   private static final GuiMessageTag CHAT_NOT_SECURE = new GuiMessageTag(13684944, null, CHAT_NOT_SECURE_TEXT, "Not Secure");
-   private static final GuiMessageTag CHAT_ERROR = new GuiMessageTag(16733525, null, CHAT_ERROR_TEXT, "Chat Error");
+   private static final GuiMessageTag SYSTEM;
+   private static final GuiMessageTag SYSTEM_SINGLE_PLAYER;
+   private static final GuiMessageTag CHAT_NOT_SECURE;
+   private static final GuiMessageTag CHAT_ERROR;
 
-   public GuiMessageTag(int var1, @Nullable GuiMessageTag.Icon var2, @Nullable Component var3, @Nullable String var4) {
+   public GuiMessageTag(int var1, @Nullable Icon var2, @Nullable Component var3, @Nullable String var4) {
       super();
       this.indicatorColor = var1;
       this.icon = var2;
@@ -50,12 +43,38 @@ public record GuiMessageTag(int a, @Nullable GuiMessageTag.Icon b, @Nullable Com
 
    public static GuiMessageTag chatModified(String var0) {
       MutableComponent var1 = Component.literal(var0).withStyle(ChatFormatting.GRAY);
-      MutableComponent var2 = Component.empty().append(CHAT_MODIFIED_TEXT).append(CommonComponents.NEW_LINE).append(var1);
+      MutableComponent var2 = Component.empty().append(CHAT_MODIFIED_TEXT).append(CommonComponents.NEW_LINE).append((Component)var1);
       return new GuiMessageTag(6316128, GuiMessageTag.Icon.CHAT_MODIFIED, var2, "Modified");
    }
 
    public static GuiMessageTag chatError() {
       return CHAT_ERROR;
+   }
+
+   public int indicatorColor() {
+      return this.indicatorColor;
+   }
+
+   @Nullable
+   public Icon icon() {
+      return this.icon;
+   }
+
+   @Nullable
+   public Component text() {
+      return this.text;
+   }
+
+   @Nullable
+   public String logTag() {
+      return this.logTag;
+   }
+
+   static {
+      SYSTEM = new GuiMessageTag(13684944, (Icon)null, SYSTEM_TEXT, "System");
+      SYSTEM_SINGLE_PLAYER = new GuiMessageTag(13684944, (Icon)null, SYSTEM_TEXT_SINGLE_PLAYER, "System");
+      CHAT_NOT_SECURE = new GuiMessageTag(13684944, (Icon)null, CHAT_NOT_SECURE_TEXT, "Not Secure");
+      CHAT_ERROR = new GuiMessageTag(16733525, (Icon)null, CHAT_ERROR_TEXT, "Chat Error");
    }
 
    public static enum Icon {
@@ -73,6 +92,11 @@ public record GuiMessageTag(int a, @Nullable GuiMessageTag.Icon b, @Nullable Com
 
       public void draw(GuiGraphics var1, int var2, int var3) {
          var1.blitSprite(this.sprite, var2, var3, this.width, this.height);
+      }
+
+      // $FF: synthetic method
+      private static Icon[] $values() {
+         return new Icon[]{CHAT_MODIFIED};
       }
    }
 }

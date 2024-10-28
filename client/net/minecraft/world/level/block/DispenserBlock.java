@@ -11,6 +11,7 @@ import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -35,19 +36,17 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class DispenserBlock extends BaseEntityBlock {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<DispenserBlock> CODEC = simpleCodec(DispenserBlock::new);
-   public static final DirectionProperty FACING = DirectionalBlock.FACING;
-   public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
-   private static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY = Util.make(
-      new Object2ObjectOpenHashMap(), var0 -> var0.defaultReturnValue(new DefaultDispenseItemBehavior())
-   );
+   public static final DirectionProperty FACING;
+   public static final BooleanProperty TRIGGERED;
+   public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY;
    private static final int TRIGGER_DURATION = 4;
 
-   @Override
    public MapCodec<? extends DispenserBlock> codec() {
       return CODEC;
    }
@@ -56,12 +55,15 @@ public class DispenserBlock extends BaseEntityBlock {
       DISPENSER_REGISTRY.put(var0.asItem(), var1);
    }
 
-   protected DispenserBlock(BlockBehaviour.Properties var1) {
-      super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TRIGGERED, Boolean.valueOf(false)));
+   public static void registerProjectileBehavior(ItemLike var0) {
+      DISPENSER_REGISTRY.put(var0.asItem(), new ProjectileDispenseBehavior(var0.asItem()));
    }
 
-   @Override
+   protected DispenserBlock(BlockBehaviour.Properties var1) {
+      super(var1);
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TRIGGERED, false));
+   }
+
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -81,7 +83,7 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected void dispenseFrom(ServerLevel var1, BlockState var2, BlockPos var3) {
-      DispenserBlockEntity var4 = var1.getBlockEntity(var3, BlockEntityType.DISPENSER).orElse(null);
+      DispenserBlockEntity var4 = (DispenserBlockEntity)var1.getBlockEntity(var3, BlockEntityType.DISPENSER).orElse((Object)null);
       if (var4 == null) {
          LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", var3);
       } else {
@@ -96,79 +98,82 @@ public class DispenserBlock extends BaseEntityBlock {
             if (var8 != DispenseItemBehavior.NOOP) {
                var4.setItem(var6, var8.dispense(var5, var7));
             }
+
          }
       }
    }
 
    protected DispenseItemBehavior getDispenseMethod(ItemStack var1) {
-      return DISPENSER_REGISTRY.get(var1.getItem());
+      return (DispenseItemBehavior)DISPENSER_REGISTRY.get(var1.getItem());
    }
 
-   @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3) || var2.hasNeighborSignal(var3.above());
-      boolean var8 = var1.getValue(TRIGGERED);
+      boolean var8 = (Boolean)var1.getValue(TRIGGERED);
       if (var7 && !var8) {
          var2.scheduleTick(var3, this, 4);
-         var2.setBlock(var3, var1.setValue(TRIGGERED, Boolean.valueOf(true)), 2);
+         var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, true), 2);
       } else if (!var7 && var8) {
-         var2.setBlock(var3, var1.setValue(TRIGGERED, Boolean.valueOf(false)), 2);
+         var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, false), 2);
       }
+
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       this.dispenseFrom(var2, var1, var3);
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new DispenserBlockEntity(var1, var2);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
    }
 
-   @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       Containers.dropContentsOnDestroy(var1, var4, var2, var3);
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
    public static Position getDispensePosition(BlockSource var0) {
-      Direction var1 = var0.state().getValue(FACING);
-      return var0.center().add(0.7 * (double)var1.getStepX(), 0.7 * (double)var1.getStepY(), 0.7 * (double)var1.getStepZ());
+      return getDispensePosition(var0, 0.7, Vec3.ZERO);
    }
 
-   @Override
+   public static Position getDispensePosition(BlockSource var0, double var1, Vec3 var3) {
+      Direction var4 = (Direction)var0.state().getValue(FACING);
+      return var0.center().add(var1 * (double)var4.getStepX() + var3.x(), var1 * (double)var4.getStepY() + var3.y(), var1 * (double)var4.getStepZ() + var3.z());
+   }
+
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
+      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, TRIGGERED);
+   }
+
+   static {
+      FACING = DirectionalBlock.FACING;
+      TRIGGERED = BlockStateProperties.TRIGGERED;
+      DISPENSER_REGISTRY = (Map)Util.make(new Object2ObjectOpenHashMap(), (var0) -> {
+         var0.defaultReturnValue(new DefaultDispenseItemBehavior());
+      });
    }
 }

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -24,37 +25,26 @@ public class Husk extends Zombie {
       return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (MobSpawnType.isSpawner(var2) || var1.canSeeSky(var3));
    }
 
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected boolean isSunSensitive() {
       return false;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.HUSK_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.HUSK_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.HUSK_DEATH;
    }
 
-   @Override
    protected SoundEvent getStepSound() {
       return SoundEvents.HUSK_STEP;
    }
 
-   @Override
    public boolean doHurtTarget(Entity var1) {
       boolean var2 = super.doHurtTarget(var1);
       if (var2 && this.getMainHandItem().isEmpty() && var1 instanceof LivingEntity) {
@@ -65,20 +55,18 @@ public class Husk extends Zombie {
       return var2;
    }
 
-   @Override
    protected boolean convertsInWater() {
       return true;
    }
 
-   @Override
    protected void doUnderWaterConversion() {
       this.convertToZombieType(EntityType.ZOMBIE);
       if (!this.isSilent()) {
-         this.level().levelEvent(null, 1041, this.blockPosition(), 0);
+         this.level().levelEvent((Player)null, 1041, this.blockPosition(), 0);
       }
+
    }
 
-   @Override
    protected ItemStack getSkull() {
       return ItemStack.EMPTY;
    }

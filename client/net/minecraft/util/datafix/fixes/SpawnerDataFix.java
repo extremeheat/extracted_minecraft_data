@@ -23,13 +23,13 @@ public class SpawnerDataFix extends DataFix {
       Type var4 = var2.findField("SpawnData").type();
       OpticFinder var5 = var1.findField("SpawnPotentials");
       Type var6 = var2.findField("SpawnPotentials").type();
-      return this.fixTypeEverywhereTyped(
-         "Fix mob spawner data structure",
-         var1,
-         var2,
-         var5x -> var5x.updateTyped(var3, var4, var2xx -> this.wrapEntityToSpawnData(var4, var2xx))
-               .updateTyped(var5, var6, var2xx -> this.wrapSpawnPotentialsToWeightedEntries(var6, var2xx))
-      );
+      return this.fixTypeEverywhereTyped("Fix mob spawner data structure", var1, var2, (var5x) -> {
+         return var5x.updateTyped(var3, var4, (var2) -> {
+            return this.wrapEntityToSpawnData(var4, var2);
+         }).updateTyped(var5, var6, (var2) -> {
+            return this.wrapSpawnPotentialsToWeightedEntries(var6, var2);
+         });
+      });
    }
 
    private <T> Typed<T> wrapEntityToSpawnData(Type<T> var1, Typed<?> var2) {
@@ -40,13 +40,13 @@ public class SpawnerDataFix extends DataFix {
    private <T> Typed<T> wrapSpawnPotentialsToWeightedEntries(Type<T> var1, Typed<?> var2) {
       DynamicOps var3 = var2.getOps();
       List var4 = (List)var2.getValue();
-      List var5 = var4.stream().map(var1x -> {
-         Pair var2xx = (Pair)var1x;
-         int var3xx = ((Dynamic)var2xx.getSecond()).get("Weight").asNumber().result().orElse(1).intValue();
-         Dynamic var4xx = new Dynamic(var3);
-         var4xx = var4xx.set("weight", var4xx.createInt(var3xx));
-         Dynamic var5xx = ((Dynamic)var2xx.getSecond()).remove("Weight").remove("Entity");
-         return Pair.of(Pair.of(var2xx.getFirst(), var5xx), var4xx);
+      List var5 = var4.stream().map((var1x) -> {
+         Pair var2 = (Pair)var1x;
+         int var3x = ((Number)((Dynamic)var2.getSecond()).get("Weight").asNumber().result().orElse(1)).intValue();
+         Dynamic var4 = new Dynamic(var3);
+         var4 = var4.set("weight", var4.createInt(var3x));
+         Dynamic var5 = ((Dynamic)var2.getSecond()).remove("Weight").remove("Entity");
+         return Pair.of(Pair.of(var2.getFirst(), var5), var4);
       }).toList();
       return new Typed(var1, var3, var5);
    }

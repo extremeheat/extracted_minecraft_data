@@ -8,6 +8,7 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -22,9 +23,8 @@ public class MinecartItem extends Item {
    private static final DispenseItemBehavior DISPENSE_ITEM_BEHAVIOR = new DefaultDispenseItemBehavior() {
       private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
 
-      @Override
       public ItemStack execute(BlockSource var1, ItemStack var2) {
-         Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+         Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
          ServerLevel var4 = var1.level();
          Vec3 var5 = var1.center();
          double var6 = var5.x() + (double)var3.getStepX() * 1.125;
@@ -32,9 +32,7 @@ public class MinecartItem extends Item {
          double var10 = var5.z() + (double)var3.getStepZ() * 1.125;
          BlockPos var12 = var1.pos().relative(var3);
          BlockState var13 = var4.getBlockState(var12);
-         RailShape var14 = var13.getBlock() instanceof BaseRailBlock
-            ? var13.getValue(((BaseRailBlock)var13.getBlock()).getShapeProperty())
-            : RailShape.NORTH_SOUTH;
+         RailShape var14 = var13.getBlock() instanceof BaseRailBlock ? (RailShape)var13.getValue(((BaseRailBlock)var13.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
          double var15;
          if (var13.is(BlockTags.RAILS)) {
             if (var14.isAscending()) {
@@ -48,9 +46,7 @@ public class MinecartItem extends Item {
             }
 
             BlockState var17 = var4.getBlockState(var12.below());
-            RailShape var18 = var17.getBlock() instanceof BaseRailBlock
-               ? var17.getValue(((BaseRailBlock)var17.getBlock()).getShapeProperty())
-               : RailShape.NORTH_SOUTH;
+            RailShape var18 = var17.getBlock() instanceof BaseRailBlock ? (RailShape)var17.getValue(((BaseRailBlock)var17.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
             if (var3 != Direction.DOWN && var18.isAscending()) {
                var15 = -0.4;
             } else {
@@ -58,13 +54,12 @@ public class MinecartItem extends Item {
             }
          }
 
-         AbstractMinecart var19 = AbstractMinecart.createMinecart(var4, var6, var8 + var15, var10, ((MinecartItem)var2.getItem()).type, var2, null);
+         AbstractMinecart var19 = AbstractMinecart.createMinecart(var4, var6, var8 + var15, var10, ((MinecartItem)var2.getItem()).type, var2, (Player)null);
          var4.addFreshEntity(var19);
          var2.shrink(1);
          return var2;
       }
 
-      @Override
       protected void playSound(BlockSource var1) {
          var1.level().levelEvent(1000, var1.pos(), 0);
       }
@@ -77,7 +72,6 @@ public class MinecartItem extends Item {
       DispenserBlock.registerBehavior(this, DISPENSE_ITEM_BEHAVIOR);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -86,20 +80,17 @@ public class MinecartItem extends Item {
          return InteractionResult.FAIL;
       } else {
          ItemStack var5 = var1.getItemInHand();
-         if (var2 instanceof ServerLevel var6) {
-            RailShape var7 = var4.getBlock() instanceof BaseRailBlock
-               ? var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty())
-               : RailShape.NORTH_SOUTH;
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var6 = (ServerLevel)var2;
+            RailShape var7 = var4.getBlock() instanceof BaseRailBlock ? (RailShape)var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
             double var8 = 0.0;
             if (var7.isAscending()) {
                var8 = 0.5;
             }
 
-            AbstractMinecart var10 = AbstractMinecart.createMinecart(
-               (ServerLevel)var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer()
-            );
-            ((ServerLevel)var6).addFreshEntity(var10);
-            ((ServerLevel)var6).gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), ((ServerLevel)var6).getBlockState(var3.below())));
+            AbstractMinecart var10 = AbstractMinecart.createMinecart(var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer());
+            var6.addFreshEntity(var10);
+            var6.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var6.getBlockState(var3.below())));
          }
 
          var5.shrink(1);

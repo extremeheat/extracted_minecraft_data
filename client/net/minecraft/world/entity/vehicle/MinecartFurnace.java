@@ -22,11 +22,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartFurnace extends AbstractMinecart {
-   private static final EntityDataAccessor<Boolean> DATA_ID_FUEL = SynchedEntityData.defineId(MinecartFurnace.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> DATA_ID_FUEL;
    private int fuel;
    public double xPush;
    public double zPush;
-   private static final Ingredient INGREDIENT = Ingredient.of(Items.COAL, Items.CHARCOAL);
+   private static final Ingredient INGREDIENT;
 
    public MinecartFurnace(EntityType<? extends MinecartFurnace> var1, Level var2) {
       super(var1, var2);
@@ -36,18 +36,15 @@ public class MinecartFurnace extends AbstractMinecart {
       super(EntityType.FURNACE_MINECART, var1, var2, var4, var6);
    }
 
-   @Override
    public AbstractMinecart.Type getMinecartType() {
       return AbstractMinecart.Type.FURNACE;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_ID_FUEL, false);
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (!this.level().isClientSide()) {
@@ -66,19 +63,17 @@ public class MinecartFurnace extends AbstractMinecart {
       if (this.hasFuel() && this.random.nextInt(4) == 0) {
          this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 0.8, this.getZ(), 0.0, 0.0, 0.0);
       }
+
    }
 
-   @Override
    protected double getMaxSpeed() {
       return (this.isInWater() ? 3.0 : 4.0) / 20.0;
    }
 
-   @Override
    protected Item getDropItem() {
       return Items.FURNACE_MINECART;
    }
 
-   @Override
    protected void moveAlongTrack(BlockPos var1, BlockState var2) {
       double var3 = 1.0E-4;
       double var5 = 0.001;
@@ -92,9 +87,9 @@ public class MinecartFurnace extends AbstractMinecart {
          this.xPush = var7.x / var12 * var14;
          this.zPush = var7.z / var12 * var14;
       }
+
    }
 
-   @Override
    protected void applyNaturalSlowdown() {
       double var1 = this.xPush * this.xPush + this.zPush * this.zPush;
       if (var1 > 1.0E-7) {
@@ -114,7 +109,6 @@ public class MinecartFurnace extends AbstractMinecart {
       super.applyNaturalSlowdown();
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (INGREDIENT.test(var3) && this.fuel + 3600 <= 32000) {
@@ -130,7 +124,6 @@ public class MinecartFurnace extends AbstractMinecart {
       return InteractionResult.sidedSuccess(this.level().isClientSide);
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putDouble("PushX", this.xPush);
@@ -138,7 +131,6 @@ public class MinecartFurnace extends AbstractMinecart {
       var1.putShort("Fuel", (short)this.fuel);
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.xPush = var1.getDouble("PushX");
@@ -147,15 +139,19 @@ public class MinecartFurnace extends AbstractMinecart {
    }
 
    protected boolean hasFuel() {
-      return this.entityData.get(DATA_ID_FUEL);
+      return (Boolean)this.entityData.get(DATA_ID_FUEL);
    }
 
    protected void setHasFuel(boolean var1) {
       this.entityData.set(DATA_ID_FUEL, var1);
    }
 
-   @Override
    public BlockState getDefaultDisplayBlockState() {
-      return Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH).setValue(FurnaceBlock.LIT, Boolean.valueOf(this.hasFuel()));
+      return (BlockState)((BlockState)Blocks.FURNACE.defaultBlockState().setValue(FurnaceBlock.FACING, Direction.NORTH)).setValue(FurnaceBlock.LIT, this.hasFuel());
+   }
+
+   static {
+      DATA_ID_FUEL = SynchedEntityData.defineId(MinecartFurnace.class, EntityDataSerializers.BOOLEAN);
+      INGREDIENT = Ingredient.of(Items.COAL, Items.CHARCOAL);
    }
 }

@@ -27,19 +27,15 @@ public class Snowball extends ThrowableItemProjectile {
       super(EntityType.SNOWBALL, var2, var4, var6, var1);
    }
 
-   @Override
    protected Item getDefaultItem() {
       return Items.SNOWBALL;
    }
 
    private ParticleOptions getParticle() {
       ItemStack var1 = this.getItem();
-      return (ParticleOptions)(!var1.isEmpty() && !var1.is(this.getDefaultItem())
-         ? new ItemParticleOption(ParticleTypes.ITEM, var1)
-         : ParticleTypes.ITEM_SNOWBALL);
+      return (ParticleOptions)(!var1.isEmpty() && !var1.is(this.getDefaultItem()) ? new ItemParticleOption(ParticleTypes.ITEM, var1) : ParticleTypes.ITEM_SNOWBALL);
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 3) {
          ParticleOptions var2 = this.getParticle();
@@ -48,9 +44,9 @@ public class Snowball extends ThrowableItemProjectile {
             this.level().addParticle(var2, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
          }
       }
+
    }
 
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       Entity var2 = var1.getEntity();
@@ -58,12 +54,12 @@ public class Snowball extends ThrowableItemProjectile {
       var2.hurt(this.damageSources().thrown(this, this.getOwner()), (float)var3);
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level().isClientSide) {
          this.level().broadcastEntityEvent(this, (byte)3);
          this.discard();
       }
+
    }
 }

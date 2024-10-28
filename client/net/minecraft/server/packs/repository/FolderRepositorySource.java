@@ -8,6 +8,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -26,7 +27,7 @@ import org.slf4j.Logger;
 
 public class FolderRepositorySource implements RepositorySource {
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final PackSelectionConfig DISCOVERED_PACK_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
+   private static final PackSelectionConfig DISCOVERED_PACK_SELECTION_CONFIG;
    private final Path folder;
    private final PackType packType;
    private final PackSource packSource;
@@ -44,7 +45,6 @@ public class FolderRepositorySource implements RepositorySource {
       return var0.getFileName().toString();
    }
 
-   @Override
    public void loadPacks(Consumer<Pack> var1) {
       try {
          FileUtil.createDirectoriesSafe(this.folder);
@@ -54,10 +54,12 @@ public class FolderRepositorySource implements RepositorySource {
             if (var5 != null) {
                var1.accept(var5);
             }
+
          });
       } catch (IOException var3) {
          LOGGER.warn("Failed to list packs in {}", this.folder, var3);
       }
+
    }
 
    private PackLocationInfo createDiscoveredFilePackInfo(Path var1) {
@@ -66,13 +68,18 @@ public class FolderRepositorySource implements RepositorySource {
    }
 
    public static void discoverPacks(Path var0, DirectoryValidator var1, BiConsumer<Path, Pack.ResourcesSupplier> var2) throws IOException {
-      FolderRepositorySource.FolderPackDetector var3 = new FolderRepositorySource.FolderPackDetector(var1);
+      FolderPackDetector var3 = new FolderPackDetector(var1);
+      DirectoryStream var4 = Files.newDirectoryStream(var0);
 
-      try (DirectoryStream var4 = Files.newDirectoryStream(var0)) {
-         for(Path var6 : var4) {
+      try {
+         Iterator var5 = var4.iterator();
+
+         while(var5.hasNext()) {
+            Path var6 = (Path)var5.next();
+
             try {
                ArrayList var7 = new ArrayList();
-               Pack.ResourcesSupplier var8 = var3.detectPackResources(var6, var7);
+               Pack.ResourcesSupplier var8 = (Pack.ResourcesSupplier)var3.detectPackResources(var6, var7);
                if (!var7.isEmpty()) {
                   LOGGER.warn("Ignoring potential pack entry: {}", ContentValidationException.getMessage(var6, var7));
                } else if (var8 != null) {
@@ -84,7 +91,26 @@ public class FolderRepositorySource implements RepositorySource {
                LOGGER.warn("Failed to read properties of '{}', ignoring", var6, var10);
             }
          }
+      } catch (Throwable var11) {
+         if (var4 != null) {
+            try {
+               var4.close();
+            } catch (Throwable var9) {
+               var11.addSuppressed(var9);
+            }
+         }
+
+         throw var11;
       }
+
+      if (var4 != null) {
+         var4.close();
+      }
+
+   }
+
+   static {
+      DISCOVERED_PACK_SELECTION_CONFIG = new PackSelectionConfig(false, Pack.Position.TOP, false);
    }
 
    static class FolderPackDetector extends PackDetector<Pack.ResourcesSupplier> {
@@ -105,6 +131,17 @@ public class FolderRepositorySource implements RepositorySource {
 
       protected Pack.ResourcesSupplier createDirectoryPack(Path var1) {
          return new PathPackResources.PathResourcesSupplier(var1);
+      }
+
+      // $FF: synthetic method
+      protected Object createDirectoryPack(Path var1) throws IOException {
+         return this.createDirectoryPack(var1);
+      }
+
+      // $FF: synthetic method
+      @Nullable
+      protected Object createZipPack(Path var1) throws IOException {
+         return this.createZipPack(var1);
       }
    }
 }

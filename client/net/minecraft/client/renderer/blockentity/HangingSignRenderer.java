@@ -37,57 +37,49 @@ public class HangingSignRenderer extends SignRenderer {
    private static final float MODEL_RENDER_SCALE = 1.0F;
    private static final float TEXT_RENDER_SCALE = 0.9F;
    private static final Vec3 TEXT_OFFSET = new Vec3(0.0, -0.3199999928474426, 0.0729999989271164);
-   private final Map<WoodType, HangingSignRenderer.HangingSignModel> hangingSignModels;
+   private final Map<WoodType, HangingSignModel> hangingSignModels;
 
    public HangingSignRenderer(BlockEntityRendererProvider.Context var1) {
       super(var1);
-      this.hangingSignModels = WoodType.values()
-         .collect(
-            ImmutableMap.toImmutableMap(
-               var0 -> var0, var1x -> new HangingSignRenderer.HangingSignModel(var1.bakeLayer(ModelLayers.createHangingSignModelName(var1x)))
-            )
-         );
+      this.hangingSignModels = (Map)WoodType.values().collect(ImmutableMap.toImmutableMap((var0) -> {
+         return var0;
+      }, (var1x) -> {
+         return new HangingSignModel(var1.bakeLayer(ModelLayers.createHangingSignModelName(var1x)));
+      }));
    }
 
-   @Override
    public float getSignModelRenderScale() {
       return 1.0F;
    }
 
-   @Override
    public float getSignTextRenderScale() {
       return 0.9F;
    }
 
-   @Override
    public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       BlockState var7 = var1.getBlockState();
       SignBlock var8 = (SignBlock)var7.getBlock();
       WoodType var9 = SignBlock.getWoodType(var8);
-      HangingSignRenderer.HangingSignModel var10 = this.hangingSignModels.get(var9);
+      HangingSignModel var10 = (HangingSignModel)this.hangingSignModels.get(var9);
       var10.evaluateVisibleParts(var7);
       this.renderSignWithText(var1, var3, var4, var5, var6, var7, var8, var9, var10);
    }
 
-   @Override
    void translateSign(PoseStack var1, float var2, BlockState var3) {
       var1.translate(0.5, 0.9375, 0.5);
       var1.mulPose(Axis.YP.rotationDegrees(var2));
       var1.translate(0.0F, -0.3125F, 0.0F);
    }
 
-   @Override
    void renderSignModel(PoseStack var1, int var2, int var3, Model var4, VertexConsumer var5) {
-      HangingSignRenderer.HangingSignModel var6 = (HangingSignRenderer.HangingSignModel)var4;
+      HangingSignModel var6 = (HangingSignModel)var4;
       var6.root.render(var1, var5, var2, var3);
    }
 
-   @Override
    Material getSignMaterial(WoodType var1) {
       return Sheets.getHangingSignMaterial(var1);
    }
 
-   @Override
    Vec3 getTextOffset() {
       return TEXT_OFFSET;
    }
@@ -98,26 +90,10 @@ public class HangingSignRenderer extends SignRenderer {
       var1.addOrReplaceChild("board", CubeListBuilder.create().texOffs(0, 12).addBox(-7.0F, 0.0F, -1.0F, 14.0F, 10.0F, 2.0F), PartPose.ZERO);
       var1.addOrReplaceChild("plank", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -6.0F, -2.0F, 16.0F, 2.0F, 4.0F), PartPose.ZERO);
       PartDefinition var2 = var1.addOrReplaceChild("normalChains", CubeListBuilder.create(), PartPose.ZERO);
-      var2.addOrReplaceChild(
-         "chainL1",
-         CubeListBuilder.create().texOffs(0, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F),
-         PartPose.offsetAndRotation(-5.0F, -6.0F, 0.0F, 0.0F, -0.7853982F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "chainL2",
-         CubeListBuilder.create().texOffs(6, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F),
-         PartPose.offsetAndRotation(-5.0F, -6.0F, 0.0F, 0.0F, 0.7853982F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "chainR1",
-         CubeListBuilder.create().texOffs(0, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F),
-         PartPose.offsetAndRotation(5.0F, -6.0F, 0.0F, 0.0F, -0.7853982F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "chainR2",
-         CubeListBuilder.create().texOffs(6, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F),
-         PartPose.offsetAndRotation(5.0F, -6.0F, 0.0F, 0.0F, 0.7853982F, 0.0F)
-      );
+      var2.addOrReplaceChild("chainL1", CubeListBuilder.create().texOffs(0, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F), PartPose.offsetAndRotation(-5.0F, -6.0F, 0.0F, 0.0F, -0.7853982F, 0.0F));
+      var2.addOrReplaceChild("chainL2", CubeListBuilder.create().texOffs(6, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F), PartPose.offsetAndRotation(-5.0F, -6.0F, 0.0F, 0.0F, 0.7853982F, 0.0F));
+      var2.addOrReplaceChild("chainR1", CubeListBuilder.create().texOffs(0, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F), PartPose.offsetAndRotation(5.0F, -6.0F, 0.0F, 0.0F, -0.7853982F, 0.0F));
+      var2.addOrReplaceChild("chainR2", CubeListBuilder.create().texOffs(6, 6).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 6.0F, 0.0F), PartPose.offsetAndRotation(5.0F, -6.0F, 0.0F, 0.0F, 0.7853982F, 0.0F));
       var1.addOrReplaceChild("vChains", CubeListBuilder.create().texOffs(14, 6).addBox(-6.0F, -6.0F, 0.0F, 12.0F, 6.0F, 0.0F), PartPose.ZERO);
       return LayerDefinition.create(var0, 64, 32);
    }
@@ -142,13 +118,13 @@ public class HangingSignRenderer extends SignRenderer {
          this.vChains.visible = false;
          this.normalChains.visible = true;
          if (!var2) {
-            boolean var3 = var1.getValue(BlockStateProperties.ATTACHED);
+            boolean var3 = (Boolean)var1.getValue(BlockStateProperties.ATTACHED);
             this.normalChains.visible = !var3;
             this.vChains.visible = var3;
          }
+
       }
 
-      @Override
       public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
          this.root.render(var1, var2, var3, var4, var5, var6, var7, var8);
       }

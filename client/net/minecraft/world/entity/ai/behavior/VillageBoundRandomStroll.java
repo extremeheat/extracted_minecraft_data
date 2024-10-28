@@ -3,10 +3,8 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
@@ -26,7 +24,9 @@ public class VillageBoundRandomStroll {
    }
 
    public static OneShot<PathfinderMob> create(float var0, int var1, int var2) {
-      return BehaviorBuilder.create(var3 -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET)).apply(var3, var3x -> (var4, var5, var6) -> {
+      return BehaviorBuilder.create((var3) -> {
+         return var3.group(var3.absent(MemoryModuleType.WALK_TARGET)).apply(var3, (var3x) -> {
+            return (var4, var5, var6) -> {
                BlockPos var8 = var5.blockPosition();
                Vec3 var9;
                if (var4.isVillage(var8)) {
@@ -41,8 +41,12 @@ public class VillageBoundRandomStroll {
                   }
                }
 
-               var3x.setOrErase(Optional.ofNullable(var9).map(var1xxxx -> new WalkTarget(var1xxxx, var0, 0)));
+               var3x.setOrErase(Optional.ofNullable(var9).map((var1x) -> {
+                  return new WalkTarget(var1x, var0, 0);
+               }));
                return true;
-            }));
+            };
+         });
+      });
    }
 }

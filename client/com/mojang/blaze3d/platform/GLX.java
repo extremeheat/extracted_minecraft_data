@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
@@ -19,9 +20,7 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
-import org.lwjgl.glfw.GLFWNativeGLX;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import oshi.SystemInfo;
@@ -38,9 +37,12 @@ public class GLX {
 
    public static String getOpenGLVersionString() {
       RenderSystem.assertOnRenderThread();
-      return GLFW.glfwGetCurrentContext() == 0L
-         ? "NO CONTEXT"
-         : GlStateManager._getString(7937) + " GL version " + GlStateManager._getString(7938) + ", " + GlStateManager._getString(7936);
+      if (GLFW.glfwGetCurrentContext() == 0L) {
+         return "NO CONTEXT";
+      } else {
+         String var10000 = GlStateManager._getString(7937);
+         return var10000 + " GL version " + GlStateManager._getString(7938) + ", " + GlStateManager._getString(7936);
+      }
    }
 
    public static int _getRefreshRate(Window var0) {
@@ -61,21 +63,24 @@ public class GLX {
 
    public static LongSupplier _initGlfw() {
       RenderSystem.assertInInitPhase();
-      GLFWNativeGLX.setPath(GL.getFunctionProvider());
       Window.checkGlfwError((var0x, var1x) -> {
          throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error before init: [0x%X]%s", var0x, var1x));
       });
       ArrayList var0 = Lists.newArrayList();
       GLFWErrorCallback var1 = GLFW.glfwSetErrorCallback((var1x, var2x) -> {
-         String var4xx = var2x == 0L ? "" : MemoryUtil.memUTF8(var2x);
-         var0.add(String.format(Locale.ROOT, "GLFW error during init: [0x%X]%s", var1x, var4xx));
+         String var4 = var2x == 0L ? "" : MemoryUtil.memUTF8(var2x);
+         var0.add(String.format(Locale.ROOT, "GLFW error during init: [0x%X]%s", var1x, var4));
       });
       if (!GLFW.glfwInit()) {
          throw new IllegalStateException("Failed to initialize GLFW, errors: " + Joiner.on(",").join(var0));
       } else {
-         LongSupplier var2 = () -> (long)(GLFW.glfwGetTime() * 1.0E9);
+         LongSupplier var2 = () -> {
+            return (long)(GLFW.glfwGetTime() * 1.0E9);
+         };
+         Iterator var3 = var0.iterator();
 
-         for(String var4 : var0) {
+         while(var3.hasNext()) {
+            String var4 = (String)var3.next();
             LOGGER.error("GLFW error collected during initialization: {}", var4);
          }
 
@@ -90,6 +95,7 @@ public class GLX {
       if (var1 != null) {
          var1.free();
       }
+
    }
 
    public static boolean _shouldClose(Window var0) {
@@ -100,7 +106,7 @@ public class GLX {
       RenderSystem.assertInInitPhase();
 
       try {
-         CentralProcessor var2 = new SystemInfo().getHardware().getProcessor();
+         CentralProcessor var2 = (new SystemInfo()).getHardware().getProcessor();
          cpuInfo = String.format(Locale.ROOT, "%dx %s", var2.getLogicalProcessorCount(), var2.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");
       } catch (Throwable var3) {
       }
@@ -161,11 +167,11 @@ public class GLX {
    }
 
    public static <T> T make(Supplier<T> var0) {
-      return (T)var0.get();
+      return var0.get();
    }
 
    public static <T> T make(T var0, Consumer<T> var1) {
       var1.accept(var0);
-      return (T)var0;
+      return var0;
    }
 }

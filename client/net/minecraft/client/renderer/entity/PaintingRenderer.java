@@ -25,7 +25,7 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
    public void render(Painting var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
       var4.mulPose(Axis.YP.rotationDegrees(180.0F - var2));
-      PaintingVariant var7 = var1.getVariant().value();
+      PaintingVariant var7 = (PaintingVariant)var1.getVariant().value();
       float var8 = 0.0625F;
       var4.scale(0.0625F, 0.0625F, 0.0625F);
       VertexConsumer var9 = var5.getBuffer(RenderType.entitySolid(this.getTextureLocation(var1)));
@@ -118,17 +118,10 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
             this.vertex(var8, var2, var33, var34, var20, var22, 0.5F, 1, 0, 0, var40);
          }
       }
+
    }
 
-   private void vertex(
-      PoseStack.Pose var1, VertexConsumer var2, float var3, float var4, float var5, float var6, float var7, int var8, int var9, int var10, int var11
-   ) {
-      var2.vertex(var1, var3, var4, var7)
-         .color(255, 255, 255, 255)
-         .uv(var5, var6)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var11)
-         .normal(var1, (float)var8, (float)var9, (float)var10)
-         .endVertex();
+   private void vertex(PoseStack.Pose var1, VertexConsumer var2, float var3, float var4, float var5, float var6, float var7, int var8, int var9, int var10, int var11) {
+      var2.vertex(var1, var3, var4, var7).color(255, 255, 255, 255).uv(var5, var6).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var11).normal(var1, (float)var8, (float)var9, (float)var10).endVertex();
    }
 }

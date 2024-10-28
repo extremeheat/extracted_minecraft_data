@@ -6,13 +6,14 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.CreeperPowerLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Creeper;
 
 public class CreeperRenderer extends MobRenderer<Creeper, CreeperModel<Creeper>> {
    private static final ResourceLocation CREEPER_LOCATION = new ResourceLocation("textures/entity/creeper/creeper.png");
 
    public CreeperRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CreeperModel<>(var1.bakeLayer(ModelLayers.CREEPER)), 0.5F);
+      super(var1, new CreeperModel(var1.bakeLayer(ModelLayers.CREEPER)), 0.5F);
       this.addLayer(new CreeperPowerLayer(this, var1.getModelSet()));
    }
 
@@ -34,5 +35,10 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperModel<Creeper>>
 
    public ResourceLocation getTextureLocation(Creeper var1) {
       return CREEPER_LOCATION;
+   }
+
+   // $FF: synthetic method
+   protected float getWhiteOverlayProgress(LivingEntity var1, float var2) {
+      return this.getWhiteOverlayProgress((Creeper)var1, var2);
    }
 }

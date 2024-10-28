@@ -33,7 +33,7 @@ public interface SoundInstance {
 
    double getZ();
 
-   SoundInstance.Attenuation getAttenuation();
+   Attenuation getAttenuation();
 
    default boolean canStartSilent() {
       return false;
@@ -52,6 +52,11 @@ public interface SoundInstance {
       LINEAR;
 
       private Attenuation() {
+      }
+
+      // $FF: synthetic method
+      private static Attenuation[] $values() {
+         return new Attenuation[]{NONE, LINEAR};
       }
    }
 }

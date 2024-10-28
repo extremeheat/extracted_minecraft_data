@@ -1,18 +1,23 @@
 package net.minecraft.core.dispenser;
 
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Shearable;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -22,14 +27,15 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       super();
    }
 
-   @Override
    protected ItemStack execute(BlockSource var1, ItemStack var2) {
       ServerLevel var3 = var1.level();
       if (!var3.isClientSide()) {
-         BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+         BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
          this.setSuccess(tryShearBeehive(var3, var4) || tryShearLivingEntity(var3, var4));
          if (this.isSuccess()) {
-            var2.hurtAndBreak(1, var3.getRandom(), null, () -> var2.setCount(0));
+            var2.hurtAndBreak(1, var3.getRandom(), (ServerPlayer)null, () -> {
+               var2.setCount(0);
+            });
          }
       }
 
@@ -38,13 +44,15 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
 
    private static boolean tryShearBeehive(ServerLevel var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
-      if (var2.is(BlockTags.BEEHIVES, var0x -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock)) {
-         int var3 = var2.getValue(BeehiveBlock.HONEY_LEVEL);
+      if (var2.is(BlockTags.BEEHIVES, (var0x) -> {
+         return var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock;
+      })) {
+         int var3 = (Integer)var2.getValue(BeehiveBlock.HONEY_LEVEL);
          if (var3 >= 5) {
-            var0.playSound(null, var1, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var0.playSound((Player)null, var1, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
             BeehiveBlock.dropHoneycomb(var0, var1);
-            ((BeehiveBlock)var2.getBlock()).releaseBeesAndResetHoneyLevel(var0, var2, var1, null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
-            var0.gameEvent(null, GameEvent.SHEAR, var1);
+            ((BeehiveBlock)var2.getBlock()).releaseBeesAndResetHoneyLevel(var0, var2, var1, (Player)null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
+            var0.gameEvent((Entity)null, GameEvent.SHEAR, var1);
             return true;
          }
       }
@@ -52,14 +60,18 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       return false;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static boolean tryShearLivingEntity(ServerLevel var0, BlockPos var1) {
-      for(LivingEntity var4 : var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS)) {
-         if (var4 instanceof Shearable var5 && var5.readyForShearing()) {
-            var5.shear(SoundSource.BLOCKS);
-            var0.gameEvent(null, GameEvent.SHEAR, var1);
-            return true;
+      List var2 = var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS);
+      Iterator var3 = var2.iterator();
+
+      while(var3.hasNext()) {
+         LivingEntity var4 = (LivingEntity)var3.next();
+         if (var4 instanceof Shearable var5) {
+            if (var5.readyForShearing()) {
+               var5.shear(SoundSource.BLOCKS);
+               var0.gameEvent((Entity)null, GameEvent.SHEAR, var1);
+               return true;
+            }
          }
       }
 

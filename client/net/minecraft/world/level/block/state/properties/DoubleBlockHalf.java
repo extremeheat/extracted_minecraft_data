@@ -17,17 +17,20 @@ public enum DoubleBlockHalf implements StringRepresentable {
       return this.directionToOther;
    }
 
-   @Override
    public String toString() {
       return this.getSerializedName();
    }
 
-   @Override
    public String getSerializedName() {
       return this == UPPER ? "upper" : "lower";
    }
 
    public DoubleBlockHalf getOtherHalf() {
       return this == UPPER ? LOWER : UPPER;
+   }
+
+   // $FF: synthetic method
+   private static DoubleBlockHalf[] $values() {
+      return new DoubleBlockHalf[]{UPPER, LOWER};
    }
 }

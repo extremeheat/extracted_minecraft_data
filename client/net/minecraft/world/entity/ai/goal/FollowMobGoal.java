@@ -1,9 +1,11 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
@@ -26,7 +28,9 @@ public class FollowMobGoal extends Goal {
    public FollowMobGoal(Mob var1, double var2, float var4, float var5) {
       super();
       this.mob = var1;
-      this.followPredicate = var1x -> var1x != null && var1.getClass() != var1x.getClass();
+      this.followPredicate = (var1x) -> {
+         return var1x != null && var1.getClass() != var1x.getClass();
+      };
       this.speedModifier = var2;
       this.navigation = var1.getNavigation();
       this.stopDistance = var4;
@@ -37,11 +41,13 @@ public class FollowMobGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canUse() {
       List var1 = this.mob.level().getEntitiesOfClass(Mob.class, this.mob.getBoundingBox().inflate((double)this.areaSize), this.followPredicate);
       if (!var1.isEmpty()) {
-         for(Mob var3 : var1) {
+         Iterator var2 = var1.iterator();
+
+         while(var2.hasNext()) {
+            Mob var3 = (Mob)var2.next();
             if (!var3.isInvisible()) {
                this.followingMob = var3;
                return true;
@@ -52,28 +58,22 @@ public class FollowMobGoal extends Goal {
       return false;
    }
 
-   @Override
    public boolean canContinueToUse() {
-      return this.followingMob != null
-         && !this.navigation.isDone()
-         && this.mob.distanceToSqr(this.followingMob) > (double)(this.stopDistance * this.stopDistance);
+      return this.followingMob != null && !this.navigation.isDone() && this.mob.distanceToSqr(this.followingMob) > (double)(this.stopDistance * this.stopDistance);
    }
 
-   @Override
    public void start() {
       this.timeToRecalcPath = 0;
       this.oldWaterCost = this.mob.getPathfindingMalus(PathType.WATER);
       this.mob.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
-   @Override
    public void stop() {
       this.followingMob = null;
       this.navigation.stop();
       this.mob.setPathfindingMalus(PathType.WATER, this.oldWaterCost);
    }
 
-   @Override
    public void tick() {
       if (this.followingMob != null && !this.mob.isLeashed()) {
          this.mob.getLookControl().setLookAt(this.followingMob, 10.0F, (float)this.mob.getMaxHeadXRot());
@@ -84,16 +84,16 @@ public class FollowMobGoal extends Goal {
             double var5 = this.mob.getZ() - this.followingMob.getZ();
             double var7 = var1 * var1 + var3 * var3 + var5 * var5;
             if (!(var7 <= (double)(this.stopDistance * this.stopDistance))) {
-               this.navigation.moveTo(this.followingMob, this.speedModifier);
+               this.navigation.moveTo((Entity)this.followingMob, this.speedModifier);
             } else {
                this.navigation.stop();
                LookControl var9 = this.followingMob.getLookControl();
-               if (var7 <= (double)this.stopDistance
-                  || var9.getWantedX() == this.mob.getX() && var9.getWantedY() == this.mob.getY() && var9.getWantedZ() == this.mob.getZ()) {
+               if (var7 <= (double)this.stopDistance || var9.getWantedX() == this.mob.getX() && var9.getWantedY() == this.mob.getY() && var9.getWantedZ() == this.mob.getZ()) {
                   double var10 = this.followingMob.getX() - this.mob.getX();
                   double var12 = this.followingMob.getZ() - this.mob.getZ();
                   this.navigation.moveTo(this.mob.getX() - var10, this.mob.getY(), this.mob.getZ() - var12, this.speedModifier);
                }
+
             }
          }
       }

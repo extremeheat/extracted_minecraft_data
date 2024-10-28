@@ -11,9 +11,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientboundSetEquipmentPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetEquipmentPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetEquipmentPacket::write, ClientboundSetEquipmentPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetEquipmentPacket> STREAM_CODEC = Packet.codec(ClientboundSetEquipmentPacket::write, ClientboundSetEquipmentPacket::new);
    private static final byte CONTINUE_MASK = -128;
    private final int entity;
    private final List<Pair<EquipmentSlot, ItemStack>> slots;
@@ -34,9 +32,10 @@ public class ClientboundSetEquipmentPacket implements Packet<ClientGamePacketLis
       do {
          var3 = var1.readByte();
          EquipmentSlot var4 = var2[var3 & 127];
-         ItemStack var5 = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
+         ItemStack var5 = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
          this.slots.add(Pair.of(var4, var5));
       } while((var3 & -128) != 0);
+
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -51,9 +50,9 @@ public class ClientboundSetEquipmentPacket implements Packet<ClientGamePacketLis
          var1.writeByte(var6 ? var7 | -128 : var7);
          ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, (ItemStack)var4.getSecond());
       }
+
    }
 
-   @Override
    public PacketType<ClientboundSetEquipmentPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_EQUIPMENT;
    }

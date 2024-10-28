@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -19,22 +18,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 
 public class SignText {
-   private static final Codec<Component[]> LINES_CODEC = ComponentSerialization.FLAT_CODEC
-      .listOf()
-      .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 4)
-               .map(var0x -> new Component[]{(Component)var0x.get(0), (Component)var0x.get(1), (Component)var0x.get(2), (Component)var0x.get(3)}),
-         var0 -> List.of(var0[0], var0[1], var0[2], var0[3])
-      );
-   public static final Codec<SignText> DIRECT_CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               LINES_CODEC.fieldOf("messages").forGetter(var0x -> var0x.messages),
-               LINES_CODEC.optionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages),
-               DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter(var0x -> var0x.color),
-               Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter(var0x -> var0x.hasGlowingText)
-            )
-            .apply(var0, SignText::load)
-   );
+   private static final Codec<Component[]> LINES_CODEC;
+   public static final Codec<SignText> DIRECT_CODEC;
    public static final int LINES = 4;
    private final Component[] messages;
    private final Component[] filteredMessages;
@@ -61,7 +46,7 @@ public class SignText {
    }
 
    private static SignText load(Component[] var0, Optional<Component[]> var1, DyeColor var2, boolean var3) {
-      return new SignText(var0, var1.orElse(Arrays.copyOf(var0, var0.length)), var2, var3);
+      return new SignText(var0, (Component[])var1.orElse((Component[])Arrays.copyOf(var0, var0.length)), var2, var3);
    }
 
    public boolean hasGlowingText() {
@@ -89,15 +74,17 @@ public class SignText {
    }
 
    public SignText setMessage(int var1, Component var2, Component var3) {
-      Component[] var4 = Arrays.copyOf(this.messages, this.messages.length);
-      Component[] var5 = Arrays.copyOf(this.filteredMessages, this.filteredMessages.length);
+      Component[] var4 = (Component[])Arrays.copyOf(this.messages, this.messages.length);
+      Component[] var5 = (Component[])Arrays.copyOf(this.filteredMessages, this.filteredMessages.length);
       var4[var1] = var2;
       var5[var1] = var3;
       return new SignText(var4, var5, this.color, this.hasGlowingText);
    }
 
    public boolean hasMessage(Player var1) {
-      return Arrays.stream(this.getMessages(var1.isTextFilteringEnabled())).anyMatch(var0 -> !var0.getString().isEmpty());
+      return Arrays.stream(this.getMessages(var1.isTextFilteringEnabled())).anyMatch((var0) -> {
+         return !var0.getString().isEmpty();
+      });
    }
 
    public Component[] getMessages(boolean var1) {
@@ -128,7 +115,11 @@ public class SignText {
    }
 
    public boolean hasAnyClickCommands(Player var1) {
-      for(Component var5 : this.getMessages(var1.isTextFilteringEnabled())) {
+      Component[] var2 = this.getMessages(var1.isTextFilteringEnabled());
+      int var3 = var2.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         Component var5 = var2[var4];
          Style var6 = var5.getStyle();
          ClickEvent var7 = var6.getClickEvent();
          if (var7 != null && var7.getAction() == ClickEvent.Action.RUN_COMMAND) {
@@ -137,5 +128,24 @@ public class SignText {
       }
 
       return false;
+   }
+
+   static {
+      LINES_CODEC = ComponentSerialization.FLAT_CODEC.listOf().comapFlatMap((var0) -> {
+         return Util.fixedSize((List)var0, 4).map((var0x) -> {
+            return new Component[]{(Component)var0x.get(0), (Component)var0x.get(1), (Component)var0x.get(2), (Component)var0x.get(3)};
+         });
+      }, (var0) -> {
+         return List.of(var0[0], var0[1], var0[2], var0[3]);
+      });
+      DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(LINES_CODEC.fieldOf("messages").forGetter((var0x) -> {
+            return var0x.messages;
+         }), LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages), DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter((var0x) -> {
+            return var0x.color;
+         }), Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter((var0x) -> {
+            return var0x.hasGlowingText;
+         })).apply(var0, SignText::load);
+      });
    }
 }

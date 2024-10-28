@@ -10,12 +10,10 @@ public class BeeAggressiveSoundInstance extends BeeSoundInstance {
       this.delay = 0;
    }
 
-   @Override
    protected AbstractTickableSoundInstance getAlternativeSoundInstance() {
       return new BeeFlyingSoundInstance(this.bee);
    }
 
-   @Override
    protected boolean shouldSwitchSounds() {
       return !this.bee.isAngry();
    }

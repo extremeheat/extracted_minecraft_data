@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TintedGlassBlock extends TransparentBlock {
    public static final MapCodec<TintedGlassBlock> CODEC = simpleCodec(TintedGlassBlock::new);
 
-   @Override
    public MapCodec<TintedGlassBlock> codec() {
       return CODEC;
    }
@@ -18,12 +17,10 @@ public class TintedGlassBlock extends TransparentBlock {
       super(var1);
    }
 
-   @Override
    protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return false;
    }
 
-   @Override
    protected int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var2.getMaxLightLevel();
    }

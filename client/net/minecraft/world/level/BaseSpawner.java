@@ -1,6 +1,7 @@
 package net.minecraft.world.level;
 
 import com.mojang.logging.LogUtils;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -75,6 +77,7 @@ public abstract class BaseSpawner {
          this.oSpin = this.spin;
          this.spin = (this.spin + (double)(1000.0F / ((float)this.spawnDelay + 200.0F))) % 360.0;
       }
+
    }
 
    public void serverTick(ServerLevel var1, BlockPos var2) {
@@ -103,7 +106,7 @@ public abstract class BaseSpawner {
                double var11 = var10 >= 1 ? var9.getDouble(0) : (double)var2.getX() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
                double var13 = var10 >= 2 ? var9.getDouble(1) : (double)(var2.getY() + var4.nextInt(3) - 1);
                double var15 = var10 >= 3 ? var9.getDouble(2) : (double)var2.getZ() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
-               if (var1.noCollision(((EntityType)var8.get()).getAABB(var11, var13, var15))) {
+               if (var1.noCollision(((EntityType)var8.get()).getSpawnAABB(var11, var13, var15))) {
                   BlockPos var17 = BlockPos.containing(var11, var13, var15);
                   if (var5.getCustomSpawnRules().isPresent()) {
                      if (!((EntityType)var8.get()).getCategory().isFriendly() && var1.getDifficulty() == Difficulty.PEACEFUL) {
@@ -118,7 +121,7 @@ public abstract class BaseSpawner {
                      continue;
                   }
 
-                  Entity var22 = EntityType.loadEntityRecursive(var7, var1, var6x -> {
+                  Entity var22 = EntityType.loadEntityRecursive(var7, var1, (var6x) -> {
                      var6x.moveTo(var11, var13, var15, var6x.getYRot(), var6x.getXRot());
                      return var6x;
                   });
@@ -127,35 +130,27 @@ public abstract class BaseSpawner {
                      return;
                   }
 
-                  int var19 = var1.getEntities(
-                        EntityTypeTest.forExactClass(var22.getClass()),
-                        new AABB(
-                              (double)var2.getX(),
-                              (double)var2.getY(),
-                              (double)var2.getZ(),
-                              (double)(var2.getX() + 1),
-                              (double)(var2.getY() + 1),
-                              (double)(var2.getZ() + 1)
-                           )
-                           .inflate((double)this.spawnRange),
-                        EntitySelector.NO_SPECTATORS
-                     )
-                     .size();
+                  int var19 = var1.getEntities(EntityTypeTest.forExactClass(var22.getClass()), (new AABB((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), (double)(var2.getX() + 1), (double)(var2.getY() + 1), (double)(var2.getZ() + 1))).inflate((double)this.spawnRange), EntitySelector.NO_SPECTATORS).size();
                   if (var19 >= this.maxNearbyEntities) {
                      this.delay(var1, var2);
                      return;
                   }
 
                   var22.moveTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
-                  if (var22 instanceof Mob var20) {
+                  if (var22 instanceof Mob) {
+                     Mob var20 = (Mob)var22;
                      if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, MobSpawnType.SPAWNER) || !var20.checkSpawnObstruction(var1)) {
                         continue;
                      }
 
                      boolean var21 = var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8);
                      if (var21) {
-                        ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, null);
+                        ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, (SpawnGroupData)null);
                      }
+
+                     Optional var10000 = var5.getEquipmentLootTable();
+                     Objects.requireNonNull(var20);
+                     var10000.ifPresent(var20::equip);
                   }
 
                   if (!var1.tryAddFreshEntityWithPassengers(var22)) {
@@ -176,6 +171,7 @@ public abstract class BaseSpawner {
             if (var3) {
                this.delay(var1, var2);
             }
+
          }
       }
    }
@@ -188,7 +184,9 @@ public abstract class BaseSpawner {
          this.spawnDelay = this.minSpawnDelay + var3.nextInt(this.maxSpawnDelay - this.minSpawnDelay);
       }
 
-      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, (SpawnData)var3x.getData()));
+      this.spawnPotentials.getRandom(var3).ifPresent((var3x) -> {
+         this.setNextSpawnData(var1, var2, (SpawnData)var3x.data());
+      });
       this.broadcastEvent(var1, var2, 1);
    }
 
@@ -196,20 +194,18 @@ public abstract class BaseSpawner {
       this.spawnDelay = var3.getShort("Delay");
       boolean var4 = var3.contains("SpawnData", 10);
       if (var4) {
-         SpawnData var5 = (SpawnData)SpawnData.CODEC
-            .parse(NbtOps.INSTANCE, var3.getCompound("SpawnData"))
-            .resultOrPartial(var0 -> LOGGER.warn("Invalid SpawnData: {}", var0))
-            .orElseGet(SpawnData::new);
+         SpawnData var5 = (SpawnData)SpawnData.CODEC.parse(NbtOps.INSTANCE, var3.getCompound("SpawnData")).resultOrPartial((var0) -> {
+            LOGGER.warn("Invalid SpawnData: {}", var0);
+         }).orElseGet(SpawnData::new);
          this.setNextSpawnData(var1, var2, var5);
       }
 
       boolean var7 = var3.contains("SpawnPotentials", 9);
       if (var7) {
          ListTag var6 = var3.getList("SpawnPotentials", 10);
-         this.spawnPotentials = (SimpleWeightedRandomList)SpawnData.LIST_CODEC
-            .parse(NbtOps.INSTANCE, var6)
-            .resultOrPartial(var0 -> LOGGER.warn("Invalid SpawnPotentials list: {}", var0))
-            .orElseGet(SimpleWeightedRandomList::empty);
+         this.spawnPotentials = (SimpleWeightedRandomList)SpawnData.LIST_CODEC.parse(NbtOps.INSTANCE, var6).resultOrPartial((var0) -> {
+            LOGGER.warn("Invalid SpawnPotentials list: {}", var0);
+         }).orElseGet(SimpleWeightedRandomList::empty);
       } else {
          this.spawnPotentials = SimpleWeightedRandomList.single(this.nextSpawnData != null ? this.nextSpawnData : new SpawnData());
       }
@@ -241,13 +237,12 @@ public abstract class BaseSpawner {
       var1.putShort("RequiredPlayerRange", (short)this.requiredPlayerRange);
       var1.putShort("SpawnRange", (short)this.spawnRange);
       if (this.nextSpawnData != null) {
-         var1.put(
-            "SpawnData",
-            (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).result().orElseThrow(() -> new IllegalStateException("Invalid SpawnData"))
-         );
+         var1.put("SpawnData", (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).getOrThrow((var0) -> {
+            return new IllegalStateException("Invalid SpawnData: " + var0);
+         }));
       }
 
-      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).result().orElseThrow());
+      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).getOrThrow());
       return var1;
    }
 
@@ -287,7 +282,7 @@ public abstract class BaseSpawner {
       if (this.nextSpawnData != null) {
          return this.nextSpawnData;
       } else {
-         this.setNextSpawnData(var1, var3, (SpawnData)this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new));
+         this.setNextSpawnData(var1, var3, (SpawnData)this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::data).orElseGet(SpawnData::new));
          return this.nextSpawnData;
       }
    }

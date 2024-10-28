@@ -7,18 +7,16 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerCommandPacket> STREAM_CODEC = Packet.codec(
-      ServerboundPlayerCommandPacket::write, ServerboundPlayerCommandPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerCommandPacket> STREAM_CODEC = Packet.codec(ServerboundPlayerCommandPacket::write, ServerboundPlayerCommandPacket::new);
    private final int id;
-   private final ServerboundPlayerCommandPacket.Action action;
+   private final Action action;
    private final int data;
 
-   public ServerboundPlayerCommandPacket(Entity var1, ServerboundPlayerCommandPacket.Action var2) {
+   public ServerboundPlayerCommandPacket(Entity var1, Action var2) {
       this(var1, var2, 0);
    }
 
-   public ServerboundPlayerCommandPacket(Entity var1, ServerboundPlayerCommandPacket.Action var2, int var3) {
+   public ServerboundPlayerCommandPacket(Entity var1, Action var2, int var3) {
       super();
       this.id = var1.getId();
       this.action = var2;
@@ -28,7 +26,7 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
    private ServerboundPlayerCommandPacket(FriendlyByteBuf var1) {
       super();
       this.id = var1.readVarInt();
-      this.action = var1.readEnum(ServerboundPlayerCommandPacket.Action.class);
+      this.action = (Action)var1.readEnum(Action.class);
       this.data = var1.readVarInt();
    }
 
@@ -38,7 +36,6 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
       var1.writeVarInt(this.data);
    }
 
-   @Override
    public PacketType<ServerboundPlayerCommandPacket> type() {
       return GamePacketTypes.SERVERBOUND_PLAYER_COMMAND;
    }
@@ -51,7 +48,7 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
       return this.id;
    }
 
-   public ServerboundPlayerCommandPacket.Action getAction() {
+   public Action getAction() {
       return this.action;
    }
 
@@ -71,6 +68,11 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
       START_FALL_FLYING;
 
       private Action() {
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{PRESS_SHIFT_KEY, RELEASE_SHIFT_KEY, STOP_SLEEPING, START_SPRINTING, STOP_SPRINTING, START_RIDING_JUMP, STOP_RIDING_JUMP, OPEN_INVENTORY, START_FALL_FLYING};
       }
    }
 }

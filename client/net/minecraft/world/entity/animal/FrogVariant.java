@@ -5,8 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
-public record FrogVariant(ResourceLocation d) {
-   private final ResourceLocation texture;
+public record FrogVariant(ResourceLocation texture) {
    public static final ResourceKey<FrogVariant> TEMPERATE = createKey("temperate");
    public static final ResourceKey<FrogVariant> WARM = createKey("warm");
    public static final ResourceKey<FrogVariant> COLD = createKey("cold");
@@ -27,6 +26,10 @@ public record FrogVariant(ResourceLocation d) {
    }
 
    private static FrogVariant register(Registry<FrogVariant> var0, ResourceKey<FrogVariant> var1, String var2) {
-      return Registry.register(var0, var1, new FrogVariant(new ResourceLocation(var2)));
+      return (FrogVariant)Registry.register(var0, (ResourceKey)var1, new FrogVariant(new ResourceLocation(var2)));
+   }
+
+   public ResourceLocation texture() {
+      return this.texture;
    }
 }

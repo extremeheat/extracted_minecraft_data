@@ -36,56 +36,42 @@ public class PaintingVariants {
    public static final ResourceKey<PaintingVariant> WIND = create("wind");
    public static final ResourceKey<PaintingVariant> WATER = create("water");
    public static final ResourceKey<PaintingVariant> FIRE = create("fire");
-   public static final ResourceKey<PaintingVariant> POISONOUS_POTATO = create("poisonous_potato");
-   public static final ResourceKey<PaintingVariant> MR_POTATO = create("mr_potato");
-   public static final ResourceKey<PaintingVariant> ABSTRACTATO = create("abstractato");
-   public static final ResourceKey<PaintingVariant> BURNING_POTATO = create("burning_potato");
-   public static final ResourceKey<PaintingVariant> UBIQUITATO = create("ubiquitato");
-   public static final ResourceKey<PaintingVariant> CECI = create("ceci");
-   public static final ResourceKey<PaintingVariant> POTATOE = create("potatoe");
 
    public PaintingVariants() {
       super();
    }
 
    public static PaintingVariant bootstrap(Registry<PaintingVariant> var0) {
-      Registry.register(var0, KEBAB, new PaintingVariant(16, 16));
-      Registry.register(var0, AZTEC, new PaintingVariant(16, 16));
-      Registry.register(var0, ALBAN, new PaintingVariant(16, 16));
-      Registry.register(var0, AZTEC2, new PaintingVariant(16, 16));
-      Registry.register(var0, BOMB, new PaintingVariant(16, 16));
-      Registry.register(var0, PLANT, new PaintingVariant(16, 16));
-      Registry.register(var0, WASTELAND, new PaintingVariant(16, 16));
-      Registry.register(var0, POOL, new PaintingVariant(32, 16));
-      Registry.register(var0, COURBET, new PaintingVariant(32, 16));
-      Registry.register(var0, SEA, new PaintingVariant(32, 16));
-      Registry.register(var0, SUNSET, new PaintingVariant(32, 16));
-      Registry.register(var0, CREEBET, new PaintingVariant(32, 16));
-      Registry.register(var0, WANDERER, new PaintingVariant(16, 32));
-      Registry.register(var0, GRAHAM, new PaintingVariant(16, 32));
-      Registry.register(var0, MATCH, new PaintingVariant(32, 32));
-      Registry.register(var0, BUST, new PaintingVariant(32, 32));
-      Registry.register(var0, STAGE, new PaintingVariant(32, 32));
-      Registry.register(var0, VOID, new PaintingVariant(32, 32));
-      Registry.register(var0, SKULL_AND_ROSES, new PaintingVariant(32, 32));
-      Registry.register(var0, WITHER, new PaintingVariant(32, 32));
-      Registry.register(var0, FIGHTERS, new PaintingVariant(64, 32));
-      Registry.register(var0, POINTER, new PaintingVariant(64, 64));
-      Registry.register(var0, PIGSCENE, new PaintingVariant(64, 64));
-      Registry.register(var0, BURNING_SKULL, new PaintingVariant(64, 64));
-      Registry.register(var0, SKELETON, new PaintingVariant(64, 48));
-      Registry.register(var0, EARTH, new PaintingVariant(32, 32));
-      Registry.register(var0, WIND, new PaintingVariant(32, 32));
-      Registry.register(var0, WATER, new PaintingVariant(32, 32));
-      Registry.register(var0, FIRE, new PaintingVariant(32, 32));
-      Registry.register(var0, POISONOUS_POTATO, new PaintingVariant(128, 128));
-      Registry.register(var0, MR_POTATO, new PaintingVariant(32, 48));
-      Registry.register(var0, ABSTRACTATO, new PaintingVariant(32, 32));
-      Registry.register(var0, BURNING_POTATO, new PaintingVariant(64, 64));
-      Registry.register(var0, UBIQUITATO, new PaintingVariant(48, 48));
-      Registry.register(var0, CECI, new PaintingVariant(128, 64));
-      Registry.register(var0, POTATOE, new PaintingVariant(64, 32));
-      return Registry.register(var0, DONKEY_KONG, new PaintingVariant(64, 48));
+      Registry.register(var0, (ResourceKey)KEBAB, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)AZTEC, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)ALBAN, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)AZTEC2, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)BOMB, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)PLANT, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)WASTELAND, new PaintingVariant(16, 16));
+      Registry.register(var0, (ResourceKey)POOL, new PaintingVariant(32, 16));
+      Registry.register(var0, (ResourceKey)COURBET, new PaintingVariant(32, 16));
+      Registry.register(var0, (ResourceKey)SEA, new PaintingVariant(32, 16));
+      Registry.register(var0, (ResourceKey)SUNSET, new PaintingVariant(32, 16));
+      Registry.register(var0, (ResourceKey)CREEBET, new PaintingVariant(32, 16));
+      Registry.register(var0, (ResourceKey)WANDERER, new PaintingVariant(16, 32));
+      Registry.register(var0, (ResourceKey)GRAHAM, new PaintingVariant(16, 32));
+      Registry.register(var0, (ResourceKey)MATCH, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)BUST, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)STAGE, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)VOID, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)SKULL_AND_ROSES, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)WITHER, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)FIGHTERS, new PaintingVariant(64, 32));
+      Registry.register(var0, (ResourceKey)POINTER, new PaintingVariant(64, 64));
+      Registry.register(var0, (ResourceKey)PIGSCENE, new PaintingVariant(64, 64));
+      Registry.register(var0, (ResourceKey)BURNING_SKULL, new PaintingVariant(64, 64));
+      Registry.register(var0, (ResourceKey)SKELETON, new PaintingVariant(64, 48));
+      Registry.register(var0, (ResourceKey)EARTH, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)WIND, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)WATER, new PaintingVariant(32, 32));
+      Registry.register(var0, (ResourceKey)FIRE, new PaintingVariant(32, 32));
+      return (PaintingVariant)Registry.register(var0, (ResourceKey)DONKEY_KONG, new PaintingVariant(64, 48));
    }
 
    private static ResourceKey<PaintingVariant> create(String var0) {

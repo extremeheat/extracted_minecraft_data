@@ -30,28 +30,15 @@ public class WorldGenAttemptRenderer implements DebugRenderer.SimpleDebugRendere
       this.blues.add(var5);
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       VertexConsumer var9 = var2.getBuffer(RenderType.debugFilledBox());
 
       for(int var10 = 0; var10 < this.toRender.size(); ++var10) {
-         BlockPos var11 = this.toRender.get(var10);
-         Float var12 = this.scales.get(var10);
+         BlockPos var11 = (BlockPos)this.toRender.get(var10);
+         Float var12 = (Float)this.scales.get(var10);
          float var13 = var12 / 2.0F;
-         LevelRenderer.addChainedFilledBoxVertices(
-            var1,
-            var9,
-            (double)((float)var11.getX() + 0.5F - var13) - var3,
-            (double)((float)var11.getY() + 0.5F - var13) - var5,
-            (double)((float)var11.getZ() + 0.5F - var13) - var7,
-            (double)((float)var11.getX() + 0.5F + var13) - var3,
-            (double)((float)var11.getY() + 0.5F + var13) - var5,
-            (double)((float)var11.getZ() + 0.5F + var13) - var7,
-            this.reds.get(var10),
-            this.greens.get(var10),
-            this.blues.get(var10),
-            this.alphas.get(var10)
-         );
+         LevelRenderer.addChainedFilledBoxVertices(var1, var9, (double)((float)var11.getX() + 0.5F - var13) - var3, (double)((float)var11.getY() + 0.5F - var13) - var5, (double)((float)var11.getZ() + 0.5F - var13) - var7, (double)((float)var11.getX() + 0.5F + var13) - var3, (double)((float)var11.getY() + 0.5F + var13) - var5, (double)((float)var11.getZ() + 0.5F + var13) - var7, (Float)this.reds.get(var10), (Float)this.greens.get(var10), (Float)this.blues.get(var10), (Float)this.alphas.get(var10));
       }
+
    }
 }

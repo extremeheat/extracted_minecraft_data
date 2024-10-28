@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
+import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.HolderLookup;
@@ -54,7 +55,6 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    boolean isRemoved();
 
-   @Override
    default boolean isEmpty() {
       return this.isChestVehicleEmpty();
    }
@@ -68,6 +68,7 @@ public interface ContainerEntity extends Container, MenuProvider {
       } else {
          ContainerHelper.saveAllItems(var1, this.getItemStacks(), var2);
       }
+
    }
 
    default void readChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
@@ -78,17 +79,19 @@ public interface ContainerEntity extends Container, MenuProvider {
       } else {
          ContainerHelper.loadAllItems(var1, this.getItemStacks(), var2);
       }
+
    }
 
    default void chestVehicleDestroyed(DamageSource var1, Level var2, Entity var3) {
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-         Containers.dropContents(var2, var3, this);
+         Containers.dropContents(var2, (Entity)var3, (Container)this);
          if (!var2.isClientSide) {
             Entity var4 = var1.getDirectEntity();
             if (var4 != null && var4.getType() == EntityType.PLAYER) {
                PiglinAi.angerNearbyPiglins((Player)var4, true);
             }
          }
+
       }
    }
 
@@ -105,34 +108,40 @@ public interface ContainerEntity extends Container, MenuProvider {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, this.getLootTable());
          }
 
-         this.setLootTable(null);
-         LootParams.Builder var4 = new LootParams.Builder((ServerLevel)this.level()).withParameter(LootContextParams.ORIGIN, this.position());
+         this.setLootTable((ResourceKey)null);
+         LootParams.Builder var4 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position());
          if (var1 != null) {
             var4.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
          }
 
          var3.fill(this, var4.create(LootContextParamSets.CHEST), this.getLootTableSeed());
       }
+
    }
 
    default void clearChestVehicleContent() {
-      this.unpackChestVehicleLootTable(null);
+      this.unpackChestVehicleLootTable((Player)null);
       this.getItemStacks().clear();
    }
 
    default boolean isChestVehicleEmpty() {
-      for(ItemStack var2 : this.getItemStacks()) {
-         if (!var2.isEmpty()) {
-            return false;
-         }
-      }
+      Iterator var1 = this.getItemStacks().iterator();
 
-      return true;
+      ItemStack var2;
+      do {
+         if (!var1.hasNext()) {
+            return true;
+         }
+
+         var2 = (ItemStack)var1.next();
+      } while(var2.isEmpty());
+
+      return false;
    }
 
    default ItemStack removeChestVehicleItemNoUpdate(int var1) {
-      this.unpackChestVehicleLootTable(null);
-      ItemStack var2 = this.getItemStacks().get(var1);
+      this.unpackChestVehicleLootTable((Player)null);
+      ItemStack var2 = (ItemStack)this.getItemStacks().get(var1);
       if (var2.isEmpty()) {
          return ItemStack.EMPTY;
       } else {
@@ -142,29 +151,27 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default ItemStack getChestVehicleItem(int var1) {
-      this.unpackChestVehicleLootTable(null);
-      return this.getItemStacks().get(var1);
+      this.unpackChestVehicleLootTable((Player)null);
+      return (ItemStack)this.getItemStacks().get(var1);
    }
 
    default ItemStack removeChestVehicleItem(int var1, int var2) {
-      this.unpackChestVehicleLootTable(null);
+      this.unpackChestVehicleLootTable((Player)null);
       return ContainerHelper.removeItem(this.getItemStacks(), var1, var2);
    }
 
    default void setChestVehicleItem(int var1, ItemStack var2) {
-      this.unpackChestVehicleLootTable(null);
+      this.unpackChestVehicleLootTable((Player)null);
       this.getItemStacks().set(var1, var2);
       var2.limitSize(this.getMaxStackSize(var2));
    }
 
    default SlotAccess getChestVehicleSlot(final int var1) {
       return var1 >= 0 && var1 < this.getContainerSize() ? new SlotAccess() {
-         @Override
          public ItemStack get() {
             return ContainerEntity.this.getChestVehicleItem(var1);
          }
 
-         @Override
          public boolean set(ItemStack var1x) {
             ContainerEntity.this.setChestVehicleItem(var1, var1x);
             return true;

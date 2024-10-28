@@ -12,8 +12,11 @@ import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -56,45 +59,68 @@ public class PostChain implements AutoCloseable {
       Resource var3 = this.resourceProvider.getResourceOrThrow(var2);
 
       try {
-         try (BufferedReader var4 = var3.openAsReader()) {
-            JsonObject var17 = GsonHelper.parse(var4);
-            if (GsonHelper.isArrayNode(var17, "targets")) {
-               JsonArray var6 = var17.getAsJsonArray("targets");
-               int var7 = 0;
+         BufferedReader var4 = var3.openAsReader();
 
-               for(JsonElement var9 : var6) {
+         try {
+            JsonObject var17 = GsonHelper.parse((Reader)var4);
+            JsonArray var6;
+            int var7;
+            Iterator var8;
+            JsonElement var9;
+            ChainedJsonException var11;
+            if (GsonHelper.isArrayNode(var17, "targets")) {
+               var6 = var17.getAsJsonArray("targets");
+               var7 = 0;
+
+               for(var8 = var6.iterator(); var8.hasNext(); ++var7) {
+                  var9 = (JsonElement)var8.next();
+
                   try {
                      this.parseTargetNode(var9);
                   } catch (Exception var14) {
-                     ChainedJsonException var11 = ChainedJsonException.forException(var14);
+                     var11 = ChainedJsonException.forException(var14);
                      var11.prependJsonKey("targets[" + var7 + "]");
                      throw var11;
                   }
-
-                  ++var7;
                }
             }
 
             if (GsonHelper.isArrayNode(var17, "passes")) {
-               JsonArray var18 = var17.getAsJsonArray("passes");
-               int var19 = 0;
+               var6 = var17.getAsJsonArray("passes");
+               var7 = 0;
 
-               for(JsonElement var21 : var18) {
+               for(var8 = var6.iterator(); var8.hasNext(); ++var7) {
+                  var9 = (JsonElement)var8.next();
+
                   try {
-                     this.parsePassNode(var1, var21);
+                     this.parsePassNode(var1, var9);
                   } catch (Exception var13) {
-                     ChainedJsonException var22 = ChainedJsonException.forException(var13);
-                     var22.prependJsonKey("passes[" + var19 + "]");
-                     throw var22;
+                     var11 = ChainedJsonException.forException(var13);
+                     var11.prependJsonKey("passes[" + var7 + "]");
+                     throw var11;
                   }
-
-                  ++var19;
                }
             }
+         } catch (Throwable var15) {
+            if (var4 != null) {
+               try {
+                  ((Reader)var4).close();
+               } catch (Throwable var12) {
+                  var15.addSuppressed(var12);
+               }
+            }
+
+            throw var15;
          }
+
+         if (var4 != null) {
+            ((Reader)var4).close();
+         }
+
       } catch (Exception var16) {
          ChainedJsonException var5 = ChainedJsonException.forException(var16);
-         var5.setFilenameAndFlush(var2.getPath() + " (" + var3.sourcePackId() + ")");
+         String var10001 = var2.getPath();
+         var5.setFilenameAndFlush(var10001 + " (" + var3.sourcePackId() + ")");
          throw var5;
       }
    }
@@ -113,6 +139,7 @@ public class PostChain implements AutoCloseable {
 
          this.addTempTarget(var3, var4, var5);
       }
+
    }
 
    private void parsePassNode(TextureManager var1, JsonElement var2) throws IOException {
@@ -129,11 +156,13 @@ public class PostChain implements AutoCloseable {
          throw new ChainedJsonException("Output target '" + var6 + "' does not exist");
       } else {
          PostPass var10 = this.addPass(var4, var7, var8, var9);
-         JsonArray var11 = GsonHelper.getAsJsonArray(var3, "auxtargets", null);
+         JsonArray var11 = GsonHelper.getAsJsonArray(var3, "auxtargets", (JsonArray)null);
          if (var11 != null) {
             int var12 = 0;
 
-            for(JsonElement var14 : var11) {
+            for(Iterator var13 = var11.iterator(); var13.hasNext(); ++var12) {
+               JsonElement var14 = (JsonElement)var13.next();
+
                try {
                   JsonObject var15 = GsonHelper.convertToJsonObject(var14, "auxtarget");
                   String var32 = GsonHelper.getAsString(var15, "name");
@@ -155,9 +184,9 @@ public class PostChain implements AutoCloseable {
                      }
 
                      ResourceLocation var21 = new ResourceLocation("textures/effect/" + var19 + ".png");
-                     this.resourceProvider
-                        .getResource(var21)
-                        .orElseThrow(() -> new ChainedJsonException("Render target or texture '" + var19 + "' does not exist"));
+                     this.resourceProvider.getResource(var21).orElseThrow(() -> {
+                        return new ChainedJsonException("Render target or texture '" + var19 + "' does not exist");
+                     });
                      RenderSystem.setShaderTexture(0, var21);
                      var1.bindForSetup(var21);
                      AbstractTexture var22 = var1.getTexture(var21);
@@ -172,10 +201,13 @@ public class PostChain implements AutoCloseable {
                         RenderSystem.texParameter(3553, 10240, 9728);
                      }
 
+                     Objects.requireNonNull(var22);
                      var10.addAuxAsset(var32, var22::getId, var23, var24);
                   } else if (var18) {
+                     Objects.requireNonNull(var20);
                      var10.addAuxAsset(var32, var20::getDepthTextureId, var20.width, var20.height);
                   } else {
+                     Objects.requireNonNull(var20);
                      var10.addAuxAsset(var32, var20::getColorTextureId, var20.width, var20.height);
                   }
                } catch (Exception var27) {
@@ -183,16 +215,16 @@ public class PostChain implements AutoCloseable {
                   var16.prependJsonKey("auxtargets[" + var12 + "]");
                   throw var16;
                }
-
-               ++var12;
             }
          }
 
-         JsonArray var28 = GsonHelper.getAsJsonArray(var3, "uniforms", null);
+         JsonArray var28 = GsonHelper.getAsJsonArray(var3, "uniforms", (JsonArray)null);
          if (var28 != null) {
             int var29 = 0;
 
-            for(JsonElement var31 : var28) {
+            for(Iterator var30 = var28.iterator(); var30.hasNext(); ++var29) {
+               JsonElement var31 = (JsonElement)var30.next();
+
                try {
                   this.parseUniformNode(var31);
                } catch (Exception var26) {
@@ -200,24 +232,26 @@ public class PostChain implements AutoCloseable {
                   var33.prependJsonKey("uniforms[" + var29 + "]");
                   throw var33;
                }
-
-               ++var29;
             }
          }
+
       }
    }
 
    private void parseUniformNode(JsonElement var1) throws ChainedJsonException {
       JsonObject var2 = GsonHelper.convertToJsonObject(var1, "uniform");
       String var3 = GsonHelper.getAsString(var2, "name");
-      Uniform var4 = this.passes.get(this.passes.size() - 1).getEffect().getUniform(var3);
+      Uniform var4 = ((PostPass)this.passes.get(this.passes.size() - 1)).getEffect().getUniform(var3);
       if (var4 == null) {
          throw new ChainedJsonException("Uniform '" + var3 + "' does not exist");
       } else {
          float[] var5 = new float[4];
          int var6 = 0;
+         JsonArray var7 = GsonHelper.getAsJsonArray(var2, "values");
 
-         for(JsonElement var9 : GsonHelper.getAsJsonArray(var2, "values")) {
+         for(Iterator var8 = var7.iterator(); var8.hasNext(); ++var6) {
+            JsonElement var9 = (JsonElement)var8.next();
+
             try {
                var5[var6] = GsonHelper.convertToFloat(var9, "value");
             } catch (Exception var12) {
@@ -225,11 +259,9 @@ public class PostChain implements AutoCloseable {
                var11.prependJsonKey("values[" + var6 + "]");
                throw var11;
             }
-
-            ++var6;
          }
 
-         switch(var6) {
+         switch (var6) {
             case 0:
             default:
                break;
@@ -245,30 +277,37 @@ public class PostChain implements AutoCloseable {
             case 4:
                var4.set(var5[0], var5[1], var5[2], var5[3]);
          }
+
       }
    }
 
    public RenderTarget getTempTarget(String var1) {
-      return this.customRenderTargets.get(var1);
+      return (RenderTarget)this.customRenderTargets.get(var1);
    }
 
    public void addTempTarget(String var1, int var2, int var3) {
       TextureTarget var4 = new TextureTarget(var2, var3, true, Minecraft.ON_OSX);
-      var4.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+      ((RenderTarget)var4).setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
       this.customRenderTargets.put(var1, var4);
       if (var2 == this.screenWidth && var3 == this.screenHeight) {
          this.fullSizedTargets.add(var4);
       }
+
    }
 
-   @Override
    public void close() {
-      for(RenderTarget var2 : this.customRenderTargets.values()) {
+      Iterator var1 = this.customRenderTargets.values().iterator();
+
+      while(var1.hasNext()) {
+         RenderTarget var2 = (RenderTarget)var1.next();
          var2.destroyBuffers();
       }
 
-      for(PostPass var4 : this.passes) {
-         var4.close();
+      var1 = this.passes.iterator();
+
+      while(var1.hasNext()) {
+         PostPass var3 = (PostPass)var1.next();
+         var3.close();
       }
 
       this.passes.clear();
@@ -281,29 +320,38 @@ public class PostChain implements AutoCloseable {
    }
 
    private void updateOrthoMatrix() {
-      this.shaderOrthoMatrix = new Matrix4f().setOrtho(0.0F, (float)this.screenTarget.width, 0.0F, (float)this.screenTarget.height, 0.1F, 1000.0F);
+      this.shaderOrthoMatrix = (new Matrix4f()).setOrtho(0.0F, (float)this.screenTarget.width, 0.0F, (float)this.screenTarget.height, 0.1F, 1000.0F);
    }
 
    public void resize(int var1, int var2) {
       this.screenWidth = this.screenTarget.width;
       this.screenHeight = this.screenTarget.height;
       this.updateOrthoMatrix();
+      Iterator var3 = this.passes.iterator();
 
-      for(PostPass var4 : this.passes) {
+      while(var3.hasNext()) {
+         PostPass var4 = (PostPass)var3.next();
          var4.setOrthoMatrix(this.shaderOrthoMatrix);
       }
 
-      for(RenderTarget var6 : this.fullSizedTargets) {
-         var6.resize(var1, var2, Minecraft.ON_OSX);
+      var3 = this.fullSizedTargets.iterator();
+
+      while(var3.hasNext()) {
+         RenderTarget var5 = (RenderTarget)var3.next();
+         var5.resize(var1, var2, Minecraft.ON_OSX);
       }
+
    }
 
    private void setFilterMode(int var1) {
       this.screenTarget.setFilterMode(var1);
+      Iterator var2 = this.customRenderTargets.values().iterator();
 
-      for(RenderTarget var3 : this.customRenderTargets.values()) {
+      while(var2.hasNext()) {
+         RenderTarget var3 = (RenderTarget)var2.next();
          var3.setFilterMode(var1);
       }
+
    }
 
    public void process(float var1) {
@@ -314,31 +362,32 @@ public class PostChain implements AutoCloseable {
          this.time += var1 - this.lastStamp;
       }
 
-      this.lastStamp = var1;
-
-      while(this.time > 20.0F) {
-         this.time -= 20.0F;
+      for(this.lastStamp = var1; this.time > 20.0F; this.time -= 20.0F) {
       }
 
       int var2 = 9728;
 
-      for(PostPass var4 : this.passes) {
+      PostPass var4;
+      for(Iterator var3 = this.passes.iterator(); var3.hasNext(); var4.process(this.time / 20.0F)) {
+         var4 = (PostPass)var3.next();
          int var5 = var4.getFilterMode();
          if (var2 != var5) {
             this.setFilterMode(var5);
             var2 = var5;
          }
-
-         var4.process(this.time / 20.0F);
       }
 
       this.setFilterMode(9728);
    }
 
    public void setUniform(String var1, float var2) {
-      for(PostPass var4 : this.passes) {
+      Iterator var3 = this.passes.iterator();
+
+      while(var3.hasNext()) {
+         PostPass var4 = (PostPass)var3.next();
          var4.getEffect().safeGetUniform(var1).set(var2);
       }
+
    }
 
    public final String getName() {
@@ -350,7 +399,7 @@ public class PostChain implements AutoCloseable {
       if (var1 == null) {
          return null;
       } else {
-         return var1.equals("minecraft:main") ? this.screenTarget : this.customRenderTargets.get(var1);
+         return var1.equals("minecraft:main") ? this.screenTarget : (RenderTarget)this.customRenderTargets.get(var1);
       }
    }
 }

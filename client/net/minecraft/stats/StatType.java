@@ -11,7 +11,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public class StatType<T> implements Iterable<Stat<T>> {
    private final Registry<T> registry;
-   private final Map<T, Stat<T>> map = new IdentityHashMap<>();
+   private final Map<T, Stat<T>> map = new IdentityHashMap();
    private final Component displayName;
    private final StreamCodec<RegistryFriendlyByteBuf, Stat<T>> streamCodec;
 
@@ -19,7 +19,7 @@ public class StatType<T> implements Iterable<Stat<T>> {
       super();
       this.registry = var1;
       this.displayName = var2;
-      this.streamCodec = ByteBufCodecs.<T>registry(var1.key()).map(this::get, Stat::getValue);
+      this.streamCodec = ByteBufCodecs.registry(var1.key()).map(this::get, Stat::getValue);
    }
 
    public StreamCodec<RegistryFriendlyByteBuf, Stat<T>> streamCodec() {
@@ -31,14 +31,15 @@ public class StatType<T> implements Iterable<Stat<T>> {
    }
 
    public Stat<T> get(T var1, StatFormatter var2) {
-      return this.map.computeIfAbsent((T)var1, var2x -> new Stat<>(this, var2x, var2));
+      return (Stat)this.map.computeIfAbsent(var1, (var2x) -> {
+         return new Stat(this, var2x, var2);
+      });
    }
 
    public Registry<T> getRegistry() {
       return this.registry;
    }
 
-   @Override
    public Iterator<Stat<T>> iterator() {
       return this.map.values().iterator();
    }

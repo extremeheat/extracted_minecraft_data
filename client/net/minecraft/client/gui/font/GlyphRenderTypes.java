@@ -4,11 +4,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
-public record GlyphRenderTypes(RenderType a, RenderType b, RenderType c) {
-   private final RenderType normal;
-   private final RenderType seeThrough;
-   private final RenderType polygonOffset;
-
+public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderType polygonOffset) {
    public GlyphRenderTypes(RenderType var1, RenderType var2, RenderType var3) {
       super();
       this.normal = var1;
@@ -25,10 +21,26 @@ public record GlyphRenderTypes(RenderType a, RenderType b, RenderType c) {
    }
 
    public RenderType select(Font.DisplayMode var1) {
-      return switch(var1) {
-         case NORMAL -> this.normal;
-         case SEE_THROUGH -> this.seeThrough;
-         case POLYGON_OFFSET -> this.polygonOffset;
-      };
+      RenderType var10000;
+      switch (var1) {
+         case NORMAL -> var10000 = this.normal;
+         case SEE_THROUGH -> var10000 = this.seeThrough;
+         case POLYGON_OFFSET -> var10000 = this.polygonOffset;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public RenderType normal() {
+      return this.normal;
+   }
+
+   public RenderType seeThrough() {
+      return this.seeThrough;
+   }
+
+   public RenderType polygonOffset() {
+      return this.polygonOffset;
    }
 }

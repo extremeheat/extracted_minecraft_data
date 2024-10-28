@@ -1,5 +1,6 @@
 package net.minecraft.network.protocol.game;
 
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -14,37 +15,16 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<ClientboundCommandSuggestionsPacket.Entry> e)
-   implements Packet<ClientGamePacketListener> {
-   private final int id;
-   private final int start;
-   private final int length;
-   private final List<ClientboundCommandSuggestionsPacket.Entry> suggestions;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.VAR_INT,
-      ClientboundCommandSuggestionsPacket::id,
-      ByteBufCodecs.VAR_INT,
-      ClientboundCommandSuggestionsPacket::start,
-      ByteBufCodecs.VAR_INT,
-      ClientboundCommandSuggestionsPacket::length,
-      ClientboundCommandSuggestionsPacket.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()),
-      ClientboundCommandSuggestionsPacket::suggestions,
-      ClientboundCommandSuggestionsPacket::new
-   );
+public record ClientboundCommandSuggestionsPacket(int id, int start, int length, List<Entry> suggestions) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket> STREAM_CODEC;
 
    public ClientboundCommandSuggestionsPacket(int var1, Suggestions var2) {
-      this(
-         var1,
-         var2.getRange().getStart(),
-         var2.getRange().getLength(),
-         var2.getList()
-            .stream()
-            .map(var0 -> new ClientboundCommandSuggestionsPacket.Entry(var0.getText(), Optional.ofNullable(var0.getTooltip()).map(ComponentUtils::fromMessage)))
-            .toList()
-      );
+      this(var1, var2.getRange().getStart(), var2.getRange().getLength(), var2.getList().stream().map((var0) -> {
+         return new Entry(var0.getText(), Optional.ofNullable(var0.getTooltip()).map(ComponentUtils::fromMessage));
+      }).toList());
    }
 
-   public ClientboundCommandSuggestionsPacket(int var1, int var2, int var3, List<ClientboundCommandSuggestionsPacket.Entry> var4) {
+   public ClientboundCommandSuggestionsPacket(int var1, int var2, int var3, List<Entry> var4) {
       super();
       this.id = var1;
       this.start = var2;
@@ -52,7 +32,6 @@ public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<Clie
       this.suggestions = var4;
    }
 
-   @Override
    public PacketType<ClientboundCommandSuggestionsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_COMMAND_SUGGESTIONS;
    }
@@ -63,24 +42,50 @@ public record ClientboundCommandSuggestionsPacket(int b, int c, int d, List<Clie
 
    public Suggestions toSuggestions() {
       StringRange var1 = StringRange.between(this.start, this.start + this.length);
-      return new Suggestions(var1, this.suggestions.stream().map(var1x -> new Suggestion(var1, var1x.text(), var1x.tooltip().orElse(null))).toList());
+      return new Suggestions(var1, this.suggestions.stream().map((var1x) -> {
+         return new Suggestion(var1, var1x.text(), (Message)var1x.tooltip().orElse((Object)null));
+      }).toList());
    }
 
-   public static record Entry(String b, Optional<Component> c) {
-      private final String text;
-      private final Optional<Component> tooltip;
-      public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket.Entry> STREAM_CODEC = StreamCodec.composite(
-         ByteBufCodecs.STRING_UTF8,
-         ClientboundCommandSuggestionsPacket.Entry::text,
-         ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC,
-         ClientboundCommandSuggestionsPacket.Entry::tooltip,
-         ClientboundCommandSuggestionsPacket.Entry::new
-      );
+   public int id() {
+      return this.id;
+   }
+
+   public int start() {
+      return this.start;
+   }
+
+   public int length() {
+      return this.length;
+   }
+
+   public List<Entry> suggestions() {
+      return this.suggestions;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundCommandSuggestionsPacket::id, ByteBufCodecs.VAR_INT, ClientboundCommandSuggestionsPacket::start, ByteBufCodecs.VAR_INT, ClientboundCommandSuggestionsPacket::length, ClientboundCommandSuggestionsPacket.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundCommandSuggestionsPacket::suggestions, ClientboundCommandSuggestionsPacket::new);
+   }
+
+   public static record Entry(String text, Optional<Component> tooltip) {
+      public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
       public Entry(String var1, Optional<Component> var2) {
          super();
          this.text = var1;
          this.tooltip = var2;
+      }
+
+      public String text() {
+         return this.text;
+      }
+
+      public Optional<Component> tooltip() {
+         return this.tooltip;
+      }
+
+      static {
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, Entry::text, ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC, Entry::tooltip, Entry::new);
       }
    }
 }

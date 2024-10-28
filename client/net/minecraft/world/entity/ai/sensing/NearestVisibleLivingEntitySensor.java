@@ -17,18 +17,20 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
 
    protected abstract MemoryModuleType<LivingEntity> getMemory();
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of(this.getMemory());
    }
 
-   @Override
    protected void doTick(ServerLevel var1, LivingEntity var2) {
       var2.getBrain().setMemory(this.getMemory(), this.getNearestEntity(var2));
    }
 
    private Optional<LivingEntity> getNearestEntity(LivingEntity var1) {
-      return this.getVisibleEntities(var1).flatMap(var2 -> var2.findClosest(var2x -> this.isMatchingEntity(var1, var2x)));
+      return this.getVisibleEntities(var1).flatMap((var2) -> {
+         return var2.findClosest((var2x) -> {
+            return this.isMatchingEntity(var1, var2x);
+         });
+      });
    }
 
    protected Optional<NearestVisibleLivingEntities> getVisibleEntities(LivingEntity var1) {

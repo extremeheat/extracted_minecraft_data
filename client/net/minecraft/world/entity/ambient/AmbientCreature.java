@@ -10,7 +10,6 @@ public abstract class AmbientCreature extends Mob {
       super(var1, var2);
    }
 
-   @Override
    public boolean canBeLeashed(Player var1) {
       return false;
    }

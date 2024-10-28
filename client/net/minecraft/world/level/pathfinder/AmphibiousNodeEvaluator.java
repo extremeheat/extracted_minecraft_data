@@ -17,7 +17,6 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       this.prefersShallowSwimming = var1;
    }
 
-   @Override
    public void prepare(PathNavigationRegion var1, Mob var2) {
       super.prepare(var1, var2);
       var2.setPathfindingMalus(PathType.WATER, 0.0F);
@@ -27,28 +26,20 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       var2.setPathfindingMalus(PathType.WATER_BORDER, 4.0F);
    }
 
-   @Override
    public void done() {
       this.mob.setPathfindingMalus(PathType.WALKABLE, this.oldWalkableCost);
       this.mob.setPathfindingMalus(PathType.WATER_BORDER, this.oldWaterBorderCost);
       super.done();
    }
 
-   @Override
    public Node getStart() {
-      return !this.mob.isInWater()
-         ? super.getStart()
-         : this.getStartNode(
-            new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ))
-         );
+      return !this.mob.isInWater() ? super.getStart() : this.getStartNode(new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ)));
    }
 
-   @Override
    public Target getTarget(double var1, double var3, double var5) {
       return this.getTargetNodeAt(var1, var3 + 0.5, var5);
    }
 
-   @Override
    public int getNeighbors(Node[] var1, Node var2) {
       int var3 = super.getNeighbors(var1, var2);
       PathType var5 = this.getCachedPathType(var2.x, var2.y + 1, var2.z);
@@ -85,18 +76,19 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       return this.isNeighborValid(var1, var2) && var1.type == PathType.WATER;
    }
 
-   @Override
    protected boolean isAmphibious() {
       return true;
    }
 
-   @Override
    public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
       PathType var5 = var1.getPathTypeFromState(var2, var3, var4);
       if (var5 == PathType.WATER) {
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+         Direction[] var7 = Direction.values();
+         int var8 = var7.length;
 
-         for(Direction var10 : Direction.values()) {
+         for(int var9 = 0; var9 < var8; ++var9) {
+            Direction var10 = var7[var9];
             var6.set(var2, var3, var4).move(var10);
             PathType var11 = var1.getPathTypeFromState(var6.getX(), var6.getY(), var6.getZ());
             if (var11 == PathType.BLOCKED) {

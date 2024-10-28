@@ -3,7 +3,9 @@ package net.minecraft.client.gui.screens.recipebook;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.RegistryAccess;
@@ -29,6 +31,7 @@ public class RecipeCollection {
       } else {
          this.singleResultItem = allRecipesHaveSameResult(var1, var2);
       }
+
    }
 
    private static boolean allRecipesHaveSameResult(RegistryAccess var0, List<RecipeHolder<?>> var1) {
@@ -54,27 +57,38 @@ public class RecipeCollection {
    }
 
    public void updateKnownRecipes(RecipeBook var1) {
-      for(RecipeHolder var3 : this.recipes) {
+      Iterator var2 = this.recipes.iterator();
+
+      while(var2.hasNext()) {
+         RecipeHolder var3 = (RecipeHolder)var2.next();
          if (var1.contains(var3)) {
             this.known.add(var3);
          }
       }
+
    }
 
    public void canCraft(StackedContents var1, int var2, int var3, RecipeBook var4) {
-      for(RecipeHolder var6 : this.recipes) {
-         boolean var7 = var6.value().canCraftInDimensions(var2, var3) && var4.contains(var6);
-         if (var7) {
-            this.fitsDimensions.add(var6);
-         } else {
-            this.fitsDimensions.remove(var6);
+      Iterator var5 = this.recipes.iterator();
+
+      while(true) {
+         while(var5.hasNext()) {
+            RecipeHolder var6 = (RecipeHolder)var5.next();
+            boolean var7 = var6.value().canCraftInDimensions(var2, var3) && var4.contains(var6);
+            if (var7) {
+               this.fitsDimensions.add(var6);
+            } else {
+               this.fitsDimensions.remove(var6);
+            }
+
+            if (var7 && var1.canCraft(var6.value(), (IntList)null)) {
+               this.craftable.add(var6);
+            } else {
+               this.craftable.remove(var6);
+            }
          }
 
-         if (var7 && var1.canCraft(var6.value(), null)) {
-            this.craftable.add(var6);
-         } else {
-            this.craftable.remove(var6);
-         }
+         return;
       }
    }
 
@@ -97,8 +111,10 @@ public class RecipeCollection {
    public List<RecipeHolder<?>> getRecipes(boolean var1) {
       ArrayList var2 = Lists.newArrayList();
       Set var3 = var1 ? this.craftable : this.fitsDimensions;
+      Iterator var4 = this.recipes.iterator();
 
-      for(RecipeHolder var5 : this.recipes) {
+      while(var4.hasNext()) {
+         RecipeHolder var5 = (RecipeHolder)var4.next();
          if (var3.contains(var5)) {
             var2.add(var5);
          }
@@ -109,8 +125,10 @@ public class RecipeCollection {
 
    public List<RecipeHolder<?>> getDisplayRecipes(boolean var1) {
       ArrayList var2 = Lists.newArrayList();
+      Iterator var3 = this.recipes.iterator();
 
-      for(RecipeHolder var4 : this.recipes) {
+      while(var3.hasNext()) {
+         RecipeHolder var4 = (RecipeHolder)var3.next();
          if (this.fitsDimensions.contains(var4) && this.craftable.contains(var4) == var1) {
             var2.add(var4);
          }

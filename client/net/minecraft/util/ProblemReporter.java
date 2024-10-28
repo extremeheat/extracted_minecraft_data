@@ -18,7 +18,9 @@ public interface ProblemReporter {
       private String pathCache;
 
       public Collector() {
-         this(HashMultimap.create(), () -> "");
+         this(HashMultimap.create(), () -> {
+            return "";
+         });
       }
 
       private Collector(Multimap<String, String> var1, Supplier<String> var2) {
@@ -29,18 +31,19 @@ public interface ProblemReporter {
 
       private String getPath() {
          if (this.pathCache == null) {
-            this.pathCache = this.path.get();
+            this.pathCache = (String)this.path.get();
          }
 
          return this.pathCache;
       }
 
-      @Override
       public ProblemReporter forChild(String var1) {
-         return new ProblemReporter.Collector(this.problems, () -> this.getPath() + var1);
+         return new Collector(this.problems, () -> {
+            String var10000 = this.getPath();
+            return var10000 + var1;
+         });
       }
 
-      @Override
       public void report(String var1) {
          this.problems.put(this.getPath(), var1);
       }

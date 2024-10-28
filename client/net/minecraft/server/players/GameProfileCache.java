@@ -19,6 +19,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -30,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -48,11 +51,11 @@ public class GameProfileCache {
    private static final int GAMEPROFILES_MRU_LIMIT = 1000;
    private static final int GAMEPROFILES_EXPIRATION_MONTHS = 1;
    private static boolean usesAuthentication;
-   private final Map<String, GameProfileCache.GameProfileInfo> profilesByName = Maps.newConcurrentMap();
-   private final Map<UUID, GameProfileCache.GameProfileInfo> profilesByUUID = Maps.newConcurrentMap();
+   private final Map<String, GameProfileInfo> profilesByName = Maps.newConcurrentMap();
+   private final Map<UUID, GameProfileInfo> profilesByUUID = Maps.newConcurrentMap();
    private final Map<String, CompletableFuture<Optional<GameProfile>>> requests = Maps.newConcurrentMap();
    private final GameProfileRepository profileRepository;
-   private final Gson gson = new GsonBuilder().create();
+   private final Gson gson = (new GsonBuilder()).create();
    private final File file;
    private final AtomicLong operationCount = new AtomicLong();
    @Nullable
@@ -65,7 +68,7 @@ public class GameProfileCache {
       Lists.reverse(this.load()).forEach(this::safeAdd);
    }
 
-   private void safeAdd(GameProfileCache.GameProfileInfo var1) {
+   private void safeAdd(GameProfileInfo var1) {
       GameProfile var2 = var1.getProfile();
       var1.setLastAccess(this.getNextOperation());
       this.profilesByName.put(var2.getName().toLowerCase(Locale.ROOT), var1);
@@ -83,7 +86,7 @@ public class GameProfileCache {
             }
 
             public void onProfileLookupFailed(String var1, Exception var2x) {
-               var2.set(null);
+               var2.set((Object)null);
             }
          };
          var0.findProfilesByNames(new String[]{var1}, var3);
@@ -109,7 +112,7 @@ public class GameProfileCache {
       var2.setTime(new Date());
       var2.add(2, 1);
       Date var3 = var2.getTime();
-      GameProfileCache.GameProfileInfo var4 = new GameProfileCache.GameProfileInfo(var1, var3);
+      GameProfileInfo var4 = new GameProfileInfo(var1, var3);
       this.safeAdd(var4);
       this.save();
    }
@@ -120,9 +123,9 @@ public class GameProfileCache {
 
    public Optional<GameProfile> get(String var1) {
       String var2 = var1.toLowerCase(Locale.ROOT);
-      GameProfileCache.GameProfileInfo var3 = this.profilesByName.get(var2);
+      GameProfileInfo var3 = (GameProfileInfo)this.profilesByName.get(var2);
       boolean var4 = false;
-      if (var3 != null && new Date().getTime() >= var3.expirationDate.getTime()) {
+      if (var3 != null && (new Date()).getTime() >= var3.expirationDate.getTime()) {
          this.profilesByUUID.remove(var3.getProfile().getId());
          this.profilesByName.remove(var3.getProfile().getName().toLowerCase(Locale.ROOT));
          var4 = true;
@@ -152,12 +155,15 @@ public class GameProfileCache {
       if (this.executor == null) {
          throw new IllegalStateException("No executor");
       } else {
-         CompletableFuture var2 = this.requests.get(var1);
+         CompletableFuture var2 = (CompletableFuture)this.requests.get(var1);
          if (var2 != null) {
             return var2;
          } else {
-            CompletableFuture var3 = CompletableFuture.<Optional<GameProfile>>supplyAsync(() -> this.get(var1), Util.backgroundExecutor())
-               .whenCompleteAsync((var2x, var3x) -> this.requests.remove(var1), this.executor);
+            CompletableFuture var3 = CompletableFuture.supplyAsync(() -> {
+               return this.get(var1);
+            }, Util.backgroundExecutor()).whenCompleteAsync((var2x, var3x) -> {
+               this.requests.remove(var1);
+            }, this.executor);
             this.requests.put(var1, var3);
             return var3;
          }
@@ -165,7 +171,7 @@ public class GameProfileCache {
    }
 
    public Optional<GameProfile> get(UUID var1) {
-      GameProfileCache.GameProfileInfo var2 = this.profilesByUUID.get(var1);
+      GameProfileInfo var2 = (GameProfileInfo)this.profilesByUUID.get(var1);
       if (var2 == null) {
          return Optional.empty();
       } else {
@@ -186,23 +192,49 @@ public class GameProfileCache {
       return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
    }
 
-   public List<GameProfileCache.GameProfileInfo> load() {
+   public List<GameProfileInfo> load() {
       ArrayList var1 = Lists.newArrayList();
 
       try {
-         ArrayList var9;
-         try (BufferedReader var2 = Files.newReader(this.file, StandardCharsets.UTF_8)) {
-            JsonArray var3 = (JsonArray)this.gson.fromJson(var2, JsonArray.class);
-            if (var3 != null) {
-               DateFormat var4 = createDateFormat();
-               var3.forEach(var2x -> readGameProfile(var2x, var4).ifPresent(var1::add));
-               return var1;
+         BufferedReader var2 = Files.newReader(this.file, StandardCharsets.UTF_8);
+
+         label54: {
+            ArrayList var4;
+            try {
+               JsonArray var3 = (JsonArray)this.gson.fromJson(var2, JsonArray.class);
+               if (var3 != null) {
+                  DateFormat var9 = createDateFormat();
+                  var3.forEach((var2x) -> {
+                     Optional var10000 = readGameProfile(var2x, var9);
+                     Objects.requireNonNull(var1);
+                     var10000.ifPresent(var1::add);
+                  });
+                  break label54;
+               }
+
+               var4 = var1;
+            } catch (Throwable var6) {
+               if (var2 != null) {
+                  try {
+                     ((Reader)var2).close();
+                  } catch (Throwable var5) {
+                     var6.addSuppressed(var5);
+                  }
+               }
+
+               throw var6;
             }
 
-            var9 = var1;
+            if (var2 != null) {
+               ((Reader)var2).close();
+            }
+
+            return var4;
          }
 
-         return var9;
+         if (var2 != null) {
+            ((Reader)var2).close();
+         }
       } catch (FileNotFoundException var7) {
       } catch (JsonParseException | IOException var8) {
          LOGGER.warn("Failed to load profile cache {}", this.file, var8);
@@ -214,23 +246,41 @@ public class GameProfileCache {
    public void save() {
       JsonArray var1 = new JsonArray();
       DateFormat var2 = createDateFormat();
-      this.getTopMRUProfiles(1000).forEach(var2x -> var1.add(writeGameProfile(var2x, var2)));
+      this.getTopMRUProfiles(1000).forEach((var2x) -> {
+         var1.add(writeGameProfile(var2x, var2));
+      });
       String var3 = this.gson.toJson(var1);
 
-      try (BufferedWriter var4 = Files.newWriter(this.file, StandardCharsets.UTF_8)) {
-         var4.write(var3);
+      try {
+         BufferedWriter var4 = Files.newWriter(this.file, StandardCharsets.UTF_8);
+
+         try {
+            ((Writer)var4).write(var3);
+         } catch (Throwable var8) {
+            if (var4 != null) {
+               try {
+                  ((Writer)var4).close();
+               } catch (Throwable var7) {
+                  var8.addSuppressed(var7);
+               }
+            }
+
+            throw var8;
+         }
+
+         if (var4 != null) {
+            ((Writer)var4).close();
+         }
       } catch (IOException var9) {
       }
+
    }
 
-   private Stream<GameProfileCache.GameProfileInfo> getTopMRUProfiles(int var1) {
-      return ImmutableList.copyOf(this.profilesByUUID.values())
-         .stream()
-         .sorted(Comparator.comparing(GameProfileCache.GameProfileInfo::getLastAccess).reversed())
-         .limit((long)var1);
+   private Stream<GameProfileInfo> getTopMRUProfiles(int var1) {
+      return ImmutableList.copyOf(this.profilesByUUID.values()).stream().sorted(Comparator.comparing(GameProfileInfo::getLastAccess).reversed()).limit((long)var1);
    }
 
-   private static JsonElement writeGameProfile(GameProfileCache.GameProfileInfo var0, DateFormat var1) {
+   private static JsonElement writeGameProfile(GameProfileInfo var0, DateFormat var1) {
       JsonObject var2 = new JsonObject();
       var2.addProperty("name", var0.getProfile().getName());
       var2.addProperty("uuid", var0.getProfile().getId().toString());
@@ -238,7 +288,7 @@ public class GameProfileCache {
       return var2;
    }
 
-   private static Optional<GameProfileCache.GameProfileInfo> readGameProfile(JsonElement var0, DateFormat var1) {
+   private static Optional<GameProfileInfo> readGameProfile(JsonElement var0, DateFormat var1) {
       if (var0.isJsonObject()) {
          JsonObject var2 = var0.getAsJsonObject();
          JsonElement var3 = var2.get("name");
@@ -263,7 +313,7 @@ public class GameProfileCache {
                   return Optional.empty();
                }
 
-               return Optional.of(new GameProfileCache.GameProfileInfo(new GameProfile(var9, var7), var8));
+               return Optional.of(new GameProfileInfo(new GameProfile(var9, var7), var8));
             } else {
                return Optional.empty();
             }

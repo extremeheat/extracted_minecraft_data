@@ -32,54 +32,47 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class Silverfish extends Monster {
    @Nullable
-   private Silverfish.SilverfishWakeUpFriendsGoal friendsGoal;
+   private SilverfishWakeUpFriendsGoal friendsGoal;
 
    public Silverfish(EntityType<? extends Silverfish> var1, Level var2) {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
-      this.friendsGoal = new Silverfish.SilverfishWakeUpFriendsGoal(this);
+      this.friendsGoal = new SilverfishWakeUpFriendsGoal(this);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(1, new ClimbOnTopOfPowderSnowGoal(this, this.level()));
       this.goalSelector.addGoal(3, this.friendsGoal);
       this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
-      this.goalSelector.addGoal(5, new Silverfish.SilverfishMergeWithStoneGoal(this));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+      this.goalSelector.addGoal(5, new SilverfishMergeWithStoneGoal(this));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 8.0).add(Attributes.MOVEMENT_SPEED, 0.25).add(Attributes.ATTACK_DAMAGE, 1.0);
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.SILVERFISH_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.SILVERFISH_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.SILVERFISH_DEATH;
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.SILVERFISH_STEP, 0.15F, 1.0F);
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
@@ -92,19 +85,16 @@ public class Silverfish extends Monster {
       }
    }
 
-   @Override
    public void tick() {
       this.yBodyRot = this.getYRot();
       super.tick();
    }
 
-   @Override
    public void setYBodyRot(float var1) {
       this.setYRot(var1);
       super.setYBodyRot(var1);
    }
 
-   @Override
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
       return InfestedBlock.isCompatibleHostBlock(var2.getBlockState(var1.below())) ? 10.0F : super.getWalkTargetValue(var1, var2);
    }
@@ -115,61 +105,6 @@ public class Silverfish extends Monster {
          return var5 == null;
       } else {
          return false;
-      }
-   }
-
-   static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {
-      @Nullable
-      private Direction selectedDirection;
-      private boolean doMerge;
-
-      public SilverfishMergeWithStoneGoal(Silverfish var1) {
-         super(var1, 1.0, 10);
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      }
-
-      @Override
-      public boolean canUse() {
-         if (this.mob.getTarget() != null) {
-            return false;
-         } else if (!this.mob.getNavigation().isDone()) {
-            return false;
-         } else {
-            RandomSource var1 = this.mob.getRandom();
-            if (this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
-               this.selectedDirection = Direction.getRandom(var1);
-               BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
-               BlockState var3 = this.mob.level().getBlockState(var2);
-               if (InfestedBlock.isCompatibleHostBlock(var3)) {
-                  this.doMerge = true;
-                  return true;
-               }
-            }
-
-            this.doMerge = false;
-            return super.canUse();
-         }
-      }
-
-      @Override
-      public boolean canContinueToUse() {
-         return this.doMerge ? false : super.canContinueToUse();
-      }
-
-      @Override
-      public void start() {
-         if (!this.doMerge) {
-            super.start();
-         } else {
-            Level var1 = this.mob.level();
-            BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
-            BlockState var3 = var1.getBlockState(var2);
-            if (InfestedBlock.isCompatibleHostBlock(var3)) {
-               var1.setBlock(var2, InfestedBlock.infestedStateByHost(var3), 3);
-               this.mob.spawnAnim();
-               this.mob.discard();
-            }
-         }
       }
    }
 
@@ -186,14 +121,13 @@ public class Silverfish extends Monster {
          if (this.lookForFriends == 0) {
             this.lookForFriends = this.adjustedTickDelay(20);
          }
+
       }
 
-      @Override
       public boolean canUse() {
          return this.lookForFriends > 0;
       }
 
-      @Override
       public void tick() {
          --this.lookForFriends;
          if (this.lookForFriends <= 0) {
@@ -221,6 +155,60 @@ public class Silverfish extends Monster {
                   }
                }
             }
+         }
+
+      }
+   }
+
+   static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {
+      @Nullable
+      private Direction selectedDirection;
+      private boolean doMerge;
+
+      public SilverfishMergeWithStoneGoal(Silverfish var1) {
+         super(var1, 1.0, 10);
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+      }
+
+      public boolean canUse() {
+         if (this.mob.getTarget() != null) {
+            return false;
+         } else if (!this.mob.getNavigation().isDone()) {
+            return false;
+         } else {
+            RandomSource var1 = this.mob.getRandom();
+            if (this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
+               this.selectedDirection = Direction.getRandom(var1);
+               BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
+               BlockState var3 = this.mob.level().getBlockState(var2);
+               if (InfestedBlock.isCompatibleHostBlock(var3)) {
+                  this.doMerge = true;
+                  return true;
+               }
+            }
+
+            this.doMerge = false;
+            return super.canUse();
+         }
+      }
+
+      public boolean canContinueToUse() {
+         return this.doMerge ? false : super.canContinueToUse();
+      }
+
+      public void start() {
+         if (!this.doMerge) {
+            super.start();
+         } else {
+            Level var1 = this.mob.level();
+            BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
+            BlockState var3 = var1.getBlockState(var2);
+            if (InfestedBlock.isCompatibleHostBlock(var3)) {
+               var1.setBlock(var2, InfestedBlock.infestedStateByHost(var3), 3);
+               this.mob.spawnAnim();
+               this.mob.discard();
+            }
+
          }
       }
    }

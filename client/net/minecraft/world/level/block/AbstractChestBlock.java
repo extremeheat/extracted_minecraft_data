@@ -18,7 +18,6 @@ public abstract class AbstractChestBlock<E extends BlockEntity> extends BaseEnti
       this.blockEntityType = var2;
    }
 
-   @Override
    protected abstract MapCodec<? extends AbstractChestBlock<E>> codec();
 
    public abstract DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState var1, Level var2, BlockPos var3, boolean var4);

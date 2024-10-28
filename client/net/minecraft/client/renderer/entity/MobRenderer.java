@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
@@ -19,15 +20,15 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
    public static final int LEASH_RENDER_STEPS = 24;
 
    public MobRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
-      super(var1, (M)var2, var3);
+      super(var1, var2, var3);
    }
 
    protected boolean shouldShowName(T var1) {
-      return super.shouldShowName((T)var1) && (var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity);
+      return super.shouldShowName((LivingEntity)var1) && (var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity);
    }
 
    public boolean shouldRender(T var1, Frustum var2, double var3, double var5, double var7) {
-      if (super.shouldRender((T)var1, var2, var3, var5, var7)) {
+      if (super.shouldRender(var1, var2, var3, var5, var7)) {
          return true;
       } else {
          Entity var9 = var1.getLeashHolder();
@@ -36,10 +37,10 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
    }
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      super.render((T)var1, var2, var3, var4, var5, var6);
+      super.render((LivingEntity)var1, var2, var3, var4, var5, var6);
       Entity var7 = var1.getLeashHolder();
       if (var7 != null) {
-         this.renderLeash((T)var1, var3, var4, var5, var7);
+         this.renderLeash(var1, var3, var4, var5, var7);
       }
    }
 
@@ -65,39 +66,24 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       float var28 = var20 * var26;
       BlockPos var29 = BlockPos.containing(var1.getEyePosition(var2));
       BlockPos var30 = BlockPos.containing(var5.getEyePosition(var2));
-      int var31 = this.getBlockLightLevel((T)var1, var29);
+      int var31 = this.getBlockLightLevel(var1, var29);
       int var32 = this.entityRenderDispatcher.getRenderer(var5).getBlockLightLevel(var5, var30);
       int var33 = var1.level().getBrightness(LightLayer.SKY, var29);
       int var34 = var1.level().getBrightness(LightLayer.SKY, var30);
 
-      for(int var35 = 0; var35 <= 24; ++var35) {
+      int var35;
+      for(var35 = 0; var35 <= 24; ++var35) {
          addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.025F, var27, var28, var35, false);
       }
 
-      for(int var36 = 24; var36 >= 0; --var36) {
-         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28, var36, true);
+      for(var35 = 24; var35 >= 0; --var35) {
+         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28, var35, true);
       }
 
       var3.popPose();
    }
 
-   private static void addVertexPair(
-      VertexConsumer var0,
-      Matrix4f var1,
-      float var2,
-      float var3,
-      float var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      float var9,
-      float var10,
-      float var11,
-      float var12,
-      int var13,
-      boolean var14
-   ) {
+   private static void addVertexPair(VertexConsumer var0, Matrix4f var1, float var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12, int var13, boolean var14) {
       float var15 = (float)var13 / 24.0F;
       int var16 = (int)Mth.lerp(var15, (float)var5, (float)var6);
       int var17 = (int)Mth.lerp(var15, (float)var7, (float)var8);
@@ -114,6 +100,26 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
    }
 
    protected float getShadowRadius(T var1) {
-      return super.getShadowRadius((T)var1) * var1.getAgeScale();
+      return super.getShadowRadius((LivingEntity)var1) * var1.getAgeScale();
+   }
+
+   // $FF: synthetic method
+   protected float getShadowRadius(LivingEntity var1) {
+      return this.getShadowRadius((Mob)var1);
+   }
+
+   // $FF: synthetic method
+   protected boolean shouldShowName(LivingEntity var1) {
+      return this.shouldShowName((Mob)var1);
+   }
+
+   // $FF: synthetic method
+   protected float getShadowRadius(Entity var1) {
+      return this.getShadowRadius((Mob)var1);
+   }
+
+   // $FF: synthetic method
+   protected boolean shouldShowName(Entity var1) {
+      return this.shouldShowName((Mob)var1);
    }
 }

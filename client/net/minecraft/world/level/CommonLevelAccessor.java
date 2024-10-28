@@ -12,22 +12,18 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface CommonLevelAccessor extends EntityGetter, LevelReader, LevelSimulatedRW {
-   @Override
    default <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2) {
       return LevelReader.super.getBlockEntity(var1, var2);
    }
 
-   @Override
    default List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2) {
       return EntityGetter.super.getEntityCollisions(var1, var2);
    }
 
-   @Override
    default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
       return EntityGetter.super.isUnobstructed(var1, var2);
    }
 
-   @Override
    default BlockPos getHeightmapPos(Heightmap.Types var1, BlockPos var2) {
       return LevelReader.super.getHeightmapPos(var1, var2);
    }

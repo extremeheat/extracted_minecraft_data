@@ -20,23 +20,20 @@ public class BlockPosTracker implements PositionTracker {
       this.centerPosition = var1;
    }
 
-   @Override
    public Vec3 currentPosition() {
       return this.centerPosition;
    }
 
-   @Override
    public BlockPos currentBlockPosition() {
       return this.blockPos;
    }
 
-   @Override
    public boolean isVisibleBy(LivingEntity var1) {
       return true;
    }
 
-   @Override
    public String toString() {
-      return "BlockPosTracker{blockPos=" + this.blockPos + ", centerPosition=" + this.centerPosition + "}";
+      String var10000 = String.valueOf(this.blockPos);
+      return "BlockPosTracker{blockPos=" + var10000 + ", centerPosition=" + String.valueOf(this.centerPosition) + "}";
    }
 }

@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.UserApiService;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -19,7 +20,7 @@ public class PlayerSocialManager {
    private final UserApiService service;
    private final Map<String, UUID> discoveredNamesToUUID = Maps.newHashMap();
    private boolean onlineMode;
-   private CompletableFuture<?> pendingBlockListRefresh = CompletableFuture.completedFuture(null);
+   private CompletableFuture<?> pendingBlockListRefresh = CompletableFuture.completedFuture((Object)null);
 
    public PlayerSocialManager(Minecraft var1, UserApiService var2) {
       super();
@@ -45,7 +46,10 @@ public class PlayerSocialManager {
 
    public void startOnlineMode() {
       this.onlineMode = true;
-      this.pendingBlockListRefresh = this.pendingBlockListRefresh.thenRunAsync(this.service::refreshBlockList, Util.ioPool());
+      CompletableFuture var10001 = this.pendingBlockListRefresh;
+      UserApiService var10002 = this.service;
+      Objects.requireNonNull(var10002);
+      this.pendingBlockListRefresh = var10001.thenRunAsync(var10002::refreshBlockList, Util.ioPool());
    }
 
    public void stopOnlineMode() {
@@ -66,11 +70,9 @@ public class PlayerSocialManager {
    }
 
    public UUID getDiscoveredUUID(String var1) {
-      return this.discoveredNamesToUUID.getOrDefault(var1, Util.NIL_UUID);
+      return (UUID)this.discoveredNamesToUUID.getOrDefault(var1, Util.NIL_UUID);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void addPlayer(PlayerInfo var1) {
       GameProfile var2 = var1.getProfile();
       this.discoveredNamesToUUID.put(var2.getName(), var2.getId());
@@ -78,14 +80,14 @@ public class PlayerSocialManager {
       if (var4 instanceof SocialInteractionsScreen var3) {
          var3.onAddPlayer(var1);
       }
+
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void removePlayer(UUID var1) {
       Screen var3 = this.minecraft.screen;
       if (var3 instanceof SocialInteractionsScreen var2) {
          var2.onRemovePlayer(var1);
       }
+
    }
 }

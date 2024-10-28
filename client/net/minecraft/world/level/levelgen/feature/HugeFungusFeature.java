@@ -20,7 +20,6 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<HugeFungusConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -94,6 +93,7 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
             }
          }
       }
+
    }
 
    private void placeHat(WorldGenLevel var1, RandomSource var2, HugeFungusConfiguration var3, BlockPos var4, int var5, boolean var6) {
@@ -140,11 +140,10 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
             }
          }
       }
+
    }
 
-   private void placeHatBlock(
-      LevelAccessor var1, RandomSource var2, HugeFungusConfiguration var3, BlockPos.MutableBlockPos var4, float var5, float var6, float var7
-   ) {
+   private void placeHatBlock(LevelAccessor var1, RandomSource var2, HugeFungusConfiguration var3, BlockPos.MutableBlockPos var4, float var5, float var6, float var7) {
       if (var2.nextFloat() < var5) {
          this.setBlock(var1, var4, var3.decorState);
       } else if (var2.nextFloat() < var6) {
@@ -153,6 +152,7 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
             tryPlaceWeepingVines(var4, var1, var2);
          }
       }
+
    }
 
    private void placeHatDropBlock(LevelAccessor var1, RandomSource var2, BlockPos var3, BlockState var4, boolean var5) {
@@ -164,6 +164,7 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
             tryPlaceWeepingVines(var3, var1, var2);
          }
       }
+
    }
 
    private static void tryPlaceWeepingVines(BlockPos var0, LevelAccessor var1, RandomSource var2) {

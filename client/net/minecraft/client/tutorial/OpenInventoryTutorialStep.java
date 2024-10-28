@@ -16,7 +16,6 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
       this.tutorial = var1;
    }
 
-   @Override
    public void tick() {
       ++this.timeWaiting;
       if (!this.tutorial.isSurvival()) {
@@ -26,18 +25,18 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
             this.toast = new TutorialToast(TutorialToast.Icons.RECIPE_BOOK, TITLE, DESCRIPTION, false);
             this.tutorial.getMinecraft().getToasts().addToast(this.toast);
          }
+
       }
    }
 
-   @Override
    public void clear() {
       if (this.toast != null) {
          this.toast.hide();
          this.toast = null;
       }
+
    }
 
-   @Override
    public void onOpenInventory() {
       this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
    }

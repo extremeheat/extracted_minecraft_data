@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 
 public class RealmsServerList implements Iterable<RealmsServer> {
    private final Minecraft minecraft;
-   private final Set<RealmsServer> removedServers = new HashSet<>();
+   private final Set<RealmsServer> removedServers = new HashSet();
    private List<RealmsServer> servers = List.of();
 
    public RealmsServerList(Minecraft var1) {
@@ -34,7 +34,6 @@ public class RealmsServerList implements Iterable<RealmsServer> {
       this.removedServers.add(var1);
    }
 
-   @Override
    public Iterator<RealmsServer> iterator() {
       return this.servers.iterator();
    }

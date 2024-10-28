@@ -35,7 +35,9 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
    public PathNavigationRegion(Level var1, BlockPos var2, BlockPos var3) {
       super();
       this.level = var1;
-      this.plains = Suppliers.memoize(() -> var1.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS));
+      this.plains = Suppliers.memoize(() -> {
+         return var1.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
+      });
       this.centerX = SectionPos.blockToSectionCoord(var2.getX());
       this.centerZ = SectionPos.blockToSectionCoord(var2.getZ());
       int var4 = SectionPos.blockToSectionCoord(var3.getX());
@@ -44,21 +46,24 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
       ChunkSource var6 = var1.getChunkSource();
       this.allEmpty = true;
 
-      for(int var7 = this.centerX; var7 <= var4; ++var7) {
-         for(int var8 = this.centerZ; var8 <= var5; ++var8) {
+      int var7;
+      int var8;
+      for(var7 = this.centerX; var7 <= var4; ++var7) {
+         for(var8 = this.centerZ; var8 <= var5; ++var8) {
             this.chunks[var7 - this.centerX][var8 - this.centerZ] = var6.getChunkNow(var7, var8);
          }
       }
 
-      for(int var10 = SectionPos.blockToSectionCoord(var2.getX()); var10 <= SectionPos.blockToSectionCoord(var3.getX()); ++var10) {
-         for(int var11 = SectionPos.blockToSectionCoord(var2.getZ()); var11 <= SectionPos.blockToSectionCoord(var3.getZ()); ++var11) {
-            ChunkAccess var9 = this.chunks[var10 - this.centerX][var11 - this.centerZ];
+      for(var7 = SectionPos.blockToSectionCoord(var2.getX()); var7 <= SectionPos.blockToSectionCoord(var3.getX()); ++var7) {
+         for(var8 = SectionPos.blockToSectionCoord(var2.getZ()); var8 <= SectionPos.blockToSectionCoord(var3.getZ()); ++var8) {
+            ChunkAccess var9 = this.chunks[var7 - this.centerX][var8 - this.centerZ];
             if (var9 != null && !var9.isYSpaceEmpty(var2.getY(), var3.getY())) {
                this.allEmpty = false;
                return;
             }
          }
       }
+
    }
 
    private ChunkAccess getChunk(BlockPos var1) {
@@ -70,35 +75,30 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
       int var4 = var2 - this.centerZ;
       if (var3 >= 0 && var3 < this.chunks.length && var4 >= 0 && var4 < this.chunks[var3].length) {
          ChunkAccess var5 = this.chunks[var3][var4];
-         return (ChunkAccess)(var5 != null ? var5 : new EmptyLevelChunk(this.level, new ChunkPos(var1, var2), this.plains.get()));
+         return (ChunkAccess)(var5 != null ? var5 : new EmptyLevelChunk(this.level, new ChunkPos(var1, var2), (Holder)this.plains.get()));
       } else {
-         return new EmptyLevelChunk(this.level, new ChunkPos(var1, var2), this.plains.get());
+         return new EmptyLevelChunk(this.level, new ChunkPos(var1, var2), (Holder)this.plains.get());
       }
    }
 
-   @Override
    public WorldBorder getWorldBorder() {
       return this.level.getWorldBorder();
    }
 
-   @Override
    public BlockGetter getChunkForCollisions(int var1, int var2) {
       return this.getChunk(var1, var2);
    }
 
-   @Override
    public List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2) {
       return List.of();
    }
 
    @Nullable
-   @Override
    public BlockEntity getBlockEntity(BlockPos var1) {
       ChunkAccess var2 = this.getChunk(var1);
       return var2.getBlockEntity(var1);
    }
 
-   @Override
    public BlockState getBlockState(BlockPos var1) {
       if (this.isOutsideBuildHeight(var1)) {
          return Blocks.AIR.defaultBlockState();
@@ -108,7 +108,6 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
       }
    }
 
-   @Override
    public FluidState getFluidState(BlockPos var1) {
       if (this.isOutsideBuildHeight(var1)) {
          return Fluids.EMPTY.defaultFluidState();
@@ -118,22 +117,15 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
       }
    }
 
-   @Override
    public int getMinBuildHeight() {
       return this.level.getMinBuildHeight();
    }
 
-   @Override
    public int getHeight() {
       return this.level.getHeight();
    }
 
    public ProfilerFiller getProfiler() {
       return this.level.getProfiler();
-   }
-
-   @Override
-   public boolean isPotato() {
-      return this.level.isPotato();
    }
 }

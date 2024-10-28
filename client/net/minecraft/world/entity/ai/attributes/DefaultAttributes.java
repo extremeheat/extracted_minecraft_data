@@ -3,9 +3,11 @@ package net.minecraft.world.entity.ai.attributes;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 import net.minecraft.Util;
+import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.GlowSquid;
 import net.minecraft.world.entity.LivingEntity;
@@ -62,10 +64,8 @@ import net.minecraft.world.entity.monster.Giant;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.entity.monster.MagmaCube;
-import net.minecraft.world.entity.monster.MegaSpud;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Pillager;
-import net.minecraft.world.entity.monster.PoisonousPotatoZombie;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.monster.Silverfish;
@@ -88,104 +88,14 @@ import org.slf4j.Logger;
 
 public class DefaultAttributes {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<EntityType<? extends LivingEntity>, AttributeSupplier> SUPPLIERS = ImmutableMap.builder()
-      .put(EntityType.ALLAY, Allay.createAttributes().build())
-      .put(EntityType.ARMADILLO, Armadillo.createAttributes().build())
-      .put(EntityType.ARMOR_STAND, ArmorStand.createAttributes().build())
-      .put(EntityType.AXOLOTL, Axolotl.createAttributes().build())
-      .put(EntityType.BAT, Bat.createAttributes().build())
-      .put(EntityType.BATATO, Bat.createAttributes().build())
-      .put(EntityType.BEE, Bee.createAttributes().build())
-      .put(EntityType.BLAZE, Blaze.createAttributes().build())
-      .put(EntityType.BOGGED, Bogged.createAttributes().build())
-      .put(EntityType.CAT, Cat.createAttributes().build())
-      .put(EntityType.CAMEL, Camel.createAttributes().build())
-      .put(EntityType.CAVE_SPIDER, CaveSpider.createCaveSpider().build())
-      .put(EntityType.CHICKEN, Chicken.createAttributes().build())
-      .put(EntityType.COD, AbstractFish.createAttributes().build())
-      .put(EntityType.COW, Cow.createAttributes().build())
-      .put(EntityType.CREEPER, Creeper.createAttributes().build())
-      .put(EntityType.DOLPHIN, Dolphin.createAttributes().build())
-      .put(EntityType.DONKEY, AbstractChestedHorse.createBaseChestedHorseAttributes().build())
-      .put(EntityType.DROWNED, Drowned.createAttributes().build())
-      .put(EntityType.ELDER_GUARDIAN, ElderGuardian.createAttributes().build())
-      .put(EntityType.ENDERMAN, EnderMan.createAttributes().build())
-      .put(EntityType.ENDERMITE, Endermite.createAttributes().build())
-      .put(EntityType.ENDER_DRAGON, EnderDragon.createAttributes().build())
-      .put(EntityType.EVOKER, Evoker.createAttributes().build())
-      .put(EntityType.BREEZE, Breeze.createAttributes().build())
-      .put(EntityType.FOX, Fox.createAttributes().build())
-      .put(EntityType.FROG, Frog.createAttributes().build())
-      .put(EntityType.GHAST, Ghast.createAttributes().build())
-      .put(EntityType.GIANT, Giant.createAttributes().build())
-      .put(EntityType.GLOW_SQUID, GlowSquid.createAttributes().build())
-      .put(EntityType.GOAT, Goat.createAttributes().build())
-      .put(EntityType.GUARDIAN, Guardian.createAttributes().build())
-      .put(EntityType.HOGLIN, Hoglin.createAttributes().build())
-      .put(EntityType.HORSE, AbstractHorse.createBaseHorseAttributes().build())
-      .put(EntityType.HUSK, Zombie.createAttributes().build())
-      .put(EntityType.ILLUSIONER, Illusioner.createAttributes().build())
-      .put(EntityType.IRON_GOLEM, IronGolem.createAttributes().build())
-      .put(EntityType.LLAMA, Llama.createAttributes().build())
-      .put(EntityType.MAGMA_CUBE, MagmaCube.createAttributes().build())
-      .put(EntityType.MEGA_SPUD, MegaSpud.createAttributes().build())
-      .put(EntityType.MOOSHROOM, Cow.createAttributes().build())
-      .put(EntityType.MULE, AbstractChestedHorse.createBaseChestedHorseAttributes().build())
-      .put(EntityType.OCELOT, Ocelot.createAttributes().build())
-      .put(EntityType.PANDA, Panda.createAttributes().build())
-      .put(EntityType.PARROT, Parrot.createAttributes().build())
-      .put(EntityType.PHANTOM, Monster.createMonsterAttributes().build())
-      .put(EntityType.PIG, Pig.createAttributes().build())
-      .put(EntityType.PIGLIN, Piglin.createAttributes().build())
-      .put(EntityType.PIGLIN_BRUTE, PiglinBrute.createAttributes().build())
-      .put(EntityType.PILLAGER, Pillager.createAttributes().build())
-      .put(EntityType.PLAGUEWHALE, ElderGuardian.createAttributes().build())
-      .put(EntityType.PLAYER, Player.createAttributes().build())
-      .put(EntityType.POLAR_BEAR, PolarBear.createAttributes().build())
-      .put(EntityType.POISONOUS_POTATO_ZOMBIE, PoisonousPotatoZombie.createAttributes().build())
-      .put(EntityType.PUFFERFISH, AbstractFish.createAttributes().build())
-      .put(EntityType.RABBIT, Rabbit.createAttributes().build())
-      .put(EntityType.RAVAGER, Ravager.createAttributes().build())
-      .put(EntityType.SALMON, AbstractFish.createAttributes().build())
-      .put(EntityType.SHEEP, Sheep.createAttributes().build())
-      .put(EntityType.SHULKER, Shulker.createAttributes().build())
-      .put(EntityType.SILVERFISH, Silverfish.createAttributes().build())
-      .put(EntityType.SKELETON, AbstractSkeleton.createAttributes().build())
-      .put(EntityType.SKELETON_HORSE, SkeletonHorse.createAttributes().build())
-      .put(EntityType.SLIME, Monster.createMonsterAttributes().build())
-      .put(EntityType.SNIFFER, Sniffer.createAttributes().build())
-      .put(EntityType.SNOW_GOLEM, SnowGolem.createAttributes().build())
-      .put(EntityType.SPIDER, Spider.createAttributes().build())
-      .put(EntityType.SQUID, Squid.createAttributes().build())
-      .put(EntityType.STRAY, AbstractSkeleton.createAttributes().build())
-      .put(EntityType.STRIDER, Strider.createAttributes().build())
-      .put(EntityType.TADPOLE, Tadpole.createAttributes().build())
-      .put(EntityType.TOXIFIN, Guardian.createAttributes().build())
-      .put(EntityType.TRADER_LLAMA, Llama.createAttributes().build())
-      .put(EntityType.TROPICAL_FISH, AbstractFish.createAttributes().build())
-      .put(EntityType.TURTLE, Turtle.createAttributes().build())
-      .put(EntityType.VEX, Vex.createAttributes().build())
-      .put(EntityType.VILLAGER, Villager.createAttributes().build())
-      .put(EntityType.VINDICATOR, Vindicator.createAttributes().build())
-      .put(EntityType.WARDEN, Warden.createAttributes().build())
-      .put(EntityType.WANDERING_TRADER, Mob.createMobAttributes().build())
-      .put(EntityType.WITCH, Witch.createAttributes().build())
-      .put(EntityType.WITHER, WitherBoss.createAttributes().build())
-      .put(EntityType.WITHER_SKELETON, AbstractSkeleton.createAttributes().build())
-      .put(EntityType.WOLF, Wolf.createAttributes().build())
-      .put(EntityType.ZOGLIN, Zoglin.createAttributes().build())
-      .put(EntityType.ZOMBIE, Zombie.createAttributes().build())
-      .put(EntityType.ZOMBIE_HORSE, ZombieHorse.createAttributes().build())
-      .put(EntityType.ZOMBIE_VILLAGER, Zombie.createAttributes().build())
-      .put(EntityType.ZOMBIFIED_PIGLIN, ZombifiedPiglin.createAttributes().build())
-      .build();
+   private static final Map<EntityType<? extends LivingEntity>, AttributeSupplier> SUPPLIERS;
 
    public DefaultAttributes() {
       super();
    }
 
    public static AttributeSupplier getSupplier(EntityType<? extends LivingEntity> var0) {
-      return SUPPLIERS.get(var0);
+      return (AttributeSupplier)SUPPLIERS.get(var0);
    }
 
    public static boolean hasSupplier(EntityType<?> var0) {
@@ -193,11 +103,19 @@ public class DefaultAttributes {
    }
 
    public static void validate() {
-      BuiltInRegistries.ENTITY_TYPE
-         .stream()
-         .filter(var0 -> var0.getCategory() != MobCategory.MISC)
-         .filter(var0 -> !hasSupplier(var0))
-         .map(BuiltInRegistries.ENTITY_TYPE::getKey)
-         .forEach(var0 -> Util.logAndPauseIfInIde("Entity " + var0 + " has no attributes"));
+      Stream var10000 = BuiltInRegistries.ENTITY_TYPE.stream().filter((var0) -> {
+         return var0.getCategory() != MobCategory.MISC;
+      }).filter((var0) -> {
+         return !hasSupplier(var0);
+      });
+      DefaultedRegistry var10001 = BuiltInRegistries.ENTITY_TYPE;
+      Objects.requireNonNull(var10001);
+      var10000.map(var10001::getKey).forEach((var0) -> {
+         Util.logAndPauseIfInIde("Entity " + String.valueOf(var0) + " has no attributes");
+      });
+   }
+
+   static {
+      SUPPLIERS = ImmutableMap.builder().put(EntityType.ALLAY, Allay.createAttributes().build()).put(EntityType.ARMADILLO, Armadillo.createAttributes().build()).put(EntityType.ARMOR_STAND, ArmorStand.createAttributes().build()).put(EntityType.AXOLOTL, Axolotl.createAttributes().build()).put(EntityType.BAT, Bat.createAttributes().build()).put(EntityType.BEE, Bee.createAttributes().build()).put(EntityType.BLAZE, Blaze.createAttributes().build()).put(EntityType.BOGGED, Bogged.createAttributes().build()).put(EntityType.CAT, Cat.createAttributes().build()).put(EntityType.CAMEL, Camel.createAttributes().build()).put(EntityType.CAVE_SPIDER, CaveSpider.createCaveSpider().build()).put(EntityType.CHICKEN, Chicken.createAttributes().build()).put(EntityType.COD, AbstractFish.createAttributes().build()).put(EntityType.COW, Cow.createAttributes().build()).put(EntityType.CREEPER, Creeper.createAttributes().build()).put(EntityType.DOLPHIN, Dolphin.createAttributes().build()).put(EntityType.DONKEY, AbstractChestedHorse.createBaseChestedHorseAttributes().build()).put(EntityType.DROWNED, Drowned.createAttributes().build()).put(EntityType.ELDER_GUARDIAN, ElderGuardian.createAttributes().build()).put(EntityType.ENDERMAN, EnderMan.createAttributes().build()).put(EntityType.ENDERMITE, Endermite.createAttributes().build()).put(EntityType.ENDER_DRAGON, EnderDragon.createAttributes().build()).put(EntityType.EVOKER, Evoker.createAttributes().build()).put(EntityType.BREEZE, Breeze.createAttributes().build()).put(EntityType.FOX, Fox.createAttributes().build()).put(EntityType.FROG, Frog.createAttributes().build()).put(EntityType.GHAST, Ghast.createAttributes().build()).put(EntityType.GIANT, Giant.createAttributes().build()).put(EntityType.GLOW_SQUID, GlowSquid.createAttributes().build()).put(EntityType.GOAT, Goat.createAttributes().build()).put(EntityType.GUARDIAN, Guardian.createAttributes().build()).put(EntityType.HOGLIN, Hoglin.createAttributes().build()).put(EntityType.HORSE, AbstractHorse.createBaseHorseAttributes().build()).put(EntityType.HUSK, Zombie.createAttributes().build()).put(EntityType.ILLUSIONER, Illusioner.createAttributes().build()).put(EntityType.IRON_GOLEM, IronGolem.createAttributes().build()).put(EntityType.LLAMA, Llama.createAttributes().build()).put(EntityType.MAGMA_CUBE, MagmaCube.createAttributes().build()).put(EntityType.MOOSHROOM, Cow.createAttributes().build()).put(EntityType.MULE, AbstractChestedHorse.createBaseChestedHorseAttributes().build()).put(EntityType.OCELOT, Ocelot.createAttributes().build()).put(EntityType.PANDA, Panda.createAttributes().build()).put(EntityType.PARROT, Parrot.createAttributes().build()).put(EntityType.PHANTOM, Monster.createMonsterAttributes().build()).put(EntityType.PIG, Pig.createAttributes().build()).put(EntityType.PIGLIN, Piglin.createAttributes().build()).put(EntityType.PIGLIN_BRUTE, PiglinBrute.createAttributes().build()).put(EntityType.PILLAGER, Pillager.createAttributes().build()).put(EntityType.PLAYER, Player.createAttributes().build()).put(EntityType.POLAR_BEAR, PolarBear.createAttributes().build()).put(EntityType.PUFFERFISH, AbstractFish.createAttributes().build()).put(EntityType.RABBIT, Rabbit.createAttributes().build()).put(EntityType.RAVAGER, Ravager.createAttributes().build()).put(EntityType.SALMON, AbstractFish.createAttributes().build()).put(EntityType.SHEEP, Sheep.createAttributes().build()).put(EntityType.SHULKER, Shulker.createAttributes().build()).put(EntityType.SILVERFISH, Silverfish.createAttributes().build()).put(EntityType.SKELETON, AbstractSkeleton.createAttributes().build()).put(EntityType.SKELETON_HORSE, SkeletonHorse.createAttributes().build()).put(EntityType.SLIME, Monster.createMonsterAttributes().build()).put(EntityType.SNIFFER, Sniffer.createAttributes().build()).put(EntityType.SNOW_GOLEM, SnowGolem.createAttributes().build()).put(EntityType.SPIDER, Spider.createAttributes().build()).put(EntityType.SQUID, Squid.createAttributes().build()).put(EntityType.STRAY, AbstractSkeleton.createAttributes().build()).put(EntityType.STRIDER, Strider.createAttributes().build()).put(EntityType.TADPOLE, Tadpole.createAttributes().build()).put(EntityType.TRADER_LLAMA, Llama.createAttributes().build()).put(EntityType.TROPICAL_FISH, AbstractFish.createAttributes().build()).put(EntityType.TURTLE, Turtle.createAttributes().build()).put(EntityType.VEX, Vex.createAttributes().build()).put(EntityType.VILLAGER, Villager.createAttributes().build()).put(EntityType.VINDICATOR, Vindicator.createAttributes().build()).put(EntityType.WARDEN, Warden.createAttributes().build()).put(EntityType.WANDERING_TRADER, Mob.createMobAttributes().build()).put(EntityType.WITCH, Witch.createAttributes().build()).put(EntityType.WITHER, WitherBoss.createAttributes().build()).put(EntityType.WITHER_SKELETON, AbstractSkeleton.createAttributes().build()).put(EntityType.WOLF, Wolf.createAttributes().build()).put(EntityType.ZOGLIN, Zoglin.createAttributes().build()).put(EntityType.ZOMBIE, Zombie.createAttributes().build()).put(EntityType.ZOMBIE_HORSE, ZombieHorse.createAttributes().build()).put(EntityType.ZOMBIE_VILLAGER, Zombie.createAttributes().build()).put(EntityType.ZOMBIFIED_PIGLIN, ZombifiedPiglin.createAttributes().build()).build();
    }
 }

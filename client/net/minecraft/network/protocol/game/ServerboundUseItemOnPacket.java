@@ -8,9 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class ServerboundUseItemOnPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundUseItemOnPacket> STREAM_CODEC = Packet.codec(
-      ServerboundUseItemOnPacket::write, ServerboundUseItemOnPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundUseItemOnPacket> STREAM_CODEC = Packet.codec(ServerboundUseItemOnPacket::write, ServerboundUseItemOnPacket::new);
    private final BlockHitResult blockHit;
    private final InteractionHand hand;
    private final int sequence;
@@ -24,7 +22,7 @@ public class ServerboundUseItemOnPacket implements Packet<ServerGamePacketListen
 
    private ServerboundUseItemOnPacket(FriendlyByteBuf var1) {
       super();
-      this.hand = var1.readEnum(InteractionHand.class);
+      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
       this.blockHit = var1.readBlockHitResult();
       this.sequence = var1.readVarInt();
    }
@@ -35,7 +33,6 @@ public class ServerboundUseItemOnPacket implements Packet<ServerGamePacketListen
       var1.writeVarInt(this.sequence);
    }
 
-   @Override
    public PacketType<ServerboundUseItemOnPacket> type() {
       return GamePacketTypes.SERVERBOUND_USE_ITEM_ON;
    }

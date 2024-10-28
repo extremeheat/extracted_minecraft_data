@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -41,49 +42,39 @@ import net.minecraft.world.ticks.TickContainerAccess;
 public class ProtoChunk extends ChunkAccess {
    @Nullable
    private volatile LevelLightEngine lightEngine;
-   private volatile ChunkStatus status = ChunkStatus.EMPTY;
-   private final List<CompoundTag> entities = Lists.newArrayList();
-   private final Map<GenerationStep.Carving, CarvingMask> carvingMasks = new Object2ObjectArrayMap();
+   private volatile ChunkStatus status;
+   private final List<CompoundTag> entities;
+   private final Map<GenerationStep.Carving, CarvingMask> carvingMasks;
    @Nullable
    private BelowZeroRetrogen belowZeroRetrogen;
    private final ProtoChunkTicks<Block> blockTicks;
    private final ProtoChunkTicks<Fluid> fluidTicks;
 
    public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, Registry<Biome> var4, @Nullable BlendingData var5) {
-      this(var1, var2, null, new ProtoChunkTicks<>(), new ProtoChunkTicks<>(), var3, var4, var5);
+      this(var1, var2, (LevelChunkSection[])null, new ProtoChunkTicks(), new ProtoChunkTicks(), var3, var4, var5);
    }
 
-   public ProtoChunk(
-      ChunkPos var1,
-      UpgradeData var2,
-      @Nullable LevelChunkSection[] var3,
-      ProtoChunkTicks<Block> var4,
-      ProtoChunkTicks<Fluid> var5,
-      LevelHeightAccessor var6,
-      Registry<Biome> var7,
-      @Nullable BlendingData var8
-   ) {
+   public ProtoChunk(ChunkPos var1, UpgradeData var2, @Nullable LevelChunkSection[] var3, ProtoChunkTicks<Block> var4, ProtoChunkTicks<Fluid> var5, LevelHeightAccessor var6, Registry<Biome> var7, @Nullable BlendingData var8) {
       super(var1, var2, var6, var7, 0L, var3, var8);
+      this.status = ChunkStatus.EMPTY;
+      this.entities = Lists.newArrayList();
+      this.carvingMasks = new Object2ObjectArrayMap();
       this.blockTicks = var4;
       this.fluidTicks = var5;
    }
 
-   @Override
    public TickContainerAccess<Block> getBlockTicks() {
       return this.blockTicks;
    }
 
-   @Override
    public TickContainerAccess<Fluid> getFluidTicks() {
       return this.fluidTicks;
    }
 
-   @Override
    public ChunkAccess.TicksToSave getTicksForSerialization() {
       return new ChunkAccess.TicksToSave(this.blockTicks, this.fluidTicks);
    }
 
-   @Override
    public BlockState getBlockState(BlockPos var1) {
       int var2 = var1.getY();
       if (this.isOutsideBuildHeight(var2)) {
@@ -94,7 +85,6 @@ public class ProtoChunk extends ChunkAccess {
       }
    }
 
-   @Override
    public FluidState getFluidState(BlockPos var1) {
       int var2 = var1.getY();
       if (this.isOutsideBuildHeight(var2)) {
@@ -106,7 +96,6 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    @Nullable
-   @Override
    public BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3) {
       int var4 = var1.getX();
       int var5 = var1.getY();
@@ -136,9 +125,12 @@ public class ProtoChunk extends ChunkAccess {
 
             EnumSet var19 = this.getStatus().heightmapsAfter();
             EnumSet var15 = null;
+            Iterator var16 = var19.iterator();
 
-            for(Heightmap.Types var17 : var19) {
-               Heightmap var18 = this.heightmaps.get(var17);
+            Heightmap.Types var17;
+            while(var16.hasNext()) {
+               var17 = (Heightmap.Types)var16.next();
+               Heightmap var18 = (Heightmap)this.heightmaps.get(var17);
                if (var18 == null) {
                   if (var15 == null) {
                      var15 = EnumSet.noneOf(Heightmap.Types.class);
@@ -152,8 +144,11 @@ public class ProtoChunk extends ChunkAccess {
                Heightmap.primeHeightmaps(this, var15);
             }
 
-            for(Heightmap.Types var21 : var19) {
-               this.heightmaps.get(var21).update(var10, var5, var12, var2);
+            var16 = var19.iterator();
+
+            while(var16.hasNext()) {
+               var17 = (Heightmap.Types)var16.next();
+               ((Heightmap)this.heightmaps.get(var17)).update(var10, var5, var12, var2);
             }
 
             return var13;
@@ -163,15 +158,13 @@ public class ProtoChunk extends ChunkAccess {
       }
    }
 
-   @Override
    public void setBlockEntity(BlockEntity var1) {
       this.blockEntities.put(var1.getBlockPos(), var1);
    }
 
    @Nullable
-   @Override
    public BlockEntity getBlockEntity(BlockPos var1) {
-      return this.blockEntities.get(var1);
+      return (BlockEntity)this.blockEntities.get(var1);
    }
 
    public Map<BlockPos, BlockEntity> getBlockEntities() {
@@ -182,7 +175,6 @@ public class ProtoChunk extends ChunkAccess {
       this.entities.add(var1);
    }
 
-   @Override
    public void addEntity(Entity var1) {
       if (!var1.isPassenger()) {
          CompoundTag var2 = new CompoundTag();
@@ -191,7 +183,6 @@ public class ProtoChunk extends ChunkAccess {
       }
    }
 
-   @Override
    public void setStartForStructure(Structure var1, StructureStart var2) {
       BelowZeroRetrogen var3 = this.getBelowZeroRetrogen();
       if (var3 != null && var2.isValid()) {
@@ -209,7 +200,6 @@ public class ProtoChunk extends ChunkAccess {
       return this.entities;
    }
 
-   @Override
    public ChunkStatus getStatus() {
       return this.status;
    }
@@ -217,13 +207,12 @@ public class ProtoChunk extends ChunkAccess {
    public void setStatus(ChunkStatus var1) {
       this.status = var1;
       if (this.belowZeroRetrogen != null && var1.isOrAfter(this.belowZeroRetrogen.targetStatus())) {
-         this.setBelowZeroRetrogen(null);
+         this.setBelowZeroRetrogen((BelowZeroRetrogen)null);
       }
 
       this.setUnsaved(true);
    }
 
-   @Override
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
       if (this.getHighestGeneratedStatus().isOrAfter(ChunkStatus.BIOMES)) {
          return super.getNoiseBiome(var1, var2, var3);
@@ -249,14 +238,13 @@ public class ProtoChunk extends ChunkAccess {
       return new BlockPos(var3, var4, var5);
    }
 
-   @Override
    public void markPosForPostprocessing(BlockPos var1) {
       if (!this.isOutsideBuildHeight(var1)) {
          ChunkAccess.getOrCreateOffsetList(this.postProcessing, this.getSectionIndex(var1.getY())).add(packOffsetCoordinates(var1));
       }
+
    }
 
-   @Override
    public void addPackedPostProcess(short var1, int var2) {
       ChunkAccess.getOrCreateOffsetList(this.postProcessing, var2).add(var1);
    }
@@ -266,13 +254,11 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    @Nullable
-   @Override
    public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
       BlockEntity var3 = this.getBlockEntity(var1);
-      return var3 != null ? var3.saveWithFullMetadata(var2) : this.pendingBlockEntities.get(var1);
+      return var3 != null ? var3.saveWithFullMetadata(var2) : (CompoundTag)this.pendingBlockEntities.get(var1);
    }
 
-   @Override
    public void removeBlockEntity(BlockPos var1) {
       this.blockEntities.remove(var1);
       this.pendingBlockEntities.remove(var1);
@@ -280,11 +266,13 @@ public class ProtoChunk extends ChunkAccess {
 
    @Nullable
    public CarvingMask getCarvingMask(GenerationStep.Carving var1) {
-      return this.carvingMasks.get(var1);
+      return (CarvingMask)this.carvingMasks.get(var1);
    }
 
    public CarvingMask getOrCreateCarvingMask(GenerationStep.Carving var1) {
-      return this.carvingMasks.computeIfAbsent(var1, var1x -> new CarvingMask(this.getHeight(), this.getMinBuildHeight()));
+      return (CarvingMask)this.carvingMasks.computeIfAbsent(var1, (var1x) -> {
+         return new CarvingMask(this.getHeight(), this.getMinBuildHeight());
+      });
    }
 
    public void setCarvingMask(GenerationStep.Carving var1, CarvingMask var2) {
@@ -300,13 +288,12 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    @Nullable
-   @Override
    public BelowZeroRetrogen getBelowZeroRetrogen() {
       return this.belowZeroRetrogen;
    }
 
    private static <T> LevelChunkTicks<T> unpackTicks(ProtoChunkTicks<T> var0) {
-      return new LevelChunkTicks<>(var0.scheduledTicks());
+      return new LevelChunkTicks(var0.scheduledTicks());
    }
 
    public LevelChunkTicks<Block> unpackBlockTicks() {
@@ -317,7 +304,6 @@ public class ProtoChunk extends ChunkAccess {
       return unpackTicks(this.fluidTicks);
    }
 
-   @Override
    public LevelHeightAccessor getHeightAccessorForGeneration() {
       return (LevelHeightAccessor)(this.isUpgrading() ? BelowZeroRetrogen.UPGRADE_HEIGHT_ACCESSOR : this);
    }

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,9 +30,10 @@ public class AttributeMap {
    }
 
    private void onAttributeModified(AttributeInstance var1) {
-      if (var1.getAttribute().value().isClientSyncable()) {
+      if (((Attribute)var1.getAttribute().value()).isClientSyncable()) {
          this.dirtyAttributes.add(var1);
       }
+
    }
 
    public Set<AttributeInstance> getDirtyAttributes() {
@@ -39,12 +41,16 @@ public class AttributeMap {
    }
 
    public Collection<AttributeInstance> getSyncableAttributes() {
-      return this.attributes.values().stream().filter(var0 -> var0.getAttribute().value().isClientSyncable()).collect(Collectors.toList());
+      return (Collection)this.attributes.values().stream().filter((var0) -> {
+         return ((Attribute)var0.getAttribute().value()).isClientSyncable();
+      }).collect(Collectors.toList());
    }
 
    @Nullable
    public AttributeInstance getInstance(Holder<Attribute> var1) {
-      return this.attributes.computeIfAbsent(var1, var1x -> this.supplier.createInstance(this::onAttributeModified, var1x));
+      return (AttributeInstance)this.attributes.computeIfAbsent(var1, (var1x) -> {
+         return this.supplier.createInstance(this::onAttributeModified, var1x);
+      });
    }
 
    public boolean hasAttribute(Holder<Attribute> var1) {
@@ -52,38 +58,41 @@ public class AttributeMap {
    }
 
    public boolean hasModifier(Holder<Attribute> var1, UUID var2) {
-      AttributeInstance var3 = this.attributes.get(var1);
+      AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
    }
 
    public double getValue(Holder<Attribute> var1) {
-      AttributeInstance var2 = this.attributes.get(var1);
+      AttributeInstance var2 = (AttributeInstance)this.attributes.get(var1);
       return var2 != null ? var2.getValue() : this.supplier.getValue(var1);
    }
 
    public double getBaseValue(Holder<Attribute> var1) {
-      AttributeInstance var2 = this.attributes.get(var1);
+      AttributeInstance var2 = (AttributeInstance)this.attributes.get(var1);
       return var2 != null ? var2.getBaseValue() : this.supplier.getBaseValue(var1);
    }
 
    public double getModifierValue(Holder<Attribute> var1, UUID var2) {
-      AttributeInstance var3 = this.attributes.get(var1);
+      AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).amount() : this.supplier.getModifierValue(var1, var2);
    }
 
    public void assignValues(AttributeMap var1) {
-      var1.attributes.values().forEach(var1x -> {
+      var1.attributes.values().forEach((var1x) -> {
          AttributeInstance var2 = this.getInstance(var1x.getAttribute());
          if (var2 != null) {
             var2.replaceFrom(var1x);
          }
+
       });
    }
 
    public ListTag save() {
       ListTag var1 = new ListTag();
+      Iterator var2 = this.attributes.values().iterator();
 
-      for(AttributeInstance var3 : this.attributes.values()) {
+      while(var2.hasNext()) {
+         AttributeInstance var3 = (AttributeInstance)var2.next();
          var1.add(var3.save());
       }
 
@@ -96,15 +105,19 @@ public class AttributeMap {
          String var4 = var3.getString("Name");
          ResourceLocation var5 = ResourceLocation.tryParse(var4);
          if (var5 != null) {
-            Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), var2x -> {
-               AttributeInstance var3xx = this.getInstance(var2x);
-               if (var3xx != null) {
-                  var3xx.load(var3);
+            Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), (var2x) -> {
+               AttributeInstance var3x = this.getInstance(var2x);
+               if (var3x != null) {
+                  var3x.load(var3);
                }
-            }, () -> LOGGER.warn("Ignoring unknown attribute '{}'", var5));
+
+            }, () -> {
+               LOGGER.warn("Ignoring unknown attribute '{}'", var5);
+            });
          } else {
             LOGGER.warn("Ignoring malformed attribute '{}'", var4);
          }
       }
+
    }
 }

@@ -47,9 +47,7 @@ public class SpiderModel<T extends Entity> extends HierarchicalModel<T> {
       boolean var2 = true;
       var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(32, 4).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F), PartPose.offset(0.0F, 15.0F, -3.0F));
       var1.addOrReplaceChild("body0", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.offset(0.0F, 15.0F, 0.0F));
-      var1.addOrReplaceChild(
-         "body1", CubeListBuilder.create().texOffs(0, 12).addBox(-5.0F, -4.0F, -6.0F, 10.0F, 8.0F, 12.0F), PartPose.offset(0.0F, 15.0F, 9.0F)
-      );
+      var1.addOrReplaceChild("body1", CubeListBuilder.create().texOffs(0, 12).addBox(-5.0F, -4.0F, -6.0F, 10.0F, 8.0F, 12.0F), PartPose.offset(0.0F, 15.0F, 9.0F));
       CubeListBuilder var3 = CubeListBuilder.create().texOffs(18, 0).addBox(-15.0F, -1.0F, -1.0F, 16.0F, 2.0F, 2.0F);
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(18, 0).mirror().addBox(-1.0F, -1.0F, -1.0F, 16.0F, 2.0F, 2.0F);
       var1.addOrReplaceChild("right_hind_leg", var3, PartPose.offset(-4.0F, 15.0F, 2.0F));
@@ -63,12 +61,10 @@ public class SpiderModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.head.yRot = var5 * 0.017453292F;
       this.head.xRot = var6 * 0.017453292F;
@@ -99,21 +95,37 @@ public class SpiderModel<T extends Entity> extends HierarchicalModel<T> {
       float var15 = Math.abs(Mth.sin(var2 * 0.6662F + 3.1415927F) * 0.4F) * var3;
       float var16 = Math.abs(Mth.sin(var2 * 0.6662F + 1.5707964F) * 0.4F) * var3;
       float var17 = Math.abs(Mth.sin(var2 * 0.6662F + 4.712389F) * 0.4F) * var3;
-      this.rightHindLeg.yRot += var10;
-      this.leftHindLeg.yRot += -var10;
-      this.rightMiddleHindLeg.yRot += var11;
-      this.leftMiddleHindLeg.yRot += -var11;
-      this.rightMiddleFrontLeg.yRot += var12;
-      this.leftMiddleFrontLeg.yRot += -var12;
-      this.rightFrontLeg.yRot += var13;
-      this.leftFrontLeg.yRot += -var13;
-      this.rightHindLeg.zRot += var14;
-      this.leftHindLeg.zRot += -var14;
-      this.rightMiddleHindLeg.zRot += var15;
-      this.leftMiddleHindLeg.zRot += -var15;
-      this.rightMiddleFrontLeg.zRot += var16;
-      this.leftMiddleFrontLeg.zRot += -var16;
-      this.rightFrontLeg.zRot += var17;
-      this.leftFrontLeg.zRot += -var17;
+      ModelPart var10000 = this.rightHindLeg;
+      var10000.yRot += var10;
+      var10000 = this.leftHindLeg;
+      var10000.yRot += -var10;
+      var10000 = this.rightMiddleHindLeg;
+      var10000.yRot += var11;
+      var10000 = this.leftMiddleHindLeg;
+      var10000.yRot += -var11;
+      var10000 = this.rightMiddleFrontLeg;
+      var10000.yRot += var12;
+      var10000 = this.leftMiddleFrontLeg;
+      var10000.yRot += -var12;
+      var10000 = this.rightFrontLeg;
+      var10000.yRot += var13;
+      var10000 = this.leftFrontLeg;
+      var10000.yRot += -var13;
+      var10000 = this.rightHindLeg;
+      var10000.zRot += var14;
+      var10000 = this.leftHindLeg;
+      var10000.zRot += -var14;
+      var10000 = this.rightMiddleHindLeg;
+      var10000.zRot += var15;
+      var10000 = this.leftMiddleHindLeg;
+      var10000.zRot += -var15;
+      var10000 = this.rightMiddleFrontLeg;
+      var10000.zRot += var16;
+      var10000 = this.leftMiddleFrontLeg;
+      var10000.zRot += -var16;
+      var10000 = this.rightFrontLeg;
+      var10000.zRot += var17;
+      var10000 = this.leftFrontLeg;
+      var10000.zRot += -var17;
    }
 }

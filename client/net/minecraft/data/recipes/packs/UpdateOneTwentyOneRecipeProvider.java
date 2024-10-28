@@ -12,8 +12,8 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
 public class UpdateOneTwentyOneRecipeProvider extends RecipeProvider {
@@ -21,19 +21,9 @@ public class UpdateOneTwentyOneRecipeProvider extends RecipeProvider {
       super(var1, var2);
    }
 
-   @Override
    protected void buildRecipes(RecipeOutput var1) {
       generateForEnabledBlockFamilies(var1, FeatureFlagSet.of(FeatureFlags.UPDATE_1_21));
-      ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Blocks.CRAFTER)
-         .define('#', Items.IRON_INGOT)
-         .define('C', Items.CRAFTING_TABLE)
-         .define('R', Items.REDSTONE)
-         .define('D', Items.DROPPER)
-         .pattern("###")
-         .pattern("#C#")
-         .pattern("RDR")
-         .unlockedBy("has_dropper", has(Items.DROPPER))
-         .save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Blocks.CRAFTER).define('#', (ItemLike)Items.IRON_INGOT).define('C', (ItemLike)Items.CRAFTING_TABLE).define('R', (ItemLike)Items.REDSTONE).define('D', (ItemLike)Items.DROPPER).pattern("###").pattern("#C#").pattern("RDR").unlockedBy("has_dropper", has(Items.DROPPER)).save(var1);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.TUFF_SLAB, Blocks.TUFF, 2);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.TUFF_STAIRS, Blocks.TUFF);
       stonecutterResultFromBase(var1, RecipeCategory.DECORATIONS, Blocks.TUFF_WALL, Blocks.TUFF);
@@ -99,26 +89,19 @@ public class UpdateOneTwentyOneRecipeProvider extends RecipeProvider {
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.WAXED_EXPOSED_COPPER_GRATE, Blocks.WAXED_EXPOSED_COPPER, 4);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.WAXED_WEATHERED_COPPER_GRATE, Blocks.WAXED_WEATHERED_COPPER, 4);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.WAXED_OXIDIZED_COPPER_GRATE, Blocks.WAXED_OXIDIZED_COPPER, 4);
-      smithingTrims().forEach(var1x -> trimSmithing(var1, var1x.template(), var1x.id()));
+      smithingTrims().forEach((var1x) -> {
+         trimSmithing(var1, var1x.template(), var1x.id());
+      });
       copySmithingTemplate(var1, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.BREEZE_ROD);
       copySmithingTemplate(var1, Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COPPER_BLOCK);
-      ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.WIND_CHARGE, 4)
-         .requires(Items.BREEZE_ROD)
-         .unlockedBy("has_breeze_rod", has(Items.BREEZE_ROD))
-         .save(var1);
-      ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, Items.MACE, 1)
-         .define('I', Items.BREEZE_ROD)
-         .define('#', Blocks.HEAVY_CORE)
-         .pattern(" # ")
-         .pattern(" I ")
-         .unlockedBy("has_breeze_rod", has(Items.BREEZE_ROD))
-         .unlockedBy("has_heavy_core", has(Blocks.HEAVY_CORE))
-         .save(var1);
+      ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.WIND_CHARGE, 4).requires((ItemLike)Items.BREEZE_ROD).unlockedBy("has_breeze_rod", has(Items.BREEZE_ROD)).save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, Items.MACE, 1).define('I', (ItemLike)Items.BREEZE_ROD).define('#', (ItemLike)Blocks.HEAVY_CORE).pattern(" # ").pattern(" I ").unlockedBy("has_breeze_rod", has(Items.BREEZE_ROD)).unlockedBy("has_heavy_core", has(Blocks.HEAVY_CORE)).save(var1);
       waxRecipes(var1, FeatureFlagSet.of(FeatureFlags.UPDATE_1_21));
    }
 
    public static Stream<VanillaRecipeProvider.TrimTemplate> smithingTrims() {
-      return Stream.of(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE)
-         .map(var0 -> new VanillaRecipeProvider.TrimTemplate(var0, new ResourceLocation(getItemName(var0) + "_smithing_trim")));
+      return Stream.of(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE).map((var0) -> {
+         return new VanillaRecipeProvider.TrimTemplate(var0, new ResourceLocation(getItemName(var0) + "_smithing_trim"));
+      });
    }
 }

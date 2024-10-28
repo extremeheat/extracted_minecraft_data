@@ -2,6 +2,7 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.FastColor;
 
@@ -20,7 +21,6 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
       this.zd = var12;
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (!this.removed) {
@@ -33,6 +33,7 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
             this.yd -= 0.007400000002235174;
          }
       }
+
    }
 
    public static class GlowInkProvider implements ParticleProvider<SimpleParticleType> {
@@ -46,6 +47,11 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, FastColor.ARGB32.color(255, 204, 31, 102), this.sprites);
       }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -58,6 +64,11 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, FastColor.ARGB32.color(255, 255, 255, 255), this.sprites);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

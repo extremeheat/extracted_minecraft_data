@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -42,11 +43,12 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private final ModelPart rightSide;
    private final ModelPart top;
    private final ModelPart bottom;
-   private final Material baseMaterial = Objects.requireNonNull(Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.BASE));
+   private final Material baseMaterial;
    private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(BlockEntityRendererProvider.Context var1) {
       super();
+      this.baseMaterial = (Material)Objects.requireNonNull(Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.BASE));
       ModelPart var2 = var1.bakeLayer(ModelLayers.DECORATED_POT_BASE);
       this.neck = var2.getChild("neck");
       this.top = var2.getChild("top");
@@ -63,15 +65,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       PartDefinition var1 = var0.getRoot();
       CubeDeformation var2 = new CubeDeformation(0.2F);
       CubeDeformation var3 = new CubeDeformation(-0.1F);
-      var1.addOrReplaceChild(
-         "neck",
-         CubeListBuilder.create()
-            .texOffs(0, 0)
-            .addBox(4.0F, 17.0F, 4.0F, 8.0F, 3.0F, 8.0F, var3)
-            .texOffs(0, 5)
-            .addBox(5.0F, 20.0F, 5.0F, 6.0F, 1.0F, 6.0F, var2),
-         PartPose.offsetAndRotation(0.0F, 37.0F, 16.0F, 3.1415927F, 0.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("neck", CubeListBuilder.create().texOffs(0, 0).addBox(4.0F, 17.0F, 4.0F, 8.0F, 3.0F, 8.0F, var3).texOffs(0, 5).addBox(5.0F, 20.0F, 5.0F, 6.0F, 1.0F, 6.0F, var2), PartPose.offsetAndRotation(0.0F, 37.0F, 16.0F, 3.1415927F, 0.0F, 0.0F));
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(-14, 13).addBox(0.0F, 0.0F, 0.0F, 14.0F, 0.0F, 14.0F);
       var1.addOrReplaceChild("top", var4, PartPose.offsetAndRotation(1.0F, 16.0F, 1.0F, 0.0F, 0.0F, 0.0F));
       var1.addOrReplaceChild("bottom", var4, PartPose.offsetAndRotation(1.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F));
@@ -81,7 +75,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    public static LayerDefinition createSidesLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      CubeListBuilder var2 = CubeListBuilder.create().texOffs(1, 0).addBox(0.0F, 0.0F, 0.0F, 14.0F, 16.0F, 0.0F, EnumSet.of(Direction.NORTH));
+      CubeListBuilder var2 = CubeListBuilder.create().texOffs(1, 0).addBox(0.0F, 0.0F, 0.0F, 14.0F, 16.0F, 0.0F, (Set)EnumSet.of(Direction.NORTH));
       var1.addOrReplaceChild("back", var2, PartPose.offsetAndRotation(15.0F, 16.0F, 1.0F, 0.0F, 0.0F, 3.1415927F));
       var1.addOrReplaceChild("left", var2, PartPose.offsetAndRotation(1.0F, 16.0F, 1.0F, 0.0F, -1.5707964F, 3.1415927F));
       var1.addOrReplaceChild("right", var2, PartPose.offsetAndRotation(15.0F, 16.0F, 15.0F, 0.0F, 1.5707964F, 3.1415927F));
@@ -111,30 +105,32 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       if (var8 != null && var1.getLevel() != null) {
          float var9 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var8.duration;
          if (var9 >= 0.0F && var9 <= 1.0F) {
+            float var10;
+            float var11;
             if (var8 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-               float var10 = 0.015625F;
-               float var11 = var9 * 6.2831855F;
+               var10 = 0.015625F;
+               var11 = var9 * 6.2831855F;
                float var12 = -1.5F * (Mth.cos(var11) + 0.5F) * Mth.sin(var11 / 2.0F);
                var3.rotateAround(Axis.XP.rotation(var12 * 0.015625F), 0.5F, 0.0F, 0.5F);
                float var13 = Mth.sin(var11);
                var3.rotateAround(Axis.ZP.rotation(var13 * 0.015625F), 0.5F, 0.0F, 0.5F);
             } else {
-               float var15 = Mth.sin(-var9 * 3.0F * 3.1415927F) * 0.125F;
-               float var17 = 1.0F - var9;
-               var3.rotateAround(Axis.YP.rotation(var15 * var17), 0.5F, 0.0F, 0.5F);
+               var10 = Mth.sin(-var9 * 3.0F * 3.1415927F) * 0.125F;
+               var11 = 1.0F - var9;
+               var3.rotateAround(Axis.YP.rotation(var10 * var11), 0.5F, 0.0F, 0.5F);
             }
          }
       }
 
-      VertexConsumer var14 = this.baseMaterial.buffer(var4, RenderType::entitySolid);
-      this.neck.render(var3, var14, var5, var6);
-      this.top.render(var3, var14, var5, var6);
-      this.bottom.render(var3, var14, var5, var6);
-      PotDecorations var16 = var1.getDecorations();
-      this.renderSide(this.frontSide, var3, var4, var5, var6, getMaterial(var16.front()));
-      this.renderSide(this.backSide, var3, var4, var5, var6, getMaterial(var16.back()));
-      this.renderSide(this.leftSide, var3, var4, var5, var6, getMaterial(var16.left()));
-      this.renderSide(this.rightSide, var3, var4, var5, var6, getMaterial(var16.right()));
+      VertexConsumer var15 = this.baseMaterial.buffer(var4, RenderType::entitySolid);
+      this.neck.render(var3, var15, var5, var6);
+      this.top.render(var3, var15, var5, var6);
+      this.bottom.render(var3, var15, var5, var6);
+      PotDecorations var14 = var1.getDecorations();
+      this.renderSide(this.frontSide, var3, var4, var5, var6, getMaterial(var14.front()));
+      this.renderSide(this.backSide, var3, var4, var5, var6, getMaterial(var14.back()));
+      this.renderSide(this.leftSide, var3, var4, var5, var6, getMaterial(var14.left()));
+      this.renderSide(this.rightSide, var3, var4, var5, var6, getMaterial(var14.right()));
       var3.popPose();
    }
 
@@ -146,5 +142,6 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       if (var6 != null) {
          var1.render(var2, var6.buffer(var3, RenderType::entitySolid), var4, var5);
       }
+
    }
 }

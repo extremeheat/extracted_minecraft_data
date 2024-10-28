@@ -2,6 +2,7 @@ package net.minecraft.world.item.component;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -11,10 +12,8 @@ import net.minecraft.world.item.ItemStack;
 
 public final class ChargedProjectiles {
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
-   public static final Codec<ChargedProjectiles> CODEC = ItemStack.CODEC.listOf().xmap(ChargedProjectiles::new, var0 -> var0.items);
-   public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC = ItemStack.STREAM_CODEC
-      .<List<ItemStack>>apply(ByteBufCodecs.list())
-      .map(ChargedProjectiles::new, var0 -> var0.items);
+   public static final Codec<ChargedProjectiles> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC;
    private final List<ItemStack> items;
 
    private ChargedProjectiles(List<ItemStack> var1) {
@@ -31,13 +30,18 @@ public final class ChargedProjectiles {
    }
 
    public boolean contains(Item var1) {
-      for(ItemStack var3 : this.items) {
-         if (var3.is(var1)) {
-            return true;
-         }
-      }
+      Iterator var2 = this.items.iterator();
 
-      return false;
+      ItemStack var3;
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+
+         var3 = (ItemStack)var2.next();
+      } while(!var3.is(var1));
+
+      return true;
    }
 
    public List<ItemStack> getItems() {
@@ -48,26 +52,38 @@ public final class ChargedProjectiles {
       return this.items.isEmpty();
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof ChargedProjectiles var2 && ItemStack.listMatches(this.items, var2.items)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof ChargedProjectiles) {
+            ChargedProjectiles var2 = (ChargedProjectiles)var1;
+            if (ItemStack.listMatches(this.items, var2.items)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       return ItemStack.hashStackList(this.items);
    }
 
-   @Override
    public String toString() {
-      return "ChargedProjectiles[items=" + this.items + "]";
+      return "ChargedProjectiles[items=" + String.valueOf(this.items) + "]";
+   }
+
+   static {
+      CODEC = ItemStack.CODEC.listOf().xmap(ChargedProjectiles::new, (var0) -> {
+         return var0.items;
+      });
+      STREAM_CODEC = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()).map(ChargedProjectiles::new, (var0) -> {
+         return var0.items;
+      });
    }
 }

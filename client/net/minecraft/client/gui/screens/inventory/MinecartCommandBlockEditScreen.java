@@ -12,30 +12,23 @@ public class MinecartCommandBlockEditScreen extends AbstractCommandBlockEditScre
       this.commandBlock = var1;
    }
 
-   @Override
    public BaseCommandBlock getCommandBlock() {
       return this.commandBlock;
    }
 
-   @Override
    int getPreviousY() {
       return 150;
    }
 
-   @Override
    protected void init() {
       super.init();
       this.commandEdit.setValue(this.getCommandBlock().getCommand());
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void populateAndSendPacket(BaseCommandBlock var1) {
       if (var1 instanceof MinecartCommandBlock.MinecartCommandBase var2) {
-         this.minecraft
-            .getConnection()
-            .send(new ServerboundSetCommandMinecartPacket(var2.getMinecart().getId(), this.commandEdit.getValue(), var1.isTrackOutput()));
+         this.minecraft.getConnection().send(new ServerboundSetCommandMinecartPacket(var2.getMinecart().getId(), this.commandEdit.getValue(), var1.isTrackOutput()));
       }
+
    }
 }

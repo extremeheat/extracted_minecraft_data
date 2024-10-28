@@ -6,4 +6,9 @@ public enum ChunkType {
 
    private ChunkType() {
    }
+
+   // $FF: synthetic method
+   private static ChunkType[] $values() {
+      return new ChunkType[]{PROTOCHUNK, LEVELCHUNK};
+   }
 }

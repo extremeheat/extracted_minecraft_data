@@ -45,10 +45,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       if (var3 == var2) {
          return false;
       } else {
-         return var3.getLightBlock(var0, var1) != var2.getLightBlock(var0, var1)
-            || var3.getLightEmission() != var2.getLightEmission()
-            || var3.useShapeForLightOcclusion()
-            || var2.useShapeForLightOcclusion();
+         return var3.getLightBlock(var0, var1) != var2.getLightBlock(var0, var1) || var3.getLightEmission() != var2.getLightEmission() || var3.useShapeForLightOcclusion() || var2.useShapeForLightOcclusion();
       }
    }
 
@@ -117,10 +114,9 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
 
    private void clearChunkCache() {
       Arrays.fill(this.lastChunkPos, ChunkPos.INVALID_CHUNK_POS);
-      Arrays.fill(this.lastChunk, null);
+      Arrays.fill(this.lastChunk, (Object)null);
    }
 
-   @Override
    public void checkBlock(BlockPos var1) {
       this.blockNodesToCheck.add(var1.asLong());
    }
@@ -133,17 +129,14 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       this.storage.retainData(SectionPos.getZeroNode(var1.x, var1.z), var2);
    }
 
-   @Override
    public void updateSectionStatus(SectionPos var1, boolean var2) {
       this.storage.updateSectionStatus(var1.asLong(), var2);
    }
 
-   @Override
    public void setLightEnabled(ChunkPos var1, boolean var2) {
       this.storage.setLightEnabled(SectionPos.getZeroNode(var1.x, var1.z), var2);
    }
 
-   @Override
    public int runLightUpdates() {
       LongIterator var1 = this.blockNodesToCheck.iterator();
 
@@ -203,18 +196,15 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       this.increaseQueue.enqueue(var3);
    }
 
-   @Override
    public boolean hasLightWork() {
       return this.storage.hasInconsistencies() || !this.blockNodesToCheck.isEmpty() || !this.decreaseQueue.isEmpty() || !this.increaseQueue.isEmpty();
    }
 
    @Nullable
-   @Override
    public DataLayer getDataLayerData(SectionPos var1) {
       return this.storage.getDataLayerData(var1.asLong());
    }
 
-   @Override
    public int getLightValue(BlockPos var1) {
       return this.storage.getLightValue(var1.asLong());
    }

@@ -60,15 +60,17 @@ public class MapCloningRecipe extends CustomRecipe {
          }
       }
 
-      return !var4.isEmpty() && var3 >= 1 ? var4.copyWithCount(var3 + 1) : ItemStack.EMPTY;
+      if (!var4.isEmpty() && var3 >= 1) {
+         return var4.copyWithCount(var3 + 1);
+      } else {
+         return ItemStack.EMPTY;
+      }
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 >= 3 && var2 >= 3;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.MAP_CLONING;
    }

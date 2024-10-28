@@ -21,17 +21,18 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class Fluid {
-   public static final IdMapper<FluidState> FLUID_STATE_REGISTRY = new IdMapper<>();
+   public static final IdMapper<FluidState> FLUID_STATE_REGISTRY = new IdMapper();
    protected final StateDefinition<Fluid, FluidState> stateDefinition;
    private FluidState defaultFluidState;
-   private final Holder.Reference<Fluid> builtInRegistryHolder = BuiltInRegistries.FLUID.createIntrusiveHolder(this);
+   private final Holder.Reference<Fluid> builtInRegistryHolder;
 
    protected Fluid() {
       super();
-      StateDefinition.Builder var1 = new StateDefinition.Builder<>(this);
+      this.builtInRegistryHolder = BuiltInRegistries.FLUID.createIntrusiveHolder(this);
+      StateDefinition.Builder var1 = new StateDefinition.Builder(this);
       this.createFluidStateDefinition(var1);
       this.stateDefinition = var1.create(Fluid::defaultFluidState, FluidState::new);
-      this.registerDefaultState(this.stateDefinition.any());
+      this.registerDefaultState((FluidState)this.stateDefinition.any());
    }
 
    protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {
@@ -95,6 +96,7 @@ public abstract class Fluid {
       return var1 == this;
    }
 
+   /** @deprecated */
    @Deprecated
    public boolean is(TagKey<Fluid> var1) {
       return this.builtInRegistryHolder.is(var1);
@@ -106,6 +108,7 @@ public abstract class Fluid {
       return Optional.empty();
    }
 
+   /** @deprecated */
    @Deprecated
    public Holder.Reference<Fluid> builtInRegistryHolder() {
       return this.builtInRegistryHolder;

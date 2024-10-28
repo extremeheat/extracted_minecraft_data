@@ -23,7 +23,6 @@ public class DemoMode extends ServerPlayerGameMode {
       super(var1);
    }
 
-   @Override
    public void tick() {
       super.tick();
       ++this.gameModeTicks;
@@ -58,6 +57,7 @@ public class DemoMode extends ServerPlayerGameMode {
       } else if (var3 == 5L && var1 % 24000L == 22000L) {
          this.player.sendSystemMessage(Component.translatable("demo.day.warning"));
       }
+
    }
 
    private void outputDemoReminder() {
@@ -65,9 +65,9 @@ public class DemoMode extends ServerPlayerGameMode {
          this.player.sendSystemMessage(Component.translatable("demo.reminder"));
          this.demoEndedReminder = 0;
       }
+
    }
 
-   @Override
    public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
       if (this.demoHasEnded) {
          this.outputDemoReminder();
@@ -76,7 +76,6 @@ public class DemoMode extends ServerPlayerGameMode {
       }
    }
 
-   @Override
    public InteractionResult useItem(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4) {
       if (this.demoHasEnded) {
          this.outputDemoReminder();
@@ -86,7 +85,6 @@ public class DemoMode extends ServerPlayerGameMode {
       }
    }
 
-   @Override
    public InteractionResult useItemOn(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4, BlockHitResult var5) {
       if (this.demoHasEnded) {
          this.outputDemoReminder();

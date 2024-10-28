@@ -5,7 +5,6 @@ import com.google.common.base.Ticker;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.authlib.properties.PropertyMap;
-import com.mojang.authlib.properties.PropertyMap.Serializer;
 import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -34,7 +33,9 @@ import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.User;
+import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.client.telemetry.events.GameLoadTimesEvent;
@@ -104,50 +105,49 @@ public class Main {
          LOGGER.info("Completely ignored arguments: {}", var33);
       }
 
-      String var34 = parseArgument(var32, var12);
+      String var34 = (String)parseArgument(var32, var12);
       Proxy var35 = Proxy.NO_PROXY;
       if (var34 != null) {
          try {
-            var35 = new Proxy(Type.SOCKS, new InetSocketAddress(var34, parseArgument(var32, var13)));
+            var35 = new Proxy(Type.SOCKS, new InetSocketAddress(var34, (Integer)parseArgument(var32, var13)));
          } catch (Exception var85) {
          }
       }
 
-      final String var36 = parseArgument(var32, var14);
-      final String var37 = parseArgument(var32, var15);
+      final String var36 = (String)parseArgument(var32, var14);
+      final String var37 = (String)parseArgument(var32, var15);
       if (!var35.equals(Proxy.NO_PROXY) && stringHasValue(var36) && stringHasValue(var37)) {
          Authenticator.setDefault(new Authenticator() {
-            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                return new PasswordAuthentication(var36, var37.toCharArray());
             }
          });
       }
 
-      int var38 = parseArgument(var32, var22);
-      int var39 = parseArgument(var32, var23);
-      OptionalInt var40 = ofNullable(parseArgument(var32, var24));
-      OptionalInt var41 = ofNullable(parseArgument(var32, var25));
+      int var38 = (Integer)parseArgument(var32, var22);
+      int var39 = (Integer)parseArgument(var32, var23);
+      OptionalInt var40 = ofNullable((Integer)parseArgument(var32, var24));
+      OptionalInt var41 = ofNullable((Integer)parseArgument(var32, var25));
       boolean var42 = var32.has("fullscreen");
       boolean var43 = var32.has("demo");
       boolean var44 = var32.has("disableMultiplayer");
       boolean var45 = var32.has("disableChat");
-      String var46 = parseArgument(var32, var21);
-      Gson var47 = new GsonBuilder().registerTypeAdapter(PropertyMap.class, new Serializer()).create();
-      PropertyMap var48 = GsonHelper.fromJson(var47, parseArgument(var32, var26), PropertyMap.class);
-      PropertyMap var49 = GsonHelper.fromJson(var47, parseArgument(var32, var27), PropertyMap.class);
-      String var50 = parseArgument(var32, var30);
-      File var51 = parseArgument(var32, var9);
-      File var52 = var32.has(var10) ? parseArgument(var32, var10) : new File(var51, "assets/");
-      File var53 = var32.has(var11) ? parseArgument(var32, var11) : new File(var51, "resourcepacks/");
+      String var46 = (String)parseArgument(var32, var21);
+      Gson var47 = (new GsonBuilder()).registerTypeAdapter(PropertyMap.class, new PropertyMap.Serializer()).create();
+      PropertyMap var48 = (PropertyMap)GsonHelper.fromJson(var47, (String)parseArgument(var32, var26), PropertyMap.class);
+      PropertyMap var49 = (PropertyMap)GsonHelper.fromJson(var47, (String)parseArgument(var32, var27), PropertyMap.class);
+      String var50 = (String)parseArgument(var32, var30);
+      File var51 = (File)parseArgument(var32, var9);
+      File var52 = var32.has(var10) ? (File)parseArgument(var32, var10) : new File(var51, "assets/");
+      File var53 = var32.has(var11) ? (File)parseArgument(var32, var11) : new File(var51, "resourcepacks/");
       UUID var54 = var32.has(var17) ? UndashedUuid.fromStringLenient((String)var17.value(var32)) : UUIDUtil.createOfflinePlayerUUID((String)var16.value(var32));
       String var55 = var32.has(var28) ? (String)var28.value(var32) : null;
       String var56 = (String)var32.valueOf(var18);
       String var57 = (String)var32.valueOf(var19);
-      String var58 = parseArgument(var32, var5);
-      String var59 = unescapeJavaArgument(parseArgument(var32, var6));
-      String var60 = unescapeJavaArgument(parseArgument(var32, var7));
-      String var61 = unescapeJavaArgument(parseArgument(var32, var8));
+      String var58 = (String)parseArgument(var32, var5);
+      String var59 = unescapeJavaArgument((String)parseArgument(var32, var6));
+      String var60 = unescapeJavaArgument((String)parseArgument(var32, var7));
+      String var61 = unescapeJavaArgument((String)parseArgument(var32, var8));
       if (var32.has(var4)) {
          JvmProfiler.INSTANCE.start(Environment.CLIENT);
       }
@@ -162,8 +162,8 @@ public class Main {
          CrashReport var63 = CrashReport.forThrowable(var84, "Bootstrap");
          CrashReportCategory var64 = var63.addCategory("Initialization");
          NativeModuleLister.addCrashSection(var64);
-         Minecraft.fillReport(null, null, var46, null, var63);
-         Minecraft.crash(null, var51, var63);
+         Minecraft.fillReport((Minecraft)null, (LanguageManager)null, var46, (Options)null, var63);
+         Minecraft.crash((Minecraft)null, var51, var63);
          return;
       }
 
@@ -173,19 +173,10 @@ public class Main {
          LOGGER.warn("Unrecognized user type: {}", var62);
       }
 
-      User var87 = new User(
-         (String)var16.value(var32), var54, (String)var20.value(var32), emptyStringToEmptyOptional(var56), emptyStringToEmptyOptional(var57), var86
-      );
-      GameConfig var65 = new GameConfig(
-         new GameConfig.UserData(var87, var48, var49, var35),
-         new DisplayData(var38, var39, var40, var41, var42),
-         new GameConfig.FolderData(var51, var53, var52, var55),
-         new GameConfig.GameData(var43, var46, var50, var44, var45),
-         new GameConfig.QuickPlayData(var58, var59, var60, var61)
-      );
+      User var87 = new User((String)var16.value(var32), var54, (String)var20.value(var32), emptyStringToEmptyOptional(var56), emptyStringToEmptyOptional(var57), var86);
+      GameConfig var65 = new GameConfig(new GameConfig.UserData(var87, var48, var49, var35), new DisplayData(var38, var39, var40, var41, var42), new GameConfig.FolderData(var51, var53, var52, var55), new GameConfig.GameData(var43, var46, var50, var44, var45), new GameConfig.QuickPlayData(var58, var59, var60, var61));
       Util.startTimerHackThread();
       Thread var66 = new Thread("Client Shutdown Thread") {
-         @Override
          public void run() {
             Minecraft var1 = Minecraft.getInstance();
             if (var1 != null) {
@@ -193,6 +184,7 @@ public class Main {
                if (var2 != null) {
                   var2.halt(true);
                }
+
             }
          }
       };
@@ -214,7 +206,7 @@ public class Main {
          CrashReport var69 = CrashReport.forThrowable(var83, "Initializing game");
          CrashReportCategory var70 = var69.addCategory("Initialization");
          NativeModuleLister.addCrashSection(var70);
-         Minecraft.fillReport(var67, null, var65.game.launchVersion, null, var69);
+         Minecraft.fillReport(var67, (LanguageManager)null, var65.game.launchVersion, (Options)null, var69);
          Minecraft.crash(var67, var65.location.gameDirectory, var69);
          return;
       }
@@ -223,7 +215,6 @@ public class Main {
       Thread var88;
       if (var67.renderOnThread()) {
          var88 = new Thread("Game thread") {
-            @Override
             public void run() {
                try {
                   RenderSystem.initGameThread(true);
@@ -231,11 +222,15 @@ public class Main {
                } catch (Throwable var2) {
                   Main.LOGGER.error("Exception in client thread", var2);
                }
+
             }
          };
          var88.start();
 
-         while(var68.isRunning()) {
+         while(true) {
+            if (var68.isRunning()) {
+               continue;
+            }
          }
       } else {
          var88 = null;
@@ -260,6 +255,7 @@ public class Main {
       } finally {
          var68.destroy();
       }
+
    }
 
    @Nullable
@@ -275,17 +271,15 @@ public class Main {
       return var0 != null ? OptionalInt.of(var0) : OptionalInt.empty();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    private static <T> T parseArgument(OptionSet var0, OptionSpec<T> var1) {
       try {
-         return (T)var0.valueOf(var1);
+         return var0.valueOf(var1);
       } catch (Throwable var5) {
          if (var1 instanceof ArgumentAcceptingOptionSpec var3) {
             List var4 = var3.defaultValues();
             if (!var4.isEmpty()) {
-               return (T)var4.get(0);
+               return var4.get(0);
             }
          }
 

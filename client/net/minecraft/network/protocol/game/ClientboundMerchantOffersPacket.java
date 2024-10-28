@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.trading.MerchantOffers;
 
 public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMerchantOffersPacket> STREAM_CODEC = Packet.codec(
-      ClientboundMerchantOffersPacket::write, ClientboundMerchantOffersPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMerchantOffersPacket> STREAM_CODEC = Packet.codec(ClientboundMerchantOffersPacket::write, ClientboundMerchantOffersPacket::new);
    private final int containerId;
    private final MerchantOffers offers;
    private final int villagerLevel;
@@ -30,7 +28,7 @@ public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketL
    private ClientboundMerchantOffersPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.containerId = var1.readVarInt();
-      this.offers = MerchantOffers.STREAM_CODEC.decode(var1);
+      this.offers = (MerchantOffers)MerchantOffers.STREAM_CODEC.decode(var1);
       this.villagerLevel = var1.readVarInt();
       this.villagerXp = var1.readVarInt();
       this.showProgress = var1.readBoolean();
@@ -46,7 +44,6 @@ public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketL
       var1.writeBoolean(this.canRestock);
    }
 
-   @Override
    public PacketType<ClientboundMerchantOffersPacket> type() {
       return GamePacketTypes.CLIENTBOUND_MERCHANT_OFFERS;
    }

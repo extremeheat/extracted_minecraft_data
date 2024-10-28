@@ -15,15 +15,14 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
       super(var1);
    }
 
-   protected void placeTrunk(
-      LevelAccessor var1, RandomSource var2, BlockPos var3, HugeMushroomFeatureConfiguration var4, int var5, BlockPos.MutableBlockPos var6
-   ) {
+   protected void placeTrunk(LevelAccessor var1, RandomSource var2, BlockPos var3, HugeMushroomFeatureConfiguration var4, int var5, BlockPos.MutableBlockPos var6) {
       for(int var7 = 0; var7 < var5; ++var7) {
          var6.set(var3).move(Direction.UP, var7);
          if (!var1.getBlockState(var6).isSolidRender(var1, var6)) {
             this.setBlock(var1, var6, var4.stemProvider.getState(var2, var3));
          }
       }
+
    }
 
    protected int getTreeHeight(RandomSource var1) {
@@ -62,7 +61,6 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
       }
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<HugeMushroomFeatureConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -81,7 +79,5 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
 
    protected abstract int getTreeRadiusForHeight(int var1, int var2, int var3, int var4);
 
-   protected abstract void makeCap(
-      LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6
-   );
+   protected abstract void makeCap(LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6);
 }

@@ -25,6 +25,7 @@ public class DirectoryValidator {
       if (!this.symlinkTargetAllowList.matches(var3)) {
          var2.add(new ForbiddenSymlinkInfo(var1, var3));
       }
+
    }
 
    public List<ForbiddenSymlinkInfo> validateSymlink(Path var1) throws IOException {
@@ -44,7 +45,7 @@ public class DirectoryValidator {
       }
 
       if (var4.isRegularFile()) {
-         throw new IOException("Path " + var1 + " is not a directory");
+         throw new IOException("Path " + String.valueOf(var1) + " is not a directory");
       } else {
          if (var4.isSymbolicLink()) {
             if (!var2) {
@@ -66,6 +67,7 @@ public class DirectoryValidator {
             if (var2x.isSymbolicLink()) {
                DirectoryValidator.this.validateSymlink(var1, var2);
             }
+
          }
 
          public FileVisitResult preVisitDirectory(Path var1, BasicFileAttributes var2x) throws IOException {
@@ -76,6 +78,16 @@ public class DirectoryValidator {
          public FileVisitResult visitFile(Path var1, BasicFileAttributes var2x) throws IOException {
             this.validateSymlink(var1, var2x);
             return super.visitFile(var1, var2x);
+         }
+
+         // $FF: synthetic method
+         public FileVisitResult visitFile(Object var1, BasicFileAttributes var2x) throws IOException {
+            return this.visitFile((Path)var1, var2x);
+         }
+
+         // $FF: synthetic method
+         public FileVisitResult preVisitDirectory(Object var1, BasicFileAttributes var2x) throws IOException {
+            return this.preVisitDirectory((Path)var1, var2x);
          }
       });
    }

@@ -46,22 +46,19 @@ public class CrossbowItem extends ProjectileWeaponItem {
       super(var1);
    }
 
-   @Override
    public Predicate<ItemStack> getSupportedHeldProjectiles() {
       return ARROW_OR_FIREWORK;
    }
 
-   @Override
    public Predicate<ItemStack> getAllSupportedProjectiles() {
       return ARROW_ONLY;
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      ChargedProjectiles var5 = var4.get(DataComponents.CHARGED_PROJECTILES);
+      ChargedProjectiles var5 = (ChargedProjectiles)var4.get(DataComponents.CHARGED_PROJECTILES);
       if (var5 != null && !var5.isEmpty()) {
-         this.performShooting(var1, var2, var3, var4, getShootingPower(var5), 1.0F, null);
+         this.performShooting(var1, var2, var3, var4, getShootingPower(var5), 1.0F, (LivingEntity)null);
          return InteractionResultHolder.consume(var4);
       } else if (!var2.getProjectile(var4).isEmpty()) {
          this.startSoundPlayed = false;
@@ -77,22 +74,13 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return var0.contains(Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
    }
 
-   @Override
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       int var5 = this.getUseDuration(var1) - var4;
       float var6 = getPowerForTime(var5, var1);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
-         var2.playSound(
-            null,
-            var3.getX(),
-            var3.getY(),
-            var3.getZ(),
-            SoundEvents.CROSSBOW_LOADING_END,
-            var3.getSoundSource(),
-            1.0F,
-            1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F
-         );
+         var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.CROSSBOW_LOADING_END, var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
       }
+
    }
 
    private static boolean tryLoadProjectiles(LivingEntity var0, ItemStack var1) {
@@ -106,11 +94,10 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public static boolean isCharged(ItemStack var0) {
-      ChargedProjectiles var1 = var0.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+      ChargedProjectiles var1 = (ChargedProjectiles)var0.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
       return !var1.isEmpty();
    }
 
-   @Override
    protected void shootProjectile(LivingEntity var1, Projectile var2, int var3, float var4, float var5, float var6, @Nullable LivingEntity var7) {
       Vector3f var8;
       if (var7 != null) {
@@ -120,38 +107,36 @@ public class CrossbowItem extends ProjectileWeaponItem {
          double var15 = var7.getY(0.3333333333333333) - var2.getY() + var13 * 0.20000000298023224;
          var8 = getProjectileShotVector(var1, new Vec3(var9, var15, var11), var6);
       } else {
-         Vec3 var17 = var1.getUpVector(1.0F);
-         Quaternionf var10 = new Quaternionf().setAngleAxis((double)(var6 * 0.017453292F), var17.x, var17.y, var17.z);
-         Vec3 var19 = var1.getViewVector(1.0F);
-         var8 = var19.toVector3f().rotate(var10);
+         Vec3 var18 = var1.getUpVector(1.0F);
+         Quaternionf var10 = (new Quaternionf()).setAngleAxis((double)(var6 * 0.017453292F), var18.x, var18.y, var18.z);
+         Vec3 var17 = var1.getViewVector(1.0F);
+         var8 = var17.toVector3f().rotate(var10);
       }
 
       var2.shoot((double)var8.x(), (double)var8.y(), (double)var8.z(), var4, var5);
-      float var18 = getShotPitch(var1.getRandom(), var3);
-      var1.level().playSound(null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var18);
+      float var19 = getShotPitch(var1.getRandom(), var3);
+      var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var19);
    }
 
    private static Vector3f getProjectileShotVector(LivingEntity var0, Vec3 var1, float var2) {
       Vector3f var3 = var1.toVector3f().normalize();
-      Vector3f var4 = new Vector3f(var3).cross(new Vector3f(0.0F, 1.0F, 0.0F));
+      Vector3f var4 = (new Vector3f(var3)).cross(new Vector3f(0.0F, 1.0F, 0.0F));
       if ((double)var4.lengthSquared() <= 1.0E-7) {
          Vec3 var5 = var0.getUpVector(1.0F);
-         var4 = new Vector3f(var3).cross(var5.toVector3f());
+         var4 = (new Vector3f(var3)).cross(var5.toVector3f());
       }
 
-      Vector3f var6 = new Vector3f(var3).rotateAxis(1.5707964F, var4.x, var4.y, var4.z);
-      return new Vector3f(var3).rotateAxis(var2 * 0.017453292F, var6.x, var6.y, var6.z);
+      Vector3f var6 = (new Vector3f(var3)).rotateAxis(1.5707964F, var4.x, var4.y, var4.z);
+      return (new Vector3f(var3)).rotateAxis(var2 * 0.017453292F, var6.x, var6.y, var6.z);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected Projectile createProjectile(Level var1, LivingEntity var2, ItemStack var3, ItemStack var4, boolean var5) {
       if (var4.is(Items.FIREWORK_ROCKET)) {
          return new FireworkRocketEntity(var1, var4, var2, var2.getX(), var2.getEyeY() - 0.15000000596046448, var2.getZ(), true);
       } else {
          Projectile var6 = super.createProjectile(var1, var2, var3, var4, var5);
-         if (var6 instanceof AbstractArrow var7) {
+         if (var6 instanceof AbstractArrow) {
+            AbstractArrow var7 = (AbstractArrow)var6;
             var7.setShotFromCrossbow(true);
             var7.setSoundEvent(SoundEvents.CROSSBOW_HIT);
          }
@@ -160,20 +145,21 @@ public class CrossbowItem extends ProjectileWeaponItem {
       }
    }
 
-   @Override
    protected int getDurabilityUse(ItemStack var1) {
       return var1.is(Items.FIREWORK_ROCKET) ? 3 : 1;
    }
 
    public void performShooting(Level var1, LivingEntity var2, InteractionHand var3, ItemStack var4, float var5, float var6, @Nullable LivingEntity var7) {
       if (!var1.isClientSide()) {
-         ChargedProjectiles var8 = var4.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+         ChargedProjectiles var8 = (ChargedProjectiles)var4.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
          if (var8 != null && !var8.isEmpty()) {
             this.shoot(var1, var2, var3, var4, var8.getItems(), var5, var6, var2 instanceof Player, var7);
-            if (var2 instanceof ServerPlayer var9) {
-               CriteriaTriggers.SHOT_CROSSBOW.trigger((ServerPlayer)var9, var4);
-               ((ServerPlayer)var9).awardStat(Stats.ITEM_USED.get(var4.getItem()));
+            if (var2 instanceof ServerPlayer) {
+               ServerPlayer var9 = (ServerPlayer)var2;
+               CriteriaTriggers.SHOT_CROSSBOW.trigger(var9, var4);
+               var9.awardStat(Stats.ITEM_USED.get(var4.getItem()));
             }
+
          }
       }
    }
@@ -187,7 +173,6 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return 1.0F / (var1.nextFloat() * 0.5F + 1.8F) + var2;
    }
 
-   @Override
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
       if (!var1.isClientSide) {
          int var5 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.QUICK_CHARGE, var3);
@@ -201,17 +186,17 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
          if (var8 >= 0.2F && !this.startSoundPlayed) {
             this.startSoundPlayed = true;
-            var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), var6, SoundSource.PLAYERS, 0.5F, 1.0F);
+            var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), var6, SoundSource.PLAYERS, 0.5F, 1.0F);
          }
 
          if (var8 >= 0.5F && var7 != null && !this.midLoadSoundPlayed) {
             this.midLoadSoundPlayed = true;
-            var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), var7, SoundSource.PLAYERS, 0.5F, 1.0F);
+            var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), var7, SoundSource.PLAYERS, 0.5F, 1.0F);
          }
       }
+
    }
 
-   @Override
    public int getUseDuration(ItemStack var1) {
       return getChargeDuration(var1) + 3;
    }
@@ -221,21 +206,24 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return var1 == 0 ? 25 : 25 - 5 * var1;
    }
 
-   @Override
    public UseAnim getUseAnimation(ItemStack var1) {
       return UseAnim.CROSSBOW;
    }
 
    private SoundEvent getStartSound(int var1) {
-      switch(var1) {
-         case 1:
+      switch (var1) {
+         case 1 -> {
             return SoundEvents.CROSSBOW_QUICK_CHARGE_1;
-         case 2:
+         }
+         case 2 -> {
             return SoundEvents.CROSSBOW_QUICK_CHARGE_2;
-         case 3:
+         }
+         case 3 -> {
             return SoundEvents.CROSSBOW_QUICK_CHARGE_3;
-         default:
+         }
+         default -> {
             return SoundEvents.CROSSBOW_LOADING_START;
+         }
       }
    }
 
@@ -248,11 +236,10 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return var2;
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      ChargedProjectiles var5 = var1.get(DataComponents.CHARGED_PROJECTILES);
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      ChargedProjectiles var5 = (ChargedProjectiles)var1.get(DataComponents.CHARGED_PROJECTILES);
       if (var5 != null && !var5.isEmpty()) {
-         ItemStack var6 = var5.getItems().get(0);
+         ItemStack var6 = (ItemStack)var5.getItems().get(0);
          var3.add(Component.translatable("item.minecraft.crossbow.projectile").append(CommonComponents.SPACE).append(var6.getDisplayName()));
          if (var4.isAdvanced() && var6.is(Items.FIREWORK_ROCKET)) {
             ArrayList var7 = Lists.newArrayList();
@@ -265,15 +252,14 @@ public class CrossbowItem extends ProjectileWeaponItem {
                var3.addAll(var7);
             }
          }
+
       }
    }
 
-   @Override
    public boolean useOnRelease(ItemStack var1) {
-      return var1.is(this);
+      return var1.is((Item)this);
    }
 
-   @Override
    public int getDefaultProjectileRange() {
       return 8;
    }

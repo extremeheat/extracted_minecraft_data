@@ -23,32 +23,15 @@ public interface ServerLevelData extends WritableLevelData {
 
    int getThunderTime();
 
-   @Override
    default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
       WritableLevelData.super.fillCrashReportCategory(var1, var2);
       var1.setDetail("Level name", this::getLevelName);
-      var1.setDetail(
-         "Level game mode",
-         () -> String.format(
-               Locale.ROOT,
-               "Game mode: %s (ID %d). Hardcore: %b. Commands: %b",
-               this.getGameType().getName(),
-               this.getGameType().getId(),
-               this.isHardcore(),
-               this.isAllowCommands()
-            )
-      );
-      var1.setDetail(
-         "Level weather",
-         () -> String.format(
-               Locale.ROOT,
-               "Rain time: %d (now: %b), thunder time: %d (now: %b)",
-               this.getRainTime(),
-               this.isRaining(),
-               this.getThunderTime(),
-               this.isThundering()
-            )
-      );
+      var1.setDetail("Level game mode", () -> {
+         return String.format(Locale.ROOT, "Game mode: %s (ID %d). Hardcore: %b. Commands: %b", this.getGameType().getName(), this.getGameType().getId(), this.isHardcore(), this.isAllowCommands());
+      });
+      var1.setDetail("Level weather", () -> {
+         return String.format(Locale.ROOT, "Rain time: %d (now: %b), thunder time: %d (now: %b)", this.getRainTime(), this.isRaining(), this.getThunderTime(), this.isThundering());
+      });
    }
 
    int getClearWeatherTime();

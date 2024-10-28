@@ -13,7 +13,9 @@ public class V2509 extends NamespacedSchema {
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
       var2.remove("minecraft:zombie_pigman");
-      var1.register(var2, "minecraft:zombified_piglin", () -> V100.equipment(var1));
+      var1.register(var2, "minecraft:zombified_piglin", () -> {
+         return V100.equipment(var1);
+      });
       return var2;
    }
 }

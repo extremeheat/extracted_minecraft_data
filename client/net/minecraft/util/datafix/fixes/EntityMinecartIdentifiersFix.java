@@ -7,11 +7,10 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
+import com.mojang.datafixers.types.templates.TaggedChoice;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,35 +22,30 @@ public class EntityMinecartIdentifiersFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.ENTITY);
-      TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.ENTITY);
-      return this.fixTypeEverywhere(
-         "EntityMinecartIdentifiersFix",
-         var1,
-         var2,
-         var2x -> var3 -> {
-               if (!Objects.equals(var3.getFirst(), "Minecart")) {
-                  return var3;
+      TaggedChoice.TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.ENTITY);
+      TaggedChoice.TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.ENTITY);
+      return this.fixTypeEverywhere("EntityMinecartIdentifiersFix", var1, var2, (var2x) -> {
+         return (var3) -> {
+            if (!Objects.equals(var3.getFirst(), "Minecart")) {
+               return var3;
+            } else {
+               Typed var4 = (Typed)var1.point(var2x, "Minecart", var3.getSecond()).orElseThrow(IllegalStateException::new);
+               Dynamic var5 = (Dynamic)var4.getOrCreate(DSL.remainderFinder());
+               int var7 = var5.get("Type").asInt(0);
+               String var6;
+               if (var7 > 0 && var7 < MINECART_BY_ID.size()) {
+                  var6 = (String)MINECART_BY_ID.get(var7);
                } else {
-                  Typed var4 = (Typed)var1.point(var2x, "Minecart", var3.getSecond()).orElseThrow(IllegalStateException::new);
-                  Dynamic var5 = (Dynamic)var4.getOrCreate(DSL.remainderFinder());
-                  int var7 = var5.get("Type").asInt(0);
-                  String var6;
-                  if (var7 > 0 && var7 < MINECART_BY_ID.size()) {
-                     var6 = MINECART_BY_ID.get(var7);
-                  } else {
-                     var6 = "MinecartRideable";
-                  }
-   
-                  return Pair.of(
-                     var6,
-                     (DataResult)var4.write()
-                        .map(var2xxx -> ((Type)var2.types().get(var6)).read(var2xxx))
-                        .result()
-                        .orElseThrow(() -> new IllegalStateException("Could not read the new minecart."))
-                  );
+                  var6 = "MinecartRideable";
                }
+
+               return Pair.of(var6, (DataResult)var4.write().map((var2xx) -> {
+                  return ((Type)var2.types().get(var6)).read(var2xx);
+               }).result().orElseThrow(() -> {
+                  return new IllegalStateException("Could not read the new minecart.");
+               }));
             }
-      );
+         };
+      });
    }
 }

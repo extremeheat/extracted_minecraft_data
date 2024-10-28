@@ -24,7 +24,6 @@ public abstract class BeeSoundInstance extends AbstractTickableSoundInstance {
       this.volume = 0.0F;
    }
 
-   @Override
    public void tick() {
       boolean var1 = this.shouldSwitchSounds();
       if (var1 && !this.isStopped()) {
@@ -44,6 +43,7 @@ public abstract class BeeSoundInstance extends AbstractTickableSoundInstance {
             this.pitch = 0.0F;
             this.volume = 0.0F;
          }
+
       } else {
          this.stop();
       }
@@ -57,12 +57,10 @@ public abstract class BeeSoundInstance extends AbstractTickableSoundInstance {
       return this.bee.isBaby() ? 1.5F : 1.1F;
    }
 
-   @Override
    public boolean canStartSilent() {
       return true;
    }
 
-   @Override
    public boolean canPlaySound() {
       return !this.bee.isSilent();
    }

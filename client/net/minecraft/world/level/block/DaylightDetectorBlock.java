@@ -27,39 +27,35 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DaylightDetectorBlock extends BaseEntityBlock {
    public static final MapCodec<DaylightDetectorBlock> CODEC = simpleCodec(DaylightDetectorBlock::new);
-   public static final IntegerProperty POWER = BlockStateProperties.POWER;
-   public static final BooleanProperty INVERTED = BlockStateProperties.INVERTED;
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0);
+   public static final IntegerProperty POWER;
+   public static final BooleanProperty INVERTED;
+   protected static final VoxelShape SHAPE;
 
-   @Override
    public MapCodec<DaylightDetectorBlock> codec() {
       return CODEC;
    }
 
    public DaylightDetectorBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(POWER, Integer.valueOf(0)).setValue(INVERTED, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWER, 0)).setValue(INVERTED, false));
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var1.getValue(POWER);
+      return (Integer)var1.getValue(POWER);
    }
 
    private static void updateSignalStrength(BlockState var0, Level var1, BlockPos var2) {
       int var3 = var1.getBrightness(LightLayer.SKY, var2) - var1.getSkyDarken();
       float var4 = var1.getSunAngle(1.0F);
-      boolean var5 = var0.getValue(INVERTED);
+      boolean var5 = (Boolean)var0.getValue(INVERTED);
       if (var5) {
          var3 = 15 - var3;
       } else if (var3 > 0) {
@@ -69,18 +65,18 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
       }
 
       var3 = Mth.clamp(var3, 0, 15);
-      if (var0.getValue(POWER) != var3) {
-         var1.setBlock(var2, var0.setValue(POWER, Integer.valueOf(var3)), 3);
+      if ((Integer)var0.getValue(POWER) != var3) {
+         var1.setBlock(var2, (BlockState)var0.setValue(POWER, var3), 3);
       }
+
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var4.mayBuild()) {
          if (var2.isClientSide) {
             return InteractionResult.SUCCESS;
          } else {
-            BlockState var6 = var1.cycle(INVERTED);
+            BlockState var6 = (BlockState)var1.cycle(INVERTED);
             var2.setBlock(var3, var6, 2);
             var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var6));
             updateSignalStrength(var6, var2, var3);
@@ -91,37 +87,37 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
       }
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new DaylightDetectorBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide && var1.dimensionType().hasSkyLight()
-         ? createTickerHelper(var3, BlockEntityType.DAYLIGHT_DETECTOR, DaylightDetectorBlock::tickEntity)
-         : null;
+      return !var1.isClientSide && var1.dimensionType().hasSkyLight() ? createTickerHelper(var3, BlockEntityType.DAYLIGHT_DETECTOR, DaylightDetectorBlock::tickEntity) : null;
    }
 
    private static void tickEntity(Level var0, BlockPos var1, BlockState var2, DaylightDetectorBlockEntity var3) {
       if (var0.getGameTime() % 20L == 0L) {
          updateSignalStrength(var2, var0, var1);
       }
+
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(POWER, INVERTED);
+   }
+
+   static {
+      POWER = BlockStateProperties.POWER;
+      INVERTED = BlockStateProperties.INVERTED;
+      SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0);
    }
 }

@@ -4,10 +4,11 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.PartPose;
 
 public class MeshDefinition {
-   private final PartDefinition root = new PartDefinition(ImmutableList.of(), PartPose.ZERO);
+   private final PartDefinition root;
 
    public MeshDefinition() {
       super();
+      this.root = new PartDefinition(ImmutableList.of(), PartPose.ZERO);
    }
 
    public PartDefinition getRoot() {

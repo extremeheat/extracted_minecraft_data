@@ -26,28 +26,13 @@ public class SwordItem extends TieredItem {
    }
 
    public static ItemAttributeModifiers createAttributes(Tier var0, int var1, float var2) {
-      return ItemAttributeModifiers.builder()
-         .add(
-            Attributes.ATTACK_DAMAGE,
-            new AttributeModifier(
-               BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)((float)var1 + var0.getAttackDamageBonus()), AttributeModifier.Operation.ADD_VALUE
-            ),
-            EquipmentSlotGroup.MAINHAND
-         )
-         .add(
-            Attributes.ATTACK_SPEED,
-            new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var2, AttributeModifier.Operation.ADD_VALUE),
-            EquipmentSlotGroup.MAINHAND
-         )
-         .build();
+      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)((float)var1 + var0.getAttackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var2, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
    }
 
-   @Override
    public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
       return !var4.isCreative();
    }
 
-   @Override
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
       return true;

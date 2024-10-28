@@ -27,15 +27,15 @@ import org.slf4j.Logger;
 public class RecoverWorldDataScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int SCREEN_SIDE_MARGIN = 25;
-   private static final Component TITLE = Component.translatable("recover_world.title").withStyle(ChatFormatting.BOLD);
-   private static final Component BUGTRACKER_BUTTON = Component.translatable("recover_world.bug_tracker");
-   private static final Component RESTORE_BUTTON = Component.translatable("recover_world.restore");
-   private static final Component NO_FALLBACK_TOOLTIP = Component.translatable("recover_world.no_fallback");
-   private static final Component DONE_TITLE = Component.translatable("recover_world.done.title");
-   private static final Component DONE_SUCCESS = Component.translatable("recover_world.done.success");
-   private static final Component DONE_FAILED = Component.translatable("recover_world.done.failed");
-   private static final Component NO_ISSUES = Component.translatable("recover_world.issue.none").withStyle(ChatFormatting.GREEN);
-   private static final Component MISSING_FILE = Component.translatable("recover_world.issue.missing_file").withStyle(ChatFormatting.RED);
+   private static final Component TITLE;
+   private static final Component BUGTRACKER_BUTTON;
+   private static final Component RESTORE_BUTTON;
+   private static final Component NO_FALLBACK_TOOLTIP;
+   private static final Component DONE_TITLE;
+   private static final Component DONE_SUCCESS;
+   private static final Component DONE_FAILED;
+   private static final Component NO_ISSUES;
+   private static final Component MISSING_FILE;
    private final BooleanConsumer callback;
    private final LinearLayout layout = LinearLayout.vertical().spacing(8);
    private final Component message;
@@ -60,12 +60,13 @@ public class RecoverWorldDataScreen extends Screen {
       this.layout.addChild(this.issuesWidget);
       LinearLayout var8 = LinearLayout.horizontal().spacing(5);
       var8.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/snapshotbugs?ref=game")).size(120, 20).build());
-      var8.addChild(
-            Button.builder(RESTORE_BUTTON, var2x -> this.attemptRestore(var1)).size(120, 20).tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build()
-         )
-         .active = var7;
+      ((Button)var8.addChild(Button.builder(RESTORE_BUTTON, (var2x) -> {
+         this.attemptRestore(var1);
+      }).size(120, 20).tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build())).active = var7;
       this.layout.addChild(var8);
-      this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).size(120, 20).build());
+      this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
+         this.onClose();
+      }).size(120, 20).build());
       this.layout.visitWidgets(this::addRenderableWidget);
    }
 
@@ -78,15 +79,16 @@ public class RecoverWorldDataScreen extends Screen {
          if (this.storageAccess.restoreLevelDataFromOld()) {
             var1.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
          } else {
-            var1.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
+            var1.setScreen(new AlertScreen(() -> {
+               this.callback.accept(false);
+            }, DONE_TITLE, DONE_FAILED));
          }
+
       } else {
-         LOGGER.error(
-            "Failed to recover world, files not as expected. level.dat: {}, level.dat_old: {}",
-            var2 != null ? var2.getMessage() : "no issues",
-            var3 != null ? var3.getMessage() : "no issues"
-         );
-         var1.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
+         LOGGER.error("Failed to recover world, files not as expected. level.dat: {}, level.dat_old: {}", var2 != null ? var2.getMessage() : "no issues", var3 != null ? var3.getMessage() : "no issues");
+         var1.setScreen(new AlertScreen(() -> {
+            this.callback.accept(false);
+         }, DONE_TITLE, DONE_FAILED));
       }
    }
 
@@ -96,18 +98,16 @@ public class RecoverWorldDataScreen extends Screen {
       } else {
          MutableComponent var4 = Component.empty();
          Instant var5 = var1.getFileModificationTime(var2);
-         MutableComponent var6 = var5 != null
-            ? Component.literal(WorldSelectionList.DATE_FORMAT.format(var5))
-            : Component.translatable("recover_world.state_entry.unknown");
-         var4.append(Component.translatable("recover_world.state_entry", var6.withStyle(ChatFormatting.GRAY)));
+         MutableComponent var6 = var5 != null ? Component.literal(WorldSelectionList.DATE_FORMAT.format(var5)) : Component.translatable("recover_world.state_entry.unknown");
+         var4.append((Component)Component.translatable("recover_world.state_entry", var6.withStyle(ChatFormatting.GRAY)));
          if (var3 == null) {
             var4.append(NO_ISSUES);
          } else if (var3 instanceof FileNotFoundException) {
             var4.append(MISSING_FILE);
          } else if (var3 instanceof ReportedNbtException) {
-            var4.append(Component.literal(var3.getCause().toString()).withStyle(ChatFormatting.RED));
+            var4.append((Component)Component.literal(var3.getCause().toString()).withStyle(ChatFormatting.RED));
          } else {
-            var4.append(Component.literal(var3.toString()).withStyle(ChatFormatting.RED));
+            var4.append((Component)Component.literal(var3.toString()).withStyle(ChatFormatting.RED));
          }
 
          return var4;
@@ -129,13 +129,11 @@ public class RecoverWorldDataScreen extends Screen {
       }
    }
 
-   @Override
    protected void init() {
       super.init();
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       this.issuesWidget.setMaxWidth(this.width - 50);
       this.messageWidget.setMaxWidth(this.width - 50);
@@ -143,13 +141,23 @@ public class RecoverWorldDataScreen extends Screen {
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   @Override
    public Component getNarrationMessage() {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), this.message);
    }
 
-   @Override
    public void onClose() {
       this.callback.accept(false);
+   }
+
+   static {
+      TITLE = Component.translatable("recover_world.title").withStyle(ChatFormatting.BOLD);
+      BUGTRACKER_BUTTON = Component.translatable("recover_world.bug_tracker");
+      RESTORE_BUTTON = Component.translatable("recover_world.restore");
+      NO_FALLBACK_TOOLTIP = Component.translatable("recover_world.no_fallback");
+      DONE_TITLE = Component.translatable("recover_world.done.title");
+      DONE_SUCCESS = Component.translatable("recover_world.done.success");
+      DONE_FAILED = Component.translatable("recover_world.done.failed");
+      NO_ISSUES = Component.translatable("recover_world.issue.none").withStyle(ChatFormatting.GREEN);
+      MISSING_FILE = Component.translatable("recover_world.issue.missing_file").withStyle(ChatFormatting.RED);
    }
 }

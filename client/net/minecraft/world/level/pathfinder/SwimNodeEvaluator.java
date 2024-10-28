@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.EnumMap;
+import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,34 +24,32 @@ public class SwimNodeEvaluator extends NodeEvaluator {
       this.allowBreaching = var1;
    }
 
-   @Override
    public void prepare(PathNavigationRegion var1, Mob var2) {
       super.prepare(var1, var2);
       this.pathTypesByPosCache.clear();
    }
 
-   @Override
    public void done() {
       super.done();
       this.pathTypesByPosCache.clear();
    }
 
-   @Override
    public Node getStart() {
       return this.getNode(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ));
    }
 
-   @Override
    public Target getTarget(double var1, double var3, double var5) {
       return this.getTargetNodeAt(var1, var3, var5);
    }
 
-   @Override
    public int getNeighbors(Node[] var1, Node var2) {
       int var3 = 0;
       EnumMap var4 = Maps.newEnumMap(Direction.class);
+      Direction[] var5 = Direction.values();
+      int var6 = var5.length;
 
-      for(Direction var8 : Direction.values()) {
+      for(int var7 = 0; var7 < var6; ++var7) {
+         Direction var8 = var5[var7];
          Node var9 = this.findAcceptedNode(var2.x + var8.getStepX(), var2.y + var8.getStepY(), var2.z + var8.getStepZ());
          var4.put(var8, var9);
          if (this.isNodeValid(var9)) {
@@ -58,7 +57,10 @@ public class SwimNodeEvaluator extends NodeEvaluator {
          }
       }
 
-      for(Direction var11 : Direction.Plane.HORIZONTAL) {
+      Iterator var10 = Direction.Plane.HORIZONTAL.iterator();
+
+      while(var10.hasNext()) {
+         Direction var11 = (Direction)var10.next();
          Direction var12 = var11.getClockWise();
          if (hasMalus((Node)var4.get(var11)) && hasMalus((Node)var4.get(var12))) {
             Node var13 = this.findAcceptedNode(var2.x + var11.getStepX() + var12.getStepX(), var2.y, var2.z + var11.getStepZ() + var12.getStepZ());
@@ -99,16 +101,15 @@ public class SwimNodeEvaluator extends NodeEvaluator {
    }
 
    protected PathType getCachedBlockType(int var1, int var2, int var3) {
-      return (PathType)this.pathTypesByPosCache
-         .computeIfAbsent(BlockPos.asLong(var1, var2, var3), var4 -> this.getPathType(this.currentContext, var1, var2, var3));
+      return (PathType)this.pathTypesByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> {
+         return this.getPathType(this.currentContext, var1, var2, var3);
+      });
    }
 
-   @Override
    public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
       return this.getPathTypeOfMob(var1, var2, var3, var4, this.mob);
    }
 
-   @Override
    public PathType getPathTypeOfMob(PathfindingContext var1, int var2, int var3, int var4, Mob var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
@@ -129,6 +130,10 @@ public class SwimNodeEvaluator extends NodeEvaluator {
       }
 
       BlockState var12 = var1.getBlockState(var6);
-      return var12.isPathfindable(PathComputationType.WATER) ? PathType.WATER : PathType.BLOCKED;
+      if (var12.isPathfindable(PathComputationType.WATER)) {
+         return PathType.WATER;
+      } else {
+         return PathType.BLOCKED;
+      }
    }
 }

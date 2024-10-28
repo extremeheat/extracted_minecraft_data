@@ -2,12 +2,12 @@ package com.mojang.blaze3d.platform;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWVidMode.Buffer;
 
 public final class Monitor {
    private final long monitor;
@@ -26,7 +26,7 @@ public final class Monitor {
    public void refreshVideoModes() {
       RenderSystem.assertInInitPhase();
       this.videoModes.clear();
-      Buffer var1 = GLFW.glfwGetVideoModes(this.monitor);
+      GLFWVidMode.Buffer var1 = GLFW.glfwGetVideoModes(this.monitor);
 
       for(int var2 = var1.limit() - 1; var2 >= 0; --var2) {
          var1.position(var2);
@@ -49,8 +49,10 @@ public final class Monitor {
       RenderSystem.assertInInitPhase();
       if (var1.isPresent()) {
          VideoMode var2 = (VideoMode)var1.get();
+         Iterator var3 = this.videoModes.iterator();
 
-         for(VideoMode var4 : this.videoModes) {
+         while(var3.hasNext()) {
+            VideoMode var4 = (VideoMode)var3.next();
             if (var4.equals(var2)) {
                return var4;
             }
@@ -78,7 +80,7 @@ public final class Monitor {
    }
 
    public VideoMode getMode(int var1) {
-      return this.videoModes.get(var1);
+      return (VideoMode)this.videoModes.get(var1);
    }
 
    public int getModeCount() {
@@ -89,7 +91,6 @@ public final class Monitor {
       return this.monitor;
    }
 
-   @Override
    public String toString() {
       return String.format(Locale.ROOT, "Monitor[%s %sx%s %s]", this.monitor, this.x, this.y, this.currentMode);
    }

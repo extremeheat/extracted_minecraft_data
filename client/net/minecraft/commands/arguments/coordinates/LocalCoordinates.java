@@ -21,7 +21,6 @@ public class LocalCoordinates implements Coordinates {
       this.forwards = var5;
    }
 
-   @Override
    public Vec3 getPosition(CommandSourceStack var1) {
       Vec2 var2 = var1.getRotation();
       Vec3 var3 = var1.getAnchor().apply(var1);
@@ -40,22 +39,18 @@ public class LocalCoordinates implements Coordinates {
       return new Vec3(var3.x + var13, var3.y + var15, var3.z + var17);
    }
 
-   @Override
    public Vec2 getRotation(CommandSourceStack var1) {
       return Vec2.ZERO;
    }
 
-   @Override
    public boolean isXRelative() {
       return true;
    }
 
-   @Override
    public boolean isYRelative() {
       return true;
    }
 
-   @Override
    public boolean isZRelative() {
       return true;
    }
@@ -92,7 +87,6 @@ public class LocalCoordinates implements Coordinates {
       }
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -104,8 +98,7 @@ public class LocalCoordinates implements Coordinates {
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.left, this.up, this.forwards);
+      return Objects.hash(new Object[]{this.left, this.up, this.forwards});
    }
 }

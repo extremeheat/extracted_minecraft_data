@@ -13,12 +13,10 @@ public class NonTameRandomTargetGoal<T extends LivingEntity> extends NearestAtta
       this.tamableMob = var1;
    }
 
-   @Override
    public boolean canUse() {
       return !this.tamableMob.isTame() && super.canUse();
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.targetConditions != null ? this.targetConditions.test(this.mob, this.target) : super.canContinueToUse();
    }

@@ -7,6 +7,7 @@ import com.mojang.realmsclient.dto.RealmsServerList;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
+import com.mojang.realmsclient.util.task.LongRunningTask;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import net.minecraft.client.multiplayer.TransferState;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -45,6 +47,7 @@ public class QuickPlay {
       } else if (!StringUtil.isBlank(var5)) {
          joinRealmsWorld(var0, var2, var5);
       }
+
    }
 
    private static void joinSingleplayerWorld(Minecraft var0, String var1) {
@@ -52,7 +55,9 @@ public class QuickPlay {
          SelectWorldScreen var2 = new SelectWorldScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var2, ERROR_TITLE, INVALID_IDENTIFIER, TO_WORLD_LIST));
       } else {
-         var0.createWorldOpenFlows().openWorld(var1, () -> var0.setScreen(new TitleScreen()));
+         var0.createWorldOpenFlows().openWorld(var1, () -> {
+            var0.setScreen(new TitleScreen());
+         });
       }
    }
 
@@ -67,33 +72,37 @@ public class QuickPlay {
       }
 
       ServerAddress var4 = ServerAddress.parseString(var1);
-      ConnectScreen.startConnecting(new JoinMultiplayerScreen(new TitleScreen()), var0, var4, var3, true, null);
+      ConnectScreen.startConnecting(new JoinMultiplayerScreen(new TitleScreen()), var0, var4, var3, true, (TransferState)null);
    }
 
    private static void joinRealmsWorld(Minecraft var0, RealmsClient var1, String var2) {
       long var3;
       RealmsServerList var5;
+      TitleScreen var7;
+      RealmsMainScreen var11;
       try {
          var3 = Long.parseLong(var2);
          var5 = var1.listRealms();
       } catch (NumberFormatException var9) {
-         RealmsMainScreen var11 = new RealmsMainScreen(new TitleScreen());
+         var11 = new RealmsMainScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var11, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));
          return;
       } catch (RealmsServiceException var10) {
-         TitleScreen var7 = new TitleScreen();
+         var7 = new TitleScreen();
          var0.setScreen(new DisconnectedScreen(var7, ERROR_TITLE, REALM_CONNECT, TO_TITLE));
          return;
       }
 
-      RealmsServer var6 = var5.servers.stream().filter(var2x -> var2x.id == var3).findFirst().orElse(null);
+      RealmsServer var6 = (RealmsServer)var5.servers.stream().filter((var2x) -> {
+         return var2x.id == var3;
+      }).findFirst().orElse((Object)null);
       if (var6 == null) {
-         RealmsMainScreen var13 = new RealmsMainScreen(new TitleScreen());
-         var0.setScreen(new DisconnectedScreen(var13, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
+         var11 = new RealmsMainScreen(new TitleScreen());
+         var0.setScreen(new DisconnectedScreen(var11, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
       } else {
-         TitleScreen var12 = new TitleScreen();
-         GetServerDetailsTask var8 = new GetServerDetailsTask(var12, var6);
-         var0.setScreen(new RealmsLongRunningMcoTaskScreen(var12, var8));
+         var7 = new TitleScreen();
+         GetServerDetailsTask var8 = new GetServerDetailsTask(var7, var6);
+         var0.setScreen(new RealmsLongRunningMcoTaskScreen(var7, new LongRunningTask[]{var8}));
       }
    }
 }

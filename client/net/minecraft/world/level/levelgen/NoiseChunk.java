@@ -2,10 +2,10 @@ package net.minecraft.world.level.levelgen;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableList.Builder;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -30,19 +30,19 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    private final int firstCellZ;
    final int firstNoiseX;
    final int firstNoiseZ;
-   final List<NoiseChunk.NoiseInterpolator> interpolators;
-   final List<NoiseChunk.CacheAllInCell> cellCaches;
-   private final Map<DensityFunction, DensityFunction> wrapped = new HashMap<>();
+   final List<NoiseInterpolator> interpolators;
+   final List<CacheAllInCell> cellCaches;
+   private final Map<DensityFunction, DensityFunction> wrapped = new HashMap();
    private final Long2IntMap preliminarySurfaceLevel = new Long2IntOpenHashMap();
    private final Aquifer aquifer;
    private final DensityFunction initialDensityNoJaggedness;
-   private final NoiseChunk.BlockStateFiller blockStateRule;
+   private final BlockStateFiller blockStateRule;
    private final Blender blender;
-   private final NoiseChunk.FlatCache blendAlpha;
-   private final NoiseChunk.FlatCache blendOffset;
+   private final FlatCache blendAlpha;
+   private final FlatCache blendOffset;
    private final DensityFunctions.BeardifierOrMarker beardifier;
-   private long lastBlendingDataPos = ChunkPos.INVALID_CHUNK_POS;
-   private Blender.BlendingOutput lastBlendingOutput = new Blender.BlendingOutput(1.0, 0.0);
+   private long lastBlendingDataPos;
+   private Blender.BlendingOutput lastBlendingOutput;
    final int noiseSizeXZ;
    final int cellWidth;
    final int cellHeight;
@@ -57,49 +57,39 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    long interpolationCounter;
    long arrayInterpolationCounter;
    int arrayIndex;
-   private final DensityFunction.ContextProvider sliceFillingContextProvider = new DensityFunction.ContextProvider() {
-      @Override
-      public DensityFunction.FunctionContext forIndex(int var1) {
-         NoiseChunk.this.cellStartBlockY = (var1 + NoiseChunk.this.cellNoiseMinY) * NoiseChunk.this.cellHeight;
-         ++NoiseChunk.this.interpolationCounter;
-         NoiseChunk.this.inCellY = 0;
-         NoiseChunk.this.arrayIndex = var1;
-         return NoiseChunk.this;
-      }
+   private final DensityFunction.ContextProvider sliceFillingContextProvider;
 
-      @Override
-      public void fillAllDirectly(double[] var1, DensityFunction var2) {
-         for(int var3 = 0; var3 < NoiseChunk.this.cellCountY + 1; ++var3) {
-            NoiseChunk.this.cellStartBlockY = (var3 + NoiseChunk.this.cellNoiseMinY) * NoiseChunk.this.cellHeight;
-            ++NoiseChunk.this.interpolationCounter;
-            NoiseChunk.this.inCellY = 0;
-            NoiseChunk.this.arrayIndex = var3;
-            var1[var3] = var2.compute(NoiseChunk.this);
-         }
-      }
-   };
-
-   public static NoiseChunk forChunk(
-      ChunkAccess var0, RandomState var1, DensityFunctions.BeardifierOrMarker var2, NoiseGeneratorSettings var3, Aquifer.FluidPicker var4, Blender var5
-   ) {
+   public static NoiseChunk forChunk(ChunkAccess var0, RandomState var1, DensityFunctions.BeardifierOrMarker var2, NoiseGeneratorSettings var3, Aquifer.FluidPicker var4, Blender var5) {
       NoiseSettings var6 = var3.noiseSettings().clampToHeightAccessor(var0);
       ChunkPos var7 = var0.getPos();
       int var8 = 16 / var6.getCellWidth();
       return new NoiseChunk(var8, var1, var7.getMinBlockX(), var7.getMinBlockZ(), var6, var2, var3, var4, var5);
    }
 
-   public NoiseChunk(
-      int var1,
-      RandomState var2,
-      int var3,
-      int var4,
-      NoiseSettings var5,
-      DensityFunctions.BeardifierOrMarker var6,
-      NoiseGeneratorSettings var7,
-      Aquifer.FluidPicker var8,
-      Blender var9
-   ) {
+   public NoiseChunk(int var1, RandomState var2, int var3, int var4, NoiseSettings var5, DensityFunctions.BeardifierOrMarker var6, NoiseGeneratorSettings var7, Aquifer.FluidPicker var8, Blender var9) {
       super();
+      this.lastBlendingDataPos = ChunkPos.INVALID_CHUNK_POS;
+      this.lastBlendingOutput = new Blender.BlendingOutput(1.0, 0.0);
+      this.sliceFillingContextProvider = new DensityFunction.ContextProvider() {
+         public DensityFunction.FunctionContext forIndex(int var1) {
+            NoiseChunk.this.cellStartBlockY = (var1 + NoiseChunk.this.cellNoiseMinY) * NoiseChunk.this.cellHeight;
+            ++NoiseChunk.this.interpolationCounter;
+            NoiseChunk.this.inCellY = 0;
+            NoiseChunk.this.arrayIndex = var1;
+            return NoiseChunk.this;
+         }
+
+         public void fillAllDirectly(double[] var1, DensityFunction var2) {
+            for(int var3 = 0; var3 < NoiseChunk.this.cellCountY + 1; ++var3) {
+               NoiseChunk.this.cellStartBlockY = (var3 + NoiseChunk.this.cellNoiseMinY) * NoiseChunk.this.cellHeight;
+               ++NoiseChunk.this.interpolationCounter;
+               NoiseChunk.this.inCellY = 0;
+               NoiseChunk.this.arrayIndex = var3;
+               var1[var3] = var2.compute(NoiseChunk.this);
+            }
+
+         }
+      };
       this.noiseSettings = var5;
       this.cellWidth = var5.getCellWidth();
       this.cellHeight = var5.getCellHeight();
@@ -115,14 +105,16 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       this.noiseSizeXZ = QuartPos.fromBlock(var1 * this.cellWidth);
       this.blender = var9;
       this.beardifier = var6;
-      this.blendAlpha = new NoiseChunk.FlatCache(new NoiseChunk.BlendAlpha(), false);
-      this.blendOffset = new NoiseChunk.FlatCache(new NoiseChunk.BlendOffset(), false);
+      this.blendAlpha = new FlatCache(new BlendAlpha(), false);
+      this.blendOffset = new FlatCache(new BlendOffset(), false);
 
+      int var12;
+      int var13;
       for(int var10 = 0; var10 <= this.noiseSizeXZ; ++var10) {
          int var11 = this.firstNoiseX + var10;
-         int var12 = QuartPos.toBlock(var11);
+         var12 = QuartPos.toBlock(var11);
 
-         for(int var13 = 0; var13 <= this.noiseSizeXZ; ++var13) {
+         for(var13 = 0; var13 <= this.noiseSizeXZ; ++var13) {
             int var14 = this.firstNoiseZ + var13;
             int var15 = QuartPos.toBlock(var14);
             Blender.BlendingOutput var16 = var9.blendOffsetAndFactor(var12, var15);
@@ -136,33 +128,26 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       if (!var7.isAquifersEnabled()) {
          this.aquifer = Aquifer.createDisabled(var8);
       } else {
-         int var19 = SectionPos.blockToSectionCoord(var3);
-         int var21 = SectionPos.blockToSectionCoord(var4);
-         this.aquifer = Aquifer.create(this, new ChunkPos(var19, var21), var18, var2.aquiferRandom(), var5.minY(), var5.height(), var8);
+         var12 = SectionPos.blockToSectionCoord(var3);
+         var13 = SectionPos.blockToSectionCoord(var4);
+         this.aquifer = Aquifer.create(this, new ChunkPos(var12, var13), var18, var2.aquiferRandom(), var5.minY(), var5.height(), var8);
       }
 
-      Builder var20 = ImmutableList.builder();
-      DensityFunction var22 = DensityFunctions.cacheAllInCell(DensityFunctions.add(var18.finalDensity(), DensityFunctions.BeardifierMarker.INSTANCE))
-         .mapAll(this::wrap);
-      var20.add((NoiseChunk.BlockStateFiller)var2x -> this.aquifer.computeSubstance(var2x, var22.compute(var2x)));
+      ImmutableList.Builder var19 = ImmutableList.builder();
+      DensityFunction var20 = DensityFunctions.cacheAllInCell(DensityFunctions.add(var18.finalDensity(), DensityFunctions.BeardifierMarker.INSTANCE)).mapAll(this::wrap);
+      var19.add((var2x) -> {
+         return this.aquifer.computeSubstance(var2x, var20.compute(var2x));
+      });
       if (var7.oreVeinsEnabled()) {
-         var20.add(OreVeinifier.create(var18.veinToggle(), var18.veinRidged(), var18.veinGap(), var2.oreRandom()));
+         var19.add(OreVeinifier.create(var18.veinToggle(), var18.veinRidged(), var18.veinGap(), var2.oreRandom()));
       }
 
-      this.blockStateRule = new MaterialRuleList(var20.build());
+      this.blockStateRule = new MaterialRuleList(var19.build());
       this.initialDensityNoJaggedness = var18.initialDensityWithoutJaggedness();
    }
 
    protected Climate.Sampler cachedClimateSampler(NoiseRouter var1, List<Climate.ParameterPoint> var2) {
-      return new Climate.Sampler(
-         var1.temperature().mapAll(this::wrap),
-         var1.vegetation().mapAll(this::wrap),
-         var1.continents().mapAll(this::wrap),
-         var1.erosion().mapAll(this::wrap),
-         var1.depth().mapAll(this::wrap),
-         var1.ridges().mapAll(this::wrap),
-         var2
-      );
+      return new Climate.Sampler(var1.temperature().mapAll(this::wrap), var1.vegetation().mapAll(this::wrap), var1.continents().mapAll(this::wrap), var1.erosion().mapAll(this::wrap), var1.depth().mapAll(this::wrap), var1.ridges().mapAll(this::wrap), var2);
    }
 
    @Nullable
@@ -170,17 +155,14 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       return this.blockStateRule.calculate(this);
    }
 
-   @Override
    public int blockX() {
       return this.cellStartBlockX + this.inCellX;
    }
 
-   @Override
    public int blockY() {
       return this.cellStartBlockY + this.inCellY;
    }
 
-   @Override
    public int blockZ() {
       return this.cellStartBlockZ + this.inCellZ;
    }
@@ -205,7 +187,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       return 2147483647;
    }
 
-   @Override
    public Blender getBlender() {
       return this.blender;
    }
@@ -219,8 +200,10 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          this.cellStartBlockZ = var4 * this.cellWidth;
          this.inCellZ = 0;
          ++this.arrayInterpolationCounter;
+         Iterator var5 = this.interpolators.iterator();
 
-         for(NoiseChunk.NoiseInterpolator var6 : this.interpolators) {
+         while(var5.hasNext()) {
+            NoiseInterpolator var6 = (NoiseInterpolator)var5.next();
             double[] var7 = (var1 ? var6.slice0 : var6.slice1)[var3];
             var6.fillArray(var7, this.sliceFillingContextProvider);
          }
@@ -256,7 +239,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       return this;
    }
 
-   @Override
    public void fillAllDirectly(double[] var1, DensityFunction var2) {
       this.arrayIndex = 0;
 
@@ -272,16 +254,21 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
             }
          }
       }
+
    }
 
    public void selectCellYZ(int var1, int var2) {
-      this.interpolators.forEach(var2x -> var2x.selectCellYZ(var1, var2));
+      this.interpolators.forEach((var2x) -> {
+         var2x.selectCellYZ(var1, var2);
+      });
       this.fillingCell = true;
       this.cellStartBlockY = (var1 + this.cellNoiseMinY) * this.cellHeight;
       this.cellStartBlockZ = (this.firstCellZ + var2) * this.cellWidth;
       ++this.arrayInterpolationCounter;
+      Iterator var3 = this.cellCaches.iterator();
 
-      for(NoiseChunk.CacheAllInCell var4 : this.cellCaches) {
+      while(var3.hasNext()) {
+         CacheAllInCell var4 = (CacheAllInCell)var3.next();
          var4.noiseFiller.fillArray(var4.values, this);
       }
 
@@ -291,18 +278,24 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
    public void updateForY(int var1, double var2) {
       this.inCellY = var1 - this.cellStartBlockY;
-      this.interpolators.forEach(var2x -> var2x.updateForY(var2));
+      this.interpolators.forEach((var2x) -> {
+         var2x.updateForY(var2);
+      });
    }
 
    public void updateForX(int var1, double var2) {
       this.inCellX = var1 - this.cellStartBlockX;
-      this.interpolators.forEach(var2x -> var2x.updateForX(var2));
+      this.interpolators.forEach((var2x) -> {
+         var2x.updateForX(var2);
+      });
    }
 
    public void updateForZ(int var1, double var2) {
       this.inCellZ = var1 - this.cellStartBlockZ;
       ++this.interpolationCounter;
-      this.interpolators.forEach(var2x -> var2x.updateForZ(var2));
+      this.interpolators.forEach((var2x) -> {
+         var2x.updateForZ(var2);
+      });
    }
 
    public void stopInterpolation() {
@@ -314,7 +307,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    }
 
    public void swapSlices() {
-      this.interpolators.forEach(NoiseChunk.NoiseInterpolator::swapSlices);
+      this.interpolators.forEach(NoiseInterpolator::swapSlices);
    }
 
    public Aquifer aquifer() {
@@ -342,20 +335,23 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    }
 
    protected DensityFunction wrap(DensityFunction var1) {
-      return this.wrapped.computeIfAbsent(var1, this::wrapNew);
+      return (DensityFunction)this.wrapped.computeIfAbsent(var1, this::wrapNew);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private DensityFunction wrapNew(DensityFunction var1) {
-      if (var1 instanceof DensityFunctions.Marker var3) {
-         return (DensityFunction)(switch(var3.type()) {
-            case Interpolated -> new NoiseChunk.NoiseInterpolator(var3.wrapped());
-            case FlatCache -> new NoiseChunk.FlatCache(var3.wrapped(), true);
-            case Cache2D -> new NoiseChunk.Cache2D(var3.wrapped());
-            case CacheOnce -> new NoiseChunk.CacheOnce(var3.wrapped());
-            case CacheAllInCell -> new NoiseChunk.CacheAllInCell(var3.wrapped());
-         });
+      if (var1 instanceof DensityFunctions.Marker) {
+         DensityFunctions.Marker var3 = (DensityFunctions.Marker)var1;
+         Object var10000;
+         switch (var3.type()) {
+            case Interpolated -> var10000 = new NoiseInterpolator(var3.wrapped());
+            case FlatCache -> var10000 = new FlatCache(var3.wrapped(), true);
+            case Cache2D -> var10000 = new Cache2D(var3.wrapped());
+            case CacheOnce -> var10000 = new CacheOnce(var3.wrapped());
+            case CacheAllInCell -> var10000 = new CacheAllInCell(var3.wrapped());
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (DensityFunction)var10000;
       } else {
          if (this.blender != Blender.empty()) {
             if (var1 == DensityFunctions.BlendAlpha.INSTANCE) {
@@ -369,246 +365,21 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
          if (var1 == DensityFunctions.BeardifierMarker.INSTANCE) {
             return this.beardifier;
+         } else if (var1 instanceof DensityFunctions.HolderHolder) {
+            DensityFunctions.HolderHolder var2 = (DensityFunctions.HolderHolder)var1;
+            return (DensityFunction)var2.function().value();
          } else {
-            return var1 instanceof DensityFunctions.HolderHolder var2 ? var2.function().value() : var1;
+            return var1;
          }
       }
    }
 
-   class BlendAlpha implements NoiseChunk.NoiseChunkDensityFunction {
-      BlendAlpha() {
-         super();
-      }
-
-      @Override
-      public DensityFunction wrapped() {
-         return DensityFunctions.BlendAlpha.INSTANCE;
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return this.wrapped().mapAll(var1);
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return NoiseChunk.this.getOrComputeBlendingOutput(var1.blockX(), var1.blockZ()).alpha();
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
-      }
-
-      @Override
-      public double minValue() {
-         return 0.0;
-      }
-
-      @Override
-      public double maxValue() {
-         return 1.0;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return DensityFunctions.BlendAlpha.CODEC;
-      }
+   // $FF: synthetic method
+   public DensityFunction.FunctionContext forIndex(int var1) {
+      return this.forIndex(var1);
    }
 
-   class BlendOffset implements NoiseChunk.NoiseChunkDensityFunction {
-      BlendOffset() {
-         super();
-      }
-
-      @Override
-      public DensityFunction wrapped() {
-         return DensityFunctions.BlendOffset.INSTANCE;
-      }
-
-      @Override
-      public DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return this.wrapped().mapAll(var1);
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         return NoiseChunk.this.getOrComputeBlendingOutput(var1.blockX(), var1.blockZ()).blendingOffset();
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
-      }
-
-      @Override
-      public double minValue() {
-         return -1.0 / 0.0;
-      }
-
-      @Override
-      public double maxValue() {
-         return 1.0 / 0.0;
-      }
-
-      @Override
-      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
-         return DensityFunctions.BlendOffset.CODEC;
-      }
-   }
-
-   @FunctionalInterface
-   public interface BlockStateFiller {
-      @Nullable
-      BlockState calculate(DensityFunction.FunctionContext var1);
-   }
-
-   static class Cache2D implements DensityFunctions.MarkerOrMarked, NoiseChunk.NoiseChunkDensityFunction {
-      private final DensityFunction function;
-      private long lastPos2D = ChunkPos.INVALID_CHUNK_POS;
-      private double lastValue;
-
-      Cache2D(DensityFunction var1) {
-         super();
-         this.function = var1;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         int var2 = var1.blockX();
-         int var3 = var1.blockZ();
-         long var4 = ChunkPos.asLong(var2, var3);
-         if (this.lastPos2D == var4) {
-            return this.lastValue;
-         } else {
-            this.lastPos2D = var4;
-            double var6 = this.function.compute(var1);
-            this.lastValue = var6;
-            return var6;
-         }
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         this.function.fillArray(var1, var2);
-      }
-
-      @Override
-      public DensityFunction wrapped() {
-         return this.function;
-      }
-
-      @Override
-      public DensityFunctions.Marker.Type type() {
-         return DensityFunctions.Marker.Type.Cache2D;
-      }
-   }
-
-   class CacheAllInCell implements DensityFunctions.MarkerOrMarked, NoiseChunk.NoiseChunkDensityFunction {
-      final DensityFunction noiseFiller;
-      final double[] values;
-
-      CacheAllInCell(DensityFunction var2) {
-         super();
-         this.noiseFiller = var2;
-         this.values = new double[NoiseChunk.this.cellWidth * NoiseChunk.this.cellWidth * NoiseChunk.this.cellHeight];
-         NoiseChunk.this.cellCaches.add(this);
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         if (var1 != NoiseChunk.this) {
-            return this.noiseFiller.compute(var1);
-         } else if (!NoiseChunk.this.interpolating) {
-            throw new IllegalStateException("Trying to sample interpolator outside the interpolation loop");
-         } else {
-            int var2 = NoiseChunk.this.inCellX;
-            int var3 = NoiseChunk.this.inCellY;
-            int var4 = NoiseChunk.this.inCellZ;
-            return var2 >= 0
-                  && var3 >= 0
-                  && var4 >= 0
-                  && var2 < NoiseChunk.this.cellWidth
-                  && var3 < NoiseChunk.this.cellHeight
-                  && var4 < NoiseChunk.this.cellWidth
-               ? this.values[((NoiseChunk.this.cellHeight - 1 - var3) * NoiseChunk.this.cellWidth + var2) * NoiseChunk.this.cellWidth + var4]
-               : this.noiseFiller.compute(var1);
-         }
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
-      }
-
-      @Override
-      public DensityFunction wrapped() {
-         return this.noiseFiller;
-      }
-
-      @Override
-      public DensityFunctions.Marker.Type type() {
-         return DensityFunctions.Marker.Type.CacheAllInCell;
-      }
-   }
-
-   class CacheOnce implements DensityFunctions.MarkerOrMarked, NoiseChunk.NoiseChunkDensityFunction {
-      private final DensityFunction function;
-      private long lastCounter;
-      private long lastArrayCounter;
-      private double lastValue;
-      @Nullable
-      private double[] lastArray;
-
-      CacheOnce(DensityFunction var2) {
-         super();
-         this.function = var2;
-      }
-
-      @Override
-      public double compute(DensityFunction.FunctionContext var1) {
-         if (var1 != NoiseChunk.this) {
-            return this.function.compute(var1);
-         } else if (this.lastArray != null && this.lastArrayCounter == NoiseChunk.this.arrayInterpolationCounter) {
-            return this.lastArray[NoiseChunk.this.arrayIndex];
-         } else if (this.lastCounter == NoiseChunk.this.interpolationCounter) {
-            return this.lastValue;
-         } else {
-            this.lastCounter = NoiseChunk.this.interpolationCounter;
-            double var2 = this.function.compute(var1);
-            this.lastValue = var2;
-            return var2;
-         }
-      }
-
-      @Override
-      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         if (this.lastArray != null && this.lastArrayCounter == NoiseChunk.this.arrayInterpolationCounter) {
-            System.arraycopy(this.lastArray, 0, var1, 0, var1.length);
-         } else {
-            this.wrapped().fillArray(var1, var2);
-            if (this.lastArray != null && this.lastArray.length == var1.length) {
-               System.arraycopy(var1, 0, this.lastArray, 0, var1.length);
-            } else {
-               this.lastArray = (double[])var1.clone();
-            }
-
-            this.lastArrayCounter = NoiseChunk.this.arrayInterpolationCounter;
-         }
-      }
-
-      @Override
-      public DensityFunction wrapped() {
-         return this.function;
-      }
-
-      @Override
-      public DensityFunctions.Marker.Type type() {
-         return DensityFunctions.Marker.Type.CacheOnce;
-      }
-   }
-
-   class FlatCache implements DensityFunctions.MarkerOrMarked, NoiseChunk.NoiseChunkDensityFunction {
+   private class FlatCache implements DensityFunctions.MarkerOrMarked, NoiseChunkDensityFunction {
       private final DensityFunction noiseFiller;
       final double[][] values;
 
@@ -628,9 +399,9 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
                }
             }
          }
+
       }
 
-      @Override
       public double compute(DensityFunction.FunctionContext var1) {
          int var2 = QuartPos.fromBlock(var1.blockX());
          int var3 = QuartPos.fromBlock(var1.blockZ());
@@ -640,37 +411,94 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          return var4 >= 0 && var5 >= 0 && var4 < var6 && var5 < var6 ? this.values[var4][var5] : this.noiseFiller.compute(var1);
       }
 
-      @Override
       public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
          var2.fillAllDirectly(var1, this);
       }
 
-      @Override
       public DensityFunction wrapped() {
          return this.noiseFiller;
       }
 
-      @Override
       public DensityFunctions.Marker.Type type() {
          return DensityFunctions.Marker.Type.FlatCache;
       }
    }
 
-   interface NoiseChunkDensityFunction extends DensityFunction {
-      DensityFunction wrapped();
-
-      @Override
-      default double minValue() {
-         return this.wrapped().minValue();
+   private class BlendAlpha implements NoiseChunkDensityFunction {
+      BlendAlpha() {
+         super();
       }
 
-      @Override
-      default double maxValue() {
-         return this.wrapped().maxValue();
+      public DensityFunction wrapped() {
+         return DensityFunctions.BlendAlpha.INSTANCE;
+      }
+
+      public DensityFunction mapAll(DensityFunction.Visitor var1) {
+         return this.wrapped().mapAll(var1);
+      }
+
+      public double compute(DensityFunction.FunctionContext var1) {
+         return NoiseChunk.this.getOrComputeBlendingOutput(var1.blockX(), var1.blockZ()).alpha();
+      }
+
+      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+         var2.fillAllDirectly(var1, this);
+      }
+
+      public double minValue() {
+         return 0.0;
+      }
+
+      public double maxValue() {
+         return 1.0;
+      }
+
+      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
+         return DensityFunctions.BlendAlpha.CODEC;
       }
    }
 
-   public class NoiseInterpolator implements DensityFunctions.MarkerOrMarked, NoiseChunk.NoiseChunkDensityFunction {
+   class BlendOffset implements NoiseChunkDensityFunction {
+      BlendOffset() {
+         super();
+      }
+
+      public DensityFunction wrapped() {
+         return DensityFunctions.BlendOffset.INSTANCE;
+      }
+
+      public DensityFunction mapAll(DensityFunction.Visitor var1) {
+         return this.wrapped().mapAll(var1);
+      }
+
+      public double compute(DensityFunction.FunctionContext var1) {
+         return NoiseChunk.this.getOrComputeBlendingOutput(var1.blockX(), var1.blockZ()).blendingOffset();
+      }
+
+      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+         var2.fillAllDirectly(var1, this);
+      }
+
+      public double minValue() {
+         return -1.0 / 0.0;
+      }
+
+      public double maxValue() {
+         return 1.0 / 0.0;
+      }
+
+      public KeyDispatchDataCodec<? extends DensityFunction> codec() {
+         return DensityFunctions.BlendOffset.CODEC;
+      }
+   }
+
+   @FunctionalInterface
+   public interface BlockStateFiller {
+      @Nullable
+      BlockState calculate(DensityFunction.FunctionContext var1);
+   }
+
+   public class NoiseInterpolator implements DensityFunctions.MarkerOrMarked, NoiseChunkDensityFunction {
       double[][] slice0;
       double[][] slice1;
       private final DensityFunction noiseFiller;
@@ -737,32 +565,16 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          this.value = Mth.lerp(var1, this.valueZ0, this.valueZ1);
       }
 
-      @Override
       public double compute(DensityFunction.FunctionContext var1) {
          if (var1 != NoiseChunk.this) {
             return this.noiseFiller.compute(var1);
          } else if (!NoiseChunk.this.interpolating) {
             throw new IllegalStateException("Trying to sample interpolator outside the interpolation loop");
          } else {
-            return NoiseChunk.this.fillingCell
-               ? Mth.lerp3(
-                  (double)NoiseChunk.this.inCellX / (double)NoiseChunk.this.cellWidth,
-                  (double)NoiseChunk.this.inCellY / (double)NoiseChunk.this.cellHeight,
-                  (double)NoiseChunk.this.inCellZ / (double)NoiseChunk.this.cellWidth,
-                  this.noise000,
-                  this.noise100,
-                  this.noise010,
-                  this.noise110,
-                  this.noise001,
-                  this.noise101,
-                  this.noise011,
-                  this.noise111
-               )
-               : this.value;
+            return NoiseChunk.this.fillingCell ? Mth.lerp3((double)NoiseChunk.this.inCellX / (double)NoiseChunk.this.cellWidth, (double)NoiseChunk.this.inCellY / (double)NoiseChunk.this.cellHeight, (double)NoiseChunk.this.inCellZ / (double)NoiseChunk.this.cellWidth, this.noise000, this.noise100, this.noise010, this.noise110, this.noise001, this.noise101, this.noise011, this.noise111) : this.value;
          }
       }
 
-      @Override
       public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
          if (NoiseChunk.this.fillingCell) {
             var2.fillAllDirectly(var1, this);
@@ -771,7 +583,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          }
       }
 
-      @Override
       public DensityFunction wrapped() {
          return this.noiseFiller;
       }
@@ -782,9 +593,147 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          this.slice1 = var1;
       }
 
-      @Override
       public DensityFunctions.Marker.Type type() {
          return DensityFunctions.Marker.Type.Interpolated;
+      }
+   }
+
+   class CacheAllInCell implements DensityFunctions.MarkerOrMarked, NoiseChunkDensityFunction {
+      final DensityFunction noiseFiller;
+      final double[] values;
+
+      CacheAllInCell(DensityFunction var2) {
+         super();
+         this.noiseFiller = var2;
+         this.values = new double[NoiseChunk.this.cellWidth * NoiseChunk.this.cellWidth * NoiseChunk.this.cellHeight];
+         NoiseChunk.this.cellCaches.add(this);
+      }
+
+      public double compute(DensityFunction.FunctionContext var1) {
+         if (var1 != NoiseChunk.this) {
+            return this.noiseFiller.compute(var1);
+         } else if (!NoiseChunk.this.interpolating) {
+            throw new IllegalStateException("Trying to sample interpolator outside the interpolation loop");
+         } else {
+            int var2 = NoiseChunk.this.inCellX;
+            int var3 = NoiseChunk.this.inCellY;
+            int var4 = NoiseChunk.this.inCellZ;
+            return var2 >= 0 && var3 >= 0 && var4 >= 0 && var2 < NoiseChunk.this.cellWidth && var3 < NoiseChunk.this.cellHeight && var4 < NoiseChunk.this.cellWidth ? this.values[((NoiseChunk.this.cellHeight - 1 - var3) * NoiseChunk.this.cellWidth + var2) * NoiseChunk.this.cellWidth + var4] : this.noiseFiller.compute(var1);
+         }
+      }
+
+      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+         var2.fillAllDirectly(var1, this);
+      }
+
+      public DensityFunction wrapped() {
+         return this.noiseFiller;
+      }
+
+      public DensityFunctions.Marker.Type type() {
+         return DensityFunctions.Marker.Type.CacheAllInCell;
+      }
+   }
+
+   private static class Cache2D implements DensityFunctions.MarkerOrMarked, NoiseChunkDensityFunction {
+      private final DensityFunction function;
+      private long lastPos2D;
+      private double lastValue;
+
+      Cache2D(DensityFunction var1) {
+         super();
+         this.lastPos2D = ChunkPos.INVALID_CHUNK_POS;
+         this.function = var1;
+      }
+
+      public double compute(DensityFunction.FunctionContext var1) {
+         int var2 = var1.blockX();
+         int var3 = var1.blockZ();
+         long var4 = ChunkPos.asLong(var2, var3);
+         if (this.lastPos2D == var4) {
+            return this.lastValue;
+         } else {
+            this.lastPos2D = var4;
+            double var6 = this.function.compute(var1);
+            this.lastValue = var6;
+            return var6;
+         }
+      }
+
+      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+         this.function.fillArray(var1, var2);
+      }
+
+      public DensityFunction wrapped() {
+         return this.function;
+      }
+
+      public DensityFunctions.Marker.Type type() {
+         return DensityFunctions.Marker.Type.Cache2D;
+      }
+   }
+
+   private class CacheOnce implements DensityFunctions.MarkerOrMarked, NoiseChunkDensityFunction {
+      private final DensityFunction function;
+      private long lastCounter;
+      private long lastArrayCounter;
+      private double lastValue;
+      @Nullable
+      private double[] lastArray;
+
+      CacheOnce(DensityFunction var2) {
+         super();
+         this.function = var2;
+      }
+
+      public double compute(DensityFunction.FunctionContext var1) {
+         if (var1 != NoiseChunk.this) {
+            return this.function.compute(var1);
+         } else if (this.lastArray != null && this.lastArrayCounter == NoiseChunk.this.arrayInterpolationCounter) {
+            return this.lastArray[NoiseChunk.this.arrayIndex];
+         } else if (this.lastCounter == NoiseChunk.this.interpolationCounter) {
+            return this.lastValue;
+         } else {
+            this.lastCounter = NoiseChunk.this.interpolationCounter;
+            double var2 = this.function.compute(var1);
+            this.lastValue = var2;
+            return var2;
+         }
+      }
+
+      public void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
+         if (this.lastArray != null && this.lastArrayCounter == NoiseChunk.this.arrayInterpolationCounter) {
+            System.arraycopy(this.lastArray, 0, var1, 0, var1.length);
+         } else {
+            this.wrapped().fillArray(var1, var2);
+            if (this.lastArray != null && this.lastArray.length == var1.length) {
+               System.arraycopy(var1, 0, this.lastArray, 0, var1.length);
+            } else {
+               this.lastArray = (double[])(([D)var1).clone();
+            }
+
+            this.lastArrayCounter = NoiseChunk.this.arrayInterpolationCounter;
+         }
+      }
+
+      public DensityFunction wrapped() {
+         return this.function;
+      }
+
+      public DensityFunctions.Marker.Type type() {
+         return DensityFunctions.Marker.Type.CacheOnce;
+      }
+   }
+
+   private interface NoiseChunkDensityFunction extends DensityFunction {
+      DensityFunction wrapped();
+
+      default double minValue() {
+         return this.wrapped().minValue();
+      }
+
+      default double maxValue() {
+         return this.wrapped().maxValue();
       }
    }
 }

@@ -13,7 +13,7 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemModel<Iro
    private static final ResourceLocation GOLEM_LOCATION = new ResourceLocation("textures/entity/iron_golem/iron_golem.png");
 
    public IronGolemRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new IronGolemModel<>(var1.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);
+      super(var1, new IronGolemModel(var1.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);
       this.addLayer(new IronGolemCrackinessLayer(this));
       this.addLayer(new IronGolemFlowerLayer(this, var1.getBlockRenderDispatcher()));
    }

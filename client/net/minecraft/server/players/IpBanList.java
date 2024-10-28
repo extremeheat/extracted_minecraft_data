@@ -10,7 +10,6 @@ public class IpBanList extends StoredUserList<String, IpBanListEntry> {
       super(var1);
    }
 
-   @Override
    protected StoredUserEntry<String> createEntry(JsonObject var1) {
       return new IpBanListEntry(var1);
    }
@@ -27,7 +26,7 @@ public class IpBanList extends StoredUserList<String, IpBanListEntry> {
    @Nullable
    public IpBanListEntry get(SocketAddress var1) {
       String var2 = this.getIpFromAddress(var1);
-      return this.get(var2);
+      return (IpBanListEntry)this.get(var2);
    }
 
    private String getIpFromAddress(SocketAddress var1) {

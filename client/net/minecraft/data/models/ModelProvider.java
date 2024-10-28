@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -35,60 +35,69 @@ public class ModelProvider implements DataProvider {
       this.modelPathProvider = var1.createPathProvider(PackOutput.Target.RESOURCE_PACK, "models");
    }
 
-   @Override
    public CompletableFuture<?> run(CachedOutput var1) {
       HashMap var2 = Maps.newHashMap();
-      Consumer var3 = var1x -> {
-         Block var2xx = var1x.getBlock();
-         BlockStateGenerator var3xx = var2.put(var2xx, var1x);
-         if (var3xx != null) {
-            throw new IllegalStateException("Duplicate blockstate definition for " + var2xx);
+      Consumer var3 = (var1x) -> {
+         Block var2x = var1x.getBlock();
+         BlockStateGenerator var3 = (BlockStateGenerator)var2.put(var2x, var1x);
+         if (var3 != null) {
+            throw new IllegalStateException("Duplicate blockstate definition for " + String.valueOf(var2x));
          }
       };
       HashMap var4 = Maps.newHashMap();
       HashSet var5 = Sets.newHashSet();
       BiConsumer var6 = (var1x, var2x) -> {
-         Supplier var3xx = var4.put(var1x, var2x);
-         if (var3xx != null) {
-            throw new IllegalStateException("Duplicate model definition for " + var1x);
+         Supplier var3 = (Supplier)var4.put(var1x, var2x);
+         if (var3 != null) {
+            throw new IllegalStateException("Duplicate model definition for " + String.valueOf(var1x));
          }
       };
+      Objects.requireNonNull(var5);
       Consumer var7 = var5::add;
-      new BlockModelGenerators(var3, var6, var7).run();
-      new ItemModelGenerators(var6).run();
-      List var8 = BuiltInRegistries.BLOCK.entrySet().stream().filter(var0 -> true).map(Entry::getValue).filter(var1x -> !var2.containsKey(var1x)).toList();
+      (new BlockModelGenerators(var3, var6, var7)).run();
+      (new ItemModelGenerators(var6)).run();
+      List var8 = BuiltInRegistries.BLOCK.entrySet().stream().filter((var0) -> {
+         return true;
+      }).map(Map.Entry::getValue).filter((var1x) -> {
+         return !var2.containsKey(var1x);
+      }).toList();
       if (!var8.isEmpty()) {
-         throw new IllegalStateException("Missing blockstate definitions for: " + var8);
+         throw new IllegalStateException("Missing blockstate definitions for: " + String.valueOf(var8));
       } else {
-         BuiltInRegistries.BLOCK.forEach(var2x -> {
-            Item var3xx = Item.BY_BLOCK.get(var2x);
-            if (var3xx != null) {
-               if (var5.contains(var3xx)) {
+         BuiltInRegistries.BLOCK.forEach((var2x) -> {
+            Item var3 = (Item)Item.BY_BLOCK.get(var2x);
+            if (var3 != null) {
+               if (var5.contains(var3)) {
                   return;
                }
 
-               ResourceLocation var4xx = ModelLocationUtils.getModelLocation(var3xx);
-               if (!var4.containsKey(var4xx)) {
-                  var4.put(var4xx, new DelegatedModel(ModelLocationUtils.getModelLocation(var2x)));
+               ResourceLocation var4x = ModelLocationUtils.getModelLocation(var3);
+               if (!var4.containsKey(var4x)) {
+                  var4.put(var4x, new DelegatedModel(ModelLocationUtils.getModelLocation(var2x)));
                }
             }
+
          });
-         return CompletableFuture.allOf(
-            this.saveCollection(var1, var2, var1x -> this.blockStatePathProvider.json(var1x.builtInRegistryHolder().key().location())),
-            this.saveCollection(var1, var4, this.modelPathProvider::json)
-         );
+         CompletableFuture[] var10000 = new CompletableFuture[]{this.saveCollection(var1, var2, (var1x) -> {
+            return this.blockStatePathProvider.json(var1x.builtInRegistryHolder().key().location());
+         }), null};
+         PackOutput.PathProvider var10006 = this.modelPathProvider;
+         Objects.requireNonNull(var10006);
+         var10000[1] = this.saveCollection(var1, var4, var10006::json);
+         return CompletableFuture.allOf(var10000);
       }
    }
 
    private <T> CompletableFuture<?> saveCollection(CachedOutput var1, Map<T, ? extends Supplier<JsonElement>> var2, Function<T, Path> var3) {
-      return CompletableFuture.allOf(var2.entrySet().stream().map(var2x -> {
-         Path var3xx = (Path)var3.apply(var2x.getKey());
+      return CompletableFuture.allOf((CompletableFuture[])var2.entrySet().stream().map((var2x) -> {
+         Path var3x = (Path)var3.apply(var2x.getKey());
          JsonElement var4 = (JsonElement)((Supplier)var2x.getValue()).get();
-         return DataProvider.saveStable(var1, var4, var3xx);
-      }).toArray(var0 -> new CompletableFuture[var0]));
+         return DataProvider.saveStable(var1, var4, var3x);
+      }).toArray((var0) -> {
+         return new CompletableFuture[var0];
+      }));
    }
 
-   @Override
    public final String getName() {
       return "Model Definitions";
    }

@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -23,7 +24,7 @@ public class RailState {
       this.pos = var2;
       this.state = var3;
       this.block = (BaseRailBlock)var3.getBlock();
-      RailShape var4 = var3.getValue(this.block.getShapeProperty());
+      RailShape var4 = (RailShape)var3.getValue(this.block.getShapeProperty());
       this.isStraight = this.block.isStraight();
       this.updateConnections(var4);
    }
@@ -34,7 +35,7 @@ public class RailState {
 
    private void updateConnections(RailShape var1) {
       this.connections.clear();
-      switch(var1) {
+      switch (var1) {
          case NORTH_SOUTH:
             this.connections.add(this.pos.north());
             this.connections.add(this.pos.south());
@@ -75,17 +76,19 @@ public class RailState {
             this.connections.add(this.pos.east());
             this.connections.add(this.pos.north());
       }
+
    }
 
    private void removeSoftConnections() {
       for(int var1 = 0; var1 < this.connections.size(); ++var1) {
-         RailState var2 = this.getRail(this.connections.get(var1));
+         RailState var2 = this.getRail((BlockPos)this.connections.get(var1));
          if (var2 != null && var2.connectsTo(this)) {
             this.connections.set(var1, var2.pos);
          } else {
             this.connections.remove(var1--);
          }
       }
+
    }
 
    private boolean hasRail(BlockPos var1) {
@@ -116,7 +119,7 @@ public class RailState {
 
    private boolean hasConnection(BlockPos var1) {
       for(int var2 = 0; var2 < this.connections.size(); ++var2) {
-         BlockPos var3 = this.connections.get(var2);
+         BlockPos var3 = (BlockPos)this.connections.get(var2);
          if (var3.getX() == var1.getX() && var3.getZ() == var1.getZ()) {
             return true;
          }
@@ -127,8 +130,10 @@ public class RailState {
 
    protected int countPotentialConnections() {
       int var1 = 0;
+      Iterator var2 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var3 : Direction.Plane.HORIZONTAL) {
+      while(var2.hasNext()) {
+         Direction var3 = (Direction)var2.next();
          if (this.hasRail(this.pos.relative(var3))) {
             ++var1;
          }
@@ -202,7 +207,7 @@ public class RailState {
          var10 = RailShape.NORTH_SOUTH;
       }
 
-      this.state = this.state.setValue(this.block.getShapeProperty(), var10);
+      this.state = (BlockState)this.state.setValue(this.block.getShapeProperty(), var10);
       this.level.setBlock(this.pos, this.state, 3);
    }
 
@@ -329,12 +334,12 @@ public class RailState {
       }
 
       this.updateConnections(var12);
-      this.state = this.state.setValue(this.block.getShapeProperty(), var12);
+      this.state = (BlockState)this.state.setValue(this.block.getShapeProperty(), var12);
       if (var2 || this.level.getBlockState(this.pos) != this.state) {
          this.level.setBlock(this.pos, this.state, 3);
 
          for(int var19 = 0; var19 < this.connections.size(); ++var19) {
-            RailState var20 = this.getRail(this.connections.get(var19));
+            RailState var20 = this.getRail((BlockPos)this.connections.get(var19));
             if (var20 != null) {
                var20.removeSoftConnections();
                if (var20.canConnectTo(this)) {

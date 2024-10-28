@@ -64,7 +64,7 @@ public class BookCloningRecipe extends CustomRecipe {
          }
       }
 
-      WrittenBookContent var8 = var4.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      WrittenBookContent var8 = (WrittenBookContent)var4.get(DataComponents.WRITTEN_BOOK_CONTENT);
       if (!var4.isEmpty() && var3 >= 1 && var8 != null) {
          WrittenBookContent var9 = var8.tryCraftCopy();
          if (var9 == null) {
@@ -95,12 +95,10 @@ public class BookCloningRecipe extends CustomRecipe {
       return var2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.BOOK_CLONING;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 >= 3 && var2 >= 3;
    }

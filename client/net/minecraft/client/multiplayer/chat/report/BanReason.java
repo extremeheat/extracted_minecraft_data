@@ -30,21 +30,95 @@ public enum BanReason {
 
    @Nullable
    public static BanReason byId(int var0) {
-      return switch(var0) {
-         case 2 -> FALSE_REPORTING;
-         default -> null;
-         case 5 -> HATE_SPEECH;
-         case 16, 25 -> HATE_TERRORISM_NOTORIOUS_FIGURE;
-         case 17, 19, 23, 31 -> GENERIC_VIOLATION;
-         case 21 -> HARASSMENT_OR_BULLYING;
-         case 27 -> DEFAMATION_IMPERSONATION_FALSE_INFORMATION;
-         case 28 -> DRUGS;
-         case 29 -> FRAUD;
-         case 30 -> SPAM_OR_ADVERTISING;
-         case 32 -> NUDITY_OR_PORNOGRAPHY;
-         case 33 -> SEXUALLY_INAPPROPRIATE;
-         case 34 -> EXTREME_VIOLENCE_OR_GORE;
-         case 53 -> IMMINENT_HARM_TO_PERSON_OR_PROPERTY;
-      };
+      BanReason var10000;
+      switch (var0) {
+         case 2:
+            var10000 = FALSE_REPORTING;
+            break;
+         case 3:
+         case 4:
+         case 6:
+         case 7:
+         case 8:
+         case 9:
+         case 10:
+         case 11:
+         case 12:
+         case 13:
+         case 14:
+         case 15:
+         case 18:
+         case 20:
+         case 22:
+         case 24:
+         case 26:
+         case 35:
+         case 36:
+         case 37:
+         case 38:
+         case 39:
+         case 40:
+         case 41:
+         case 42:
+         case 43:
+         case 44:
+         case 45:
+         case 46:
+         case 47:
+         case 48:
+         case 49:
+         case 50:
+         case 51:
+         case 52:
+         default:
+            var10000 = null;
+            break;
+         case 5:
+            var10000 = HATE_SPEECH;
+            break;
+         case 16:
+         case 25:
+            var10000 = HATE_TERRORISM_NOTORIOUS_FIGURE;
+            break;
+         case 17:
+         case 19:
+         case 23:
+         case 31:
+            var10000 = GENERIC_VIOLATION;
+            break;
+         case 21:
+            var10000 = HARASSMENT_OR_BULLYING;
+            break;
+         case 27:
+            var10000 = DEFAMATION_IMPERSONATION_FALSE_INFORMATION;
+            break;
+         case 28:
+            var10000 = DRUGS;
+            break;
+         case 29:
+            var10000 = FRAUD;
+            break;
+         case 30:
+            var10000 = SPAM_OR_ADVERTISING;
+            break;
+         case 32:
+            var10000 = NUDITY_OR_PORNOGRAPHY;
+            break;
+         case 33:
+            var10000 = SEXUALLY_INAPPROPRIATE;
+            break;
+         case 34:
+            var10000 = EXTREME_VIOLENCE_OR_GORE;
+            break;
+         case 53:
+            var10000 = IMMINENT_HARM_TO_PERSON_OR_PROPERTY;
+      }
+
+      return var10000;
+   }
+
+   // $FF: synthetic method
+   private static BanReason[] $values() {
+      return new BanReason[]{GENERIC_VIOLATION, FALSE_REPORTING, HATE_SPEECH, HATE_TERRORISM_NOTORIOUS_FIGURE, HARASSMENT_OR_BULLYING, DEFAMATION_IMPERSONATION_FALSE_INFORMATION, DRUGS, FRAUD, SPAM_OR_ADVERTISING, NUDITY_OR_PORNOGRAPHY, SEXUALLY_INAPPROPRIATE, EXTREME_VIOLENCE_OR_GORE, IMMINENT_HARM_TO_PERSON_OR_PROPERTY};
    }
 }

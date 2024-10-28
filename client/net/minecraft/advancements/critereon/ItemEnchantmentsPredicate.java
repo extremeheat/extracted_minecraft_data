@@ -1,6 +1,7 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.core.component.DataComponentType;
@@ -25,44 +26,47 @@ public abstract class ItemEnchantmentsPredicate implements SingleComponentItemPr
    }
 
    public boolean matches(ItemStack var1, ItemEnchantments var2) {
-      for(EnchantmentPredicate var4 : this.enchantments) {
-         if (!var4.containedIn(var2)) {
-            return false;
+      Iterator var3 = this.enchantments.iterator();
+
+      EnchantmentPredicate var4;
+      do {
+         if (!var3.hasNext()) {
+            return true;
          }
-      }
 
-      return true;
+         var4 = (EnchantmentPredicate)var3.next();
+      } while(var4.containedIn(var2));
+
+      return false;
    }
 
-   public static ItemEnchantmentsPredicate.Enchantments enchantments(List<EnchantmentPredicate> var0) {
-      return new ItemEnchantmentsPredicate.Enchantments(var0);
+   public static Enchantments enchantments(List<EnchantmentPredicate> var0) {
+      return new Enchantments(var0);
    }
 
-   public static ItemEnchantmentsPredicate.StoredEnchantments storedEnchantments(List<EnchantmentPredicate> var0) {
-      return new ItemEnchantmentsPredicate.StoredEnchantments(var0);
+   public static StoredEnchantments storedEnchantments(List<EnchantmentPredicate> var0) {
+      return new StoredEnchantments(var0);
    }
 
    public static class Enchantments extends ItemEnchantmentsPredicate {
-      public static final Codec<ItemEnchantmentsPredicate.Enchantments> CODEC = codec(ItemEnchantmentsPredicate.Enchantments::new);
+      public static final Codec<Enchantments> CODEC = codec(Enchantments::new);
 
       protected Enchantments(List<EnchantmentPredicate> var1) {
          super(var1);
       }
 
-      @Override
       public DataComponentType<ItemEnchantments> componentType() {
          return DataComponents.ENCHANTMENTS;
       }
    }
 
    public static class StoredEnchantments extends ItemEnchantmentsPredicate {
-      public static final Codec<ItemEnchantmentsPredicate.StoredEnchantments> CODEC = codec(ItemEnchantmentsPredicate.StoredEnchantments::new);
+      public static final Codec<StoredEnchantments> CODEC = codec(StoredEnchantments::new);
 
       protected StoredEnchantments(List<EnchantmentPredicate> var1) {
          super(var1);
       }
 
-      @Override
       public DataComponentType<ItemEnchantments> componentType() {
          return DataComponents.STORED_ENCHANTMENTS;
       }

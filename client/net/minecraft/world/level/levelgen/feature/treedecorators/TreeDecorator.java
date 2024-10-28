@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public abstract class TreeDecorator {
-   public static final Codec<TreeDecorator> CODEC = BuiltInRegistries.TREE_DECORATOR_TYPE.byNameCodec().dispatch(TreeDecorator::type, TreeDecoratorType::codec);
+   public static final Codec<TreeDecorator> CODEC;
 
    public TreeDecorator() {
       super();
@@ -24,7 +24,11 @@ public abstract class TreeDecorator {
 
    protected abstract TreeDecoratorType<?> type();
 
-   public abstract void place(TreeDecorator.Context var1);
+   public abstract void place(Context var1);
+
+   static {
+      CODEC = BuiltInRegistries.TREE_DECORATOR_TYPE.byNameCodec().dispatch(TreeDecorator::type, TreeDecoratorType::codec);
+   }
 
    public static final class Context {
       private final LevelSimulatedReader level;
@@ -34,9 +38,7 @@ public abstract class TreeDecorator {
       private final ObjectArrayList<BlockPos> leaves;
       private final ObjectArrayList<BlockPos> roots;
 
-      public Context(
-         LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, Set<BlockPos> var4, Set<BlockPos> var5, Set<BlockPos> var6
-      ) {
+      public Context(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, Set<BlockPos> var4, Set<BlockPos> var5, Set<BlockPos> var6) {
          super();
          this.level = var1;
          this.decorationSetter = var2;
@@ -50,7 +52,7 @@ public abstract class TreeDecorator {
       }
 
       public void placeVine(BlockPos var1, BooleanProperty var2) {
-         this.setBlock(var1, Blocks.VINE.defaultBlockState().setValue(var2, Boolean.valueOf(true)));
+         this.setBlock(var1, (BlockState)Blocks.VINE.defaultBlockState().setValue(var2, true));
       }
 
       public void setBlock(BlockPos var1, BlockState var2) {

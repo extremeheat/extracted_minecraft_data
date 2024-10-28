@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
@@ -22,7 +23,6 @@ import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -68,6 +68,7 @@ import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.EntityGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -84,20 +85,31 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    public static final int CHEST_SLOT_OFFSET = 499;
    public static final int INVENTORY_SLOT_OFFSET = 500;
    public static final double BREEDING_CROSS_FACTOR = 0.15;
-   private static final float MIN_MOVEMENT_SPEED = (float)generateSpeed(() -> 0.0);
-   private static final float MAX_MOVEMENT_SPEED = (float)generateSpeed(() -> 1.0);
-   private static final float MIN_JUMP_STRENGTH = (float)generateJumpStrength(() -> 0.0);
-   private static final float MAX_JUMP_STRENGTH = (float)generateJumpStrength(() -> 1.0);
-   private static final float MIN_HEALTH = generateMaxHealth(var0 -> 0);
-   private static final float MAX_HEALTH = generateMaxHealth(var0 -> var0 - 1);
+   private static final float MIN_MOVEMENT_SPEED = (float)generateSpeed(() -> {
+      return 0.0;
+   });
+   private static final float MAX_MOVEMENT_SPEED = (float)generateSpeed(() -> {
+      return 1.0;
+   });
+   private static final float MIN_JUMP_STRENGTH = (float)generateJumpStrength(() -> {
+      return 0.0;
+   });
+   private static final float MAX_JUMP_STRENGTH = (float)generateJumpStrength(() -> {
+      return 1.0;
+   });
+   private static final float MIN_HEALTH = generateMaxHealth((var0) -> {
+      return 0;
+   });
+   private static final float MAX_HEALTH = generateMaxHealth((var0) -> {
+      return var0 - 1;
+   });
    private static final float BACKWARDS_MOVE_SPEED_FACTOR = 0.25F;
    private static final float SIDEWAYS_MOVE_SPEED_FACTOR = 0.5F;
-   private static final Predicate<LivingEntity> PARENT_HORSE_SELECTOR = var0 -> var0 instanceof AbstractHorse && ((AbstractHorse)var0).isBred();
-   private static final TargetingConditions MOMMY_TARGETING = TargetingConditions.forNonCombat()
-      .range(16.0)
-      .ignoreLineOfSight()
-      .selector(PARENT_HORSE_SELECTOR);
-   private static final EntityDataAccessor<Byte> DATA_ID_FLAGS = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
+   private static final Predicate<LivingEntity> PARENT_HORSE_SELECTOR = (var0) -> {
+      return var0 instanceof AbstractHorse && ((AbstractHorse)var0).isBred();
+   };
+   private static final TargetingConditions MOMMY_TARGETING;
+   private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
    private static final int FLAG_TAME = 2;
    private static final int FLAG_SADDLE = 4;
    private static final int FLAG_BRED = 8;
@@ -127,23 +139,19 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    @Nullable
    private UUID owner;
    private final Container bodyArmorAccess = new ContainerSingleItem() {
-      @Override
       public ItemStack getTheItem() {
          return AbstractHorse.this.getBodyArmorItem();
       }
 
-      @Override
       public void setTheItem(ItemStack var1) {
          AbstractHorse.this.setBodyArmorItem(var1);
       }
 
-      @Override
       public void setChanged() {
       }
 
-      @Override
       public boolean stillValid(Player var1) {
-         return var1.getVehicle() == AbstractHorse.this || var1.canInteractWithEntity(AbstractHorse.this, 4.0);
+         return var1.getVehicle() == AbstractHorse.this || var1.canInteractWithEntity((Entity)AbstractHorse.this, 4.0);
       }
    };
 
@@ -152,7 +160,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.createInventory();
    }
 
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.2));
       this.goalSelector.addGoal(1, new RunAroundLikeCrazyGoal(this, 1.2));
@@ -170,26 +177,28 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    protected void addBehaviourGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, var0 -> var0.is(ItemTags.HORSE_TEMPT_ITEMS), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> {
+         return var0.is(ItemTags.HORSE_TEMPT_ITEMS);
+      }, false));
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_ID_FLAGS, (byte)0);
    }
 
    protected boolean getFlag(int var1) {
-      return (this.entityData.get(DATA_ID_FLAGS) & var1) != 0;
+      return ((Byte)this.entityData.get(DATA_ID_FLAGS) & var1) != 0;
    }
 
    protected void setFlag(int var1, boolean var2) {
-      byte var3 = this.entityData.get(DATA_ID_FLAGS);
+      byte var3 = (Byte)this.entityData.get(DATA_ID_FLAGS);
       if (var2) {
          this.entityData.set(DATA_ID_FLAGS, (byte)(var3 | var1));
       } else {
          this.entityData.set(DATA_ID_FLAGS, (byte)(var3 & ~var1));
       }
+
    }
 
    public boolean isTamed() {
@@ -197,7 +206,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   @Override
    public UUID getOwnerUUID() {
       return this.owner;
    }
@@ -218,11 +226,11 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.isJumping = var1;
    }
 
-   @Override
    protected void onLeashDistance(float var1) {
       if (var1 > 6.0F && this.isEating()) {
          this.setEating(false);
       }
+
    }
 
    public boolean isEating() {
@@ -241,12 +249,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.setFlag(8, var1);
    }
 
-   @Override
    public boolean isSaddleable() {
       return this.isAlive() && !this.isBaby() && this.isTamed();
    }
 
-   @Override
    public void equipSaddle(@Nullable SoundSource var1) {
       this.inventory.setItem(0, new ItemStack(Items.SADDLE));
    }
@@ -256,9 +262,9 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          this.setBodyArmorItem(var2.copyWithCount(1));
          var2.consume(1, var1);
       }
+
    }
 
-   @Override
    public boolean isSaddled() {
       return this.getFlag(4);
    }
@@ -277,7 +283,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return var2;
    }
 
-   @Override
    public boolean isPushable() {
       return !this.isVehicle();
    }
@@ -287,22 +292,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!this.isSilent()) {
          SoundEvent var1 = this.getEatingSound();
          if (var1 != null) {
-            this.level()
-               .playSound(
-                  null,
-                  this.getX(),
-                  this.getY(),
-                  this.getZ(),
-                  var1,
-                  this.getSoundSource(),
-                  1.0F,
-                  1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F
-               );
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
+
    }
 
-   @Override
    public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
       if (var1 > 1.0F) {
          this.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
@@ -314,7 +309,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       } else {
          this.hurt(var3, (float)var4);
          if (this.isVehicle()) {
-            for(Entity var6 : this.getIndirectPassengers()) {
+            Iterator var5 = this.getIndirectPassengers().iterator();
+
+            while(var5.hasNext()) {
+               Entity var6 = (Entity)var5.next();
                var6.hurt(var3, (float)var4);
             }
          }
@@ -324,7 +322,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
    }
 
-   @Override
    protected int calculateFallDamage(float var1, float var2) {
       return Mth.ceil((var1 * 0.5F - 3.0F) * var2);
    }
@@ -358,16 +355,15 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
    }
 
-   @Override
    public void containerChanged(Container var1) {
       boolean var2 = this.isSaddled();
       this.syncSaddleToClients();
       if (this.tickCount > 20 && !var2 && this.isSaddled()) {
          this.playSound(this.getSaddleSoundEvent(), 0.5F, 1.0F);
       }
+
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       boolean var3 = super.hurt(var1, var2);
       if (var3 && this.random.nextInt(3) == 0) {
@@ -391,7 +387,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return null;
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       if (!var2.liquid()) {
          BlockState var3 = this.level().getBlockState(var1.above());
@@ -412,15 +407,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          } else {
             this.playSound(SoundEvents.HORSE_STEP, var4.getVolume() * 0.15F, var4.getPitch());
          }
+
       }
    }
 
    private boolean isWoodSoundType(SoundType var1) {
-      return var1 == SoundType.WOOD
-         || var1 == SoundType.NETHER_WOOD
-         || var1 == SoundType.STEM
-         || var1 == SoundType.CHERRY_WOOD
-         || var1 == SoundType.BAMBOO_WOOD;
+      return var1 == SoundType.WOOD || var1 == SoundType.NETHER_WOOD || var1 == SoundType.STEM || var1 == SoundType.CHERRY_WOOD || var1 == SoundType.BAMBOO_WOOD;
    }
 
    protected void playGallopSound(SoundType var1) {
@@ -428,14 +420,9 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public static AttributeSupplier.Builder createBaseHorseAttributes() {
-      return Mob.createMobAttributes()
-         .add(Attributes.JUMP_STRENGTH, 0.7)
-         .add(Attributes.MAX_HEALTH, 53.0)
-         .add(Attributes.MOVEMENT_SPEED, 0.22499999403953552)
-         .add(Attributes.STEP_HEIGHT, 1.0);
+      return Mob.createMobAttributes().add(Attributes.JUMP_STRENGTH, 0.7).add(Attributes.MAX_HEALTH, 53.0).add(Attributes.MOVEMENT_SPEED, 0.22499999403953552).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   @Override
    public int getMaxSpawnClusterSize() {
       return 6;
    }
@@ -444,21 +431,19 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return 100;
    }
 
-   @Override
    protected float getSoundVolume() {
       return 0.8F;
    }
 
-   @Override
    public int getAmbientSoundInterval() {
       return 400;
    }
 
-   @Override
    public void openCustomInventoryScreen(Player var1) {
       if (!this.level().isClientSide && (!this.isVehicle() || this.hasPassenger(var1)) && this.isTamed()) {
          var1.openHorseInventory(this, this.inventory);
       }
+
    }
 
    public InteractionResult fedFood(Player var1, ItemStack var2) {
@@ -546,14 +531,13 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          var1.setXRot(this.getXRot());
          var1.startRiding(this);
       }
+
    }
 
-   @Override
    public boolean isImmobile() {
       return super.isImmobile() && this.isVehicle() && this.isSaddled() || this.isEating() || this.isStanding();
    }
 
-   @Override
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.HORSE_FOOD);
    }
@@ -562,7 +546,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.tailCounter = 1;
    }
 
-   @Override
    protected void dropEquipment() {
       super.dropEquipment();
       if (this.inventory != null) {
@@ -572,10 +555,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                this.spawnAtLocation(var2);
             }
          }
+
       }
    }
 
-   @Override
    public void aiStep() {
       if (this.random.nextInt(200) == 0) {
          this.moveTail();
@@ -588,10 +571,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          }
 
          if (this.canEatGrass()) {
-            if (!this.isEating()
-               && !this.isVehicle()
-               && this.random.nextInt(300) == 0
-               && this.level().getBlockState(this.blockPosition().below()).is(BlockTags.ANIMALS_SPAWNABLE_ON)) {
+            if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && this.level().getBlockState(this.blockPosition().below()).is(Blocks.GRASS_BLOCK)) {
                this.setEating(true);
             }
 
@@ -607,19 +587,18 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    protected void followMommy() {
       if (this.isBred() && this.isBaby() && !this.isEating()) {
-         LivingEntity var1 = this.level()
-            .getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
+         LivingEntity var1 = this.level().getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
          if (var1 != null && this.distanceToSqr(var1) > 4.0) {
-            this.navigation.createPath(var1, 0);
+            this.navigation.createPath((Entity)var1, 0);
          }
       }
+
    }
 
    public boolean canEatGrass() {
       return true;
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.mouthCounter > 0 && ++this.mouthCounter > 30) {
@@ -684,31 +663,33 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
             this.mouthAnim = 0.0F;
          }
       }
+
    }
 
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      if (this.isVehicle() || this.isBaby()) {
-         return super.mobInteract(var1, var2);
-      } else if (this.isTamed() && var1.isSecondaryUseActive()) {
-         this.openCustomInventoryScreen(var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else {
-         ItemStack var3 = var1.getItemInHand(var2);
-         if (!var3.isEmpty()) {
-            InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
-            if (var4.consumesAction()) {
-               return var4;
+      if (!this.isVehicle() && !this.isBaby()) {
+         if (this.isTamed() && var1.isSecondaryUseActive()) {
+            this.openCustomInventoryScreen(var1);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+         } else {
+            ItemStack var3 = var1.getItemInHand(var2);
+            if (!var3.isEmpty()) {
+               InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
+               if (var4.consumesAction()) {
+                  return var4;
+               }
+
+               if (this.canWearBodyArmor() && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
+                  this.equipBodyArmor(var1, var3);
+                  return InteractionResult.sidedSuccess(this.level().isClientSide);
+               }
             }
 
-            if (this.canWearBodyArmor() && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
-               this.equipBodyArmor(var1, var3);
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
-            }
+            this.doPlayerRide(var1);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
          }
-
-         this.doPlayerRide(var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+      } else {
+         return super.mobInteract(var1, var2);
       }
    }
 
@@ -717,6 +698,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          this.mouthCounter = 1;
          this.setFlag(64, true);
       }
+
    }
 
    public void setEating(boolean var1) {
@@ -741,6 +723,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          this.standCounter = 1;
          this.setStanding(true);
       }
+
    }
 
    public void makeMad() {
@@ -748,6 +731,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          this.standIfPossible();
          this.makeSound(this.getAngrySound());
       }
+
    }
 
    public boolean tameWithName(Player var1) {
@@ -761,7 +745,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return true;
    }
 
-   @Override
    protected void tickRidden(Player var1, Vec3 var2) {
       super.tickRidden(var1, var2);
       Vec2 var3 = this.getRiddenRotation(var1);
@@ -781,13 +764,13 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
             this.playerJumpPendingScale = 0.0F;
          }
       }
+
    }
 
    protected Vec2 getRiddenRotation(LivingEntity var1) {
       return new Vec2(var1.getXRot() * 0.5F, var1.getYRot());
    }
 
-   @Override
    protected Vec3 getRiddenInput(Player var1, Vec3 var2) {
       if (this.onGround() && this.playerJumpPendingScale == 0.0F && this.isStanding() && !this.allowStandSliding) {
          return Vec3.ZERO;
@@ -802,7 +785,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
    }
 
-   @Override
    protected float getRiddenSpeed(Player var1) {
       return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
    }
@@ -818,13 +800,13 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          float var7 = Mth.cos(this.getYRot() * 0.017453292F);
          this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * var6 * var1), 0.0, (double)(0.4F * var7 * var1)));
       }
+
    }
 
    protected void playJumpSound() {
       this.playSound(SoundEvents.HORSE_JUMP, 0.4F, 1.0F);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("EatingHaystack", this.isEating());
@@ -838,9 +820,9 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!this.inventory.getItem(0).isEmpty()) {
          var1.put("SaddleItem", this.inventory.getItem(0).save(this.registryAccess()));
       }
+
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setEating(var1.getBoolean("EatingHaystack"));
@@ -860,7 +842,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
 
       if (var1.contains("SaddleItem", 10)) {
-         ItemStack var4 = ItemStack.parse(this.registryAccess(), var1.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
+         ItemStack var4 = (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
          if (var4.is(Items.SADDLE)) {
             this.inventory.setItem(0, var4);
          }
@@ -869,7 +851,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.syncSaddleToClients();
    }
 
-   @Override
    public boolean canMate(Animal var1) {
       return false;
    }
@@ -879,7 +860,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
    }
@@ -906,11 +886,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          double var13 = (var0 + var2) / 2.0;
          double var15 = (var8.nextDouble() + var8.nextDouble() + var8.nextDouble()) / 3.0 - 0.5;
          double var17 = var13 + var11 * var15;
+         double var19;
          if (var17 > var6) {
-            double var23 = var17 - var6;
-            return var6 - var23;
+            var19 = var17 - var6;
+            return var6 - var19;
          } else if (var17 < var4) {
-            double var19 = var4 - var17;
+            var19 = var4 - var17;
             return var4 + var19;
          } else {
             return var17;
@@ -930,7 +911,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return Mth.lerp(var1, this.mouthAnimO, this.mouthAnim);
    }
 
-   @Override
    public void onPlayerJump(int var1) {
       if (this.isSaddled()) {
          if (var1 < 0) {
@@ -945,22 +925,20 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          } else {
             this.playerJumpPendingScale = 0.4F + 0.4F * (float)var1 / 90.0F;
          }
+
       }
    }
 
-   @Override
    public boolean canJump() {
       return this.isSaddled();
    }
 
-   @Override
    public void handleStartJump(int var1) {
       this.allowStandSliding = true;
       this.standIfPossible();
       this.playJumpSound();
    }
 
-   @Override
    public void handleStopJump() {
    }
 
@@ -973,9 +951,9 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          double var8 = this.random.nextGaussian() * 0.02;
          this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
       }
+
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 7) {
          this.spawnTamingParticles(true);
@@ -984,14 +962,15 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
-   @Override
    protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       super.positionRider(var1, var2);
       if (var1 instanceof LivingEntity) {
          ((LivingEntity)var1).yBodyRot = this.yBodyRot;
       }
+
    }
 
    protected static float generateMaxHealth(IntUnaryOperator var0) {
@@ -1006,22 +985,18 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return (0.44999998807907104 + var0.getAsDouble() * 0.3 + var0.getAsDouble() * 0.3 + var0.getAsDouble() * 0.3) * 0.25;
    }
 
-   @Override
    public boolean onClimbable() {
       return false;
    }
 
-   @Override
    public SlotAccess getSlot(int var1) {
       int var2 = var1 - 400;
       if (var2 == 0) {
          return new SlotAccess() {
-            @Override
             public ItemStack get() {
                return AbstractHorse.this.inventory.getItem(0);
             }
 
-            @Override
             public boolean set(ItemStack var1) {
                if (!var1.isEmpty() && !var1.is(Items.SADDLE)) {
                   return false;
@@ -1039,12 +1014,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   @Override
    public LivingEntity getControllingPassenger() {
       if (this.isSaddled()) {
          Entity var2 = this.getFirstPassenger();
          if (var2 instanceof Player) {
-            return (Player)var2;
+            Player var1 = (Player)var2;
+            return var1;
          }
       }
 
@@ -1064,7 +1039,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          var9.set(var3, var5, var7);
          double var12 = this.getBoundingBox().maxY + 0.75;
 
-         do {
+         while(true) {
             double var14 = this.level().getBlockFloorHeight(var9);
             if ((double)var9.getY() + var14 > var12) {
                break;
@@ -1080,24 +1055,22 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
             }
 
             var9.move(Direction.UP);
-         } while(!((double)var9.getY() < var12));
+            if (!((double)var9.getY() < var12)) {
+               break;
+            }
+         }
       }
 
       return null;
    }
 
-   @Override
    public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Vec3 var2 = getCollisionHorizontalEscapeVector(
-         (double)this.getBbWidth(), (double)var1.getBbWidth(), this.getYRot() + (var1.getMainArm() == HumanoidArm.RIGHT ? 90.0F : -90.0F)
-      );
+      Vec3 var2 = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)var1.getBbWidth(), this.getYRot() + (var1.getMainArm() == HumanoidArm.RIGHT ? 90.0F : -90.0F));
       Vec3 var3 = this.getDismountLocationInDirection(var2, var1);
       if (var3 != null) {
          return var3;
       } else {
-         Vec3 var4 = getCollisionHorizontalEscapeVector(
-            (double)this.getBbWidth(), (double)var1.getBbWidth(), this.getYRot() + (var1.getMainArm() == HumanoidArm.LEFT ? 90.0F : -90.0F)
-         );
+         Vec3 var4 = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)var1.getBbWidth(), this.getYRot() + (var1.getMainArm() == HumanoidArm.LEFT ? 90.0F : -90.0F));
          Vec3 var5 = this.getDismountLocationInDirection(var4, var1);
          return var5 != null ? var5 : this.position();
       }
@@ -1107,7 +1080,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(0.2F);
@@ -1125,13 +1097,21 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return this.getAmbientSoundInterval();
    }
 
-   @Override
    protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return super.getPassengerAttachmentPoint(var1, var2, var3)
-         .add(new Vec3(0.0, 0.15 * (double)this.standAnimO * (double)var3, -0.7 * (double)this.standAnimO * (double)var3).yRot(-this.getYRot() * 0.017453292F));
+      return super.getPassengerAttachmentPoint(var1, var2, var3).add((new Vec3(0.0, 0.15 * (double)this.standAnimO * (double)var3, -0.7 * (double)this.standAnimO * (double)var3)).yRot(-this.getYRot() * 0.017453292F));
    }
 
    public final Container getBodyArmorAccess() {
       return this.bodyArmorAccess;
+   }
+
+   // $FF: synthetic method
+   public EntityGetter level() {
+      return super.level();
+   }
+
+   static {
+      MOMMY_TARGETING = TargetingConditions.forNonCombat().range(16.0).ignoreLineOfSight().selector(PARENT_HORSE_SELECTOR);
+      DATA_ID_FLAGS = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
    }
 }

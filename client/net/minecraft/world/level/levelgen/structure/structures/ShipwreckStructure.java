@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Rotation;
@@ -12,9 +12,11 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class ShipwreckStructure extends Structure {
-   public static final Codec<ShipwreckStructure> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(settingsCodec(var0), Codec.BOOL.fieldOf("is_beached").forGetter(var0x -> var0x.isBeached)).apply(var0, ShipwreckStructure::new)
-   );
+   public static final MapCodec<ShipwreckStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(settingsCodec(var0), Codec.BOOL.fieldOf("is_beached").forGetter((var0x) -> {
+         return var0x.isBeached;
+      })).apply(var0, ShipwreckStructure::new);
+   });
    public final boolean isBeached;
 
    public ShipwreckStructure(Structure.StructureSettings var1, boolean var2) {
@@ -22,10 +24,11 @@ public class ShipwreckStructure extends Structure {
       this.isBeached = var2;
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       Heightmap.Types var2 = this.isBeached ? Heightmap.Types.WORLD_SURFACE_WG : Heightmap.Types.OCEAN_FLOOR_WG;
-      return onTopOfChunkCenter(var1, var2, var2x -> this.generatePieces(var2x, var1));
+      return onTopOfChunkCenter(var1, var2, (var2x) -> {
+         this.generatePieces(var2x, var1);
+      });
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {
@@ -34,7 +37,6 @@ public class ShipwreckStructure extends Structure {
       ShipwreckPieces.addPieces(var2.structureTemplateManager(), var4, var3, var1, var2.random(), this.isBeached);
    }
 
-   @Override
    public StructureType<?> type() {
       return StructureType.SHIPWRECK;
    }

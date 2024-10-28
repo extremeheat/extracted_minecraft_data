@@ -3,9 +3,7 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.datafixers.types.templates.TaggedChoice;
 import java.util.function.UnaryOperator;
 
 public class BlockEntityRenameFix extends DataFix {
@@ -19,9 +17,13 @@ public class BlockEntityRenameFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
-      TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhere(this.name, var1, var2, var1x -> var1xx -> var1xx.mapFirst(this.nameChangeLookup));
+      TaggedChoice.TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
+      TaggedChoice.TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
+      return this.fixTypeEverywhere(this.name, var1, var2, (var1x) -> {
+         return (var1) -> {
+            return var1.mapFirst(this.nameChangeLookup);
+         };
+      });
    }
 
    public static DataFix create(Schema var0, String var1, UnaryOperator<String> var2) {

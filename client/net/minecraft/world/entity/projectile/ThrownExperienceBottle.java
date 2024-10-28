@@ -24,17 +24,14 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
       super(EntityType.EXPERIENCE_BOTTLE, var2, var4, var6, var1);
    }
 
-   @Override
    protected Item getDefaultItem() {
       return Items.EXPERIENCE_BOTTLE;
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.07;
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (this.level() instanceof ServerLevel) {
@@ -43,5 +40,6 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
          ExperienceOrb.award((ServerLevel)this.level(), this.position(), var2);
          this.discard();
       }
+
    }
 }

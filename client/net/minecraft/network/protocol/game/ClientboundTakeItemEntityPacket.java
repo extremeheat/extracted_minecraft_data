@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundTakeItemEntityPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTakeItemEntityPacket> STREAM_CODEC = Packet.codec(
-      ClientboundTakeItemEntityPacket::write, ClientboundTakeItemEntityPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundTakeItemEntityPacket> STREAM_CODEC = Packet.codec(ClientboundTakeItemEntityPacket::write, ClientboundTakeItemEntityPacket::new);
    private final int itemId;
    private final int playerId;
    private final int amount;
@@ -33,7 +31,6 @@ public class ClientboundTakeItemEntityPacket implements Packet<ClientGamePacketL
       var1.writeVarInt(this.amount);
    }
 
-   @Override
    public PacketType<ClientboundTakeItemEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TAKE_ITEM_ENTITY;
    }

@@ -38,6 +38,7 @@ public class ChatReport extends Report {
       } else if (this.reportedMessages.size() < var2.maxReportedMessageCount()) {
          this.reportedMessages.add(var1);
       }
+
    }
 
    public ChatReport copy() {
@@ -48,9 +49,13 @@ public class ChatReport extends Report {
       return var1;
    }
 
-   @Override
    public Screen createScreen(Screen var1, ReportingContext var2) {
       return new ChatReportScreen(var1, var2, this);
+   }
+
+   // $FF: synthetic method
+   public Report copy() {
+      return this.copy();
    }
 
    public static class Builder extends Report.Builder<ChatReport> {
@@ -63,56 +68,53 @@ public class ChatReport extends Report {
       }
 
       public IntSet reportedMessages() {
-         return this.report.reportedMessages;
+         return ((ChatReport)this.report).reportedMessages;
       }
 
       public void toggleReported(int var1) {
-         this.report.toggleReported(var1, this.limits);
+         ((ChatReport)this.report).toggleReported(var1, this.limits);
       }
 
       public boolean isReported(int var1) {
-         return this.report.reportedMessages.contains(var1);
+         return ((ChatReport)this.report).reportedMessages.contains(var1);
       }
 
-      @Override
       public boolean hasContent() {
          return StringUtils.isNotEmpty(this.comments()) || !this.reportedMessages().isEmpty() || this.reason() != null;
       }
 
       @Nullable
-      @Override
       public Report.CannotBuildReason checkBuildable() {
-         if (this.report.reportedMessages.isEmpty()) {
+         if (((ChatReport)this.report).reportedMessages.isEmpty()) {
             return Report.CannotBuildReason.NO_REPORTED_MESSAGES;
-         } else if (this.report.reportedMessages.size() > this.limits.maxReportedMessageCount()) {
+         } else if (((ChatReport)this.report).reportedMessages.size() > this.limits.maxReportedMessageCount()) {
             return Report.CannotBuildReason.TOO_MANY_MESSAGES;
-         } else if (this.report.reason == null) {
+         } else if (((ChatReport)this.report).reason == null) {
             return Report.CannotBuildReason.NO_REASON;
          } else {
-            return this.report.comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : null;
+            return ((ChatReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : null;
          }
       }
 
-      @Override
       public Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1) {
          Report.CannotBuildReason var2 = this.checkBuildable();
          if (var2 != null) {
             return Either.right(var2);
          } else {
-            String var3 = Objects.requireNonNull(this.report.reason).backendName();
+            String var3 = ((ReportReason)Objects.requireNonNull(((ChatReport)this.report).reason)).backendName();
             ReportEvidence var4 = this.buildEvidence(var1);
-            ReportedEntity var5 = new ReportedEntity(this.report.reportedProfileId);
-            AbuseReport var6 = AbuseReport.chat(this.report.comments, var3, var4, var5, this.report.createdAt);
-            return Either.left(new Report.Result(this.report.reportId, ReportType.CHAT, var6));
+            ReportedEntity var5 = new ReportedEntity(((ChatReport)this.report).reportedProfileId);
+            AbuseReport var6 = AbuseReport.chat(((ChatReport)this.report).comments, var3, var4, var5, ((ChatReport)this.report).createdAt);
+            return Either.left(new Report.Result(((ChatReport)this.report).reportId, ReportType.CHAT, var6));
          }
       }
 
       private ReportEvidence buildEvidence(ReportingContext var1) {
          ArrayList var2 = new ArrayList();
          ChatReportContextBuilder var3 = new ChatReportContextBuilder(this.limits.leadingContextMessageCount());
-         var3.collectAllContext(
-            var1.chatLog(), this.report.reportedMessages, (var2x, var3x) -> var2.add(this.buildReportedChatMessage(var3x, this.isReported(var2x)))
-         );
+         var3.collectAllContext(var1.chatLog(), ((ChatReport)this.report).reportedMessages, (var2x, var3x) -> {
+            var2.add(this.buildReportedChatMessage(var3x, this.isReported(var2x)));
+         });
          return new ReportEvidence(Lists.reverse(var2));
       }
 
@@ -120,12 +122,12 @@ public class ChatReport extends Report {
          SignedMessageLink var3 = var1.message().link();
          SignedMessageBody var4 = var1.message().signedBody();
          List var5 = var4.lastSeen().entries().stream().map(MessageSignature::asByteBuffer).toList();
-         ByteBuffer var6 = Optionull.map(var1.message().signature(), MessageSignature::asByteBuffer);
+         ByteBuffer var6 = (ByteBuffer)Optionull.map(var1.message().signature(), MessageSignature::asByteBuffer);
          return new ReportChatMessage(var3.index(), var3.sender(), var3.sessionId(), var4.timeStamp(), var4.salt(), var5, var4.content(), var6, var2);
       }
 
-      public ChatReport.Builder copy() {
-         return new ChatReport.Builder(this.report.copy(), this.limits);
+      public Builder copy() {
+         return new Builder(((ChatReport)this.report).copy(), this.limits);
       }
    }
 }

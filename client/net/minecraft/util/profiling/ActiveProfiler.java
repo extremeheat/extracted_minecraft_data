@@ -27,7 +27,7 @@ public class ActiveProfiler implements ProfileCollector {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final List<String> paths = Lists.newArrayList();
    private final LongList startTimes = new LongArrayList();
-   private final Map<String, ActiveProfiler.PathEntry> entries = Maps.newHashMap();
+   private final Map<String, PathEntry> entries = Maps.newHashMap();
    private final IntSupplier getTickTime;
    private final LongSupplier getRealTime;
    private final long startTimeNano;
@@ -35,7 +35,7 @@ public class ActiveProfiler implements ProfileCollector {
    private String path = "";
    private boolean started;
    @Nullable
-   private ActiveProfiler.PathEntry currentEntry;
+   private PathEntry currentEntry;
    private final boolean warn;
    private final Set<Pair<String, MetricCategory>> chartedPaths = new ObjectArraySet();
 
@@ -48,7 +48,6 @@ public class ActiveProfiler implements ProfileCollector {
       this.warn = var3;
    }
 
-   @Override
    public void startTick() {
       if (this.started) {
          LOGGER.error("Profiler tick already started - missing endTick()?");
@@ -60,7 +59,6 @@ public class ActiveProfiler implements ProfileCollector {
       }
    }
 
-   @Override
    public void endTick() {
       if (!this.started) {
          LOGGER.error("Profiler tick already ended - missing startTick()?");
@@ -68,15 +66,14 @@ public class ActiveProfiler implements ProfileCollector {
          this.pop();
          this.started = false;
          if (!this.path.isEmpty()) {
-            LOGGER.error(
-               "Profiler tick ended before path was fully popped (remainder: '{}'). Mismatched push/pop?",
-               LogUtils.defer(() -> ProfileResults.demanglePath(this.path))
-            );
+            LOGGER.error("Profiler tick ended before path was fully popped (remainder: '{}'). Mismatched push/pop?", LogUtils.defer(() -> {
+               return ProfileResults.demanglePath(this.path);
+            }));
          }
+
       }
    }
 
-   @Override
    public void push(String var1) {
       if (!this.started) {
          LOGGER.error("Cannot push '{}' to profiler if profiler tick hasn't started - missing startTick()?", var1);
@@ -92,17 +89,14 @@ public class ActiveProfiler implements ProfileCollector {
       }
    }
 
-   @Override
    public void push(Supplier<String> var1) {
       this.push((String)var1.get());
    }
 
-   @Override
    public void markForCharting(MetricCategory var1) {
       this.chartedPaths.add(Pair.of(this.path, var1));
    }
 
-   @Override
    public void pop() {
       if (!this.started) {
          LOGGER.error("Cannot pop from profiler if profiler tick hasn't started - missing startTick()?");
@@ -113,66 +107,61 @@ public class ActiveProfiler implements ProfileCollector {
          long var3 = this.startTimes.removeLong(this.startTimes.size() - 1);
          this.paths.remove(this.paths.size() - 1);
          long var5 = var1 - var3;
-         ActiveProfiler.PathEntry var7 = this.getCurrentEntry();
+         PathEntry var7 = this.getCurrentEntry();
          var7.accumulatedDuration += var5;
          ++var7.count;
          var7.maxDuration = Math.max(var7.maxDuration, var5);
          var7.minDuration = Math.min(var7.minDuration, var5);
          if (this.warn && var5 > WARNING_TIME_NANOS) {
-            LOGGER.warn(
-               "Something's taking too long! '{}' took aprox {} ms",
-               LogUtils.defer(() -> ProfileResults.demanglePath(this.path)),
-               LogUtils.defer(() -> (double)var5 / 1000000.0)
-            );
+            LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> {
+               return ProfileResults.demanglePath(this.path);
+            }), LogUtils.defer(() -> {
+               return (double)var5 / 1000000.0;
+            }));
          }
 
-         this.path = this.paths.isEmpty() ? "" : this.paths.get(this.paths.size() - 1);
+         this.path = this.paths.isEmpty() ? "" : (String)this.paths.get(this.paths.size() - 1);
          this.currentEntry = null;
       }
    }
 
-   @Override
    public void popPush(String var1) {
       this.pop();
       this.push(var1);
    }
 
-   @Override
    public void popPush(Supplier<String> var1) {
       this.pop();
       this.push(var1);
    }
 
-   private ActiveProfiler.PathEntry getCurrentEntry() {
+   private PathEntry getCurrentEntry() {
       if (this.currentEntry == null) {
-         this.currentEntry = this.entries.computeIfAbsent(this.path, var0 -> new ActiveProfiler.PathEntry());
+         this.currentEntry = (PathEntry)this.entries.computeIfAbsent(this.path, (var0) -> {
+            return new PathEntry();
+         });
       }
 
       return this.currentEntry;
    }
 
-   @Override
    public void incrementCounter(String var1, int var2) {
       this.getCurrentEntry().counters.addTo(var1, (long)var2);
    }
 
-   @Override
    public void incrementCounter(Supplier<String> var1, int var2) {
       this.getCurrentEntry().counters.addTo((String)var1.get(), (long)var2);
    }
 
-   @Override
    public ProfileResults getResults() {
       return new FilledProfileResults(this.entries, this.startTimeNano, this.startTimeTicks, this.getRealTime.getAsLong(), this.getTickTime.getAsInt());
    }
 
    @Nullable
-   @Override
-   public ActiveProfiler.PathEntry getEntry(String var1) {
-      return this.entries.get(var1);
+   public PathEntry getEntry(String var1) {
+      return (PathEntry)this.entries.get(var1);
    }
 
-   @Override
    public Set<Pair<String, MetricCategory>> getChartedPaths() {
       return this.chartedPaths;
    }
@@ -188,22 +177,18 @@ public class ActiveProfiler implements ProfileCollector {
          super();
       }
 
-      @Override
       public long getDuration() {
          return this.accumulatedDuration;
       }
 
-      @Override
       public long getMaxDuration() {
          return this.maxDuration;
       }
 
-      @Override
       public long getCount() {
          return this.count;
       }
 
-      @Override
       public Object2LongMap<String> getCounters() {
          return Object2LongMaps.unmodifiable(this.counters);
       }

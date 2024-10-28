@@ -8,33 +8,33 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
 public class ChainedJsonException extends IOException {
-   private final List<ChainedJsonException.Entry> entries = Lists.newArrayList();
+   private final List<Entry> entries = Lists.newArrayList();
    private final String message;
 
    public ChainedJsonException(String var1) {
       super();
-      this.entries.add(new ChainedJsonException.Entry());
+      this.entries.add(new Entry());
       this.message = var1;
    }
 
    public ChainedJsonException(String var1, Throwable var2) {
       super(var2);
-      this.entries.add(new ChainedJsonException.Entry());
+      this.entries.add(new Entry());
       this.message = var1;
    }
 
    public void prependJsonKey(String var1) {
-      this.entries.get(0).addJsonKey(var1);
+      ((Entry)this.entries.get(0)).addJsonKey(var1);
    }
 
    public void setFilenameAndFlush(String var1) {
-      this.entries.get(0).filename = var1;
-      this.entries.add(0, new ChainedJsonException.Entry());
+      ((Entry)this.entries.get(0)).filename = var1;
+      this.entries.add(0, new Entry());
    }
 
-   @Override
    public String getMessage() {
-      return "Invalid " + this.entries.get(this.entries.size() - 1) + ": " + this.message;
+      String var10000 = String.valueOf(this.entries.get(this.entries.size() - 1));
+      return "Invalid " + var10000 + ": " + this.message;
    }
 
    public static ChainedJsonException forException(Exception var0) {
@@ -72,10 +72,14 @@ public class ChainedJsonException extends IOException {
          return StringUtils.join(this.jsonKeys, "->");
       }
 
-      @Override
       public String toString() {
          if (this.filename != null) {
-            return this.jsonKeys.isEmpty() ? this.filename : this.filename + " " + this.getJsonKeys();
+            if (this.jsonKeys.isEmpty()) {
+               return this.filename;
+            } else {
+               String var10000 = this.filename;
+               return var10000 + " " + this.getJsonKeys();
+            }
          } else {
             return this.jsonKeys.isEmpty() ? "(Unknown file)" : "(Unknown file) " + this.getJsonKeys();
          }

@@ -8,9 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class BlockStateProvider {
-   public static final Codec<BlockStateProvider> CODEC = BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE
-      .byNameCodec()
-      .dispatch(BlockStateProvider::type, BlockStateProviderType::codec);
+   public static final Codec<BlockStateProvider> CODEC;
 
    public BlockStateProvider() {
       super();
@@ -27,4 +25,8 @@ public abstract class BlockStateProvider {
    protected abstract BlockStateProviderType<?> type();
 
    public abstract BlockState getState(RandomSource var1, BlockPos var2);
+
+   static {
+      CODEC = BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE.byNameCodec().dispatch(BlockStateProvider::type, BlockStateProviderType::codec);
+   }
 }

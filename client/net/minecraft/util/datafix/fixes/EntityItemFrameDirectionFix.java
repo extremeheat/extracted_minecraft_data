@@ -14,13 +14,12 @@ public class EntityItemFrameDirectionFix extends NamedEntityFix {
       return var1.set("Facing", var1.createByte(direction2dTo3d(var1.get("Facing").asByte((byte)0))));
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fixTag);
    }
 
    private static byte direction2dTo3d(byte var0) {
-      switch(var0) {
+      switch (var0) {
          case 0:
             return 3;
          case 1:

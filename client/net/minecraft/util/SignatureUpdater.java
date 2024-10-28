@@ -4,7 +4,7 @@ import java.security.SignatureException;
 
 @FunctionalInterface
 public interface SignatureUpdater {
-   void update(SignatureUpdater.Output var1) throws SignatureException;
+   void update(Output var1) throws SignatureException;
 
    @FunctionalInterface
    public interface Output {

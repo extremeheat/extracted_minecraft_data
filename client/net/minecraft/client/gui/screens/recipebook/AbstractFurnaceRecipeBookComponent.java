@@ -14,12 +14,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookComponent {
-   private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(
-      new ResourceLocation("recipe_book/furnace_filter_enabled"),
-      new ResourceLocation("recipe_book/furnace_filter_disabled"),
-      new ResourceLocation("recipe_book/furnace_filter_enabled_highlighted"),
-      new ResourceLocation("recipe_book/furnace_filter_disabled_highlighted")
-   );
+   private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/furnace_filter_enabled"), new ResourceLocation("recipe_book/furnace_filter_disabled"), new ResourceLocation("recipe_book/furnace_filter_enabled_highlighted"), new ResourceLocation("recipe_book/furnace_filter_disabled_highlighted"));
    @Nullable
    private Ingredient fuels;
 
@@ -27,20 +22,18 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
       super();
    }
 
-   @Override
    protected void initFilterButtonTextures() {
       this.filterButton.initTextureValues(FILTER_SPRITES);
    }
 
-   @Override
    public void slotClicked(@Nullable Slot var1) {
       super.slotClicked(var1);
       if (var1 != null && var1.index < this.menu.getSize()) {
          this.ghostRecipe.clear();
       }
+
    }
 
-   @Override
    public void setupGhostRecipe(RecipeHolder<?> var1, List<Slot> var2) {
       ItemStack var3 = var1.value().getResultItem(this.minecraft.level.registryAccess());
       this.ghostRecipe.setRecipe(var1);
@@ -49,9 +42,9 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
       Slot var5 = (Slot)var2.get(1);
       if (var5.getItem().isEmpty()) {
          if (this.fuels == null) {
-            this.fuels = Ingredient.of(
-               this.getFuelItems().stream().filter(var1x -> var1x.isEnabled(this.minecraft.level.enabledFeatures())).map(ItemStack::new)
-            );
+            this.fuels = Ingredient.of(this.getFuelItems().stream().filter((var1x) -> {
+               return var1x.isEnabled(this.minecraft.level.enabledFeatures());
+            }).map(ItemStack::new));
          }
 
          this.ghostRecipe.addIngredient(this.fuels, var5.x, var5.y);
@@ -70,6 +63,7 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
             this.ghostRecipe.addIngredient(var8, var9.x, var9.y);
          }
       }
+
    }
 
    protected abstract Set<Item> getFuelItems();

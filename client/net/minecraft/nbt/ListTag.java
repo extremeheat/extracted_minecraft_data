@@ -6,6 +6,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -45,7 +46,6 @@ public class ListTag extends CollectionTag<Tag> {
          }
       }
 
-      @Override
       public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
          var3.pushDepth();
 
@@ -63,7 +63,7 @@ public class ListTag extends CollectionTag<Tag> {
          var2.accountBytes(37L);
          TagType var3 = TagTypes.getType(var0.readByte());
          int var4 = var0.readInt();
-         switch(var1.visitList(var3, var4)) {
+         switch (var1.visitList(var3, var4)) {
             case HALT:
                return StreamTagVisitor.ValueResult.HALT;
             case BREAK:
@@ -73,44 +73,36 @@ public class ListTag extends CollectionTag<Tag> {
                var2.accountBytes(4L, (long)var4);
                int var5 = 0;
 
-               while(true) {
-                  label41: {
-                     if (var5 < var4) {
-                        switch(var1.visitElement(var3, var5)) {
-                           case HALT:
+               label34:
+               for(; var5 < var4; ++var5) {
+                  switch (var1.visitElement(var3, var5)) {
+                     case HALT:
+                        return StreamTagVisitor.ValueResult.HALT;
+                     case BREAK:
+                        var3.skip(var0, var2);
+                        break label34;
+                     case SKIP:
+                        var3.skip(var0, var2);
+                        break;
+                     default:
+                        switch (var3.parse(var0, var1, var2)) {
+                           case HALT -> {
                               return StreamTagVisitor.ValueResult.HALT;
-                           case BREAK:
-                              var3.skip(var0, var2);
-                              break;
-                           case SKIP:
-                              var3.skip(var0, var2);
-                              break label41;
-                           default:
-                              switch(var3.parse(var0, var1, var2)) {
-                                 case HALT:
-                                    return StreamTagVisitor.ValueResult.HALT;
-                                 case BREAK:
-                                    break;
-                                 default:
-                                    break label41;
-                              }
+                           }
+                           case BREAK -> { }
                         }
-                     }
-
-                     int var6 = var4 - 1 - var5;
-                     if (var6 > 0) {
-                        var3.skip(var0, var6, var2);
-                     }
-
-                     return var1.visitContainerEnd();
                   }
-
-                  ++var5;
                }
+
+               int var6 = var4 - 1 - var5;
+               if (var6 > 0) {
+                  var3.skip(var0, var6, var2);
+               }
+
+               return var1.visitContainerEnd();
          }
       }
 
-      @Override
       public void skip(DataInput var1, NbtAccounter var2) throws IOException {
          var2.pushDepth();
 
@@ -121,16 +113,20 @@ public class ListTag extends CollectionTag<Tag> {
          } finally {
             var2.popDepth();
          }
+
       }
 
-      @Override
       public String getName() {
          return "LIST";
       }
 
-      @Override
       public String getPrettyName() {
          return "TAG_List";
+      }
+
+      // $FF: synthetic method
+      public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return this.load(var1, var2);
       }
    };
    private final List<Tag> list;
@@ -146,45 +142,44 @@ public class ListTag extends CollectionTag<Tag> {
       this(Lists.newArrayList(), (byte)0);
    }
 
-   @Override
    public void write(DataOutput var1) throws IOException {
       if (this.list.isEmpty()) {
          this.type = 0;
       } else {
-         this.type = this.list.get(0).getId();
+         this.type = ((Tag)this.list.get(0)).getId();
       }
 
       var1.writeByte(this.type);
       var1.writeInt(this.list.size());
+      Iterator var2 = this.list.iterator();
 
-      for(Tag var3 : this.list) {
+      while(var2.hasNext()) {
+         Tag var3 = (Tag)var2.next();
          var3.write(var1);
       }
+
    }
 
-   @Override
    public int sizeInBytes() {
       int var1 = 37;
       var1 += 4 * this.list.size();
 
-      for(Tag var3 : this.list) {
-         var1 += var3.sizeInBytes();
+      Tag var3;
+      for(Iterator var2 = this.list.iterator(); var2.hasNext(); var1 += var3.sizeInBytes()) {
+         var3 = (Tag)var2.next();
       }
 
       return var1;
    }
 
-   @Override
    public byte getId() {
       return 9;
    }
 
-   @Override
    public TagType<ListTag> getType() {
       return TYPE;
    }
 
-   @Override
    public String toString() {
       return this.getAsString();
    }
@@ -193,23 +188,22 @@ public class ListTag extends CollectionTag<Tag> {
       if (this.list.isEmpty()) {
          this.type = 0;
       }
+
    }
 
-   @Override
    public Tag remove(int var1) {
-      Tag var2 = this.list.remove(var1);
+      Tag var2 = (Tag)this.list.remove(var1);
       this.updateTypeAfterRemove();
       return var2;
    }
 
-   @Override
    public boolean isEmpty() {
       return this.list.isEmpty();
    }
 
    public CompoundTag getCompound(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 10) {
             return (CompoundTag)var2;
          }
@@ -220,7 +214,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public ListTag getList(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 9) {
             return (ListTag)var2;
          }
@@ -231,7 +225,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public short getShort(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 2) {
             return ((ShortTag)var2).getAsShort();
          }
@@ -242,7 +236,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public int getInt(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 3) {
             return ((IntTag)var2).getAsInt();
          }
@@ -253,7 +247,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public int[] getIntArray(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 11) {
             return ((IntArrayTag)var2).getAsIntArray();
          }
@@ -264,7 +258,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public long[] getLongArray(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 12) {
             return ((LongArrayTag)var2).getAsLongArray();
          }
@@ -275,7 +269,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public double getDouble(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 6) {
             return ((DoubleTag)var2).getAsDouble();
          }
@@ -286,7 +280,7 @@ public class ListTag extends CollectionTag<Tag> {
 
    public float getFloat(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          if (var2.getId() == 5) {
             return ((FloatTag)var2).getAsFloat();
          }
@@ -297,23 +291,21 @@ public class ListTag extends CollectionTag<Tag> {
 
    public String getString(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
-         Tag var2 = this.list.get(var1);
+         Tag var2 = (Tag)this.list.get(var1);
          return var2.getId() == 8 ? var2.getAsString() : var2.toString();
       } else {
          return "";
       }
    }
 
-   @Override
    public int size() {
       return this.list.size();
    }
 
    public Tag get(int var1) {
-      return this.list.get(var1);
+      return (Tag)this.list.get(var1);
    }
 
-   @Override
    public Tag set(int var1, Tag var2) {
       Tag var3 = this.get(var1);
       if (!this.setTag(var1, var2)) {
@@ -323,14 +315,12 @@ public class ListTag extends CollectionTag<Tag> {
       }
    }
 
-   @Override
    public void add(int var1, Tag var2) {
       if (!this.addTag(var1, var2)) {
          throw new UnsupportedOperationException(String.format(Locale.ROOT, "Trying to add tag of type %d to list of %d", var2.getId(), this.type));
       }
    }
 
-   @Override
    public boolean setTag(int var1, Tag var2) {
       if (this.updateType(var2)) {
          this.list.set(var1, var2);
@@ -340,7 +330,6 @@ public class ListTag extends CollectionTag<Tag> {
       }
    }
 
-   @Override
    public boolean addTag(int var1, Tag var2) {
       if (this.updateType(var2)) {
          this.list.add(var1, var2);
@@ -367,7 +356,6 @@ public class ListTag extends CollectionTag<Tag> {
       return new ListTag(var2, this.type);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -376,30 +364,25 @@ public class ListTag extends CollectionTag<Tag> {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.list.hashCode();
    }
 
-   @Override
    public void accept(TagVisitor var1) {
       var1.visitList(this);
    }
 
-   @Override
    public byte getElementType() {
       return this.type;
    }
 
-   @Override
    public void clear() {
       this.list.clear();
       this.type = 0;
    }
 
-   @Override
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      switch(var1.visitList(TagTypes.getType(this.type), this.list.size())) {
+      switch (var1.visitList(TagTypes.getType(this.type), this.list.size())) {
          case HALT:
             return StreamTagVisitor.ValueResult.HALT;
          case BREAK:
@@ -408,18 +391,20 @@ public class ListTag extends CollectionTag<Tag> {
             int var2 = 0;
 
             while(var2 < this.list.size()) {
-               Tag var3 = this.list.get(var2);
-               switch(var1.visitElement(var3.getType(), var2)) {
+               Tag var3 = (Tag)this.list.get(var2);
+               switch (var1.visitElement(var3.getType(), var2)) {
                   case HALT:
                      return StreamTagVisitor.ValueResult.HALT;
                   case BREAK:
                      return var1.visitContainerEnd();
                   default:
-                     switch(var3.accept(var1)) {
-                        case HALT:
+                     switch (var3.accept(var1)) {
+                        case HALT -> {
                            return StreamTagVisitor.ValueResult.HALT;
-                        case BREAK:
+                        }
+                        case BREAK -> {
                            return var1.visitContainerEnd();
+                        }
                      }
                   case SKIP:
                      ++var2;
@@ -428,5 +413,30 @@ public class ListTag extends CollectionTag<Tag> {
 
             return var1.visitContainerEnd();
       }
+   }
+
+   // $FF: synthetic method
+   public Tag copy() {
+      return this.copy();
+   }
+
+   // $FF: synthetic method
+   public Object remove(int var1) {
+      return this.remove(var1);
+   }
+
+   // $FF: synthetic method
+   public void add(int var1, Object var2) {
+      this.add(var1, (Tag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object set(int var1, Object var2) {
+      return this.set(var1, (Tag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object get(int var1) {
+      return this.get(var1);
    }
 }

@@ -26,14 +26,16 @@ public class StandingAndWallBlockItem extends BlockItem {
    }
 
    @Nullable
-   @Override
    protected BlockState getPlacementState(BlockPlaceContext var1) {
       BlockState var2 = this.wallBlock.getStateForPlacement(var1);
       BlockState var3 = null;
       Level var4 = var1.getLevel();
       BlockPos var5 = var1.getClickedPos();
+      Direction[] var6 = var1.getNearestLookingDirections();
+      int var7 = var6.length;
 
-      for(Direction var9 : var1.getNearestLookingDirections()) {
+      for(int var8 = 0; var8 < var7; ++var8) {
+         Direction var9 = var6[var8];
          if (var9 != this.attachmentDirection.getOpposite()) {
             BlockState var10 = var9 == this.attachmentDirection ? this.getBlock().getStateForPlacement(var1) : var2;
             if (var10 != null && this.canPlace(var4, var10, var5)) {
@@ -46,7 +48,6 @@ public class StandingAndWallBlockItem extends BlockItem {
       return var3 != null && var4.isUnobstructed(var3, var5, CollisionContext.empty()) ? var3 : null;
    }
 
-   @Override
    public void registerBlocks(Map<Block, Item> var1, Item var2) {
       super.registerBlocks(var1, var2);
       var1.put(this.wallBlock, var2);

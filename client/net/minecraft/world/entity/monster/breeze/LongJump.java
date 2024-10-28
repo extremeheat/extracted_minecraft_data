@@ -3,6 +3,8 @@ package net.minecraft.world.entity.monster.breeze;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -23,7 +25,9 @@ import net.minecraft.world.entity.ai.behavior.LongJumpUtil;
 import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -38,57 +42,48 @@ public class LongJump extends Behavior<Breeze> {
 
    @VisibleForTesting
    public LongJump() {
-      super(
-         Map.of(
-            MemoryModuleType.ATTACK_TARGET,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.BREEZE_JUMP_COOLDOWN,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_JUMP_INHALING,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.BREEZE_JUMP_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.BREEZE_SHOOT,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_LEAVING_WATER,
-            MemoryStatus.REGISTERED
-         ),
-         200
-      );
+      super(Map.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.BREEZE_JUMP_COOLDOWN, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_JUMP_INHALING, MemoryStatus.REGISTERED, MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.BREEZE_SHOOT, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_LEAVING_WATER, MemoryStatus.REGISTERED), 200);
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
-      if (!var2.onGround() && !var2.isInWater()) {
+   public static boolean canRun(ServerLevel var0, Breeze var1) {
+      if (!var1.onGround() && !var1.isInWater()) {
          return false;
-      } else if (Swim.shouldSwim(var2)) {
+      } else if (Swim.shouldSwim(var1)) {
          return false;
-      } else if (var2.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
+      } else if (var1.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
          return true;
       } else {
-         LivingEntity var3 = var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
-         if (var3 == null) {
+         LivingEntity var2 = (LivingEntity)var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+         if (var2 == null) {
             return false;
-         } else if (outOfAggroRange(var2, var3)) {
-            var2.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+         } else if (outOfAggroRange(var1, var2)) {
+            var1.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
             return false;
-         } else if (tooCloseForJump(var2, var3)) {
+         } else if (tooCloseForJump(var1, var2)) {
             return false;
-         } else if (!canJumpFromCurrentPosition(var1, var2)) {
+         } else if (!canJumpFromCurrentPosition(var0, var1)) {
             return false;
          } else {
-            BlockPos var4 = snapToSurface(var2, BreezeUtil.randomPointBehindTarget(var3, var2.getRandom()));
-            if (var4 == null) {
-               return false;
-            } else if (!BreezeUtil.hasLineOfSight(var2, var4.getCenter()) && !BreezeUtil.hasLineOfSight(var2, var4.above(4).getCenter())) {
+            BlockPos var3 = snapToSurface(var1, BreezeUtil.randomPointBehindTarget(var2, var1.getRandom()));
+            if (var3 == null) {
                return false;
             } else {
-               var2.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, var4);
-               return true;
+               BlockState var4 = var0.getBlockState(var3.below());
+               if (var1.getType().isBlockDangerous(var4)) {
+                  return false;
+               } else if (!BreezeUtil.hasLineOfSight(var1, var3.getCenter()) && !BreezeUtil.hasLineOfSight(var1, var3.above(4).getCenter())) {
+                  return false;
+               } else {
+                  var1.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, (Object)var3);
+                  return true;
+               }
             }
          }
       }
+   }
+
+   protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
+      return canRun(var1, var2);
    }
 
    protected boolean canStillUse(ServerLevel var1, Breeze var2, long var3) {
@@ -101,8 +96,10 @@ public class LongJump extends Behavior<Breeze> {
       }
 
       var2.setPose(Pose.INHALING);
-      var1.playSound(null, var2, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
-      var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent(var1x -> var2.lookAt(EntityAnchorArgument.Anchor.EYES, var1x.getCenter()));
+      var1.playSound((Player)null, var2, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
+      var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((var1x) -> {
+         var2.lookAt(EntityAnchorArgument.Anchor.EYES, var1x.getCenter());
+      });
    }
 
    protected void tick(ServerLevel var1, Breeze var2, long var3) {
@@ -112,17 +109,16 @@ public class LongJump extends Behavior<Breeze> {
       }
 
       if (isFinishedInhaling(var2)) {
-         Vec3 var6 = var2.getBrain()
-            .getMemory(MemoryModuleType.BREEZE_JUMP_TARGET)
-            .flatMap(var1x -> calculateOptimalJumpVector(var2, var2.getRandom(), Vec3.atBottomCenterOf(var1x)))
-            .orElse(null);
+         Vec3 var6 = (Vec3)var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).flatMap((var1x) -> {
+            return calculateOptimalJumpVector(var2, var2.getRandom(), Vec3.atBottomCenterOf(var1x));
+         }).orElse((Object)null);
          if (var6 == null) {
             var2.setPose(Pose.STANDING);
             return;
          }
 
          if (var5) {
-            var2.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, Unit.INSTANCE);
+            var2.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, (Object)Unit.INSTANCE);
          }
 
          var2.playSound(SoundEvents.BREEZE_JUMP, 1.0F, 1.0F);
@@ -138,6 +134,7 @@ public class LongJump extends Behavior<Breeze> {
          var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_JUMP_COOLDOWN, Unit.INSTANCE, var7 ? 2L : 10L);
          var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT, Unit.INSTANCE, 100L);
       }
+
    }
 
    protected void stop(ServerLevel var1, Breeze var2, long var3) {
@@ -165,12 +162,12 @@ public class LongJump extends Behavior<Breeze> {
    private static BlockPos snapToSurface(LivingEntity var0, Vec3 var1) {
       ClipContext var2 = new ClipContext(var1, var1.relative(Direction.DOWN, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0);
       BlockHitResult var3 = var0.level().clip(var2);
-      if (var3.getType() == HitResult.Type.BLOCK) {
-         return BlockPos.containing(var3.getLocation()).above();
+      if (((HitResult)var3).getType() == HitResult.Type.BLOCK) {
+         return BlockPos.containing(((HitResult)var3).getLocation()).above();
       } else {
          ClipContext var4 = new ClipContext(var1, var1.relative(Direction.UP, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0);
          BlockHitResult var5 = var0.level().clip(var4);
-         return var5.getType() == HitResult.Type.BLOCK ? BlockPos.containing(var3.getLocation()).above() : null;
+         return ((HitResult)var5).getType() == HitResult.Type.BLOCK ? BlockPos.containing(((HitResult)var5).getLocation()).above() : null;
       }
    }
 
@@ -196,13 +193,34 @@ public class LongJump extends Behavior<Breeze> {
    }
 
    private static Optional<Vec3> calculateOptimalJumpVector(Breeze var0, RandomSource var1, Vec3 var2) {
-      for(int var5 : Util.shuffledCopy(ALLOWED_ANGLES, var1)) {
-         Optional var6 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, 1.4F, var5, false);
-         if (var6.isPresent()) {
-            return var6;
-         }
-      }
+      List var3 = Util.shuffledCopy(ALLOWED_ANGLES, var1);
+      Iterator var4 = var3.iterator();
 
-      return Optional.empty();
+      Optional var6;
+      do {
+         if (!var4.hasNext()) {
+            return Optional.empty();
+         }
+
+         int var5 = (Integer)var4.next();
+         var6 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, 1.4F, var5, false);
+      } while(!var6.isPresent());
+
+      return var6;
+   }
+
+   // $FF: synthetic method
+   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
+      return this.checkExtraStartConditions(var1, (Breeze)var2);
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Breeze)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Breeze)var2, var3);
    }
 }

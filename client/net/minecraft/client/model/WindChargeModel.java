@@ -27,20 +27,8 @@ public class WindChargeModel extends HierarchicalModel<AbstractWindCharge> {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
       PartDefinition var2 = var1.addOrReplaceChild("bone", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      var2.addOrReplaceChild(
-         "wind",
-         CubeListBuilder.create()
-            .texOffs(15, 20)
-            .addBox(-4.0F, -1.0F, -4.0F, 8.0F, 2.0F, 8.0F, new CubeDeformation(0.0F))
-            .texOffs(0, 9)
-            .addBox(-3.0F, -2.0F, -3.0F, 6.0F, 4.0F, 6.0F, new CubeDeformation(0.0F)),
-         PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, -0.7854F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "wind_charge",
-         CubeListBuilder.create().texOffs(0, 0).addBox(-2.0F, -2.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)),
-         PartPose.offset(0.0F, 0.0F, 0.0F)
-      );
+      var2.addOrReplaceChild("wind", CubeListBuilder.create().texOffs(15, 20).addBox(-4.0F, -1.0F, -4.0F, 8.0F, 2.0F, 8.0F, new CubeDeformation(0.0F)).texOffs(0, 9).addBox(-3.0F, -2.0F, -3.0F, 6.0F, 4.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, -0.7854F, 0.0F));
+      var2.addOrReplaceChild("wind_charge", CubeListBuilder.create().texOffs(0, 0).addBox(-2.0F, -2.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
       return LayerDefinition.create(var0, 64, 32);
    }
 
@@ -49,7 +37,6 @@ public class WindChargeModel extends HierarchicalModel<AbstractWindCharge> {
       this.wind.yRot = var4 * 16.0F * 0.017453292F;
    }
 
-   @Override
    public ModelPart root() {
       return this.bone;
    }

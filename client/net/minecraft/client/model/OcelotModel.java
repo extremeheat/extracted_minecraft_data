@@ -58,28 +58,10 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
       MeshDefinition var1 = new MeshDefinition();
       PartDefinition var2 = var1.getRoot();
       CubeDeformation var3 = new CubeDeformation(-0.02F);
-      var2.addOrReplaceChild(
-         "head",
-         CubeListBuilder.create()
-            .addBox("main", -2.5F, -2.0F, -3.0F, 5.0F, 4.0F, 5.0F, var0)
-            .addBox("nose", -1.5F, -0.001F, -4.0F, 3, 2, 2, var0, 0, 24)
-            .addBox("ear1", -2.0F, -3.0F, 0.0F, 1, 1, 2, var0, 0, 10)
-            .addBox("ear2", 1.0F, -3.0F, 0.0F, 1, 1, 2, var0, 6, 10),
-         PartPose.offset(0.0F, 15.0F, -9.0F)
-      );
-      var2.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create().texOffs(20, 0).addBox(-2.0F, 3.0F, -8.0F, 4.0F, 16.0F, 6.0F, var0),
-         PartPose.offsetAndRotation(0.0F, 12.0F, -10.0F, 1.5707964F, 0.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "tail1",
-         CubeListBuilder.create().texOffs(0, 15).addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F, var0),
-         PartPose.offsetAndRotation(0.0F, 15.0F, 8.0F, 0.9F, 0.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "tail2", CubeListBuilder.create().texOffs(4, 15).addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F, var3), PartPose.offset(0.0F, 20.0F, 14.0F)
-      );
+      var2.addOrReplaceChild("head", CubeListBuilder.create().addBox("main", -2.5F, -2.0F, -3.0F, 5.0F, 4.0F, 5.0F, var0).addBox("nose", -1.5F, -0.001F, -4.0F, 3, 2, 2, var0, 0, 24).addBox("ear1", -2.0F, -3.0F, 0.0F, 1, 1, 2, var0, 0, 10).addBox("ear2", 1.0F, -3.0F, 0.0F, 1, 1, 2, var0, 6, 10), PartPose.offset(0.0F, 15.0F, -9.0F));
+      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(20, 0).addBox(-2.0F, 3.0F, -8.0F, 4.0F, 16.0F, 6.0F, var0), PartPose.offsetAndRotation(0.0F, 12.0F, -10.0F, 1.5707964F, 0.0F, 0.0F));
+      var2.addOrReplaceChild("tail1", CubeListBuilder.create().texOffs(0, 15).addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F, var0), PartPose.offsetAndRotation(0.0F, 15.0F, 8.0F, 0.9F, 0.0F, 0.0F));
+      var2.addOrReplaceChild("tail2", CubeListBuilder.create().texOffs(4, 15).addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F, var3), PartPose.offset(0.0F, 20.0F, 14.0F));
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(8, 13).addBox(-1.0F, 0.0F, 1.0F, 2.0F, 6.0F, 2.0F, var0);
       var2.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(1.1F, 18.0F, 5.0F));
       var2.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-1.1F, 18.0F, 5.0F));
@@ -89,17 +71,14 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
       return var1;
    }
 
-   @Override
    protected Iterable<ModelPart> headParts() {
       return ImmutableList.of(this.head);
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return ImmutableList.of(this.body, this.leftHindLeg, this.rightHindLeg, this.leftFrontLeg, this.rightFrontLeg, this.tail1, this.tail2);
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.head.xRot = var6 * 0.017453292F;
       this.head.yRot = var5 * 0.017453292F;
@@ -123,9 +102,9 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
             }
          }
       }
+
    }
 
-   @Override
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
       this.body.y = 12.0F;
       this.body.z = -10.0F;
@@ -144,23 +123,29 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
       this.rightHindLeg.y = 18.0F;
       this.rightHindLeg.z = 5.0F;
       this.tail1.xRot = 0.9F;
+      ModelPart var10000;
       if (var1.isCrouching()) {
          ++this.body.y;
-         this.head.y += 2.0F;
+         var10000 = this.head;
+         var10000.y += 2.0F;
          ++this.tail1.y;
-         this.tail2.y += -4.0F;
-         this.tail2.z += 2.0F;
+         var10000 = this.tail2;
+         var10000.y += -4.0F;
+         var10000 = this.tail2;
+         var10000.z += 2.0F;
          this.tail1.xRot = 1.5707964F;
          this.tail2.xRot = 1.5707964F;
          this.state = 0;
       } else if (var1.isSprinting()) {
          this.tail2.y = this.tail1.y;
-         this.tail2.z += 2.0F;
+         var10000 = this.tail2;
+         var10000.z += 2.0F;
          this.tail1.xRot = 1.5707964F;
          this.tail2.xRot = 1.5707964F;
          this.state = 2;
       } else {
          this.state = 1;
       }
+
    }
 }

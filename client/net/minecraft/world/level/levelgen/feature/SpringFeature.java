@@ -11,7 +11,6 @@ public class SpringFeature extends Feature<SpringConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<SpringConfiguration> var1) {
       SpringConfiguration var2 = (SpringConfiguration)var1.config();
       WorldGenLevel var3 = var1.level();

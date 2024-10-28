@@ -1,26 +1,29 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.Codec;
-import java.util.HashMap;
+import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
 
 public class BlackstoneReplaceProcessor extends StructureProcessor {
-   public static final Codec<BlackstoneReplaceProcessor> CODEC = Codec.unit(() -> BlackstoneReplaceProcessor.INSTANCE);
+   public static final MapCodec<BlackstoneReplaceProcessor> CODEC = MapCodec.unit(() -> {
+      return INSTANCE;
+   });
    public static final BlackstoneReplaceProcessor INSTANCE = new BlackstoneReplaceProcessor();
-   private final Map<Block, Block> replacements = Util.make(Maps.newHashMap(), var0 -> {
+   private final Map<Block, Block> replacements = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(Blocks.COBBLESTONE, Blocks.BLACKSTONE);
       var0.put(Blocks.MOSSY_COBBLESTONE, Blocks.BLACKSTONE);
       var0.put(Blocks.STONE, Blocks.POLISHED_BLACKSTONE);
-      var0.put(Blocks.POTONE, Blocks.POLISHED_BLACKSTONE);
       var0.put(Blocks.STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
       var0.put(Blocks.MOSSY_STONE_BRICKS, Blocks.POLISHED_BLACKSTONE_BRICKS);
       var0.put(Blocks.COBBLESTONE_STAIRS, Blocks.BLACKSTONE_STAIRS);
@@ -47,38 +50,29 @@ public class BlackstoneReplaceProcessor extends StructureProcessor {
       super();
    }
 
-   @Override
-   public StructureTemplate.StructureBlockInfo processBlock(
-      LevelReader var1,
-      BlockPos var2,
-      BlockPos var3,
-      StructureTemplate.StructureBlockInfo var4,
-      StructureTemplate.StructureBlockInfo var5,
-      StructurePlaceSettings var6
-   ) {
-      Block var7 = this.replacements.get(var5.state().getBlock());
+   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
+      Block var7 = (Block)this.replacements.get(var5.state().getBlock());
       if (var7 == null) {
          return var5;
       } else {
          BlockState var8 = var5.state();
          BlockState var9 = var7.defaultBlockState();
          if (var8.hasProperty(StairBlock.FACING)) {
-            var9 = var9.setValue(StairBlock.FACING, var8.getValue(StairBlock.FACING));
+            var9 = (BlockState)var9.setValue(StairBlock.FACING, (Direction)var8.getValue(StairBlock.FACING));
          }
 
          if (var8.hasProperty(StairBlock.HALF)) {
-            var9 = var9.setValue(StairBlock.HALF, var8.getValue(StairBlock.HALF));
+            var9 = (BlockState)var9.setValue(StairBlock.HALF, (Half)var8.getValue(StairBlock.HALF));
          }
 
          if (var8.hasProperty(SlabBlock.TYPE)) {
-            var9 = var9.setValue(SlabBlock.TYPE, var8.getValue(SlabBlock.TYPE));
+            var9 = (BlockState)var9.setValue(SlabBlock.TYPE, (SlabType)var8.getValue(SlabBlock.TYPE));
          }
 
          return new StructureTemplate.StructureBlockInfo(var5.pos(), var9, var5.nbt());
       }
    }
 
-   @Override
    protected StructureProcessorType<?> getType() {
       return StructureProcessorType.BLACKSTONE_REPLACE;
    }

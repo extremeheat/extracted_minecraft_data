@@ -3,8 +3,10 @@ package net.minecraft.world;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -26,7 +28,11 @@ public class RandomSequences extends SavedData {
    private final Map<ResourceLocation, RandomSequence> sequences = new Object2ObjectOpenHashMap();
 
    public static SavedData.Factory<RandomSequences> factory(long var0) {
-      return new SavedData.Factory<>(() -> new RandomSequences(var0), (var2, var3) -> load(var0, var2), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
+      return new SavedData.Factory(() -> {
+         return new RandomSequences(var0);
+      }, (var2, var3) -> {
+         return load(var0, var2);
+      }, DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
    }
 
    public RandomSequences(long var1) {
@@ -35,8 +41,8 @@ public class RandomSequences extends SavedData {
    }
 
    public RandomSource get(ResourceLocation var1) {
-      RandomSource var2 = this.sequences.computeIfAbsent(var1, this::createSequence).random();
-      return new RandomSequences.DirtyMarkingRandomSource(var2);
+      RandomSource var2 = ((RandomSequence)this.sequences.computeIfAbsent(var1, this::createSequence)).random();
+      return new DirtyMarkingRandomSource(var2);
    }
 
    private RandomSequence createSequence(ResourceLocation var1) {
@@ -58,14 +64,14 @@ public class RandomSequences extends SavedData {
       this.includeSequenceId = var3;
    }
 
-   @Override
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putInt("salt", this.salt);
       var1.putBoolean("include_world_seed", this.includeWorldSeed);
       var1.putBoolean("include_sequence_id", this.includeSequenceId);
       CompoundTag var3 = new CompoundTag();
-      this.sequences
-         .forEach((var1x, var2x) -> var3.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow()));
+      this.sequences.forEach((var1x, var2x) -> {
+         var3.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow());
+      });
       var1.put("sequences", var3);
       return var1;
    }
@@ -76,12 +82,14 @@ public class RandomSequences extends SavedData {
 
    public static RandomSequences load(long var0, CompoundTag var2) {
       RandomSequences var3 = new RandomSequences(var0);
-      var3.setSeedDefaults(
-         var2.getInt("salt"), getBooleanWithDefault(var2, "include_world_seed", true), getBooleanWithDefault(var2, "include_sequence_id", true)
-      );
+      var3.setSeedDefaults(var2.getInt("salt"), getBooleanWithDefault(var2, "include_world_seed", true), getBooleanWithDefault(var2, "include_sequence_id", true));
       CompoundTag var4 = var2.getCompound("sequences");
+      Set var5 = var4.getAllKeys();
+      Iterator var6 = var5.iterator();
 
-      for(String var7 : var4.getAllKeys()) {
+      while(var6.hasNext()) {
+         String var7 = (String)var6.next();
+
          try {
             RandomSequence var8 = (RandomSequence)((Pair)RandomSequence.CODEC.decode(NbtOps.INSTANCE, var4.get(var7)).result().get()).getFirst();
             var3.sequences.put(new ResourceLocation(var7), var8);
@@ -107,7 +115,7 @@ public class RandomSequences extends SavedData {
       this.sequences.put(var1, this.createSequence(var1, var2, var3, var4));
    }
 
-   class DirtyMarkingRandomSource implements RandomSource {
+   private class DirtyMarkingRandomSource implements RandomSource {
       private final RandomSource random;
 
       DirtyMarkingRandomSource(RandomSource var2) {
@@ -115,72 +123,64 @@ public class RandomSequences extends SavedData {
          this.random = var2;
       }
 
-      @Override
       public RandomSource fork() {
          RandomSequences.this.setDirty();
          return this.random.fork();
       }
 
-      @Override
       public PositionalRandomFactory forkPositional() {
          RandomSequences.this.setDirty();
          return this.random.forkPositional();
       }
 
-      @Override
       public void setSeed(long var1) {
          RandomSequences.this.setDirty();
          this.random.setSeed(var1);
       }
 
-      @Override
       public int nextInt() {
          RandomSequences.this.setDirty();
          return this.random.nextInt();
       }
 
-      @Override
       public int nextInt(int var1) {
          RandomSequences.this.setDirty();
          return this.random.nextInt(var1);
       }
 
-      @Override
       public long nextLong() {
          RandomSequences.this.setDirty();
          return this.random.nextLong();
       }
 
-      @Override
       public boolean nextBoolean() {
          RandomSequences.this.setDirty();
          return this.random.nextBoolean();
       }
 
-      @Override
       public float nextFloat() {
          RandomSequences.this.setDirty();
          return this.random.nextFloat();
       }
 
-      @Override
       public double nextDouble() {
          RandomSequences.this.setDirty();
          return this.random.nextDouble();
       }
 
-      @Override
       public double nextGaussian() {
          RandomSequences.this.setDirty();
          return this.random.nextGaussian();
       }
 
-      @Override
       public boolean equals(Object var1) {
          if (this == var1) {
             return true;
+         } else if (var1 instanceof DirtyMarkingRandomSource) {
+            DirtyMarkingRandomSource var2 = (DirtyMarkingRandomSource)var1;
+            return this.random.equals(var2.random);
          } else {
-            return var1 instanceof RandomSequences.DirtyMarkingRandomSource var2 ? this.random.equals(var2.random) : false;
+            return false;
          }
       }
    }

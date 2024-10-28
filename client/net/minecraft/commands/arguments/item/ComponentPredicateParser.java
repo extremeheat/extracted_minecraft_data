@@ -1,10 +1,10 @@
 package net.minecraft.commands.arguments.item;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.Util;
@@ -13,8 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
-import net.minecraft.util.parsing.packrat.ParseState;
-import net.minecraft.util.parsing.packrat.Scope;
 import net.minecraft.util.parsing.packrat.Term;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.util.parsing.packrat.commands.ResourceLocationParseRule;
@@ -27,7 +25,7 @@ public class ComponentPredicateParser {
       super();
    }
 
-   public static <T, C, P> Grammar<List<T>> createGrammar(ComponentPredicateParser.Context<T, C, P> var0) {
+   public static <T, C, P> Grammar<List<T>> createGrammar(Context<T, C, P> var0) {
       Atom var1 = Atom.of("top");
       Atom var2 = Atom.of("type");
       Atom var3 = Atom.of("any_type");
@@ -43,94 +41,79 @@ public class ComponentPredicateParser {
       Atom var13 = Atom.of("id");
       Atom var14 = Atom.of("tag");
       Dictionary var15 = new Dictionary();
-      var15.put(
-         var1,
-         Term.alternative(
-            Term.sequence(Term.named(var2), StringReaderTerms.character('['), Term.cut(), Term.optional(Term.named(var6)), StringReaderTerms.character(']')),
-            Term.named(var2)
-         ),
-         var2x -> {
-            Builder var3xx = ImmutableList.builder();
-            var2x.<Optional>getOrThrow(var2).ifPresent(var3xx::add);
-            List var4xx = var2x.get(var6);
-            if (var4xx != null) {
-               var3xx.addAll(var4xx);
-            }
-   
-            return var3xx.build();
+      var15.put(var1, Term.alternative(Term.sequence(Term.named(var2), StringReaderTerms.character('['), Term.cut(), Term.optional(Term.named(var6)), StringReaderTerms.character(']')), Term.named(var2)), (var2x) -> {
+         ImmutableList.Builder var3 = ImmutableList.builder();
+         Optional var10000 = (Optional)var2x.getOrThrow(var2);
+         Objects.requireNonNull(var3);
+         var10000.ifPresent(var3::add);
+         List var4 = (List)var2x.get(var6);
+         if (var4 != null) {
+            var3.addAll(var4);
          }
-      );
-      var15.put(
-         var2,
-         Term.alternative(Term.named(var4), Term.sequence(StringReaderTerms.character('#'), Term.cut(), Term.named(var5)), Term.named(var3)),
-         var2x -> Optional.ofNullable(var2x.getAny(var4, var5))
-      );
-      var15.put(var3, StringReaderTerms.character('*'), var0x -> Unit.INSTANCE);
-      var15.put(var4, new ComponentPredicateParser.ElementLookupRule(var13, var0));
-      var15.put(var5, new ComponentPredicateParser.TagLookupRule(var13, var0));
-      var15.put(var6, Term.sequence(Term.named(var7), Term.optional(Term.sequence(StringReaderTerms.character(','), Term.named(var6)))), var3x -> {
-         Object var4xx = var0.anyOf(var3x.getOrThrow(var7));
-         return Optional.ofNullable((List)var3x.get(var6)).map(var1xx -> Util.copyAndAdd(var4x, (List<Object>)var1xx)).orElse(List.of(var4xx));
+
+         return var3.build();
       });
-      var15.put(var7, Term.sequence(Term.named(var8), Term.optional(Term.sequence(StringReaderTerms.character('|'), Term.named(var7)))), var2x -> {
-         Object var3xx = var2x.getOrThrow(var8);
-         return Optional.ofNullable((List)var2x.get(var7)).map(var1xx -> Util.copyAndAdd(var3x, (List<Object>)var1xx)).orElse(List.of(var3xx));
+      var15.put(var2, Term.alternative(Term.named(var4), Term.sequence(StringReaderTerms.character('#'), Term.cut(), Term.named(var5)), Term.named(var3)), (var2x) -> {
+         return Optional.ofNullable(var2x.getAny(var4, var5));
       });
-      var15.put(
-         var8,
-         Term.alternative(Term.named(var10), Term.sequence(StringReaderTerms.character('!'), Term.named(var9))),
-         var2x -> var2x.getAnyOrThrow(var10, var9)
-      );
-      var15.put(var9, Term.named(var10), var2x -> (T)var0.negate(var2x.getOrThrow(var10)));
-      var15.put(
-         var10,
-         Term.alternative(
-            Term.sequence(Term.named(var11), StringReaderTerms.character('='), Term.cut(), Term.named(var14)),
-            Term.sequence(Term.named(var12), StringReaderTerms.character('~'), Term.cut(), Term.named(var14)),
-            Term.named(var11)
-         ),
-         (var4x, var5x) -> {
-            Object var6xx = var5x.get(var12);
-   
-            try {
-               if (var6xx != null) {
-                  Tag var10xx = var5x.getOrThrow(var14);
-                  return Optional.of(var0.createPredicateTest((ImmutableStringReader)var4x.input(), (Tag)var6xx, var10xx));
-               } else {
-                  Object var7xx = var5x.getOrThrow(var11);
-                  Tag var8xx = var5x.get(var14);
-                  return Optional.of(
-                     var8xx != null
-                        ? var0.createComponentTest((ImmutableStringReader)var4x.input(), (Tag)var7xx, var8xx)
-                        : var0.createComponentTest((ImmutableStringReader)var4x.input(), (C)var7xx)
-                  );
-               }
-            } catch (CommandSyntaxException var9xx) {
-               var4x.errorCollector().store(var4x.mark(), var9xx);
-               return Optional.empty();
+      var15.put(var3, StringReaderTerms.character('*'), (var0x) -> {
+         return Unit.INSTANCE;
+      });
+      var15.put(var4, new ElementLookupRule(var13, var0));
+      var15.put(var5, new TagLookupRule(var13, var0));
+      var15.put(var6, Term.sequence(Term.named(var7), Term.optional(Term.sequence(StringReaderTerms.character(','), Term.named(var6)))), (var3x) -> {
+         Object var4 = var0.anyOf((List)var3x.getOrThrow(var7));
+         return (List)Optional.ofNullable((List)var3x.get(var6)).map((var1) -> {
+            return Util.copyAndAdd(var4, var1);
+         }).orElse(List.of(var4));
+      });
+      var15.put(var7, Term.sequence(Term.named(var8), Term.optional(Term.sequence(StringReaderTerms.character('|'), Term.named(var7)))), (var2x) -> {
+         Object var3 = var2x.getOrThrow(var8);
+         return (List)Optional.ofNullable((List)var2x.get(var7)).map((var1) -> {
+            return Util.copyAndAdd(var3, var1);
+         }).orElse(List.of(var3));
+      });
+      var15.put(var8, Term.alternative(Term.named(var10), Term.sequence(StringReaderTerms.character('!'), Term.named(var9))), (var2x) -> {
+         return var2x.getAnyOrThrow(var10, var9);
+      });
+      var15.put(var9, Term.named(var10), (var2x) -> {
+         return var0.negate(var2x.getOrThrow(var10));
+      });
+      var15.put(var10, Term.alternative(Term.sequence(Term.named(var11), StringReaderTerms.character('='), Term.cut(), Term.named(var14)), Term.sequence(Term.named(var12), StringReaderTerms.character('~'), Term.cut(), Term.named(var14)), Term.named(var11)), (var4x, var5x) -> {
+         Object var6 = var5x.get(var12);
+
+         try {
+            if (var6 != null) {
+               Tag var10 = (Tag)var5x.getOrThrow(var14);
+               return Optional.of(var0.createPredicateTest((ImmutableStringReader)var4x.input(), var6, var10));
+            } else {
+               Object var7 = var5x.getOrThrow(var11);
+               Tag var8 = (Tag)var5x.get(var14);
+               return Optional.of(var8 != null ? var0.createComponentTest((ImmutableStringReader)var4x.input(), var7, var8) : var0.createComponentTest((ImmutableStringReader)var4x.input(), var7));
             }
+         } catch (CommandSyntaxException var9) {
+            var4x.errorCollector().store(var4x.mark(), var9);
+            return Optional.empty();
          }
-      );
-      var15.put(var11, new ComponentPredicateParser.ComponentLookupRule(var13, var0));
-      var15.put(var12, new ComponentPredicateParser.PredicateLookupRule(var13, var0));
+      });
+      var15.put(var11, new ComponentLookupRule(var13, var0));
+      var15.put(var12, new PredicateLookupRule(var13, var0));
       var15.put(var14, TagParseRule.INSTANCE);
       var15.put(var13, ResourceLocationParseRule.INSTANCE);
-      return new Grammar<>(var15, var1);
+      return new Grammar(var15, var1);
    }
 
-   static class ComponentLookupRule<T, C, P> extends ResourceLookupRule<ComponentPredicateParser.Context<T, C, P>, C> {
-      ComponentLookupRule(Atom<ResourceLocation> var1, ComponentPredicateParser.Context<T, C, P> var2) {
+   static class ElementLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, T> {
+      ElementLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      @Override
-      protected C validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
-         return this.context.lookupComponentType(var1, var2);
+      protected T validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
+         return ((Context)this.context).forElementType(var1, var2);
       }
 
-      @Override
       public Stream<ResourceLocation> possibleResources() {
-         return this.context.listComponentTypes();
+         return ((Context)this.context).listElementTypes();
       }
    }
 
@@ -162,51 +145,45 @@ public class ComponentPredicateParser {
       T anyOf(List<T> var1);
    }
 
-   static class ElementLookupRule<T, C, P> extends ResourceLookupRule<ComponentPredicateParser.Context<T, C, P>, T> {
-      ElementLookupRule(Atom<ResourceLocation> var1, ComponentPredicateParser.Context<T, C, P> var2) {
+   private static class TagLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, T> {
+      TagLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      @Override
       protected T validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
-         return this.context.forElementType(var1, var2);
+         return ((Context)this.context).forTagType(var1, var2);
       }
 
-      @Override
       public Stream<ResourceLocation> possibleResources() {
-         return this.context.listElementTypes();
+         return ((Context)this.context).listTagTypes();
       }
    }
 
-   static class PredicateLookupRule<T, C, P> extends ResourceLookupRule<ComponentPredicateParser.Context<T, C, P>, P> {
-      PredicateLookupRule(Atom<ResourceLocation> var1, ComponentPredicateParser.Context<T, C, P> var2) {
+   static class ComponentLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, C> {
+      ComponentLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
          super(var1, var2);
       }
 
-      @Override
+      protected C validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
+         return ((Context)this.context).lookupComponentType(var1, var2);
+      }
+
+      public Stream<ResourceLocation> possibleResources() {
+         return ((Context)this.context).listComponentTypes();
+      }
+   }
+
+   static class PredicateLookupRule<T, C, P> extends ResourceLookupRule<Context<T, C, P>, P> {
+      PredicateLookupRule(Atom<ResourceLocation> var1, Context<T, C, P> var2) {
+         super(var1, var2);
+      }
+
       protected P validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
-         return this.context.lookupPredicateType(var1, var2);
+         return ((Context)this.context).lookupPredicateType(var1, var2);
       }
 
-      @Override
       public Stream<ResourceLocation> possibleResources() {
-         return this.context.listPredicateTypes();
-      }
-   }
-
-   static class TagLookupRule<T, C, P> extends ResourceLookupRule<ComponentPredicateParser.Context<T, C, P>, T> {
-      TagLookupRule(Atom<ResourceLocation> var1, ComponentPredicateParser.Context<T, C, P> var2) {
-         super(var1, var2);
-      }
-
-      @Override
-      protected T validateElement(ImmutableStringReader var1, ResourceLocation var2) throws Exception {
-         return this.context.forTagType(var1, var2);
-      }
-
-      @Override
-      public Stream<ResourceLocation> possibleResources() {
-         return this.context.listTagTypes();
+         return ((Context)this.context).listPredicateTypes();
       }
    }
 }

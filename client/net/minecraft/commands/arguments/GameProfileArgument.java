@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
@@ -23,7 +25,7 @@ import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
-public class GameProfileArgument implements ArgumentType<GameProfileArgument.Result> {
+public class GameProfileArgument implements ArgumentType<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "dd12be42-52a9-4a91-a8a1-11c01849e498", "@e");
    public static final SimpleCommandExceptionType ERROR_UNKNOWN_PLAYER = new SimpleCommandExceptionType(Component.translatable("argument.player.unknown"));
 
@@ -32,21 +34,21 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
    }
 
    public static Collection<GameProfile> getGameProfiles(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((GameProfileArgument.Result)var0.getArgument(var1, GameProfileArgument.Result.class)).getNames((CommandSourceStack)var0.getSource());
+      return ((Result)var0.getArgument(var1, Result.class)).getNames((CommandSourceStack)var0.getSource());
    }
 
    public static GameProfileArgument gameProfile() {
       return new GameProfileArgument();
    }
 
-   public GameProfileArgument.Result parse(StringReader var1) throws CommandSyntaxException {
+   public Result parse(StringReader var1) throws CommandSyntaxException {
       if (var1.canRead() && var1.peek() == '@') {
          EntitySelectorParser var4 = new EntitySelectorParser(var1);
          EntitySelector var5 = var4.parse();
          if (var5.includesEntities()) {
             throw EntityArgument.ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(var1);
          } else {
-            return new GameProfileArgument.SelectorResult(var5);
+            return new SelectorResult(var5);
          }
       } else {
          int var2 = var1.getCursor();
@@ -56,9 +58,11 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
          }
 
          String var3 = var1.getString().substring(var2, var1.getCursor());
-         return var1x -> {
-            Optional var2xx = var1x.getServer().getProfileCache().get(var3);
-            return Collections.singleton((GameProfile)var2xx.orElseThrow(ERROR_UNKNOWN_PLAYER::create));
+         return (var1x) -> {
+            Optional var2 = var1x.getServer().getProfileCache().get(var3);
+            SimpleCommandExceptionType var10001 = ERROR_UNKNOWN_PLAYER;
+            Objects.requireNonNull(var10001);
+            return Collections.singleton((GameProfile)var2.orElseThrow(var10001::create));
          };
       }
    }
@@ -74,9 +78,9 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
          } catch (CommandSyntaxException var6) {
          }
 
-         return var4.fillSuggestions(
-            var2, var1x -> SharedSuggestionProvider.suggest(((SharedSuggestionProvider)var1.getSource()).getOnlinePlayerNames(), var1x)
-         );
+         return var4.fillSuggestions(var2, (var1x) -> {
+            SharedSuggestionProvider.suggest((Iterable)((SharedSuggestionProvider)var1.getSource()).getOnlinePlayerNames(), var1x);
+         });
       } else {
          return Suggestions.empty();
       }
@@ -86,12 +90,17 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
       return EXAMPLES;
    }
 
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
+
    @FunctionalInterface
    public interface Result {
       Collection<GameProfile> getNames(CommandSourceStack var1) throws CommandSyntaxException;
    }
 
-   public static class SelectorResult implements GameProfileArgument.Result {
+   public static class SelectorResult implements Result {
       private final EntitySelector selector;
 
       public SelectorResult(EntitySelector var1) {
@@ -99,15 +108,16 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
          this.selector = var1;
       }
 
-      @Override
       public Collection<GameProfile> getNames(CommandSourceStack var1) throws CommandSyntaxException {
          List var2 = this.selector.findPlayers(var1);
          if (var2.isEmpty()) {
             throw EntityArgument.NO_PLAYERS_FOUND.create();
          } else {
             ArrayList var3 = Lists.newArrayList();
+            Iterator var4 = var2.iterator();
 
-            for(ServerPlayer var5 : var2) {
+            while(var4.hasNext()) {
+               ServerPlayer var5 = (ServerPlayer)var4.next();
                var3.add(var5.getGameProfile());
             }
 

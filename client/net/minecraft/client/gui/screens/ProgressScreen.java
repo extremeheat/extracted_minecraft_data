@@ -20,58 +20,52 @@ public class ProgressScreen extends Screen implements ProgressListener {
       this.clearScreenAfterStop = var1;
    }
 
-   @Override
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   @Override
    protected boolean shouldNarrateNavigation() {
       return false;
    }
 
-   @Override
    public void progressStartNoAbort(Component var1) {
       this.progressStart(var1);
    }
 
-   @Override
    public void progressStart(Component var1) {
       this.header = var1;
       this.progressStage(Component.translatable("menu.working"));
    }
 
-   @Override
    public void progressStage(Component var1) {
       this.stage = var1;
       this.progressStagePercentage(0);
    }
 
-   @Override
    public void progressStagePercentage(int var1) {
       this.progress = var1;
    }
 
-   @Override
    public void stop() {
       this.stop = true;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.stop) {
          if (this.clearScreenAfterStop) {
-            this.minecraft.setScreen(null);
+            this.minecraft.setScreen((Screen)null);
          }
+
       } else {
          super.render(var1, var2, var3, var4);
          if (this.header != null) {
-            var1.drawCenteredString(this.font, this.header, this.width / 2, 70, 16777215);
+            var1.drawCenteredString(this.font, (Component)this.header, this.width / 2, 70, 16777215);
          }
 
          if (this.stage != null && this.progress != 0) {
-            var1.drawCenteredString(this.font, Component.empty().append(this.stage).append(" " + this.progress + "%"), this.width / 2, 90, 16777215);
+            var1.drawCenteredString(this.font, (Component)Component.empty().append(this.stage).append(" " + this.progress + "%"), this.width / 2, 90, 16777215);
          }
+
       }
    }
 }

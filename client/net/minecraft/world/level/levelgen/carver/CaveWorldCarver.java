@@ -22,16 +22,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       return var2.nextFloat() <= var1.probability;
    }
 
-   public boolean carve(
-      CarvingContext var1,
-      CaveCarverConfiguration var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      RandomSource var5,
-      Aquifer var6,
-      ChunkPos var7,
-      CarvingMask var8
-   ) {
+   public boolean carve(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8) {
       int var9 = SectionPos.sectionToBlockCoord(this.getRange() * 2 - 1);
       int var10 = var5.nextInt(var5.nextInt(var5.nextInt(this.getCaveBound()) + 1) + 1);
 
@@ -42,24 +33,25 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
          double var18 = (double)var2.horizontalRadiusMultiplier.sample(var5);
          double var20 = (double)var2.verticalRadiusMultiplier.sample(var5);
          double var22 = (double)var2.floorLevel.sample(var5);
-         WorldCarver.CarveSkipChecker var24 = (var2x, var3x, var5x, var7x, var9x) -> shouldSkip(var3x, var5x, var7x, var22);
+         WorldCarver.CarveSkipChecker var24 = (var2x, var3x, var5x, var7x, var9x) -> {
+            return shouldSkip(var3x, var5x, var7x, var22);
+         };
          int var25 = 1;
+         float var28;
          if (var5.nextInt(4) == 0) {
             double var26 = (double)var2.yScale.sample(var5);
-            float var28 = 1.0F + var5.nextFloat() * 6.0F;
+            var28 = 1.0F + var5.nextFloat() * 6.0F;
             this.createRoom(var1, var2, var3, var4, var6, var12, var14, var16, var28, var26, var8, var24);
             var25 += var5.nextInt(4);
          }
 
          for(int var32 = 0; var32 < var25; ++var32) {
             float var27 = var5.nextFloat() * 6.2831855F;
-            float var33 = (var5.nextFloat() - 0.5F) / 4.0F;
+            var28 = (var5.nextFloat() - 0.5F) / 4.0F;
             float var29 = this.getThickness(var5);
             int var30 = var9 - var5.nextInt(var9 / 4);
             boolean var31 = false;
-            this.createTunnel(
-               var1, var2, var3, var4, var5.nextLong(), var6, var12, var14, var16, var18, var20, var29, var27, var33, 0, var30, this.getYScale(), var8, var24
-            );
+            this.createTunnel(var1, var2, var3, var4, var5.nextLong(), var6, var12, var14, var16, var18, var20, var29, var27, var28, 0, var30, this.getYScale(), var8, var24);
          }
       }
 
@@ -83,46 +75,13 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       return 1.0;
    }
 
-   protected void createRoom(
-      CarvingContext var1,
-      CaveCarverConfiguration var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      Aquifer var5,
-      double var6,
-      double var8,
-      double var10,
-      float var12,
-      double var13,
-      CarvingMask var15,
-      WorldCarver.CarveSkipChecker var16
-   ) {
+   protected void createRoom(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, Aquifer var5, double var6, double var8, double var10, float var12, double var13, CarvingMask var15, WorldCarver.CarveSkipChecker var16) {
       double var17 = 1.5 + (double)(Mth.sin(1.5707964F) * var12);
       double var19 = var17 * var13;
       this.carveEllipsoid(var1, var2, var3, var4, var5, var6 + 1.0, var8, var10, var17, var19, var15, var16);
    }
 
-   protected void createTunnel(
-      CarvingContext var1,
-      CaveCarverConfiguration var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      long var5,
-      Aquifer var7,
-      double var8,
-      double var10,
-      double var12,
-      double var14,
-      double var16,
-      float var18,
-      float var19,
-      float var20,
-      int var21,
-      int var22,
-      double var23,
-      CarvingMask var25,
-      WorldCarver.CarveSkipChecker var26
-   ) {
+   protected void createTunnel(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, long var5, Aquifer var7, double var8, double var10, double var12, double var14, double var16, float var18, float var19, float var20, int var21, int var22, double var23, CarvingMask var25, WorldCarver.CarveSkipChecker var26) {
       RandomSource var27 = RandomSource.create(var5);
       int var28 = var27.nextInt(var22 / 2) + var22 / 4;
       boolean var29 = var27.nextInt(6) == 0;
@@ -144,48 +103,8 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
          var31 += (var27.nextFloat() - var27.nextFloat()) * var27.nextFloat() * 2.0F;
          var30 += (var27.nextFloat() - var27.nextFloat()) * var27.nextFloat() * 4.0F;
          if (var32 == var28 && var18 > 1.0F) {
-            this.createTunnel(
-               var1,
-               var2,
-               var3,
-               var4,
-               var27.nextLong(),
-               var7,
-               var8,
-               var10,
-               var12,
-               var14,
-               var16,
-               var27.nextFloat() * 0.5F + 0.5F,
-               var19 - 1.5707964F,
-               var20 / 3.0F,
-               var32,
-               var22,
-               1.0,
-               var25,
-               var26
-            );
-            this.createTunnel(
-               var1,
-               var2,
-               var3,
-               var4,
-               var27.nextLong(),
-               var7,
-               var8,
-               var10,
-               var12,
-               var14,
-               var16,
-               var27.nextFloat() * 0.5F + 0.5F,
-               var19 + 1.5707964F,
-               var20 / 3.0F,
-               var32,
-               var22,
-               1.0,
-               var25,
-               var26
-            );
+            this.createTunnel(var1, var2, var3, var4, var27.nextLong(), var7, var8, var10, var12, var14, var16, var27.nextFloat() * 0.5F + 0.5F, var19 - 1.5707964F, var20 / 3.0F, var32, var22, 1.0, var25, var26);
+            this.createTunnel(var1, var2, var3, var4, var27.nextLong(), var7, var8, var10, var12, var14, var16, var27.nextFloat() * 0.5F + 0.5F, var19 + 1.5707964F, var20 / 3.0F, var32, var22, 1.0, var25, var26);
             return;
          }
 
@@ -197,6 +116,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
             this.carveEllipsoid(var1, var2, var3, var4, var7, var8, var10, var12, var33 * var14, var35 * var16, var25, var26);
          }
       }
+
    }
 
    private static boolean shouldSkip(double var0, double var2, double var4, double var6) {

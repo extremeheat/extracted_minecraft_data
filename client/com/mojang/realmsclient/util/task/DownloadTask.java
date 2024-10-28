@@ -27,7 +27,6 @@ public class DownloadTask extends LongRunningTask {
       this.downloadName = var4;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
       int var2 = 0;
@@ -44,7 +43,7 @@ public class DownloadTask extends LongRunningTask {
                return;
             }
 
-            setScreen(new RealmsDownloadLatestWorldScreen(this.lastScreen, var3, this.downloadName, var0 -> {
+            setScreen(new RealmsDownloadLatestWorldScreen(this.lastScreen, var3, this.downloadName, (var0) -> {
             }));
             return;
          } catch (RetryCallException var4) {
@@ -72,9 +71,9 @@ public class DownloadTask extends LongRunningTask {
             return;
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

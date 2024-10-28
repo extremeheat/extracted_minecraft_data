@@ -34,15 +34,15 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 
 public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-   private static final DynamicCommandExceptionType ERROR_NOT_SUMMONABLE_ENTITY = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("entity.not_summonable", var0)
-   );
-   public static final Dynamic2CommandExceptionType ERROR_UNKNOWN_RESOURCE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("argument.resource.not_found", var0, var1)
-   );
-   public static final Dynamic3CommandExceptionType ERROR_INVALID_RESOURCE_TYPE = new Dynamic3CommandExceptionType(
-      (var0, var1, var2) -> Component.translatableEscape("argument.resource.invalid_type", var0, var1, var2)
-   );
+   private static final DynamicCommandExceptionType ERROR_NOT_SUMMONABLE_ENTITY = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("entity.not_summonable", var0);
+   });
+   public static final Dynamic2CommandExceptionType ERROR_UNKNOWN_RESOURCE = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("argument.resource.not_found", var0, var1);
+   });
+   public static final Dynamic3CommandExceptionType ERROR_INVALID_RESOURCE_TYPE = new Dynamic3CommandExceptionType((var0, var1, var2) -> {
+      return Component.translatableEscape("argument.resource.invalid_type", var0, var1, var2);
+   });
    final ResourceKey<? extends Registry<T>> registryKey;
    private final HolderLookup<T> registryLookup;
 
@@ -53,7 +53,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    }
 
    public static <T> ResourceArgument<T> resource(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
-      return new ResourceArgument<>(var0, var1);
+      return new ResourceArgument(var0, var1);
    }
 
    public static <T> Holder.Reference<T> getResource(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2) throws CommandSyntaxException {
@@ -102,7 +102,9 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    public Holder.Reference<T> parse(StringReader var1) throws CommandSyntaxException {
       ResourceLocation var2 = ResourceLocation.read(var1);
       ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
-      return this.registryLookup.get(var3).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
+      return (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> {
+         return ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location());
+      });
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
@@ -113,25 +115,35 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
       return EXAMPLES;
    }
 
-   public static class Info<T> implements ArgumentTypeInfo<ResourceArgument<T>, ResourceArgument.Info<T>.Template> {
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
+
+   public static class Info<T> implements ArgumentTypeInfo<ResourceArgument<T>, Info<T>.Template> {
       public Info() {
          super();
       }
 
-      public void serializeToNetwork(ResourceArgument.Info<T>.Template var1, FriendlyByteBuf var2) {
+      public void serializeToNetwork(Info<T>.Template var1, FriendlyByteBuf var2) {
          var2.writeResourceKey(var1.registryKey);
       }
 
-      public ResourceArgument.Info<T>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         return new ResourceArgument.Info.Template(var1.readRegistryKey());
+      public Info<T>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+         return new Template(var1.readRegistryKey());
       }
 
-      public void serializeToJson(ResourceArgument.Info<T>.Template var1, JsonObject var2) {
+      public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
          var2.addProperty("registry", var1.registryKey.location().toString());
       }
 
-      public ResourceArgument.Info<T>.Template unpack(ResourceArgument<T> var1) {
-         return new ResourceArgument.Info.Template(var1.registryKey);
+      public Info<T>.Template unpack(ResourceArgument<T> var1) {
+         return new Template(var1.registryKey);
+      }
+
+      // $FF: synthetic method
+      public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+         return this.deserializeFromNetwork(var1);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<ResourceArgument<T>> {
@@ -143,12 +155,16 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
          }
 
          public ResourceArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceArgument<>(var1, this.registryKey);
+            return new ResourceArgument(var1, this.registryKey);
          }
 
-         @Override
          public ArgumentTypeInfo<ResourceArgument<T>, ?> type() {
             return Info.this;
+         }
+
+         // $FF: synthetic method
+         public ArgumentType instantiate(CommandBuildContext var1) {
+            return this.instantiate(var1);
          }
       }
    }

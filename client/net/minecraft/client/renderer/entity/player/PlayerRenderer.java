@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity.player;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.util.Objects;
 import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
@@ -21,7 +22,6 @@ import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ParrotOnShoulderLayer;
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
-import net.minecraft.client.renderer.entity.layers.PoisonousPolytraLayer;
 import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.CommonComponents;
@@ -32,6 +32,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -45,30 +46,22 @@ import net.minecraft.world.scores.Scoreboard;
 
 public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
    public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
-      super(var1, new PlayerModel<>(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), var2), 0.5F);
-      this.addLayer(
-         new HumanoidArmorLayer<>(
-            this,
-            new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)),
-            new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR)),
-            var1.getModelManager()
-         )
-      );
-      this.addLayer(new PlayerItemInHandLayer<>(this, var1.getItemInHandRenderer()));
-      this.addLayer(new ArrowLayer<>(var1, this));
+      super(var1, new PlayerModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), var2), 0.5F);
+      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR)), var1.getModelManager()));
+      this.addLayer(new PlayerItemInHandLayer(this, var1.getItemInHandRenderer()));
+      this.addLayer(new ArrowLayer(var1, this));
       this.addLayer(new Deadmau5EarsLayer(this));
       this.addLayer(new CapeLayer(this));
-      this.addLayer(new CustomHeadLayer<>(this, var1.getModelSet(), var1.getItemInHandRenderer()));
-      this.addLayer(new ElytraLayer<>(this, var1.getModelSet()));
-      this.addLayer(new PoisonousPolytraLayer<>(this, var1.getModelSet()));
-      this.addLayer(new ParrotOnShoulderLayer<>(this, var1.getModelSet()));
-      this.addLayer(new SpinAttackEffectLayer<>(this, var1.getModelSet()));
-      this.addLayer(new BeeStingerLayer<>(this));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getItemInHandRenderer()));
+      this.addLayer(new ElytraLayer(this, var1.getModelSet()));
+      this.addLayer(new ParrotOnShoulderLayer(this, var1.getModelSet()));
+      this.addLayer(new SpinAttackEffectLayer(this, var1.getModelSet()));
+      this.addLayer(new BeeStingerLayer(this));
    }
 
    public void render(AbstractClientPlayer var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       this.setModelProperties(var1);
-      super.render(var1, var2, var3, var4, var5, var6);
+      super.render((LivingEntity)var1, var2, var3, var4, var5, var6);
    }
 
    public Vec3 getRenderOffset(AbstractClientPlayer var1, float var2) {
@@ -76,7 +69,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    }
 
    private void setModelProperties(AbstractClientPlayer var1) {
-      PlayerModel var2 = this.getModel();
+      PlayerModel var2 = (PlayerModel)this.getModel();
       if (var1.isSpectator()) {
          var2.setAllVisible(false);
          var2.head.visible = true;
@@ -104,6 +97,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
             var2.leftArmPose = var3;
          }
       }
+
    }
 
    private static HumanoidModel.ArmPose getArmPose(AbstractClientPlayer var0, InteractionHand var1) {
@@ -166,7 +160,8 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          if (var10 != null) {
             ReadOnlyScoreInfo var11 = var9.getPlayerScoreInfo(var1, var10);
             MutableComponent var12 = ReadOnlyScoreInfo.safeFormatValue(var11, var10.numberFormatOrDefault(StyledFormat.NO_STYLE));
-            super.renderNameTag(var1, Component.empty().append(var12).append(CommonComponents.SPACE).append(var10.getDisplayName()), var3, var4, var5, var6);
+            super.renderNameTag(var1, Component.empty().append((Component)var12).append(CommonComponents.SPACE).append(var10.getDisplayName()), var3, var4, var5, var6);
+            Objects.requireNonNull(this.getFont());
             var3.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
          }
       }
@@ -176,20 +171,20 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    }
 
    public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4) {
-      this.renderHand(var1, var2, var3, var4, this.model.rightArm, this.model.rightSleeve);
+      this.renderHand(var1, var2, var3, var4, ((PlayerModel)this.model).rightArm, ((PlayerModel)this.model).rightSleeve);
    }
 
    public void renderLeftHand(PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4) {
-      this.renderHand(var1, var2, var3, var4, this.model.leftArm, this.model.leftSleeve);
+      this.renderHand(var1, var2, var3, var4, ((PlayerModel)this.model).leftArm, ((PlayerModel)this.model).leftSleeve);
    }
 
    private void renderHand(PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4, ModelPart var5, ModelPart var6) {
-      PlayerModel var7 = this.getModel();
+      PlayerModel var7 = (PlayerModel)this.getModel();
       this.setModelProperties(var4);
       var7.attackTime = 0.0F;
       var7.crouching = false;
       var7.swimAmount = 0.0F;
-      var7.setupAnim(var4, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      var7.setupAnim((LivingEntity)var4, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
       var5.xRot = 0.0F;
       ResourceLocation var8 = var4.getSkin().texture();
       var5.render(var1, var2.getBuffer(RenderType.entitySolid(var8)), var3, OverlayTexture.NO_OVERLAY);
@@ -200,10 +195,12 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    protected void setupRotations(AbstractClientPlayer var1, PoseStack var2, float var3, float var4, float var5, float var6) {
       float var7 = var1.getSwimAmount(var5);
       float var8 = var1.getViewXRot(var5);
+      float var9;
+      float var10;
       if (var1.isFallFlying()) {
          super.setupRotations(var1, var2, var3, var4, var5, var6);
-         float var9 = (float)var1.getFallFlyingTicks() + var5;
-         float var10 = Mth.clamp(var9 * var9 / 100.0F, 0.0F, 1.0F);
+         var9 = (float)var1.getFallFlyingTicks() + var5;
+         var10 = Mth.clamp(var9 * var9 / 100.0F, 0.0F, 1.0F);
          if (!var1.isAutoSpinAttack()) {
             var2.mulPose(Axis.XP.rotationDegrees(var10 * (-90.0F - var8)));
          }
@@ -219,14 +216,15 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          }
       } else if (var7 > 0.0F) {
          super.setupRotations(var1, var2, var3, var4, var5, var6);
-         float var21 = var1.isInWater() ? -90.0F - var8 : -90.0F;
-         float var22 = Mth.lerp(var7, 0.0F, var21);
-         var2.mulPose(Axis.XP.rotationDegrees(var22));
+         var9 = var1.isInWater() ? -90.0F - var8 : -90.0F;
+         var10 = Mth.lerp(var7, 0.0F, var9);
+         var2.mulPose(Axis.XP.rotationDegrees(var10));
          if (var1.isVisuallySwimming()) {
             var2.translate(0.0F, -1.0F, 0.3F);
          }
       } else {
          super.setupRotations(var1, var2, var3, var4, var5, var6);
       }
+
    }
 }

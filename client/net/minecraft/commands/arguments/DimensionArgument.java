@@ -21,12 +21,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 public class DimensionArgument implements ArgumentType<ResourceLocation> {
-   private static final Collection<String> EXAMPLES = Stream.of(Level.OVERWORLD, Level.NETHER)
-      .map(var0 -> var0.location().toString())
-      .collect(Collectors.toList());
-   private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.dimension.invalid", var0)
-   );
+   private static final Collection<String> EXAMPLES;
+   private static final DynamicCommandExceptionType ERROR_INVALID_VALUE;
 
    public DimensionArgument() {
       super();
@@ -37,9 +33,7 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return var1.getSource() instanceof SharedSuggestionProvider
-         ? SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var1.getSource()).levels().stream().map(ResourceKey::location), var2)
-         : Suggestions.empty();
+      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var1.getSource()).levels().stream().map(ResourceKey::location), var2) : Suggestions.empty();
    }
 
    public Collection<String> getExamples() {
@@ -59,5 +53,19 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
       } else {
          return var4;
       }
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
+
+   static {
+      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((var0) -> {
+         return var0.location().toString();
+      }).collect(Collectors.toList());
+      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> {
+         return Component.translatableEscape("argument.dimension.invalid", var0);
+      });
    }
 }

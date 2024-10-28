@@ -31,11 +31,11 @@ public class Tooltip implements NarrationSupplier {
       return new Tooltip(var0, var0);
    }
 
-   @Override
    public void updateNarration(NarrationElementOutput var1) {
       if (this.narration != null) {
          var1.add(NarratedElementType.HINT, this.narration);
       }
+
    }
 
    public List<FormattedCharSequence> toCharSequence(Minecraft var1) {

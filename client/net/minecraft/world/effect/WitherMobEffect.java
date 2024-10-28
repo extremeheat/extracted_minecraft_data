@@ -7,13 +7,11 @@ class WitherMobEffect extends MobEffect {
       super(var1, var2);
    }
 
-   @Override
    public boolean applyEffectTick(LivingEntity var1, int var2) {
       var1.hurt(var1.damageSources().wither(), 1.0F);
       return true;
    }
 
-   @Override
    public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
       int var3 = 40 >> var2;
       if (var3 > 0) {

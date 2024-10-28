@@ -2,11 +2,8 @@ package com.mojang.blaze3d.audio;
 
 import net.minecraft.world.phys.Vec3;
 
-public record ListenerTransform(Vec3 b, Vec3 c, Vec3 d) {
-   private final Vec3 position;
-   private final Vec3 forward;
-   private final Vec3 up;
-   public static final ListenerTransform INITIAL = new ListenerTransform(Vec3.ZERO, new Vec3(0.0, 0.0, -1.0), new Vec3(0.0, 1.0, 0.0));
+public record ListenerTransform(Vec3 position, Vec3 forward, Vec3 up) {
+   public static final ListenerTransform INITIAL;
 
    public ListenerTransform(Vec3 var1, Vec3 var2, Vec3 var3) {
       super();
@@ -17,5 +14,21 @@ public record ListenerTransform(Vec3 b, Vec3 c, Vec3 d) {
 
    public Vec3 right() {
       return this.forward.cross(this.up);
+   }
+
+   public Vec3 position() {
+      return this.position;
+   }
+
+   public Vec3 forward() {
+      return this.forward;
+   }
+
+   public Vec3 up() {
+      return this.up;
+   }
+
+   static {
+      INITIAL = new ListenerTransform(Vec3.ZERO, new Vec3(0.0, 0.0, -1.0), new Vec3(0.0, 1.0, 0.0));
    }
 }

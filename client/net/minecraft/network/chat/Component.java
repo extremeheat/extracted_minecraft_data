@@ -18,11 +18,11 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
@@ -40,14 +40,13 @@ public interface Component extends Message, FormattedText {
 
    ComponentContents getContents();
 
-   @Override
    default String getString() {
       return FormattedText.super.getString();
    }
 
    default String getString(int var1) {
       StringBuilder var2 = new StringBuilder();
-      this.visit(var2x -> {
+      this.visit((var2x) -> {
          int var3 = var1 - var2.length();
          if (var3 <= 0) {
             return STOP_ITERATION;
@@ -61,13 +60,13 @@ public interface Component extends Message, FormattedText {
 
    List<Component> getSiblings();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    default String tryCollapseToString() {
       ComponentContents var2 = this.getContents();
-      if (var2 instanceof PlainTextContents var1 && this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
-         return var1.text();
+      if (var2 instanceof PlainTextContents var1) {
+         if (this.getSiblings().isEmpty() && this.getStyle().isEmpty()) {
+            return var1.text();
+         }
       }
 
       return null;
@@ -78,43 +77,51 @@ public interface Component extends Message, FormattedText {
    }
 
    default MutableComponent copy() {
-      return new MutableComponent(this.getContents(), new ArrayList<>(this.getSiblings()), this.getStyle());
+      return new MutableComponent(this.getContents(), new ArrayList(this.getSiblings()), this.getStyle());
    }
 
    FormattedCharSequence getVisualOrderText();
 
-   @Override
    default <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
       Style var3 = this.getStyle().applyTo(var2);
       Optional var4 = this.getContents().visit(var1, var3);
       if (var4.isPresent()) {
          return var4;
       } else {
-         for(Component var6 : this.getSiblings()) {
-            Optional var7 = var6.visit(var1, var3);
-            if (var7.isPresent()) {
-               return var7;
-            }
-         }
+         Iterator var5 = this.getSiblings().iterator();
 
-         return Optional.empty();
+         Optional var7;
+         do {
+            if (!var5.hasNext()) {
+               return Optional.empty();
+            }
+
+            Component var6 = (Component)var5.next();
+            var7 = var6.visit(var1, var3);
+         } while(!var7.isPresent());
+
+         return var7;
       }
    }
 
-   @Override
    default <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
       Optional var2 = this.getContents().visit(var1);
       if (var2.isPresent()) {
          return var2;
       } else {
-         for(Component var4 : this.getSiblings()) {
-            Optional var5 = var4.visit(var1);
-            if (var5.isPresent()) {
-               return var5;
-            }
-         }
+         Iterator var3 = this.getSiblings().iterator();
 
-         return Optional.empty();
+         Optional var5;
+         do {
+            if (!var3.hasNext()) {
+               return Optional.empty();
+            }
+
+            Component var4 = (Component)var3.next();
+            var5 = var4.visit(var1);
+         } while(!var5.isPresent());
+
+         return var5;
       }
    }
 
@@ -153,11 +160,11 @@ public interface Component extends Message, FormattedText {
    }
 
    static MutableComponent translatable(String var0) {
-      return MutableComponent.create(new TranslatableContents(var0, null, TranslatableContents.NO_ARGS));
+      return MutableComponent.create(new TranslatableContents(var0, (String)null, TranslatableContents.NO_ARGS));
    }
 
    static MutableComponent translatable(String var0, Object... var1) {
-      return MutableComponent.create(new TranslatableContents(var0, null, var1));
+      return MutableComponent.create(new TranslatableContents(var0, (String)null, var1));
    }
 
    static MutableComponent translatableEscape(String var0, Object... var1) {
@@ -204,7 +211,14 @@ public interface Component extends Message, FormattedText {
    }
 
    static Component translationArg(Message var0) {
-      return (Component)(var0 instanceof Component var1 ? var1 : literal(var0.getString()));
+      Object var10000;
+      if (var0 instanceof Component var1) {
+         var10000 = var1;
+      } else {
+         var10000 = literal(var0.getString());
+      }
+
+      return (Component)var10000;
    }
 
    static Component translationArg(UUID var0) {
@@ -219,19 +233,46 @@ public interface Component extends Message, FormattedText {
       return literal(var0.toString());
    }
 
+   public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
+      private final HolderLookup.Provider registries;
+
+      public SerializerAdapter(HolderLookup.Provider var1) {
+         super();
+         this.registries = var1;
+      }
+
+      public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return Component.Serializer.deserialize(var1, this.registries);
+      }
+
+      public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
+         return Component.Serializer.serialize(var1, this.registries);
+      }
+
+      // $FF: synthetic method
+      public JsonElement serialize(Object var1, Type var2, JsonSerializationContext var3) {
+         return this.serialize((Component)var1, var2, var3);
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
+      }
+   }
+
    public static class Serializer {
-      private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
+      private static final Gson GSON = (new GsonBuilder()).disableHtmlEscaping().create();
 
       private Serializer() {
          super();
       }
 
       static MutableComponent deserialize(JsonElement var0, HolderLookup.Provider var1) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.parse(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
+         return (MutableComponent)ComponentSerialization.CODEC.parse(var1.createSerializationContext(JsonOps.INSTANCE), var0).getOrThrow(JsonParseException::new);
       }
 
       static JsonElement serialize(Component var0, HolderLookup.Provider var1) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
+         return (JsonElement)ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0).getOrThrow(JsonParseException::new);
       }
 
       public static String toJson(Component var0, HolderLookup.Provider var1) {
@@ -255,23 +296,6 @@ public interface Component extends Message, FormattedText {
          var2.setLenient(true);
          JsonElement var3 = JsonParser.parseReader(var2);
          return var3 == null ? null : deserialize(var3, var1);
-      }
-   }
-
-   public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
-      private final HolderLookup.Provider registries;
-
-      public SerializerAdapter(HolderLookup.Provider var1) {
-         super();
-         this.registries = var1;
-      }
-
-      public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return Component.Serializer.deserialize(var1, this.registries);
-      }
-
-      public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
-         return Component.Serializer.serialize(var1, this.registries);
       }
    }
 }

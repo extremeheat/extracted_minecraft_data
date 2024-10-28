@@ -1,7 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,7 +53,7 @@ public abstract class ContainerOpenersCounter {
 
    private List<Player> getPlayersWithContainerOpen(Level var1, BlockPos var2) {
       double var3 = this.maxInteractionRange + 4.0;
-      AABB var5 = new AABB(var2).inflate(var3);
+      AABB var5 = (new AABB(var2)).inflate(var3);
       return var1.getEntities(EntityTypeTest.forClass(Player.class), var5, this::isOwnContainer);
    }
 
@@ -59,8 +61,9 @@ public abstract class ContainerOpenersCounter {
       List var4 = this.getPlayersWithContainerOpen(var1, var2);
       this.maxInteractionRange = 0.0;
 
-      for(Player var6 : var4) {
-         this.maxInteractionRange = Math.max(var6.blockInteractionRange(), this.maxInteractionRange);
+      Player var6;
+      for(Iterator var5 = var4.iterator(); var5.hasNext(); this.maxInteractionRange = Math.max(var6.blockInteractionRange(), this.maxInteractionRange)) {
+         var6 = (Player)var5.next();
       }
 
       int var9 = var4.size();
@@ -70,10 +73,10 @@ public abstract class ContainerOpenersCounter {
          boolean var8 = var10 != 0;
          if (var7 && !var8) {
             this.onOpen(var1, var2, var3);
-            var1.gameEvent(null, GameEvent.CONTAINER_OPEN, var2);
+            var1.gameEvent((Entity)null, GameEvent.CONTAINER_OPEN, var2);
          } else if (!var7) {
             this.onClose(var1, var2, var3);
-            var1.gameEvent(null, GameEvent.CONTAINER_CLOSE, var2);
+            var1.gameEvent((Entity)null, GameEvent.CONTAINER_CLOSE, var2);
          }
 
          this.openCount = var9;
@@ -83,6 +86,7 @@ public abstract class ContainerOpenersCounter {
       if (var9 > 0) {
          scheduleRecheck(var1, var2, var3);
       }
+
    }
 
    public int getOpenerCount() {

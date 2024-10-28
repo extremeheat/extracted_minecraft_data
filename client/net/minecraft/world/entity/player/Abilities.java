@@ -43,6 +43,7 @@ public class Abilities {
             this.mayBuild = var2.getBoolean("mayBuild");
          }
       }
+
    }
 
    public float getFlyingSpeed() {

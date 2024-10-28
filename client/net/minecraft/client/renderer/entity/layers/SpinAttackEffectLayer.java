@@ -51,6 +51,7 @@ public class SpinAttackEffectLayer<T extends LivingEntity> extends RenderLayer<T
             this.box.render(var1, var11, var3, OverlayTexture.NO_OVERLAY);
             var1.popPose();
          }
+
       }
    }
 }

@@ -12,20 +12,16 @@ import net.minecraft.util.RandomSource;
 import org.joml.Vector3f;
 
 public class Vec3 implements Position {
-   public static final Codec<Vec3> CODEC = Codec.DOUBLE
-      .listOf()
-      .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 3).map(var0x -> new Vec3(var0x.get(0), var0x.get(1), var0x.get(2))), var0 -> List.of(var0.x(), var0.y(), var0.z())
-      );
-   public static final Vec3 ZERO = new Vec3(0.0, 0.0, 0.0);
+   public static final Codec<Vec3> CODEC;
+   public static final Vec3 ZERO;
    public final double x;
    public final double y;
    public final double z;
 
    public static Vec3 fromRGB24(int var0) {
-      double var1 = (double)(var0 >> 16 & 0xFF) / 255.0;
-      double var3 = (double)(var0 >> 8 & 0xFF) / 255.0;
-      double var5 = (double)(var0 & 0xFF) / 255.0;
+      double var1 = (double)(var0 >> 16 & 255) / 255.0;
+      double var3 = (double)(var0 >> 8 & 255) / 255.0;
+      double var5 = (double)(var0 & 255) / 255.0;
       return new Vec3(var1, var3, var5);
    }
 
@@ -161,7 +157,6 @@ public class Vec3 implements Position {
       return this.x * this.x + this.z * this.z;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -179,17 +174,16 @@ public class Vec3 implements Position {
       }
    }
 
-   @Override
    public int hashCode() {
       long var2 = Double.doubleToLongBits(this.x);
       int var1 = (int)(var2 ^ var2 >>> 32);
       var2 = Double.doubleToLongBits(this.y);
       var1 = 31 * var1 + (int)(var2 ^ var2 >>> 32);
       var2 = Double.doubleToLongBits(this.z);
-      return 31 * var1 + (int)(var2 ^ var2 >>> 32);
+      var1 = 31 * var1 + (int)(var2 ^ var2 >>> 32);
+      return var1;
    }
 
-   @Override
    public String toString() {
       return "(" + this.x + ", " + this.y + ", " + this.z + ")";
    }
@@ -260,22 +254,30 @@ public class Vec3 implements Position {
       return new Vec3(this.x + var2 * (double)var4.getX(), this.y + var2 * (double)var4.getY(), this.z + var2 * (double)var4.getZ());
    }
 
-   @Override
    public final double x() {
       return this.x;
    }
 
-   @Override
    public final double y() {
       return this.y;
    }
 
-   @Override
    public final double z() {
       return this.z;
    }
 
    public Vector3f toVector3f() {
       return new Vector3f((float)this.x, (float)this.y, (float)this.z);
+   }
+
+   static {
+      CODEC = Codec.DOUBLE.listOf().comapFlatMap((var0) -> {
+         return Util.fixedSize((List)var0, 3).map((var0x) -> {
+            return new Vec3((Double)var0x.get(0), (Double)var0x.get(1), (Double)var0x.get(2));
+         });
+      }, (var0) -> {
+         return List.of(var0.x(), var0.y(), var0.z());
+      });
+      ZERO = new Vec3(0.0, 0.0, 0.0);
    }
 }

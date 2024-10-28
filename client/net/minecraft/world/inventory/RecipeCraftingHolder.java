@@ -22,9 +22,10 @@ public interface RecipeCraftingHolder {
          var1.triggerRecipeCrafted(var3, var2);
          if (!var3.value().isSpecial()) {
             var1.awardRecipes(Collections.singleton(var3));
-            this.setRecipeUsed(null);
+            this.setRecipeUsed((RecipeHolder)null);
          }
       }
+
    }
 
    default boolean setRecipeUsed(Level var1, ServerPlayer var2, RecipeHolder<?> var3) {

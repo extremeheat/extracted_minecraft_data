@@ -22,9 +22,9 @@ public class RealmsServerAddress extends ValueObject {
 
       try {
          JsonObject var3 = var1.parse(var0).getAsJsonObject();
-         var2.address = JsonUtils.getStringOr("address", var3, null);
-         var2.resourcePackUrl = JsonUtils.getStringOr("resourcePackUrl", var3, null);
-         var2.resourcePackHash = JsonUtils.getStringOr("resourcePackHash", var3, null);
+         var2.address = JsonUtils.getStringOr("address", var3, (String)null);
+         var2.resourcePackUrl = JsonUtils.getStringOr("resourcePackUrl", var3, (String)null);
+         var2.resourcePackHash = JsonUtils.getStringOr("resourcePackHash", var3, (String)null);
       } catch (Exception var4) {
          LOGGER.error("Could not parse RealmsServerAddress: {}", var4.getMessage());
       }

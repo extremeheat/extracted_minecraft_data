@@ -25,7 +25,6 @@ public class DirectJoinServerScreen extends Screen {
       this.callback = var2;
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (!this.selectButton.active || this.getFocused() != this.ipEdit || var1 != 257 && var1 != 335) {
          return super.keyPressed(var1, var2, var3);
@@ -35,32 +34,27 @@ public class DirectJoinServerScreen extends Screen {
       }
    }
 
-   @Override
    protected void init() {
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, Component.translatable("addServer.enterIp"));
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.minecraft.options.lastMpIp);
-      this.ipEdit.setResponder(var1 -> this.updateSelectButtonStatus());
+      this.ipEdit.setResponder((var1) -> {
+         this.updateSelectButtonStatus();
+      });
       this.addWidget(this.ipEdit);
-      this.selectButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("selectServer.select"), var1 -> this.onSelect())
-            .bounds(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20)
-            .build()
-      );
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.callback.accept(false))
-            .bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20)
-            .build()
-      );
+      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (var1) -> {
+         this.onSelect();
+      }).bounds(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
+         this.callback.accept(false);
+      }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
       this.updateSelectButtonStatus();
    }
 
-   @Override
    protected void setInitialFocus() {
       this.setInitialFocus(this.ipEdit);
    }
 
-   @Override
    public void resize(Minecraft var1, int var2, int var3) {
       String var4 = this.ipEdit.getValue();
       this.init(var1, var2, var3);
@@ -72,12 +66,10 @@ public class DirectJoinServerScreen extends Screen {
       this.callback.accept(true);
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   @Override
    public void removed() {
       this.minecraft.options.lastMpIp = this.ipEdit.getValue();
       this.minecraft.options.save();
@@ -87,11 +79,10 @@ public class DirectJoinServerScreen extends Screen {
       this.selectButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-      var1.drawString(this.font, ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, 10526880);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, 16777215);
+      var1.drawString(this.font, (Component)ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, 10526880);
       this.ipEdit.render(var1, var2, var3, var4);
    }
 }

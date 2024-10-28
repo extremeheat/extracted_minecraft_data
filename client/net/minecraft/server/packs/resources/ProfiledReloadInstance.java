@@ -2,6 +2,7 @@ package net.minecraft.server.packs.resources;
 
 import com.google.common.base.Stopwatch;
 import com.mojang.logging.LogUtils;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -13,7 +14,7 @@ import net.minecraft.util.profiling.ActiveProfiler;
 import net.minecraft.util.profiling.ProfileResults;
 import org.slf4j.Logger;
 
-public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadInstance.State> {
+public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Stopwatch total = Stopwatch.createUnstarted();
 
@@ -21,40 +22,49 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
       super(var3, var4, var1, var2, (var1x, var2x, var3x, var4x, var5x) -> {
          AtomicLong var6 = new AtomicLong();
          AtomicLong var7 = new AtomicLong();
-         ActiveProfiler var8 = new ActiveProfiler(Util.timeSource, () -> 0, false);
-         ActiveProfiler var9 = new ActiveProfiler(Util.timeSource, () -> 0, false);
-         CompletableFuture var10 = var3x.reload(var1x, var2x, var8, var9, var2xx -> var4x.execute(() -> {
-               long var2xxxx = Util.getNanos();
-               var2xx.run();
-               var6.addAndGet(Util.getNanos() - var2xxxx);
-            }), var2xx -> var5x.execute(() -> {
-               long var2xxxx = Util.getNanos();
-               var2xx.run();
-               var7.addAndGet(Util.getNanos() - var2xxxx);
-            }));
-         return var10.thenApplyAsync(var5xx -> {
+         ActiveProfiler var8 = new ActiveProfiler(Util.timeSource, () -> {
+            return 0;
+         }, false);
+         ActiveProfiler var9 = new ActiveProfiler(Util.timeSource, () -> {
+            return 0;
+         }, false);
+         CompletableFuture var10 = var3x.reload(var1x, var2x, var8, var9, (var2) -> {
+            var4x.execute(() -> {
+               long var2x = Util.getNanos();
+               var2.run();
+               var6.addAndGet(Util.getNanos() - var2x);
+            });
+         }, (var2) -> {
+            var5x.execute(() -> {
+               long var2x = Util.getNanos();
+               var2.run();
+               var7.addAndGet(Util.getNanos() - var2x);
+            });
+         });
+         return var10.thenApplyAsync((var5) -> {
             LOGGER.debug("Finished reloading " + var3x.getName());
-            return new ProfiledReloadInstance.State(var3x.getName(), var8.getResults(), var9.getResults(), var6, var7);
+            return new State(var3x.getName(), var8.getResults(), var9.getResults(), var6, var7);
          }, var4);
       }, var5);
       this.total.start();
       this.allDone = this.allDone.thenApplyAsync(this::finish, var4);
    }
 
-   private List<ProfiledReloadInstance.State> finish(List<ProfiledReloadInstance.State> var1) {
+   private List<State> finish(List<State> var1) {
       this.total.stop();
       long var2 = 0L;
       LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
 
-      for(ProfiledReloadInstance.State var5 : var1) {
+      long var10;
+      for(Iterator var4 = var1.iterator(); var4.hasNext(); var2 += var10) {
+         State var5 = (State)var4.next();
          ProfileResults var6 = var5.preparationResult;
          ProfileResults var7 = var5.reloadResult;
          long var8 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());
-         long var10 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
+         var10 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
          long var12 = var8 + var10;
          String var14 = var5.name;
          LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", new Object[]{var14, var12, var8, var10});
-         var2 += var10;
       }
 
       LOGGER.info("Total blocking time: {} ms", var2);

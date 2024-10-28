@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -22,27 +23,25 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<LadderBlock> CODEC = simpleCodec(LadderBlock::new);
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-   public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+   public static final DirectionProperty FACING;
+   public static final BooleanProperty WATERLOGGED;
    protected static final float AABB_OFFSET = 3.0F;
-   protected static final VoxelShape EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
-   protected static final VoxelShape WEST_AABB = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-   protected static final VoxelShape SOUTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
-   protected static final VoxelShape NORTH_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
+   protected static final VoxelShape EAST_AABB;
+   protected static final VoxelShape WEST_AABB;
+   protected static final VoxelShape SOUTH_AABB;
+   protected static final VoxelShape NORTH_AABB;
 
-   @Override
    public MapCodec<LadderBlock> codec() {
       return CODEC;
    }
 
    protected LadderBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch((Direction)var1.getValue(FACING)) {
+      switch ((Direction)var1.getValue(FACING)) {
          case NORTH:
             return NORTH_AABB;
          case SOUTH:
@@ -60,19 +59,17 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       return var4.isFaceSturdy(var1, var2, var3);
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      Direction var4 = var1.getValue(FACING);
+      Direction var4 = (Direction)var1.getValue(FACING);
       return this.canAttachTo(var2, var3.relative(var4.getOpposite()), var4);
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         if (var1.getValue(WATERLOGGED)) {
-            var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         if ((Boolean)var1.getValue(WATERLOGGED)) {
+            var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
          }
 
          return super.updateShape(var1, var2, var3, var4, var5, var6);
@@ -80,25 +77,28 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Nullable
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
+      BlockState var2;
       if (!var1.replacingClickedOnBlock()) {
-         BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
+         var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
          if (var2.is(this) && var2.getValue(FACING) == var1.getClickedFace()) {
             return null;
          }
       }
 
-      BlockState var10 = this.defaultBlockState();
+      var2 = this.defaultBlockState();
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
       FluidState var5 = var1.getLevel().getFluidState(var1.getClickedPos());
+      Direction[] var6 = var1.getNearestLookingDirections();
+      int var7 = var6.length;
 
-      for(Direction var9 : var1.getNearestLookingDirections()) {
+      for(int var8 = 0; var8 < var7; ++var8) {
+         Direction var9 = var6[var8];
          if (var9.getAxis().isHorizontal()) {
-            var10 = var10.setValue(FACING, var9.getOpposite());
-            if (var10.canSurvive(var3, var4)) {
-               return var10.setValue(WATERLOGGED, Boolean.valueOf(var5.getType() == Fluids.WATER));
+            var2 = (BlockState)var2.setValue(FACING, var9.getOpposite());
+            if (var2.canSurvive(var3, var4)) {
+               return (BlockState)var2.setValue(WATERLOGGED, var5.getType() == Fluids.WATER);
             }
          }
       }
@@ -106,23 +106,28 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       return null;
    }
 
-   @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
+      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, WATERLOGGED);
    }
 
-   @Override
    protected FluidState getFluidState(BlockState var1) {
-      return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   }
+
+   static {
+      FACING = HorizontalDirectionalBlock.FACING;
+      WATERLOGGED = BlockStateProperties.WATERLOGGED;
+      EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
+      WEST_AABB = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+      SOUTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
+      NORTH_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
    }
 }

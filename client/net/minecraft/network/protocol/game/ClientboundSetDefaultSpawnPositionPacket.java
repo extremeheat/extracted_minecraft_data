@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetDefaultSpawnPositionPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetDefaultSpawnPositionPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetDefaultSpawnPositionPacket::write, ClientboundSetDefaultSpawnPositionPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetDefaultSpawnPositionPacket> STREAM_CODEC = Packet.codec(ClientboundSetDefaultSpawnPositionPacket::write, ClientboundSetDefaultSpawnPositionPacket::new);
    private final BlockPos pos;
    private final float angle;
 
@@ -30,7 +28,6 @@ public class ClientboundSetDefaultSpawnPositionPacket implements Packet<ClientGa
       var1.writeFloat(this.angle);
    }
 
-   @Override
    public PacketType<ClientboundSetDefaultSpawnPositionPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_DEFAULT_SPAWN_POSITION;
    }

@@ -12,35 +12,30 @@ public class DragonHoverPhase extends AbstractDragonPhaseInstance {
       super(var1);
    }
 
-   @Override
    public void doServerTick() {
       if (this.targetLocation == null) {
          this.targetLocation = this.dragon.position();
       }
+
    }
 
-   @Override
    public boolean isSitting() {
       return true;
    }
 
-   @Override
    public void begin() {
       this.targetLocation = null;
    }
 
-   @Override
    public float getFlySpeed() {
       return 1.0F;
    }
 
    @Nullable
-   @Override
    public Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 
-   @Override
    public EnderDragonPhase<DragonHoverPhase> getPhase() {
       return EnderDragonPhase.HOVERING;
    }

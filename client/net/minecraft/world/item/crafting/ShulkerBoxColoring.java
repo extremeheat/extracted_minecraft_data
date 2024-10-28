@@ -61,12 +61,10 @@ public class ShulkerBoxColoring extends CustomRecipe {
       return var3.transmuteCopy(var8, 1);
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.SHULKER_BOX_COLORING;
    }

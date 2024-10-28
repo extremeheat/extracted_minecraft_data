@@ -18,22 +18,18 @@ public abstract class TextureSheetParticle extends SingleQuadParticle {
       this.sprite = var1;
    }
 
-   @Override
    protected float getU0() {
       return this.sprite.getU0();
    }
 
-   @Override
    protected float getU1() {
       return this.sprite.getU1();
    }
 
-   @Override
    protected float getV0() {
       return this.sprite.getV0();
    }
 
-   @Override
    protected float getV1() {
       return this.sprite.getV1();
    }
@@ -46,5 +42,6 @@ public abstract class TextureSheetParticle extends SingleQuadParticle {
       if (!this.removed) {
          this.setSprite(var1.get(this.age, this.lifetime));
       }
+
    }
 }

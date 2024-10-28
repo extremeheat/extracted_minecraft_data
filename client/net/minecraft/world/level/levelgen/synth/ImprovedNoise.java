@@ -18,22 +18,25 @@ public final class ImprovedNoise {
       this.zo = var1.nextDouble() * 256.0;
       this.p = new byte[256];
 
-      for(int var2 = 0; var2 < 256; ++var2) {
+      int var2;
+      for(var2 = 0; var2 < 256; ++var2) {
          this.p[var2] = (byte)var2;
       }
 
-      for(int var5 = 0; var5 < 256; ++var5) {
-         int var3 = var1.nextInt(256 - var5);
-         byte var4 = this.p[var5];
-         this.p[var5] = this.p[var5 + var3];
-         this.p[var5 + var3] = var4;
+      for(var2 = 0; var2 < 256; ++var2) {
+         int var3 = var1.nextInt(256 - var2);
+         byte var4 = this.p[var2];
+         this.p[var2] = this.p[var2 + var3];
+         this.p[var2 + var3] = var4;
       }
+
    }
 
    public double noise(double var1, double var3, double var5) {
       return this.noise(var1, var3, var5, 0.0, 0.0);
    }
 
+   /** @deprecated */
    @Deprecated
    public double noise(double var1, double var3, double var5, double var7, double var9) {
       double var11 = var1 + this.xo;
@@ -80,7 +83,7 @@ public final class ImprovedNoise {
    }
 
    private int p(int var1) {
-      return this.p[var1 & 0xFF] & 0xFF;
+      return this.p[var1 & 255] & 255;
    }
 
    private double sampleAndLerp(int var1, int var2, int var3, double var4, double var6, double var8, double var10) {
@@ -138,45 +141,9 @@ public final class ImprovedNoise {
       double var49 = Mth.smoothstep(var4);
       double var51 = Mth.smoothstep(var6);
       double var53 = Mth.smoothstep(var8);
-      double var55 = Mth.lerp3(
-         var49,
-         var51,
-         var53,
-         (double)var25[0],
-         (double)var26[0],
-         (double)var27[0],
-         (double)var28[0],
-         (double)var29[0],
-         (double)var30[0],
-         (double)var31[0],
-         (double)var32[0]
-      );
-      double var57 = Mth.lerp3(
-         var49,
-         var51,
-         var53,
-         (double)var25[1],
-         (double)var26[1],
-         (double)var27[1],
-         (double)var28[1],
-         (double)var29[1],
-         (double)var30[1],
-         (double)var31[1],
-         (double)var32[1]
-      );
-      double var59 = Mth.lerp3(
-         var49,
-         var51,
-         var53,
-         (double)var25[2],
-         (double)var26[2],
-         (double)var27[2],
-         (double)var28[2],
-         (double)var29[2],
-         (double)var30[2],
-         (double)var31[2],
-         (double)var32[2]
-      );
+      double var55 = Mth.lerp3(var49, var51, var53, (double)var25[0], (double)var26[0], (double)var27[0], (double)var28[0], (double)var29[0], (double)var30[0], (double)var31[0], (double)var32[0]);
+      double var57 = Mth.lerp3(var49, var51, var53, (double)var25[1], (double)var26[1], (double)var27[1], (double)var28[1], (double)var29[1], (double)var30[1], (double)var31[1], (double)var32[1]);
+      double var59 = Mth.lerp3(var49, var51, var53, (double)var25[2], (double)var26[2], (double)var27[2], (double)var28[2], (double)var29[2], (double)var30[2], (double)var31[2], (double)var32[2]);
       double var61 = Mth.lerp2(var51, var53, var35 - var33, var39 - var37, var43 - var41, var47 - var45);
       double var63 = Mth.lerp2(var53, var49, var37 - var33, var45 - var41, var39 - var35, var47 - var43);
       double var65 = Mth.lerp2(var49, var51, var41 - var33, var43 - var35, var45 - var37, var47 - var39);

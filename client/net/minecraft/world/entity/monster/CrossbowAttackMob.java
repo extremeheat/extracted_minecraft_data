@@ -17,8 +17,6 @@ public interface CrossbowAttackMob extends RangedAttackMob {
 
    void onCrossbowAttackPerformed();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    default void performCrossbowAttack(LivingEntity var1, float var2) {
       InteractionHand var3 = ProjectileUtil.getWeaponHoldingHand(var1, Items.CROSSBOW);
       ItemStack var4 = var1.getItemInHand(var3);

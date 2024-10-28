@@ -1,21 +1,22 @@
 package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
 public class NoiseThresholdCountPlacement extends RepeatingPlacement {
-   public static final Codec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.DOUBLE.fieldOf("noise_level").forGetter(var0x -> var0x.noiseLevel),
-               Codec.INT.fieldOf("below_noise").forGetter(var0x -> var0x.belowNoise),
-               Codec.INT.fieldOf("above_noise").forGetter(var0x -> var0x.aboveNoise)
-            )
-            .apply(var0, NoiseThresholdCountPlacement::new)
-   );
+   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.DOUBLE.fieldOf("noise_level").forGetter((var0x) -> {
+         return var0x.noiseLevel;
+      }), Codec.INT.fieldOf("below_noise").forGetter((var0x) -> {
+         return var0x.belowNoise;
+      }), Codec.INT.fieldOf("above_noise").forGetter((var0x) -> {
+         return var0x.aboveNoise;
+      })).apply(var0, NoiseThresholdCountPlacement::new);
+   });
    private final double noiseLevel;
    private final int belowNoise;
    private final int aboveNoise;
@@ -31,13 +32,11 @@ public class NoiseThresholdCountPlacement extends RepeatingPlacement {
       return new NoiseThresholdCountPlacement(var0, var2, var3);
    }
 
-   @Override
    protected int count(RandomSource var1, BlockPos var2) {
       double var3 = Biome.BIOME_INFO_NOISE.getValue((double)var2.getX() / 200.0, (double)var2.getZ() / 200.0, false);
       return var3 < this.noiseLevel ? this.belowNoise : this.aboveNoise;
    }
 
-   @Override
    public PlacementModifierType<?> type() {
       return PlacementModifierType.NOISE_THRESHOLD_COUNT;
    }

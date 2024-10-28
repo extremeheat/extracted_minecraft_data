@@ -26,7 +26,6 @@ public class StrollThroughVillageGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (this.mob.hasControllingPassenger()) {
          return false;
@@ -40,19 +39,19 @@ public class StrollThroughVillageGoal extends Goal {
          if (!var1.isCloseToVillage(var2, 6)) {
             return false;
          } else {
-            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, var1x -> (double)(-var1.sectionsToVillage(SectionPos.of(var1x))));
+            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var1x) -> {
+               return (double)(-var1.sectionsToVillage(SectionPos.of(var1x)));
+            });
             this.wantedPos = var3 == null ? null : BlockPos.containing(var3);
             return this.wantedPos != null;
          }
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.wantedPos != null && !this.mob.getNavigation().isDone() && this.mob.getNavigation().getTargetPos().equals(this.wantedPos);
    }
 
-   @Override
    public void tick() {
       if (this.wantedPos != null) {
          PathNavigation var1 = this.mob.getNavigation();
@@ -68,14 +67,13 @@ public class StrollThroughVillageGoal extends Goal {
                this.moveRandomly();
             }
          }
+
       }
    }
 
    private void moveRandomly() {
       RandomSource var1 = this.mob.getRandom();
-      BlockPos var2 = this.mob
-         .level()
-         .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
+      BlockPos var2 = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
       this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), 1.0);
    }
 }

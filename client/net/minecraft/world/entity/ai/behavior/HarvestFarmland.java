@@ -10,11 +10,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,16 +37,7 @@ public class HarvestFarmland extends Behavior<Villager> {
    private final List<BlockPos> validFarmlandAroundVillager = Lists.newArrayList();
 
    public HarvestFarmland() {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.SECONDARY_JOB_SITE,
-            MemoryStatus.VALUE_PRESENT
-         )
-      );
+      super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SECONDARY_JOB_SITE, MemoryStatus.VALUE_PRESENT));
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
@@ -74,9 +67,7 @@ public class HarvestFarmland extends Behavior<Villager> {
 
    @Nullable
    private BlockPos getValidFarmland(ServerLevel var1) {
-      return this.validFarmlandAroundVillager.isEmpty()
-         ? null
-         : this.validFarmlandAroundVillager.get(var1.getRandom().nextInt(this.validFarmlandAroundVillager.size()));
+      return this.validFarmlandAroundVillager.isEmpty() ? null : (BlockPos)this.validFarmlandAroundVillager.get(var1.getRandom().nextInt(this.validFarmlandAroundVillager.size()));
    }
 
    private boolean validPos(BlockPos var1, ServerLevel var2) {
@@ -88,9 +79,10 @@ public class HarvestFarmland extends Behavior<Villager> {
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       if (var3 > this.nextOkStartTime && this.aboveFarmlandPos != null) {
-         var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
+         var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosTracker(this.aboveFarmlandPos)));
+         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1)));
       }
+
    }
 
    protected void stop(ServerLevel var1, Villager var2, long var3) {
@@ -100,8 +92,6 @@ public class HarvestFarmland extends Behavior<Villager> {
       this.nextOkStartTime = var3 + 40L;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       if (this.aboveFarmlandPos == null || this.aboveFarmlandPos.closerToCenterThan(var2.position(), 1.0)) {
          if (this.aboveFarmlandPos != null && var3 > this.nextOkStartTime) {
@@ -120,7 +110,8 @@ public class HarvestFarmland extends Behavior<Villager> {
                   boolean var11 = false;
                   if (!var10.isEmpty() && var10.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
                      Item var13 = var10.getItem();
-                     if (var13 instanceof BlockItem var12) {
+                     if (var13 instanceof BlockItem) {
+                        BlockItem var12 = (BlockItem)var13;
                         BlockState var14 = var12.getBlock().defaultBlockState();
                         var1.setBlockAndUpdate(this.aboveFarmlandPos, var14);
                         var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var14));
@@ -129,16 +120,7 @@ public class HarvestFarmland extends Behavior<Villager> {
                   }
 
                   if (var11) {
-                     var1.playSound(
-                        null,
-                        (double)this.aboveFarmlandPos.getX(),
-                        (double)this.aboveFarmlandPos.getY(),
-                        (double)this.aboveFarmlandPos.getZ(),
-                        SoundEvents.CROP_PLANTED,
-                        SoundSource.BLOCKS,
-                        1.0F,
-                        1.0F
-                     );
+                     var1.playSound((Player)null, (double)this.aboveFarmlandPos.getX(), (double)this.aboveFarmlandPos.getY(), (double)this.aboveFarmlandPos.getZ(), SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
                      var10.shrink(1);
                      if (var10.isEmpty()) {
                         var8.setItem(var9, ItemStack.EMPTY);
@@ -153,8 +135,8 @@ public class HarvestFarmland extends Behavior<Villager> {
                this.aboveFarmlandPos = this.getValidFarmland(var1);
                if (this.aboveFarmlandPos != null) {
                   this.nextOkStartTime = var3 + 20L;
-                  var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1));
-                  var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(this.aboveFarmlandPos));
+                  var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new BlockPosTracker(this.aboveFarmlandPos), 0.5F, 1)));
+                  var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosTracker(this.aboveFarmlandPos)));
                }
             }
          }
@@ -165,5 +147,15 @@ public class HarvestFarmland extends Behavior<Villager> {
 
    protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
       return this.timeWorkedSoFar < 200;
+   }
+
+   // $FF: synthetic method
+   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+      return this.canStillUse(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

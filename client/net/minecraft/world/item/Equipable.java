@@ -43,19 +43,17 @@ public interface Equipable {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    static Equipable get(ItemStack var0) {
       Item var2 = var0.getItem();
-      if (var2 instanceof Equipable) {
-         return (Equipable)var2;
+      if (var2 instanceof Equipable var4) {
+         return var4;
       } else {
          Item var3 = var0.getItem();
          if (var3 instanceof BlockItem var1) {
-            Block var4 = var1.getBlock();
-            if (var4 instanceof Equipable) {
-               return (Equipable)var4;
+            Block var6 = var1.getBlock();
+            if (var6 instanceof Equipable var5) {
+               return var5;
             }
          }
 

@@ -29,37 +29,30 @@ public class SpacerElement implements LayoutElement {
       return new SpacerElement(0, var0);
    }
 
-   @Override
    public void setX(int var1) {
       this.x = var1;
    }
 
-   @Override
    public void setY(int var1) {
       this.y = var1;
    }
 
-   @Override
    public int getX() {
       return this.x;
    }
 
-   @Override
    public int getY() {
       return this.y;
    }
 
-   @Override
    public int getWidth() {
       return this.width;
    }
 
-   @Override
    public int getHeight() {
       return this.height;
    }
 
-   @Override
    public void visitWidgets(Consumer<AbstractWidget> var1) {
    }
 }

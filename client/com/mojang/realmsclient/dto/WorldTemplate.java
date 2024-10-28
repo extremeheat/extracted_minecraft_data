@@ -17,10 +17,11 @@ public class WorldTemplate extends ValueObject {
    public String image;
    public String trailer = "";
    public String recommendedPlayers = "";
-   public WorldTemplate.WorldTemplateType type = WorldTemplate.WorldTemplateType.WORLD_TEMPLATE;
+   public WorldTemplateType type;
 
    public WorldTemplate() {
       super();
+      this.type = WorldTemplate.WorldTemplateType.WORLD_TEMPLATE;
    }
 
    public static WorldTemplate parse(JsonObject var0) {
@@ -32,7 +33,7 @@ public class WorldTemplate extends ValueObject {
          var1.version = JsonUtils.getStringOr("version", var0, "");
          var1.author = JsonUtils.getStringOr("author", var0, "");
          var1.link = JsonUtils.getStringOr("link", var0, "");
-         var1.image = JsonUtils.getStringOr("image", var0, null);
+         var1.image = JsonUtils.getStringOr("image", var0, (String)null);
          var1.trailer = JsonUtils.getStringOr("trailer", var0, "");
          var1.recommendedPlayers = JsonUtils.getStringOr("recommendedPlayers", var0, "");
          var1.type = WorldTemplate.WorldTemplateType.valueOf(JsonUtils.getStringOr("type", var0, WorldTemplate.WorldTemplateType.WORLD_TEMPLATE.name()));
@@ -51,6 +52,11 @@ public class WorldTemplate extends ValueObject {
       INSPIRATION;
 
       private WorldTemplateType() {
+      }
+
+      // $FF: synthetic method
+      private static WorldTemplateType[] $values() {
+         return new WorldTemplateType[]{WORLD_TEMPLATE, MINIGAME, ADVENTUREMAP, EXPERIENCE, INSPIRATION};
       }
    }
 }

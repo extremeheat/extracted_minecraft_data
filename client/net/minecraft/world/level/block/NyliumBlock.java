@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.NetherFeatures;
@@ -21,7 +20,6 @@ import net.minecraft.world.level.lighting.LightEngine;
 public class NyliumBlock extends Block implements BonemealableBlock {
    public static final MapCodec<NyliumBlock> CODEC = simpleCodec(NyliumBlock::new);
 
-   @Override
    public MapCodec<NyliumBlock> codec() {
       return CODEC;
    }
@@ -37,24 +35,21 @@ public class NyliumBlock extends Block implements BonemealableBlock {
       return var5 < var1.getMaxLightLevel();
    }
 
-   @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!canBeNylium(var1, var2, var3)) {
          var2.setBlockAndUpdate(var3, Blocks.NETHERRACK.defaultBlockState());
       }
+
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return var1.getBlockState(var2.above()).isAir();
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       BlockState var5 = var1.getBlockState(var3);
       BlockPos var6 = var3.above();
@@ -69,20 +64,15 @@ public class NyliumBlock extends Block implements BonemealableBlock {
             this.place(var8, NetherFeatures.TWISTING_VINES_BONEMEAL, var1, var7, var2, var6);
          }
       }
+
    }
 
-   private void place(
-      Registry<ConfiguredFeature<?, ?>> var1,
-      ResourceKey<ConfiguredFeature<?, ?>> var2,
-      ServerLevel var3,
-      ChunkGenerator var4,
-      RandomSource var5,
-      BlockPos var6
-   ) {
-      var1.getHolder(var2).ifPresent(var4x -> ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6));
+   private void place(Registry<ConfiguredFeature<?, ?>> var1, ResourceKey<ConfiguredFeature<?, ?>> var2, ServerLevel var3, ChunkGenerator var4, RandomSource var5, BlockPos var6) {
+      var1.getHolder(var2).ifPresent((var4x) -> {
+         ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6);
+      });
    }
 
-   @Override
    public BonemealableBlock.Type getType() {
       return BonemealableBlock.Type.NEIGHBOR_SPREADER;
    }

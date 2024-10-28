@@ -31,7 +31,8 @@ public class EntityProjectileOwnerFix extends DataFix {
       var1 = this.updateEntity(var1, "minecraft:llama_spit", this::updateOwnerLlamaSpit);
       var1 = this.updateEntity(var1, "minecraft:arrow", this::updateOwnerArrow);
       var1 = this.updateEntity(var1, "minecraft:spectral_arrow", this::updateOwnerArrow);
-      return this.updateEntity(var1, "minecraft:trident", this::updateOwnerArrow);
+      var1 = this.updateEntity(var1, "minecraft:trident", this::updateOwnerArrow);
+      return var1;
    }
 
    private Dynamic<?> updateOwnerArrow(Dynamic<?> var1) {
@@ -72,6 +73,8 @@ public class EntityProjectileOwnerFix extends DataFix {
    private Typed<?> updateEntity(Typed<?> var1, String var2, Function<Dynamic<?>, Dynamic<?>> var3) {
       Type var4 = this.getInputSchema().getChoiceType(References.ENTITY, var2);
       Type var5 = this.getOutputSchema().getChoiceType(References.ENTITY, var2);
-      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, var1x -> var1x.update(DSL.remainderFinder(), var3));
+      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, (var1x) -> {
+         return var1x.update(DSL.remainderFinder(), var3);
+      });
    }
 }

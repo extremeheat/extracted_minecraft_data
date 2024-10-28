@@ -10,6 +10,7 @@ public interface ProtocolSwapHandler {
          var0.pipeline().addBefore(var0.name(), "inbound_config", new UnconfiguredPipelineHandler.Inbound());
          var0.pipeline().remove(var0.name());
       }
+
    }
 
    static void handleOutboundTerminalPacket(ChannelHandlerContext var0, Packet<?> var1) {
@@ -17,5 +18,6 @@ public interface ProtocolSwapHandler {
          var0.pipeline().addAfter(var0.name(), "outbound_config", new UnconfiguredPipelineHandler.Outbound());
          var0.pipeline().remove(var0.name());
       }
+
    }
 }

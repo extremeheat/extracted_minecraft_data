@@ -9,17 +9,20 @@ import net.minecraft.network.codec.StreamCodec;
 public class BlankFormat implements NumberFormat {
    public static final BlankFormat INSTANCE = new BlankFormat();
    public static final NumberFormatType<BlankFormat> TYPE = new NumberFormatType<BlankFormat>() {
-      private static final MapCodec<BlankFormat> CODEC = MapCodec.unit(BlankFormat.INSTANCE);
-      private static final StreamCodec<RegistryFriendlyByteBuf, BlankFormat> STREAM_CODEC = StreamCodec.unit(BlankFormat.INSTANCE);
+      private static final MapCodec<BlankFormat> CODEC;
+      private static final StreamCodec<RegistryFriendlyByteBuf, BlankFormat> STREAM_CODEC;
 
-      @Override
       public MapCodec<BlankFormat> mapCodec() {
          return CODEC;
       }
 
-      @Override
       public StreamCodec<RegistryFriendlyByteBuf, BlankFormat> streamCodec() {
          return STREAM_CODEC;
+      }
+
+      static {
+         CODEC = MapCodec.unit(BlankFormat.INSTANCE);
+         STREAM_CODEC = StreamCodec.unit(BlankFormat.INSTANCE);
       }
    };
 
@@ -27,12 +30,10 @@ public class BlankFormat implements NumberFormat {
       super();
    }
 
-   @Override
    public MutableComponent format(int var1) {
       return Component.empty();
    }
 
-   @Override
    public NumberFormatType<BlankFormat> type() {
       return TYPE;
    }

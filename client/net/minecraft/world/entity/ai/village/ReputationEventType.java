@@ -9,7 +9,6 @@ public interface ReputationEventType {
 
    static ReputationEventType register(final String var0) {
       return new ReputationEventType() {
-         @Override
          public String toString() {
             return var0;
          }

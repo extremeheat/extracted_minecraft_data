@@ -7,16 +7,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundTabListPacket(Component b, Component c) implements Packet<ClientGamePacketListener> {
-   private final Component header;
-   private final Component footer;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTabListPacket> STREAM_CODEC = StreamCodec.composite(
-      ComponentSerialization.TRUSTED_STREAM_CODEC,
-      ClientboundTabListPacket::header,
-      ComponentSerialization.TRUSTED_STREAM_CODEC,
-      ClientboundTabListPacket::footer,
-      ClientboundTabListPacket::new
-   );
+public record ClientboundTabListPacket(Component header, Component footer) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTabListPacket> STREAM_CODEC;
 
    public ClientboundTabListPacket(Component var1, Component var2) {
       super();
@@ -24,12 +16,23 @@ public record ClientboundTabListPacket(Component b, Component c) implements Pack
       this.footer = var2;
    }
 
-   @Override
    public PacketType<ClientboundTabListPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TAB_LIST;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleTabListCustomisation(this);
+   }
+
+   public Component header() {
+      return this.header;
+   }
+
+   public Component footer() {
+      return this.footer;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundTabListPacket::header, ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundTabListPacket::footer, ClientboundTabListPacket::new);
    }
 }

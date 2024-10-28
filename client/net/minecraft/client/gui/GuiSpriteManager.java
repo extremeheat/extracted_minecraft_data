@@ -11,13 +11,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 
 public class GuiSpriteManager extends TextureAtlasHolder {
-   private static final Set<MetadataSectionSerializer<?>> METADATA_SECTIONS = Set.of(AnimationMetadataSection.SERIALIZER, GuiMetadataSection.TYPE);
+   private static final Set<MetadataSectionSerializer<?>> METADATA_SECTIONS;
 
    public GuiSpriteManager(TextureManager var1) {
       super(var1, new ResourceLocation("textures/atlas/gui.png"), new ResourceLocation("gui"), METADATA_SECTIONS);
    }
 
-   @Override
    public TextureAtlasSprite getSprite(ResourceLocation var1) {
       return super.getSprite(var1);
    }
@@ -28,5 +27,9 @@ public class GuiSpriteManager extends TextureAtlasHolder {
 
    private GuiMetadataSection getMetadata(TextureAtlasSprite var1) {
       return (GuiMetadataSection)var1.contents().metadata().getSection(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT);
+   }
+
+   static {
+      METADATA_SECTIONS = Set.of(AnimationMetadataSection.SERIALIZER, GuiMetadataSection.TYPE);
    }
 }

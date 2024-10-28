@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
@@ -23,7 +24,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -43,13 +43,16 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
    private static final int OUTLINE_RENDER_DISTANCE = Mth.square(16);
    private static final float RENDER_SCALE = 0.6666667F;
    private static final Vec3 TEXT_OFFSET = new Vec3(0.0, 0.3333333432674408, 0.046666666865348816);
-   private final Map<WoodType, SignRenderer.SignModel> signModels;
+   private final Map<WoodType, SignModel> signModels;
    private final Font font;
 
    public SignRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.signModels = WoodType.values()
-         .collect(ImmutableMap.toImmutableMap(var0 -> var0, var1x -> new SignRenderer.SignModel(var1.bakeLayer(ModelLayers.createSignModelName(var1x)))));
+      this.signModels = (Map)WoodType.values().collect(ImmutableMap.toImmutableMap((var0) -> {
+         return var0;
+      }, (var1x) -> {
+         return new SignModel(var1.bakeLayer(ModelLayers.createSignModelName(var1x)));
+      }));
       this.font = var1.getFont();
    }
 
@@ -57,7 +60,7 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       BlockState var7 = var1.getBlockState();
       SignBlock var8 = (SignBlock)var7.getBlock();
       WoodType var9 = SignBlock.getWoodType(var8);
-      SignRenderer.SignModel var10 = this.signModels.get(var9);
+      SignModel var10 = (SignModel)this.signModels.get(var9);
       var10.stick.visible = var7.getBlock() instanceof StandingSignBlock;
       this.renderSignWithText(var1, var3, var4, var5, var6, var7, var8, var9, var10);
    }
@@ -70,9 +73,7 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       return 0.6666667F;
    }
 
-   void renderSignWithText(
-      SignBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, BlockState var6, SignBlock var7, WoodType var8, Model var9
-   ) {
+   void renderSignWithText(SignBlockEntity var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, BlockState var6, SignBlock var7, WoodType var8, Model var9) {
       var2.pushPose();
       this.translateSign(var2, -var7.getYRotationDegrees(var6), var6);
       this.renderSign(var2, var3, var4, var5, var8, var9);
@@ -87,6 +88,7 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       if (!(var3.getBlock() instanceof StandingSignBlock)) {
          var1.translate(0.0F, -0.3125F, -0.4375F);
       }
+
    }
 
    void renderSign(PoseStack var1, MultiBufferSource var2, int var3, int var4, WoodType var5, Model var6) {
@@ -94,13 +96,14 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       float var7 = this.getSignModelRenderScale();
       var1.scale(var7, -var7, -var7);
       Material var8 = this.getSignMaterial(var5);
+      Objects.requireNonNull(var6);
       VertexConsumer var9 = var8.buffer(var2, var6::renderType);
       this.renderSignModel(var1, var3, var4, var6, var9);
       var1.popPose();
    }
 
    void renderSignModel(PoseStack var1, int var2, int var3, Model var4, VertexConsumer var5) {
-      SignRenderer.SignModel var6 = (SignRenderer.SignModel)var4;
+      SignModel var6 = (SignModel)var4;
       var6.root.render(var1, var5, var2, var3);
    }
 
@@ -113,9 +116,9 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       this.translateSignText(var3, var8, this.getTextOffset());
       int var9 = getDarkColor(var2);
       int var10 = 4 * var6 / 2;
-      FormattedCharSequence[] var11 = var2.getRenderMessages(Minecraft.getInstance().isTextFilteringEnabled(), var2x -> {
-         List var3xx = this.font.split(var2x, var7);
-         return var3xx.isEmpty() ? FormattedCharSequence.EMPTY : (FormattedCharSequence)var3xx.get(0);
+      FormattedCharSequence[] var11 = var2.getRenderMessages(Minecraft.getInstance().isTextFilteringEnabled(), (var2x) -> {
+         List var3 = this.font.split(var2x, var7);
+         return var3.isEmpty() ? FormattedCharSequence.EMPTY : (FormattedCharSequence)var3.get(0);
       });
       int var12;
       boolean var13;
@@ -136,8 +139,7 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
          if (var13) {
             this.font.drawInBatch8xOutline(var16, var17, (float)(var15 * var6 - var10), var12, var9, var3.last().pose(), var4, var14);
          } else {
-            this.font
-               .drawInBatch(var16, var17, (float)(var15 * var6 - var10), var12, false, var3.last().pose(), var4, Font.DisplayMode.POLYGON_OFFSET, 0, var14);
+            this.font.drawInBatch((FormattedCharSequence)var16, var17, (float)(var15 * var6 - var10), var12, false, var3.last().pose(), var4, Font.DisplayMode.POLYGON_OFFSET, 0, var14);
          }
       }
 
@@ -186,8 +188,8 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       }
    }
 
-   public static SignRenderer.SignModel createSignModel(EntityModelSet var0, WoodType var1) {
-      return new SignRenderer.SignModel(var0.bakeLayer(ModelLayers.createSignModelName(var1)));
+   public static SignModel createSignModel(EntityModelSet var0, WoodType var1) {
+      return new SignModel(var0.bakeLayer(ModelLayers.createSignModelName(var1)));
    }
 
    public static LayerDefinition createSignLayer() {
@@ -208,7 +210,6 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
          this.stick = var1.getChild("stick");
       }
 
-      @Override
       public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
          this.root.render(var1, var2, var3, var4, var5, var6, var7, var8);
       }

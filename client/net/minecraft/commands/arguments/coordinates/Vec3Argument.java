@@ -60,13 +60,16 @@ public class Vec3Argument implements ArgumentType<Coordinates> {
             var4 = ((SharedSuggestionProvider)var1.getSource()).getAbsoluteCoordinates();
          }
 
-         return SharedSuggestionProvider.suggestCoordinates(
-            var3, (Collection<SharedSuggestionProvider.TextCoordinates>)var4, var2, Commands.createValidator(this::parse)
-         );
+         return SharedSuggestionProvider.suggestCoordinates(var3, (Collection)var4, var2, Commands.createValidator(this::parse));
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

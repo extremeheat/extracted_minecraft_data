@@ -10,8 +10,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -49,20 +52,9 @@ public class StructureCheck {
    private final long seed;
    private final DataFixer fixerUpper;
    private final Long2ObjectMap<Object2IntMap<Structure>> loadedChunks = new Long2ObjectOpenHashMap();
-   private final Map<Structure, Long2BooleanMap> featureChecks = new HashMap<>();
+   private final Map<Structure, Long2BooleanMap> featureChecks = new HashMap();
 
-   public StructureCheck(
-      ChunkScanAccess var1,
-      RegistryAccess var2,
-      StructureTemplateManager var3,
-      ResourceKey<Level> var4,
-      ChunkGenerator var5,
-      RandomState var6,
-      LevelHeightAccessor var7,
-      BiomeSource var8,
-      long var9,
-      DataFixer var11
-   ) {
+   public StructureCheck(ChunkScanAccess var1, RegistryAccess var2, StructureTemplateManager var3, ResourceKey<Level> var4, ChunkGenerator var5, RandomState var6, LevelHeightAccessor var7, BiomeSource var8, long var9, DataFixer var11) {
       super();
       this.storageAccess = var1;
       this.registryAccess = var2;
@@ -88,38 +80,32 @@ public class StructureCheck {
          } else if (!var3.applyAdditionalChunkRestrictions(var1.x, var1.z, this.seed)) {
             return StructureCheckResult.START_NOT_PRESENT;
          } else {
-            boolean var9 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, var0 -> new Long2BooleanOpenHashMap()))
-               .computeIfAbsent(var5, var3x -> this.canCreateStructure(var1, var2));
+            boolean var9 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, (var0) -> {
+               return new Long2BooleanOpenHashMap();
+            })).computeIfAbsent(var5, (var3x) -> {
+               return this.canCreateStructure(var1, var2);
+            });
             return !var9 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
          }
       }
    }
 
    private boolean canCreateStructure(ChunkPos var1, Structure var2) {
-      return var2.findValidGenerationPoint(
-            new Structure.GenerationContext(
-               this.registryAccess,
-               this.chunkGenerator,
-               this.biomeSource,
-               this.randomState,
-               this.structureTemplateManager,
-               this.seed,
-               var1,
-               this.heightAccessor,
-               var2.biomes()::contains,
-               var2.densityChecks()
-            )
-         )
-         .isPresent();
+      RegistryAccess var10003 = this.registryAccess;
+      ChunkGenerator var10004 = this.chunkGenerator;
+      BiomeSource var10005 = this.biomeSource;
+      RandomState var10006 = this.randomState;
+      StructureTemplateManager var10007 = this.structureTemplateManager;
+      long var10008 = this.seed;
+      LevelHeightAccessor var10010 = this.heightAccessor;
+      HolderSet var10011 = var2.biomes();
+      Objects.requireNonNull(var10011);
+      return var2.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, var1, var10010, var10011::contains)).isPresent();
    }
 
    @Nullable
    private StructureCheckResult tryLoadFromStorage(ChunkPos var1, Structure var2, boolean var3, long var4) {
-      CollectFields var6 = new CollectFields(
-         new FieldSelector(IntTag.TYPE, "DataVersion"),
-         new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"),
-         new FieldSelector("structures", CompoundTag.TYPE, "starts")
-      );
+      CollectFields var6 = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts")});
 
       try {
          this.storageAccess.scanChunk(var1, var6).join();
@@ -129,10 +115,9 @@ public class StructureCheck {
       }
 
       Tag var7 = var6.getResult();
-      if (!(var7 instanceof CompoundTag)) {
+      if (!(var7 instanceof CompoundTag var8)) {
          return null;
       } else {
-         CompoundTag var8 = (CompoundTag)var7;
          int var9 = ChunkStorage.getVersion(var8);
          if (var9 <= 1493) {
             return StructureCheckResult.CHUNK_LOAD_NEEDED;
@@ -173,8 +158,10 @@ public class StructureCheck {
             } else {
                Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
                Registry var5 = this.registryAccess.registryOrThrow(Registries.STRUCTURE);
+               Iterator var6 = var3.getAllKeys().iterator();
 
-               for(String var7 : var3.getAllKeys()) {
+               while(var6.hasNext()) {
+                  String var7 = (String)var6.next();
                   ResourceLocation var8 = ResourceLocation.tryParse(var7);
                   if (var8 != null) {
                      Structure var9 = (Structure)var5.get(var8);
@@ -213,23 +200,28 @@ public class StructureCheck {
          if (var2x.isValid()) {
             var5.put(var1x, var2x.getReferences());
          }
+
       });
       this.storeFullResults(var3, var5);
    }
 
    private void storeFullResults(long var1, Object2IntMap<Structure> var3) {
       this.loadedChunks.put(var1, deduplicateEmptyMap(var3));
-      this.featureChecks.values().forEach(var2 -> var2.remove(var1));
+      this.featureChecks.values().forEach((var2) -> {
+         var2.remove(var1);
+      });
    }
 
    public void incrementReference(ChunkPos var1, Structure var2) {
       this.loadedChunks.compute(var1.toLong(), (var1x, var2x) -> {
-         if (var2x == null || var2x.isEmpty()) {
+         if (var2x == null || ((Object2IntMap)var2x).isEmpty()) {
             var2x = new Object2IntOpenHashMap();
          }
 
-         var2x.computeInt(var2, (var0x, var1xx) -> var1xx == null ? 1 : var1xx + 1);
-         return var2x;
+         ((Object2IntMap)var2x).computeInt(var2, (var0, var1) -> {
+            return var1 == null ? 1 : var1 + 1;
+         });
+         return (Object2IntMap)var2x;
       });
    }
 }

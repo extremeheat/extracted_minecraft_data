@@ -8,12 +8,10 @@ public interface BitRandomSource extends RandomSource {
 
    int next(int var1);
 
-   @Override
    default int nextInt() {
       return this.next(32);
    }
 
-   @Override
    default int nextInt(int var1) {
       if (var1 <= 0) {
          throw new IllegalArgumentException("Bound must be positive");
@@ -31,7 +29,6 @@ public interface BitRandomSource extends RandomSource {
       }
    }
 
-   @Override
    default long nextLong() {
       int var1 = this.next(32);
       int var2 = this.next(32);
@@ -39,17 +36,14 @@ public interface BitRandomSource extends RandomSource {
       return var3 + (long)var2;
    }
 
-   @Override
    default boolean nextBoolean() {
       return this.next(1) != 0;
    }
 
-   @Override
    default float nextFloat() {
       return (float)this.next(24) * 5.9604645E-8F;
    }
 
-   @Override
    default double nextDouble() {
       int var1 = this.next(26);
       int var2 = this.next(27);

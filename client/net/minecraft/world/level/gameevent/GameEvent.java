@@ -9,8 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public record GameEvent(int aj) {
-   private final int notificationRadius;
+public record GameEvent(int notificationRadius) {
    public static final Holder.Reference<GameEvent> BLOCK_ACTIVATE = register("block_activate");
    public static final Holder.Reference<GameEvent> BLOCK_ATTACH = register("block_attach");
    public static final Holder.Reference<GameEvent> BLOCK_CHANGE = register("block_change");
@@ -82,47 +81,26 @@ public record GameEvent(int aj) {
       return BLOCK_ACTIVATE;
    }
 
+   public int notificationRadius() {
+      return this.notificationRadius;
+   }
+
    private static Holder.Reference<GameEvent> register(String var0) {
       return register(var0, 16);
    }
 
    private static Holder.Reference<GameEvent> register(String var0, int var1) {
-      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, new ResourceLocation(var0), new GameEvent(var1));
+      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, (ResourceLocation)(new ResourceLocation(var0)), new GameEvent(var1));
    }
 
-   public static record Context(@Nullable Entity a, @Nullable BlockState b) {
-      @Nullable
-      private final Entity sourceEntity;
-      @Nullable
-      private final BlockState affectedState;
-
-      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
-         super();
-         this.sourceEntity = var1;
-         this.affectedState = var2;
-      }
-
-      public static GameEvent.Context of(@Nullable Entity var0) {
-         return new GameEvent.Context(var0, null);
-      }
-
-      public static GameEvent.Context of(@Nullable BlockState var0) {
-         return new GameEvent.Context(null, var0);
-      }
-
-      public static GameEvent.Context of(@Nullable Entity var0, @Nullable BlockState var1) {
-         return new GameEvent.Context(var0, var1);
-      }
-   }
-
-   public static final class ListenerInfo implements Comparable<GameEvent.ListenerInfo> {
+   public static final class ListenerInfo implements Comparable<ListenerInfo> {
       private final Holder<GameEvent> gameEvent;
       private final Vec3 source;
-      private final GameEvent.Context context;
+      private final Context context;
       private final GameEventListener recipient;
       private final double distanceToRecipient;
 
-      public ListenerInfo(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, GameEventListener var4, Vec3 var5) {
+      public ListenerInfo(Holder<GameEvent> var1, Vec3 var2, Context var3, GameEventListener var4, Vec3 var5) {
          super();
          this.gameEvent = var1;
          this.source = var2;
@@ -131,7 +109,7 @@ public record GameEvent(int aj) {
          this.distanceToRecipient = var2.distanceToSqr(var5);
       }
 
-      public int compareTo(GameEvent.ListenerInfo var1) {
+      public int compareTo(ListenerInfo var1) {
          return Double.compare(this.distanceToRecipient, var1.distanceToRecipient);
       }
 
@@ -143,12 +121,47 @@ public record GameEvent(int aj) {
          return this.source;
       }
 
-      public GameEvent.Context context() {
+      public Context context() {
          return this.context;
       }
 
       public GameEventListener recipient() {
          return this.recipient;
+      }
+
+      // $FF: synthetic method
+      public int compareTo(Object var1) {
+         return this.compareTo((ListenerInfo)var1);
+      }
+   }
+
+   public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
+      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
+         super();
+         this.sourceEntity = var1;
+         this.affectedState = var2;
+      }
+
+      public static Context of(@Nullable Entity var0) {
+         return new Context(var0, (BlockState)null);
+      }
+
+      public static Context of(@Nullable BlockState var0) {
+         return new Context((Entity)null, var0);
+      }
+
+      public static Context of(@Nullable Entity var0, @Nullable BlockState var1) {
+         return new Context(var0, var1);
+      }
+
+      @Nullable
+      public Entity sourceEntity() {
+         return this.sourceEntity;
+      }
+
+      @Nullable
+      public BlockState affectedState() {
+         return this.affectedState;
       }
    }
 }

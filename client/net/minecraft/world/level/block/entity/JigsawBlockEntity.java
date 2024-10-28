@@ -3,12 +3,14 @@ package net.minecraft.world.level.block.entity;
 import java.util.Arrays;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -29,14 +31,17 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String FINAL_STATE = "final_state";
    private ResourceLocation name = new ResourceLocation("empty");
    private ResourceLocation target = new ResourceLocation("empty");
-   private ResourceKey<StructureTemplatePool> pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation("empty"));
-   private JigsawBlockEntity.JointType joint = JigsawBlockEntity.JointType.ROLLABLE;
-   private String finalState = "minecraft:air";
+   private ResourceKey<StructureTemplatePool> pool;
+   private JointType joint;
+   private String finalState;
    private int placementPriority;
    private int selectionPriority;
 
    public JigsawBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.JIGSAW, var1, var2);
+      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation("empty"));
+      this.joint = JigsawBlockEntity.JointType.ROLLABLE;
+      this.finalState = "minecraft:air";
    }
 
    public ResourceLocation getName() {
@@ -55,7 +60,7 @@ public class JigsawBlockEntity extends BlockEntity {
       return this.finalState;
    }
 
-   public JigsawBlockEntity.JointType getJoint() {
+   public JointType getJoint() {
       return this.joint;
    }
 
@@ -83,7 +88,7 @@ public class JigsawBlockEntity extends BlockEntity {
       this.finalState = var1;
    }
 
-   public void setJoint(JigsawBlockEntity.JointType var1) {
+   public void setJoint(JointType var1) {
       this.joint = var1;
    }
 
@@ -95,7 +100,6 @@ public class JigsawBlockEntity extends BlockEntity {
       this.selectionPriority = var1;
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putString("name", this.name.toString());
@@ -107,19 +111,15 @@ public class JigsawBlockEntity extends BlockEntity {
       var1.putInt("selection_priority", this.selectionPriority);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.name = new ResourceLocation(var1.getString("name"));
       this.target = new ResourceLocation(var1.getString("target"));
       this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
-      this.joint = JigsawBlockEntity.JointType.byName(var1.getString("joint"))
-         .orElseGet(
-            () -> JigsawBlock.getFrontFacing(this.getBlockState()).getAxis().isHorizontal()
-                  ? JigsawBlockEntity.JointType.ALIGNED
-                  : JigsawBlockEntity.JointType.ROLLABLE
-         );
+      this.joint = (JointType)JigsawBlockEntity.JointType.byName(var1.getString("joint")).orElseGet(() -> {
+         return JigsawBlock.getFrontFacing(this.getBlockState()).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
+      });
       this.placementPriority = var1.getInt("placement_priority");
       this.selectionPriority = var1.getInt("selection_priority");
    }
@@ -128,16 +128,20 @@ public class JigsawBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public void generate(ServerLevel var1, int var2, boolean var3) {
-      BlockPos var4 = this.getBlockPos().relative(this.getBlockState().getValue(JigsawBlock.ORIENTATION).front());
+      BlockPos var4 = this.getBlockPos().relative(((FrontAndTop)this.getBlockState().getValue(JigsawBlock.ORIENTATION)).front());
       Registry var5 = var1.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
       Holder.Reference var6 = var5.getHolderOrThrow(this.pool);
       JigsawPlacement.generateJigsaw(var1, var6, this.target, var2, var4, var3);
+   }
+
+   // $FF: synthetic method
+   public Packet getUpdatePacket() {
+      return this.getUpdatePacket();
    }
 
    public static enum JointType implements StringRepresentable {
@@ -150,17 +154,23 @@ public class JigsawBlockEntity extends BlockEntity {
          this.name = var3;
       }
 
-      @Override
       public String getSerializedName() {
          return this.name;
       }
 
-      public static Optional<JigsawBlockEntity.JointType> byName(String var0) {
-         return Arrays.stream(values()).filter(var1 -> var1.getSerializedName().equals(var0)).findFirst();
+      public static Optional<JointType> byName(String var0) {
+         return Arrays.stream(values()).filter((var1) -> {
+            return var1.getSerializedName().equals(var0);
+         }).findFirst();
       }
 
       public Component getTranslatedName() {
          return Component.translatable("jigsaw_block.joint." + this.name);
+      }
+
+      // $FF: synthetic method
+      private static JointType[] $values() {
+         return new JointType[]{ROLLABLE, ALIGNED};
       }
    }
 }

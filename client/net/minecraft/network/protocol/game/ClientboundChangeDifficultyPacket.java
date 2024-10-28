@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.Difficulty;
 
 public class ClientboundChangeDifficultyPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundChangeDifficultyPacket> STREAM_CODEC = Packet.codec(
-      ClientboundChangeDifficultyPacket::write, ClientboundChangeDifficultyPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundChangeDifficultyPacket> STREAM_CODEC = Packet.codec(ClientboundChangeDifficultyPacket::write, ClientboundChangeDifficultyPacket::new);
    private final Difficulty difficulty;
    private final boolean locked;
 
@@ -30,7 +28,6 @@ public class ClientboundChangeDifficultyPacket implements Packet<ClientGamePacke
       var1.writeBoolean(this.locked);
    }
 
-   @Override
    public PacketType<ClientboundChangeDifficultyPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CHANGE_DIFFICULTY;
    }

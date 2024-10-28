@@ -5,7 +5,6 @@ import com.google.common.primitives.Longs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.time.Instant;
@@ -14,20 +13,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 
-public record SignedMessageBody(String b, Instant c, long d, LastSeenMessages e) {
-   private final String content;
-   private final Instant timeStamp;
-   private final long salt;
-   private final LastSeenMessages lastSeen;
-   public static final MapCodec<SignedMessageBody> MAP_CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(
-               Codec.STRING.fieldOf("content").forGetter(SignedMessageBody::content),
-               ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(SignedMessageBody::timeStamp),
-               Codec.LONG.fieldOf("salt").forGetter(SignedMessageBody::salt),
-               LastSeenMessages.CODEC.optionalFieldOf("last_seen", LastSeenMessages.EMPTY).forGetter(SignedMessageBody::lastSeen)
-            )
-            .apply(var0, SignedMessageBody::new)
-   );
+public record SignedMessageBody(String content, Instant timeStamp, long salt, LastSeenMessages lastSeen) {
+   public static final MapCodec<SignedMessageBody> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.STRING.fieldOf("content").forGetter(SignedMessageBody::content), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(SignedMessageBody::timeStamp), Codec.LONG.fieldOf("salt").forGetter(SignedMessageBody::salt), LastSeenMessages.CODEC.optionalFieldOf("last_seen", LastSeenMessages.EMPTY).forGetter(SignedMessageBody::lastSeen)).apply(var0, SignedMessageBody::new);
+   });
 
    public SignedMessageBody(String var1, Instant var2, long var3, LastSeenMessages var5) {
       super();
@@ -50,16 +39,27 @@ public record SignedMessageBody(String b, Instant c, long d, LastSeenMessages e)
       this.lastSeen.updateSignature(var1);
    }
 
-   public SignedMessageBody.Packed pack(MessageSignatureCache var1) {
-      return new SignedMessageBody.Packed(this.content, this.timeStamp, this.salt, this.lastSeen.pack(var1));
+   public Packed pack(MessageSignatureCache var1) {
+      return new Packed(this.content, this.timeStamp, this.salt, this.lastSeen.pack(var1));
    }
 
-   public static record Packed(String a, Instant b, long c, LastSeenMessages.Packed d) {
-      private final String content;
-      private final Instant timeStamp;
-      private final long salt;
-      private final LastSeenMessages.Packed lastSeen;
+   public String content() {
+      return this.content;
+   }
 
+   public Instant timeStamp() {
+      return this.timeStamp;
+   }
+
+   public long salt() {
+      return this.salt;
+   }
+
+   public LastSeenMessages lastSeen() {
+      return this.lastSeen;
+   }
+
+   public static record Packed(String content, Instant timeStamp, long salt, LastSeenMessages.Packed lastSeen) {
       public Packed(FriendlyByteBuf var1) {
          this(var1.readUtf(256), var1.readInstant(), var1.readLong(), new LastSeenMessages.Packed(var1));
       }
@@ -80,7 +80,25 @@ public record SignedMessageBody(String b, Instant c, long d, LastSeenMessages e)
       }
 
       public Optional<SignedMessageBody> unpack(MessageSignatureCache var1) {
-         return this.lastSeen.unpack(var1).map(var1x -> new SignedMessageBody(this.content, this.timeStamp, this.salt, var1x));
+         return this.lastSeen.unpack(var1).map((var1x) -> {
+            return new SignedMessageBody(this.content, this.timeStamp, this.salt, var1x);
+         });
+      }
+
+      public String content() {
+         return this.content;
+      }
+
+      public Instant timeStamp() {
+         return this.timeStamp;
+      }
+
+      public long salt() {
+         return this.salt;
+      }
+
+      public LastSeenMessages.Packed lastSeen() {
+         return this.lastSeen;
       }
    }
 }

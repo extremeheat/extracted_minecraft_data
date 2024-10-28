@@ -21,25 +21,26 @@ import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.Level;
+import org.apache.commons.lang3.math.Fraction;
 
 public class BundleItem extends Item {
    private static final int BAR_COLOR = Mth.color(0.4F, 0.4F, 1.0F);
+   private static final int TOOLTIP_MAX_WEIGHT = 64;
 
    public BundleItem(Item.Properties var1) {
       super(var1);
    }
 
    public static float getFullnessDisplay(ItemStack var0) {
-      BundleContents var1 = var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return (float)var1.weight() / 64.0F;
+      BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+      return var1.weight().floatValue();
    }
 
-   @Override
    public boolean overrideStackedOnOther(ItemStack var1, Slot var2, ClickAction var3, Player var4) {
       if (var3 != ClickAction.SECONDARY) {
          return false;
       } else {
-         BundleContents var5 = var1.get(DataComponents.BUNDLE_CONTENTS);
+         BundleContents var5 = (BundleContents)var1.get(DataComponents.BUNDLE_CONTENTS);
          if (var5 == null) {
             return false;
          } else {
@@ -65,10 +66,9 @@ public class BundleItem extends Item {
       }
    }
 
-   @Override
    public boolean overrideOtherStackedOnMe(ItemStack var1, ItemStack var2, Slot var3, ClickAction var4, Player var5, SlotAccess var6) {
       if (var4 == ClickAction.SECONDARY && var3.allowModification(var5)) {
-         BundleContents var7 = var1.get(DataComponents.BUNDLE_CONTENTS);
+         BundleContents var7 = (BundleContents)var1.get(DataComponents.BUNDLE_CONTENTS);
          if (var7 == null) {
             return false;
          } else {
@@ -94,7 +94,6 @@ public class BundleItem extends Item {
       }
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (dropContents(var4, var2)) {
@@ -106,29 +105,28 @@ public class BundleItem extends Item {
       }
    }
 
-   @Override
    public boolean isBarVisible(ItemStack var1) {
-      BundleContents var2 = var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return var2.weight() > 0;
+      BundleContents var2 = (BundleContents)var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+      return var2.weight().compareTo(Fraction.ZERO) > 0;
    }
 
-   @Override
    public int getBarWidth(ItemStack var1) {
-      BundleContents var2 = var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return Math.min(1 + 12 * var2.weight() / 64, 13);
+      BundleContents var2 = (BundleContents)var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+      return Math.min(1 + Mth.mulAndTruncate(var2.weight(), 12), 13);
    }
 
-   @Override
    public int getBarColor(ItemStack var1) {
       return BAR_COLOR;
    }
 
    private static boolean dropContents(ItemStack var0, Player var1) {
-      BundleContents var2 = var0.get(DataComponents.BUNDLE_CONTENTS);
+      BundleContents var2 = (BundleContents)var0.get(DataComponents.BUNDLE_CONTENTS);
       if (var2 != null && !var2.isEmpty()) {
          var0.set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
          if (var1 instanceof ServerPlayer) {
-            var2.items().forEach(var1x -> var1.drop(var1x, true));
+            var2.items().forEach((var1x) -> {
+               var1.drop(var1x, true);
+            });
          }
 
          return true;
@@ -137,22 +135,21 @@ public class BundleItem extends Item {
       }
    }
 
-   @Override
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
-      return Optional.ofNullable(var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new);
+      return !var1.has(DataComponents.HIDE_TOOLTIP) && !var1.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP) ? Optional.ofNullable((BundleContents)var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new) : Optional.empty();
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, Level var2, List<Component> var3, TooltipFlag var4) {
-      BundleContents var5 = var1.get(DataComponents.BUNDLE_CONTENTS);
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      BundleContents var5 = (BundleContents)var1.get(DataComponents.BUNDLE_CONTENTS);
       if (var5 != null) {
-         var3.add(Component.translatable("item.minecraft.bundle.fullness", var5.weight(), 64).withStyle(ChatFormatting.GRAY));
+         int var6 = Mth.mulAndTruncate(var5.weight(), 64);
+         var3.add(Component.translatable("item.minecraft.bundle.fullness", var6, 64).withStyle(ChatFormatting.GRAY));
       }
+
    }
 
-   @Override
    public void onDestroyed(ItemEntity var1) {
-      BundleContents var2 = var1.getItem().get(DataComponents.BUNDLE_CONTENTS);
+      BundleContents var2 = (BundleContents)var1.getItem().get(DataComponents.BUNDLE_CONTENTS);
       if (var2 != null) {
          var1.getItem().set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
          ItemUtils.onContainerDestroyed(var1, var2.items());

@@ -1,15 +1,14 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.server.level.WorldGenRegion;
@@ -28,25 +27,28 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class FlatLevelSource extends ChunkGenerator {
-   public static final Codec<FlatLevelSource> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings))
-            .apply(var0, var0.stable(FlatLevelSource::new))
-   );
+   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)).apply(var0, var0.stable(FlatLevelSource::new));
+   });
    private final FlatLevelGeneratorSettings settings;
 
    public FlatLevelSource(FlatLevelGeneratorSettings var1) {
-      super(new FixedBiomeSource(var1.getBiome()), Util.memoize(var1::adjustGenerationSettings));
+      FixedBiomeSource var10001 = new FixedBiomeSource(var1.getBiome());
+      Objects.requireNonNull(var1);
+      super(var10001, Util.memoize(var1::adjustGenerationSettings));
       this.settings = var1;
    }
 
-   @Override
    public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
-      Stream var5 = this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> var1.listElements().map(var0x -> var0x));
+      Stream var5 = (Stream)this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> {
+         return var1.listElements().map((var0) -> {
+            return var0;
+         });
+      });
       return ChunkGeneratorStructureState.createForFlat(var2, var3, this.biomeSource, var5);
    }
 
-   @Override
-   protected Codec<? extends ChunkGenerator> codec() {
+   protected MapCodec<? extends ChunkGenerator> codec() {
       return CODEC;
    }
 
@@ -54,16 +56,13 @@ public class FlatLevelSource extends ChunkGenerator {
       return this.settings;
    }
 
-   @Override
    public void buildSurface(WorldGenRegion var1, StructureManager var2, RandomState var3, ChunkAccess var4) {
    }
 
-   @Override
    public int getSpawnHeight(LevelHeightAccessor var1) {
       return var1.getMinBuildHeight() + Math.min(var1.getHeight(), this.settings.getLayers().size());
    }
 
-   @Override
    public CompletableFuture<ChunkAccess> fillFromNoise(Executor var1, Blender var2, RandomState var3, StructureManager var4, ChunkAccess var5) {
       List var6 = this.settings.getLayers();
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
@@ -88,7 +87,6 @@ public class FlatLevelSource extends ChunkGenerator {
       return CompletableFuture.completedFuture(var5);
    }
 
-   @Override
    public int getBaseHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
       List var6 = this.settings.getLayers();
 
@@ -102,44 +100,31 @@ public class FlatLevelSource extends ChunkGenerator {
       return var4.getMinBuildHeight();
    }
 
-   @Override
    public NoiseColumn getBaseColumn(int var1, int var2, LevelHeightAccessor var3, RandomState var4) {
-      return new NoiseColumn(
-         var3.getMinBuildHeight(),
-         this.settings
-            .getLayers()
-            .stream()
-            .limit((long)var3.getHeight())
-            .map(var0 -> var0 == null ? Blocks.AIR.defaultBlockState() : var0)
-            .toArray(var0 -> new BlockState[var0])
-      );
+      return new NoiseColumn(var3.getMinBuildHeight(), (BlockState[])this.settings.getLayers().stream().limit((long)var3.getHeight()).map((var0) -> {
+         return var0 == null ? Blocks.AIR.defaultBlockState() : var0;
+      }).toArray((var0) -> {
+         return new BlockState[var0];
+      }));
    }
 
-   @Override
    public void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3) {
    }
 
-   @Override
-   public void applyCarvers(
-      WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7, GenerationStep.Carving var8
-   ) {
+   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7, GenerationStep.Carving var8) {
    }
 
-   @Override
    public void spawnOriginalMobs(WorldGenRegion var1) {
    }
 
-   @Override
    public int getMinY() {
       return 0;
    }
 
-   @Override
    public int getGenDepth() {
       return 384;
    }
 
-   @Override
    public int getSeaLevel() {
       return -63;
    }

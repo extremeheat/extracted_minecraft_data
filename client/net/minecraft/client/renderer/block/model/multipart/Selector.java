@@ -9,8 +9,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.client.renderer.block.model.MultiVariant;
@@ -43,12 +43,10 @@ public class Selector {
       return this.condition.getPredicate(var1);
    }
 
-   @Override
    public boolean equals(Object var1) {
       return this == var1;
    }
 
-   @Override
    public int hashCode() {
       return System.identityHashCode(this);
    }
@@ -73,26 +71,32 @@ public class Selector {
          if (var1.isEmpty()) {
             throw new JsonParseException("No elements found in selector");
          } else if (var1.size() == 1) {
+            List var2;
             if (var0.has("OR")) {
-               List var3 = Streams.stream(GsonHelper.getAsJsonArray(var0, "OR"))
-                  .map(var0x -> getCondition(var0x.getAsJsonObject()))
-                  .collect(Collectors.toList());
-               return new OrCondition(var3);
+               var2 = (List)Streams.stream(GsonHelper.getAsJsonArray(var0, "OR")).map((var0x) -> {
+                  return getCondition(var0x.getAsJsonObject());
+               }).collect(Collectors.toList());
+               return new OrCondition(var2);
             } else if (var0.has("AND")) {
-               List var2 = Streams.stream(GsonHelper.getAsJsonArray(var0, "AND"))
-                  .map(var0x -> getCondition(var0x.getAsJsonObject()))
-                  .collect(Collectors.toList());
+               var2 = (List)Streams.stream(GsonHelper.getAsJsonArray(var0, "AND")).map((var0x) -> {
+                  return getCondition(var0x.getAsJsonObject());
+               }).collect(Collectors.toList());
                return new AndCondition(var2);
             } else {
-               return getKeyValueCondition((Entry<String, JsonElement>)var1.iterator().next());
+               return getKeyValueCondition((Map.Entry)var1.iterator().next());
             }
          } else {
-            return new AndCondition(var1.stream().map(Selector.Deserializer::getKeyValueCondition).collect(Collectors.toList()));
+            return new AndCondition((Iterable)var1.stream().map(Deserializer::getKeyValueCondition).collect(Collectors.toList()));
          }
       }
 
-      private static Condition getKeyValueCondition(Entry<String, JsonElement> var0) {
-         return new KeyValueCondition(var0.getKey(), ((JsonElement)var0.getValue()).getAsString());
+      private static Condition getKeyValueCondition(Map.Entry<String, JsonElement> var0) {
+         return new KeyValueCondition((String)var0.getKey(), ((JsonElement)var0.getValue()).getAsString());
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

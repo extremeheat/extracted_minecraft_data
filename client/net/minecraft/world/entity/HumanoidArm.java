@@ -26,18 +26,20 @@ public enum HumanoidArm implements OptionEnum, StringRepresentable {
       return this == LEFT ? RIGHT : LEFT;
    }
 
-   @Override
    public int getId() {
       return this.id;
    }
 
-   @Override
    public String getKey() {
       return this.translationKey;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static HumanoidArm[] $values() {
+      return new HumanoidArm[]{LEFT, RIGHT};
    }
 }

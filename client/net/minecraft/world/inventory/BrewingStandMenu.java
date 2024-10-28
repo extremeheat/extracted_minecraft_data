@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 
@@ -40,33 +39,33 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       checkContainerDataCount(var4, 2);
       this.brewingStand = var3;
       this.brewingStandData = var4;
-      this.addSlot(new BrewingStandMenu.PotionSlot(var3, 0, 56, 51));
-      this.addSlot(new BrewingStandMenu.PotionSlot(var3, 1, 79, 58));
-      this.addSlot(new BrewingStandMenu.PotionSlot(var3, 2, 102, 51));
-      this.ingredientSlot = this.addSlot(new BrewingStandMenu.IngredientsSlot(var3, 3, 79, 17));
-      this.addSlot(new BrewingStandMenu.FuelSlot(var3, 4, 17, 17));
+      this.addSlot(new PotionSlot(var3, 0, 56, 51));
+      this.addSlot(new PotionSlot(var3, 1, 79, 58));
+      this.addSlot(new PotionSlot(var3, 2, 102, 51));
+      this.ingredientSlot = this.addSlot(new IngredientsSlot(var3, 3, 79, 17));
+      this.addSlot(new FuelSlot(var3, 4, 17, 17));
       this.addDataSlots(var4);
 
-      for(int var5 = 0; var5 < 3; ++var5) {
+      int var5;
+      for(var5 = 0; var5 < 3; ++var5) {
          for(int var6 = 0; var6 < 9; ++var6) {
             this.addSlot(new Slot(var2, var6 + var5 * 9 + 9, 8 + var6 * 18, 84 + var5 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
+      for(var5 = 0; var5 < 9; ++var5) {
+         this.addSlot(new Slot(var2, var5, 8 + var5 * 18, 142));
       }
+
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.brewingStand.stillValid(var1);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -126,23 +125,30 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       return this.brewingStandData.get(0);
    }
 
-   static class FuelSlot extends Slot {
-      public FuelSlot(Container var1, int var2, int var3, int var4) {
+   private static class PotionSlot extends Slot {
+      public PotionSlot(Container var1, int var2, int var3, int var4) {
          super(var1, var2, var3, var4);
       }
 
-      @Override
       public boolean mayPlace(ItemStack var1) {
          return mayPlaceItem(var1);
       }
 
-      public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(Items.BLAZE_POWDER);
+      public int getMaxStackSize() {
+         return 1;
       }
 
-      @Override
-      public int getMaxStackSize() {
-         return 64;
+      public void onTake(Player var1, ItemStack var2) {
+         Optional var3 = ((PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+         if (var3.isPresent() && var1 instanceof ServerPlayer var4) {
+            CriteriaTriggers.BREWED_POTION.trigger(var4, (Holder)var3.get());
+         }
+
+         super.onTake(var1, var2);
+      }
+
+      public static boolean mayPlaceItem(ItemStack var0) {
+         return var0.is(Items.POTION) || var0.is(Items.SPLASH_POTION) || var0.is(Items.LINGERING_POTION) || var0.is(Items.GLASS_BOTTLE);
       }
    }
 
@@ -151,44 +157,30 @@ public class BrewingStandMenu extends AbstractContainerMenu {
          super(var1, var2, var3, var4);
       }
 
-      @Override
       public boolean mayPlace(ItemStack var1) {
          return PotionBrewing.isIngredient(var1);
       }
 
-      @Override
       public int getMaxStackSize() {
          return 64;
       }
    }
 
-   static class PotionSlot extends Slot {
-      public PotionSlot(Container var1, int var2, int var3, int var4) {
+   private static class FuelSlot extends Slot {
+      public FuelSlot(Container var1, int var2, int var3, int var4) {
          super(var1, var2, var3, var4);
       }
 
-      @Override
       public boolean mayPlace(ItemStack var1) {
          return mayPlaceItem(var1);
       }
 
-      @Override
-      public int getMaxStackSize() {
-         return 1;
-      }
-
-      @Override
-      public void onTake(Player var1, ItemStack var2) {
-         Optional var3 = ((PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
-         if (var3.isPresent() && var1 instanceof ServerPlayer var4) {
-            CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)var4, (Holder<Potion>)var3.get());
-         }
-
-         super.onTake(var1, var2);
-      }
-
       public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(Items.POTION) || var0.is(Items.SPLASH_POTION) || var0.is(Items.LINGERING_POTION) || var0.is(Items.GLASS_BOTTLE);
+         return var0.is(Items.BLAZE_POWDER);
+      }
+
+      public int getMaxStackSize() {
+         return 64;
       }
    }
 }

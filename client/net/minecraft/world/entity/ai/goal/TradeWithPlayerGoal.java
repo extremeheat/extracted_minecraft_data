@@ -13,7 +13,6 @@ public class TradeWithPlayerGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (!this.mob.isAlive()) {
          return false;
@@ -35,13 +34,11 @@ public class TradeWithPlayerGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().stop();
    }
 
-   @Override
    public void stop() {
-      this.mob.setTradingPlayer(null);
+      this.mob.setTradingPlayer((Player)null);
    }
 }

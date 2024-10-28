@@ -11,7 +11,6 @@ public class IntTag extends NumericTag {
          return IntTag.valueOf(readAccounted(var1, var2));
       }
 
-      @Override
       public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
          return var2.visit(readAccounted(var1, var3));
       }
@@ -21,24 +20,25 @@ public class IntTag extends NumericTag {
          return var0.readInt();
       }
 
-      @Override
       public int size() {
          return 4;
       }
 
-      @Override
       public String getName() {
          return "INT";
       }
 
-      @Override
       public String getPrettyName() {
          return "TAG_Int";
       }
 
-      @Override
       public boolean isValue() {
          return true;
+      }
+
+      // $FF: synthetic method
+      public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return this.load(var1, var2);
       }
    };
    private final int data;
@@ -52,22 +52,18 @@ public class IntTag extends NumericTag {
       return var0 >= -128 && var0 <= 1024 ? IntTag.Cache.cache[var0 - -128] : new IntTag(var0);
    }
 
-   @Override
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data);
    }
 
-   @Override
    public int sizeInBytes() {
       return 12;
    }
 
-   @Override
    public byte getId() {
       return 3;
    }
 
-   @Override
    public TagType<IntTag> getType() {
       return TYPE;
    }
@@ -76,7 +72,6 @@ public class IntTag extends NumericTag {
       return this;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -85,54 +80,49 @@ public class IntTag extends NumericTag {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.data;
    }
 
-   @Override
    public void accept(TagVisitor var1) {
       var1.visitInt(this);
    }
 
-   @Override
    public long getAsLong() {
       return (long)this.data;
    }
 
-   @Override
    public int getAsInt() {
       return this.data;
    }
 
-   @Override
    public short getAsShort() {
-      return (short)(this.data & 65535);
+      return (short)(this.data & '\uffff');
    }
 
-   @Override
    public byte getAsByte() {
-      return (byte)(this.data & 0xFF);
+      return (byte)(this.data & 255);
    }
 
-   @Override
    public double getAsDouble() {
       return (double)this.data;
    }
 
-   @Override
    public float getAsFloat() {
       return (float)this.data;
    }
 
-   @Override
    public Number getAsNumber() {
       return this.data;
    }
 
-   @Override
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
       return var1.visit(this.data);
+   }
+
+   // $FF: synthetic method
+   public Tag copy() {
+      return this.copy();
    }
 
    static class Cache {
@@ -148,6 +138,7 @@ public class IntTag extends NumericTag {
          for(int var0 = 0; var0 < cache.length; ++var0) {
             cache[var0] = new IntTag(-128 + var0);
          }
+
       }
    }
 }

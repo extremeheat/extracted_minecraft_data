@@ -26,27 +26,31 @@ public abstract class LongRunningTask implements Runnable {
          Thread.currentThread().interrupt();
          LOGGER.error("", var3);
       }
+
    }
 
    public static void setScreen(Screen var0) {
       Minecraft var1 = Minecraft.getInstance();
-      var1.execute(() -> var1.setScreen(var0));
+      var1.execute(() -> {
+         var1.setScreen(var0);
+      });
    }
 
    protected void error(Component var1) {
       this.abortTask();
       Minecraft var2 = Minecraft.getInstance();
-      var2.execute(() -> var2.setScreen(new RealmsGenericErrorScreen(var1, new RealmsMainScreen(new TitleScreen()))));
+      var2.execute(() -> {
+         var2.setScreen(new RealmsGenericErrorScreen(var1, new RealmsMainScreen(new TitleScreen())));
+      });
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void error(Exception var1) {
       if (var1 instanceof RealmsServiceException var2) {
          this.error(var2.realmsError.errorMessage());
       } else {
-         this.error(Component.literal(var1.getMessage()));
+         this.error((Component)Component.literal(var1.getMessage()));
       }
+
    }
 
    protected void error(RealmsServiceException var1) {

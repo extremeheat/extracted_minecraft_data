@@ -9,26 +9,29 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.stats.Stat;
 
-public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> b) implements Packet<ClientGamePacketListener> {
-   private final Object2IntMap<Stat<?>> stats;
-   private static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Stat<?>>> STAT_VALUES_STREAM_CODEC = ByteBufCodecs.map(
-      Object2IntOpenHashMap::new, Stat.STREAM_CODEC, ByteBufCodecs.VAR_INT
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAwardStatsPacket> STREAM_CODEC = STAT_VALUES_STREAM_CODEC.map(
-      ClientboundAwardStatsPacket::new, ClientboundAwardStatsPacket::stats
-   );
+public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) implements Packet<ClientGamePacketListener> {
+   private static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Stat<?>>> STAT_VALUES_STREAM_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAwardStatsPacket> STREAM_CODEC;
 
    public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> var1) {
       super();
       this.stats = var1;
    }
 
-   @Override
    public PacketType<ClientboundAwardStatsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_AWARD_STATS;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleAwardStats(this);
+   }
+
+   public Object2IntMap<Stat<?>> stats() {
+      return this.stats;
+   }
+
+   static {
+      STAT_VALUES_STREAM_CODEC = ByteBufCodecs.map(Object2IntOpenHashMap::new, Stat.STREAM_CODEC, ByteBufCodecs.VAR_INT);
+      STREAM_CODEC = STAT_VALUES_STREAM_CODEC.map(ClientboundAwardStatsPacket::new, ClientboundAwardStatsPacket::stats);
    }
 }

@@ -13,14 +13,9 @@ public class JigsawPropertiesFix extends NamedEntityFix {
    private static Dynamic<?> fixTag(Dynamic<?> var0) {
       String var1 = var0.get("attachement_type").asString("minecraft:empty");
       String var2 = var0.get("target_pool").asString("minecraft:empty");
-      return var0.set("name", var0.createString(var1))
-         .set("target", var0.createString(var1))
-         .remove("attachement_type")
-         .set("pool", var0.createString(var2))
-         .remove("target_pool");
+      return var0.set("name", var0.createString(var1)).set("target", var0.createString(var1)).remove("attachement_type").set("pool", var0.createString(var2)).remove("target_pool");
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), JigsawPropertiesFix::fixTag);
    }

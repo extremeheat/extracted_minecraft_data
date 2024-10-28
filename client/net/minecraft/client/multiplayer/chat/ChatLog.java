@@ -11,16 +11,12 @@ public class ChatLog {
    private int nextId;
 
    public static Codec<ChatLog> codec(int var0) {
-      return Codec.list(LoggedChatEvent.CODEC)
-         .comapFlatMap(
-            var1 -> {
-               int var2 = var1.size();
-               return var2 > var0
-                  ? DataResult.error(() -> "Expected: a buffer of size less than or equal to " + var0 + " but: " + var2 + " is greater than " + var0)
-                  : DataResult.success(new ChatLog(var0, var1));
-            },
-            ChatLog::loggedChatEvents
-         );
+      return Codec.list(LoggedChatEvent.CODEC).comapFlatMap((var1) -> {
+         int var2 = var1.size();
+         return var2 > var0 ? DataResult.error(() -> {
+            return "Expected: a buffer of size less than or equal to " + var0 + " but: " + var2 + " is greater than " + var0;
+         }) : DataResult.success(new ChatLog(var0, var1));
+      }, ChatLog::loggedChatEvents);
    }
 
    public ChatLog(int var1) {
@@ -30,7 +26,9 @@ public class ChatLog {
 
    private ChatLog(int var1, List<LoggedChatEvent> var2) {
       super();
-      this.buffer = var2.toArray(var1x -> new LoggedChatEvent[var1]);
+      this.buffer = (LoggedChatEvent[])var2.toArray((var1x) -> {
+         return new LoggedChatEvent[var1];
+      });
       this.nextId = var2.size();
    }
 

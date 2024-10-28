@@ -1,21 +1,22 @@
 package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
 public class NoiseBasedCountPlacement extends RepeatingPlacement {
-   public static final Codec<NoiseBasedCountPlacement> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.INT.fieldOf("noise_to_count_ratio").forGetter(var0x -> var0x.noiseToCountRatio),
-               Codec.DOUBLE.fieldOf("noise_factor").forGetter(var0x -> var0x.noiseFactor),
-               Codec.DOUBLE.fieldOf("noise_offset").orElse(0.0).forGetter(var0x -> var0x.noiseOffset)
-            )
-            .apply(var0, NoiseBasedCountPlacement::new)
-   );
+   public static final MapCodec<NoiseBasedCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.INT.fieldOf("noise_to_count_ratio").forGetter((var0x) -> {
+         return var0x.noiseToCountRatio;
+      }), Codec.DOUBLE.fieldOf("noise_factor").forGetter((var0x) -> {
+         return var0x.noiseFactor;
+      }), Codec.DOUBLE.fieldOf("noise_offset").orElse(0.0).forGetter((var0x) -> {
+         return var0x.noiseOffset;
+      })).apply(var0, NoiseBasedCountPlacement::new);
+   });
    private final int noiseToCountRatio;
    private final double noiseFactor;
    private final double noiseOffset;
@@ -31,13 +32,11 @@ public class NoiseBasedCountPlacement extends RepeatingPlacement {
       return new NoiseBasedCountPlacement(var0, var1, var3);
    }
 
-   @Override
    protected int count(RandomSource var1, BlockPos var2) {
       double var3 = Biome.BIOME_INFO_NOISE.getValue((double)var2.getX() / this.noiseFactor, (double)var2.getZ() / this.noiseFactor, false);
       return (int)Math.ceil((var3 + this.noiseOffset) * (double)this.noiseToCountRatio);
    }
 
-   @Override
    public PlacementModifierType<?> type() {
       return PlacementModifierType.NOISE_BASED_COUNT;
    }

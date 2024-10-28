@@ -29,13 +29,14 @@ public interface NeutralMob {
       if (this.getPersistentAngerTarget() != null) {
          var1.putUUID("AngryAt", this.getPersistentAngerTarget());
       }
+
    }
 
    default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
       this.setRemainingPersistentAngerTime(var2.getInt("AngerTime"));
       if (var1 instanceof ServerLevel) {
          if (!var2.hasUUID("AngryAt")) {
-            this.setPersistentAngerTarget(null);
+            this.setPersistentAngerTarget((UUID)null);
          } else {
             UUID var3 = var2.getUUID("AngryAt");
             this.setPersistentAngerTarget(var3);
@@ -48,6 +49,7 @@ public interface NeutralMob {
                if (var4.getType() == EntityType.PLAYER) {
                   this.setLastHurtByPlayer((Player)var4);
                }
+
             }
          }
       }
@@ -70,6 +72,7 @@ public interface NeutralMob {
                this.stopBeingAngry();
             }
          }
+
       }
    }
 
@@ -103,9 +106,9 @@ public interface NeutralMob {
    }
 
    default void stopBeingAngry() {
-      this.setLastHurtByMob(null);
-      this.setPersistentAngerTarget(null);
-      this.setTarget(null);
+      this.setLastHurtByMob((LivingEntity)null);
+      this.setPersistentAngerTarget((UUID)null);
+      this.setTarget((LivingEntity)null);
       this.setRemainingPersistentAngerTime(0);
    }
 

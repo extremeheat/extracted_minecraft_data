@@ -15,30 +15,33 @@ public abstract class Property<T extends Comparable<T>> {
    private final String name;
    @Nullable
    private Integer hashCode;
-   private final Codec<T> codec = Codec.STRING
-      .comapFlatMap(
-         var1x -> (DataResult)this.getValue(var1x)
-               .map(DataResult::success)
-               .orElseGet(() -> (T)DataResult.error(() -> "Unable to read property: " + this + " with value: " + var1x)),
-         this::getName
-      );
-   private final Codec<Property.Value<T>> valueCodec = this.codec.xmap(this::value, Property.Value::value);
+   private final Codec<T> codec;
+   private final Codec<Value<T>> valueCodec;
 
    protected Property(String var1, Class<T> var2) {
       super();
+      this.codec = Codec.STRING.comapFlatMap((var1x) -> {
+         return (DataResult)this.getValue(var1x).map(DataResult::success).orElseGet(() -> {
+            return DataResult.error(() -> {
+               String var10000 = String.valueOf(this);
+               return "Unable to read property: " + var10000 + " with value: " + var1x;
+            });
+         });
+      }, this::getName);
+      this.valueCodec = this.codec.xmap(this::value, Value::value);
       this.clazz = var2;
       this.name = var1;
    }
 
-   public Property.Value<T> value(T var1) {
-      return new Property.Value<>(this, var1);
+   public Value<T> value(T var1) {
+      return new Value(this, var1);
    }
 
-   public Property.Value<T> value(StateHolder<?, ?> var1) {
-      return new Property.Value<>(this, var1.getValue(this));
+   public Value<T> value(StateHolder<?, ?> var1) {
+      return new Value(this, var1.getValue(this));
    }
 
-   public Stream<Property.Value<T>> getAllValues() {
+   public Stream<Value<T>> getAllValues() {
       return this.getPossibleValues().stream().map(this::value);
    }
 
@@ -46,7 +49,7 @@ public abstract class Property<T extends Comparable<T>> {
       return this.codec;
    }
 
-   public Codec<Property.Value<T>> valueCodec() {
+   public Codec<Value<T>> valueCodec() {
       return this.valueCodec;
    }
 
@@ -64,12 +67,10 @@ public abstract class Property<T extends Comparable<T>> {
 
    public abstract Optional<T> getValue(String var1);
 
-   @Override
    public String toString() {
       return MoreObjects.toStringHelper(this).add("name", this.name).add("clazz", this.clazz).add("values", this.getPossibleValues()).toString();
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -81,7 +82,6 @@ public abstract class Property<T extends Comparable<T>> {
       }
    }
 
-   @Override
    public final int hashCode() {
       if (this.hashCode == null) {
          this.hashCode = this.generateHashCode();
@@ -96,17 +96,17 @@ public abstract class Property<T extends Comparable<T>> {
 
    public <U, S extends StateHolder<?, S>> DataResult<S> parseValue(DynamicOps<U> var1, S var2, U var3) {
       DataResult var4 = this.codec.parse(var1, var3);
-      return var4.map(var2x -> (StateHolder)var2.setValue(this, var2x)).setPartial(var2);
+      return var4.map((var2x) -> {
+         return (StateHolder)var2.setValue(this, var2x);
+      }).setPartial(var2);
    }
 
-   public static record Value<T extends Comparable<T>>(Property<T> a, T b) {
-      private final Property<T> property;
-      private final T value;
-
+   public static record Value<T extends Comparable<T>>(Property<T> property, T value) {
       public Value(Property<T> var1, T var2) {
          super();
          if (!var1.getPossibleValues().contains(var2)) {
-            throw new IllegalArgumentException("Value " + var2 + " does not belong to property " + var1);
+            String var10002 = String.valueOf(var2);
+            throw new IllegalArgumentException("Value " + var10002 + " does not belong to property " + String.valueOf(var1));
          } else {
             this.property = var1;
             this.value = var2;
@@ -114,7 +114,16 @@ public abstract class Property<T extends Comparable<T>> {
       }
 
       public String toString() {
-         return this.property.getName() + "=" + this.property.getName(this.value);
+         String var10000 = this.property.getName();
+         return var10000 + "=" + this.property.getName(this.value);
+      }
+
+      public Property<T> property() {
+         return this.property;
+      }
+
+      public T value() {
+         return this.value;
       }
    }
 }

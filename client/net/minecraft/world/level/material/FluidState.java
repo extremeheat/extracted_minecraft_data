@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class FluidState extends StateHolder<Fluid, FluidState> {
-   public static final Codec<FluidState> CODEC = codec(BuiltInRegistries.FLUID.byNameCodec(), Fluid::defaultFluidState).stable();
+   public static final Codec<FluidState> CODEC;
    public static final int AMOUNT_MAX = 9;
    public static final int AMOUNT_FULL = 8;
 
@@ -31,7 +31,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    }
 
    public Fluid getType() {
-      return this.owner;
+      return (Fluid)this.owner;
    }
 
    public boolean isSource() {
@@ -39,7 +39,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    }
 
    public boolean isSourceOfType(Fluid var1) {
-      return this.owner == var1 && this.owner.isSource(this);
+      return this.owner == var1 && ((Fluid)this.owner).isSource(this);
    }
 
    public boolean isEmpty() {
@@ -126,10 +126,14 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    }
 
    public Holder<Fluid> holder() {
-      return this.owner.builtInRegistryHolder();
+      return ((Fluid)this.owner).builtInRegistryHolder();
    }
 
    public Stream<TagKey<Fluid>> getTags() {
-      return this.owner.builtInRegistryHolder().tags();
+      return ((Fluid)this.owner).builtInRegistryHolder().tags();
+   }
+
+   static {
+      CODEC = codec(BuiltInRegistries.FLUID.byNameCodec(), Fluid::defaultFluidState).stable();
    }
 }

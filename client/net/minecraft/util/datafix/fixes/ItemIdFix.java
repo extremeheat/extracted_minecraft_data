@@ -5,17 +5,15 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemIdFix extends DataFix {
-   private static final Int2ObjectMap<String> ITEM_NAMES = (Int2ObjectMap<String>)DataFixUtils.make(new Int2ObjectOpenHashMap(), var0 -> {
+   private static final Int2ObjectMap<String> ITEM_NAMES = (Int2ObjectMap)DataFixUtils.make(new Int2ObjectOpenHashMap(), (var0) -> {
       var0.put(1, "minecraft:stone");
       var0.put(2, "minecraft:grass");
       var0.put(3, "minecraft:dirt");
@@ -346,11 +344,14 @@ public class ItemIdFix extends DataFix {
       Type var1 = DSL.or(DSL.intType(), DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       Type var2 = DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString());
       OpticFinder var3 = DSL.fieldFinder("id", var1);
-      return this.fixTypeEverywhereTyped(
-         "ItemIdFix",
-         this.getInputSchema().getType(References.ITEM_STACK),
-         this.getOutputSchema().getType(References.ITEM_STACK),
-         var2x -> var2x.update(var3, var2, var0x -> (Pair)var0x.map(var0xx -> Pair.of(References.ITEM_NAME.typeName(), getItem(var0xx)), var0xx -> var0xx))
-      );
+      return this.fixTypeEverywhereTyped("ItemIdFix", this.getInputSchema().getType(References.ITEM_STACK), this.getOutputSchema().getType(References.ITEM_STACK), (var2x) -> {
+         return var2x.update(var3, var2, (var0) -> {
+            return (Pair)var0.map((var0x) -> {
+               return Pair.of(References.ITEM_NAME.typeName(), getItem(var0x));
+            }, (var0x) -> {
+               return var0x;
+            });
+         });
+      });
    }
 }

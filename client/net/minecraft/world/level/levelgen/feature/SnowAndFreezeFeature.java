@@ -16,7 +16,6 @@ public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -30,7 +29,7 @@ public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
             int var10 = var2.getHeight(Heightmap.Types.MOTION_BLOCKING, var8, var9);
             var4.set(var8, var10, var9);
             var5.set(var4).move(Direction.DOWN, 1);
-            Biome var11 = var2.getBiome(var4).value();
+            Biome var11 = (Biome)var2.getBiome(var4).value();
             if (var11.shouldFreeze(var2, var5, false)) {
                var2.setBlock(var5, Blocks.ICE.defaultBlockState(), 2);
             }
@@ -39,7 +38,7 @@ public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
                var2.setBlock(var4, Blocks.SNOW.defaultBlockState(), 2);
                BlockState var12 = var2.getBlockState(var5);
                if (var12.hasProperty(SnowyDirtBlock.SNOWY)) {
-                  var2.setBlock(var5, var12.setValue(SnowyDirtBlock.SNOWY, Boolean.valueOf(true)), 2);
+                  var2.setBlock(var5, (BlockState)var12.setValue(SnowyDirtBlock.SNOWY, true), 2);
                }
             }
          }

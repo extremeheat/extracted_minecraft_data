@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundPickItemPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPickItemPacket> STREAM_CODEC = Packet.codec(
-      ServerboundPickItemPacket::write, ServerboundPickItemPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPickItemPacket> STREAM_CODEC = Packet.codec(ServerboundPickItemPacket::write, ServerboundPickItemPacket::new);
    private final int slot;
 
    public ServerboundPickItemPacket(int var1) {
@@ -25,7 +23,6 @@ public class ServerboundPickItemPacket implements Packet<ServerGamePacketListene
       var1.writeVarInt(this.slot);
    }
 
-   @Override
    public PacketType<ServerboundPickItemPacket> type() {
       return GamePacketTypes.SERVERBOUND_PICK_ITEM;
    }

@@ -6,7 +6,7 @@ import net.minecraft.util.SegmentedAnglePrecision;
 
 public class RotationSegment {
    private static final SegmentedAnglePrecision SEGMENTED_ANGLE16 = new SegmentedAnglePrecision(4);
-   private static final int MAX_SEGMENT_INDEX = SEGMENTED_ANGLE16.getMask();
+   private static final int MAX_SEGMENT_INDEX;
    private static final int NORTH_0 = 0;
    private static final int EAST_90 = 4;
    private static final int SOUTH_180 = 8;
@@ -29,17 +29,24 @@ public class RotationSegment {
    }
 
    public static Optional<Direction> convertToDirection(int var0) {
-      Direction var1 = switch(var0) {
-         case 0 -> Direction.NORTH;
-         case 4 -> Direction.EAST;
-         case 8 -> Direction.SOUTH;
-         case 12 -> Direction.WEST;
-         default -> null;
-      };
+      Direction var10000;
+      switch (var0) {
+         case 0 -> var10000 = Direction.NORTH;
+         case 4 -> var10000 = Direction.EAST;
+         case 8 -> var10000 = Direction.SOUTH;
+         case 12 -> var10000 = Direction.WEST;
+         default -> var10000 = null;
+      }
+
+      Direction var1 = var10000;
       return Optional.ofNullable(var1);
    }
 
    public static float convertToDegrees(int var0) {
       return SEGMENTED_ANGLE16.toDegrees(var0);
+   }
+
+   static {
+      MAX_SEGMENT_INDEX = SEGMENTED_ANGLE16.getMask();
    }
 }

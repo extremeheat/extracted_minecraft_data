@@ -17,6 +17,8 @@ public class RegistryFriendlyByteBuf extends FriendlyByteBuf {
    }
 
    public static Function<ByteBuf, RegistryFriendlyByteBuf> decorator(RegistryAccess var0) {
-      return var1 -> new RegistryFriendlyByteBuf(var1, var0);
+      return (var1) -> {
+         return new RegistryFriendlyByteBuf(var1, var0);
+      };
    }
 }

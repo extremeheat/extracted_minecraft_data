@@ -19,9 +19,8 @@ public class SoundOptionsScreen extends OptionsSubScreen {
       super(var1, var2, TITLE);
    }
 
-   @Override
    protected void init() {
-      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
+      this.list = (OptionsList)this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
       this.list.addBig(this.options.getSoundSourceOptionInstance(SoundSource.MASTER));
       this.list.addSmall(this.getAllSoundOptionsExceptMaster());
       this.list.addBig(this.options.soundDevice());
@@ -29,16 +28,18 @@ public class SoundOptionsScreen extends OptionsSubScreen {
       super.init();
    }
 
-   @Override
    protected void repositionElements() {
       super.repositionElements();
       this.list.updateSize(this.width, this.layout);
    }
 
    private OptionInstance<?>[] getAllSoundOptionsExceptMaster() {
-      return Arrays.stream(SoundSource.values())
-         .filter(var0 -> var0 != SoundSource.MASTER)
-         .map(var1 -> this.options.getSoundSourceOptionInstance(var1))
-         .toArray(var0 -> new OptionInstance[var0]);
+      return (OptionInstance[])Arrays.stream(SoundSource.values()).filter((var0) -> {
+         return var0 != SoundSource.MASTER;
+      }).map((var1) -> {
+         return this.options.getSoundSourceOptionInstance(var1);
+      }).toArray((var0) -> {
+         return new OptionInstance[var0];
+      });
    }
 }

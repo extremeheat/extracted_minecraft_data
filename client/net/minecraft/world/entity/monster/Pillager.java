@@ -45,7 +45,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class Pillager extends AbstractIllager implements CrossbowAttackMob, InventoryCarrier {
-   private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW;
    private static final int INVENTORY_SIZE = 5;
    private static final int SLOT_OFFSET = 300;
    private final SimpleContainer inventory = new SimpleContainer(5);
@@ -54,61 +54,50 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(2, new Raider.HoldGroundAttackGoal(this, 10.0F));
-      this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal<>(this, 1.0, 8.0F));
+      this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal(this, 1.0, 8.0F));
       this.goalSelector.addGoal(8, new RandomStrollGoal(this, 0.6));
       this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 15.0F, 1.0F));
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 15.0F));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, false));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes()
-         .add(Attributes.MOVEMENT_SPEED, 0.3499999940395355)
-         .add(Attributes.MAX_HEALTH, 24.0)
-         .add(Attributes.ATTACK_DAMAGE, 5.0)
-         .add(Attributes.FOLLOW_RANGE, 32.0);
+      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.3499999940395355).add(Attributes.MAX_HEALTH, 24.0).add(Attributes.ATTACK_DAMAGE, 5.0).add(Attributes.FOLLOW_RANGE, 32.0);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(IS_CHARGING_CROSSBOW, false);
    }
 
-   @Override
    public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
       return var1 == Items.CROSSBOW;
    }
 
    public boolean isChargingCrossbow() {
-      return this.entityData.get(IS_CHARGING_CROSSBOW);
+      return (Boolean)this.entityData.get(IS_CHARGING_CROSSBOW);
    }
 
-   @Override
    public void setChargingCrossbow(boolean var1) {
       this.entityData.set(IS_CHARGING_CROSSBOW, var1);
    }
 
-   @Override
    public void onCrossbowAttackPerformed() {
       this.noActionTime = 0;
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       this.writeInventoryToTag(var1, this.registryAccess());
    }
 
-   @Override
    public AbstractIllager.IllagerArmPose getArmPose() {
       if (this.isChargingCrossbow()) {
          return AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE;
@@ -119,25 +108,21 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       }
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.readInventoryFromTag(var1, this.registryAccess());
       this.setCanPickUpLoot(true);
    }
 
-   @Override
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
       return 0.0F;
    }
 
-   @Override
    public int getMaxSpawnClusterSize() {
       return 1;
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
@@ -145,12 +130,10 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
    }
 
-   @Override
    protected void enchantSpawnedWeapon(RandomSource var1, float var2) {
       super.enchantSpawnedWeapon(var1, var2);
       if (var1.nextInt(300) == 0) {
@@ -160,34 +143,29 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
             this.setItemSlot(EquipmentSlot.MAINHAND, var3);
          }
       }
+
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.PILLAGER_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.PILLAGER_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.PILLAGER_HURT;
    }
 
-   @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
       this.performCrossbowAttack(this, 1.6F);
    }
 
-   @Override
    public SimpleContainer getInventory() {
       return this.inventory;
    }
 
-   @Override
    protected void pickUpItem(ItemEntity var1) {
       ItemStack var2 = var1.getItem();
       if (var2.getItem() instanceof BannerItem) {
@@ -201,19 +179,18 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
             var2.setCount(var3.getCount());
          }
       }
+
    }
 
    private boolean wantsItem(ItemStack var1) {
       return this.hasActiveRaid() && var1.is(Items.WHITE_BANNER);
    }
 
-   @Override
    public SlotAccess getSlot(int var1) {
       int var2 = var1 - 300;
       return var2 >= 0 && var2 < this.inventory.getContainerSize() ? SlotAccess.forContainer(this.inventory, var2) : super.getSlot(var1);
    }
 
-   @Override
    public void applyRaidBuffs(int var1, boolean var2) {
       Raid var3 = this.getCurrentRaid();
       boolean var4 = this.random.nextFloat() <= var3.getEnchantOdds();
@@ -228,10 +205,14 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
          var5.enchant(Enchantments.MULTISHOT, 1);
          this.setItemSlot(EquipmentSlot.MAINHAND, var5);
       }
+
    }
 
-   @Override
    public SoundEvent getCelebrateSound() {
       return SoundEvents.PILLAGER_CELEBRATE;
+   }
+
+   static {
+      IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
    }
 }

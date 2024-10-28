@@ -22,10 +22,10 @@ public final class OreVeinifier {
 
    protected static NoiseChunk.BlockStateFiller create(DensityFunction var0, DensityFunction var1, DensityFunction var2, PositionalRandomFactory var3) {
       Object var4 = null;
-      return var5 -> {
+      return (var5) -> {
          double var6 = var0.compute(var5);
          int var8 = var5.blockY();
-         OreVeinifier.VeinType var9 = var6 > 0.0 ? OreVeinifier.VeinType.COPPER : OreVeinifier.VeinType.IRON;
+         VeinType var9 = var6 > 0.0 ? OreVeinifier.VeinType.COPPER : OreVeinifier.VeinType.IRON;
          double var10 = Math.abs(var6);
          int var12 = var9.maxY - var8;
          int var13 = var8 - var9.minY;
@@ -71,6 +71,11 @@ public final class OreVeinifier {
          this.filler = var5;
          this.minY = var6;
          this.maxY = var7;
+      }
+
+      // $FF: synthetic method
+      private static VeinType[] $values() {
+         return new VeinType[]{COPPER, IRON};
       }
    }
 }

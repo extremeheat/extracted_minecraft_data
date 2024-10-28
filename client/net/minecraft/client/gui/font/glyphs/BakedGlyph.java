@@ -43,7 +43,7 @@ public class BakedGlyph {
       var5.vertex(var4, var12 + var15, var13, 0.0F).color(var6, var7, var8, var9).uv(this.u1, this.v0).uv2(var10).endVertex();
    }
 
-   public void renderEffect(BakedGlyph.Effect var1, Matrix4f var2, VertexConsumer var3, int var4) {
+   public void renderEffect(Effect var1, Matrix4f var2, VertexConsumer var3, int var4) {
       var3.vertex(var2, var1.x0, var1.y0, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u0, this.v0).uv2(var4).endVertex();
       var3.vertex(var2, var1.x1, var1.y0, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u0, this.v1).uv2(var4).endVertex();
       var3.vertex(var2, var1.x1, var1.y1, var1.depth).color(var1.r, var1.g, var1.b, var1.a).uv(this.u1, this.v1).uv2(var4).endVertex();

@@ -13,12 +13,10 @@ public class FurnaceBlockEntity extends AbstractFurnaceBlockEntity {
       super(BlockEntityType.FURNACE, var1, var2, RecipeType.SMELTING);
    }
 
-   @Override
    protected Component getDefaultName() {
       return Component.translatable("container.furnace");
    }
 
-   @Override
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
       return new FurnaceMenu(var1, var2, this, this.dataAccess);
    }

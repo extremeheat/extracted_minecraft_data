@@ -1,6 +1,8 @@
 package net.minecraft.client;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -24,14 +26,14 @@ public class Camera {
    private boolean initialized;
    private BlockGetter level;
    private Entity entity;
-   private Vec3 position = Vec3.ZERO;
-   private final BlockPos.MutableBlockPos blockPosition = new BlockPos.MutableBlockPos();
-   private final Vector3f forwards = new Vector3f(0.0F, 0.0F, 1.0F);
-   private final Vector3f up = new Vector3f(0.0F, 1.0F, 0.0F);
-   private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
+   private Vec3 position;
+   private final BlockPos.MutableBlockPos blockPosition;
+   private final Vector3f forwards;
+   private final Vector3f up;
+   private final Vector3f left;
    private float xRot;
    private float yRot;
-   private final Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
+   private final Quaternionf rotation;
    private boolean detached;
    private float eyeHeight;
    private float eyeHeightOld;
@@ -40,6 +42,12 @@ public class Camera {
 
    public Camera() {
       super();
+      this.position = Vec3.ZERO;
+      this.blockPosition = new BlockPos.MutableBlockPos();
+      this.forwards = new Vector3f(0.0F, 0.0F, 1.0F);
+      this.up = new Vector3f(0.0F, 1.0F, 0.0F);
+      this.left = new Vector3f(1.0F, 0.0F, 0.0F);
+      this.rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
    }
 
    public void setup(BlockGetter var1, Entity var2, boolean var3, boolean var4, float var5) {
@@ -49,23 +57,28 @@ public class Camera {
       this.detached = var3;
       this.partialTickTime = var5;
       this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
-      this.setPosition(
-         Mth.lerp((double)var5, var2.xo, var2.getX()),
-         Mth.lerp((double)var5, var2.yo, var2.getY()) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight),
-         Mth.lerp((double)var5, var2.zo, var2.getZ())
-      );
+      this.setPosition(Mth.lerp((double)var5, var2.xo, var2.getX()), Mth.lerp((double)var5, var2.yo, var2.getY()) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), Mth.lerp((double)var5, var2.zo, var2.getZ()));
       if (var3) {
          if (var4) {
             this.setRotation(this.yRot + 180.0F, -this.xRot);
          }
 
-         float var6 = var2 instanceof LivingEntity var7 ? var7.getScale() : 1.0F;
+         float var10000;
+         if (var2 instanceof LivingEntity) {
+            LivingEntity var7 = (LivingEntity)var2;
+            var10000 = var7.getScale();
+         } else {
+            var10000 = 1.0F;
+         }
+
+         float var6 = var10000;
          this.move(-this.getMaxZoom((double)(4.0F * var6)), 0.0, 0.0);
       } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
          Direction var8 = ((LivingEntity)var2).getBedOrientation();
          this.setRotation(var8 != null ? var8.toYRot() - 180.0F : 0.0F, 0.0F);
          this.move(0.0, 0.3, 0.0);
       }
+
    }
 
    public void tick() {
@@ -73,6 +86,7 @@ public class Camera {
          this.eyeHeightOld = this.eyeHeight;
          this.eyeHeight += (this.entity.getEyeHeight() - this.eyeHeight) * 0.5F;
       }
+
    }
 
    private double getMaxZoom(double var1) {
@@ -84,14 +98,10 @@ public class Camera {
          var5 *= 0.1F;
          var6 *= 0.1F;
          Vec3 var7 = this.position.add((double)var4, (double)var5, (double)var6);
-         Vec3 var8 = new Vec3(
-            this.position.x - (double)this.forwards.x() * var1 + (double)var4,
-            this.position.y - (double)this.forwards.y() * var1 + (double)var5,
-            this.position.z - (double)this.forwards.z() * var1 + (double)var6
-         );
+         Vec3 var8 = new Vec3(this.position.x - (double)this.forwards.x() * var1 + (double)var4, this.position.y - (double)this.forwards.y() * var1 + (double)var5, this.position.z - (double)this.forwards.z() * var1 + (double)var6);
          BlockHitResult var9 = this.level.clip(new ClipContext(var7, var8, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, this.entity));
-         if (var9.getType() != HitResult.Type.MISS) {
-            double var10 = var9.getLocation().distanceTo(this.position);
+         if (((HitResult)var9).getType() != HitResult.Type.MISS) {
+            double var10 = ((HitResult)var9).getLocation().distanceTo(this.position);
             if (var10 < var1) {
                var1 = var10;
             }
@@ -158,15 +168,15 @@ public class Camera {
       return this.detached;
    }
 
-   public Camera.NearPlane getNearPlane() {
+   public NearPlane getNearPlane() {
       Minecraft var1 = Minecraft.getInstance();
       double var2 = (double)var1.getWindow().getWidth() / (double)var1.getWindow().getHeight();
-      double var4 = Math.tan((double)((float)var1.options.fov().get().intValue() * 0.017453292F) / 2.0) * 0.05000000074505806;
+      double var4 = Math.tan((double)((float)(Integer)var1.options.fov().get() * 0.017453292F) / 2.0) * 0.05000000074505806;
       double var6 = var4 * var2;
-      Vec3 var8 = new Vec3(this.forwards).scale(0.05000000074505806);
-      Vec3 var9 = new Vec3(this.left).scale(var6);
-      Vec3 var10 = new Vec3(this.up).scale(var4);
-      return new Camera.NearPlane(var8, var9, var10);
+      Vec3 var8 = (new Vec3(this.forwards)).scale(0.05000000074505806);
+      Vec3 var9 = (new Vec3(this.left)).scale(var6);
+      Vec3 var10 = (new Vec3(this.up)).scale(var4);
+      return new NearPlane(var8, var9, var10);
    }
 
    public FogType getFluidInCamera() {
@@ -177,9 +187,12 @@ public class Camera {
          if (var1.is(FluidTags.WATER) && this.position.y < (double)((float)this.blockPosition.getY() + var1.getHeight(this.level, this.blockPosition))) {
             return FogType.WATER;
          } else {
-            Camera.NearPlane var2 = this.getNearPlane();
+            NearPlane var2 = this.getNearPlane();
+            List var3 = Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight());
+            Iterator var4 = var3.iterator();
 
-            for(Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
+            while(var4.hasNext()) {
+               Vec3 var5 = (Vec3)var4.next();
                Vec3 var6 = this.position.add(var5);
                BlockPos var7 = BlockPos.containing(var6);
                FluidState var8 = this.level.getFluidState(var7);

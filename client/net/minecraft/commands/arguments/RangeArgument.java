@@ -10,12 +10,37 @@ import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandSourceStack;
 
 public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T> {
-   static RangeArgument.Ints intRange() {
-      return new RangeArgument.Ints();
+   static Ints intRange() {
+      return new Ints();
    }
 
-   static RangeArgument.Floats floatRange() {
-      return new RangeArgument.Floats();
+   static Floats floatRange() {
+      return new Floats();
+   }
+
+   public static class Ints implements RangeArgument<MinMaxBounds.Ints> {
+      private static final Collection<String> EXAMPLES = Arrays.asList("0..5", "0", "-5", "-100..", "..100");
+
+      public Ints() {
+         super();
+      }
+
+      public static MinMaxBounds.Ints getRange(CommandContext<CommandSourceStack> var0, String var1) {
+         return (MinMaxBounds.Ints)var0.getArgument(var1, MinMaxBounds.Ints.class);
+      }
+
+      public MinMaxBounds.Ints parse(StringReader var1) throws CommandSyntaxException {
+         return MinMaxBounds.Ints.fromReader(var1);
+      }
+
+      public Collection<String> getExamples() {
+         return EXAMPLES;
+      }
+
+      // $FF: synthetic method
+      public Object parse(StringReader var1) throws CommandSyntaxException {
+         return this.parse(var1);
+      }
    }
 
    public static class Floats implements RangeArgument<MinMaxBounds.Doubles> {
@@ -36,25 +61,10 @@ public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T
       public Collection<String> getExamples() {
          return EXAMPLES;
       }
-   }
 
-   public static class Ints implements RangeArgument<MinMaxBounds.Ints> {
-      private static final Collection<String> EXAMPLES = Arrays.asList("0..5", "0", "-5", "-100..", "..100");
-
-      public Ints() {
-         super();
-      }
-
-      public static MinMaxBounds.Ints getRange(CommandContext<CommandSourceStack> var0, String var1) {
-         return (MinMaxBounds.Ints)var0.getArgument(var1, MinMaxBounds.Ints.class);
-      }
-
-      public MinMaxBounds.Ints parse(StringReader var1) throws CommandSyntaxException {
-         return MinMaxBounds.Ints.fromReader(var1);
-      }
-
-      public Collection<String> getExamples() {
-         return EXAMPLES;
+      // $FF: synthetic method
+      public Object parse(StringReader var1) throws CommandSyntaxException {
+         return this.parse(var1);
       }
    }
 }

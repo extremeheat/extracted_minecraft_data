@@ -23,34 +23,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class HoeItem extends DiggerItem {
-   protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES = Maps.newHashMap(
-      ImmutableMap.of(
-         Blocks.CORRUPTED_PEELGRASS_BLOCK,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.PEELGRASS_BLOCK,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.TERREDEPOMME,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.POISON_PATH,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.POISON_FARMLAND.defaultBlockState())),
-         Blocks.GRASS_BLOCK,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())),
-         Blocks.DIRT_PATH,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())),
-         Blocks.DIRT,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())),
-         Blocks.COARSE_DIRT,
-         Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.DIRT.defaultBlockState())),
-         Blocks.ROOTED_DIRT,
-         Pair.of((Predicate<UseOnContext>)var0 -> true, changeIntoStateAndDropItem(Blocks.DIRT.defaultBlockState(), Items.HANGING_ROOTS))
-      )
-   );
+   protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES;
 
    public HoeItem(Tier var1, Item.Properties var2) {
       super(var1, BlockTags.MINEABLE_WITH_HOE, var2);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -78,14 +56,14 @@ public class HoeItem extends DiggerItem {
    }
 
    public static Consumer<UseOnContext> changeIntoState(BlockState var0) {
-      return var1 -> {
+      return (var1) -> {
          var1.getLevel().setBlock(var1.getClickedPos(), var0, 11);
          var1.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, var1.getClickedPos(), GameEvent.Context.of(var1.getPlayer(), var0));
       };
    }
 
    public static Consumer<UseOnContext> changeIntoStateAndDropItem(BlockState var0, ItemLike var1) {
-      return var2 -> {
+      return (var2) -> {
          var2.getLevel().setBlock(var2.getClickedPos(), var0, 11);
          var2.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, var2.getClickedPos(), GameEvent.Context.of(var2.getPlayer(), var0));
          Block.popResourceFromFace(var2.getLevel(), var2.getClickedPos(), var2.getClickedFace(), new ItemStack(var1));
@@ -94,5 +72,11 @@ public class HoeItem extends DiggerItem {
 
    public static boolean onlyIfAirAbove(UseOnContext var0) {
       return var0.getClickedFace() != Direction.DOWN && var0.getLevel().getBlockState(var0.getClickedPos().above()).isAir();
+   }
+
+   static {
+      TILLABLES = Maps.newHashMap(ImmutableMap.of(Blocks.GRASS_BLOCK, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.DIRT_PATH, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.DIRT, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.FARMLAND.defaultBlockState())), Blocks.COARSE_DIRT, Pair.of(HoeItem::onlyIfAirAbove, changeIntoState(Blocks.DIRT.defaultBlockState())), Blocks.ROOTED_DIRT, Pair.of((var0) -> {
+         return true;
+      }, changeIntoStateAndDropItem(Blocks.DIRT.defaultBlockState(), Items.HANGING_ROOTS))));
    }
 }

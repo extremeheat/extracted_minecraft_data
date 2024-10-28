@@ -36,7 +36,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
                   return false;
                }
 
-               BannerPatternLayers var7 = var6.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+               BannerPatternLayers var7 = (BannerPatternLayers)var6.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
                if (!var7.layers().isEmpty()) {
                   return false;
                }
@@ -46,7 +46,11 @@ public class ShieldDecorationRecipe extends CustomRecipe {
          }
       }
 
-      return !var3.isEmpty() && !var4.isEmpty();
+      if (!var3.isEmpty() && !var4.isEmpty()) {
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
@@ -73,12 +77,10 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       }
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.SHIELD_DECORATION;
    }

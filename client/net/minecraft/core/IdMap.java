@@ -15,14 +15,15 @@ public interface IdMap<T> extends Iterable<T> {
       if (var2 == null) {
          throw new IllegalArgumentException("No value with id " + var1);
       } else {
-         return (T)var2;
+         return var2;
       }
    }
 
    default int getIdOrThrow(T var1) {
-      int var2 = this.getId((T)var1);
+      int var2 = this.getId(var1);
       if (var2 == -1) {
-         throw new IllegalArgumentException("Can't find id for '" + var1 + "' in map " + this);
+         String var10002 = String.valueOf(var1);
+         throw new IllegalArgumentException("Can't find id for '" + var10002 + "' in map " + String.valueOf(this));
       } else {
          return var2;
       }

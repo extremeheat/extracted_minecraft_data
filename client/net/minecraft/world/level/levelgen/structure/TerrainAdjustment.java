@@ -6,7 +6,6 @@ import net.minecraft.util.StringRepresentable;
 public enum TerrainAdjustment implements StringRepresentable {
    NONE("none"),
    BURY("bury"),
-   BURY_PROPER("bury_proper"),
    BEARD_THIN("beard_thin"),
    BEARD_BOX("beard_box");
 
@@ -17,8 +16,12 @@ public enum TerrainAdjustment implements StringRepresentable {
       this.id = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
+   }
+
+   // $FF: synthetic method
+   private static TerrainAdjustment[] $values() {
+      return new TerrainAdjustment[]{NONE, BURY, BEARD_THIN, BEARD_BOX};
    }
 }

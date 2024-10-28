@@ -3,14 +3,14 @@ package net.minecraft.world.effect;
 import com.google.common.collect.ComparisonChain;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -23,6 +23,8 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.slf4j.Logger;
 
@@ -31,20 +33,10 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public static final int INFINITE_DURATION = -1;
    public static final int MIN_AMPLIFIER = 0;
    public static final int MAX_AMPLIFIER = 255;
-   public static final Codec<MobEffectInstance> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("id").forGetter(MobEffectInstance::getEffect),
-               MobEffectInstance.Details.MAP_CODEC.forGetter(MobEffectInstance::asDetails)
-            )
-            .apply(var0, MobEffectInstance::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, MobEffectInstance> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT),
-      MobEffectInstance::getEffect,
-      MobEffectInstance.Details.STREAM_CODEC,
-      MobEffectInstance::asDetails,
-      MobEffectInstance::new
-   );
+   public static final Codec<MobEffectInstance> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("id").forGetter(MobEffectInstance::getEffect), MobEffectInstance.Details.MAP_CODEC.forGetter(MobEffectInstance::asDetails)).apply(var0, MobEffectInstance::new);
+   });
+   public static final StreamCodec<RegistryFriendlyByteBuf, MobEffectInstance> STREAM_CODEC;
    private final Holder<MobEffect> effect;
    private int duration;
    private int amplifier;
@@ -53,7 +45,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private boolean showIcon;
    @Nullable
    private MobEffectInstance hiddenEffect;
-   private final MobEffectInstance.BlendState blendState = new MobEffectInstance.BlendState();
+   private final BlendState blendState;
 
    public MobEffectInstance(Holder<MobEffect> var1) {
       this(var1, 0, 0);
@@ -72,11 +64,12 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public MobEffectInstance(Holder<MobEffect> var1, int var2, int var3, boolean var4, boolean var5, boolean var6) {
-      this(var1, var2, var3, var4, var5, var6, null);
+      this(var1, var2, var3, var4, var5, var6, (MobEffectInstance)null);
    }
 
    public MobEffectInstance(Holder<MobEffect> var1, int var2, int var3, boolean var4, boolean var5, boolean var6, @Nullable MobEffectInstance var7) {
       super();
+      this.blendState = new BlendState();
       this.effect = var1;
       this.duration = var2;
       this.amplifier = Mth.clamp(var3, 0, 255);
@@ -88,31 +81,19 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
 
    public MobEffectInstance(MobEffectInstance var1) {
       super();
+      this.blendState = new BlendState();
       this.effect = var1.effect;
       this.setDetailsFrom(var1);
    }
 
-   private MobEffectInstance(Holder<MobEffect> var1, MobEffectInstance.Details var2) {
-      this(
-         var1,
-         var2.duration(),
-         var2.amplifier(),
-         var2.ambient(),
-         var2.showParticles(),
-         var2.showIcon(),
-         var2.hiddenEffect().map(var1x -> new MobEffectInstance(var1, var1x)).orElse(null)
-      );
+   private MobEffectInstance(Holder<MobEffect> var1, Details var2) {
+      this(var1, var2.duration(), var2.amplifier(), var2.ambient(), var2.showParticles(), var2.showIcon(), (MobEffectInstance)var2.hiddenEffect().map((var1x) -> {
+         return new MobEffectInstance(var1, var1x);
+      }).orElse((Object)null));
    }
 
-   private MobEffectInstance.Details asDetails() {
-      return new MobEffectInstance.Details(
-         this.getAmplifier(),
-         this.getDuration(),
-         this.isAmbient(),
-         this.isVisible(),
-         this.showIcon(),
-         Optional.ofNullable(this.hiddenEffect).map(MobEffectInstance::asDetails)
-      );
+   private Details asDetails() {
+      return new Details(this.getAmplifier(), this.getDuration(), this.isAmbient(), this.isVisible(), this.showIcon(), Optional.ofNullable(this.hiddenEffect).map(MobEffectInstance::asDetails));
    }
 
    public float getBlendFactor(LivingEntity var1, float var2) {
@@ -120,7 +101,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public ParticleOptions getParticleOptions() {
-      return this.effect.value().createParticleOptions(this);
+      return ((MobEffect)this.effect.value()).createParticleOptions(this);
    }
 
    void setDetailsFrom(MobEffectInstance var1) {
@@ -219,7 +200,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public boolean tick(LivingEntity var1, Runnable var2) {
       if (this.hasRemainingDuration()) {
          int var3 = this.isInfiniteDuration() ? var1.tickCount : this.duration;
-         if (this.effect.value().shouldApplyEffectTickThisTick(var3, this.amplifier) && !this.effect.value().applyEffectTick(var1, this.amplifier)) {
+         if (((MobEffect)this.effect.value()).shouldApplyEffectTickThisTick(var3, this.amplifier) && !((MobEffect)this.effect.value()).applyEffectTick(var1, this.amplifier)) {
             var1.removeEffect(this.effect);
          }
 
@@ -244,24 +225,36 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.hiddenEffect.tickDownDuration();
       }
 
-      return this.duration = this.mapDuration(var0 -> var0 - 1);
+      return this.duration = this.mapDuration((var0) -> {
+         return var0 - 1;
+      });
    }
 
    public void onEffectStarted(LivingEntity var1) {
-      this.effect.value().onEffectStarted(var1, this.amplifier);
+      ((MobEffect)this.effect.value()).onEffectStarted(var1, this.amplifier);
+   }
+
+   public void onMobRemoved(LivingEntity var1, Entity.RemovalReason var2) {
+      ((MobEffect)this.effect.value()).onMobRemoved(var1, this.amplifier, var2);
+   }
+
+   public void onMobHurt(LivingEntity var1, DamageSource var2, float var3) {
+      ((MobEffect)this.effect.value()).onMobHurt(var1, this.amplifier, var2, var3);
    }
 
    public String getDescriptionId() {
-      return this.effect.value().getDescriptionId();
+      return ((MobEffect)this.effect.value()).getDescriptionId();
    }
 
-   @Override
    public String toString() {
+      String var10000;
       String var1;
       if (this.amplifier > 0) {
-         var1 = this.getDescriptionId() + " x " + (this.amplifier + 1) + ", Duration: " + this.describeDuration();
+         var10000 = this.getDescriptionId();
+         var1 = var10000 + " x " + (this.amplifier + 1) + ", Duration: " + this.describeDuration();
       } else {
-         var1 = this.getDescriptionId() + ", Duration: " + this.describeDuration();
+         var10000 = this.getDescriptionId();
+         var1 = var10000 + ", Duration: " + this.describeDuration();
       }
 
       if (!this.visible) {
@@ -279,7 +272,6 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return this.isInfiniteDuration() ? "infinite" : Integer.toString(this.duration);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -291,36 +283,33 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.effect.hashCode();
       var1 = 31 * var1 + this.duration;
       var1 = 31 * var1 + this.amplifier;
-      return 31 * var1 + (this.ambient ? 1 : 0);
+      var1 = 31 * var1 + (this.ambient ? 1 : 0);
+      return var1;
    }
 
    public Tag save() {
-      return Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, this), IllegalStateException::new);
+      return (Tag)CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
    }
 
    @Nullable
    public static MobEffectInstance load(CompoundTag var0) {
-      return (MobEffectInstance)CODEC.parse(NbtOps.INSTANCE, var0).resultOrPartial(LOGGER::error).orElse(null);
+      DataResult var10000 = CODEC.parse(NbtOps.INSTANCE, var0);
+      Logger var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      return (MobEffectInstance)var10000.resultOrPartial(var10001::error).orElse((Object)null);
    }
 
    public int compareTo(MobEffectInstance var1) {
       boolean var2 = true;
-      return (this.getDuration() <= 32147 || var1.getDuration() <= 32147) && (!this.isAmbient() || !var1.isAmbient())
-         ? ComparisonChain.start()
-            .compareFalseFirst(this.isAmbient(), var1.isAmbient())
-            .compareFalseFirst(this.isInfiniteDuration(), var1.isInfiniteDuration())
-            .compare(this.getDuration(), var1.getDuration())
-            .compare(this.getEffect().value().getColor(), var1.getEffect().value().getColor())
-            .result()
-         : ComparisonChain.start()
-            .compare(this.isAmbient(), var1.isAmbient())
-            .compare(this.getEffect().value().getColor(), var1.getEffect().value().getColor())
-            .result();
+      return (this.getDuration() <= 32147 || var1.getDuration() <= 32147) && (!this.isAmbient() || !var1.isAmbient()) ? ComparisonChain.start().compareFalseFirst(this.isAmbient(), var1.isAmbient()).compareFalseFirst(this.isInfiniteDuration(), var1.isInfiniteDuration()).compare(this.getDuration(), var1.getDuration()).compare(((MobEffect)this.getEffect().value()).getColor(), ((MobEffect)var1.getEffect().value()).getColor()).result() : ComparisonChain.start().compare(this.isAmbient(), var1.isAmbient()).compare(((MobEffect)this.getEffect().value()).getColor(), ((MobEffect)var1.getEffect().value()).getColor()).result();
+   }
+
+   public void onEffectAdded(LivingEntity var1) {
+      ((MobEffect)this.effect.value()).onEffectAdded(var1, this.amplifier);
    }
 
    public boolean is(Holder<MobEffect> var1) {
@@ -333,6 +322,15 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
 
    public void skipBlending() {
       this.blendState.setImmediate(this);
+   }
+
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((MobEffectInstance)var1);
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT), MobEffectInstance::getEffect, MobEffectInstance.Details.STREAM_CODEC, MobEffectInstance::asDetails, MobEffectInstance::new);
    }
 
    static class BlendState {
@@ -348,7 +346,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.factorPreviousFrame = this.factor;
       }
 
-      public void copyFrom(MobEffectInstance.BlendState var1) {
+      public void copyFrom(BlendState var1) {
          this.factor = var1.factor;
          this.factorPreviousFrame = var1.factorPreviousFrame;
       }
@@ -364,6 +362,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
                float var4 = 1.0F / (float)var2;
                this.factor += Mth.clamp(var3 - this.factor, -var4, var4);
             }
+
          }
       }
 
@@ -373,7 +372,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
 
       private static int getBlendDuration(MobEffectInstance var0) {
-         return var0.getEffect().value().getBlendDurationTicks();
+         return ((MobEffect)var0.getEffect().value()).getBlendDurationTicks();
       }
 
       public float getFactor(LivingEntity var1, float var2) {
@@ -385,46 +384,19 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
    }
 
-   static record Details(int c, int d, boolean e, boolean f, boolean g, Optional<MobEffectInstance.Details> h) {
-      private final int amplifier;
-      private final int duration;
-      private final boolean ambient;
-      private final boolean showParticles;
-      private final boolean showIcon;
-      private final Optional<MobEffectInstance.Details> hiddenEffect;
-      public static final MapCodec<MobEffectInstance.Details> MAP_CODEC = ExtraCodecs.recursiveMap(
-         "MobEffectInstance.Details",
-         var0 -> RecordCodecBuilder.mapCodec(
-               var1 -> var1.group(
-                        ExtraCodecs.strictOptionalField(ExtraCodecs.UNSIGNED_BYTE, "amplifier", 0).forGetter(MobEffectInstance.Details::amplifier),
-                        ExtraCodecs.strictOptionalField(Codec.INT, "duration", 0).forGetter(MobEffectInstance.Details::duration),
-                        ExtraCodecs.strictOptionalField(Codec.BOOL, "ambient", false).forGetter(MobEffectInstance.Details::ambient),
-                        ExtraCodecs.strictOptionalField(Codec.BOOL, "show_particles", true).forGetter(MobEffectInstance.Details::showParticles),
-                        ExtraCodecs.strictOptionalField(Codec.BOOL, "show_icon").forGetter(var0xx -> Optional.of(var0xx.showIcon())),
-                        ExtraCodecs.strictOptionalField(var0, "hidden_effect").forGetter(MobEffectInstance.Details::hiddenEffect)
-                     )
-                     .apply(var1, MobEffectInstance.Details::create)
-            )
-      );
-      public static final StreamCodec<ByteBuf, MobEffectInstance.Details> STREAM_CODEC = StreamCodec.recursive(
-         var0 -> StreamCodec.composite(
-               ByteBufCodecs.VAR_INT,
-               MobEffectInstance.Details::amplifier,
-               ByteBufCodecs.VAR_INT,
-               MobEffectInstance.Details::duration,
-               ByteBufCodecs.BOOL,
-               MobEffectInstance.Details::ambient,
-               ByteBufCodecs.BOOL,
-               MobEffectInstance.Details::showParticles,
-               ByteBufCodecs.BOOL,
-               MobEffectInstance.Details::showIcon,
-               var0.apply(ByteBufCodecs::optional),
-               MobEffectInstance.Details::hiddenEffect,
-               MobEffectInstance.Details::new
-            )
-      );
+   static record Details(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<Details> hiddenEffect) {
+      public static final MapCodec<Details> MAP_CODEC = MapCodec.recursive("MobEffectInstance.Details", (var0) -> {
+         return RecordCodecBuilder.mapCodec((var1) -> {
+            return var1.group(ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("amplifier", 0).forGetter(Details::amplifier), Codec.INT.optionalFieldOf("duration", 0).forGetter(Details::duration), Codec.BOOL.optionalFieldOf("ambient", false).forGetter(Details::ambient), Codec.BOOL.optionalFieldOf("show_particles", true).forGetter(Details::showParticles), Codec.BOOL.optionalFieldOf("show_icon").forGetter((var0x) -> {
+               return Optional.of(var0x.showIcon());
+            }), var0.optionalFieldOf("hidden_effect").forGetter(Details::hiddenEffect)).apply(var1, Details::create);
+         });
+      });
+      public static final StreamCodec<ByteBuf, Details> STREAM_CODEC = StreamCodec.recursive((var0) -> {
+         return StreamCodec.composite(ByteBufCodecs.VAR_INT, Details::amplifier, ByteBufCodecs.VAR_INT, Details::duration, ByteBufCodecs.BOOL, Details::ambient, ByteBufCodecs.BOOL, Details::showParticles, ByteBufCodecs.BOOL, Details::showIcon, var0.apply(ByteBufCodecs::optional), Details::hiddenEffect, Details::new);
+      });
 
-      Details(int var1, int var2, boolean var3, boolean var4, boolean var5, Optional<MobEffectInstance.Details> var6) {
+      Details(int var1, int var2, boolean var3, boolean var4, boolean var5, Optional<Details> var6) {
          super();
          this.amplifier = var1;
          this.duration = var2;
@@ -434,10 +406,32 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.hiddenEffect = var6;
       }
 
-      private static MobEffectInstance.Details create(
-         int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<MobEffectInstance.Details> var5
-      ) {
-         return new MobEffectInstance.Details(var0, var1, var2, var3, var4.orElse(var3), var5);
+      private static Details create(int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<Details> var5) {
+         return new Details(var0, var1, var2, var3, (Boolean)var4.orElse(var3), var5);
+      }
+
+      public int amplifier() {
+         return this.amplifier;
+      }
+
+      public int duration() {
+         return this.duration;
+      }
+
+      public boolean ambient() {
+         return this.ambient;
+      }
+
+      public boolean showParticles() {
+         return this.showParticles;
+      }
+
+      public boolean showIcon() {
+         return this.showIcon;
+      }
+
+      public Optional<Details> hiddenEffect() {
+         return this.hiddenEffect;
       }
    }
 }

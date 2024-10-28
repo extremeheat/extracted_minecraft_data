@@ -10,7 +10,6 @@ public class ComplexItem extends Item {
       super(var1);
    }
 
-   @Override
    public boolean isComplex() {
       return true;
    }

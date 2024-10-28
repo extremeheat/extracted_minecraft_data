@@ -18,7 +18,9 @@ public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
    public LavaSlimeModel(ModelPart var1) {
       super();
       this.root = var1;
-      Arrays.setAll(this.bodyCubes, var1x -> var1.getChild(getSegmentName(var1x)));
+      Arrays.setAll(this.bodyCubes, (var1x) -> {
+         return var1.getChild(getSegmentName(var1x));
+      });
    }
 
    private static String getSegmentName(int var0) {
@@ -40,9 +42,7 @@ public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
             var4 = 19;
          }
 
-         var1.addOrReplaceChild(
-            getSegmentName(var2), CubeListBuilder.create().texOffs(var3, var4).addBox(-4.0F, (float)(16 + var2), -4.0F, 8.0F, 1.0F, 8.0F), PartPose.ZERO
-         );
+         var1.addOrReplaceChild(getSegmentName(var2), CubeListBuilder.create().texOffs(var3, var4).addBox(-4.0F, (float)(16 + var2), -4.0F, 8.0F, 1.0F, 8.0F), PartPose.ZERO);
       }
 
       var1.addOrReplaceChild("inside_cube", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 18.0F, -2.0F, 4.0F, 4.0F, 4.0F), PartPose.ZERO);
@@ -61,9 +61,9 @@ public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
       for(int var6 = 0; var6 < this.bodyCubes.length; ++var6) {
          this.bodyCubes[var6].y = (float)(-(4 - var6)) * var5 * 1.7F;
       }
+
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

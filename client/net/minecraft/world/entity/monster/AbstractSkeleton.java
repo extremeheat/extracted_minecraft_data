@@ -46,15 +46,13 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class AbstractSkeleton extends Monster implements RangedAttackMob {
    private static final int HARD_ATTACK_INTERVAL = 20;
    private static final int NORMAL_ATTACK_INTERVAL = 40;
-   private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal<>(this, 1.0, 20, 15.0F);
+   private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal(this, 1.0, 20, 15.0F);
    private final MeleeAttackGoal meleeGoal = new MeleeAttackGoal(this, 1.2, false) {
-      @Override
       public void stop() {
          super.stop();
          AbstractSkeleton.this.setAggressive(false);
       }
 
-      @Override
       public void start() {
          super.start();
          AbstractSkeleton.this.setAggressive(true);
@@ -66,32 +64,29 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.reassessWeaponGoal();
    }
 
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(2, new RestrictSunGoal(this));
       this.goalSelector.addGoal(3, new FleeSunGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Wolf.class, 6.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Wolf.class, 6.0F, 1.0, 1.2));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
       this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Turtle.class, 10, true, false, Turtle.BABY_ON_LAND_SELECTOR));
+      this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[0]));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Turtle.class, 10, true, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.25);
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(this.getStepSound(), 0.15F, 1.0F);
    }
 
    abstract SoundEvent getStepSound();
 
-   @Override
    public void aiStep() {
       boolean var1 = this.isSunBurnTick();
       if (var1) {
@@ -116,25 +111,21 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       super.aiStep();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void rideTick() {
       super.rideTick();
       Entity var2 = this.getControlledVehicle();
       if (var2 instanceof PathfinderMob var1) {
          this.yBodyRot = var1.yBodyRot;
       }
+
    }
 
-   @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       super.populateDefaultEquipmentSlots(var1, var2);
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var5 = var1.getRandom();
@@ -171,6 +162,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          } else {
             this.goalSelector.addGoal(4, this.meleeGoal);
          }
+
       }
    }
 
@@ -182,7 +174,6 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return 40;
    }
 
-   @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
       ItemStack var3 = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
       AbstractArrow var4 = this.getArrow(var3, var2);
@@ -199,23 +190,21 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return ProjectileUtil.getMobArrow(this, var1, var2);
    }
 
-   @Override
    public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
       return var1 == Items.BOW;
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.reassessWeaponGoal();
    }
 
-   @Override
    public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
       super.setItemSlot(var1, var2);
       if (!this.level().isClientSide) {
          this.reassessWeaponGoal();
       }
+
    }
 
    public boolean isShaking() {

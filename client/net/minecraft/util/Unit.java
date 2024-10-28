@@ -5,4 +5,9 @@ public enum Unit {
 
    private Unit() {
    }
+
+   // $FF: synthetic method
+   private static Unit[] $values() {
+      return new Unit[]{INSTANCE};
+   }
 }

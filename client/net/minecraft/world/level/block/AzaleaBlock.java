@@ -18,7 +18,6 @@ public class AzaleaBlock extends BushBlock implements BonemealableBlock {
    public static final MapCodec<AzaleaBlock> CODEC = simpleCodec(AzaleaBlock::new);
    private static final VoxelShape SHAPE = Shapes.or(Block.box(0.0, 8.0, 0.0, 16.0, 16.0, 16.0), Block.box(6.0, 0.0, 6.0, 10.0, 8.0, 10.0));
 
-   @Override
    public MapCodec<AzaleaBlock> codec() {
       return CODEC;
    }
@@ -27,27 +26,22 @@ public class AzaleaBlock extends BushBlock implements BonemealableBlock {
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.is(Blocks.CLAY) || super.mayPlaceOn(var1, var2, var3);
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return var1.getFluidState(var2.above()).isEmpty();
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return (double)var1.random.nextFloat() < 0.45;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       TreeGrower.AZALEA.growTree(var1, var1.getChunkSource().getGenerator(), var3, var4, var2);
    }

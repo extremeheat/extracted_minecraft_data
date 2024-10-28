@@ -19,12 +19,10 @@ public interface PackSource {
 
    static PackSource create(final UnaryOperator<Component> var0, final boolean var1) {
       return new PackSource() {
-         @Override
          public Component decorate(Component var1x) {
-            return var0.apply(var1x);
+            return (Component)var0.apply(var1x);
          }
 
-         @Override
          public boolean shouldAddAutomatically() {
             return var1;
          }
@@ -33,6 +31,8 @@ public interface PackSource {
 
    private static UnaryOperator<Component> decorateWithSource(String var0) {
       MutableComponent var1 = Component.translatable(var0);
-      return var1x -> Component.translatable("pack.nameAndSource", var1x, var1).withStyle(ChatFormatting.GRAY);
+      return (var1x) -> {
+         return Component.translatable("pack.nameAndSource", var1x, var1).withStyle(ChatFormatting.GRAY);
+      };
    }
 }

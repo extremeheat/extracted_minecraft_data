@@ -2,6 +2,7 @@ package net.minecraft.client.gui.spectator.categories;
 
 import com.mojang.authlib.GameProfile;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -34,35 +35,31 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    private static List<SpectatorMenuItem> createTeamEntries(Minecraft var0, Scoreboard var1) {
-      return var1.getPlayerTeams().stream().flatMap(var1x -> TeleportToTeamMenuCategory.TeamSelectionItem.create(var0, var1x).stream()).toList();
+      return var1.getPlayerTeams().stream().flatMap((var1x) -> {
+         return TeleportToTeamMenuCategory.TeamSelectionItem.create(var0, var1x).stream();
+      }).toList();
    }
 
-   @Override
    public List<SpectatorMenuItem> getItems() {
       return this.items;
    }
 
-   @Override
    public Component getPrompt() {
       return TELEPORT_PROMPT;
    }
 
-   @Override
    public void selectItem(SpectatorMenu var1) {
       var1.selectCategory(this);
    }
 
-   @Override
    public Component getName() {
       return TELEPORT_TEXT;
    }
 
-   @Override
    public void renderIcon(GuiGraphics var1, float var2, int var3) {
       var1.blitSprite(TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16);
    }
 
-   @Override
    public boolean isEnabled() {
       return !this.items.isEmpty();
    }
@@ -81,8 +78,10 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
 
       public static Optional<SpectatorMenuItem> create(Minecraft var0, PlayerTeam var1) {
          ArrayList var2 = new ArrayList();
+         Iterator var3 = var1.getPlayers().iterator();
 
-         for(String var4 : var1.getPlayers()) {
+         while(var3.hasNext()) {
+            String var4 = (String)var3.next();
             PlayerInfo var5 = var0.getConnection().getPlayerInfo(var4);
             if (var5 != null && var5.getGameMode() != GameType.SPECTATOR) {
                var2.add(var5);
@@ -94,36 +93,32 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
          } else {
             GameProfile var6 = ((PlayerInfo)var2.get(RandomSource.create().nextInt(var2.size()))).getProfile();
             Supplier var7 = var0.getSkinManager().lookupInsecure(var6);
-            return Optional.of(new TeleportToTeamMenuCategory.TeamSelectionItem(var1, var2, var7));
+            return Optional.of(new TeamSelectionItem(var1, var2, var7));
          }
       }
 
-      @Override
       public void selectItem(SpectatorMenu var1) {
          var1.selectCategory(new TeleportToPlayerMenuCategory(this.players));
       }
 
-      @Override
       public Component getName() {
          return this.team.getDisplayName();
       }
 
-      @Override
       public void renderIcon(GuiGraphics var1, float var2, int var3) {
          Integer var4 = this.team.getColor().getColor();
          if (var4 != null) {
-            float var5 = (float)(var4 >> 16 & 0xFF) / 255.0F;
-            float var6 = (float)(var4 >> 8 & 0xFF) / 255.0F;
-            float var7 = (float)(var4 & 0xFF) / 255.0F;
+            float var5 = (float)(var4 >> 16 & 255) / 255.0F;
+            float var6 = (float)(var4 >> 8 & 255) / 255.0F;
+            float var7 = (float)(var4 & 255) / 255.0F;
             var1.fill(1, 1, 15, 15, Mth.color(var5 * var2, var6 * var2, var7 * var2) | var3 << 24);
          }
 
          var1.setColor(var2, var2, var2, (float)var3 / 255.0F);
-         PlayerFaceRenderer.draw(var1, (PlayerSkin)this.iconSkin.get(), 2, 2, 12);
+         PlayerFaceRenderer.draw(var1, (PlayerSkin)((PlayerSkin)this.iconSkin.get()), 2, 2, 12);
          var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       }
 
-      @Override
       public boolean isEnabled() {
          return true;
       }

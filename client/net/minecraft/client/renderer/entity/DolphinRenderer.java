@@ -10,7 +10,7 @@ public class DolphinRenderer extends MobRenderer<Dolphin, DolphinModel<Dolphin>>
    private static final ResourceLocation DOLPHIN_LOCATION = new ResourceLocation("textures/entity/dolphin.png");
 
    public DolphinRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new DolphinModel<>(var1.bakeLayer(ModelLayers.DOLPHIN)), 0.7F);
+      super(var1, new DolphinModel(var1.bakeLayer(ModelLayers.DOLPHIN)), 0.7F);
       this.addLayer(new DolphinCarryingItemLayer(this, var1.getItemInHandRenderer()));
    }
 

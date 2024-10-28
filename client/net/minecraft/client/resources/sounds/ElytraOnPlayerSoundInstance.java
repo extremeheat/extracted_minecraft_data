@@ -18,7 +18,6 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
       this.volume = 0.1F;
    }
 
-   @Override
    public void tick() {
       ++this.time;
       if (!this.player.isRemoved() && (this.time <= 20 || this.player.isFallFlying())) {
@@ -44,6 +43,7 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
          } else {
             this.pitch = 1.0F;
          }
+
       } else {
          this.stop();
       }

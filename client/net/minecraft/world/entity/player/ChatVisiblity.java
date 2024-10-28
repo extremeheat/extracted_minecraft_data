@@ -18,17 +18,20 @@ public enum ChatVisiblity implements OptionEnum {
       this.key = var4;
    }
 
-   @Override
    public int getId() {
       return this.id;
    }
 
-   @Override
    public String getKey() {
       return this.key;
    }
 
    public static ChatVisiblity byId(int var0) {
-      return BY_ID.apply(var0);
+      return (ChatVisiblity)BY_ID.apply(var0);
+   }
+
+   // $FF: synthetic method
+   private static ChatVisiblity[] $values() {
+      return new ChatVisiblity[]{FULL, SYSTEM, HIDDEN};
    }
 }

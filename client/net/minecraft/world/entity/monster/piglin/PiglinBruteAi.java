@@ -57,73 +57,36 @@ public class PiglinBruteAi {
 
    protected static void initMemories(PiglinBrute var0) {
       GlobalPos var1 = GlobalPos.of(var0.level().dimension(), var0.blockPosition());
-      var0.getBrain().setMemory(MemoryModuleType.HOME, var1);
+      var0.getBrain().setMemory(MemoryModuleType.HOME, (Object)var1);
    }
 
    private static void initCoreActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivity(
-         Activity.CORE,
-         0,
-         ImmutableList.of(new LookAtTargetSink(45, 90), new MoveToTargetSink(), InteractWithDoor.create(), StopBeingAngryIfTargetDead.create())
-      );
+      var1.addActivity(Activity.CORE, 0, ImmutableList.of(new LookAtTargetSink(45, 90), new MoveToTargetSink(), InteractWithDoor.create(), StopBeingAngryIfTargetDead.create()));
    }
 
    private static void initIdleActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivity(
-         Activity.IDLE,
-         10,
-         ImmutableList.of(
-            StartAttacking.create(PiglinBruteAi::findNearestValidAttackTarget),
-            createIdleLookBehaviors(),
-            createIdleMovementBehaviors(),
-            SetLookAndInteract.create(EntityType.PLAYER, 4)
-         )
-      );
+      var1.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create(PiglinBruteAi::findNearestValidAttackTarget), createIdleLookBehaviors(), createIdleMovementBehaviors(), SetLookAndInteract.create(EntityType.PLAYER, 4)));
    }
 
    private static void initFightActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(
-         Activity.FIGHT,
-         10,
-         ImmutableList.of(
-            StopAttackingIfTargetInvalid.create(var1x -> !isNearestValidAttackTarget(var0, var1x)),
-            SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F),
-            MeleeAttack.create(20)
-         ),
-         MemoryModuleType.ATTACK_TARGET
-      );
+      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((var1x) -> {
+         return !isNearestValidAttackTarget(var0, var1x);
+      }), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20)), MemoryModuleType.ATTACK_TARGET);
    }
 
    private static RunOne<PiglinBrute> createIdleLookBehaviors() {
-      return new RunOne<>(
-         ImmutableList.of(
-            Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 1),
-            Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN, 8.0F), 1),
-            Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN_BRUTE, 8.0F), 1),
-            Pair.of(SetEntityLookTarget.create(8.0F), 1),
-            Pair.of(new DoNothing(30, 60), 1)
-         )
-      );
+      return new RunOne(ImmutableList.of(Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 1), Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN, 8.0F), 1), Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN_BRUTE, 8.0F), 1), Pair.of(SetEntityLookTarget.create(8.0F), 1), Pair.of(new DoNothing(30, 60), 1)));
    }
 
    private static RunOne<PiglinBrute> createIdleMovementBehaviors() {
-      return new RunOne<>(
-         ImmutableList.of(
-            Pair.of(RandomStroll.stroll(0.6F), 2),
-            Pair.of(InteractWith.of(EntityType.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2),
-            Pair.of(InteractWith.of(EntityType.PIGLIN_BRUTE, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2),
-            Pair.of(StrollToPoi.create(MemoryModuleType.HOME, 0.6F, 2, 100), 2),
-            Pair.of(StrollAroundPoi.create(MemoryModuleType.HOME, 0.6F, 5), 2),
-            Pair.of(new DoNothing(30, 60), 1)
-         )
-      );
+      return new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.6F), 2), Pair.of(InteractWith.of(EntityType.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(InteractWith.of(EntityType.PIGLIN_BRUTE, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(StrollToPoi.create(MemoryModuleType.HOME, 0.6F, 2, 100), 2), Pair.of(StrollAroundPoi.create(MemoryModuleType.HOME, 0.6F, 5), 2), Pair.of(new DoNothing(30, 60), 1)));
    }
 
    protected static void updateActivity(PiglinBrute var0) {
       Brain var1 = var0.getBrain();
-      Activity var2 = var1.getActiveNonCoreActivity().orElse(null);
+      Activity var2 = (Activity)var1.getActiveNonCoreActivity().orElse((Object)null);
       var1.setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.IDLE));
-      Activity var3 = var1.getActiveNonCoreActivity().orElse(null);
+      Activity var3 = (Activity)var1.getActiveNonCoreActivity().orElse((Object)null);
       if (var2 != var3) {
          playActivitySound(var0);
       }
@@ -132,7 +95,9 @@ public class PiglinBruteAi {
    }
 
    private static boolean isNearestValidAttackTarget(AbstractPiglin var0, LivingEntity var1) {
-      return findNearestValidAttackTarget(var0).filter(var1x -> var1x == var1).isPresent();
+      return findNearestValidAttackTarget(var0).filter((var1x) -> {
+         return var1x == var1;
+      }).isPresent();
    }
 
    private static Optional<? extends LivingEntity> findNearestValidAttackTarget(AbstractPiglin var0) {
@@ -146,7 +111,9 @@ public class PiglinBruteAi {
    }
 
    private static Optional<? extends LivingEntity> getTargetIfWithinRange(AbstractPiglin var0, MemoryModuleType<? extends LivingEntity> var1) {
-      return var0.getBrain().getMemory(var1).filter(var1x -> var1x.closerThan(var0, 12.0));
+      return var0.getBrain().getMemory(var1).filter((var1x) -> {
+         return var1x.closerThan(var0, 12.0);
+      });
    }
 
    protected static void wasHurtBy(PiglinBrute var0, LivingEntity var1) {
@@ -164,13 +131,15 @@ public class PiglinBruteAi {
       if ((double)var0.level().random.nextFloat() < 0.0125) {
          playActivitySound(var0);
       }
+
    }
 
    private static void playActivitySound(PiglinBrute var0) {
-      var0.getBrain().getActiveNonCoreActivity().ifPresent(var1 -> {
+      var0.getBrain().getActiveNonCoreActivity().ifPresent((var1) -> {
          if (var1 == Activity.FIGHT) {
             var0.playAngrySound();
          }
+
       });
    }
 }

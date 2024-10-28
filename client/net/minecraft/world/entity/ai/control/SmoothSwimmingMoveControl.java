@@ -22,7 +22,6 @@ public class SmoothSwimmingMoveControl extends MoveControl {
       this.applyGravity = var6;
    }
 
-   @Override
    public void tick() {
       if (this.applyGravity && this.mob.isInWater()) {
          this.mob.setDeltaMovement(this.mob.getDeltaMovement().add(0.0, 0.005, 0.0));
@@ -44,21 +43,23 @@ public class SmoothSwimmingMoveControl extends MoveControl {
             if (this.mob.isInWater()) {
                this.mob.setSpeed(var10 * this.inWaterSpeedModifier);
                double var11 = Math.sqrt(var1 * var1 + var5 * var5);
+               float var13;
                if (Math.abs(var3) > 9.999999747378752E-6 || Math.abs(var11) > 9.999999747378752E-6) {
-                  float var13 = -((float)(Mth.atan2(var3, var11) * 57.2957763671875));
+                  var13 = -((float)(Mth.atan2(var3, var11) * 57.2957763671875));
                   var13 = Mth.clamp(Mth.wrapDegrees(var13), (float)(-this.maxTurnX), (float)this.maxTurnX);
                   this.mob.setXRot(this.rotlerp(this.mob.getXRot(), var13, 5.0F));
                }
 
-               float var17 = Mth.cos(this.mob.getXRot() * 0.017453292F);
+               var13 = Mth.cos(this.mob.getXRot() * 0.017453292F);
                float var14 = Mth.sin(this.mob.getXRot() * 0.017453292F);
-               this.mob.zza = var17 * var10;
+               this.mob.zza = var13 * var10;
                this.mob.yya = -var14 * var10;
             } else {
                float var15 = Math.abs(Mth.wrapDegrees(this.mob.getYRot() - var9));
                float var12 = getTurningSpeedFactor(var15);
                this.mob.setSpeed(var10 * this.outsideWaterSpeedModifier * var12);
             }
+
          }
       } else {
          this.mob.setSpeed(0.0F);

@@ -29,33 +29,25 @@ import net.minecraft.world.ticks.TickPriority;
 
 public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    public static final MapCodec<ComparatorBlock> CODEC = simpleCodec(ComparatorBlock::new);
-   public static final EnumProperty<ComparatorMode> MODE = BlockStateProperties.MODE_COMPARATOR;
+   public static final EnumProperty<ComparatorMode> MODE;
 
-   @Override
    public MapCodec<ComparatorBlock> codec() {
       return CODEC;
    }
 
    public ComparatorBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(
-         this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, Boolean.valueOf(false)).setValue(MODE, ComparatorMode.COMPARE)
-      );
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(MODE, ComparatorMode.COMPARE));
    }
 
-   @Override
    protected int getDelay(BlockState var1) {
       return 2;
    }
 
-   @Override
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2 == Direction.DOWN && !this.canSurviveOn(var4, var6, var3)
-         ? Blocks.AIR.defaultBlockState()
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+      return var2 == Direction.DOWN && !this.canSurviveOn(var4, var6, var3) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected int getOutputSignal(BlockGetter var1, BlockPos var2, BlockState var3) {
       BlockEntity var4 = var1.getBlockEntity(var2);
       return var4 instanceof ComparatorBlockEntity ? ((ComparatorBlockEntity)var4).getOutputSignal() : 0;
@@ -75,7 +67,6 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       }
    }
 
-   @Override
    protected boolean shouldTurnOn(Level var1, BlockPos var2, BlockState var3) {
       int var4 = this.getInputSignal(var1, var2, var3);
       if (var4 == 0) {
@@ -90,10 +81,9 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       }
    }
 
-   @Override
    protected int getInputSignal(Level var1, BlockPos var2, BlockState var3) {
       int var4 = super.getInputSignal(var1, var2, var3);
-      Direction var5 = var3.getValue(FACING);
+      Direction var5 = (Direction)var3.getValue(FACING);
       BlockPos var6 = var2.relative(var5);
       BlockState var7 = var1.getBlockState(var6);
       if (var7.hasAnalogOutputSignal()) {
@@ -102,9 +92,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
          var6 = var6.relative(var5);
          var7 = var1.getBlockState(var6);
          ItemFrame var8 = this.getItemFrame(var1, var5, var6);
-         int var9 = Math.max(
-            var8 == null ? -2147483648 : var8.getAnalogOutput(), var7.hasAnalogOutputSignal() ? var7.getAnalogOutputSignal(var1, var6) : -2147483648
-         );
+         int var9 = Math.max(var8 == null ? -2147483648 : var8.getAnalogOutput(), var7.hasAnalogOutputSignal() ? var7.getAnalogOutputSignal(var1, var6) : -2147483648);
          if (var9 != -2147483648) {
             var4 = var9;
          }
@@ -115,22 +103,17 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
 
    @Nullable
    private ItemFrame getItemFrame(Level var1, Direction var2, BlockPos var3) {
-      List var4 = var1.getEntitiesOfClass(
-         ItemFrame.class,
-         new AABB(
-            (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)(var3.getX() + 1), (double)(var3.getY() + 1), (double)(var3.getZ() + 1)
-         ),
-         var1x -> var1x != null && var1x.getDirection() == var2
-      );
+      List var4 = var1.getEntitiesOfClass(ItemFrame.class, new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)(var3.getX() + 1), (double)(var3.getY() + 1), (double)(var3.getZ() + 1)), (var1x) -> {
+         return var1x != null && var1x.getDirection() == var2;
+      });
       return var4.size() == 1 ? (ItemFrame)var4.get(0) : null;
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
-         var1 = var1.cycle(MODE);
+         var1 = (BlockState)var1.cycle(MODE);
          float var6 = var1.getValue(MODE) == ComparatorMode.SUBTRACT ? 0.55F : 0.5F;
          var2.playSound(var4, var3, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, var6);
          var2.setBlock(var3, var1, 2);
@@ -139,21 +122,19 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       }
    }
 
-   @Override
    protected void checkTickOnNeighbor(Level var1, BlockPos var2, BlockState var3) {
       if (!var1.getBlockTicks().willTickThisTick(var2, this)) {
          int var4 = this.calculateOutputSignal(var1, var2, var3);
          BlockEntity var5 = var1.getBlockEntity(var2);
          int var6 = var5 instanceof ComparatorBlockEntity ? ((ComparatorBlockEntity)var5).getOutputSignal() : 0;
-         if (var4 != var6 || var3.getValue(POWERED) != this.shouldTurnOn(var1, var2, var3)) {
+         if (var4 != var6 || (Boolean)var3.getValue(POWERED) != this.shouldTurnOn(var1, var2, var3)) {
             TickPriority var7 = this.shouldPrioritize(var1, var2, var3) ? TickPriority.HIGH : TickPriority.NORMAL;
             var1.scheduleTick(var2, this, 2, var7);
          }
+
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void refreshOutputState(Level var1, BlockPos var2, BlockState var3) {
       int var4 = this.calculateOutputSignal(var1, var2, var3);
       BlockEntity var5 = var1.getBlockEntity(var2);
@@ -165,36 +146,37 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
 
       if (var6 != var4 || var3.getValue(MODE) == ComparatorMode.COMPARE) {
          boolean var9 = this.shouldTurnOn(var1, var2, var3);
-         boolean var8 = var3.getValue(POWERED);
+         boolean var8 = (Boolean)var3.getValue(POWERED);
          if (var8 && !var9) {
-            var1.setBlock(var2, var3.setValue(POWERED, Boolean.valueOf(false)), 2);
+            var1.setBlock(var2, (BlockState)var3.setValue(POWERED, false), 2);
          } else if (!var8 && var9) {
-            var1.setBlock(var2, var3.setValue(POWERED, Boolean.valueOf(true)), 2);
+            var1.setBlock(var2, (BlockState)var3.setValue(POWERED, true), 2);
          }
 
          this.updateNeighborsInFront(var1, var2, var3);
       }
+
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       this.refreshOutputState(var2, var3, var1);
    }
 
-   @Override
    protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       super.triggerEvent(var1, var2, var3, var4, var5);
       BlockEntity var6 = var2.getBlockEntity(var3);
       return var6 != null && var6.triggerEvent(var4, var5);
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new ComparatorBlockEntity(var1, var2);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, MODE, POWERED);
+   }
+
+   static {
+      MODE = BlockStateProperties.MODE_COMPARATOR;
    }
 }

@@ -11,13 +11,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ClientboundBlockUpdatePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockUpdatePacket> STREAM_CODEC = StreamCodec.composite(
-      BlockPos.STREAM_CODEC,
-      ClientboundBlockUpdatePacket::getPos,
-      ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY),
-      ClientboundBlockUpdatePacket::getBlockState,
-      ClientboundBlockUpdatePacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockUpdatePacket> STREAM_CODEC;
    private final BlockPos pos;
    private final BlockState blockState;
 
@@ -31,7 +25,6 @@ public class ClientboundBlockUpdatePacket implements Packet<ClientGamePacketList
       this(var2, var1.getBlockState(var2));
    }
 
-   @Override
    public PacketType<ClientboundBlockUpdatePacket> type() {
       return GamePacketTypes.CLIENTBOUND_BLOCK_UPDATE;
    }
@@ -46,5 +39,9 @@ public class ClientboundBlockUpdatePacket implements Packet<ClientGamePacketList
 
    public BlockPos getPos() {
       return this.pos;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ClientboundBlockUpdatePacket::getPos, ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY), ClientboundBlockUpdatePacket::getBlockState, ClientboundBlockUpdatePacket::new);
    }
 }

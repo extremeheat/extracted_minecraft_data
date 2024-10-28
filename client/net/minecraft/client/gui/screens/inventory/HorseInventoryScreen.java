@@ -23,16 +23,15 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
       this.horse = var3;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(HORSE_INVENTORY_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       AbstractHorse var8 = this.horse;
-      if (var8 instanceof AbstractChestedHorse var7 && var7.hasChest()) {
-         var1.blitSprite(CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, var7.getInventoryColumns() * 18, 54);
+      if (var8 instanceof AbstractChestedHorse var7) {
+         if (var7.hasChest()) {
+            var1.blitSprite(CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, var7.getInventoryColumns() * 18, 54);
+         }
       }
 
       if (this.horse.isSaddleable()) {
@@ -50,7 +49,6 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
       InventoryScreen.renderEntityInInventoryFollowsMouse(var1, var5 + 26, var6 + 18, var5 + 78, var6 + 70, 17, 0.25F, this.xMouse, this.yMouse, this.horse);
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;

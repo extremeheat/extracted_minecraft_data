@@ -21,9 +21,9 @@ import net.minecraft.util.StringDecomposer;
 import org.apache.commons.lang3.StringUtils;
 
 public class ChatListener {
-   private static final Component CHAT_VALIDATION_ERROR = Component.translatable("chat.validation_error").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
+   private static final Component CHAT_VALIDATION_ERROR;
    private final Minecraft minecraft;
-   private final Deque<ChatListener.Message> delayedMessageQueue = Queues.newArrayDeque();
+   private final Deque<Message> delayedMessageQueue = Queues.newArrayDeque();
    private long messageDelay;
    private long previousMessageTime;
 
@@ -35,19 +35,17 @@ public class ChatListener {
    public void tick() {
       if (this.messageDelay != 0L) {
          if (Util.getMillis() >= this.previousMessageTime + this.messageDelay) {
-            ChatListener.Message var1 = (ChatListener.Message)this.delayedMessageQueue.poll();
-
-            while(var1 != null && !var1.accept()) {
-               var1 = (ChatListener.Message)this.delayedMessageQueue.poll();
+            for(Message var1 = (Message)this.delayedMessageQueue.poll(); var1 != null && !var1.accept(); var1 = (Message)this.delayedMessageQueue.poll()) {
             }
          }
+
       }
    }
 
    public void setMessageDelay(double var1) {
       long var3 = (long)(var1 * 1000.0);
       if (var3 == 0L && this.messageDelay > 0L) {
-         this.delayedMessageQueue.forEach(ChatListener.Message::accept);
+         this.delayedMessageQueue.forEach(Message::accept);
          this.delayedMessageQueue.clear();
       }
 
@@ -55,7 +53,7 @@ public class ChatListener {
    }
 
    public void acceptNextDelayedMessage() {
-      ((ChatListener.Message)this.delayedMessageQueue.remove()).accept();
+      ((Message)this.delayedMessageQueue.remove()).accept();
    }
 
    public long queueSize() {
@@ -63,12 +61,14 @@ public class ChatListener {
    }
 
    public void clearQueue() {
-      this.delayedMessageQueue.forEach(ChatListener.Message::accept);
+      this.delayedMessageQueue.forEach(Message::accept);
       this.delayedMessageQueue.clear();
    }
 
    public boolean removeFromDelayedMessageQueue(MessageSignature var1) {
-      return this.delayedMessageQueue.removeIf(var1x -> var1.equals(var1x.signature()));
+      return this.delayedMessageQueue.removeIf((var1x) -> {
+         return var1.equals(var1x.signature());
+      });
    }
 
    private boolean willDelayMessages() {
@@ -77,35 +77,36 @@ public class ChatListener {
 
    private void handleMessage(@Nullable MessageSignature var1, BooleanSupplier var2) {
       if (this.willDelayMessages()) {
-         this.delayedMessageQueue.add(new ChatListener.Message(var1, var2));
+         this.delayedMessageQueue.add(new Message(var1, var2));
       } else {
          var2.getAsBoolean();
       }
+
    }
 
    public void handlePlayerChatMessage(PlayerChatMessage var1, GameProfile var2, ChatType.Bound var3) {
-      boolean var4 = this.minecraft.options.onlyShowSecureChat().get();
+      boolean var4 = (Boolean)this.minecraft.options.onlyShowSecureChat().get();
       PlayerChatMessage var5 = var4 ? var1.removeUnsignedContent() : var1;
       Component var6 = var3.decorate(var5.decoratedContent());
       Instant var7 = Instant.now();
       this.handleMessage(var1.signature(), () -> {
-         boolean var7xx = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
+         boolean var7x = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
          ClientPacketListener var8 = this.minecraft.getConnection();
          if (var8 != null) {
-            var8.markMessageAsProcessed(var1, var7xx);
+            var8.markMessageAsProcessed(var1, var7x);
          }
 
-         return var7xx;
+         return var7x;
       });
    }
 
    public void handleChatMessageError(UUID var1, ChatType.Bound var2) {
-      this.handleMessage(null, () -> {
+      this.handleMessage((MessageSignature)null, () -> {
          if (this.minecraft.isBlocked(var1)) {
             return false;
          } else {
             Component var3 = var2.decorate(CHAT_VALIDATION_ERROR);
-            this.minecraft.gui.getChat().addMessage(var3, null, GuiMessageTag.chatError());
+            this.minecraft.gui.getChat().addMessage(var3, (MessageSignature)null, GuiMessageTag.chatError());
             this.previousMessageTime = Util.getMillis();
             return true;
          }
@@ -114,7 +115,7 @@ public class ChatListener {
 
    public void handleDisguisedChatMessage(Component var1, ChatType.Bound var2) {
       Instant var3 = Instant.now();
-      this.handleMessage(null, () -> {
+      this.handleMessage((MessageSignature)null, () -> {
          Component var4 = var2.decorate(var1);
          this.minecraft.gui.getChat().addMessage(var4);
          this.narrateChatMessage(var2, var1);
@@ -170,7 +171,7 @@ public class ChatListener {
    }
 
    public void handleSystemMessage(Component var1, boolean var2) {
-      if (!this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(var1))) {
+      if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(var1))) {
          if (var2) {
             this.minecraft.gui.setOverlayMessage(var1, false);
          } else {
@@ -197,11 +198,11 @@ public class ChatListener {
       }
    }
 
-   static record Message(@Nullable MessageSignature a, BooleanSupplier b) {
-      @Nullable
-      private final MessageSignature signature;
-      private final BooleanSupplier handler;
+   static {
+      CHAT_VALIDATION_ERROR = Component.translatable("chat.validation_error").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
+   }
 
+   private static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
       Message(@Nullable MessageSignature var1, BooleanSupplier var2) {
          super();
          this.signature = var1;
@@ -210,6 +211,15 @@ public class ChatListener {
 
       public boolean accept() {
          return this.handler.getAsBoolean();
+      }
+
+      @Nullable
+      public MessageSignature signature() {
+         return this.signature;
+      }
+
+      public BooleanSupplier handler() {
+         return this.handler;
       }
    }
 }

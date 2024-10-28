@@ -18,6 +18,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -29,36 +31,24 @@ public class FenceBlock extends CrossCollisionBlock {
    public static final MapCodec<FenceBlock> CODEC = simpleCodec(FenceBlock::new);
    private final VoxelShape[] occlusionByIndex;
 
-   @Override
    public MapCodec<FenceBlock> codec() {
       return CODEC;
    }
 
    public FenceBlock(BlockBehaviour.Properties var1) {
       super(2.0F, 2.0F, 16.0F, 16.0F, 24.0F, var1);
-      this.registerDefaultState(
-         this.stateDefinition
-            .any()
-            .setValue(NORTH, Boolean.valueOf(false))
-            .setValue(EAST, Boolean.valueOf(false))
-            .setValue(SOUTH, Boolean.valueOf(false))
-            .setValue(WEST, Boolean.valueOf(false))
-            .setValue(WATERLOGGED, Boolean.valueOf(false))
-      );
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));
       this.occlusionByIndex = this.makeShapes(2.0F, 1.0F, 16.0F, 6.0F, 15.0F);
    }
 
-   @Override
    protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return this.occlusionByIndex[this.getAABBIndex(var1)];
    }
 
-   @Override
    protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.getShape(var1, var2, var3, var4);
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
@@ -74,7 +64,6 @@ public class FenceBlock extends CrossCollisionBlock {
       return var1.is(BlockTags.FENCES) && var1.is(BlockTags.WOODEN_FENCES) == this.defaultBlockState().is(BlockTags.WOODEN_FENCES);
    }
 
-   @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (var3.isClientSide) {
          return var1.is(Items.LEAD) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
@@ -83,12 +72,10 @@ public class FenceBlock extends CrossCollisionBlock {
       }
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       return !var2.isClientSide() ? LeadItem.bindPlayerMobs(var4, var2, var3) : InteractionResult.PASS;
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -101,28 +88,17 @@ public class FenceBlock extends CrossCollisionBlock {
       BlockState var10 = var2.getBlockState(var6);
       BlockState var11 = var2.getBlockState(var7);
       BlockState var12 = var2.getBlockState(var8);
-      return super.getStateForPlacement(var1)
-         .setValue(NORTH, Boolean.valueOf(this.connectsTo(var9, var9.isFaceSturdy(var2, var5, Direction.SOUTH), Direction.SOUTH)))
-         .setValue(EAST, Boolean.valueOf(this.connectsTo(var10, var10.isFaceSturdy(var2, var6, Direction.WEST), Direction.WEST)))
-         .setValue(SOUTH, Boolean.valueOf(this.connectsTo(var11, var11.isFaceSturdy(var2, var7, Direction.NORTH), Direction.NORTH)))
-         .setValue(WEST, Boolean.valueOf(this.connectsTo(var12, var12.isFaceSturdy(var2, var8, Direction.EAST), Direction.EAST)))
-         .setValue(WATERLOGGED, Boolean.valueOf(var4.getType() == Fluids.WATER));
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)super.getStateForPlacement(var1).setValue(NORTH, this.connectsTo(var9, var9.isFaceSturdy(var2, var5, Direction.SOUTH), Direction.SOUTH))).setValue(EAST, this.connectsTo(var10, var10.isFaceSturdy(var2, var6, Direction.WEST), Direction.WEST))).setValue(SOUTH, this.connectsTo(var11, var11.isFaceSturdy(var2, var7, Direction.NORTH), Direction.NORTH))).setValue(WEST, this.connectsTo(var12, var12.isFaceSturdy(var2, var8, Direction.EAST), Direction.EAST))).setValue(WATERLOGGED, var4.getType() == Fluids.WATER);
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+      if ((Boolean)var1.getValue(WATERLOGGED)) {
+         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
 
-      return var2.getAxis().getPlane() == Direction.Plane.HORIZONTAL
-         ? var1.setValue(
-            PROPERTY_BY_DIRECTION.get(var2), Boolean.valueOf(this.connectsTo(var3, var3.isFaceSturdy(var4, var6, var2.getOpposite()), var2.getOpposite()))
-         )
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+      return var2.getAxis().getPlane() == Direction.Plane.HORIZONTAL ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), this.connectsTo(var3, var3.isFaceSturdy(var4, var6, var2.getOpposite()), var2.getOpposite())) : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(NORTH, EAST, WEST, SOUTH, WATERLOGGED);
    }

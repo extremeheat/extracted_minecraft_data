@@ -30,21 +30,20 @@ public class BoatRenderer extends EntityRenderer<Boat> {
    public BoatRenderer(EntityRendererProvider.Context var1, boolean var2) {
       super(var1);
       this.shadowRadius = 0.8F;
-      this.boatResources = Stream.of(Boat.Type.values())
-         .collect(
-            ImmutableMap.toImmutableMap(
-               var0 -> var0, var3 -> Pair.of(new ResourceLocation(getTextureLocation(var3, var2)), this.createBoatModel(var1, var3, var2))
-            )
-         );
+      this.boatResources = (Map)Stream.of(Boat.Type.values()).collect(ImmutableMap.toImmutableMap((var0) -> {
+         return var0;
+      }, (var3) -> {
+         return Pair.of(new ResourceLocation(getTextureLocation(var3, var2)), this.createBoatModel(var1, var3, var2));
+      }));
    }
 
    private ListModel<Boat> createBoatModel(EntityRendererProvider.Context var1, Boat.Type var2, boolean var3) {
       ModelLayerLocation var4 = var3 ? ModelLayers.createChestBoatModelName(var2) : ModelLayers.createBoatModelName(var2);
       ModelPart var5 = var1.bakeLayer(var4);
       if (var2 == Boat.Type.BAMBOO) {
-         return (ListModel<Boat>)(var3 ? new ChestRaftModel(var5) : new RaftModel(var5));
+         return (ListModel)(var3 ? new ChestRaftModel(var5) : new RaftModel(var5));
       } else {
-         return (ListModel<Boat>)(var3 ? new ChestBoatModel(var5) : new BoatModel(var5));
+         return (ListModel)(var3 ? new ChestBoatModel(var5) : new BoatModel(var5));
       }
    }
 
@@ -52,8 +51,6 @@ public class BoatRenderer extends EntityRenderer<Boat> {
       return var1 ? "textures/entity/chest_boat/" + var0.getName() + ".png" : "textures/entity/boat/" + var0.getName() + ".png";
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(Boat var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
       var4.translate(0.0F, 0.375F, 0.0F);
@@ -70,7 +67,7 @@ public class BoatRenderer extends EntityRenderer<Boat> {
 
       float var9 = var1.getBubbleAngle(var3);
       if (!Mth.equal(var9, 0.0F)) {
-         var4.mulPose(new Quaternionf().setAngleAxis(var1.getBubbleAngle(var3) * 0.017453292F, 1.0F, 0.0F, 1.0F));
+         var4.mulPose((new Quaternionf()).setAngleAxis(var1.getBubbleAngle(var3) * 0.017453292F, 1.0F, 0.0F, 1.0F));
       }
 
       Pair var10 = (Pair)this.boatResources.get(var1.getVariant());
@@ -83,7 +80,8 @@ public class BoatRenderer extends EntityRenderer<Boat> {
       var12.renderToBuffer(var4, var13, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
       if (!var1.isUnderWater()) {
          VertexConsumer var14 = var5.getBuffer(RenderType.waterMask());
-         if (var12 instanceof WaterPatchModel var15) {
+         if (var12 instanceof WaterPatchModel) {
+            WaterPatchModel var15 = (WaterPatchModel)var12;
             var15.waterPatch().render(var4, var14, var6, OverlayTexture.NO_OVERLAY);
          }
       }

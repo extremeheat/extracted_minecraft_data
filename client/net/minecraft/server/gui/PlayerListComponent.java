@@ -3,6 +3,7 @@ package net.minecraft.server.gui;
 import java.util.Vector;
 import javax.swing.JList;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 public class PlayerListComponent extends JList<String> {
    private final MinecraftServer server;
@@ -19,10 +20,11 @@ public class PlayerListComponent extends JList<String> {
          Vector var1 = new Vector();
 
          for(int var2 = 0; var2 < this.server.getPlayerList().getPlayers().size(); ++var2) {
-            var1.add(this.server.getPlayerList().getPlayers().get(var2).getGameProfile().getName());
+            var1.add(((ServerPlayer)this.server.getPlayerList().getPlayers().get(var2)).getGameProfile().getName());
          }
 
          this.setListData(var1);
       }
+
    }
 }

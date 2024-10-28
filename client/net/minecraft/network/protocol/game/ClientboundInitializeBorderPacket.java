@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.border.WorldBorder;
 
 public class ClientboundInitializeBorderPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundInitializeBorderPacket> STREAM_CODEC = Packet.codec(
-      ClientboundInitializeBorderPacket::write, ClientboundInitializeBorderPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundInitializeBorderPacket> STREAM_CODEC = Packet.codec(ClientboundInitializeBorderPacket::write, ClientboundInitializeBorderPacket::new);
    private final double newCenterX;
    private final double newCenterZ;
    private final double oldSize;
@@ -54,7 +52,6 @@ public class ClientboundInitializeBorderPacket implements Packet<ClientGamePacke
       var1.writeVarInt(this.warningTime);
    }
 
-   @Override
    public PacketType<ClientboundInitializeBorderPacket> type() {
       return GamePacketTypes.CLIENTBOUND_INITIALIZE_BORDER;
    }

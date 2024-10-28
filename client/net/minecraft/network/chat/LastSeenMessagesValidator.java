@@ -16,8 +16,9 @@ public class LastSeenMessagesValidator {
       this.lastSeenCount = var1;
 
       for(int var2 = 0; var2 < var1; ++var2) {
-         this.trackedMessages.add(null);
+         this.trackedMessages.add((Object)null);
       }
+
    }
 
    public void addPending(MessageSignature var1) {
@@ -25,6 +26,7 @@ public class LastSeenMessagesValidator {
          this.trackedMessages.add(new LastSeenTrackedEntry(var1, true));
          this.lastPendingMessage = var1;
       }
+
    }
 
    public int trackedMessagesCount() {
@@ -64,7 +66,7 @@ public class LastSeenMessagesValidator {
                      return Optional.empty();
                   }
 
-                  this.trackedMessages.set(var3, null);
+                  this.trackedMessages.set(var3, (Object)null);
                }
             }
 

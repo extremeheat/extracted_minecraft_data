@@ -16,7 +16,7 @@ public class RenderBuffers {
    public RenderBuffers(int var1) {
       super();
       this.sectionBufferPool = SectionBufferBuilderPool.allocate(var1);
-      SortedMap var2 = Util.make(new Object2ObjectLinkedOpenHashMap(), var1x -> {
+      SortedMap var2 = (SortedMap)Util.make(new Object2ObjectLinkedOpenHashMap(), (var1x) -> {
          var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.builder(RenderType.solid()));
          var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.builder(RenderType.cutout()));
          var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.builder(RenderType.cutoutMipped()));
@@ -35,7 +35,9 @@ public class RenderBuffers {
          put(var1x, RenderType.entityGlint());
          put(var1x, RenderType.entityGlintDirect());
          put(var1x, RenderType.waterMask());
-         ModelBakery.DESTROY_TYPES.forEach(var1xx -> put(var1x, var1xx));
+         ModelBakery.DESTROY_TYPES.forEach((var1) -> {
+            put(var1x, var1);
+         });
       });
       this.crumblingBufferSource = MultiBufferSource.immediate(new BufferBuilder(1536));
       this.bufferSource = MultiBufferSource.immediateWithBuffers(var2, new BufferBuilder(786432));

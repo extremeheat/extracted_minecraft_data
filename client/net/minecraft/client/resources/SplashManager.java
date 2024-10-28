@@ -32,9 +32,27 @@ public class SplashManager extends SimplePreparableReloadListener<List<String>> 
 
    protected List<String> prepare(ResourceManager var1, ProfilerFiller var2) {
       try {
+         BufferedReader var3 = Minecraft.getInstance().getResourceManager().openAsReader(SPLASHES_LOCATION);
+
          List var4;
-         try (BufferedReader var3 = Minecraft.getInstance().getResourceManager().openAsReader(SPLASHES_LOCATION)) {
-            var4 = var3.lines().map(String::trim).filter(var0 -> var0.hashCode() != 125780783).collect(Collectors.toList());
+         try {
+            var4 = (List)var3.lines().map(String::trim).filter((var0) -> {
+               return var0.hashCode() != 125780783;
+            }).collect(Collectors.toList());
+         } catch (Throwable var7) {
+            if (var3 != null) {
+               try {
+                  var3.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
+               }
+            }
+
+            throw var7;
+         }
+
+         if (var3 != null) {
+            var3.close();
          }
 
          return var4;
@@ -60,10 +78,16 @@ public class SplashManager extends SimplePreparableReloadListener<List<String>> 
          return SplashRenderer.HALLOWEEN;
       } else if (this.splashes.isEmpty()) {
          return null;
+      } else if (this.user != null && RANDOM.nextInt(this.splashes.size()) == 42) {
+         String var10002 = this.user.getName();
+         return new SplashRenderer(var10002.toUpperCase(Locale.ROOT) + " IS YOU");
       } else {
-         return this.user != null && RANDOM.nextInt(this.splashes.size()) == 42
-            ? new SplashRenderer(this.user.getName().toUpperCase(Locale.ROOT) + " IS YOU")
-            : new SplashRenderer(this.splashes.get(RANDOM.nextInt(this.splashes.size())));
+         return new SplashRenderer((String)this.splashes.get(RANDOM.nextInt(this.splashes.size())));
       }
+   }
+
+   // $FF: synthetic method
+   protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+      return this.prepare(var1, var2);
    }
 }

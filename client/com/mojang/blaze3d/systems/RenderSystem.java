@@ -14,12 +14,14 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -52,9 +54,9 @@ public class RenderSystem {
    private static Thread renderThread;
    private static int MAX_SUPPORTED_TEXTURE_SIZE = -1;
    private static boolean isInInit;
-   private static double lastDrawTime = 5.0E-324;
-   private static final RenderSystem.AutoStorageIndexBuffer sharedSequential = new RenderSystem.AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
-   private static final RenderSystem.AutoStorageIndexBuffer sharedSequentialQuad = new RenderSystem.AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
+   private static double lastDrawTime = 4.9E-324;
+   private static final AutoStorageIndexBuffer sharedSequential = new AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
+   private static final AutoStorageIndexBuffer sharedSequentialQuad = new AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
       var0.accept(var1 + 0);
       var0.accept(var1 + 1);
       var0.accept(var1 + 2);
@@ -62,7 +64,7 @@ public class RenderSystem {
       var0.accept(var1 + 3);
       var0.accept(var1 + 0);
    });
-   private static final RenderSystem.AutoStorageIndexBuffer sharedSequentialLines = new RenderSystem.AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
+   private static final AutoStorageIndexBuffer sharedSequentialLines = new AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
       var0.accept(var1 + 0);
       var0.accept(var1 + 1);
       var0.accept(var1 + 2);
@@ -72,26 +74,26 @@ public class RenderSystem {
    });
    private static Matrix4f projectionMatrix = new Matrix4f();
    private static Matrix4f savedProjectionMatrix = new Matrix4f();
-   private static VertexSorting vertexSorting = VertexSorting.DISTANCE_TO_ORIGIN;
-   private static VertexSorting savedVertexSorting = VertexSorting.DISTANCE_TO_ORIGIN;
-   private static final Matrix4fStack modelViewStack = new Matrix4fStack(16);
-   private static Matrix4f modelViewMatrix = new Matrix4f();
-   private static Matrix4f textureMatrix = new Matrix4f();
-   private static final int[] shaderTextures = new int[12];
-   private static final float[] shaderColor = new float[]{1.0F, 1.0F, 1.0F, 1.0F};
-   private static float shaderGlintAlpha = 1.0F;
+   private static VertexSorting vertexSorting;
+   private static VertexSorting savedVertexSorting;
+   private static final Matrix4fStack modelViewStack;
+   private static Matrix4f modelViewMatrix;
+   private static Matrix4f textureMatrix;
+   private static final int[] shaderTextures;
+   private static final float[] shaderColor;
+   private static float shaderGlintAlpha;
    private static float shaderFogStart;
-   private static float shaderFogEnd = 1.0F;
-   private static final float[] shaderFogColor = new float[]{0.0F, 0.0F, 0.0F, 0.0F};
-   private static FogShape shaderFogShape = FogShape.SPHERE;
-   private static final Vector3f[] shaderLightDirections = new Vector3f[2];
+   private static float shaderFogEnd;
+   private static final float[] shaderFogColor;
+   private static FogShape shaderFogShape;
+   private static final Vector3f[] shaderLightDirections;
    private static float shaderGameTime;
-   private static float shaderLineWidth = 1.0F;
-   private static String apiDescription = "Unknown";
+   private static float shaderLineWidth;
+   private static String apiDescription;
    @Nullable
    private static ShaderInstance shader;
-   private static final AtomicLong pollEventsWaitStart = new AtomicLong();
-   private static final AtomicBoolean pollingEvents = new AtomicBoolean(false);
+   private static final AtomicLong pollEventsWaitStart;
+   private static final AtomicBoolean pollingEvents;
 
    public RenderSystem() {
       super();
@@ -191,7 +193,7 @@ public class RenderSystem {
       isReplayingQueue = true;
 
       while(!recordingQueue.isEmpty()) {
-         RenderCall var0 = recordingQueue.poll();
+         RenderCall var0 = (RenderCall)recordingQueue.poll();
          var0.execute();
       }
 
@@ -260,9 +262,7 @@ public class RenderSystem {
       GlStateManager._blendFunc(var0, var1);
    }
 
-   public static void blendFuncSeparate(
-      GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1, GlStateManager.SourceFactor var2, GlStateManager.DestFactor var3
-   ) {
+   public static void blendFuncSeparate(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1, GlStateManager.SourceFactor var2, GlStateManager.DestFactor var3) {
       assertOnRenderThread();
       GlStateManager._blendFuncSeparate(var0.value, var1.value, var2.value, var3.value);
    }
@@ -489,14 +489,18 @@ public class RenderSystem {
       if (var0.LIGHT1_DIRECTION != null) {
          var0.LIGHT1_DIRECTION.set(shaderLightDirections[1]);
       }
+
    }
 
    public static void setShaderColor(float var0, float var1, float var2, float var3) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> _setShaderColor(var0, var1, var2, var3));
+         recordRenderCall(() -> {
+            _setShaderColor(var0, var1, var2, var3);
+         });
       } else {
          _setShaderColor(var0, var1, var2, var3);
       }
+
    }
 
    private static void _setShaderColor(float var0, float var1, float var2, float var3) {
@@ -518,10 +522,13 @@ public class RenderSystem {
 
    public static void lineWidth(float var0) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> shaderLineWidth = var0);
+         recordRenderCall(() -> {
+            shaderLineWidth = var0;
+         });
       } else {
          shaderLineWidth = var0;
       }
+
    }
 
    public static float getShaderLineWidth() {
@@ -555,7 +562,9 @@ public class RenderSystem {
 
    public static TimeSource.NanoTimeSource initBackendSystem() {
       assertInInitPhase();
-      return GLX._initGlfw()::getAsLong;
+      LongSupplier var10000 = GLX._initGlfw();
+      Objects.requireNonNull(var10000);
+      return var10000::getAsLong;
    }
 
    public static void initRenderer(int var0, boolean var1) {
@@ -597,7 +606,7 @@ public class RenderSystem {
          int var0 = GlStateManager._getInteger(3379);
 
          for(int var1 = Math.max(32768, var0); var1 >= 1024; var1 >>= 1) {
-            GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, null);
+            GlStateManager._texImage2D(32868, 0, 6408, var1, var1, 0, 6408, 5121, (IntBuffer)null);
             int var2 = GlStateManager._getTexLevelParameter(32868, 0, 4096);
             if (var2 != 0) {
                MAX_SUPPORTED_TEXTURE_SIZE = var1;
@@ -617,7 +626,7 @@ public class RenderSystem {
    }
 
    public static void glBindVertexArray(Supplier<Integer> var0) {
-      GlStateManager._glBindVertexArray(var0.get());
+      GlStateManager._glBindVertexArray((Integer)var0.get());
    }
 
    public static void glBufferData(int var0, ByteBuffer var1, int var2) {
@@ -738,18 +747,24 @@ public class RenderSystem {
 
    public static void glGenBuffers(Consumer<Integer> var0) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> var0.accept(GlStateManager._glGenBuffers()));
+         recordRenderCall(() -> {
+            var0.accept(GlStateManager._glGenBuffers());
+         });
       } else {
          var0.accept(GlStateManager._glGenBuffers());
       }
+
    }
 
    public static void glGenVertexArrays(Consumer<Integer> var0) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> var0.accept(GlStateManager._glGenVertexArrays()));
+         recordRenderCall(() -> {
+            var0.accept(GlStateManager._glGenVertexArrays());
+         });
       } else {
          var0.accept(GlStateManager._glGenVertexArrays());
       }
+
    }
 
    public static Tesselator renderThreadTesselator() {
@@ -758,11 +773,10 @@ public class RenderSystem {
    }
 
    public static void defaultBlendFunc() {
-      blendFuncSeparate(
-         GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
-      );
+      blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
    }
 
+   /** @deprecated */
    @Deprecated
    public static void runAsFancy(Runnable var0) {
       boolean var1 = Minecraft.useShaderTransparency();
@@ -779,10 +793,13 @@ public class RenderSystem {
 
    public static void setShader(Supplier<ShaderInstance> var0) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> shader = (ShaderInstance)var0.get());
+         recordRenderCall(() -> {
+            shader = (ShaderInstance)var0.get();
+         });
       } else {
          shader = (ShaderInstance)var0.get();
       }
+
    }
 
    @Nullable
@@ -793,10 +810,13 @@ public class RenderSystem {
 
    public static void setShaderTexture(int var0, ResourceLocation var1) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> _setShaderTexture(var0, var1));
+         recordRenderCall(() -> {
+            _setShaderTexture(var0, var1);
+         });
       } else {
          _setShaderTexture(var0, var1);
       }
+
    }
 
    public static void _setShaderTexture(int var0, ResourceLocation var1) {
@@ -805,20 +825,25 @@ public class RenderSystem {
          AbstractTexture var3 = var2.getTexture(var1);
          shaderTextures[var0] = var3.getId();
       }
+
    }
 
    public static void setShaderTexture(int var0, int var1) {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> _setShaderTexture(var0, var1));
+         recordRenderCall(() -> {
+            _setShaderTexture(var0, var1);
+         });
       } else {
          _setShaderTexture(var0, var1);
       }
+
    }
 
    public static void _setShaderTexture(int var0, int var1) {
       if (var0 >= 0 && var0 < shaderTextures.length) {
          shaderTextures[var0] = var1;
       }
+
    }
 
    public static int getShaderTexture(int var0) {
@@ -837,40 +862,53 @@ public class RenderSystem {
          projectionMatrix = var2;
          vertexSorting = var1;
       }
+
    }
 
    public static void setTextureMatrix(Matrix4f var0) {
       Matrix4f var1 = new Matrix4f(var0);
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> textureMatrix = var1);
+         recordRenderCall(() -> {
+            textureMatrix = var1;
+         });
       } else {
          textureMatrix = var1;
       }
+
    }
 
    public static void resetTextureMatrix() {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> textureMatrix.identity());
+         recordRenderCall(() -> {
+            textureMatrix.identity();
+         });
       } else {
          textureMatrix.identity();
       }
+
    }
 
    public static void applyModelViewMatrix() {
       Matrix4f var0 = new Matrix4f(modelViewStack);
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> modelViewMatrix = var0);
+         recordRenderCall(() -> {
+            modelViewMatrix = var0;
+         });
       } else {
          modelViewMatrix = var0;
       }
+
    }
 
    public static void backupProjectionMatrix() {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> _backupProjectionMatrix());
+         recordRenderCall(() -> {
+            _backupProjectionMatrix();
+         });
       } else {
          _backupProjectionMatrix();
       }
+
    }
 
    private static void _backupProjectionMatrix() {
@@ -880,10 +918,13 @@ public class RenderSystem {
 
    public static void restoreProjectionMatrix() {
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> _restoreProjectionMatrix());
+         recordRenderCall(() -> {
+            _restoreProjectionMatrix();
+         });
       } else {
          _restoreProjectionMatrix();
       }
+
    }
 
    private static void _restoreProjectionMatrix() {
@@ -910,23 +951,28 @@ public class RenderSystem {
       return textureMatrix;
    }
 
-   public static RenderSystem.AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0) {
+   public static AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0) {
       assertOnRenderThread();
+      AutoStorageIndexBuffer var10000;
+      switch (var0) {
+         case QUADS -> var10000 = sharedSequentialQuad;
+         case LINES -> var10000 = sharedSequentialLines;
+         default -> var10000 = sharedSequential;
+      }
 
-      return switch(var0) {
-         case QUADS -> sharedSequentialQuad;
-         case LINES -> sharedSequentialLines;
-         default -> sharedSequential;
-      };
+      return var10000;
    }
 
    public static void setShaderGameTime(long var0, float var2) {
       float var3 = ((float)(var0 % 24000L) + var2) / 24000.0F;
       if (!isOnRenderThread()) {
-         recordRenderCall(() -> shaderGameTime = var3);
+         recordRenderCall(() -> {
+            shaderGameTime = var3;
+         });
       } else {
          shaderGameTime = var3;
       }
+
    }
 
    public static float getShaderGameTime() {
@@ -939,16 +985,319 @@ public class RenderSystem {
       return vertexSorting;
    }
 
+   // $FF: synthetic method
+   private static void lambda$setupGui3DDiffuseLighting$59(Vector3f var0, Vector3f var1) {
+      GlStateManager.setupGui3DDiffuseLighting(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setupGuiFlatDiffuseLighting$58(Vector3f var0, Vector3f var1) {
+      GlStateManager.setupGuiFlatDiffuseLighting(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setupLevelDiffuseLighting$57(Vector3f var0, Vector3f var1) {
+      setShaderLights(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$teardownOverlayColor$56() {
+      setShaderTexture(1, 0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setupOverlayColor$55(IntSupplier var0) {
+      int var1 = var0.getAsInt();
+      setShaderTexture(1, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniformMatrix4$54(int var0, boolean var1, FloatBuffer var2) {
+      GlStateManager._glUniformMatrix4(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniformMatrix3$53(int var0, boolean var1, FloatBuffer var2) {
+      GlStateManager._glUniformMatrix3(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniformMatrix2$52(int var0, boolean var1, FloatBuffer var2) {
+      GlStateManager._glUniformMatrix2(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform4$51(int var0, FloatBuffer var1) {
+      GlStateManager._glUniform4(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform3$50(int var0, FloatBuffer var1) {
+      GlStateManager._glUniform3(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform2$49(int var0, FloatBuffer var1) {
+      GlStateManager._glUniform2(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform1$48(int var0, FloatBuffer var1) {
+      GlStateManager._glUniform1(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform4$47(int var0, IntBuffer var1) {
+      GlStateManager._glUniform4(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform3$46(int var0, IntBuffer var1) {
+      GlStateManager._glUniform3(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform2$45(int var0, IntBuffer var1) {
+      GlStateManager._glUniform2(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform1$44(int var0, IntBuffer var1) {
+      GlStateManager._glUniform1(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glUniform1i$43(int var0, int var1) {
+      GlStateManager._glUniform1i(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glDeleteVertexArrays$42(int var0) {
+      GlStateManager._glDeleteVertexArrays(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glDeleteBuffers$41(int var0) {
+      GlStateManager._glDeleteBuffers(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glBindVertexArray$40(Supplier var0) {
+      GlStateManager._glBindVertexArray((Integer)var0.get());
+   }
+
+   // $FF: synthetic method
+   private static void lambda$glBindBuffer$39(int var0, IntSupplier var1) {
+      GlStateManager._glBindBuffer(var0, var1.getAsInt());
+   }
+
+   // $FF: synthetic method
+   private static void lambda$renderCrosshair$38(int var0) {
+      GLX._renderCrosshair(var0, true, true, true);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$getString$37(int var0, Consumer var1) {
+      String var2 = GlStateManager._getString(var0);
+      var1.accept(var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$readPixels$36(int var0, int var1, int var2, int var3, int var4, int var5, ByteBuffer var6) {
+      GlStateManager._readPixels(var0, var1, var2, var3, var4, var5, var6);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$pixelStore$35(int var0, int var1) {
+      GlStateManager._pixelStore(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$drawElements$33(int var0, int var1, int var2) {
+      GlStateManager._drawElements(var0, var1, var2, 0L);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setShaderLights$31(Vector3f var0, Vector3f var1) {
+      _setShaderLights(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setShaderFogShape$30(FogShape var0) {
+      _setShaderFogShape(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setShaderFogColor$29(float var0, float var1, float var2, float var3) {
+      _setShaderFogColor(var0, var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setShaderFogEnd$28(float var0) {
+      _setShaderFogEnd(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setShaderGlintAlpha$27(float var0) {
+      _setShaderGlintAlpha(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$setShaderFogStart$26(float var0) {
+      _setShaderFogStart(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$clear$25(int var0, boolean var1) {
+      GlStateManager._clear(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$clearStencil$24(int var0) {
+      GlStateManager._clearStencil(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$clearColor$23(float var0, float var1, float var2, float var3) {
+      GlStateManager._clearColor(var0, var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$clearDepth$22(double var0) {
+      GlStateManager._clearDepth(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$stencilOp$21(int var0, int var1, int var2) {
+      GlStateManager._stencilOp(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$stencilMask$20(int var0) {
+      GlStateManager._stencilMask(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$stencilFunc$19(int var0, int var1, int var2) {
+      GlStateManager._stencilFunc(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$colorMask$18(boolean var0, boolean var1, boolean var2, boolean var3) {
+      GlStateManager._colorMask(var0, var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$viewport$17(int var0, int var1, int var2, int var3) {
+      GlStateManager._viewport(var0, var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$bindTexture$16(int var0) {
+      GlStateManager._bindTexture(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$deleteTexture$15(int var0) {
+      GlStateManager._deleteTexture(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$texParameter$14(int var0, int var1, int var2) {
+      GlStateManager._texParameter(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$activeTexture$13(int var0) {
+      GlStateManager._activeTexture(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$logicOp$12(GlStateManager.LogicOp var0) {
+      GlStateManager._logicOp(var0.value);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$polygonOffset$11(float var0, float var1) {
+      GlStateManager._polygonOffset(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$polygonMode$10(int var0, int var1) {
+      GlStateManager._polygonMode(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$blendEquation$9(int var0) {
+      GlStateManager._blendEquation(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$blendFuncSeparate$8(int var0, int var1, int var2, int var3) {
+      GlStateManager._blendFuncSeparate(var0, var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$blendFuncSeparate$7(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1, GlStateManager.SourceFactor var2, GlStateManager.DestFactor var3) {
+      GlStateManager._blendFuncSeparate(var0.value, var1.value, var2.value, var3.value);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$blendFunc$6(int var0, int var1) {
+      GlStateManager._blendFunc(var0, var1);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$blendFunc$5(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1) {
+      GlStateManager._blendFunc(var0.value, var1.value);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$depthMask$4(boolean var0) {
+      GlStateManager._depthMask(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$depthFunc$3(int var0) {
+      GlStateManager._depthFunc(var0);
+   }
+
+   // $FF: synthetic method
+   private static void lambda$enableScissor$2(int var0, int var1, int var2, int var3) {
+      GlStateManager._enableScissorTest();
+      GlStateManager._scissorBox(var0, var1, var2, var3);
+   }
+
+   static {
+      vertexSorting = VertexSorting.DISTANCE_TO_ORIGIN;
+      savedVertexSorting = VertexSorting.DISTANCE_TO_ORIGIN;
+      modelViewStack = new Matrix4fStack(16);
+      modelViewMatrix = new Matrix4f();
+      textureMatrix = new Matrix4f();
+      shaderTextures = new int[12];
+      shaderColor = new float[]{1.0F, 1.0F, 1.0F, 1.0F};
+      shaderGlintAlpha = 1.0F;
+      shaderFogEnd = 1.0F;
+      shaderFogColor = new float[]{0.0F, 0.0F, 0.0F, 0.0F};
+      shaderFogShape = FogShape.SPHERE;
+      shaderLightDirections = new Vector3f[2];
+      shaderLineWidth = 1.0F;
+      apiDescription = "Unknown";
+      pollEventsWaitStart = new AtomicLong();
+      pollingEvents = new AtomicBoolean(false);
+   }
+
    public static final class AutoStorageIndexBuffer {
       private final int vertexStride;
       private final int indexStride;
-      private final RenderSystem.AutoStorageIndexBuffer.IndexGenerator generator;
+      private final IndexGenerator generator;
       private int name;
-      private VertexFormat.IndexType type = VertexFormat.IndexType.SHORT;
+      private VertexFormat.IndexType type;
       private int indexCount;
 
-      AutoStorageIndexBuffer(int var1, int var2, RenderSystem.AutoStorageIndexBuffer.IndexGenerator var3) {
+      AutoStorageIndexBuffer(int var1, int var2, IndexGenerator var3) {
          super();
+         this.type = VertexFormat.IndexType.SHORT;
          this.vertexStride = var1;
          this.indexStride = var2;
          this.generator = var3;
@@ -994,11 +1343,14 @@ public class RenderSystem {
       }
 
       private it.unimi.dsi.fastutil.ints.IntConsumer intConsumer(ByteBuffer var1) {
-         switch(this.type) {
+         switch (this.type) {
             case SHORT:
-               return var1x -> var1.putShort((short)var1x);
+               return (var1x) -> {
+                  var1.putShort((short)var1x);
+               };
             case INT:
             default:
+               Objects.requireNonNull(var1);
                return var1::putInt;
          }
       }

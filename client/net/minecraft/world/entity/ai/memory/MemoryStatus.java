@@ -7,4 +7,9 @@ public enum MemoryStatus {
 
    private MemoryStatus() {
    }
+
+   // $FF: synthetic method
+   private static MemoryStatus[] $values() {
+      return new MemoryStatus[]{VALUE_PRESENT, VALUE_ABSENT, REGISTERED};
+   }
 }

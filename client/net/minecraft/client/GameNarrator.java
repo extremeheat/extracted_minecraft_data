@@ -12,8 +12,8 @@ import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
 public class GameNarrator {
-   public static final Component NO_TITLE = CommonComponents.EMPTY;
-   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Component NO_TITLE;
+   private static final Logger LOGGER;
    private final Minecraft minecraft;
    private final Narrator narrator = Narrator.getNarrator();
 
@@ -28,6 +28,7 @@ public class GameNarrator {
          this.logNarratedMessage(var2);
          this.narrator.say(var2, false);
       }
+
    }
 
    public void say(Component var1) {
@@ -36,6 +37,7 @@ public class GameNarrator {
          this.logNarratedMessage(var2);
          this.narrator.say(var2, false);
       }
+
    }
 
    public void sayNow(Component var1) {
@@ -50,16 +52,18 @@ public class GameNarrator {
             this.narrator.say(var1, true);
          }
       }
+
    }
 
    private NarratorStatus getStatus() {
-      return this.minecraft.options.narrator().get();
+      return (NarratorStatus)this.minecraft.options.narrator().get();
    }
 
    private void logNarratedMessage(String var1) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          LOGGER.debug("Narrating: {}", var1.replaceAll("\n", "\\\\n"));
       }
+
    }
 
    public void updateNarratorStatus(NarratorStatus var1) {
@@ -68,18 +72,14 @@ public class GameNarrator {
       ToastComponent var2 = Minecraft.getInstance().getToasts();
       if (this.narrator.active()) {
          if (var1 == NarratorStatus.OFF) {
-            SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), null);
+            SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), (Component)null);
          } else {
             SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.enabled"), var1.getName());
          }
       } else {
-         SystemToast.addOrUpdate(
-            var2,
-            SystemToast.SystemToastId.NARRATOR_TOGGLE,
-            Component.translatable("narrator.toast.disabled"),
-            Component.translatable("options.narrator.notavailable")
-         );
+         SystemToast.addOrUpdate(var2, SystemToast.SystemToastId.NARRATOR_TOGGLE, Component.translatable("narrator.toast.disabled"), Component.translatable("options.narrator.notavailable"));
       }
+
    }
 
    public boolean isActive() {
@@ -97,17 +97,14 @@ public class GameNarrator {
    }
 
    public void checkStatus(boolean var1) {
-      if (var1
-         && !this.isActive()
-         && !TinyFileDialogs.tinyfd_messageBox(
-            "Minecraft",
-            "Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com",
-            "yesno",
-            "error",
-            true
-         )) {
-         throw new GameNarrator.NarratorInitException("Narrator library is not active");
+      if (var1 && !this.isActive() && !TinyFileDialogs.tinyfd_messageBox("Minecraft", "Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com", "yesno", "error", true)) {
+         throw new NarratorInitException("Narrator library is not active");
       }
+   }
+
+   static {
+      NO_TITLE = CommonComponents.EMPTY;
+      LOGGER = LogUtils.getLogger();
    }
 
    public static class NarratorInitException extends SilentInitException {

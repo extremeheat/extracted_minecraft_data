@@ -17,15 +17,13 @@ public class LinearPalette<T> implements Palette<T> {
    private LinearPalette(IdMap<T> var1, int var2, PaletteResize<T> var3, List<T> var4) {
       super();
       this.registry = var1;
-      this.values = (T[])(new Object[1 << var2]);
+      this.values = new Object[1 << var2];
       this.bits = var2;
       this.resizeHandler = var3;
-      Validate.isTrue(
-         var4.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", new Object[]{this.values.length, var4.size()}
-      );
+      Validate.isTrue(var4.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", new Object[]{this.values.length, var4.size()});
 
       for(int var5 = 0; var5 < var4.size(); ++var5) {
-         this.values[var5] = (T)var4.get(var5);
+         this.values[var5] = var4.get(var5);
       }
 
       this.size = var4.size();
@@ -34,35 +32,34 @@ public class LinearPalette<T> implements Palette<T> {
    private LinearPalette(IdMap<T> var1, T[] var2, PaletteResize<T> var3, int var4, int var5) {
       super();
       this.registry = var1;
-      this.values = (T[])var2;
+      this.values = var2;
       this.resizeHandler = var3;
       this.bits = var4;
       this.size = var5;
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new LinearPalette<>(var1, var0, var2, var3);
+      return new LinearPalette(var1, var0, var2, var3);
    }
 
-   @Override
    public int idFor(T var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
+      int var2;
+      for(var2 = 0; var2 < this.size; ++var2) {
          if (this.values[var2] == var1) {
             return var2;
          }
       }
 
-      int var3 = this.size;
-      if (var3 < this.values.length) {
-         this.values[var3] = (T)var1;
+      var2 = this.size;
+      if (var2 < this.values.length) {
+         this.values[var2] = var1;
          ++this.size;
-         return var3;
+         return var2;
       } else {
-         return this.resizeHandler.onResize(this.bits + 1, (T)var1);
+         return this.resizeHandler.onResize(this.bits + 1, var1);
       }
    }
 
-   @Override
    public boolean maybeHas(Predicate<T> var1) {
       for(int var2 = 0; var2 < this.size; ++var2) {
          if (var1.test(this.values[var2])) {
@@ -73,7 +70,6 @@ public class LinearPalette<T> implements Palette<T> {
       return false;
    }
 
-   @Override
    public T valueFor(int var1) {
       if (var1 >= 0 && var1 < this.size) {
          return this.values[var1];
@@ -82,25 +78,24 @@ public class LinearPalette<T> implements Palette<T> {
       }
    }
 
-   @Override
    public void read(FriendlyByteBuf var1) {
       this.size = var1.readVarInt();
 
       for(int var2 = 0; var2 < this.size; ++var2) {
          this.values[var2] = this.registry.byIdOrThrow(var1.readVarInt());
       }
+
    }
 
-   @Override
    public void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.size);
 
       for(int var2 = 0; var2 < this.size; ++var2) {
          var1.writeVarInt(this.registry.getId(this.values[var2]));
       }
+
    }
 
-   @Override
    public int getSerializedSize() {
       int var1 = VarInt.getByteSize(this.getSize());
 
@@ -111,13 +106,11 @@ public class LinearPalette<T> implements Palette<T> {
       return var1;
    }
 
-   @Override
    public int getSize() {
       return this.size;
    }
 
-   @Override
    public Palette<T> copy() {
-      return new LinearPalette<>(this.registry, (T[])((Object[])this.values.clone()), this.resizeHandler, this.bits, this.size);
+      return new LinearPalette(this.registry, (Object[])this.values.clone(), this.resizeHandler, this.bits, this.size);
    }
 }

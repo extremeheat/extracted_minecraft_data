@@ -12,7 +12,7 @@ import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
-public class AngleArgument implements ArgumentType<AngleArgument.SingleAngle> {
+public class AngleArgument implements ArgumentType<SingleAngle> {
    private static final Collection<String> EXAMPLES = Arrays.asList("0", "~", "~-5");
    public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(Component.translatable("argument.angle.incomplete"));
    public static final SimpleCommandExceptionType ERROR_INVALID_ANGLE = new SimpleCommandExceptionType(Component.translatable("argument.angle.invalid"));
@@ -26,17 +26,17 @@ public class AngleArgument implements ArgumentType<AngleArgument.SingleAngle> {
    }
 
    public static float getAngle(CommandContext<CommandSourceStack> var0, String var1) {
-      return ((AngleArgument.SingleAngle)var0.getArgument(var1, AngleArgument.SingleAngle.class)).getAngle((CommandSourceStack)var0.getSource());
+      return ((SingleAngle)var0.getArgument(var1, SingleAngle.class)).getAngle((CommandSourceStack)var0.getSource());
    }
 
-   public AngleArgument.SingleAngle parse(StringReader var1) throws CommandSyntaxException {
+   public SingleAngle parse(StringReader var1) throws CommandSyntaxException {
       if (!var1.canRead()) {
          throw ERROR_NOT_COMPLETE.createWithContext(var1);
       } else {
          boolean var2 = WorldCoordinate.isRelative(var1);
          float var3 = var1.canRead() && var1.peek() != ' ' ? var1.readFloat() : 0.0F;
          if (!Float.isNaN(var3) && !Float.isInfinite(var3)) {
-            return new AngleArgument.SingleAngle(var3, var2);
+            return new SingleAngle(var3, var2);
          } else {
             throw ERROR_INVALID_ANGLE.createWithContext(var1);
          }
@@ -45,6 +45,11 @@ public class AngleArgument implements ArgumentType<AngleArgument.SingleAngle> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 
    public static final class SingleAngle {

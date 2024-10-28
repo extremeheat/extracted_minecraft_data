@@ -18,22 +18,18 @@ public class WrappedGoal extends Goal {
       return this.isInterruptable() && var1.getPriority() < this.getPriority();
    }
 
-   @Override
    public boolean canUse() {
       return this.goal.canUse();
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.goal.canContinueToUse();
    }
 
-   @Override
    public boolean isInterruptable() {
       return this.goal.isInterruptable();
    }
 
-   @Override
    public void start() {
       if (!this.isRunning) {
          this.isRunning = true;
@@ -41,7 +37,6 @@ public class WrappedGoal extends Goal {
       }
    }
 
-   @Override
    public void stop() {
       if (this.isRunning) {
          this.isRunning = false;
@@ -49,27 +44,22 @@ public class WrappedGoal extends Goal {
       }
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return this.goal.requiresUpdateEveryTick();
    }
 
-   @Override
    protected int adjustedTickDelay(int var1) {
       return this.goal.adjustedTickDelay(var1);
    }
 
-   @Override
    public void tick() {
       this.goal.tick();
    }
 
-   @Override
    public void setFlags(EnumSet<Goal.Flag> var1) {
       this.goal.setFlags(var1);
    }
 
-   @Override
    public EnumSet<Goal.Flag> getFlags() {
       return this.goal.getFlags();
    }
@@ -86,7 +76,6 @@ public class WrappedGoal extends Goal {
       return this.goal;
    }
 
-   @Override
    public boolean equals(@Nullable Object var1) {
       if (this == var1) {
          return true;
@@ -95,7 +84,6 @@ public class WrappedGoal extends Goal {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.goal.hashCode();
    }

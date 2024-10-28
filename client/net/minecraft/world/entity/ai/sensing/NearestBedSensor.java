@@ -3,13 +3,11 @@ package net.minecraft.world.entity.ai.sensing;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.AcquirePoi;
@@ -30,7 +28,6 @@ public class NearestBedSensor extends Sensor<Mob> {
       super(20);
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of(MemoryModuleType.NEAREST_BED);
    }
@@ -40,28 +37,33 @@ public class NearestBedSensor extends Sensor<Mob> {
          this.triedCount = 0;
          this.lastUpdate = var1.getGameTime() + (long)var1.getRandom().nextInt(20);
          PoiManager var3 = var1.getPoiManager();
-         Predicate var4 = var1x -> {
-            long var2xx = var1x.asLong();
-            if (this.batchCache.containsKey(var2xx)) {
+         Predicate var4 = (var1x) -> {
+            long var2 = var1x.asLong();
+            if (this.batchCache.containsKey(var2)) {
                return false;
             } else if (++this.triedCount >= 5) {
                return false;
             } else {
-               this.batchCache.put(var2xx, this.lastUpdate + 40L);
+               this.batchCache.put(var2, this.lastUpdate + 40L);
                return true;
             }
          };
-         Set var5 = var3.findAllWithType(var0 -> var0.is(PoiTypes.HOME), var4, var2.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
+         Set var5 = (Set)var3.findAllWithType((var0) -> {
+            return var0.is(PoiTypes.HOME);
+         }, var4, var2.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
          Path var6 = AcquirePoi.findPathToPois(var2, var5);
          if (var6 != null && var6.canReach()) {
             BlockPos var7 = var6.getTarget();
             Optional var8 = var3.getType(var7);
             if (var8.isPresent()) {
-               var2.getBrain().setMemory(MemoryModuleType.NEAREST_BED, var7);
+               var2.getBrain().setMemory(MemoryModuleType.NEAREST_BED, (Object)var7);
             }
          } else if (this.triedCount < 5) {
-            this.batchCache.long2LongEntrySet().removeIf(var1x -> var1x.getLongValue() < this.lastUpdate);
+            this.batchCache.long2LongEntrySet().removeIf((var1x) -> {
+               return var1x.getLongValue() < this.lastUpdate;
+            });
          }
+
       }
    }
 }

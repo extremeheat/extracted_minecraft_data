@@ -20,12 +20,10 @@ public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> e
       super(var1);
    }
 
-   @Override
    protected int numStuck(T var1) {
       return var1.getStingerCount();
    }
 
-   @Override
    protected void renderStuckItem(PoseStack var1, MultiBufferSource var2, int var3, Entity var4, float var5, float var6, float var7, float var8) {
       float var9 = Mth.sqrt(var5 * var5 + var7 * var7);
       float var10 = (float)(Math.atan2((double)var5, (double)var7) * 57.2957763671875);
@@ -51,15 +49,10 @@ public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> e
          vertex(var17, var19, 4.5F, 1, 0.125F, 0.0625F, var3);
          vertex(var17, var19, -4.5F, 1, 0.0F, 0.0625F, var3);
       }
+
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, int var3, float var4, float var5, int var6) {
-      var0.vertex(var1, var2, (float)var3, 0.0F)
-         .color(255, 255, 255, 255)
-         .uv(var4, var5)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var6)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var0.vertex(var1, var2, (float)var3, 0.0F).color(255, 255, 255, 255).uv(var4, var5).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var6).normal(var1, 0.0F, 1.0F, 0.0F).endVertex();
    }
 }

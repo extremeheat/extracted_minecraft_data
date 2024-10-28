@@ -15,15 +15,23 @@ public enum RandomSpreadType implements StringRepresentable {
       this.id = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
    }
 
    public int evaluate(RandomSource var1, int var2) {
-      return switch(this) {
-         case LINEAR -> var1.nextInt(var2);
-         case TRIANGULAR -> (var1.nextInt(var2) + var1.nextInt(var2)) / 2;
-      };
+      int var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = var1.nextInt(var2);
+         case 1 -> var10000 = (var1.nextInt(var2) + var1.nextInt(var2)) / 2;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   // $FF: synthetic method
+   private static RandomSpreadType[] $values() {
+      return new RandomSpreadType[]{LINEAR, TRIANGULAR};
    }
 }

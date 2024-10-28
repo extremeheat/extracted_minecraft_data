@@ -6,9 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.AABB;
 
-public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
-   private final BlockPos min;
-   private final BlockPos max;
+public record BlockBox(BlockPos min, BlockPos max) implements Iterable<BlockPos> {
    public static final StreamCodec<ByteBuf, BlockBox> STREAM_CODEC = new StreamCodec<ByteBuf, BlockBox>() {
       public BlockBox decode(ByteBuf var1) {
          return new BlockBox(FriendlyByteBuf.readBlockPos(var1), FriendlyByteBuf.readBlockPos(var1));
@@ -17,6 +15,16 @@ public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
       public void encode(ByteBuf var1, BlockBox var2) {
          FriendlyByteBuf.writeBlockPos(var1, var2.min());
          FriendlyByteBuf.writeBlockPos(var1, var2.max());
+      }
+
+      // $FF: synthetic method
+      public void encode(Object var1, Object var2) {
+         this.encode((ByteBuf)var1, (BlockBox)var2);
+      }
+
+      // $FF: synthetic method
+      public Object decode(Object var1) {
+         return this.decode((ByteBuf)var1);
       }
    };
 
@@ -43,19 +51,13 @@ public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
    }
 
    public boolean contains(BlockPos var1) {
-      return var1.getX() >= this.min.getX()
-         && var1.getY() >= this.min.getY()
-         && var1.getZ() >= this.min.getZ()
-         && var1.getX() <= this.max.getX()
-         && var1.getY() <= this.max.getY()
-         && var1.getZ() <= this.max.getZ();
+      return var1.getX() >= this.min.getX() && var1.getY() >= this.min.getY() && var1.getZ() >= this.min.getZ() && var1.getX() <= this.max.getX() && var1.getY() <= this.max.getY() && var1.getZ() <= this.max.getZ();
    }
 
    public AABB aabb() {
       return AABB.encapsulatingFullBlocks(this.min, this.max);
    }
 
-   @Override
    public Iterator<BlockPos> iterator() {
       return BlockPos.betweenClosed(this.min, this.max).iterator();
    }
@@ -76,9 +78,7 @@ public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
       if (var2 == 0) {
          return this;
       } else {
-         return var1.getAxisDirection() == Direction.AxisDirection.POSITIVE
-            ? of(this.min, BlockPos.max(this.min, this.max.relative(var1, var2)))
-            : of(BlockPos.min(this.min.relative(var1, var2), this.max), this.max);
+         return var1.getAxisDirection() == Direction.AxisDirection.POSITIVE ? of(this.min, BlockPos.max(this.min, this.max.relative(var1, var2))) : of(BlockPos.min(this.min.relative(var1, var2), this.max), this.max);
       }
    }
 
@@ -88,5 +88,13 @@ public record BlockBox(BlockPos b, BlockPos c) implements Iterable<BlockPos> {
 
    public BlockBox offset(Vec3i var1) {
       return new BlockBox(this.min.offset(var1), this.max.offset(var1));
+   }
+
+   public BlockPos min() {
+      return this.min;
+   }
+
+   public BlockPos max() {
+      return this.max;
    }
 }

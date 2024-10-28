@@ -9,9 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundSetEntityMotionPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetEntityMotionPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetEntityMotionPacket::write, ClientboundSetEntityMotionPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetEntityMotionPacket> STREAM_CODEC = Packet.codec(ClientboundSetEntityMotionPacket::write, ClientboundSetEntityMotionPacket::new);
    private final int id;
    private final int xa;
    private final int ya;
@@ -48,7 +46,6 @@ public class ClientboundSetEntityMotionPacket implements Packet<ClientGamePacket
       var1.writeShort(this.za);
    }
 
-   @Override
    public PacketType<ClientboundSetEntityMotionPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_ENTITY_MOTION;
    }

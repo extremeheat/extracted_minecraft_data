@@ -31,14 +31,8 @@ public class QuadrupedModel<T extends Entity> extends AgeableListModel<T> {
    public static MeshDefinition createBodyMesh(int var0, CubeDeformation var1) {
       MeshDefinition var2 = new MeshDefinition();
       PartDefinition var3 = var2.getRoot();
-      var3.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F, var1), PartPose.offset(0.0F, (float)(18 - var0), -6.0F)
-      );
-      var3.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F, var1),
-         PartPose.offsetAndRotation(0.0F, (float)(17 - var0), 2.0F, 1.5707964F, 0.0F, 0.0F)
-      );
+      var3.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F, var1), PartPose.offset(0.0F, (float)(18 - var0), -6.0F));
+      var3.addOrReplaceChild("body", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F, var1), PartPose.offsetAndRotation(0.0F, (float)(17 - var0), 2.0F, 1.5707964F, 0.0F, 0.0F));
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, (float)var0, 4.0F, var1);
       var3.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-3.0F, (float)(24 - var0), 7.0F));
       var3.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(3.0F, (float)(24 - var0), 7.0F));
@@ -47,17 +41,14 @@ public class QuadrupedModel<T extends Entity> extends AgeableListModel<T> {
       return var2;
    }
 
-   @Override
    protected Iterable<ModelPart> headParts() {
       return ImmutableList.of(this.head);
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return ImmutableList.of(this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg);
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.head.xRot = var6 * 0.017453292F;
       this.head.yRot = var5 * 0.017453292F;

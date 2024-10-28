@@ -12,18 +12,19 @@ public class AnimalArmorItem extends ArmorItem {
    private final ResourceLocation textureLocation;
    @Nullable
    private final ResourceLocation overlayTextureLocation;
-   private final AnimalArmorItem.BodyType bodyType;
+   private final BodyType bodyType;
 
-   public AnimalArmorItem(Holder<ArmorMaterial> var1, AnimalArmorItem.BodyType var2, boolean var3, Item.Properties var4) {
+   public AnimalArmorItem(Holder<ArmorMaterial> var1, BodyType var2, boolean var3, Item.Properties var4) {
       super(var1, ArmorItem.Type.BODY, var4);
       this.bodyType = var2;
-      ResourceLocation var5 = var2.textureLocator.apply(((ResourceKey)var1.unwrapKey().orElseThrow()).location());
+      ResourceLocation var5 = (ResourceLocation)var2.textureLocator.apply(((ResourceKey)var1.unwrapKey().orElseThrow()).location());
       this.textureLocation = var5.withSuffix(".png");
       if (var3) {
          this.overlayTextureLocation = var5.withSuffix("_overlay.png");
       } else {
          this.overlayTextureLocation = null;
       }
+
    }
 
    public ResourceLocation getTexture() {
@@ -35,25 +36,35 @@ public class AnimalArmorItem extends ArmorItem {
       return this.overlayTextureLocation;
    }
 
-   public AnimalArmorItem.BodyType getBodyType() {
+   public BodyType getBodyType() {
       return this.bodyType;
    }
 
-   @Override
    public SoundEvent getBreakingSound() {
       return this.bodyType.breakingSound;
    }
 
    public static enum BodyType {
-      EQUESTRIAN(var0 -> var0.withPath(var0x -> "textures/entity/horse/armor/horse_armor_" + var0x), SoundEvents.ITEM_BREAK),
-      CANINE(var0 -> var0.withPath("textures/entity/wolf/wolf_armor"), SoundEvents.WOLF_ARMOR_BREAK);
+      EQUESTRIAN((var0) -> {
+         return var0.withPath((var0x) -> {
+            return "textures/entity/horse/armor/horse_armor_" + var0x;
+         });
+      }, SoundEvents.ITEM_BREAK),
+      CANINE((var0) -> {
+         return var0.withPath("textures/entity/wolf/wolf_armor");
+      }, SoundEvents.WOLF_ARMOR_BREAK);
 
       final Function<ResourceLocation, ResourceLocation> textureLocator;
       final SoundEvent breakingSound;
 
-      private BodyType(Function<ResourceLocation, ResourceLocation> var3, SoundEvent var4) {
+      private BodyType(Function var3, SoundEvent var4) {
          this.textureLocator = var3;
          this.breakingSound = var4;
+      }
+
+      // $FF: synthetic method
+      private static BodyType[] $values() {
+         return new BodyType[]{EQUESTRIAN, CANINE};
       }
    }
 }

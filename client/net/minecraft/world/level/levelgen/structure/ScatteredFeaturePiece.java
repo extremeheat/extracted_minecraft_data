@@ -30,7 +30,6 @@ public abstract class ScatteredFeaturePiece extends StructurePiece {
       this.heightPosition = var2.getInt("HPos");
    }
 
-   @Override
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
       var2.putInt("Width", this.width);
       var2.putInt("Height", this.height);

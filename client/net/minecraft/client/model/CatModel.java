@@ -31,17 +31,24 @@ public class CatModel<T extends Cat> extends OcelotModel<T> {
          this.rightHindLeg.y = 18.0F;
       }
 
-      super.prepareMobModel((T)var1, var2, var3, var4);
+      super.prepareMobModel(var1, var2, var3, var4);
       if (var1.isInSittingPose()) {
          this.body.xRot = 0.7853982F;
-         this.body.y += -4.0F;
-         this.body.z += 5.0F;
-         this.head.y += -3.3F;
+         ModelPart var10000 = this.body;
+         var10000.y += -4.0F;
+         var10000 = this.body;
+         var10000.z += 5.0F;
+         var10000 = this.head;
+         var10000.y += -3.3F;
          ++this.head.z;
-         this.tail1.y += 8.0F;
-         this.tail1.z += -2.0F;
-         this.tail2.y += 2.0F;
-         this.tail2.z += -0.8F;
+         var10000 = this.tail1;
+         var10000.y += 8.0F;
+         var10000 = this.tail1;
+         var10000.z += -2.0F;
+         var10000 = this.tail2;
+         var10000.y += 2.0F;
+         var10000 = this.tail2;
+         var10000.z += -0.8F;
          this.tail1.xRot = 1.7278761F;
          this.tail2.xRot = 2.670354F;
          this.leftFrontLeg.xRot = -0.15707964F;
@@ -58,10 +65,11 @@ public class CatModel<T extends Cat> extends OcelotModel<T> {
          this.rightHindLeg.z = 1.0F;
          this.state = 3;
       }
+
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
+      super.setupAnim(var1, var2, var3, var4, var5, var6);
       if (this.lieDownAmount > 0.0F) {
          this.head.zRot = ModelUtils.rotlerpRad(this.head.zRot, -1.2707963F, this.lieDownAmount);
          this.head.yRot = ModelUtils.rotlerpRad(this.head.yRot, 1.2707963F, this.lieDownAmount);
@@ -81,5 +89,6 @@ public class CatModel<T extends Cat> extends OcelotModel<T> {
       if (this.relaxStateOneAmount > 0.0F) {
          this.head.xRot = ModelUtils.rotlerpRad(this.head.xRot, -0.58177644F, this.relaxStateOneAmount);
       }
+
    }
 }

@@ -16,7 +16,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.GsonHelper;
@@ -24,7 +27,7 @@ import org.slf4j.Logger;
 
 public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+   private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
    private final File file;
    private final Map<String, V> map = Maps.newHashMap();
 
@@ -38,37 +41,39 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    }
 
    public void add(V var1) {
-      this.map.put(this.getKeyForUser((K)var1.getUser()), (V)var1);
+      this.map.put(this.getKeyForUser(var1.getUser()), var1);
 
       try {
          this.save();
       } catch (IOException var3) {
          LOGGER.warn("Could not save the list after adding a user.", var3);
       }
+
    }
 
    @Nullable
    public V get(K var1) {
       this.removeExpired();
-      return this.map.get(this.getKeyForUser((K)var1));
+      return (StoredUserEntry)this.map.get(this.getKeyForUser(var1));
    }
 
    public void remove(K var1) {
-      this.map.remove(this.getKeyForUser((K)var1));
+      this.map.remove(this.getKeyForUser(var1));
 
       try {
          this.save();
       } catch (IOException var3) {
          LOGGER.warn("Could not save the list after removing a user.", var3);
       }
+
    }
 
    public void remove(StoredUserEntry<K> var1) {
-      this.remove((K)var1.getUser());
+      this.remove(var1.getUser());
    }
 
    public String[] getUserList() {
-      return this.map.keySet().toArray(new String[0]);
+      return (String[])this.map.keySet().toArray(new String[0]);
    }
 
    public boolean isEmpty() {
@@ -80,21 +85,27 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    }
 
    protected boolean contains(K var1) {
-      return this.map.containsKey(this.getKeyForUser((K)var1));
+      return this.map.containsKey(this.getKeyForUser(var1));
    }
 
    private void removeExpired() {
       ArrayList var1 = Lists.newArrayList();
+      Iterator var2 = this.map.values().iterator();
 
-      for(StoredUserEntry var3 : this.map.values()) {
+      while(var2.hasNext()) {
+         StoredUserEntry var3 = (StoredUserEntry)var2.next();
          if (var3.hasExpired()) {
             var1.add(var3.getUser());
          }
       }
 
-      for(Object var5 : var1) {
-         this.map.remove(this.getKeyForUser((K)var5));
+      var2 = var1.iterator();
+
+      while(var2.hasNext()) {
+         Object var4 = var2.next();
+         this.map.remove(this.getKeyForUser(var4));
       }
+
    }
 
    protected abstract StoredUserEntry<K> createEntry(JsonObject var1);
@@ -105,30 +116,82 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
 
    public void save() throws IOException {
       JsonArray var1 = new JsonArray();
-      this.map.values().stream().map(var0 -> Util.make(new JsonObject(), var0::serialize)).forEach(var1::add);
+      Stream var10000 = this.map.values().stream().map((var0) -> {
+         JsonObject var10000 = new JsonObject();
+         Objects.requireNonNull(var0);
+         return (JsonObject)Util.make(var10000, var0::serialize);
+      });
+      Objects.requireNonNull(var1);
+      var10000.forEach(var1::add);
+      BufferedWriter var2 = Files.newWriter(this.file, StandardCharsets.UTF_8);
 
-      try (BufferedWriter var2 = Files.newWriter(this.file, StandardCharsets.UTF_8)) {
+      try {
          GSON.toJson(var1, var2);
+      } catch (Throwable var6) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+         }
+
+         throw var6;
       }
+
+      if (var2 != null) {
+         var2.close();
+      }
+
    }
 
    public void load() throws IOException {
       if (this.file.exists()) {
-         try (BufferedReader var1 = Files.newReader(this.file, StandardCharsets.UTF_8)) {
-            this.map.clear();
-            JsonArray var2 = (JsonArray)GSON.fromJson(var1, JsonArray.class);
-            if (var2 == null) {
-               return;
+         BufferedReader var1 = Files.newReader(this.file, StandardCharsets.UTF_8);
+
+         label54: {
+            try {
+               this.map.clear();
+               JsonArray var2 = (JsonArray)GSON.fromJson(var1, JsonArray.class);
+               if (var2 != null) {
+                  Iterator var3 = var2.iterator();
+
+                  while(true) {
+                     if (!var3.hasNext()) {
+                        break label54;
+                     }
+
+                     JsonElement var4 = (JsonElement)var3.next();
+                     JsonObject var5 = GsonHelper.convertToJsonObject(var4, "entry");
+                     StoredUserEntry var6 = this.createEntry(var5);
+                     if (var6.getUser() != null) {
+                        this.map.put(this.getKeyForUser(var6.getUser()), var6);
+                     }
+                  }
+               }
+            } catch (Throwable var8) {
+               if (var1 != null) {
+                  try {
+                     var1.close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
+               }
+
+               throw var8;
             }
 
-            for(JsonElement var4 : var2) {
-               JsonObject var5 = GsonHelper.convertToJsonObject(var4, "entry");
-               StoredUserEntry var6 = this.createEntry(var5);
-               if (var6.getUser() != null) {
-                  this.map.put(this.getKeyForUser((K)var6.getUser()), (V)var6);
-               }
+            if (var1 != null) {
+               var1.close();
             }
+
+            return;
          }
+
+         if (var1 != null) {
+            var1.close();
+         }
+
       }
    }
 }

@@ -37,4 +37,9 @@ public enum ReportReason {
    public Component description() {
       return this.description;
    }
+
+   // $FF: synthetic method
+   private static ReportReason[] $values() {
+      return new ReportReason[]{GENERIC, HATE_SPEECH, HARASSMENT_OR_BULLYING, SELF_HARM_OR_SUICIDE, IMMINENT_HARM, DEFAMATION_IMPERSONATION_FALSE_INFORMATION, ALCOHOL_TOBACCO_DRUGS, CHILD_SEXUAL_EXPLOITATION_OR_ABUSE, TERRORISM_OR_VIOLENT_EXTREMISM, NON_CONSENSUAL_INTIMATE_IMAGERY};
+   }
 }

@@ -16,7 +16,7 @@ import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemPotionFix extends DataFix {
    private static final int SPLASH = 16384;
-   private static final String[] POTIONS = (String[])DataFixUtils.make(new String[128], var0 -> {
+   private static final String[] POTIONS = (String[])DataFixUtils.make(new String[128], (var0) -> {
       var0[0] = "minecraft:water";
       var0[1] = "minecraft:regeneration";
       var0[2] = "minecraft:swiftness";
@@ -156,39 +156,34 @@ public class ItemPotionFix extends DataFix {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped(
-         "ItemPotionFix",
-         var1,
-         var2x -> {
-            Optional var3xx = var2x.getOptional(var2);
-            if (var3xx.isPresent() && Objects.equals(((Pair)var3xx.get()).getSecond(), "minecraft:potion")) {
-               Dynamic var4 = (Dynamic)var2x.get(DSL.remainderFinder());
-               Optional var5 = var2x.getOptionalTyped(var3);
-               short var6 = var4.get("Damage").asShort((short)0);
-               if (var5.isPresent()) {
-                  Typed var7 = var2x;
-                  Dynamic var8 = (Dynamic)((Typed)var5.get()).get(DSL.remainderFinder());
-                  Optional var9 = var8.get("Potion").asString().result();
-                  if (var9.isEmpty()) {
-                     String var10 = POTIONS[var6 & 127];
-                     Typed var11 = ((Typed)var5.get())
-                        .set(DSL.remainderFinder(), var8.set("Potion", var8.createString(var10 == null ? "minecraft:water" : var10)));
-                     var7 = var2x.set(var3, var11);
-                     if ((var6 & 16384) == 16384) {
-                        var7 = var7.set(var2, Pair.of(References.ITEM_NAME.typeName(), "minecraft:splash_potion"));
-                     }
+      return this.fixTypeEverywhereTyped("ItemPotionFix", var1, (var2x) -> {
+         Optional var3x = var2x.getOptional(var2);
+         if (var3x.isPresent() && Objects.equals(((Pair)var3x.get()).getSecond(), "minecraft:potion")) {
+            Dynamic var4 = (Dynamic)var2x.get(DSL.remainderFinder());
+            Optional var5 = var2x.getOptionalTyped(var3);
+            short var6 = var4.get("Damage").asShort((short)0);
+            if (var5.isPresent()) {
+               Typed var7 = var2x;
+               Dynamic var8 = (Dynamic)((Typed)var5.get()).get(DSL.remainderFinder());
+               Optional var9 = var8.get("Potion").asString().result();
+               if (var9.isEmpty()) {
+                  String var10 = POTIONS[var6 & 127];
+                  Typed var11 = ((Typed)var5.get()).set(DSL.remainderFinder(), var8.set("Potion", var8.createString(var10 == null ? "minecraft:water" : var10)));
+                  var7 = var2x.set(var3, var11);
+                  if ((var6 & 16384) == 16384) {
+                     var7 = var7.set(var2, Pair.of(References.ITEM_NAME.typeName(), "minecraft:splash_potion"));
                   }
-   
-                  if (var6 != 0) {
-                     var4 = var4.set("Damage", var4.createShort((short)0));
-                  }
-   
-                  return var7.set(DSL.remainderFinder(), var4);
                }
+
+               if (var6 != 0) {
+                  var4 = var4.set("Damage", var4.createShort((short)0));
+               }
+
+               return var7.set(DSL.remainderFinder(), var4);
             }
-   
-            return var2x;
          }
-      );
+
+         return var2x;
+      });
    }
 }

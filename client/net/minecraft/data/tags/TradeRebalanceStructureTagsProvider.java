@@ -13,7 +13,6 @@ public class TradeRebalanceStructureTagsProvider extends TagsProvider<Structure>
       super(var1, Registries.STRUCTURE, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
       this.tag(StructureTags.ON_SAVANNA_VILLAGE_MAPS).add(BuiltinStructures.VILLAGE_SAVANNA);
       this.tag(StructureTags.ON_DESERT_VILLAGE_MAPS).add(BuiltinStructures.VILLAGE_DESERT);

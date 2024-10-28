@@ -73,16 +73,30 @@ public class ChaseClient {
             this.socket = new Socket(this.serverHost, this.serverPort);
             LOGGER.info("Connected to remote control server! Will continuously execute the command broadcasted by that server.");
 
-            try (BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), Charsets.US_ASCII))) {
-               while(this.wantsToRun) {
-                  String var3 = var2.readLine();
-                  if (var3 == null) {
-                     LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", var1, 5);
-                     break;
+            try {
+               BufferedReader var2 = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), Charsets.US_ASCII));
+
+               try {
+                  while(this.wantsToRun) {
+                     String var3 = var2.readLine();
+                     if (var3 == null) {
+                        LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", var1, 5);
+                        break;
+                     }
+
+                     this.handleMessage(var3);
+                  }
+               } catch (Throwable var7) {
+                  try {
+                     var2.close();
+                  } catch (Throwable var6) {
+                     var7.addSuppressed(var6);
                   }
 
-                  this.handleMessage(var3);
+                  throw var7;
                }
+
+               var2.close();
             } catch (IOException var8) {
                LOGGER.warn("Lost connection to remote control server {}. Will retry in {}s.", var1, 5);
             }
@@ -97,41 +111,45 @@ public class ChaseClient {
             }
          }
       }
+
    }
 
    private void handleMessage(String var1) {
-      try (Scanner var2 = new Scanner(new StringReader(var1))) {
-         var2.useLocale(Locale.ROOT);
-         String var3 = var2.next();
-         if ("t".equals(var3)) {
-            this.handleTeleport(var2);
-         } else {
-            LOGGER.warn("Unknown message type '{}'", var3);
+      try {
+         Scanner var2 = new Scanner(new StringReader(var1));
+
+         try {
+            var2.useLocale(Locale.ROOT);
+            String var3 = var2.next();
+            if ("t".equals(var3)) {
+               this.handleTeleport(var2);
+            } else {
+               LOGGER.warn("Unknown message type '{}'", var3);
+            }
+         } catch (Throwable var6) {
+            try {
+               var2.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+
+            throw var6;
          }
+
+         var2.close();
       } catch (NoSuchElementException var7) {
          LOGGER.warn("Could not parse message '{}', ignoring", var1);
       }
+
    }
 
    private void handleTeleport(Scanner var1) {
-      this.parseTarget(var1)
-         .ifPresent(
-            var1x -> this.executeCommand(
-                  String.format(
-                     Locale.ROOT,
-                     "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f",
-                     var1x.level.location(),
-                     var1x.pos.x,
-                     var1x.pos.y,
-                     var1x.pos.z,
-                     var1x.rot.y,
-                     var1x.rot.x
-                  )
-               )
-         );
+      this.parseTarget(var1).ifPresent((var1x) -> {
+         this.executeCommand(String.format(Locale.ROOT, "execute in %s run tp @s %.3f %.3f %.3f %.3f %.3f", var1x.level.location(), var1x.pos.x, var1x.pos.y, var1x.pos.z, var1x.rot.y, var1x.rot.x));
+      });
    }
 
-   private Optional<ChaseClient.TeleportTarget> parseTarget(Scanner var1) {
+   private Optional<TeleportTarget> parseTarget(Scanner var1) {
       ResourceKey var2 = (ResourceKey)ChaseCommand.DIMENSION_NAMES.get(var1.next());
       if (var2 == null) {
          return Optional.empty();
@@ -141,29 +159,24 @@ public class ChaseClient {
          float var5 = var1.nextFloat();
          float var6 = var1.nextFloat();
          float var7 = var1.nextFloat();
-         return Optional.of(new ChaseClient.TeleportTarget(var2, new Vec3((double)var3, (double)var4, (double)var5), new Vec2(var7, var6)));
+         return Optional.of(new TeleportTarget(var2, new Vec3((double)var3, (double)var4, (double)var5), new Vec2(var7, var6)));
       }
    }
 
    private void executeCommand(String var1) {
-      this.server
-         .execute(
-            () -> {
-               List var2 = this.server.getPlayerList().getPlayers();
-               if (!var2.isEmpty()) {
-                  ServerPlayer var3 = (ServerPlayer)var2.get(0);
-                  ServerLevel var4 = this.server.overworld();
-                  CommandSourceStack var5 = new CommandSourceStack(
-                     var3, Vec3.atLowerCornerOf(var4.getSharedSpawnPos()), Vec2.ZERO, var4, 4, "", CommonComponents.EMPTY, this.server, var3
-                  );
-                  Commands var6 = this.server.getCommands();
-                  var6.performPrefixedCommand(var5, var1);
-               }
-            }
-         );
+      this.server.execute(() -> {
+         List var2 = this.server.getPlayerList().getPlayers();
+         if (!var2.isEmpty()) {
+            ServerPlayer var3 = (ServerPlayer)var2.get(0);
+            ServerLevel var4 = this.server.overworld();
+            CommandSourceStack var5 = new CommandSourceStack(var3, Vec3.atLowerCornerOf(var4.getSharedSpawnPos()), Vec2.ZERO, var4, 4, "", CommonComponents.EMPTY, this.server, var3);
+            Commands var6 = this.server.getCommands();
+            var6.performPrefixedCommand(var5, var1);
+         }
+      });
    }
 
-   static record TeleportTarget(ResourceKey<Level> a, Vec3 b, Vec2 c) {
+   static record TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
       final ResourceKey<Level> level;
       final Vec3 pos;
       final Vec2 rot;
@@ -173,6 +186,18 @@ public class ChaseClient {
          this.level = var1;
          this.pos = var2;
          this.rot = var3;
+      }
+
+      public ResourceKey<Level> level() {
+         return this.level;
+      }
+
+      public Vec3 pos() {
+         return this.pos;
+      }
+
+      public Vec2 rot() {
+         return this.rot;
       }
    }
 }

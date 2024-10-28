@@ -15,23 +15,21 @@ public class V703 extends Schema {
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
       var2.remove("EntityHorse");
-      var1.register(
-         var2,
-         "Horse",
-         () -> DSL.optionalFields("ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1))
-      );
-      var1.register(
-         var2,
-         "Donkey",
-         () -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1))
-      );
-      var1.register(
-         var2,
-         "Mule",
-         () -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1))
-      );
-      var1.register(var2, "ZombieHorse", () -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
-      var1.register(var2, "SkeletonHorse", () -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "Horse", () -> {
+         return DSL.optionalFields("ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1));
+      });
+      var1.register(var2, "Donkey", () -> {
+         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1));
+      });
+      var1.register(var2, "Mule", () -> {
+         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1));
+      });
+      var1.register(var2, "ZombieHorse", () -> {
+         return DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1));
+      });
+      var1.register(var2, "SkeletonHorse", () -> {
+         return DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1));
+      });
       return var2;
    }
 }

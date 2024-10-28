@@ -9,7 +9,6 @@ import net.minecraft.util.parsing.packrat.SuggestionSupplier;
 public interface ResourceSuggestion extends SuggestionSupplier<StringReader> {
    Stream<ResourceLocation> possibleResources();
 
-   @Override
    default Stream<String> possibleValues(ParseState<StringReader> var1) {
       return this.possibleResources().map(ResourceLocation::toString);
    }

@@ -10,6 +10,7 @@ import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,112 +26,107 @@ public class LinkFileSystem extends FileSystem {
    private final FileSystemProvider provider = new LinkFSProvider();
    private final LinkFSPath root;
 
-   LinkFileSystem(String var1, LinkFileSystem.DirectoryEntry var2) {
+   LinkFileSystem(String var1, DirectoryEntry var2) {
       super();
       this.store = new LinkFSFileStore(var1);
-      this.root = buildPath(var2, this, "", null);
+      this.root = buildPath(var2, this, "", (LinkFSPath)null);
    }
 
-   private static LinkFSPath buildPath(LinkFileSystem.DirectoryEntry var0, LinkFileSystem var1, String var2, @Nullable LinkFSPath var3) {
+   private static LinkFSPath buildPath(DirectoryEntry var0, LinkFileSystem var1, String var2, @Nullable LinkFSPath var3) {
       Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
       LinkFSPath var5 = new LinkFSPath(var1, var2, var3, new PathContents.DirectoryContents(var4));
-      var0.files.forEach((var3x, var4x) -> var4.put(var3x, new LinkFSPath(var1, var3x, var5, new PathContents.FileContents(var4x))));
-      var0.children.forEach((var3x, var4x) -> var4.put(var3x, buildPath(var4x, var1, var3x, var5)));
+      var0.files.forEach((var3x, var4x) -> {
+         var4.put(var3x, new LinkFSPath(var1, var3x, var5, new PathContents.FileContents(var4x)));
+      });
+      var0.children.forEach((var3x, var4x) -> {
+         var4.put(var3x, buildPath(var4x, var1, var3x, var5));
+      });
       var4.trim();
       return var5;
    }
 
-   @Override
    public FileSystemProvider provider() {
       return this.provider;
    }
 
-   @Override
    public void close() {
    }
 
-   @Override
    public boolean isOpen() {
       return true;
    }
 
-   @Override
    public boolean isReadOnly() {
       return true;
    }
 
-   @Override
    public String getSeparator() {
       return "/";
    }
 
-   @Override
    public Iterable<Path> getRootDirectories() {
       return List.of(this.root);
    }
 
-   @Override
    public Iterable<FileStore> getFileStores() {
       return List.of(this.store);
    }
 
-   @Override
    public Set<String> supportedFileAttributeViews() {
       return VIEWS;
    }
 
-   @Override
    public Path getPath(String var1, String... var2) {
       Stream var3 = Stream.of(var1);
       if (var2.length > 0) {
          var3 = Stream.concat(var3, Stream.of(var2));
       }
 
-      String var4 = var3.collect(Collectors.joining("/"));
+      String var4 = (String)var3.collect(Collectors.joining("/"));
       if (var4.equals("/")) {
          return this.root;
-      } else if (var4.startsWith("/")) {
-         LinkFSPath var8 = this.root;
-
-         for(String var10 : PATH_SPLITTER.split(var4.substring(1))) {
-            if (var10.isEmpty()) {
-               throw new IllegalArgumentException("Empty paths not allowed");
-            }
-
-            var8 = var8.resolveName(var10);
-         }
-
-         return var8;
       } else {
-         LinkFSPath var5 = null;
+         LinkFSPath var5;
+         Iterator var6;
+         String var7;
+         if (var4.startsWith("/")) {
+            var5 = this.root;
 
-         for(String var7 : PATH_SPLITTER.split(var4)) {
-            if (var7.isEmpty()) {
-               throw new IllegalArgumentException("Empty paths not allowed");
+            for(var6 = PATH_SPLITTER.split(var4.substring(1)).iterator(); var6.hasNext(); var5 = var5.resolveName(var7)) {
+               var7 = (String)var6.next();
+               if (var7.isEmpty()) {
+                  throw new IllegalArgumentException("Empty paths not allowed");
+               }
             }
 
-            var5 = new LinkFSPath(this, var7, var5, PathContents.RELATIVE);
-         }
-
-         if (var5 == null) {
-            throw new IllegalArgumentException("Empty paths not allowed");
-         } else {
             return var5;
+         } else {
+            var5 = null;
+
+            for(var6 = PATH_SPLITTER.split(var4).iterator(); var6.hasNext(); var5 = new LinkFSPath(this, var7, var5, PathContents.RELATIVE)) {
+               var7 = (String)var6.next();
+               if (var7.isEmpty()) {
+                  throw new IllegalArgumentException("Empty paths not allowed");
+               }
+            }
+
+            if (var5 == null) {
+               throw new IllegalArgumentException("Empty paths not allowed");
+            } else {
+               return var5;
+            }
          }
       }
    }
 
-   @Override
    public PathMatcher getPathMatcher(String var1) {
       throw new UnsupportedOperationException();
    }
 
-   @Override
    public UserPrincipalLookupService getUserPrincipalLookupService() {
       throw new UnsupportedOperationException();
    }
 
-   @Override
    public WatchService newWatchService() {
       throw new UnsupportedOperationException();
    }
@@ -143,29 +139,55 @@ public class LinkFileSystem extends FileSystem {
       return this.root;
    }
 
-   public static LinkFileSystem.Builder builder() {
-      return new LinkFileSystem.Builder();
+   public static Builder builder() {
+      return new Builder();
+   }
+
+   static record DirectoryEntry(Map<String, DirectoryEntry> children, Map<String, Path> files) {
+      final Map<String, DirectoryEntry> children;
+      final Map<String, Path> files;
+
+      public DirectoryEntry() {
+         this(new HashMap(), new HashMap());
+      }
+
+      private DirectoryEntry(Map<String, DirectoryEntry> var1, Map<String, Path> var2) {
+         super();
+         this.children = var1;
+         this.files = var2;
+      }
+
+      public Map<String, DirectoryEntry> children() {
+         return this.children;
+      }
+
+      public Map<String, Path> files() {
+         return this.files;
+      }
    }
 
    public static class Builder {
-      private final LinkFileSystem.DirectoryEntry root = new LinkFileSystem.DirectoryEntry();
+      private final DirectoryEntry root = new DirectoryEntry();
 
       public Builder() {
          super();
       }
 
-      public LinkFileSystem.Builder put(List<String> var1, String var2, Path var3) {
-         LinkFileSystem.DirectoryEntry var4 = this.root;
+      public Builder put(List<String> var1, String var2, Path var3) {
+         DirectoryEntry var4 = this.root;
 
-         for(String var6 : var1) {
-            var4 = (LinkFileSystem.DirectoryEntry)var4.children.computeIfAbsent(var6, var0 -> new LinkFileSystem.DirectoryEntry());
+         String var6;
+         for(Iterator var5 = var1.iterator(); var5.hasNext(); var4 = (DirectoryEntry)var4.children.computeIfAbsent(var6, (var0) -> {
+            return new DirectoryEntry();
+         })) {
+            var6 = (String)var5.next();
          }
 
          var4.files.put(var2, var3);
          return this;
       }
 
-      public LinkFileSystem.Builder put(List<String> var1, Path var2) {
+      public Builder put(List<String> var1, Path var2) {
          if (var1.isEmpty()) {
             throw new IllegalArgumentException("Path can't be empty");
          } else {
@@ -176,21 +198,6 @@ public class LinkFileSystem extends FileSystem {
 
       public FileSystem build(String var1) {
          return new LinkFileSystem(var1, this.root);
-      }
-   }
-
-   static record DirectoryEntry(Map<String, LinkFileSystem.DirectoryEntry> a, Map<String, Path> b) {
-      final Map<String, LinkFileSystem.DirectoryEntry> children;
-      final Map<String, Path> files;
-
-      public DirectoryEntry() {
-         this(new HashMap<>(), new HashMap<>());
-      }
-
-      private DirectoryEntry(Map<String, LinkFileSystem.DirectoryEntry> var1, Map<String, Path> var2) {
-         super();
-         this.children = var1;
-         this.files = var2;
       }
    }
 }

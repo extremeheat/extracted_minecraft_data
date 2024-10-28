@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.block;
 
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
@@ -25,7 +25,7 @@ public class BlockModelShaper {
    }
 
    public BakedModel getBlockModel(BlockState var1) {
-      BakedModel var2 = this.modelByStateCache.get(var1);
+      BakedModel var2 = (BakedModel)this.modelByStateCache.get(var1);
       if (var2 == null) {
          var2 = this.modelManager.getMissingModel();
       }
@@ -51,8 +51,10 @@ public class BlockModelShaper {
 
    public static String statePropertiesToString(Map<Property<?>, Comparable<?>> var0) {
       StringBuilder var1 = new StringBuilder();
+      Iterator var2 = var0.entrySet().iterator();
 
-      for(Entry var3 : var0.entrySet()) {
+      while(var2.hasNext()) {
+         Map.Entry var3 = (Map.Entry)var2.next();
          if (var1.length() != 0) {
             var1.append(',');
          }
@@ -60,13 +62,13 @@ public class BlockModelShaper {
          Property var4 = (Property)var3.getKey();
          var1.append(var4.getName());
          var1.append('=');
-         var1.append(getValue(var4, (Comparable<?>)var3.getValue()));
+         var1.append(getValue(var4, (Comparable)var3.getValue()));
       }
 
       return var1.toString();
    }
 
    private static <T extends Comparable<T>> String getValue(Property<T> var0, Comparable<?> var1) {
-      return var0.getName((T)var1);
+      return var0.getName(var1);
    }
 }

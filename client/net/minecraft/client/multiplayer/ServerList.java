@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -50,62 +51,80 @@ public class ServerList {
       } catch (Exception var6) {
          LOGGER.error("Couldn't load server list", var6);
       }
+
    }
 
    public void save() {
       try {
          ListTag var1 = new ListTag();
+         Iterator var2 = this.serverList.iterator();
 
-         for(ServerData var3 : this.serverList) {
-            CompoundTag var4 = var3.write();
+         ServerData var3;
+         CompoundTag var4;
+         while(var2.hasNext()) {
+            var3 = (ServerData)var2.next();
+            var4 = var3.write();
             var4.putBoolean("hidden", false);
             var1.add(var4);
          }
 
-         for(ServerData var10 : this.hiddenServerList) {
-            CompoundTag var12 = var10.write();
-            var12.putBoolean("hidden", true);
-            var1.add(var12);
+         var2 = this.hiddenServerList.iterator();
+
+         while(var2.hasNext()) {
+            var3 = (ServerData)var2.next();
+            var4 = var3.write();
+            var4.putBoolean("hidden", true);
+            var1.add(var4);
          }
 
-         CompoundTag var9 = new CompoundTag();
-         var9.put("servers", var1);
-         Path var11 = this.minecraft.gameDirectory.toPath();
-         Path var13 = Files.createTempFile(var11, "servers", ".dat");
-         NbtIo.write(var9, var13);
-         Path var5 = var11.resolve("servers.dat_old");
-         Path var6 = var11.resolve("servers.dat");
-         Util.safeReplaceFile(var6, var13, var5);
+         CompoundTag var8 = new CompoundTag();
+         var8.put("servers", var1);
+         Path var9 = this.minecraft.gameDirectory.toPath();
+         Path var10 = Files.createTempFile(var9, "servers", ".dat");
+         NbtIo.write(var8, var10);
+         Path var5 = var9.resolve("servers.dat_old");
+         Path var6 = var9.resolve("servers.dat");
+         Util.safeReplaceFile(var6, var10, var5);
       } catch (Exception var7) {
          LOGGER.error("Couldn't save server list", var7);
       }
+
    }
 
    public ServerData get(int var1) {
-      return this.serverList.get(var1);
+      return (ServerData)this.serverList.get(var1);
    }
 
    @Nullable
    public ServerData get(String var1) {
-      for(ServerData var3 : this.serverList) {
-         if (var3.ip.equals(var1)) {
+      Iterator var2 = this.serverList.iterator();
+
+      ServerData var3;
+      do {
+         if (!var2.hasNext()) {
+            var2 = this.hiddenServerList.iterator();
+
+            do {
+               if (!var2.hasNext()) {
+                  return null;
+               }
+
+               var3 = (ServerData)var2.next();
+            } while(!var3.ip.equals(var1));
+
             return var3;
          }
-      }
 
-      for(ServerData var5 : this.hiddenServerList) {
-         if (var5.ip.equals(var1)) {
-            return var5;
-         }
-      }
+         var3 = (ServerData)var2.next();
+      } while(!var3.ip.equals(var1));
 
-      return null;
+      return var3;
    }
 
    @Nullable
    public ServerData unhide(String var1) {
       for(int var2 = 0; var2 < this.hiddenServerList.size(); ++var2) {
-         ServerData var3 = this.hiddenServerList.get(var2);
+         ServerData var3 = (ServerData)this.hiddenServerList.get(var2);
          if (var3.ip.equals(var1)) {
             this.hiddenServerList.remove(var2);
             this.serverList.add(var3);
@@ -120,6 +139,7 @@ public class ServerList {
       if (!this.serverList.remove(var1)) {
          this.hiddenServerList.remove(var1);
       }
+
    }
 
    public void add(ServerData var1, boolean var2) {
@@ -132,6 +152,7 @@ public class ServerList {
       } else {
          this.serverList.add(var1);
       }
+
    }
 
    public int size() {

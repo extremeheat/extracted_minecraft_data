@@ -8,9 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class ClientboundPlaceGhostRecipePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlaceGhostRecipePacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlaceGhostRecipePacket::write, ClientboundPlaceGhostRecipePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlaceGhostRecipePacket> STREAM_CODEC = Packet.codec(ClientboundPlaceGhostRecipePacket::write, ClientboundPlaceGhostRecipePacket::new);
    private final int containerId;
    private final ResourceLocation recipe;
 
@@ -31,7 +29,6 @@ public class ClientboundPlaceGhostRecipePacket implements Packet<ClientGamePacke
       var1.writeResourceLocation(this.recipe);
    }
 
-   @Override
    public PacketType<ClientboundPlaceGhostRecipePacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLACE_GHOST_RECIPE;
    }

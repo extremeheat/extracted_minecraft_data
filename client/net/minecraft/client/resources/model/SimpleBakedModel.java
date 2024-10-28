@@ -24,16 +24,7 @@ public class SimpleBakedModel implements BakedModel {
    protected final ItemTransforms transforms;
    protected final ItemOverrides overrides;
 
-   public SimpleBakedModel(
-      List<BakedQuad> var1,
-      Map<Direction, List<BakedQuad>> var2,
-      boolean var3,
-      boolean var4,
-      boolean var5,
-      TextureAtlasSprite var6,
-      ItemTransforms var7,
-      ItemOverrides var8
-   ) {
+   public SimpleBakedModel(List<BakedQuad> var1, Map<Direction, List<BakedQuad>> var2, boolean var3, boolean var4, boolean var5, TextureAtlasSprite var6, ItemTransforms var7, ItemOverrides var8) {
       super();
       this.unculledFaces = var1;
       this.culledFaces = var2;
@@ -45,49 +36,41 @@ public class SimpleBakedModel implements BakedModel {
       this.overrides = var8;
    }
 
-   @Override
    public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, RandomSource var3) {
-      return var2 == null ? this.unculledFaces : this.culledFaces.get(var2);
+      return var2 == null ? this.unculledFaces : (List)this.culledFaces.get(var2);
    }
 
-   @Override
    public boolean useAmbientOcclusion() {
       return this.hasAmbientOcclusion;
    }
 
-   @Override
    public boolean isGui3d() {
       return this.isGui3d;
    }
 
-   @Override
    public boolean usesBlockLight() {
       return this.usesBlockLight;
    }
 
-   @Override
    public boolean isCustomRenderer() {
       return false;
    }
 
-   @Override
    public TextureAtlasSprite getParticleIcon() {
       return this.particleIcon;
    }
 
-   @Override
    public ItemTransforms getTransforms() {
       return this.transforms;
    }
 
-   @Override
    public ItemOverrides getOverrides() {
       return this.overrides;
    }
 
    public static class Builder {
-      private final List<BakedQuad> unculledFaces = Lists.newArrayList();
-      private final Map<Direction, List<BakedQuad>> culledFaces = Maps.newEnumMap(Direction.class);
+      private final List<BakedQuad> unculledFaces;
+      private final Map<Direction, List<BakedQuad>> culledFaces;
       private final ItemOverrides overrides;
       private final boolean hasAmbientOcclusion;
       private TextureAtlasSprite particleIcon;
@@ -101,8 +84,13 @@ public class SimpleBakedModel implements BakedModel {
 
       private Builder(boolean var1, boolean var2, boolean var3, ItemTransforms var4, ItemOverrides var5) {
          super();
+         this.unculledFaces = Lists.newArrayList();
+         this.culledFaces = Maps.newEnumMap(Direction.class);
+         Direction[] var6 = Direction.values();
+         int var7 = var6.length;
 
-         for(Direction var9 : Direction.values()) {
+         for(int var8 = 0; var8 < var7; ++var8) {
+            Direction var9 = var6[var8];
             this.culledFaces.put(var9, Lists.newArrayList());
          }
 
@@ -113,22 +101,22 @@ public class SimpleBakedModel implements BakedModel {
          this.transforms = var4;
       }
 
-      public SimpleBakedModel.Builder addCulledFace(Direction var1, BakedQuad var2) {
-         this.culledFaces.get(var1).add(var2);
+      public Builder addCulledFace(Direction var1, BakedQuad var2) {
+         ((List)this.culledFaces.get(var1)).add(var2);
          return this;
       }
 
-      public SimpleBakedModel.Builder addUnculledFace(BakedQuad var1) {
+      public Builder addUnculledFace(BakedQuad var1) {
          this.unculledFaces.add(var1);
          return this;
       }
 
-      public SimpleBakedModel.Builder particle(TextureAtlasSprite var1) {
+      public Builder particle(TextureAtlasSprite var1) {
          this.particleIcon = var1;
          return this;
       }
 
-      public SimpleBakedModel.Builder item() {
+      public Builder item() {
          return this;
       }
 
@@ -136,16 +124,7 @@ public class SimpleBakedModel implements BakedModel {
          if (this.particleIcon == null) {
             throw new RuntimeException("Missing particle!");
          } else {
-            return new SimpleBakedModel(
-               this.unculledFaces,
-               this.culledFaces,
-               this.hasAmbientOcclusion,
-               this.usesBlockLight,
-               this.isGui3d,
-               this.particleIcon,
-               this.transforms,
-               this.overrides
-            );
+            return new SimpleBakedModel(this.unculledFaces, this.culledFaces, this.hasAmbientOcclusion, this.usesBlockLight, this.isGui3d, this.particleIcon, this.transforms, this.overrides);
          }
       }
    }

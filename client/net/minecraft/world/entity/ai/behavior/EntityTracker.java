@@ -18,25 +18,22 @@ public class EntityTracker implements PositionTracker {
       this.trackEyeHeight = var2;
    }
 
-   @Override
    public Vec3 currentPosition() {
       return this.trackEyeHeight ? this.entity.position().add(0.0, (double)this.entity.getEyeHeight(), 0.0) : this.entity.position();
    }
 
-   @Override
    public BlockPos currentBlockPosition() {
       return this.entity.blockPosition();
    }
 
-   @Override
    public boolean isVisibleBy(LivingEntity var1) {
       Entity var3 = this.entity;
       if (var3 instanceof LivingEntity var2) {
-         if (!((LivingEntity)var2).isAlive()) {
+         if (!var2.isAlive()) {
             return false;
          } else {
             Optional var4 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-            return var4.isPresent() && ((NearestVisibleLivingEntities)var4.get()).contains((LivingEntity)var2);
+            return var4.isPresent() && ((NearestVisibleLivingEntities)var4.get()).contains(var2);
          }
       } else {
          return true;
@@ -47,8 +44,7 @@ public class EntityTracker implements PositionTracker {
       return this.entity;
    }
 
-   @Override
    public String toString() {
-      return "EntityTracker for " + this.entity;
+      return "EntityTracker for " + String.valueOf(this.entity);
    }
 }

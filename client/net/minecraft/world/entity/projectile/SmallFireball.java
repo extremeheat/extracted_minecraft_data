@@ -26,7 +26,6 @@ public class SmallFireball extends Fireball {
       super(EntityType.SMALL_FIREBALL, var2, var4, var6, var8, var10, var12, var1);
    }
 
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       if (!this.level().isClientSide) {
@@ -39,10 +38,10 @@ public class SmallFireball extends Fireball {
          } else if (var3 instanceof LivingEntity) {
             this.doEnchantDamageEffects((LivingEntity)var3, var2);
          }
+
       }
    }
 
-   @Override
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
       if (!this.level().isClientSide) {
@@ -53,23 +52,22 @@ public class SmallFireball extends Fireball {
                this.level().setBlockAndUpdate(var3, BaseFireBlock.getState(this.level(), var3));
             }
          }
+
       }
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level().isClientSide) {
          this.discard();
       }
+
    }
 
-   @Override
    public boolean isPickable() {
       return false;
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       return false;
    }

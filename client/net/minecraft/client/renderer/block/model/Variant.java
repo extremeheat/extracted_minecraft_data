@@ -32,12 +32,10 @@ public class Variant implements ModelState {
       return this.modelLocation;
    }
 
-   @Override
    public Transformation getRotation() {
       return this.rotation;
    }
 
-   @Override
    public boolean isUvLocked() {
       return this.uvLock;
    }
@@ -46,12 +44,11 @@ public class Variant implements ModelState {
       return this.weight;
    }
 
-   @Override
    public String toString() {
-      return "Variant{modelLocation=" + this.modelLocation + ", rotation=" + this.rotation + ", uvLock=" + this.uvLock + ", weight=" + this.weight + "}";
+      String var10000 = String.valueOf(this.modelLocation);
+      return "Variant{modelLocation=" + var10000 + ", rotation=" + String.valueOf(this.rotation) + ", uvLock=" + this.uvLock + ", weight=" + this.weight + "}";
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -59,19 +56,16 @@ public class Variant implements ModelState {
          return false;
       } else {
          Variant var2 = (Variant)var1;
-         return this.modelLocation.equals(var2.modelLocation)
-            && Objects.equals(this.rotation, var2.rotation)
-            && this.uvLock == var2.uvLock
-            && this.weight == var2.weight;
+         return this.modelLocation.equals(var2.modelLocation) && Objects.equals(this.rotation, var2.rotation) && this.uvLock == var2.uvLock && this.weight == var2.weight;
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.modelLocation.hashCode();
       var1 = 31 * var1 + this.rotation.hashCode();
       var1 = 31 * var1 + Boolean.valueOf(this.uvLock).hashCode();
-      return 31 * var1 + this.weight;
+      var1 = 31 * var1 + this.weight;
+      return var1;
    }
 
    public static class Deserializer implements JsonDeserializer<Variant> {
@@ -123,6 +117,11 @@ public class Variant implements ModelState {
          } else {
             return var2;
          }
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

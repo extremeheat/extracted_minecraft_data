@@ -19,11 +19,10 @@ public class WrittenBookItem extends Item {
       super(var1);
    }
 
-   @Override
    public Component getName(ItemStack var1) {
-      WrittenBookContent var2 = var1.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      WrittenBookContent var2 = (WrittenBookContent)var1.get(DataComponents.WRITTEN_BOOK_CONTENT);
       if (var2 != null) {
-         String var3 = var2.title().raw();
+         String var3 = (String)var2.title().raw();
          if (!StringUtil.isBlank(var3)) {
             return Component.literal(var3);
          }
@@ -32,9 +31,8 @@ public class WrittenBookItem extends Item {
       return super.getName(var1);
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      WrittenBookContent var5 = var1.get(DataComponents.WRITTEN_BOOK_CONTENT);
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      WrittenBookContent var5 = (WrittenBookContent)var1.get(DataComponents.WRITTEN_BOOK_CONTENT);
       if (var5 != null) {
          if (!StringUtil.isBlank(var5.author())) {
             var3.add(Component.translatable("book.byAuthor", var5.author()).withStyle(ChatFormatting.GRAY));
@@ -42,9 +40,9 @@ public class WrittenBookItem extends Item {
 
          var3.add(Component.translatable("book.generation." + var5.generation()).withStyle(ChatFormatting.GRAY));
       }
+
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       var2.openItemGui(var4, var3);
@@ -53,7 +51,7 @@ public class WrittenBookItem extends Item {
    }
 
    public static boolean resolveBookComponents(ItemStack var0, CommandSourceStack var1, @Nullable Player var2) {
-      WrittenBookContent var3 = var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      WrittenBookContent var3 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
       if (var3 != null && !var3.resolved()) {
          WrittenBookContent var4 = var3.resolve(var1, var2);
          if (var4 != null) {

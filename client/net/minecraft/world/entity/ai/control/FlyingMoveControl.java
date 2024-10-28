@@ -14,7 +14,6 @@ public class FlyingMoveControl extends MoveControl {
       this.hoversInPlace = var3;
    }
 
-   @Override
    public void tick() {
       if (this.operation == MoveControl.Operation.MOVE_TO) {
          this.operation = MoveControl.Operation.WAIT;
@@ -53,5 +52,6 @@ public class FlyingMoveControl extends MoveControl {
          this.mob.setYya(0.0F);
          this.mob.setZza(0.0F);
       }
+
    }
 }

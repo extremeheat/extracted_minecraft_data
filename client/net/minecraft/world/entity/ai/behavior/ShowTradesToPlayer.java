@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +35,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
       if (var3.getMemory(MemoryModuleType.INTERACTION_TARGET).isEmpty()) {
          return false;
       } else {
-         LivingEntity var4 = var3.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+         LivingEntity var4 = (LivingEntity)var3.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
          return var4.getType() == EntityType.PLAYER && var2.isAlive() && var4.isAlive() && !var2.isBaby() && var2.distanceToSqr(var4) <= 17.0;
       }
    }
@@ -87,18 +88,23 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
             this.displayFirstItem(var2);
          }
       }
+
    }
 
    private void displayFirstItem(Villager var1) {
-      displayAsHeldItem(var1, this.displayItems.get(0));
+      displayAsHeldItem(var1, (ItemStack)this.displayItems.get(0));
    }
 
    private void updateDisplayItems(Villager var1) {
-      for(MerchantOffer var3 : var1.getOffers()) {
+      Iterator var2 = var1.getOffers().iterator();
+
+      while(var2.hasNext()) {
+         MerchantOffer var3 = (MerchantOffer)var2.next();
          if (!var3.isOutOfStock() && this.playerItemStackMatchesCostOfOffer(var3)) {
             this.displayItems.add(var3.assemble());
          }
       }
+
    }
 
    private boolean playerItemStackMatchesCostOfOffer(MerchantOffer var1) {
@@ -117,8 +123,8 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
 
    private LivingEntity lookAtTarget(Villager var1) {
       Brain var2 = var1.getBrain();
-      LivingEntity var3 = var2.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var3, true));
+      LivingEntity var3 = (LivingEntity)var2.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var3, true)));
       return var3;
    }
 
@@ -130,7 +136,18 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
             this.displayIndex = 0;
          }
 
-         displayAsHeldItem(var1, this.displayItems.get(this.displayIndex));
+         displayAsHeldItem(var1, (ItemStack)this.displayItems.get(this.displayIndex));
       }
+
+   }
+
+   // $FF: synthetic method
+   public void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   public void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

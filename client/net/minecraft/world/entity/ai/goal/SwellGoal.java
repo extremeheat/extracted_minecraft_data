@@ -16,29 +16,24 @@ public class SwellGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       LivingEntity var1 = this.creeper.getTarget();
       return this.creeper.getSwellDir() > 0 || var1 != null && this.creeper.distanceToSqr(var1) < 9.0;
    }
 
-   @Override
    public void start() {
       this.creeper.getNavigation().stop();
       this.target = this.creeper.getTarget();
    }
 
-   @Override
    public void stop() {
       this.target = null;
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   @Override
    public void tick() {
       if (this.target == null) {
          this.creeper.setSwellDir(-1);

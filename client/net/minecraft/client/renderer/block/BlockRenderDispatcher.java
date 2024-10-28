@@ -55,9 +55,9 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       try {
          RenderShape var8 = var1.getRenderShape();
          if (var8 == RenderShape.MODEL) {
-            this.modelRenderer
-               .tesselateBlock(var3, this.getBlockModel(var1), var1, var2, var4, var5, var6, var7, var1.getSeed(var2), OverlayTexture.NO_OVERLAY);
+            this.modelRenderer.tesselateBlock(var3, this.getBlockModel(var1), var1, var2, var4, var5, var6, var7, var1.getSeed(var2), OverlayTexture.NO_OVERLAY);
          }
+
       } catch (Throwable var11) {
          CrashReport var9 = CrashReport.forThrowable(var11, "Tesselating block in world");
          CrashReportCategory var10 = var9.addCategory("Block being tesselated");
@@ -66,14 +66,14 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       }
    }
 
-   public void renderLiquid(BlockPos var1, BlockAndTintGetter var2, VertexConsumer var3, BlockState var4, FluidState var5, int var6, int var7, int var8) {
+   public void renderLiquid(BlockPos var1, BlockAndTintGetter var2, VertexConsumer var3, BlockState var4, FluidState var5) {
       try {
-         this.liquidBlockRenderer.tesselate(var2, var1, var3, var4, var5, (double)var6, (double)var7, (double)var8);
-      } catch (Throwable var12) {
-         CrashReport var10 = CrashReport.forThrowable(var12, "Tesselating liquid in world");
-         CrashReportCategory var11 = var10.addCategory("Block being tesselated");
-         CrashReportCategory.populateBlockDetails(var11, var2, var1, null);
-         throw new ReportedException(var10);
+         this.liquidBlockRenderer.tesselate(var2, var1, var3, var4, var5);
+      } catch (Throwable var9) {
+         CrashReport var7 = CrashReport.forThrowable(var9, "Tesselating liquid in world");
+         CrashReportCategory var8 = var7.addCategory("Block being tesselated");
+         CrashReportCategory.populateBlockDetails(var8, var2, var1, (BlockState)null);
+         throw new ReportedException(var7);
       }
    }
 
@@ -88,23 +88,22 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    public void renderSingleBlock(BlockState var1, PoseStack var2, MultiBufferSource var3, int var4, int var5) {
       RenderShape var6 = var1.getRenderShape();
       if (var6 != RenderShape.INVISIBLE) {
-         switch(var6) {
+         switch (var6) {
             case MODEL:
                BakedModel var7 = this.getBlockModel(var1);
-               int var8 = this.blockColors.getColor(var1, null, null, 0);
-               float var9 = (float)(var8 >> 16 & 0xFF) / 255.0F;
-               float var10 = (float)(var8 >> 8 & 0xFF) / 255.0F;
-               float var11 = (float)(var8 & 0xFF) / 255.0F;
-               this.modelRenderer
-                  .renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1, false)), var1, var7, var9, var10, var11, var4, var5);
+               int var8 = this.blockColors.getColor(var1, (BlockAndTintGetter)null, (BlockPos)null, 0);
+               float var9 = (float)(var8 >> 16 & 255) / 255.0F;
+               float var10 = (float)(var8 >> 8 & 255) / 255.0F;
+               float var11 = (float)(var8 & 255) / 255.0F;
+               this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1, false)), var1, var7, var9, var10, var11, var4, var5);
                break;
             case ENTITYBLOCK_ANIMATED:
                this.blockEntityRenderer.renderByItem(new ItemStack(var1.getBlock()), ItemDisplayContext.NONE, var2, var3, var4, var5);
          }
+
       }
    }
 
-   @Override
    public void onResourceManagerReload(ResourceManager var1) {
       this.liquidBlockRenderer.setupSprites();
    }

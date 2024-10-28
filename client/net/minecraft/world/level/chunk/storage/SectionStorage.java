@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -56,6 +57,7 @@ public class SectionStorage<R> implements AutoCloseable {
          ChunkPos var2 = SectionPos.of(this.dirty.firstLong()).chunk();
          this.writeColumn(var2);
       }
+
    }
 
    public boolean hasWork() {
@@ -64,7 +66,7 @@ public class SectionStorage<R> implements AutoCloseable {
 
    @Nullable
    protected Optional<R> get(long var1) {
-      return (Optional<R>)this.storage.get(var1);
+      return (Optional)this.storage.get(var1);
    }
 
    protected Optional<R> getOrLoad(long var1) {
@@ -97,23 +99,25 @@ public class SectionStorage<R> implements AutoCloseable {
       } else {
          Optional var3 = this.getOrLoad(var1);
          if (var3.isPresent()) {
-            return (R)var3.get();
+            return var3.get();
          } else {
-            Object var4 = this.factory.apply(() -> this.setDirty(var1));
+            Object var4 = this.factory.apply(() -> {
+               this.setDirty(var1);
+            });
             this.storage.put(var1, Optional.of(var4));
-            return (R)var4;
+            return var4;
          }
       }
    }
 
    private void readColumn(ChunkPos var1) {
-      Optional var2 = this.tryRead(var1).join();
+      Optional var2 = (Optional)this.tryRead(var1).join();
       RegistryOps var3 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
-      this.readColumn(var1, var3, (CompoundTag)var2.orElse(null));
+      this.readColumn(var1, var3, (CompoundTag)var2.orElse((Object)null));
    }
 
    private CompletableFuture<Optional<CompoundTag>> tryRead(ChunkPos var1) {
-      return this.simpleRegionStorage.read(var1).exceptionally(var1x -> {
+      return this.simpleRegionStorage.read(var1).exceptionally((var1x) -> {
          if (var1x instanceof IOException var2) {
             LOGGER.error("Error reading chunk {} data from disk", var1, var2);
             return Optional.empty();
@@ -138,18 +142,25 @@ public class SectionStorage<R> implements AutoCloseable {
 
          for(int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); ++var10) {
             long var11 = getKey(var1, var10);
-            Optional var13 = var9.get(Integer.toString(var10))
-               .result()
-               .flatMap(var3x -> ((Codec)this.codec.apply(() -> this.setDirty(var11))).parse(var3x).resultOrPartial(LOGGER::error));
+            Optional var13 = var9.get(Integer.toString(var10)).result().flatMap((var3x) -> {
+               DataResult var10000 = ((Codec)this.codec.apply(() -> {
+                  this.setDirty(var11);
+               })).parse(var3x);
+               Logger var10001 = LOGGER;
+               Objects.requireNonNull(var10001);
+               return var10000.resultOrPartial(var10001::error);
+            });
             this.storage.put(var11, var13);
-            var13.ifPresent(var4x -> {
+            var13.ifPresent((var4x) -> {
                this.onSectionLoad(var11);
                if (var7) {
                   this.setDirty(var11);
                }
+
             });
          }
       }
+
    }
 
    private void writeColumn(ChunkPos var1) {
@@ -161,6 +172,7 @@ public class SectionStorage<R> implements AutoCloseable {
       } else {
          LOGGER.error("Expected compound tag, got {}", var4);
       }
+
    }
 
    private <T> Dynamic<T> writeColumn(ChunkPos var1, DynamicOps<T> var2) {
@@ -171,23 +183,19 @@ public class SectionStorage<R> implements AutoCloseable {
          this.dirty.remove(var5);
          Optional var7 = (Optional)this.storage.get(var5);
          if (var7 != null && !var7.isEmpty()) {
-            DataResult var8 = ((Codec)this.codec.apply(() -> this.setDirty(var5))).encodeStart(var2, var7.get());
+            DataResult var8 = ((Codec)this.codec.apply(() -> {
+               this.setDirty(var5);
+            })).encodeStart(var2, var7.get());
             String var9 = Integer.toString(var4);
-            var8.resultOrPartial(LOGGER::error).ifPresent(var3x -> var3.put(var2.createString(var9), var3x));
+            Logger var10001 = LOGGER;
+            Objects.requireNonNull(var10001);
+            var8.resultOrPartial(var10001::error).ifPresent((var3x) -> {
+               var3.put(var2.createString(var9), var3x);
+            });
          }
       }
 
-      return new Dynamic(
-         var2,
-         var2.createMap(
-            ImmutableMap.of(
-               var2.createString("Sections"),
-               var2.createMap(var3),
-               var2.createString("DataVersion"),
-               var2.createInt(SharedConstants.getCurrentVersion().getDataVersion().getVersion())
-            )
-         )
-      );
+      return new Dynamic(var2, var2.createMap(ImmutableMap.of(var2.createString("Sections"), var2.createMap(var3), var2.createString("DataVersion"), var2.createInt(SharedConstants.getCurrentVersion().getDataVersion().getVersion()))));
    }
 
    private static long getKey(ChunkPos var0, int var1) {
@@ -220,9 +228,9 @@ public class SectionStorage<R> implements AutoCloseable {
             }
          }
       }
+
    }
 
-   @Override
    public void close() throws IOException {
       this.simpleRegionStorage.close();
    }

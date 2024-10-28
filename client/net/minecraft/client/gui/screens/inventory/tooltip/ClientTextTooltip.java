@@ -13,18 +13,15 @@ public class ClientTextTooltip implements ClientTooltipComponent {
       this.text = var1;
    }
 
-   @Override
    public int getWidth(Font var1) {
       return var1.width(this.text);
    }
 
-   @Override
    public int getHeight() {
       return 10;
    }
 
-   @Override
    public void renderText(Font var1, int var2, int var3, Matrix4f var4, MultiBufferSource.BufferSource var5) {
-      var1.drawInBatch(this.text, (float)var2, (float)var3, -1, true, var4, var5, Font.DisplayMode.NORMAL, 0, 15728880);
+      var1.drawInBatch((FormattedCharSequence)this.text, (float)var2, (float)var3, -1, true, var4, var5, Font.DisplayMode.NORMAL, 0, 15728880);
    }
 }

@@ -4,13 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record PoiAddedDebugPayload(BlockPos c, String d, int e) implements CustomPacketPayload {
-   private final BlockPos pos;
-   private final String poiType;
-   private final int freeTicketCount;
-   public static final StreamCodec<FriendlyByteBuf, PoiAddedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      PoiAddedDebugPayload::write, PoiAddedDebugPayload::new
-   );
+public record PoiAddedDebugPayload(BlockPos pos, String poiType, int freeTicketCount) implements CustomPacketPayload {
+   public static final StreamCodec<FriendlyByteBuf, PoiAddedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(PoiAddedDebugPayload::write, PoiAddedDebugPayload::new);
    public static final CustomPacketPayload.Type<PoiAddedDebugPayload> TYPE = CustomPacketPayload.createType("debug/poi_added");
 
    private PoiAddedDebugPayload(FriendlyByteBuf var1) {
@@ -30,8 +25,19 @@ public record PoiAddedDebugPayload(BlockPos c, String d, int e) implements Custo
       var1.writeInt(this.freeTicketCount);
    }
 
-   @Override
    public CustomPacketPayload.Type<PoiAddedDebugPayload> type() {
       return TYPE;
+   }
+
+   public BlockPos pos() {
+      return this.pos;
+   }
+
+   public String poiType() {
+      return this.poiType;
+   }
+
+   public int freeTicketCount() {
+      return this.freeTicketCount;
    }
 }

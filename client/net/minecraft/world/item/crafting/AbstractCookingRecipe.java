@@ -26,22 +26,18 @@ public abstract class AbstractCookingRecipe implements Recipe<Container> {
       this.cookingTime = var7;
    }
 
-   @Override
    public boolean matches(Container var1, Level var2) {
       return this.ingredient.test(var1.getItem(0));
    }
 
-   @Override
    public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
       return this.result.copy();
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return true;
    }
 
-   @Override
    public NonNullList<Ingredient> getIngredients() {
       NonNullList var1 = NonNullList.create();
       var1.add(this.ingredient);
@@ -52,12 +48,10 @@ public abstract class AbstractCookingRecipe implements Recipe<Container> {
       return this.experience;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 
-   @Override
    public String getGroup() {
       return this.group;
    }
@@ -66,7 +60,6 @@ public abstract class AbstractCookingRecipe implements Recipe<Container> {
       return this.cookingTime;
    }
 
-   @Override
    public RecipeType<?> getType() {
       return this.type;
    }

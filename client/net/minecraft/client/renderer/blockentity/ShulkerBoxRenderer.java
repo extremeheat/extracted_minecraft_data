@@ -28,7 +28,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       if (var1.hasLevel()) {
          BlockState var8 = var1.getLevel().getBlockState(var1.getBlockPos());
          if (var8.getBlock() instanceof ShulkerBoxBlock) {
-            var7 = var8.getValue(ShulkerBoxBlock.FACING);
+            var7 = (Direction)var8.getValue(ShulkerBoxBlock.FACING);
          }
       }
 
@@ -37,7 +37,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       if (var9 == null) {
          var13 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         var13 = Sheets.SHULKER_TEXTURE_LOCATION.get(var9.getId());
+         var13 = (Material)Sheets.SHULKER_TEXTURE_LOCATION.get(var9.getId());
       }
 
       var3.pushPose();

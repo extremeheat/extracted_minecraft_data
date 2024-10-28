@@ -19,9 +19,7 @@ import net.minecraft.world.item.ItemStack;
 public class CombatTracker {
    public static final int RESET_DAMAGE_STATUS_TIME = 100;
    public static final int RESET_COMBAT_STATUS_TIME = 300;
-   private static final Style INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY
-      .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://bugs.mojang.com/browse/MCPE-28723"))
-      .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("MCPE-28723")));
+   private static final Style INTENTIONAL_GAME_DESIGN_STYLE;
    private final List<CombatEntry> entries = Lists.newArrayList();
    private final LivingEntity mob;
    private int lastDamageTime;
@@ -48,6 +46,7 @@ public class CombatTracker {
          this.combatEndTime = this.combatStartTime;
          this.mob.onEnterCombat();
       }
+
    }
 
    private static boolean shouldEnterCombat(DamageSource var0) {
@@ -55,10 +54,15 @@ public class CombatTracker {
    }
 
    private Component getMessageForAssistedFall(Entity var1, Component var2, String var3, String var4) {
-      ItemStack var5 = var1 instanceof LivingEntity var6 ? var6.getMainHandItem() : ItemStack.EMPTY;
-      return !var5.isEmpty() && var5.has(DataComponents.CUSTOM_NAME)
-         ? Component.translatable(var3, this.mob.getDisplayName(), var2, var5.getDisplayName())
-         : Component.translatable(var4, this.mob.getDisplayName(), var2);
+      ItemStack var10000;
+      if (var1 instanceof LivingEntity var6) {
+         var10000 = var6.getMainHandItem();
+      } else {
+         var10000 = ItemStack.EMPTY;
+      }
+
+      ItemStack var5 = var10000;
+      return !var5.isEmpty() && var5.has(DataComponents.CUSTOM_NAME) ? Component.translatable(var3, this.mob.getDisplayName(), var2, var5.getDisplayName()) : Component.translatable(var4, this.mob.getDisplayName(), var2);
    }
 
    private Component getFallMessage(CombatEntry var1, @Nullable Entity var2) {
@@ -70,12 +74,10 @@ public class CombatTracker {
          if (var6 != null && !var6.equals(var7)) {
             return this.getMessageForAssistedFall(var5, var6, "death.fell.assist.item", "death.fell.assist");
          } else {
-            return (Component)(var7 != null
-               ? this.getMessageForAssistedFall(var2, var7, "death.fell.finish.item", "death.fell.finish")
-               : Component.translatable("death.fell.killer", this.mob.getDisplayName()));
+            return (Component)(var7 != null ? this.getMessageForAssistedFall(var2, var7, "death.fell.finish.item", "death.fell.finish") : Component.translatable("death.fell.killer", this.mob.getDisplayName()));
          }
       } else {
-         FallLocation var4 = Objects.requireNonNullElse(var1.fallLocation(), FallLocation.GENERIC);
+         FallLocation var4 = (FallLocation)Objects.requireNonNullElse(var1.fallLocation(), FallLocation.GENERIC);
          return Component.translatable(var4.languageKey(), this.mob.getDisplayName());
       }
    }
@@ -136,8 +138,10 @@ public class CombatTracker {
 
       if (var4 > 5.0F && var1 != null) {
          return var1;
+      } else if (var3 > 5.0F && var2 != null) {
+         return var2;
       } else {
-         return var3 > 5.0F && var2 != null ? var2 : null;
+         return null;
       }
    }
 
@@ -158,5 +162,10 @@ public class CombatTracker {
 
          this.entries.clear();
       }
+
+   }
+
+   static {
+      INTENTIONAL_GAME_DESIGN_STYLE = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://bugs.mojang.com/browse/MCPE-28723")).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("MCPE-28723")));
    }
 }

@@ -2,12 +2,14 @@ package net.minecraft.world.level.gameevent;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 
@@ -35,6 +37,7 @@ public class GameEventDispatcher {
          } else {
             var5x.handleGameEvent(this.level, var1, var3, var2);
          }
+
       };
       boolean var14 = false;
 
@@ -43,7 +46,7 @@ public class GameEventDispatcher {
             LevelChunk var17 = this.level.getChunkSource().getChunkNow(var15, var16);
             if (var17 != null) {
                for(int var18 = var7; var18 <= var10; ++var18) {
-                  var14 |= var17.getListenerRegistry(var18).visitInRangeListeners(var1, var2, var3, var13);
+                  var14 |= ((ChunkAccess)var17).getListenerRegistry(var18).visitInRangeListeners(var1, var2, var3, var13);
                }
             }
          }
@@ -56,14 +59,18 @@ public class GameEventDispatcher {
       if (var14) {
          DebugPackets.sendGameEventInfo(this.level, var1, var2);
       }
+
    }
 
    private void handleGameEventMessagesInQueue(List<GameEvent.ListenerInfo> var1) {
       Collections.sort(var1);
+      Iterator var2 = var1.iterator();
 
-      for(GameEvent.ListenerInfo var3 : var1) {
+      while(var2.hasNext()) {
+         GameEvent.ListenerInfo var3 = (GameEvent.ListenerInfo)var2.next();
          GameEventListener var4 = var3.recipient();
          var4.handleGameEvent(this.level, var3.gameEvent(), var3.context(), var3.source());
       }
+
    }
 }

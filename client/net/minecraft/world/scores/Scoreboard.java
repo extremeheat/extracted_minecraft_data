@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class Scoreboard {
    private final Object2ObjectMap<String, Objective> objectivesByName = new Object2ObjectOpenHashMap(16, 0.5F);
    private final Reference2ObjectMap<ObjectiveCriteria, List<Objective>> objectivesByCriteria = new Reference2ObjectOpenHashMap();
    private final Map<String, PlayerScores> playerScores = new Object2ObjectOpenHashMap(16, 0.5F);
-   private final Map<DisplaySlot, Objective> displayObjectives = new EnumMap<>(DisplaySlot.class);
+   private final Map<DisplaySlot, Objective> displayObjectives = new EnumMap(DisplaySlot.class);
    private final Object2ObjectMap<String, PlayerTeam> teamsByName = new Object2ObjectOpenHashMap();
    private final Object2ObjectMap<String, PlayerTeam> teamsByPlayer = new Object2ObjectOpenHashMap();
 
@@ -47,14 +48,14 @@ public class Scoreboard {
       return (Objective)this.objectivesByName.get(var1);
    }
 
-   public Objective addObjective(
-      String var1, ObjectiveCriteria var2, Component var3, ObjectiveCriteria.RenderType var4, boolean var5, @Nullable NumberFormat var6
-   ) {
+   public Objective addObjective(String var1, ObjectiveCriteria var2, Component var3, ObjectiveCriteria.RenderType var4, boolean var5, @Nullable NumberFormat var6) {
       if (this.objectivesByName.containsKey(var1)) {
          throw new IllegalArgumentException("An objective with the name '" + var1 + "' already exists!");
       } else {
          Objective var7 = new Objective(this, var1, var2, var3, var4, var5, var6);
-         ((List)this.objectivesByCriteria.computeIfAbsent(var2, var0 -> Lists.newArrayList())).add(var7);
+         ((List)this.objectivesByCriteria.computeIfAbsent(var2, (var0) -> {
+            return Lists.newArrayList();
+         })).add(var7);
          this.objectivesByName.put(var1, var7);
          this.onObjectiveAdded(var7);
          return var7;
@@ -62,12 +63,15 @@ public class Scoreboard {
    }
 
    public final void forAllObjectives(ObjectiveCriteria var1, ScoreHolder var2, Consumer<ScoreAccess> var3) {
-      ((List)this.objectivesByCriteria.getOrDefault(var1, Collections.emptyList()))
-         .forEach(var3x -> var3.accept(this.getOrCreatePlayerScore(var2, var3x, true)));
+      ((List)this.objectivesByCriteria.getOrDefault(var1, Collections.emptyList())).forEach((var3x) -> {
+         var3.accept(this.getOrCreatePlayerScore(var2, var3x, true));
+      });
    }
 
    private PlayerScores getOrCreatePlayerInfo(String var1) {
-      return this.playerScores.computeIfAbsent(var1, var0 -> new PlayerScores());
+      return (PlayerScores)this.playerScores.computeIfAbsent(var1, (var0) -> {
+         return new PlayerScores();
+      });
    }
 
    public ScoreAccess getOrCreatePlayerScore(ScoreHolder var1, Objective var2) {
@@ -78,14 +82,14 @@ public class Scoreboard {
       final boolean var4 = var3 || !var2.getCriteria().isReadOnly();
       PlayerScores var5 = this.getOrCreatePlayerInfo(var1.getScoreboardName());
       final MutableBoolean var6 = new MutableBoolean();
-      final Score var7 = var5.getOrCreate(var2, var1x -> var6.setTrue());
+      final Score var7 = var5.getOrCreate(var2, (var1x) -> {
+         var6.setTrue();
+      });
       return new ScoreAccess() {
-         @Override
          public int get() {
             return var7.value();
          }
 
-         @Override
          public void set(int var1x) {
             if (!var4) {
                throw new IllegalStateException("Cannot modify read-only score");
@@ -107,40 +111,36 @@ public class Scoreboard {
                if (var2x) {
                   this.sendScoreToPlayers();
                }
+
             }
          }
 
          @Nullable
-         @Override
          public Component display() {
             return var7.display();
          }
 
-         @Override
          public void display(@Nullable Component var1x) {
             if (var6.isTrue() || !Objects.equals(var1x, var7.display())) {
                var7.display(var1x);
                this.sendScoreToPlayers();
             }
+
          }
 
-         @Override
          public void numberFormatOverride(@Nullable NumberFormat var1x) {
             var7.numberFormat(var1x);
             this.sendScoreToPlayers();
          }
 
-         @Override
          public boolean locked() {
             return var7.isLocked();
          }
 
-         @Override
          public void unlock() {
             this.setLocked(false);
          }
 
-         @Override
          public void lock() {
             this.setLocked(true);
          }
@@ -163,7 +163,7 @@ public class Scoreboard {
 
    @Nullable
    public ReadOnlyScoreInfo getPlayerScoreInfo(ScoreHolder var1, Objective var2) {
-      PlayerScores var3 = this.playerScores.get(var1.getScoreboardName());
+      PlayerScores var3 = (PlayerScores)this.playerScores.get(var1.getScoreboardName());
       return var3 != null ? var3.get(var2) : null;
    }
 
@@ -174,6 +174,7 @@ public class Scoreboard {
          if (var4 != null) {
             var2.add(new PlayerScoreEntry(var2x, var4.value(), var4.display(), var4.numberFormat()));
          }
+
       });
       return var2;
    }
@@ -191,18 +192,19 @@ public class Scoreboard {
    }
 
    public void resetAllPlayerScores(ScoreHolder var1) {
-      PlayerScores var2 = this.playerScores.remove(var1.getScoreboardName());
+      PlayerScores var2 = (PlayerScores)this.playerScores.remove(var1.getScoreboardName());
       if (var2 != null) {
          this.onPlayerRemoved(var1);
       }
+
    }
 
    public void resetSinglePlayerScore(ScoreHolder var1, Objective var2) {
-      PlayerScores var3 = this.playerScores.get(var1.getScoreboardName());
+      PlayerScores var3 = (PlayerScores)this.playerScores.get(var1.getScoreboardName());
       if (var3 != null) {
          boolean var4 = var3.remove(var2);
          if (!var3.hasScores()) {
-            PlayerScores var5 = this.playerScores.remove(var1.getScoreboardName());
+            PlayerScores var5 = (PlayerScores)this.playerScores.remove(var1.getScoreboardName());
             if (var5 != null) {
                this.onPlayerRemoved(var1);
             }
@@ -210,19 +212,23 @@ public class Scoreboard {
             this.onPlayerScoreRemoved(var1, var2);
          }
       }
+
    }
 
    public Object2IntMap<Objective> listPlayerScores(ScoreHolder var1) {
-      PlayerScores var2 = this.playerScores.get(var1.getScoreboardName());
+      PlayerScores var2 = (PlayerScores)this.playerScores.get(var1.getScoreboardName());
       return var2 != null ? var2.listScores() : Object2IntMaps.emptyMap();
    }
 
    public void removeObjective(Objective var1) {
       this.objectivesByName.remove(var1.getName());
+      DisplaySlot[] var2 = DisplaySlot.values();
+      int var3 = var2.length;
 
-      for(DisplaySlot var5 : DisplaySlot.values()) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         DisplaySlot var5 = var2[var4];
          if (this.getDisplayObjective(var5) == var1) {
-            this.setDisplayObjective(var5, null);
+            this.setDisplayObjective(var5, (Objective)null);
          }
       }
 
@@ -231,7 +237,10 @@ public class Scoreboard {
          var6.remove(var1);
       }
 
-      for(PlayerScores var8 : this.playerScores.values()) {
+      Iterator var7 = this.playerScores.values().iterator();
+
+      while(var7.hasNext()) {
+         PlayerScores var8 = (PlayerScores)var7.next();
          var8.remove(var1);
       }
 
@@ -244,7 +253,7 @@ public class Scoreboard {
 
    @Nullable
    public Objective getDisplayObjective(DisplaySlot var1) {
-      return this.displayObjectives.get(var1);
+      return (Objective)this.displayObjectives.get(var1);
    }
 
    @Nullable
@@ -267,8 +276,10 @@ public class Scoreboard {
 
    public void removePlayerTeam(PlayerTeam var1) {
       this.teamsByName.remove(var1.getName());
+      Iterator var2 = var1.getPlayers().iterator();
 
-      for(String var3 : var1.getPlayers()) {
+      while(var2.hasNext()) {
+         String var3 = (String)var2.next();
          this.teamsByPlayer.remove(var3);
       }
 
@@ -355,12 +366,14 @@ public class Scoreboard {
 
    protected ListTag savePlayerScores(HolderLookup.Provider var1) {
       ListTag var2 = new ListTag();
-      this.playerScores.forEach((var2x, var3) -> var3.listRawScores().forEach((var3x, var4) -> {
+      this.playerScores.forEach((var2x, var3) -> {
+         var3.listRawScores().forEach((var3x, var4) -> {
             CompoundTag var5 = var4.write(var1);
             var5.putString("Name", var2x);
             var5.putString("Objective", var3x.getName());
             var2.add(var5);
-         }));
+         });
+      });
       return var2;
    }
 
@@ -377,5 +390,6 @@ public class Scoreboard {
             this.getOrCreatePlayerInfo(var6).setScore(var8, var5);
          }
       }
+
    }
 }

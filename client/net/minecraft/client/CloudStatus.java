@@ -20,18 +20,20 @@ public enum CloudStatus implements OptionEnum, StringRepresentable {
       this.key = var5;
    }
 
-   @Override
    public String getSerializedName() {
       return this.legacyName;
    }
 
-   @Override
    public int getId() {
       return this.id;
    }
 
-   @Override
    public String getKey() {
       return this.key;
+   }
+
+   // $FF: synthetic method
+   private static CloudStatus[] $values() {
+      return new CloudStatus[]{OFF, FAST, FANCY};
    }
 }

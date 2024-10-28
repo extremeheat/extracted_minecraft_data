@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -27,5 +28,10 @@ public class PlayDead extends Behavior<Axolotl> {
       var5.eraseMemory(MemoryModuleType.WALK_TARGET);
       var5.eraseMemory(MemoryModuleType.LOOK_TARGET);
       var2.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 0));
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Axolotl)var2, var3);
    }
 }

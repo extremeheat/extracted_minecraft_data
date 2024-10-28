@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.village.poi;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -17,15 +16,15 @@ public class PoiRecord {
    private final Runnable setDirty;
 
    public static Codec<PoiRecord> codec(Runnable var0) {
-      return RecordCodecBuilder.create(
-         var1 -> var1.group(
-                  BlockPos.CODEC.fieldOf("pos").forGetter(var0xx -> var0xx.pos),
-                  RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(var0xx -> var0xx.poiType),
-                  Codec.INT.fieldOf("free_tickets").orElse(0).forGetter(var0xx -> var0xx.freeTickets),
-                  RecordCodecBuilder.point(var0)
-               )
-               .apply(var1, PoiRecord::new)
-      );
+      return RecordCodecBuilder.create((var1) -> {
+         return var1.group(BlockPos.CODEC.fieldOf("pos").forGetter((var0x) -> {
+            return var0x.pos;
+         }), RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter((var0x) -> {
+            return var0x.poiType;
+         }), Codec.INT.fieldOf("free_tickets").orElse(0).forGetter((var0x) -> {
+            return var0x.freeTickets;
+         }), RecordCodecBuilder.point(var0)).apply(var1, PoiRecord::new);
+      });
    }
 
    private PoiRecord(BlockPos var1, Holder<PoiType> var2, int var3, Runnable var4) {
@@ -40,6 +39,7 @@ public class PoiRecord {
       this(var1, var2, ((PoiType)var2.value()).maxTickets(), var3);
    }
 
+   /** @deprecated */
    @Deprecated
    @VisibleForDebug
    public int getFreeTickets() {
@@ -82,7 +82,6 @@ public class PoiRecord {
       return this.poiType;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -91,7 +90,6 @@ public class PoiRecord {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.pos.hashCode();
    }

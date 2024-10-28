@@ -22,7 +22,6 @@ public interface GlyphInfo {
    BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1);
 
    public interface SpaceGlyphInfo extends GlyphInfo {
-      @Override
       default BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
          return EmptyGlyph.INSTANCE;
       }

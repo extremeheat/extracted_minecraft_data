@@ -30,10 +30,11 @@ public interface Bucketable {
 
    SoundEvent getPickupSound();
 
+   /** @deprecated */
    @Deprecated
    static void saveDefaultDataToBucketTag(Mob var0, ItemStack var1) {
       var1.set(DataComponents.CUSTOM_NAME, var0.getCustomName());
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, var1x -> {
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
          if (var0.isNoAi()) {
             var1x.putBoolean("NoAI", var0.isNoAi());
          }
@@ -58,6 +59,7 @@ public interface Bucketable {
       });
    }
 
+   /** @deprecated */
    @Deprecated
    static void loadDefaultDataFromBucketTag(Mob var0, CompoundTag var1) {
       if (var1.contains("NoAI")) {
@@ -83,6 +85,7 @@ public interface Bucketable {
       if (var1.contains("Health", 99)) {
          var0.setHealth(var1.getFloat("Health"));
       }
+
    }
 
    static <T extends LivingEntity & Bucketable> Optional<InteractionResult> bucketMobPickup(Player var0, InteractionHand var1, T var2) {

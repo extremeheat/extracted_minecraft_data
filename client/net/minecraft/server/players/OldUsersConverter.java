@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,8 +42,10 @@ public class OldUsersConverter {
 
    static List<String> readOldListFormat(File var0, Map<String, String[]> var1) throws IOException {
       List var2 = Files.readLines(var0, StandardCharsets.UTF_8);
+      Iterator var3 = var2.iterator();
 
-      for(String var4 : var2) {
+      while(var3.hasNext()) {
+         String var4 = (String)var3.next();
          var4 = var4.trim();
          if (!var4.startsWith("#") && var4.length() >= 1) {
             String[] var5 = var4.split("\\|");
@@ -54,14 +57,23 @@ public class OldUsersConverter {
    }
 
    private static void lookupPlayers(MinecraftServer var0, Collection<String> var1, ProfileLookupCallback var2) {
-      String[] var3 = var1.stream().filter(var0x -> !StringUtil.isNullOrEmpty(var0x)).toArray(var0x -> new String[var0x]);
+      String[] var3 = (String[])var1.stream().filter((var0x) -> {
+         return !StringUtil.isNullOrEmpty(var0x);
+      }).toArray((var0x) -> {
+         return new String[var0x];
+      });
       if (var0.usesAuthentication()) {
          var0.getProfileRepository().findProfilesByNames(var3, var2);
       } else {
-         for(String var7 : var3) {
+         String[] var4 = var3;
+         int var5 = var3.length;
+
+         for(int var6 = 0; var6 < var5; ++var6) {
+            String var7 = var4[var6];
             var2.onProfileLookupSucceeded(UUIDUtil.createOfflineProfile(var7));
          }
       }
+
    }
 
    public static boolean convertUserBanlist(final MinecraftServer var0) {
@@ -84,11 +96,11 @@ public class OldUsersConverter {
                   String[] var2x = (String[])var2.get(var1x.getName().toLowerCase(Locale.ROOT));
                   if (var2x == null) {
                      OldUsersConverter.LOGGER.warn("Could not convert user banlist entry for {}", var1x.getName());
-                     throw new OldUsersConverter.ConversionError("Profile not in the conversionlist");
+                     throw new ConversionError("Profile not in the conversionlist");
                   } else {
-                     Date var3 = var2x.length > 1 ? OldUsersConverter.parseDate(var2x[1], null) : null;
+                     Date var3 = var2x.length > 1 ? OldUsersConverter.parseDate(var2x[1], (Date)null) : null;
                      String var4 = var2x.length > 2 ? var2x[2] : null;
-                     Date var5 = var2x.length > 3 ? OldUsersConverter.parseDate(var2x[3], null) : null;
+                     Date var5 = var2x.length > 3 ? OldUsersConverter.parseDate(var2x[3], (Date)null) : null;
                      String var6 = var2x.length > 4 ? var2x[4] : null;
                      var1.add(new UserBanListEntry(var1x, var3, var4, var5, var6));
                   }
@@ -97,7 +109,7 @@ public class OldUsersConverter {
                public void onProfileLookupFailed(String var1x, Exception var2x) {
                   OldUsersConverter.LOGGER.warn("Could not lookup user banlist entry for {}", var1x, var2x);
                   if (!(var2x instanceof ProfileNotFoundException)) {
-                     throw new OldUsersConverter.ConversionError("Could not request user " + var1x + " from backend systems", var2x);
+                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2x);
                   }
                }
             };
@@ -108,7 +120,7 @@ public class OldUsersConverter {
          } catch (IOException var4) {
             LOGGER.warn("Could not read old user banlist to convert it!", var4);
             return false;
-         } catch (OldUsersConverter.ConversionError var5) {
+         } catch (ConversionError var5) {
             LOGGER.error("Conversion failed, please try again later", var5);
             return false;
          }
@@ -131,12 +143,14 @@ public class OldUsersConverter {
          try {
             HashMap var2 = Maps.newHashMap();
             readOldListFormat(OLD_IPBANLIST, var2);
+            Iterator var3 = var2.keySet().iterator();
 
-            for(String var4 : var2.keySet()) {
+            while(var3.hasNext()) {
+               String var4 = (String)var3.next();
                String[] var5 = (String[])var2.get(var4);
-               Date var6 = var5.length > 1 ? parseDate(var5[1], null) : null;
+               Date var6 = var5.length > 1 ? parseDate(var5[1], (Date)null) : null;
                String var7 = var5.length > 2 ? var5[2] : null;
-               Date var8 = var5.length > 3 ? parseDate(var5[3], null) : null;
+               Date var8 = var5.length > 3 ? parseDate(var5[3], (Date)null) : null;
                String var9 = var5.length > 4 ? var5[4] : null;
                var1.add(new IpBanListEntry(var4, var6, var7, var8, var9));
             }
@@ -175,7 +189,7 @@ public class OldUsersConverter {
                public void onProfileLookupFailed(String var1x, Exception var2) {
                   OldUsersConverter.LOGGER.warn("Could not lookup oplist entry for {}", var1x, var2);
                   if (!(var2 instanceof ProfileNotFoundException)) {
-                     throw new OldUsersConverter.ConversionError("Could not request user " + var1x + " from backend systems", var2);
+                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2);
                   }
                }
             };
@@ -186,7 +200,7 @@ public class OldUsersConverter {
          } catch (IOException var4) {
             LOGGER.warn("Could not read old oplist to convert it!", var4);
             return false;
-         } catch (OldUsersConverter.ConversionError var5) {
+         } catch (ConversionError var5) {
             LOGGER.error("Conversion failed, please try again later", var5);
             return false;
          }
@@ -217,7 +231,7 @@ public class OldUsersConverter {
                public void onProfileLookupFailed(String var1x, Exception var2) {
                   OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", var1x, var2);
                   if (!(var2 instanceof ProfileNotFoundException)) {
-                     throw new OldUsersConverter.ConversionError("Could not request user " + var1x + " from backend systems", var2);
+                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2);
                   }
                }
             };
@@ -228,7 +242,7 @@ public class OldUsersConverter {
          } catch (IOException var4) {
             LOGGER.warn("Could not read old whitelist to convert it!", var4);
             return false;
-         } catch (OldUsersConverter.ConversionError var5) {
+         } catch (ConversionError var5) {
             LOGGER.error("Conversion failed, please try again later", var5);
             return false;
          }
@@ -276,8 +290,11 @@ public class OldUsersConverter {
       if (var1.exists() && var1.isDirectory()) {
          File[] var4 = var1.listFiles();
          ArrayList var5 = Lists.newArrayList();
+         File[] var6 = var4;
+         int var7 = var4.length;
 
-         for(File var9 : var4) {
+         for(int var8 = 0; var8 < var7; ++var8) {
+            File var9 = var6[var8];
             String var10 = var9.getName();
             if (var10.toLowerCase(Locale.ROOT).endsWith(".dat")) {
                String var11 = var10.substring(0, var10.length() - ".dat".length());
@@ -288,7 +305,7 @@ public class OldUsersConverter {
          }
 
          try {
-            final String[] var13 = var5.toArray(new String[var5.size()]);
+            final String[] var13 = (String[])var5.toArray(new String[var5.size()]);
             ProfileLookupCallback var14 = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(GameProfile var1x) {
                   var0.getProfileCache().add(var1x);
@@ -302,7 +319,7 @@ public class OldUsersConverter {
                      String var3x = this.getFileNameForProfile(var1x);
                      this.movePlayerFile(var3, var3x, var3x);
                   } else {
-                     throw new OldUsersConverter.ConversionError("Could not request user " + var1x + " from backend systems", var2x);
+                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2x);
                   }
                }
 
@@ -311,14 +328,17 @@ public class OldUsersConverter {
                   File var5 = new File(var1x, var3x + ".dat");
                   OldUsersConverter.ensureDirectoryExists(var1x);
                   if (!var4.renameTo(var5)) {
-                     throw new OldUsersConverter.ConversionError("Could not convert file for " + var2x);
+                     throw new ConversionError("Could not convert file for " + var2x);
                   }
                }
 
                private String getFileNameForProfile(String var1x) {
                   String var2x = null;
+                  String[] var3x = var13;
+                  int var4 = var3x.length;
 
-                  for(String var6 : var13) {
+                  for(int var5 = 0; var5 < var4; ++var5) {
+                     String var6 = var3x[var5];
                      if (var6 != null && var6.equalsIgnoreCase(var1x)) {
                         var2x = var6;
                         break;
@@ -326,7 +346,7 @@ public class OldUsersConverter {
                   }
 
                   if (var2x == null) {
-                     throw new OldUsersConverter.ConversionError("Could not find the filename for " + var1x + " anymore");
+                     throw new ConversionError("Could not find the filename for " + var1x + " anymore");
                   } else {
                      return var2x;
                   }
@@ -334,7 +354,7 @@ public class OldUsersConverter {
             };
             lookupPlayers(var0, Lists.newArrayList(var13), var14);
             return true;
-         } catch (OldUsersConverter.ConversionError var12) {
+         } catch (ConversionError var12) {
             LOGGER.error("Conversion failed, please try again later", var12);
             return false;
          }
@@ -346,16 +366,17 @@ public class OldUsersConverter {
    static void ensureDirectoryExists(File var0) {
       if (var0.exists()) {
          if (!var0.isDirectory()) {
-            throw new OldUsersConverter.ConversionError("Can't create directory " + var0.getName() + " in world save directory.");
+            throw new ConversionError("Can't create directory " + var0.getName() + " in world save directory.");
          }
       } else if (!var0.mkdirs()) {
-         throw new OldUsersConverter.ConversionError("Can't create directory " + var0.getName() + " in world save directory.");
+         throw new ConversionError("Can't create directory " + var0.getName() + " in world save directory.");
       }
    }
 
    public static boolean serverReadyAfterUserconversion(MinecraftServer var0) {
       boolean var1 = areOldUserlistsRemoved();
-      return var1 && areOldPlayersConverted(var0);
+      var1 = var1 && areOldPlayersConverted(var0);
+      return var1;
    }
 
    private static boolean areOldUserlistsRemoved() {
@@ -436,7 +457,7 @@ public class OldUsersConverter {
       return var2;
    }
 
-   static class ConversionError extends RuntimeException {
+   private static class ConversionError extends RuntimeException {
       ConversionError(String var1, Throwable var2) {
          super(var1, var2);
       }

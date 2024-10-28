@@ -25,7 +25,7 @@ public class WorldSessionTelemetryManager {
       this.worldLoadEvent = new WorldLoadEvent(var4);
       this.performanceMetricsEvent = new PerformanceMetricsEvent();
       this.worldLoadTimesEvent = new WorldLoadTimesEvent(var2, var3);
-      this.eventSender = var1.decorate(var1x -> {
+      this.eventSender = var1.decorate((var1x) -> {
          this.worldLoadEvent.addProperties(var1x);
          var1x.put(TelemetryProperty.WORLD_SESSION_ID, this.worldSessionId);
       });
@@ -55,6 +55,7 @@ public class WorldSessionTelemetryManager {
          this.worldLoadTimesEvent.send(this.eventSender);
          this.performanceMetricsEvent.start();
       }
+
    }
 
    public void onDisconnect() {
@@ -67,10 +68,11 @@ public class WorldSessionTelemetryManager {
       ResourceLocation var3 = var2.id();
       if (var2.value().sendsTelemetryEvent() && "minecraft".equals(var3.getNamespace())) {
          long var4 = var1.getGameTime();
-         this.eventSender.send(TelemetryEventType.ADVANCEMENT_MADE, var3x -> {
+         this.eventSender.send(TelemetryEventType.ADVANCEMENT_MADE, (var3x) -> {
             var3x.put(TelemetryProperty.ADVANCEMENT_ID, var3.toString());
             var3x.put(TelemetryProperty.ADVANCEMENT_GAME_TIME, var4);
          });
       }
+
    }
 }

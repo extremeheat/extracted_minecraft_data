@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
@@ -14,20 +13,13 @@ public class OptionsAddTextBackgroundFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(
-         "OptionsAddTextBackgroundFix",
-         this.getInputSchema().getType(References.OPTIONS),
-         var1 -> var1.update(
-               DSL.remainderFinder(),
-               var1x -> (Dynamic)DataFixUtils.orElse(
-                     var1x.get("chatOpacity")
-                        .asString()
-                        .map(var2 -> var1x.set("textBackgroundOpacity", var1x.createDouble(this.calculateBackground(var2))))
-                        .result(),
-                     var1x
-                  )
-            )
-      );
+      return this.fixTypeEverywhereTyped("OptionsAddTextBackgroundFix", this.getInputSchema().getType(References.OPTIONS), (var1) -> {
+         return var1.update(DSL.remainderFinder(), (var1x) -> {
+            return (Dynamic)DataFixUtils.orElse(var1x.get("chatOpacity").asString().map((var2) -> {
+               return var1x.set("textBackgroundOpacity", var1x.createDouble(this.calculateBackground(var2)));
+            }).result(), var1x);
+         });
+      });
    }
 
    private double calculateBackground(String var1) {

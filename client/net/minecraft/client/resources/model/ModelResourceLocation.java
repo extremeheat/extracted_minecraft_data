@@ -21,7 +21,7 @@ public class ModelResourceLocation extends ResourceLocation {
    }
 
    public ModelResourceLocation(ResourceLocation var1, String var2) {
-      this(var1.getNamespace(), var1.getPath(), lowercaseVariant(var2), null);
+      this(var1.getNamespace(), var1.getPath(), lowercaseVariant(var2), (ResourceLocation.Dummy)null);
    }
 
    public static ModelResourceLocation vanilla(String var0, String var1) {
@@ -36,22 +36,23 @@ public class ModelResourceLocation extends ResourceLocation {
       return this.variant;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
+      } else if (var1 instanceof ModelResourceLocation && super.equals(var1)) {
+         ModelResourceLocation var2 = (ModelResourceLocation)var1;
+         return this.variant.equals(var2.variant);
       } else {
-         return var1 instanceof ModelResourceLocation var2 && super.equals(var1) ? this.variant.equals(var2.variant) : false;
+         return false;
       }
    }
 
-   @Override
    public int hashCode() {
       return 31 * super.hashCode() + this.variant.hashCode();
    }
 
-   @Override
    public String toString() {
-      return super.toString() + "#" + this.variant;
+      String var10000 = super.toString();
+      return var10000 + "#" + this.variant;
    }
 }

@@ -32,22 +32,15 @@ public class SnowGolemModel<T extends Entity> extends HierarchicalModel<T> {
       PartDefinition var1 = var0.getRoot();
       float var2 = 4.0F;
       CubeDeformation var3 = new CubeDeformation(-0.5F);
-      var1.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var3), PartPose.offset(0.0F, 4.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var3), PartPose.offset(0.0F, 4.0F, 0.0F));
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(32, 0).addBox(-1.0F, 0.0F, -1.0F, 12.0F, 2.0F, 2.0F, var3);
       var1.addOrReplaceChild("left_arm", var4, PartPose.offsetAndRotation(5.0F, 6.0F, 1.0F, 0.0F, 0.0F, 1.0F));
       var1.addOrReplaceChild("right_arm", var4, PartPose.offsetAndRotation(-5.0F, 6.0F, -1.0F, 0.0F, 3.1415927F, -1.0F));
-      var1.addOrReplaceChild(
-         "upper_body", CubeListBuilder.create().texOffs(0, 16).addBox(-5.0F, -10.0F, -5.0F, 10.0F, 10.0F, 10.0F, var3), PartPose.offset(0.0F, 13.0F, 0.0F)
-      );
-      var1.addOrReplaceChild(
-         "lower_body", CubeListBuilder.create().texOffs(0, 36).addBox(-6.0F, -12.0F, -6.0F, 12.0F, 12.0F, 12.0F, var3), PartPose.offset(0.0F, 24.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("upper_body", CubeListBuilder.create().texOffs(0, 16).addBox(-5.0F, -10.0F, -5.0F, 10.0F, 10.0F, 10.0F, var3), PartPose.offset(0.0F, 13.0F, 0.0F));
+      var1.addOrReplaceChild("lower_body", CubeListBuilder.create().texOffs(0, 36).addBox(-6.0F, -12.0F, -6.0F, 12.0F, 12.0F, 12.0F, var3), PartPose.offset(0.0F, 24.0F, 0.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.head.yRot = var5 * 0.017453292F;
       this.head.xRot = var6 * 0.017453292F;
@@ -62,7 +55,6 @@ public class SnowGolemModel<T extends Entity> extends HierarchicalModel<T> {
       this.rightArm.z = var7 * 5.0F;
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

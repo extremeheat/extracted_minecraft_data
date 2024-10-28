@@ -18,10 +18,11 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
 
    public DragonSittingScanningPhase(EnderDragon var1) {
       super(var1);
-      this.scanTargeting = TargetingConditions.forCombat().range(20.0).selector(var1x -> Math.abs(var1x.getY() - var1.getY()) <= 10.0);
+      this.scanTargeting = TargetingConditions.forCombat().range(20.0).selector((var1x) -> {
+         return Math.abs(var1x.getY() - var1.getY()) <= 10.0;
+      });
    }
 
-   @Override
    public void doServerTick() {
       ++this.scanningTime;
       Player var1 = this.dragon.level().getNearestPlayer(this.scanTargeting, this.dragon, this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
@@ -29,23 +30,24 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
          if (this.scanningTime > 25) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_ATTACKING);
          } else {
-            Vec3 var2 = new Vec3(var1.getX() - this.dragon.getX(), 0.0, var1.getZ() - this.dragon.getZ()).normalize();
-            Vec3 var3 = new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))
-               .normalize();
+            Vec3 var2 = (new Vec3(((LivingEntity)var1).getX() - this.dragon.getX(), 0.0, ((LivingEntity)var1).getZ() - this.dragon.getZ())).normalize();
+            Vec3 var3 = (new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))).normalize();
             float var4 = (float)var3.dot(var2);
             float var5 = (float)(Math.acos((double)var4) * 57.2957763671875) + 0.5F;
             if (var5 < 0.0F || var5 > 10.0F) {
-               double var6 = var1.getX() - this.dragon.head.getX();
-               double var8 = var1.getZ() - this.dragon.head.getZ();
+               double var6 = ((LivingEntity)var1).getX() - this.dragon.head.getX();
+               double var8 = ((LivingEntity)var1).getZ() - this.dragon.head.getZ();
                double var10 = Mth.clamp(Mth.wrapDegrees(180.0 - Mth.atan2(var6, var8) * 57.2957763671875 - (double)this.dragon.getYRot()), -100.0, 100.0);
-               this.dragon.yRotA *= 0.8F;
+               EnderDragon var10000 = this.dragon;
+               var10000.yRotA *= 0.8F;
                float var12 = (float)Math.sqrt(var6 * var6 + var8 * var8) + 1.0F;
                float var13 = var12;
                if (var12 > 40.0F) {
                   var12 = 40.0F;
                }
 
-               this.dragon.yRotA += (float)var10 * (0.7F / var12 / var13);
+               var10000 = this.dragon;
+               var10000.yRotA += (float)var10 * (0.7F / var12 / var13);
                this.dragon.setYRot(this.dragon.getYRot() + this.dragon.yRotA);
             }
          }
@@ -54,17 +56,16 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
          this.dragon.getPhaseManager().setPhase(EnderDragonPhase.TAKEOFF);
          if (var1 != null) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.CHARGING_PLAYER);
-            this.dragon.getPhaseManager().getPhase(EnderDragonPhase.CHARGING_PLAYER).setTarget(new Vec3(var1.getX(), var1.getY(), var1.getZ()));
+            ((DragonChargePlayerPhase)this.dragon.getPhaseManager().getPhase(EnderDragonPhase.CHARGING_PLAYER)).setTarget(new Vec3(((LivingEntity)var1).getX(), ((LivingEntity)var1).getY(), ((LivingEntity)var1).getZ()));
          }
       }
+
    }
 
-   @Override
    public void begin() {
       this.scanningTime = 0;
    }
 
-   @Override
    public EnderDragonPhase<DragonSittingScanningPhase> getPhase() {
       return EnderDragonPhase.SITTING_SCANNING;
    }

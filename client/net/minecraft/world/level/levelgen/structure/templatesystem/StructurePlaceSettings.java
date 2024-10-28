@@ -12,22 +12,27 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class StructurePlaceSettings {
-   private Mirror mirror = Mirror.NONE;
-   private Rotation rotation = Rotation.NONE;
-   private BlockPos rotationPivot = BlockPos.ZERO;
+   private Mirror mirror;
+   private Rotation rotation;
+   private BlockPos rotationPivot;
    private boolean ignoreEntities;
    @Nullable
    private BoundingBox boundingBox;
-   private boolean keepLiquids = true;
+   private boolean keepLiquids;
    @Nullable
    private RandomSource random;
    private int palette;
-   private final List<StructureProcessor> processors = Lists.newArrayList();
+   private final List<StructureProcessor> processors;
    private boolean knownShape;
    private boolean finalizeEntities;
 
    public StructurePlaceSettings() {
       super();
+      this.mirror = Mirror.NONE;
+      this.rotation = Rotation.NONE;
+      this.rotationPivot = BlockPos.ZERO;
+      this.keepLiquids = true;
+      this.processors = Lists.newArrayList();
    }
 
    public StructurePlaceSettings copy() {

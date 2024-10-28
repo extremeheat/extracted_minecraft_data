@@ -46,7 +46,9 @@ public abstract class NodeEvaluator {
    }
 
    protected Node getNode(int var1, int var2, int var3) {
-      return (Node)this.nodes.computeIfAbsent(Node.createHash(var1, var2, var3), var3x -> new Node(var1, var2, var3));
+      return (Node)this.nodes.computeIfAbsent(Node.createHash(var1, var2, var3), (var3x) -> {
+         return new Node(var1, var2, var3);
+      });
    }
 
    public abstract Node getStart();
@@ -100,10 +102,6 @@ public abstract class NodeEvaluator {
    }
 
    public static boolean isBurningBlock(BlockState var0) {
-      return var0.is(BlockTags.FIRE)
-         || var0.is(Blocks.LAVA)
-         || var0.is(Blocks.MAGMA_BLOCK)
-         || CampfireBlock.isLitCampfire(var0)
-         || var0.is(Blocks.LAVA_CAULDRON);
+      return var0.is(BlockTags.FIRE) || var0.is(Blocks.LAVA) || var0.is(Blocks.MAGMA_BLOCK) || CampfireBlock.isLitCampfire(var0) || var0.is(Blocks.LAVA_CAULDRON);
    }
 }

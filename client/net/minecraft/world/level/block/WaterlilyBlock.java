@@ -18,7 +18,6 @@ public class WaterlilyBlock extends BushBlock {
    public static final MapCodec<WaterlilyBlock> CODEC = simpleCodec(WaterlilyBlock::new);
    protected static final VoxelShape AABB = Block.box(1.0, 0.0, 1.0, 15.0, 1.5, 15.0);
 
-   @Override
    public MapCodec<WaterlilyBlock> codec() {
       return CODEC;
    }
@@ -27,20 +26,18 @@ public class WaterlilyBlock extends BushBlock {
       super(var1);
    }
 
-   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       super.entityInside(var1, var2, var3, var4);
       if (var2 instanceof ServerLevel && var4 instanceof Boat) {
          var2.destroyBlock(new BlockPos(var3), true, var4);
       }
+
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABB;
    }
 
-   @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       FluidState var4 = var2.getFluidState(var3);
       FluidState var5 = var2.getFluidState(var3.above());

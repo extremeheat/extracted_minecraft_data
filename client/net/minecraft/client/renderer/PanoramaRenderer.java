@@ -19,7 +19,7 @@ public class PanoramaRenderer {
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4, float var5) {
-      float var6 = (float)((double)var5 * this.minecraft.options.panoramaSpeed().get());
+      float var6 = (float)((double)var5 * (Double)this.minecraft.options.panoramaSpeed().get());
       this.spin = wrap(this.spin + var6 * 0.1F, 360.0F);
       this.bob = wrap(this.bob + var6 * 0.001F, 6.2831855F);
       this.cubeMap.render(this.minecraft, 10.0F, -this.spin, var4);

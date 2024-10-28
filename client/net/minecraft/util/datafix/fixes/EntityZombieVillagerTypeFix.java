@@ -35,7 +35,6 @@ public class EntityZombieVillagerTypeFix extends NamedEntityFix {
       return var1 >= 0 && var1 < 6 ? var1 : -1;
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fixTag);
    }

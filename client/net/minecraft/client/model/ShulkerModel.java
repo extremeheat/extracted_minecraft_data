@@ -28,12 +28,8 @@ public class ShulkerModel<T extends Shulker> extends ListModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild(
-         "lid", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 12.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F)
-      );
-      var1.addOrReplaceChild(
-         "base", CubeListBuilder.create().texOffs(0, 28).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 8.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 12.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F));
+      var1.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 28).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 8.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F));
       var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 52).addBox(-3.0F, 0.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.offset(0.0F, 12.0F, 0.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
@@ -58,7 +54,6 @@ public class ShulkerModel<T extends Shulker> extends ListModel<T> {
       this.head.yRot = (var1.yHeadRot - 180.0F - var1.yBodyRot) * 0.017453292F;
    }
 
-   @Override
    public Iterable<ModelPart> parts() {
       return ImmutableList.of(this.base, this.lid);
    }

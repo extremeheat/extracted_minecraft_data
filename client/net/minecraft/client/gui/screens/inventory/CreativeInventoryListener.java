@@ -13,12 +13,10 @@ public class CreativeInventoryListener implements ContainerListener {
       this.minecraft = var1;
    }
 
-   @Override
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
       this.minecraft.gameMode.handleCreativeModeItemAdd(var3, var2);
    }
 
-   @Override
    public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
    }
 }

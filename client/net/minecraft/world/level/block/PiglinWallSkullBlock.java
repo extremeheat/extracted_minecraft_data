@@ -13,20 +13,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PiglinWallSkullBlock extends WallSkullBlock {
    public static final MapCodec<PiglinWallSkullBlock> CODEC = simpleCodec(PiglinWallSkullBlock::new);
-   private static final Map<Direction, VoxelShape> AABBS = Maps.immutableEnumMap(
-      Map.of(
-         Direction.NORTH,
-         Block.box(3.0, 4.0, 8.0, 13.0, 12.0, 16.0),
-         Direction.SOUTH,
-         Block.box(3.0, 4.0, 0.0, 13.0, 12.0, 8.0),
-         Direction.EAST,
-         Block.box(0.0, 4.0, 3.0, 8.0, 12.0, 13.0),
-         Direction.WEST,
-         Block.box(8.0, 4.0, 3.0, 16.0, 12.0, 13.0)
-      )
-   );
+   private static final Map<Direction, VoxelShape> AABBS;
 
-   @Override
    public MapCodec<PiglinWallSkullBlock> codec() {
       return CODEC;
    }
@@ -35,8 +23,11 @@ public class PiglinWallSkullBlock extends WallSkullBlock {
       super(SkullBlock.Types.PIGLIN, var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return AABBS.get(var1.getValue(FACING));
+      return (VoxelShape)AABBS.get(var1.getValue(FACING));
+   }
+
+   static {
+      AABBS = Maps.immutableEnumMap(Map.of(Direction.NORTH, Block.box(3.0, 4.0, 8.0, 13.0, 12.0, 16.0), Direction.SOUTH, Block.box(3.0, 4.0, 0.0, 13.0, 12.0, 8.0), Direction.EAST, Block.box(0.0, 4.0, 3.0, 8.0, 12.0, 13.0), Direction.WEST, Block.box(8.0, 4.0, 3.0, 16.0, 12.0, 13.0)));
    }
 }

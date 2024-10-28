@@ -24,7 +24,6 @@ public class RestoreTask extends LongRunningTask {
       this.lastScreen = var4;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
       int var2 = 0;
@@ -68,9 +67,9 @@ public class RestoreTask extends LongRunningTask {
             return;
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

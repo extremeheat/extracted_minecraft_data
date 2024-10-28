@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster.warden;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -19,14 +18,15 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class WardenSpawnTracker {
-   public static final Codec<WardenSpawnTracker> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.NON_NEGATIVE_INT.fieldOf("ticks_since_last_warning").orElse(0).forGetter(var0x -> var0x.ticksSinceLastWarning),
-               ExtraCodecs.NON_NEGATIVE_INT.fieldOf("warning_level").orElse(0).forGetter(var0x -> var0x.warningLevel),
-               ExtraCodecs.NON_NEGATIVE_INT.fieldOf("cooldown_ticks").orElse(0).forGetter(var0x -> var0x.cooldownTicks)
-            )
-            .apply(var0, WardenSpawnTracker::new)
-   );
+   public static final Codec<WardenSpawnTracker> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("ticks_since_last_warning").orElse(0).forGetter((var0x) -> {
+         return var0x.ticksSinceLastWarning;
+      }), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("warning_level").orElse(0).forGetter((var0x) -> {
+         return var0x.warningLevel;
+      }), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("cooldown_ticks").orElse(0).forGetter((var0x) -> {
+         return var0x.cooldownTicks;
+      })).apply(var0, WardenSpawnTracker::new);
+   });
    public static final int MAX_WARNING_LEVEL = 4;
    private static final double PLAYER_SEARCH_RADIUS = 16.0;
    private static final int WARNING_CHECK_DIAMETER = 48;
@@ -54,6 +54,7 @@ public class WardenSpawnTracker {
       if (this.cooldownTicks > 0) {
          --this.cooldownTicks;
       }
+
    }
 
    public void reset() {
@@ -71,16 +72,22 @@ public class WardenSpawnTracker {
             var3.add(var2);
          }
 
-         if (var3.stream().anyMatch(var0x -> var0x.getWardenSpawnTracker().map(WardenSpawnTracker::onCooldown).orElse(false))) {
+         if (var3.stream().anyMatch((var0x) -> {
+            return (Boolean)var0x.getWardenSpawnTracker().map(WardenSpawnTracker::onCooldown).orElse(false);
+         })) {
             return OptionalInt.empty();
          } else {
-            Optional var4 = var3.stream()
-               .flatMap(var0x -> var0x.getWardenSpawnTracker().stream())
-               .max(Comparator.comparingInt(WardenSpawnTracker::getWarningLevel));
+            Optional var4 = var3.stream().flatMap((var0x) -> {
+               return var0x.getWardenSpawnTracker().stream();
+            }).max(Comparator.comparingInt(WardenSpawnTracker::getWarningLevel));
             if (var4.isPresent()) {
                WardenSpawnTracker var5 = (WardenSpawnTracker)var4.get();
                var5.increaseWarningLevel();
-               var3.forEach(var1x -> var1x.getWardenSpawnTracker().ifPresent(var1xx -> var1xx.copyData(var5)));
+               var3.forEach((var1x) -> {
+                  var1x.getWardenSpawnTracker().ifPresent((var1) -> {
+                     var1.copyData(var5);
+                  });
+               });
                return OptionalInt.of(var5.warningLevel);
             } else {
                return OptionalInt.empty();
@@ -100,7 +107,9 @@ public class WardenSpawnTracker {
 
    private static List<ServerPlayer> getNearbyPlayers(ServerLevel var0, BlockPos var1) {
       Vec3 var2 = Vec3.atCenterOf(var1);
-      Predicate var3 = var1x -> var1x.position().closerThan(var2, 16.0);
+      Predicate var3 = (var1x) -> {
+         return var1x.position().closerThan(var2, 16.0);
+      };
       return var0.getPlayers(var3.and(LivingEntity::isAlive).and(EntitySelector.NO_SPECTATORS));
    }
 
@@ -110,6 +119,7 @@ public class WardenSpawnTracker {
          this.cooldownTicks = 200;
          this.setWarningLevel(this.getWarningLevel() + 1);
       }
+
    }
 
    private void decreaseWarningLevel() {

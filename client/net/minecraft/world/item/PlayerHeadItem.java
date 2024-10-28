@@ -12,19 +12,18 @@ public class PlayerHeadItem extends StandingAndWallBlockItem {
       super(var1, var2, var3, Direction.DOWN);
    }
 
-   @Override
    public Component getName(ItemStack var1) {
-      ResolvableProfile var2 = var1.get(DataComponents.PROFILE);
-      return (Component)(var2 != null && var2.name().isPresent()
-         ? Component.translatable(this.getDescriptionId() + ".named", var2.name().get())
-         : super.getName(var1));
+      ResolvableProfile var2 = (ResolvableProfile)var1.get(DataComponents.PROFILE);
+      return (Component)(var2 != null && var2.name().isPresent() ? Component.translatable(this.getDescriptionId() + ".named", var2.name().get()) : super.getName(var1));
    }
 
-   @Override
    public void verifyComponentsAfterLoad(ItemStack var1) {
-      ResolvableProfile var2 = var1.get(DataComponents.PROFILE);
+      ResolvableProfile var2 = (ResolvableProfile)var1.get(DataComponents.PROFILE);
       if (var2 != null && !var2.isResolved()) {
-         var2.resolve().thenAcceptAsync(var1x -> var1.set(DataComponents.PROFILE, var1x), SkullBlockEntity.CHECKED_MAIN_THREAD_EXECUTOR);
+         var2.resolve().thenAcceptAsync((var1x) -> {
+            var1.set(DataComponents.PROFILE, var1x);
+         }, SkullBlockEntity.CHECKED_MAIN_THREAD_EXECUTOR);
       }
+
    }
 }

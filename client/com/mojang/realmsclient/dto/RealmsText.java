@@ -23,7 +23,7 @@ public class RealmsText {
    }
 
    public Component createComponent(Component var1) {
-      return Objects.requireNonNullElse(this.createComponent(), var1);
+      return (Component)Objects.requireNonNullElse(this.createComponent(), var1);
    }
 
    @Nullable
@@ -31,7 +31,7 @@ public class RealmsText {
       if (!I18n.exists(this.translationKey)) {
          return null;
       } else {
-         return this.args == null ? Component.translatable(this.translationKey) : Component.translatable(this.translationKey, this.args);
+         return this.args == null ? Component.translatable(this.translationKey) : Component.translatable(this.translationKey, (Object[])this.args);
       }
    }
 
@@ -53,7 +53,6 @@ public class RealmsText {
       return new RealmsText(var1, var3);
    }
 
-   @Override
    public String toString() {
       return this.translationKey;
    }

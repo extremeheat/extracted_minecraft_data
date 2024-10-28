@@ -21,18 +21,22 @@ public class TelemetryEventLog implements AutoCloseable {
    }
 
    public TelemetryEventLogger logger() {
-      return var1 -> this.mailbox.tell(() -> {
+      return (var1) -> {
+         this.mailbox.tell(() -> {
             try {
                this.log.write(var1);
             } catch (IOException var3) {
                LOGGER.error("Failed to write telemetry event to log", var3);
             }
+
          });
+      };
    }
 
-   @Override
    public void close() {
-      this.mailbox.tell(() -> IOUtils.closeQuietly(this.log));
+      this.mailbox.tell(() -> {
+         IOUtils.closeQuietly(this.log);
+      });
       this.mailbox.close();
    }
 }

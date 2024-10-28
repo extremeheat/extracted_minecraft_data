@@ -8,16 +8,8 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.Item;
 
-public record ClientboundCooldownPacket(Item b, int c) implements Packet<ClientGamePacketListener> {
-   private final Item item;
-   private final int duration;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.registry(Registries.ITEM),
-      ClientboundCooldownPacket::item,
-      ByteBufCodecs.VAR_INT,
-      ClientboundCooldownPacket::duration,
-      ClientboundCooldownPacket::new
-   );
+public record ClientboundCooldownPacket(Item item, int duration) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC;
 
    public ClientboundCooldownPacket(Item var1, int var2) {
       super();
@@ -25,12 +17,23 @@ public record ClientboundCooldownPacket(Item b, int c) implements Packet<ClientG
       this.duration = var2;
    }
 
-   @Override
    public PacketType<ClientboundCooldownPacket> type() {
       return GamePacketTypes.CLIENTBOUND_COOLDOWN;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleItemCooldown(this);
+   }
+
+   public Item item() {
+      return this.item;
+   }
+
+   public int duration() {
+      return this.duration;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.registry(Registries.ITEM), ClientboundCooldownPacket::item, ByteBufCodecs.VAR_INT, ClientboundCooldownPacket::duration, ClientboundCooldownPacket::new);
    }
 }

@@ -8,16 +8,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundPlayerCombatKillPacket(int b, Component c) implements Packet<ClientGamePacketListener> {
-   private final int playerId;
-   private final Component message;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerCombatKillPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.VAR_INT,
-      ClientboundPlayerCombatKillPacket::playerId,
-      ComponentSerialization.TRUSTED_STREAM_CODEC,
-      ClientboundPlayerCombatKillPacket::message,
-      ClientboundPlayerCombatKillPacket::new
-   );
+public record ClientboundPlayerCombatKillPacket(int playerId, Component message) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerCombatKillPacket> STREAM_CODEC;
 
    public ClientboundPlayerCombatKillPacket(int var1, Component var2) {
       super();
@@ -25,7 +17,6 @@ public record ClientboundPlayerCombatKillPacket(int b, Component c) implements P
       this.message = var2;
    }
 
-   @Override
    public PacketType<ClientboundPlayerCombatKillPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_COMBAT_KILL;
    }
@@ -34,8 +25,19 @@ public record ClientboundPlayerCombatKillPacket(int b, Component c) implements P
       var1.handlePlayerCombatKill(this);
    }
 
-   @Override
    public boolean isSkippable() {
       return true;
+   }
+
+   public int playerId() {
+      return this.playerId;
+   }
+
+   public Component message() {
+      return this.message;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundPlayerCombatKillPacket::playerId, ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundPlayerCombatKillPacket::message, ClientboundPlayerCombatKillPacket::new);
    }
 }

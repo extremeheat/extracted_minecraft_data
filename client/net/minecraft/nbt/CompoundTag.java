@@ -9,156 +9,22 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 
 public class CompoundTag implements Tag {
-   public static final Codec<CompoundTag> CODEC = Codec.PASSTHROUGH
-      .comapFlatMap(
-         var0 -> {
-            Tag var1 = (Tag)var0.convert(NbtOps.INSTANCE).getValue();
-            return var1 instanceof CompoundTag var2
-               ? DataResult.success(var2 == var0.getValue() ? var2.copy() : var2)
-               : DataResult.error(() -> "Not a compound tag: " + var1);
-         },
-         var0 -> new Dynamic(NbtOps.INSTANCE, var0.copy())
-      );
+   public static final Codec<CompoundTag> CODEC;
    private static final int SELF_SIZE_IN_BYTES = 48;
    private static final int MAP_ENTRY_SIZE_IN_BYTES = 32;
-   public static final TagType<CompoundTag> TYPE = new TagType.VariableSize<CompoundTag>() {
-      public CompoundTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         var2.pushDepth();
-
-         CompoundTag var3;
-         try {
-            var3 = loadCompound(var1, var2);
-         } finally {
-            var2.popDepth();
-         }
-
-         return var3;
-      }
-
-      private static CompoundTag loadCompound(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(48L);
-         HashMap var2 = Maps.newHashMap();
-
-         byte var3;
-         while((var3 = var0.readByte()) != false) {
-            String var4 = readString(var0, var1);
-            Tag var5 = CompoundTag.readNamedTagData(TagTypes.getType(var3), var4, var0, var1);
-            if (var2.put(var4, var5) == null) {
-               var1.accountBytes(36L);
-            }
-         }
-
-         return new CompoundTag(var2);
-      }
-
-      @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         var3.pushDepth();
-
-         StreamTagVisitor.ValueResult var4;
-         try {
-            var4 = parseCompound(var1, var2, var3);
-         } finally {
-            var3.popDepth();
-         }
-
-         return var4;
-      }
-
-      private static StreamTagVisitor.ValueResult parseCompound(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-         var2.accountBytes(48L);
-
-         byte var3;
-         label35:
-         while((var3 = var0.readByte()) != 0) {
-            TagType var4 = TagTypes.getType(var3);
-            switch(var1.visitEntry(var4)) {
-               case HALT:
-                  return StreamTagVisitor.ValueResult.HALT;
-               case BREAK:
-                  StringTag.skipString(var0);
-                  var4.skip(var0, var2);
-                  break label35;
-               case SKIP:
-                  StringTag.skipString(var0);
-                  var4.skip(var0, var2);
-                  break;
-               default:
-                  String var5 = readString(var0, var2);
-                  switch(var1.visitEntry(var4, var5)) {
-                     case HALT:
-                        return StreamTagVisitor.ValueResult.HALT;
-                     case BREAK:
-                        var4.skip(var0, var2);
-                        break label35;
-                     case SKIP:
-                        var4.skip(var0, var2);
-                        break;
-                     default:
-                        var2.accountBytes(36L);
-                        switch(var4.parse(var0, var1, var2)) {
-                           case HALT:
-                              return StreamTagVisitor.ValueResult.HALT;
-                           case BREAK:
-                        }
-                  }
-            }
-         }
-
-         if (var3 != 0) {
-            while((var3 = var0.readByte()) != false) {
-               StringTag.skipString(var0);
-               TagTypes.getType(var3).skip(var0, var2);
-            }
-         }
-
-         return var1.visitContainerEnd();
-      }
-
-      private static String readString(DataInput var0, NbtAccounter var1) throws IOException {
-         String var2 = var0.readUTF();
-         var1.accountBytes(28L);
-         var1.accountBytes(2L, (long)var2.length());
-         return var2;
-      }
-
-      @Override
-      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
-         var2.pushDepth();
-
-         byte var3;
-         try {
-            while((var3 = var1.readByte()) != false) {
-               StringTag.skipString(var1);
-               TagTypes.getType(var3).skip(var1, var2);
-            }
-         } finally {
-            var2.popDepth();
-         }
-      }
-
-      @Override
-      public String getName() {
-         return "COMPOUND";
-      }
-
-      @Override
-      public String getPrettyName() {
-         return "TAG_Compound";
-      }
-   };
+   public static final TagType<CompoundTag> TYPE;
    private final Map<String, Tag> tags;
 
    protected CompoundTag(Map<String, Tag> var1) {
@@ -170,24 +36,26 @@ public class CompoundTag implements Tag {
       this(Maps.newHashMap());
    }
 
-   @Override
    public void write(DataOutput var1) throws IOException {
-      for(String var3 : this.tags.keySet()) {
-         Tag var4 = this.tags.get(var3);
+      Iterator var2 = this.tags.keySet().iterator();
+
+      while(var2.hasNext()) {
+         String var3 = (String)var2.next();
+         Tag var4 = (Tag)this.tags.get(var3);
          writeNamedTag(var3, var4, var1);
       }
 
       var1.writeByte(0);
    }
 
-   @Override
    public int sizeInBytes() {
       int var1 = 48;
 
-      for(Entry var3 : this.tags.entrySet()) {
+      Map.Entry var3;
+      for(Iterator var2 = this.tags.entrySet().iterator(); var2.hasNext(); var1 += ((Tag)var3.getValue()).sizeInBytes()) {
+         var3 = (Map.Entry)var2.next();
          var1 += 28 + 2 * ((String)var3.getKey()).length();
          var1 += 36;
-         var1 += ((Tag)var3.getValue()).sizeInBytes();
       }
 
       return var1;
@@ -197,12 +65,10 @@ public class CompoundTag implements Tag {
       return this.tags.keySet();
    }
 
-   @Override
    public byte getId() {
       return 10;
    }
 
-   @Override
    public TagType<CompoundTag> getType() {
       return TYPE;
    }
@@ -213,7 +79,7 @@ public class CompoundTag implements Tag {
 
    @Nullable
    public Tag put(String var1, Tag var2) {
-      return this.tags.put(var1, var2);
+      return (Tag)this.tags.put(var1, var2);
    }
 
    public void putByte(String var1, byte var2) {
@@ -287,11 +153,11 @@ public class CompoundTag implements Tag {
 
    @Nullable
    public Tag get(String var1) {
-      return this.tags.get(var1);
+      return (Tag)this.tags.get(var1);
    }
 
    public byte getTagType(String var1) {
-      Tag var2 = this.tags.get(var1);
+      Tag var2 = (Tag)this.tags.get(var1);
       return var2 == null ? 0 : var2.getId();
    }
 
@@ -379,7 +245,7 @@ public class CompoundTag implements Tag {
    public String getString(String var1) {
       try {
          if (this.contains(var1, 8)) {
-            return this.tags.get(var1).getAsString();
+            return ((Tag)this.tags.get(var1)).getAsString();
          }
       } catch (ClassCastException var3) {
       }
@@ -436,20 +302,28 @@ public class CompoundTag implements Tag {
    }
 
    public ListTag getList(String var1, int var2) {
-      try {
-         if (this.getTagType(var1) == 9) {
-            ListTag var3 = (ListTag)this.tags.get(var1);
-            if (!var3.isEmpty() && var3.getElementType() != var2) {
-               return new ListTag();
-            }
+      label28: {
+         try {
+            if (this.getTagType(var1) == 9) {
+               ListTag var3 = (ListTag)this.tags.get(var1);
+               if (!var3.isEmpty() && var3.getElementType() != var2) {
+                  break label28;
+               }
 
-            return var3;
+               return var3;
+            }
+         } catch (ClassCastException var5) {
+            throw new ReportedException(this.createReport(var1, ListTag.TYPE, var5));
          }
+
+         return new ListTag();
+      }
+
+      try {
+         return new ListTag();
       } catch (ClassCastException var4) {
          throw new ReportedException(this.createReport(var1, ListTag.TYPE, var4));
       }
-
-      return new ListTag();
    }
 
    public boolean getBoolean(String var1) {
@@ -460,7 +334,6 @@ public class CompoundTag implements Tag {
       this.tags.remove(var1);
    }
 
-   @Override
    public String toString() {
       return this.getAsString();
    }
@@ -472,9 +345,12 @@ public class CompoundTag implements Tag {
    private CrashReport createReport(String var1, TagType<?> var2, ClassCastException var3) {
       CrashReport var4 = CrashReport.forThrowable(var3, "Reading NBT data");
       CrashReportCategory var5 = var4.addCategory("Corrupt NBT tag", 1);
-      var5.setDetail("Tag type found", () -> this.tags.get(var1).getType().getName());
+      var5.setDetail("Tag type found", () -> {
+         return ((Tag)this.tags.get(var1)).getType().getName();
+      });
+      Objects.requireNonNull(var2);
       var5.setDetail("Tag type expected", var2::getName);
-      var5.setDetail("Tag name", var1);
+      var5.setDetail("Tag name", (Object)var1);
       return var4;
    }
 
@@ -483,7 +359,6 @@ public class CompoundTag implements Tag {
       return new CompoundTag(var1);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -492,7 +367,6 @@ public class CompoundTag implements Tag {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.tags.hashCode();
    }
@@ -511,15 +385,18 @@ public class CompoundTag implements Tag {
       } catch (IOException var7) {
          CrashReport var5 = CrashReport.forThrowable(var7, "Loading NBT data");
          CrashReportCategory var6 = var5.addCategory("NBT Tag");
-         var6.setDetail("Tag name", var1);
-         var6.setDetail("Tag type", var0.getName());
+         var6.setDetail("Tag name", (Object)var1);
+         var6.setDetail("Tag type", (Object)var0.getName());
          throw new ReportedNbtException(var5);
       }
    }
 
    public CompoundTag merge(CompoundTag var1) {
-      for(String var3 : var1.tags.keySet()) {
-         Tag var4 = var1.tags.get(var3);
+      Iterator var2 = var1.tags.keySet().iterator();
+
+      while(var2.hasNext()) {
+         String var3 = (String)var2.next();
+         Tag var4 = (Tag)var1.tags.get(var3);
          if (var4.getId() == 10) {
             if (this.contains(var3, 10)) {
                CompoundTag var5 = this.getCompound(var3);
@@ -535,7 +412,6 @@ public class CompoundTag implements Tag {
       return this;
    }
 
-   @Override
    public void accept(TagVisitor var1) {
       var1.visitCompound(this);
    }
@@ -544,13 +420,15 @@ public class CompoundTag implements Tag {
       return Collections.unmodifiableMap(this.tags);
    }
 
-   @Override
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      for(Entry var3 : this.tags.entrySet()) {
+      Iterator var2 = this.tags.entrySet().iterator();
+
+      while(var2.hasNext()) {
+         Map.Entry var3 = (Map.Entry)var2.next();
          Tag var4 = (Tag)var3.getValue();
          TagType var5 = var4.getType();
          StreamTagVisitor.EntryResult var6 = var1.visitEntry(var5);
-         switch(var6) {
+         switch (var6) {
             case HALT:
                return StreamTagVisitor.ValueResult.HALT;
             case BREAK:
@@ -559,7 +437,7 @@ public class CompoundTag implements Tag {
                break;
             default:
                var6 = var1.visitEntry(var5, (String)var3.getKey());
-               switch(var6) {
+               switch (var6) {
                   case HALT:
                      return StreamTagVisitor.ValueResult.HALT;
                   case BREAK:
@@ -568,16 +446,169 @@ public class CompoundTag implements Tag {
                      break;
                   default:
                      StreamTagVisitor.ValueResult var7 = var4.accept(var1);
-                     switch(var7) {
-                        case HALT:
+                     switch (var7) {
+                        case HALT -> {
                            return StreamTagVisitor.ValueResult.HALT;
-                        case BREAK:
+                        }
+                        case BREAK -> {
                            return var1.visitContainerEnd();
+                        }
                      }
                }
          }
       }
 
       return var1.visitContainerEnd();
+   }
+
+   // $FF: synthetic method
+   public Tag copy() {
+      return this.copy();
+   }
+
+   static {
+      CODEC = Codec.PASSTHROUGH.comapFlatMap((var0) -> {
+         Tag var1 = (Tag)var0.convert(NbtOps.INSTANCE).getValue();
+         if (var1 instanceof CompoundTag var2) {
+            return DataResult.success(var2 == var0.getValue() ? var2.copy() : var2);
+         } else {
+            return DataResult.error(() -> {
+               return "Not a compound tag: " + String.valueOf(var1);
+            });
+         }
+      }, (var0) -> {
+         return new Dynamic(NbtOps.INSTANCE, var0.copy());
+      });
+      TYPE = new TagType.VariableSize<CompoundTag>() {
+         public CompoundTag load(DataInput var1, NbtAccounter var2) throws IOException {
+            var2.pushDepth();
+
+            CompoundTag var3;
+            try {
+               var3 = loadCompound(var1, var2);
+            } finally {
+               var2.popDepth();
+            }
+
+            return var3;
+         }
+
+         private static CompoundTag loadCompound(DataInput var0, NbtAccounter var1) throws IOException {
+            var1.accountBytes(48L);
+            HashMap var2 = Maps.newHashMap();
+
+            byte var3;
+            while((var3 = var0.readByte()) != 0) {
+               String var4 = readString(var0, var1);
+               Tag var5 = CompoundTag.readNamedTagData(TagTypes.getType(var3), var4, var0, var1);
+               if (var2.put(var4, var5) == null) {
+                  var1.accountBytes(36L);
+               }
+            }
+
+            return new CompoundTag(var2);
+         }
+
+         public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+            var3.pushDepth();
+
+            StreamTagVisitor.ValueResult var4;
+            try {
+               var4 = parseCompound(var1, var2, var3);
+            } finally {
+               var3.popDepth();
+            }
+
+            return var4;
+         }
+
+         private static StreamTagVisitor.ValueResult parseCompound(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
+            var2.accountBytes(48L);
+
+            while(true) {
+               byte var3;
+               if ((var3 = var0.readByte()) != 0) {
+                  TagType var4 = TagTypes.getType(var3);
+                  switch (var1.visitEntry(var4)) {
+                     case HALT:
+                        return StreamTagVisitor.ValueResult.HALT;
+                     case BREAK:
+                        StringTag.skipString(var0);
+                        var4.skip(var0, var2);
+                        break;
+                     case SKIP:
+                        StringTag.skipString(var0);
+                        var4.skip(var0, var2);
+                        continue;
+                     default:
+                        String var5 = readString(var0, var2);
+                        switch (var1.visitEntry(var4, var5)) {
+                           case HALT:
+                              return StreamTagVisitor.ValueResult.HALT;
+                           case BREAK:
+                              var4.skip(var0, var2);
+                              break;
+                           case SKIP:
+                              var4.skip(var0, var2);
+                              continue;
+                           default:
+                              var2.accountBytes(36L);
+                              switch (var4.parse(var0, var1, var2)) {
+                                 case HALT:
+                                    return StreamTagVisitor.ValueResult.HALT;
+                                 case BREAK:
+                                 default:
+                                    continue;
+                              }
+                        }
+                  }
+               }
+
+               if (var3 != 0) {
+                  while((var3 = var0.readByte()) != 0) {
+                     StringTag.skipString(var0);
+                     TagTypes.getType(var3).skip(var0, var2);
+                  }
+               }
+
+               return var1.visitContainerEnd();
+            }
+         }
+
+         private static String readString(DataInput var0, NbtAccounter var1) throws IOException {
+            String var2 = var0.readUTF();
+            var1.accountBytes(28L);
+            var1.accountBytes(2L, (long)var2.length());
+            return var2;
+         }
+
+         public void skip(DataInput var1, NbtAccounter var2) throws IOException {
+            var2.pushDepth();
+
+            byte var3;
+            try {
+               while((var3 = var1.readByte()) != 0) {
+                  StringTag.skipString(var1);
+                  TagTypes.getType(var3).skip(var1, var2);
+               }
+            } finally {
+               var2.popDepth();
+            }
+
+         }
+
+         public String getName() {
+            return "COMPOUND";
+         }
+
+         public String getPrettyName() {
+            return "TAG_Compound";
+         }
+
+         // $FF: synthetic method
+         public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+            return this.load(var1, var2);
+         }
+      };
    }
 }

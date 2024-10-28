@@ -2,50 +2,30 @@ package net.minecraft.world.level.levelgen.structure.placement;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 
 public class RandomSpreadStructurePlacement extends StructurePlacement {
-   public static final Codec<RandomSpreadStructurePlacement> CODEC = ExtraCodecs.validate(
-         RecordCodecBuilder.mapCodec(
-            var0 -> placementCodec(var0)
-                  .and(
-                     var0.group(
-                        Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing),
-                        Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation),
-                        RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType)
-                     )
-                  )
-                  .apply(var0, RandomSpreadStructurePlacement::new)
-         ),
-         RandomSpreadStructurePlacement::validate
-      )
-      .codec();
+   public static final MapCodec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return placementCodec(var0).and(var0.group(Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing), Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation), RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType))).apply(var0, RandomSpreadStructurePlacement::new);
+   }).validate(RandomSpreadStructurePlacement::validate);
    private final int spacing;
    private final int separation;
    private final RandomSpreadType spreadType;
 
    private static DataResult<RandomSpreadStructurePlacement> validate(RandomSpreadStructurePlacement var0) {
-      return var0.spacing <= var0.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(var0);
+      return var0.spacing <= var0.separation ? DataResult.error(() -> {
+         return "Spacing has to be larger than separation";
+      }) : DataResult.success(var0);
    }
 
-   public RandomSpreadStructurePlacement(
-      Vec3i var1,
-      StructurePlacement.FrequencyReductionMethod var2,
-      float var3,
-      int var4,
-      Optional<StructurePlacement.ExclusionZone> var5,
-      int var6,
-      int var7,
-      RandomSpreadType var8
-   ) {
+   public RandomSpreadStructurePlacement(Vec3i var1, StructurePlacement.FrequencyReductionMethod var2, float var3, int var4, Optional<StructurePlacement.ExclusionZone> var5, int var6, int var7, RandomSpreadType var8) {
       super(var1, var2, var3, var4, var5);
       this.spacing = var6;
       this.separation = var7;
@@ -79,13 +59,11 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
       return new ChunkPos(var5 * this.spacing + var9, var6 * this.spacing + var10);
    }
 
-   @Override
    protected boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
       ChunkPos var4 = this.getPotentialStructureChunk(var1.getLevelSeed(), var2, var3);
       return var4.x == var2 && var4.z == var3;
    }
 
-   @Override
    public StructurePlacementType<?> type() {
       return StructurePlacementType.RANDOM_SPREAD;
    }

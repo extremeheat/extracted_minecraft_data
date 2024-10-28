@@ -6,10 +6,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-public record LockCode(String d) {
-   private final String key;
+public record LockCode(String key) {
    public static final LockCode NO_LOCK = new LockCode("");
-   public static final Codec<LockCode> CODEC = Codec.STRING.xmap(LockCode::new, LockCode::key);
+   public static final Codec<LockCode> CODEC;
    public static final String TAG_LOCK = "Lock";
 
    public LockCode(String var1) {
@@ -21,7 +20,7 @@ public record LockCode(String d) {
       if (this.key.isEmpty()) {
          return true;
       } else {
-         Component var2 = var1.get(DataComponents.CUSTOM_NAME);
+         Component var2 = (Component)var1.get(DataComponents.CUSTOM_NAME);
          return var2 != null && this.key.equals(var2.getString());
       }
    }
@@ -30,9 +29,18 @@ public record LockCode(String d) {
       if (!this.key.isEmpty()) {
          var1.putString("Lock", this.key);
       }
+
    }
 
    public static LockCode fromTag(CompoundTag var0) {
       return var0.contains("Lock", 8) ? new LockCode(var0.getString("Lock")) : NO_LOCK;
+   }
+
+   public String key() {
+      return this.key;
+   }
+
+   static {
+      CODEC = Codec.STRING.xmap(LockCode::new, LockCode::key);
    }
 }

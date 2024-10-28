@@ -6,15 +6,11 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 
-public record ClientboundDebugSamplePacket(long[] b, RemoteDebugSampleType c) implements Packet<ClientGamePacketListener> {
-   private final long[] sample;
-   private final RemoteDebugSampleType debugSampleType;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundDebugSamplePacket> STREAM_CODEC = Packet.codec(
-      ClientboundDebugSamplePacket::write, ClientboundDebugSamplePacket::new
-   );
+public record ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundDebugSamplePacket> STREAM_CODEC = Packet.codec(ClientboundDebugSamplePacket::write, ClientboundDebugSamplePacket::new);
 
    private ClientboundDebugSamplePacket(FriendlyByteBuf var1) {
-      this(var1.readLongArray(), var1.readEnum(RemoteDebugSampleType.class));
+      this(var1.readLongArray(), (RemoteDebugSampleType)var1.readEnum(RemoteDebugSampleType.class));
    }
 
    public ClientboundDebugSamplePacket(long[] var1, RemoteDebugSampleType var2) {
@@ -28,12 +24,19 @@ public record ClientboundDebugSamplePacket(long[] b, RemoteDebugSampleType c) im
       var1.writeEnum(this.debugSampleType);
    }
 
-   @Override
    public PacketType<ClientboundDebugSamplePacket> type() {
       return GamePacketTypes.CLIENTBOUND_DEBUG_SAMPLE;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleDebugSample(this);
+   }
+
+   public long[] sample() {
+      return this.sample;
+   }
+
+   public RemoteDebugSampleType debugSampleType() {
+      return this.debugSampleType;
    }
 }

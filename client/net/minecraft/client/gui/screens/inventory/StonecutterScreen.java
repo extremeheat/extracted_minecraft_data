@@ -40,13 +40,11 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       --this.titleLabelY;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
@@ -61,36 +59,34 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       this.renderRecipes(var1, var9, var10, var11);
    }
 
-   @Override
    protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
       super.renderTooltip(var1, var2, var3);
       if (this.displayRecipes) {
          int var4 = this.leftPos + 52;
          int var5 = this.topPos + 14;
          int var6 = this.startIndex + 12;
-         List var7 = this.menu.getRecipes();
+         List var7 = ((StonecutterMenu)this.menu).getRecipes();
 
-         for(int var8 = this.startIndex; var8 < var6 && var8 < this.menu.getNumRecipes(); ++var8) {
+         for(int var8 = this.startIndex; var8 < var6 && var8 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var8) {
             int var9 = var8 - this.startIndex;
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               var1.renderTooltip(
-                  this.font, ((StonecutterRecipe)((RecipeHolder)var7.get(var8)).value()).getResultItem(this.minecraft.level.registryAccess()), var2, var3
-               );
+               var1.renderTooltip(this.font, ((StonecutterRecipe)((RecipeHolder)var7.get(var8)).value()).getResultItem(this.minecraft.level.registryAccess()), var2, var3);
             }
          }
       }
+
    }
 
    private void renderButtons(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = this.startIndex; var7 < var6 && var7 < this.menu.getNumRecipes(); ++var7) {
+      for(int var7 = this.startIndex; var7 < var6 && var7 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var7) {
          int var8 = var7 - this.startIndex;
          int var9 = var4 + var8 % 4 * 16;
          int var10 = var8 / 4;
          int var11 = var5 + var10 * 18 + 2;
          ResourceLocation var12;
-         if (var7 == this.menu.getSelectedRecipeIndex()) {
+         if (var7 == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
             var12 = RECIPE_SELECTED_SPRITE;
          } else if (var2 >= var9 && var3 >= var11 && var2 < var9 + 16 && var3 < var11 + 18) {
             var12 = RECIPE_HIGHLIGHTED_SPRITE;
@@ -100,21 +96,22 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
          var1.blitSprite(var12, var9, var11 - 1, 16, 18);
       }
+
    }
 
    private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
-      List var5 = this.menu.getRecipes();
+      List var5 = ((StonecutterMenu)this.menu).getRecipes();
 
-      for(int var6 = this.startIndex; var6 < var4 && var6 < this.menu.getNumRecipes(); ++var6) {
+      for(int var6 = this.startIndex; var6 < var4 && var6 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var6) {
          int var7 = var6 - this.startIndex;
          int var8 = var2 + var7 % 4 * 16;
          int var9 = var7 / 4;
          int var10 = var3 + var9 * 18 + 2;
          var1.renderItem(((StonecutterRecipe)((RecipeHolder)var5.get(var6)).value()).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
       }
+
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       this.scrolling = false;
       if (this.displayRecipes) {
@@ -126,9 +123,9 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             int var10 = var9 - this.startIndex;
             double var11 = var1 - (double)(var6 + var10 % 4 * 16);
             double var13 = var3 - (double)(var7 + var10 / 4 * 18);
-            if (var11 >= 0.0 && var13 >= 0.0 && var11 < 16.0 && var13 < 18.0 && this.menu.clickMenuButton(this.minecraft.player, var9)) {
+            if (var11 >= 0.0 && var13 >= 0.0 && var11 < 16.0 && var13 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var9)) {
                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0F));
-               this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, var9);
+               this.minecraft.gameMode.handleInventoryButtonClick(((StonecutterMenu)this.menu).containerId, var9);
                return true;
             }
          }
@@ -143,7 +140,6 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       return super.mouseClicked(var1, var3, var5);
    }
 
-   @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
       if (this.scrolling && this.isScrollBarActive()) {
          int var10 = this.topPos + 14;
@@ -157,7 +153,6 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       }
    }
 
-   @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (this.isScrollBarActive()) {
          int var9 = this.getOffscreenRows();
@@ -170,18 +165,19 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    private boolean isScrollBarActive() {
-      return this.displayRecipes && this.menu.getNumRecipes() > 12;
+      return this.displayRecipes && ((StonecutterMenu)this.menu).getNumRecipes() > 12;
    }
 
    protected int getOffscreenRows() {
-      return (this.menu.getNumRecipes() + 4 - 1) / 4 - 3;
+      return (((StonecutterMenu)this.menu).getNumRecipes() + 4 - 1) / 4 - 3;
    }
 
    private void containerChanged() {
-      this.displayRecipes = this.menu.hasInputItem();
+      this.displayRecipes = ((StonecutterMenu)this.menu).hasInputItem();
       if (!this.displayRecipes) {
          this.scrollOffs = 0.0F;
          this.startIndex = 0;
       }
+
    }
 }

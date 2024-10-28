@@ -38,40 +38,12 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
       PartDefinition var2 = var1.addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0.0F, -2.5F, 0.0F));
-      var2.addOrReplaceChild(
-         "head",
-         CubeListBuilder.create().texOffs(0, 0).addBox(-2.5F, -5.0F, -2.5F, 5.0F, 5.0F, 5.0F, new CubeDeformation(0.0F)),
-         PartPose.offset(0.0F, 20.0F, 0.0F)
-      );
-      PartDefinition var3 = var2.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create()
-            .texOffs(0, 10)
-            .addBox(-1.5F, 0.0F, -1.0F, 3.0F, 4.0F, 2.0F, new CubeDeformation(0.0F))
-            .texOffs(0, 16)
-            .addBox(-1.5F, 1.0F, -1.0F, 3.0F, 5.0F, 2.0F, new CubeDeformation(-0.2F)),
-         PartPose.offset(0.0F, 20.0F, 0.0F)
-      );
-      var3.addOrReplaceChild(
-         "right_arm",
-         CubeListBuilder.create().texOffs(23, 0).addBox(-1.25F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)),
-         PartPose.offset(-1.75F, 0.25F, 0.0F)
-      );
-      var3.addOrReplaceChild(
-         "left_arm",
-         CubeListBuilder.create().texOffs(23, 6).addBox(-0.75F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)),
-         PartPose.offset(1.75F, 0.25F, 0.0F)
-      );
-      var3.addOrReplaceChild(
-         "left_wing",
-         CubeListBuilder.create().texOffs(16, 14).mirror().addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)).mirror(false),
-         PartPose.offset(0.5F, 1.0F, 1.0F)
-      );
-      var3.addOrReplaceChild(
-         "right_wing",
-         CubeListBuilder.create().texOffs(16, 14).addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)),
-         PartPose.offset(-0.5F, 1.0F, 1.0F)
-      );
+      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-2.5F, -5.0F, -2.5F, 5.0F, 5.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 20.0F, 0.0F));
+      PartDefinition var3 = var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 10).addBox(-1.5F, 0.0F, -1.0F, 3.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(0, 16).addBox(-1.5F, 1.0F, -1.0F, 3.0F, 5.0F, 2.0F, new CubeDeformation(-0.2F)), PartPose.offset(0.0F, 20.0F, 0.0F));
+      var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(23, 0).addBox(-1.25F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)), PartPose.offset(-1.75F, 0.25F, 0.0F));
+      var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(23, 6).addBox(-0.75F, -0.5F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.1F)), PartPose.offset(1.75F, 0.25F, 0.0F));
+      var3.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(16, 14).mirror().addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)).mirror(false), PartPose.offset(0.5F, 1.0F, 1.0F));
+      var3.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(16, 14).addBox(0.0F, 0.0F, 0.0F, 0.0F, 5.0F, 8.0F, new CubeDeformation(0.0F)), PartPose.offset(-0.5F, 1.0F, 1.0F));
       return LayerDefinition.create(var0, 32, 32);
    }
 
@@ -117,15 +89,14 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
             this.leftArm.yRot = -0.2617994F;
             this.leftArm.zRot = 0.47123888F + var3;
          }
+
       }
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
 
-   @Override
    public void translateToHand(HumanoidArm var1, PoseStack var2) {
       boolean var3 = var1 == HumanoidArm.RIGHT;
       ModelPart var4 = var3 ? this.rightArm : this.leftArm;
@@ -142,5 +113,6 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
       } else {
          var1.translate(-0.046875, -0.15625, 0.078125);
       }
+
    }
 }

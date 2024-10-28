@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.state;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,9 +83,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class BlockBehaviour implements FeatureElement {
-   protected static final Direction[] UPDATE_SHAPE_ORDER = new Direction[]{
-      Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.DOWN, Direction.UP
-   };
+   protected static final Direction[] UPDATE_SHAPE_ORDER;
    protected final boolean hasCollision;
    protected final float explosionResistance;
    protected final boolean isRandomlyTicking;
@@ -96,11 +93,11 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final float jumpFactor;
    protected final boolean dynamicShape;
    protected final FeatureFlagSet requiredFeatures;
-   protected final BlockBehaviour.Properties properties;
+   protected final Properties properties;
    @Nullable
    protected ResourceKey<LootTable> drops;
 
-   public BlockBehaviour(BlockBehaviour.Properties var1) {
+   public BlockBehaviour(Properties var1) {
       super();
       this.hasCollision = var1.hasCollision;
       this.drops = var1.drops;
@@ -115,33 +112,39 @@ public abstract class BlockBehaviour implements FeatureElement {
       this.properties = var1;
    }
 
-   public BlockBehaviour.Properties properties() {
+   public Properties properties() {
       return this.properties;
    }
 
    protected abstract MapCodec<? extends Block> codec();
 
-   protected static <B extends Block> RecordCodecBuilder<B, BlockBehaviour.Properties> propertiesCodec() {
+   protected static <B extends Block> RecordCodecBuilder<B, Properties> propertiesCodec() {
       return BlockBehaviour.Properties.CODEC.fieldOf("properties").forGetter(BlockBehaviour::properties);
    }
 
-   public static <B extends Block> MapCodec<B> simpleCodec(Function<BlockBehaviour.Properties, B> var0) {
-      return RecordCodecBuilder.mapCodec(var1 -> var1.group(propertiesCodec()).apply(var1, var0));
+   public static <B extends Block> MapCodec<B> simpleCodec(Function<Properties, B> var0) {
+      return RecordCodecBuilder.mapCodec((var1) -> {
+         return var1.group(propertiesCodec()).apply(var1, var0);
+      });
    }
 
    protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch(var2) {
-         case LAND:
+      switch (var2) {
+         case LAND -> {
             return !var1.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-         case WATER:
+         }
+         case WATER -> {
             return var1.getFluidState().is(FluidTags.WATER);
-         case AIR:
+         }
+         case AIR -> {
             return !var1.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-         default:
+         }
+         default -> {
             return false;
+         }
       }
    }
 
@@ -164,25 +167,25 @@ public abstract class BlockBehaviour implements FeatureElement {
       if (var1.hasBlockEntity() && !var1.is(var4.getBlock())) {
          var2.removeBlockEntity(var3);
       }
+
    }
 
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (!var1.isAir() && var4.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK) {
          Block var6 = var1.getBlock();
          boolean var7 = var4.getIndirectSourceEntity() instanceof Player;
-         if (var6.dropFromExplosion(var4) && var2 instanceof ServerLevel var8) {
+         if (var6.dropFromExplosion(var4) && var2 instanceof ServerLevel) {
+            ServerLevel var8 = (ServerLevel)var2;
             BlockEntity var9 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
-            LootParams.Builder var10 = new LootParams.Builder((ServerLevel)var8)
-               .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3))
-               .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-               .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var9)
-               .withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getDirectSourceEntity());
+            LootParams.Builder var10 = (new LootParams.Builder(var8)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var9).withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getDirectSourceEntity());
             if (var4.getBlockInteraction() == Explosion.BlockInteraction.DESTROY_WITH_DECAY) {
                var10.withParameter(LootContextParams.EXPLOSION_RADIUS, var4.radius());
             }
 
-            var1.spawnAfterBreak((ServerLevel)var8, var3, ItemStack.EMPTY, var7);
-            var1.getDrops(var10).forEach(var2x -> var5.accept(var2x, var3));
+            var1.spawnAfterBreak(var8, var3, ItemStack.EMPTY, var7);
+            var1.getDrops(var10).forEach((var2x) -> {
+               var5.accept(var2x, var3);
+            });
          }
 
          var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 3);
@@ -230,7 +233,6 @@ public abstract class BlockBehaviour implements FeatureElement {
       return 0.2F;
    }
 
-   @Override
    public FeatureFlagSet requiredFeatures() {
       return this.requiredFeatures;
    }
@@ -386,11 +388,362 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected abstract Block asBlock();
 
    public MapColor defaultMapColor() {
-      return this.properties.mapColor.apply(this.asBlock().defaultBlockState());
+      return (MapColor)this.properties.mapColor.apply(this.asBlock().defaultBlockState());
    }
 
    public float defaultDestroyTime() {
       return this.properties.destroyTime;
+   }
+
+   static {
+      UPDATE_SHAPE_ORDER = new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.DOWN, Direction.UP};
+   }
+
+   public static class Properties {
+      public static final Codec<Properties> CODEC = Codec.unit(() -> {
+         return of();
+      });
+      Function<BlockState, MapColor> mapColor = (var0) -> {
+         return MapColor.NONE;
+      };
+      boolean hasCollision = true;
+      SoundType soundType;
+      ToIntFunction<BlockState> lightEmission;
+      float explosionResistance;
+      float destroyTime;
+      boolean requiresCorrectToolForDrops;
+      boolean isRandomlyTicking;
+      float friction;
+      float speedFactor;
+      float jumpFactor;
+      ResourceKey<LootTable> drops;
+      boolean canOcclude;
+      boolean isAir;
+      boolean ignitedByLava;
+      /** @deprecated */
+      @Deprecated
+      boolean liquid;
+      /** @deprecated */
+      @Deprecated
+      boolean forceSolidOff;
+      boolean forceSolidOn;
+      PushReaction pushReaction;
+      boolean spawnTerrainParticles;
+      NoteBlockInstrument instrument;
+      boolean replaceable;
+      StateArgumentPredicate<EntityType<?>> isValidSpawn;
+      StatePredicate isRedstoneConductor;
+      StatePredicate isSuffocating;
+      StatePredicate isViewBlocking;
+      StatePredicate hasPostProcess;
+      StatePredicate emissiveRendering;
+      boolean dynamicShape;
+      FeatureFlagSet requiredFeatures;
+      Optional<OffsetFunction> offsetFunction;
+
+      private Properties() {
+         super();
+         this.soundType = SoundType.STONE;
+         this.lightEmission = (var0) -> {
+            return 0;
+         };
+         this.friction = 0.6F;
+         this.speedFactor = 1.0F;
+         this.jumpFactor = 1.0F;
+         this.canOcclude = true;
+         this.pushReaction = PushReaction.NORMAL;
+         this.spawnTerrainParticles = true;
+         this.instrument = NoteBlockInstrument.HARP;
+         this.isValidSpawn = (var0, var1, var2, var3) -> {
+            return var0.isFaceSturdy(var1, var2, Direction.UP) && var0.getLightEmission() < 14;
+         };
+         this.isRedstoneConductor = (var0, var1, var2) -> {
+            return var0.isCollisionShapeFullBlock(var1, var2);
+         };
+         this.isSuffocating = (var0, var1, var2) -> {
+            return var0.blocksMotion() && var0.isCollisionShapeFullBlock(var1, var2);
+         };
+         this.isViewBlocking = this.isSuffocating;
+         this.hasPostProcess = (var0, var1, var2) -> {
+            return false;
+         };
+         this.emissiveRendering = (var0, var1, var2) -> {
+            return false;
+         };
+         this.requiredFeatures = FeatureFlags.VANILLA_SET;
+         this.offsetFunction = Optional.empty();
+      }
+
+      public static Properties of() {
+         return new Properties();
+      }
+
+      public static Properties ofFullCopy(BlockBehaviour var0) {
+         Properties var1 = ofLegacyCopy(var0);
+         Properties var2 = var0.properties;
+         var1.jumpFactor = var2.jumpFactor;
+         var1.isRedstoneConductor = var2.isRedstoneConductor;
+         var1.isValidSpawn = var2.isValidSpawn;
+         var1.hasPostProcess = var2.hasPostProcess;
+         var1.isSuffocating = var2.isSuffocating;
+         var1.isViewBlocking = var2.isViewBlocking;
+         var1.drops = var2.drops;
+         return var1;
+      }
+
+      /** @deprecated */
+      @Deprecated
+      public static Properties ofLegacyCopy(BlockBehaviour var0) {
+         Properties var1 = new Properties();
+         Properties var2 = var0.properties;
+         var1.destroyTime = var2.destroyTime;
+         var1.explosionResistance = var2.explosionResistance;
+         var1.hasCollision = var2.hasCollision;
+         var1.isRandomlyTicking = var2.isRandomlyTicking;
+         var1.lightEmission = var2.lightEmission;
+         var1.mapColor = var2.mapColor;
+         var1.soundType = var2.soundType;
+         var1.friction = var2.friction;
+         var1.speedFactor = var2.speedFactor;
+         var1.dynamicShape = var2.dynamicShape;
+         var1.canOcclude = var2.canOcclude;
+         var1.isAir = var2.isAir;
+         var1.ignitedByLava = var2.ignitedByLava;
+         var1.liquid = var2.liquid;
+         var1.forceSolidOff = var2.forceSolidOff;
+         var1.forceSolidOn = var2.forceSolidOn;
+         var1.pushReaction = var2.pushReaction;
+         var1.requiresCorrectToolForDrops = var2.requiresCorrectToolForDrops;
+         var1.offsetFunction = var2.offsetFunction;
+         var1.spawnTerrainParticles = var2.spawnTerrainParticles;
+         var1.requiredFeatures = var2.requiredFeatures;
+         var1.emissiveRendering = var2.emissiveRendering;
+         var1.instrument = var2.instrument;
+         var1.replaceable = var2.replaceable;
+         return var1;
+      }
+
+      public Properties mapColor(DyeColor var1) {
+         this.mapColor = (var1x) -> {
+            return var1.getMapColor();
+         };
+         return this;
+      }
+
+      public Properties mapColor(MapColor var1) {
+         this.mapColor = (var1x) -> {
+            return var1;
+         };
+         return this;
+      }
+
+      public Properties mapColor(Function<BlockState, MapColor> var1) {
+         this.mapColor = var1;
+         return this;
+      }
+
+      public Properties noCollission() {
+         this.hasCollision = false;
+         this.canOcclude = false;
+         return this;
+      }
+
+      public Properties noOcclusion() {
+         this.canOcclude = false;
+         return this;
+      }
+
+      public Properties friction(float var1) {
+         this.friction = var1;
+         return this;
+      }
+
+      public Properties speedFactor(float var1) {
+         this.speedFactor = var1;
+         return this;
+      }
+
+      public Properties jumpFactor(float var1) {
+         this.jumpFactor = var1;
+         return this;
+      }
+
+      public Properties sound(SoundType var1) {
+         this.soundType = var1;
+         return this;
+      }
+
+      public Properties lightLevel(ToIntFunction<BlockState> var1) {
+         this.lightEmission = var1;
+         return this;
+      }
+
+      public Properties strength(float var1, float var2) {
+         return this.destroyTime(var1).explosionResistance(var2);
+      }
+
+      public Properties instabreak() {
+         return this.strength(0.0F);
+      }
+
+      public Properties strength(float var1) {
+         this.strength(var1, var1);
+         return this;
+      }
+
+      public Properties randomTicks() {
+         this.isRandomlyTicking = true;
+         return this;
+      }
+
+      public Properties dynamicShape() {
+         this.dynamicShape = true;
+         return this;
+      }
+
+      public Properties noLootTable() {
+         this.drops = BuiltInLootTables.EMPTY;
+         return this;
+      }
+
+      public Properties dropsLike(Block var1) {
+         this.drops = var1.getLootTable();
+         return this;
+      }
+
+      public Properties ignitedByLava() {
+         this.ignitedByLava = true;
+         return this;
+      }
+
+      public Properties liquid() {
+         this.liquid = true;
+         return this;
+      }
+
+      public Properties forceSolidOn() {
+         this.forceSolidOn = true;
+         return this;
+      }
+
+      /** @deprecated */
+      @Deprecated
+      public Properties forceSolidOff() {
+         this.forceSolidOff = true;
+         return this;
+      }
+
+      public Properties pushReaction(PushReaction var1) {
+         this.pushReaction = var1;
+         return this;
+      }
+
+      public Properties air() {
+         this.isAir = true;
+         return this;
+      }
+
+      public Properties isValidSpawn(StateArgumentPredicate<EntityType<?>> var1) {
+         this.isValidSpawn = var1;
+         return this;
+      }
+
+      public Properties isRedstoneConductor(StatePredicate var1) {
+         this.isRedstoneConductor = var1;
+         return this;
+      }
+
+      public Properties isSuffocating(StatePredicate var1) {
+         this.isSuffocating = var1;
+         return this;
+      }
+
+      public Properties isViewBlocking(StatePredicate var1) {
+         this.isViewBlocking = var1;
+         return this;
+      }
+
+      public Properties hasPostProcess(StatePredicate var1) {
+         this.hasPostProcess = var1;
+         return this;
+      }
+
+      public Properties emissiveRendering(StatePredicate var1) {
+         this.emissiveRendering = var1;
+         return this;
+      }
+
+      public Properties requiresCorrectToolForDrops() {
+         this.requiresCorrectToolForDrops = true;
+         return this;
+      }
+
+      public Properties destroyTime(float var1) {
+         this.destroyTime = var1;
+         return this;
+      }
+
+      public Properties explosionResistance(float var1) {
+         this.explosionResistance = Math.max(0.0F, var1);
+         return this;
+      }
+
+      public Properties offsetType(OffsetType var1) {
+         switch (var1.ordinal()) {
+            case 1 -> this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+   Block var3 = var0.getBlock();
+   long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+   float var6 = var3.getMaxHorizontalOffset();
+   double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+   double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+   return new Vec3(var7, 0.0, var9);
+});
+            case 2 -> this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+   Block var3 = var0.getBlock();
+   long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+   double var6 = ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset();
+   float var8 = var3.getMaxHorizontalOffset();
+   double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
+   double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
+   return new Vec3(var9, var6, var11);
+});
+            default -> this.offsetFunction = Optional.empty();
+         }
+
+         return this;
+      }
+
+      public Properties noTerrainParticles() {
+         this.spawnTerrainParticles = false;
+         return this;
+      }
+
+      public Properties requiredFeatures(FeatureFlag... var1) {
+         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+         return this;
+      }
+
+      public Properties instrument(NoteBlockInstrument var1) {
+         this.instrument = var1;
+         return this;
+      }
+
+      public Properties replaceable() {
+         this.replaceable = true;
+         return this;
+      }
+   }
+
+   public interface StateArgumentPredicate<A> {
+      boolean test(BlockState var1, BlockGetter var2, BlockPos var3, A var4);
+   }
+
+   public interface OffsetFunction {
+      Vec3 evaluate(BlockState var1, BlockGetter var2, BlockPos var3);
+   }
+
+   public interface StatePredicate {
+      boolean test(BlockState var1, BlockGetter var2, BlockPos var3);
    }
 
    public abstract static class BlockStateBase extends StateHolder<Block, BlockState> {
@@ -398,8 +751,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final boolean useShapeForLightOcclusion;
       private final boolean isAir;
       private final boolean ignitedByLava;
+      /** @deprecated */
       @Deprecated
       private final boolean liquid;
+      /** @deprecated */
       @Deprecated
       private boolean legacySolid;
       private final PushReaction pushReaction;
@@ -407,30 +762,31 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final float destroySpeed;
       private final boolean requiresCorrectToolForDrops;
       private final boolean canOcclude;
-      private final BlockBehaviour.StatePredicate isRedstoneConductor;
-      private final BlockBehaviour.StatePredicate isSuffocating;
-      private final BlockBehaviour.StatePredicate isViewBlocking;
-      private final BlockBehaviour.StatePredicate hasPostProcess;
-      private final BlockBehaviour.StatePredicate emissiveRendering;
-      private final Optional<BlockBehaviour.OffsetFunction> offsetFunction;
+      private final StatePredicate isRedstoneConductor;
+      private final StatePredicate isSuffocating;
+      private final StatePredicate isViewBlocking;
+      private final StatePredicate hasPostProcess;
+      private final StatePredicate emissiveRendering;
+      private final Optional<OffsetFunction> offsetFunction;
       private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
       private final boolean replaceable;
       @Nullable
-      protected BlockBehaviour.BlockStateBase.Cache cache;
-      private FluidState fluidState = Fluids.EMPTY.defaultFluidState();
+      protected Cache cache;
+      private FluidState fluidState;
       private boolean isRandomlyTicking;
 
       protected BlockStateBase(Block var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<BlockState> var3) {
          super(var1, var2, var3);
-         BlockBehaviour.Properties var4 = var1.properties;
+         this.fluidState = Fluids.EMPTY.defaultFluidState();
+         Properties var4 = var1.properties;
          this.lightEmission = var4.lightEmission.applyAsInt(this.asState());
          this.useShapeForLightOcclusion = var1.useShapeForLightOcclusion(this.asState());
          this.isAir = var4.isAir;
          this.ignitedByLava = var4.ignitedByLava;
          this.liquid = var4.liquid;
          this.pushReaction = var4.pushReaction;
-         this.mapColor = var4.mapColor.apply(this.asState());
+         this.mapColor = (MapColor)var4.mapColor.apply(this.asState());
          this.destroySpeed = var4.destroyTime;
          this.requiresCorrectToolForDrops = var4.requiresCorrectToolForDrops;
          this.canOcclude = var4.canOcclude;
@@ -446,9 +802,9 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       private boolean calculateSolid() {
-         if (this.owner.properties.forceSolidOn) {
+         if (((Block)this.owner).properties.forceSolidOn) {
             return true;
-         } else if (this.owner.properties.forceSolidOff) {
+         } else if (((Block)this.owner).properties.forceSolidOff) {
             return false;
          } else if (this.cache == null) {
             return false;
@@ -468,29 +824,31 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public void initCache() {
-         this.fluidState = this.owner.getFluidState(this.asState());
-         this.isRandomlyTicking = this.owner.isRandomlyTicking(this.asState());
+         this.fluidState = ((Block)this.owner).getFluidState(this.asState());
+         this.isRandomlyTicking = ((Block)this.owner).isRandomlyTicking(this.asState());
          if (!this.getBlock().hasDynamicShape()) {
-            this.cache = new BlockBehaviour.BlockStateBase.Cache(this.asState());
+            this.cache = new Cache(this.asState());
          }
 
          this.legacySolid = this.calculateSolid();
       }
 
       public Block getBlock() {
-         return this.owner;
+         return (Block)this.owner;
       }
 
       public Holder<Block> getBlockHolder() {
-         return this.owner.builtInRegistryHolder();
+         return ((Block)this.owner).builtInRegistryHolder();
       }
 
+      /** @deprecated */
       @Deprecated
       public boolean blocksMotion() {
          Block var1 = this.getBlock();
          return var1 != Blocks.COBWEB && var1 != Blocks.BAMBOO_SAPLING && this.isSolid();
       }
 
+      /** @deprecated */
       @Deprecated
       public boolean isSolid() {
          return this.legacySolid;
@@ -509,9 +867,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public VoxelShape getFaceOcclusionShape(BlockGetter var1, BlockPos var2, Direction var3) {
-         return this.cache != null && this.cache.occlusionShapes != null
-            ? this.cache.occlusionShapes[var3.ordinal()]
-            : Shapes.getFaceShape(this.getOcclusionShape(var1, var2), var3);
+         return this.cache != null && this.cache.occlusionShapes != null ? this.cache.occlusionShapes[var3.ordinal()] : Shapes.getFaceShape(this.getOcclusionShape(var1, var2), var3);
       }
 
       public VoxelShape getOcclusionShape(BlockGetter var1, BlockPos var2) {
@@ -538,6 +894,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.ignitedByLava;
       }
 
+      /** @deprecated */
       @Deprecated
       public boolean liquid() {
          return this.liquid;
@@ -657,7 +1014,9 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Vec3 getOffset(BlockGetter var1, BlockPos var2) {
-         return this.offsetFunction.<Vec3>map(var3 -> var3.evaluate(this.asState(), var1, var2)).orElse(Vec3.ZERO);
+         return (Vec3)this.offsetFunction.map((var3) -> {
+            return var3.evaluate(this.asState(), var1, var2);
+         }).orElse(Vec3.ZERO);
       }
 
       public boolean hasOffsetFunction() {
@@ -678,11 +1037,15 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
+         Direction[] var6 = BlockBehaviour.UPDATE_SHAPE_ORDER;
+         int var7 = var6.length;
 
-         for(Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
-            var5.setWithOffset(var2, var9);
+         for(int var8 = 0; var8 < var7; ++var8) {
+            Direction var9 = var6[var8];
+            var5.setWithOffset(var2, (Direction)var9);
             var1.neighborShapeChanged(var9.getOpposite(), this.asState(), var5, var2, var3, var4);
          }
+
       }
 
       public final void updateIndirectNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3) {
@@ -782,7 +1145,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().builtInRegistryHolder().is(var1);
       }
 
-      public boolean is(TagKey<Block> var1, Predicate<BlockBehaviour.BlockStateBase> var2) {
+      public boolean is(TagKey<Block> var1, Predicate<BlockStateBase> var2) {
          return this.is(var1) && var2.test(this);
       }
 
@@ -861,7 +1224,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.instrument;
       }
 
-      static final class Cache {
+      private static final class Cache {
          private static final Direction[] DIRECTIONS = Direction.values();
          private static final int SUPPORT_TYPE_COUNT = SupportType.values().length;
          protected final boolean solidRender;
@@ -880,34 +1243,40 @@ public abstract class BlockBehaviour implements FeatureElement {
             this.solidRender = var1.isSolidRender(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
             this.propagatesSkylightDown = var2.propagatesSkylightDown(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
             this.lightBlock = var2.getLightBlock(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+            int var5;
             if (!var1.canOcclude()) {
                this.occlusionShapes = null;
             } else {
                this.occlusionShapes = new VoxelShape[DIRECTIONS.length];
                VoxelShape var3 = var2.getOcclusionShape(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
+               Direction[] var4 = DIRECTIONS;
+               var5 = var4.length;
 
-               for(Direction var7 : DIRECTIONS) {
+               for(int var6 = 0; var6 < var5; ++var6) {
+                  Direction var7 = var4[var6];
                   this.occlusionShapes[var7.ordinal()] = Shapes.getFaceShape(var3, var7);
                }
             }
 
             this.collisionShape = var2.getCollisionShape(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty());
             if (!this.collisionShape.isEmpty() && var1.hasOffsetFunction()) {
-               throw new IllegalStateException(
-                  String.format(
-                     Locale.ROOT,
-                     "%s has a collision shape and an offset type, but is not marked as dynamicShape in its properties.",
-                     BuiltInRegistries.BLOCK.getKey(var2)
-                  )
-               );
+               throw new IllegalStateException(String.format(Locale.ROOT, "%s has a collision shape and an offset type, but is not marked as dynamicShape in its properties.", BuiltInRegistries.BLOCK.getKey(var2)));
             } else {
-               this.largeCollisionShape = Arrays.stream(Direction.Axis.values())
-                  .anyMatch(var1x -> this.collisionShape.min(var1x) < 0.0 || this.collisionShape.max(var1x) > 1.0);
+               this.largeCollisionShape = Arrays.stream(Direction.Axis.values()).anyMatch((var1x) -> {
+                  return this.collisionShape.min(var1x) < 0.0 || this.collisionShape.max(var1x) > 1.0;
+               });
                this.faceSturdy = new boolean[DIRECTIONS.length * SUPPORT_TYPE_COUNT];
+               Direction[] var11 = DIRECTIONS;
+               int var12 = var11.length;
 
-               for(Direction var14 : DIRECTIONS) {
-                  for(SupportType var10 : SupportType.values()) {
-                     this.faceSturdy[getFaceSupportIndex(var14, var10)] = var10.isSupporting(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, var14);
+               for(var5 = 0; var5 < var12; ++var5) {
+                  Direction var13 = var11[var5];
+                  SupportType[] var14 = SupportType.values();
+                  int var8 = var14.length;
+
+                  for(int var9 = 0; var9 < var8; ++var9) {
+                     SupportType var10 = var14[var9];
+                     this.faceSturdy[getFaceSupportIndex(var13, var10)] = var10.isSupporting(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, var13);
                   }
                }
 
@@ -925,331 +1294,17 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   public interface OffsetFunction {
-      Vec3 evaluate(BlockState var1, BlockGetter var2, BlockPos var3);
-   }
-
    public static enum OffsetType {
       NONE,
       XZ,
-      XYZ,
-      POTATO;
+      XYZ;
 
       private OffsetType() {
       }
-   }
 
-   public static class Properties {
-      public static final Codec<BlockBehaviour.Properties> CODEC = Codec.unit(() -> of());
-      Function<BlockState, MapColor> mapColor = var0 -> MapColor.NONE;
-      boolean hasCollision = true;
-      SoundType soundType = SoundType.STONE;
-      ToIntFunction<BlockState> lightEmission = var0 -> 0;
-      float explosionResistance;
-      float destroyTime;
-      boolean requiresCorrectToolForDrops;
-      boolean isRandomlyTicking;
-      float friction = 0.6F;
-      float speedFactor = 1.0F;
-      float jumpFactor = 1.0F;
-      ResourceKey<LootTable> drops;
-      boolean canOcclude = true;
-      boolean isAir;
-      boolean ignitedByLava;
-      @Deprecated
-      boolean liquid;
-      @Deprecated
-      boolean forceSolidOff;
-      boolean forceSolidOn;
-      PushReaction pushReaction = PushReaction.NORMAL;
-      boolean spawnTerrainParticles = true;
-      NoteBlockInstrument instrument = NoteBlockInstrument.HARP;
-      boolean replaceable;
-      BlockBehaviour.StateArgumentPredicate<EntityType<?>> isValidSpawn = (var0, var1, var2, var3) -> var0.isFaceSturdy(var1, var2, Direction.UP)
-            && var0.getLightEmission() < 14;
-      BlockBehaviour.StatePredicate isRedstoneConductor = (var0, var1, var2) -> var0.isCollisionShapeFullBlock(var1, var2);
-      BlockBehaviour.StatePredicate isSuffocating = (var0, var1, var2) -> var0.blocksMotion() && var0.isCollisionShapeFullBlock(var1, var2);
-      BlockBehaviour.StatePredicate isViewBlocking = this.isSuffocating;
-      BlockBehaviour.StatePredicate hasPostProcess = (var0, var1, var2) -> false;
-      BlockBehaviour.StatePredicate emissiveRendering = (var0, var1, var2) -> false;
-      boolean dynamicShape;
-      FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
-      Optional<BlockBehaviour.OffsetFunction> offsetFunction = Optional.empty();
-
-      private Properties() {
-         super();
+      // $FF: synthetic method
+      private static OffsetType[] $values() {
+         return new OffsetType[]{NONE, XZ, XYZ};
       }
-
-      public static BlockBehaviour.Properties of() {
-         return new BlockBehaviour.Properties();
-      }
-
-      public static BlockBehaviour.Properties ofFullCopy(BlockBehaviour var0) {
-         BlockBehaviour.Properties var1 = ofLegacyCopy(var0);
-         BlockBehaviour.Properties var2 = var0.properties;
-         var1.jumpFactor = var2.jumpFactor;
-         var1.isRedstoneConductor = var2.isRedstoneConductor;
-         var1.isValidSpawn = var2.isValidSpawn;
-         var1.hasPostProcess = var2.hasPostProcess;
-         var1.isSuffocating = var2.isSuffocating;
-         var1.isViewBlocking = var2.isViewBlocking;
-         var1.drops = var2.drops;
-         return var1;
-      }
-
-      @Deprecated
-      public static BlockBehaviour.Properties ofLegacyCopy(BlockBehaviour var0) {
-         BlockBehaviour.Properties var1 = new BlockBehaviour.Properties();
-         BlockBehaviour.Properties var2 = var0.properties;
-         var1.destroyTime = var2.destroyTime;
-         var1.explosionResistance = var2.explosionResistance;
-         var1.hasCollision = var2.hasCollision;
-         var1.isRandomlyTicking = var2.isRandomlyTicking;
-         var1.lightEmission = var2.lightEmission;
-         var1.mapColor = var2.mapColor;
-         var1.soundType = var2.soundType;
-         var1.friction = var2.friction;
-         var1.speedFactor = var2.speedFactor;
-         var1.dynamicShape = var2.dynamicShape;
-         var1.canOcclude = var2.canOcclude;
-         var1.isAir = var2.isAir;
-         var1.ignitedByLava = var2.ignitedByLava;
-         var1.liquid = var2.liquid;
-         var1.forceSolidOff = var2.forceSolidOff;
-         var1.forceSolidOn = var2.forceSolidOn;
-         var1.pushReaction = var2.pushReaction;
-         var1.requiresCorrectToolForDrops = var2.requiresCorrectToolForDrops;
-         var1.offsetFunction = var2.offsetFunction;
-         var1.spawnTerrainParticles = var2.spawnTerrainParticles;
-         var1.requiredFeatures = var2.requiredFeatures;
-         var1.emissiveRendering = var2.emissiveRendering;
-         var1.instrument = var2.instrument;
-         var1.replaceable = var2.replaceable;
-         return var1;
-      }
-
-      public BlockBehaviour.Properties mapColor(DyeColor var1) {
-         this.mapColor = var1x -> var1.getMapColor();
-         return this;
-      }
-
-      public BlockBehaviour.Properties mapColor(MapColor var1) {
-         this.mapColor = var1x -> var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties mapColor(Function<BlockState, MapColor> var1) {
-         this.mapColor = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties noCollission() {
-         this.hasCollision = false;
-         this.canOcclude = false;
-         return this;
-      }
-
-      public BlockBehaviour.Properties noOcclusion() {
-         this.canOcclude = false;
-         return this;
-      }
-
-      public BlockBehaviour.Properties friction(float var1) {
-         this.friction = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties speedFactor(float var1) {
-         this.speedFactor = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties jumpFactor(float var1) {
-         this.jumpFactor = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties sound(SoundType var1) {
-         this.soundType = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties lightLevel(ToIntFunction<BlockState> var1) {
-         this.lightEmission = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties strength(float var1, float var2) {
-         return this.destroyTime(var1).explosionResistance(var2);
-      }
-
-      public BlockBehaviour.Properties instabreak() {
-         return this.strength(0.0F);
-      }
-
-      public BlockBehaviour.Properties strength(float var1) {
-         this.strength(var1, var1);
-         return this;
-      }
-
-      public BlockBehaviour.Properties randomTicks() {
-         this.isRandomlyTicking = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties dynamicShape() {
-         this.dynamicShape = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties noLootTable() {
-         this.drops = BuiltInLootTables.EMPTY;
-         return this;
-      }
-
-      public BlockBehaviour.Properties dropsLike(Block var1) {
-         this.drops = var1.getLootTable();
-         return this;
-      }
-
-      public BlockBehaviour.Properties ignitedByLava() {
-         this.ignitedByLava = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties liquid() {
-         this.liquid = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties forceSolidOn() {
-         this.forceSolidOn = true;
-         return this;
-      }
-
-      @Deprecated
-      public BlockBehaviour.Properties forceSolidOff() {
-         this.forceSolidOff = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties pushReaction(PushReaction var1) {
-         this.pushReaction = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties air() {
-         this.isAir = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties isValidSpawn(BlockBehaviour.StateArgumentPredicate<EntityType<?>> var1) {
-         this.isValidSpawn = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties isRedstoneConductor(BlockBehaviour.StatePredicate var1) {
-         this.isRedstoneConductor = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties isSuffocating(BlockBehaviour.StatePredicate var1) {
-         this.isSuffocating = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties isViewBlocking(BlockBehaviour.StatePredicate var1) {
-         this.isViewBlocking = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties hasPostProcess(BlockBehaviour.StatePredicate var1) {
-         this.hasPostProcess = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties emissiveRendering(BlockBehaviour.StatePredicate var1) {
-         this.emissiveRendering = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties requiresCorrectToolForDrops() {
-         this.requiresCorrectToolForDrops = true;
-         return this;
-      }
-
-      public BlockBehaviour.Properties destroyTime(float var1) {
-         this.destroyTime = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties explosionResistance(float var1) {
-         this.explosionResistance = Math.max(0.0F, var1);
-         return this;
-      }
-
-      public BlockBehaviour.Properties offsetType(BlockBehaviour.OffsetType var1) {
-         switch(var1) {
-            case POTATO:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  BlockPos var3 = var2.below();
-                  return var1x.getBlockState(var3).isCollisionShapeFullBlock(var1x, var3) ? new Vec3(0.0, 0.0625, 0.0) : Vec3.ZERO;
-               });
-               break;
-            case XYZ:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  Block var3 = var0.getBlock();
-                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-                  double var6 = ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset();
-                  float var8 = var3.getMaxHorizontalOffset();
-                  double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
-                  double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
-                  return new Vec3(var9, var6, var11);
-               });
-               break;
-            case XZ:
-               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
-                  Block var3 = var0.getBlock();
-                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-                  float var6 = var3.getMaxHorizontalOffset();
-                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-                  return new Vec3(var7, 0.0, var9);
-               });
-               break;
-            default:
-               this.offsetFunction = Optional.empty();
-         }
-
-         return this;
-      }
-
-      public BlockBehaviour.Properties noTerrainParticles() {
-         this.spawnTerrainParticles = false;
-         return this;
-      }
-
-      public BlockBehaviour.Properties requiredFeatures(FeatureFlag... var1) {
-         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
-         return this;
-      }
-
-      public BlockBehaviour.Properties instrument(NoteBlockInstrument var1) {
-         this.instrument = var1;
-         return this;
-      }
-
-      public BlockBehaviour.Properties replaceable() {
-         this.replaceable = true;
-         return this;
-      }
-   }
-
-   public interface StateArgumentPredicate<A> {
-      boolean test(BlockState var1, BlockGetter var2, BlockPos var3, A var4);
-   }
-
-   public interface StatePredicate {
-      boolean test(BlockState var1, BlockGetter var2, BlockPos var3);
    }
 }

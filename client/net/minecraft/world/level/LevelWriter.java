@@ -15,7 +15,7 @@ public interface LevelWriter {
    boolean removeBlock(BlockPos var1, boolean var2);
 
    default boolean destroyBlock(BlockPos var1, boolean var2) {
-      return this.destroyBlock(var1, var2, null);
+      return this.destroyBlock(var1, var2, (Entity)null);
    }
 
    default boolean destroyBlock(BlockPos var1, boolean var2, @Nullable Entity var3) {

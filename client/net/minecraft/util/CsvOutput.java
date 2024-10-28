@@ -22,8 +22,8 @@ public class CsvOutput {
       this.writeLine(var2.stream());
    }
 
-   public static CsvOutput.Builder builder() {
-      return new CsvOutput.Builder();
+   public static Builder builder() {
+      return new Builder();
    }
 
    public void writeRow(Object... var1) throws IOException {
@@ -35,7 +35,9 @@ public class CsvOutput {
    }
 
    private void writeLine(Stream<?> var1) throws IOException {
-      this.output.write((String)var1.map(CsvOutput::getStringValue).collect(Collectors.joining(",")) + "\r\n");
+      Writer var10000 = this.output;
+      Stream var10001 = var1.map(CsvOutput::getStringValue);
+      var10000.write((String)var10001.collect(Collectors.joining(",")) + "\r\n");
    }
 
    private static String getStringValue(@Nullable Object var0) {
@@ -49,7 +51,7 @@ public class CsvOutput {
          super();
       }
 
-      public CsvOutput.Builder addColumn(String var1) {
+      public Builder addColumn(String var1) {
          this.headers.add(var1);
          return this;
       }

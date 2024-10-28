@@ -17,7 +17,7 @@ public class RabbitRenderer extends MobRenderer<Rabbit, RabbitModel<Rabbit>> {
    private static final ResourceLocation RABBIT_EVIL_LOCATION = new ResourceLocation("textures/entity/rabbit/caerbannog.png");
 
    public RabbitRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new RabbitModel<>(var1.bakeLayer(ModelLayers.RABBIT)), 0.3F);
+      super(var1, new RabbitModel(var1.bakeLayer(ModelLayers.RABBIT)), 0.3F);
    }
 
    public ResourceLocation getTextureLocation(Rabbit var1) {
@@ -25,15 +25,19 @@ public class RabbitRenderer extends MobRenderer<Rabbit, RabbitModel<Rabbit>> {
       if ("Toast".equals(var2)) {
          return RABBIT_TOAST_LOCATION;
       } else {
-         return switch(var1.getVariant()) {
-            case BROWN -> RABBIT_BROWN_LOCATION;
-            case WHITE -> RABBIT_WHITE_LOCATION;
-            case BLACK -> RABBIT_BLACK_LOCATION;
-            case GOLD -> RABBIT_GOLD_LOCATION;
-            case SALT -> RABBIT_SALT_LOCATION;
-            case WHITE_SPLOTCHED -> RABBIT_WHITE_SPLOTCHED_LOCATION;
-            case EVIL -> RABBIT_EVIL_LOCATION;
-         };
+         ResourceLocation var10000;
+         switch (var1.getVariant()) {
+            case BROWN -> var10000 = RABBIT_BROWN_LOCATION;
+            case WHITE -> var10000 = RABBIT_WHITE_LOCATION;
+            case BLACK -> var10000 = RABBIT_BLACK_LOCATION;
+            case GOLD -> var10000 = RABBIT_GOLD_LOCATION;
+            case SALT -> var10000 = RABBIT_SALT_LOCATION;
+            case WHITE_SPLOTCHED -> var10000 = RABBIT_WHITE_SPLOTCHED_LOCATION;
+            case EVIL -> var10000 = RABBIT_EVIL_LOCATION;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
    }
 }

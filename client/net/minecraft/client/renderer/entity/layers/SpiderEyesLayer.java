@@ -13,7 +13,6 @@ public class SpiderEyesLayer<T extends Entity, M extends SpiderModel<T>> extends
       super(var1);
    }
 
-   @Override
    public RenderType renderType() {
       return SPIDER_EYES;
    }

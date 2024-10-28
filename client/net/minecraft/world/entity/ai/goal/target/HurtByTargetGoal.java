@@ -30,7 +30,6 @@ public class HurtByTargetGoal extends TargetGoal {
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
    }
 
-   @Override
    public boolean canUse() {
       int var1 = this.mob.getLastHurtByMobTimestamp();
       LivingEntity var2 = this.mob.getLastHurtByMob();
@@ -38,7 +37,11 @@ public class HurtByTargetGoal extends TargetGoal {
          if (var2.getType() == EntityType.PLAYER && this.mob.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             return false;
          } else {
-            for(Class var6 : this.toIgnoreDamage) {
+            Class[] var3 = this.toIgnoreDamage;
+            int var4 = var3.length;
+
+            for(int var5 = 0; var5 < var4; ++var5) {
+               Class var6 = var3[var5];
                if (var6.isAssignableFrom(var2.getClass())) {
                   return false;
                }
@@ -57,7 +60,6 @@ public class HurtByTargetGoal extends TargetGoal {
       return this;
    }
 
-   @Override
    public void start() {
       this.mob.setTarget(this.mob.getLastHurtByMob());
       this.targetMob = this.mob.getTarget();
@@ -78,34 +80,38 @@ public class HurtByTargetGoal extends TargetGoal {
 
       while(true) {
          Mob var6;
-         while(true) {
-            if (!var5.hasNext()) {
-               return;
+         boolean var7;
+         do {
+            do {
+               do {
+                  do {
+                     do {
+                        if (!var5.hasNext()) {
+                           return;
+                        }
+
+                        var6 = (Mob)var5.next();
+                     } while(this.mob == var6);
+                  } while(var6.getTarget() != null);
+               } while(this.mob instanceof TamableAnimal && ((TamableAnimal)this.mob).getOwner() != ((TamableAnimal)var6).getOwner());
+            } while(var6.isAlliedTo(this.mob.getLastHurtByMob()));
+
+            if (this.toIgnoreAlert == null) {
+               break;
             }
 
-            var6 = (Mob)var5.next();
-            if (this.mob != var6
-               && var6.getTarget() == null
-               && (!(this.mob instanceof TamableAnimal) || ((TamableAnimal)this.mob).getOwner() == ((TamableAnimal)var6).getOwner())
-               && !var6.isAlliedTo(this.mob.getLastHurtByMob())) {
-               if (this.toIgnoreAlert == null) {
-                  break;
-               }
+            var7 = false;
+            Class[] var8 = this.toIgnoreAlert;
+            int var9 = var8.length;
 
-               boolean var7 = false;
-
-               for(Class var11 : this.toIgnoreAlert) {
-                  if (var6.getClass() == var11) {
-                     var7 = true;
-                     break;
-                  }
-               }
-
-               if (!var7) {
+            for(int var10 = 0; var10 < var9; ++var10) {
+               Class var11 = var8[var10];
+               if (var6.getClass() == var11) {
+                  var7 = true;
                   break;
                }
             }
-         }
+         } while(var7);
 
          this.alertOther(var6, this.mob.getLastHurtByMob());
       }

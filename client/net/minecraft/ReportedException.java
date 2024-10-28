@@ -12,12 +12,10 @@ public class ReportedException extends RuntimeException {
       return this.report;
    }
 
-   @Override
    public Throwable getCause() {
       return this.report.getException();
    }
 
-   @Override
    public String getMessage() {
       return this.report.getTitle();
    }

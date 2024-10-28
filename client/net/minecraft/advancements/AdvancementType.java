@@ -31,12 +31,16 @@ public enum AdvancementType implements StringRepresentable {
       return this.displayName;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    public MutableComponent createAnnouncement(AdvancementHolder var1, ServerPlayer var2) {
       return Component.translatable("chat.type.advancement." + this.name, var2.getDisplayName(), Advancement.name(var1));
+   }
+
+   // $FF: synthetic method
+   private static AdvancementType[] $values() {
+      return new AdvancementType[]{TASK, CHALLENGE, GOAL};
    }
 }

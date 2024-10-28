@@ -14,9 +14,7 @@ public class StructureFeatureIndexSavedData extends SavedData {
    private final LongSet remaining;
 
    public static SavedData.Factory<StructureFeatureIndexSavedData> factory() {
-      return new SavedData.Factory<>(
-         StructureFeatureIndexSavedData::new, StructureFeatureIndexSavedData::load, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES
-      );
+      return new SavedData.Factory(StructureFeatureIndexSavedData::new, StructureFeatureIndexSavedData::load, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
    }
 
    private StructureFeatureIndexSavedData(LongSet var1, LongSet var2) {
@@ -33,7 +31,6 @@ public class StructureFeatureIndexSavedData extends SavedData {
       return new StructureFeatureIndexSavedData(new LongOpenHashSet(var0.getLongArray("All")), new LongOpenHashSet(var0.getLongArray("Remaining")));
    }
 
-   @Override
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putLongArray("All", this.all.toLongArray());
       var1.putLongArray("Remaining", this.remaining.toLongArray());

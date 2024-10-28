@@ -23,37 +23,30 @@ public interface BorderChangeListener {
          this.worldBorder = var1;
       }
 
-      @Override
       public void onBorderSizeSet(WorldBorder var1, double var2) {
          this.worldBorder.setSize(var2);
       }
 
-      @Override
       public void onBorderSizeLerping(WorldBorder var1, double var2, double var4, long var6) {
          this.worldBorder.lerpSizeBetween(var2, var4, var6);
       }
 
-      @Override
       public void onBorderCenterSet(WorldBorder var1, double var2, double var4) {
          this.worldBorder.setCenter(var2, var4);
       }
 
-      @Override
       public void onBorderSetWarningTime(WorldBorder var1, int var2) {
          this.worldBorder.setWarningTime(var2);
       }
 
-      @Override
       public void onBorderSetWarningBlocks(WorldBorder var1, int var2) {
          this.worldBorder.setWarningBlocks(var2);
       }
 
-      @Override
       public void onBorderSetDamagePerBlock(WorldBorder var1, double var2) {
          this.worldBorder.setDamagePerBlock(var2);
       }
 
-      @Override
       public void onBorderSetDamageSafeZOne(WorldBorder var1, double var2) {
          this.worldBorder.setDamageSafeZone(var2);
       }

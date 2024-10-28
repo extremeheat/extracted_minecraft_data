@@ -2,6 +2,8 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
@@ -33,9 +35,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
    protected StructurePlaceSettings placeSettings;
    protected BlockPos templatePosition;
 
-   public TemplateStructurePiece(
-      StructurePieceType var1, int var2, StructureTemplateManager var3, ResourceLocation var4, String var5, StructurePlaceSettings var6, BlockPos var7
-   ) {
+   public TemplateStructurePiece(StructurePieceType var1, int var2, StructureTemplateManager var3, ResourceLocation var4, String var5, StructurePlaceSettings var6, BlockPos var7) {
       super(var1, var2, var3.getOrCreate(var4).getBoundingBox(var6, var7));
       this.setOrientation(Direction.NORTH);
       this.templateName = var5;
@@ -44,9 +44,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       this.placeSettings = var6;
    }
 
-   public TemplateStructurePiece(
-      StructurePieceType var1, CompoundTag var2, StructureTemplateManager var3, Function<ResourceLocation, StructurePlaceSettings> var4
-   ) {
+   public TemplateStructurePiece(StructurePieceType var1, CompoundTag var2, StructureTemplateManager var3, Function<ResourceLocation, StructurePlaceSettings> var4) {
       super(var1, var2);
       this.setOrientation(Direction.NORTH);
       this.templateName = var2.getString("Template");
@@ -61,7 +59,6 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       return new ResourceLocation(this.templateName);
    }
 
-   @Override
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
       var2.putInt("TPX", this.templatePosition.getX());
       var2.putInt("TPY", this.templatePosition.getY());
@@ -69,12 +66,15 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       var2.putString("Template", this.templateName);
    }
 
-   @Override
    public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
       this.placeSettings.setBoundingBox(var5);
       this.boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
       if (this.template.placeInWorld(var1, this.templatePosition, var7, this.placeSettings, var4, 2)) {
-         for(StructureTemplate.StructureBlockInfo var10 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK)) {
+         List var8 = this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK);
+         Iterator var9 = var8.iterator();
+
+         while(var9.hasNext()) {
+            StructureTemplate.StructureBlockInfo var10 = (StructureTemplate.StructureBlockInfo)var9.next();
             if (var10.nbt() != null) {
                StructureMode var11 = StructureMode.valueOf(var10.nbt().getString("mode"));
                if (var11 == StructureMode.DATA) {
@@ -83,33 +83,37 @@ public abstract class TemplateStructurePiece extends StructurePiece {
             }
          }
 
-         for(StructureTemplate.StructureBlockInfo var18 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW)) {
-            if (var18.nbt() != null) {
-               String var12 = var18.nbt().getString("final_state");
+         List var18 = this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW);
+         Iterator var16 = var18.iterator();
+
+         while(var16.hasNext()) {
+            StructureTemplate.StructureBlockInfo var17 = (StructureTemplate.StructureBlockInfo)var16.next();
+            if (var17.nbt() != null) {
+               String var12 = var17.nbt().getString("final_state");
                BlockState var13 = Blocks.AIR.defaultBlockState();
 
                try {
                   var13 = BlockStateParser.parseForBlock(var1.holderLookup(Registries.BLOCK), var12, true).blockState();
                } catch (CommandSyntaxException var15) {
-                  LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", var12, var18.pos());
+                  LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", var12, var17.pos());
                }
 
-               var1.setBlock(var18.pos(), var13, 3);
+               var1.setBlock(var17.pos(), var13, 3);
             }
          }
       }
+
    }
 
    protected abstract void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, RandomSource var4, BoundingBox var5);
 
+   /** @deprecated */
    @Deprecated
-   @Override
    public void move(int var1, int var2, int var3) {
       super.move(var1, var2, var3);
       this.templatePosition = this.templatePosition.offset(var1, var2, var3);
    }
 
-   @Override
    public Rotation getRotation() {
       return this.placeSettings.getRotation();
    }

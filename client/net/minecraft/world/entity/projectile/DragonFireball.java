@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -25,7 +26,6 @@ public class DragonFireball extends AbstractHurtingProjectile {
       super(EntityType.DRAGON_FIREBALL, var2, var3, var5, var7, var1);
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (var1.getType() != HitResult.Type.ENTITY || !this.ownedBy(((EntityHitResult)var1).getEntity())) {
@@ -43,7 +43,10 @@ public class DragonFireball extends AbstractHurtingProjectile {
             var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());
             var3.addEffect(new MobEffectInstance(MobEffects.HARM, 1, 1));
             if (!var2.isEmpty()) {
-               for(LivingEntity var6 : var2) {
+               Iterator var5 = var2.iterator();
+
+               while(var5.hasNext()) {
+                  LivingEntity var6 = (LivingEntity)var5.next();
                   double var7 = this.distanceToSqr(var6);
                   if (var7 < 16.0) {
                      var3.setPos(var6.getX(), var6.getY(), var6.getZ());
@@ -56,25 +59,22 @@ public class DragonFireball extends AbstractHurtingProjectile {
             this.level().addFreshEntity(var3);
             this.discard();
          }
+
       }
    }
 
-   @Override
    public boolean isPickable() {
       return false;
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       return false;
    }
 
-   @Override
    protected ParticleOptions getTrailParticle() {
       return ParticleTypes.DRAGON_BREATH;
    }
 
-   @Override
    protected boolean shouldBurn() {
       return false;
    }

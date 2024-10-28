@@ -44,15 +44,9 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create().texOffs(0, 11).addBox(-4.0F, -2.0F, -9.0F, 8.0F, 4.0F, 10.0F).texOffs(2, 17).addBox(0.0F, -3.0F, -8.0F, 0.0F, 5.0F, 9.0F),
-         PartPose.offset(0.0F, 20.0F, 5.0F)
-      );
+      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 11).addBox(-4.0F, -2.0F, -9.0F, 8.0F, 4.0F, 10.0F).texOffs(2, 17).addBox(0.0F, -3.0F, -8.0F, 0.0F, 5.0F, 9.0F), PartPose.offset(0.0F, 20.0F, 5.0F));
       CubeDeformation var3 = new CubeDeformation(0.001F);
-      PartDefinition var4 = var2.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(0, 1).addBox(-4.0F, -3.0F, -5.0F, 8.0F, 5.0F, 5.0F, var3), PartPose.offset(0.0F, 0.0F, -9.0F)
-      );
+      PartDefinition var4 = var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 1).addBox(-4.0F, -3.0F, -5.0F, 8.0F, 5.0F, 5.0F, var3), PartPose.offset(0.0F, 0.0F, -9.0F));
       CubeListBuilder var5 = CubeListBuilder.create().texOffs(3, 37).addBox(-4.0F, -3.0F, 0.0F, 8.0F, 3.0F, 0.0F, var3);
       CubeListBuilder var6 = CubeListBuilder.create().texOffs(0, 40).addBox(-3.0F, -5.0F, 0.0F, 3.0F, 7.0F, 0.0F, var3);
       CubeListBuilder var7 = CubeListBuilder.create().texOffs(11, 40).addBox(0.0F, -5.0F, 0.0F, 3.0F, 7.0F, 0.0F, var3);
@@ -69,21 +63,19 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   @Override
    protected Iterable<ModelPart> headParts() {
       return ImmutableList.of();
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return ImmutableList.of(this.body);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.setupInitialAnimationValues((T)var1, var5, var6);
+      this.setupInitialAnimationValues(var1, var5, var6);
       if (var1.isPlayingDead()) {
          this.setupPlayDeadAnimation(var5);
-         this.saveAnimationValues((T)var1);
+         this.saveAnimationValues(var1);
       } else {
          boolean var7 = var3 > 1.0E-5F || var1.getXRot() != var1.xRotO || var1.getYRot() != var1.yRotO;
          if (var1.isInWaterOrBubble()) {
@@ -93,7 +85,7 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
                this.setupWaterHoveringAnimation(var4);
             }
 
-            this.saveAnimationValues((T)var1);
+            this.saveAnimationValues(var1);
          } else {
             if (var1.onGround()) {
                if (var7) {
@@ -103,7 +95,7 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
                }
             }
 
-            this.saveAnimationValues((T)var1);
+            this.saveAnimationValues(var1);
          }
       }
    }
@@ -158,6 +150,7 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
          this.setRotationFromVector(this.topGills, (Vector3f)var4.get("top_gills"));
          this.setRotationFromVector(this.tail, (Vector3f)var4.get("tail"));
       }
+
    }
 
    private float lerpTo(float var1, float var2) {
@@ -219,7 +212,8 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
       float var3 = Mth.cos(var2);
       float var4 = Mth.sin(var2) * 0.15F;
       this.body.xRot = this.lerpTo(this.body.xRot, -0.15F + 0.075F * var3);
-      this.body.y -= var4;
+      ModelPart var10000 = this.body;
+      var10000.y -= var4;
       this.head.xRot = this.lerpTo(this.head.xRot, -this.body.xRot);
       this.topGills.xRot = this.lerpTo(this.topGills.xRot, 0.2F * var3);
       this.leftGills.yRot = this.lerpTo(this.leftGills.yRot, -0.3F * var3 - 0.19F);
@@ -239,7 +233,8 @@ public class AxolotlModel<T extends Axolotl & LerpingModel> extends AgeableListM
       float var6 = 0.13F * var4;
       this.body.xRot = this.lerpTo(0.1F, this.body.xRot, var2 * 0.017453292F + var6);
       this.head.xRot = -var6 * 1.8F;
-      this.body.y -= 0.45F * var5;
+      ModelPart var10000 = this.body;
+      var10000.y -= 0.45F * var5;
       this.topGills.xRot = this.lerpTo(this.topGills.xRot, -0.5F * var4 - 0.8F);
       this.leftGills.yRot = this.lerpTo(this.leftGills.yRot, 0.3F * var4 + 0.9F);
       this.rightGills.yRot = this.lerpTo(this.rightGills.yRot, -this.leftGills.yRot);

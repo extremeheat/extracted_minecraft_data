@@ -11,7 +11,6 @@ public class TwistingVinesBlock extends GrowingPlantHeadBlock {
    public static final MapCodec<TwistingVinesBlock> CODEC = simpleCodec(TwistingVinesBlock::new);
    public static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 15.0, 12.0);
 
-   @Override
    public MapCodec<TwistingVinesBlock> codec() {
       return CODEC;
    }
@@ -20,17 +19,14 @@ public class TwistingVinesBlock extends GrowingPlantHeadBlock {
       super(var1, Direction.UP, SHAPE, false, 0.1);
    }
 
-   @Override
    protected int getBlocksToGrowWhenBonemealed(RandomSource var1) {
       return NetherVines.getBlocksToGrowWhenBonemealed(var1);
    }
 
-   @Override
    protected Block getBodyBlock() {
       return Blocks.TWISTING_VINES_PLANT;
    }
 
-   @Override
    protected boolean canGrowInto(BlockState var1) {
       return NetherVines.isValidGrowthState(var1);
    }

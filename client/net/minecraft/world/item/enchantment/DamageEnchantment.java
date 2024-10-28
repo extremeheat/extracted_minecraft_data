@@ -18,31 +18,25 @@ public class DamageEnchantment extends Enchantment {
       this.targets = var2;
    }
 
-   @Override
    public float getDamageBonus(int var1, @Nullable EntityType<?> var2) {
       if (this.targets.isEmpty()) {
          return 1.0F + (float)Math.max(0, var1 - 1) * 0.5F;
       } else {
-         return var2 != null && var2.is((TagKey<EntityType<?>>)this.targets.get()) ? (float)var1 * 2.5F : 0.0F;
+         return var2 != null && var2.is((TagKey)this.targets.get()) ? (float)var1 * 2.5F : 0.0F;
       }
    }
 
-   @Override
    public boolean checkCompatibility(Enchantment var1) {
       return !(var1 instanceof DamageEnchantment);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void doPostAttack(LivingEntity var1, Entity var2, int var3) {
-      if (this.targets.isPresent()
-         && var2 instanceof LivingEntity var4
-         && this.targets.get() == EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS
-         && var3 > 0
-         && var4.getType().is((TagKey<EntityType<?>>)this.targets.get())) {
-         int var5 = 20 + var1.getRandom().nextInt(10 * var3);
-         var4.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, var5, 3));
+      if (this.targets.isPresent() && var2 instanceof LivingEntity var4) {
+         if (this.targets.get() == EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS && var3 > 0 && var4.getType().is((TagKey)this.targets.get())) {
+            int var5 = 20 + var1.getRandom().nextInt(10 * var3);
+            var4.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, var5, 3));
+         }
       }
+
    }
 }

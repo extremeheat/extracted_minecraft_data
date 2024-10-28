@@ -4,14 +4,16 @@ import com.mojang.realmsclient.dto.Backup;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameType;
 
 public class RealmsBackupInfoScreen extends RealmsScreen {
    private static final Component TITLE = Component.translatable("mco.backup.info.title");
@@ -19,7 +21,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    private final Screen lastScreen;
    final Backup backup;
    final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-   private RealmsBackupInfoScreen.BackupInfoList backupInfoList;
+   private BackupInfoList backupInfoList;
 
    public RealmsBackupInfoScreen(Screen var1, Backup var2) {
       super(TITLE);
@@ -27,23 +29,23 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       this.backup = var2;
    }
 
-   @Override
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      this.backupInfoList = this.layout.addToContents(new RealmsBackupInfoScreen.BackupInfoList(this.minecraft));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
+      this.backupInfoList = (BackupInfoList)this.layout.addToContents(new BackupInfoList(this.minecraft));
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
+         this.onClose();
+      }).build());
       this.repositionElements();
-      this.layout.visitWidgets(var1 -> {
+      this.layout.visitWidgets((var1) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
       });
    }
 
-   @Override
    protected void repositionElements() {
       this.backupInfoList.setSize(this.width, this.layout.getContentHeight());
       this.layout.arrangeElements();
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }
@@ -59,7 +61,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
 
    private Component gameDifficultyMetadata(String var1) {
       try {
-         return RealmsSlotOptionsScreen.DIFFICULTIES.get(Integer.parseInt(var1)).getDisplayName();
+         return ((Difficulty)RealmsSlotOptionsScreen.DIFFICULTIES.get(Integer.parseInt(var1))).getDisplayName();
       } catch (Exception var3) {
          return UNKNOWN;
       }
@@ -67,30 +69,25 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
 
    private Component gameModeMetadata(String var1) {
       try {
-         return RealmsSlotOptionsScreen.GAME_MODES.get(Integer.parseInt(var1)).getShortDisplayName();
+         return ((GameType)RealmsSlotOptionsScreen.GAME_MODES.get(Integer.parseInt(var1))).getShortDisplayName();
       } catch (Exception var3) {
          return UNKNOWN;
       }
    }
 
-   class BackupInfoList extends ObjectSelectionList<RealmsBackupInfoScreen.BackupInfoListEntry> {
+   private class BackupInfoList extends ObjectSelectionList<BackupInfoListEntry> {
       public BackupInfoList(Minecraft var2) {
-         super(
-            var2,
-            RealmsBackupInfoScreen.this.width,
-            RealmsBackupInfoScreen.this.layout.getContentHeight(),
-            RealmsBackupInfoScreen.this.layout.getHeaderHeight(),
-            36
-         );
+         super(var2, RealmsBackupInfoScreen.this.width, RealmsBackupInfoScreen.this.layout.getContentHeight(), RealmsBackupInfoScreen.this.layout.getHeaderHeight(), 36);
          if (RealmsBackupInfoScreen.this.backup.changeList != null) {
-            RealmsBackupInfoScreen.this.backup
-               .changeList
-               .forEach((var1x, var2x) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x)));
+            RealmsBackupInfoScreen.this.backup.changeList.forEach((var1x, var2x) -> {
+               this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x));
+            });
          }
+
       }
    }
 
-   class BackupInfoListEntry extends ObjectSelectionList.Entry<RealmsBackupInfoScreen.BackupInfoListEntry> {
+   private class BackupInfoListEntry extends ObjectSelectionList.Entry<BackupInfoListEntry> {
       private static final Component TEMPLATE_NAME = Component.translatable("mco.backup.entry.templateName");
       private static final Component GAME_DIFFICULTY = Component.translatable("mco.backup.entry.gameDifficulty");
       private static final Component NAME = Component.translatable("mco.backup.entry.name");
@@ -111,34 +108,34 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
          this.value = var3;
       }
 
-      @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          var1.drawString(RealmsBackupInfoScreen.this.font, this.translateKey(this.key), var4, var3, -6250336);
-         var1.drawString(RealmsBackupInfoScreen.this.font, RealmsBackupInfoScreen.this.checkForSpecificMetadata(this.key, this.value), var4, var3 + 12, -1);
+         var1.drawString(RealmsBackupInfoScreen.this.font, (Component)RealmsBackupInfoScreen.this.checkForSpecificMetadata(this.key, this.value), var4, var3 + 12, -1);
       }
 
       private Component translateKey(String var1) {
-         return switch(var1) {
-            case "template_name" -> TEMPLATE_NAME;
-            case "game_difficulty" -> GAME_DIFFICULTY;
-            case "name" -> NAME;
-            case "game_server_version" -> GAME_SERVER_VERSION;
-            case "uploaded" -> UPLOADED;
-            case "enabled_packs" -> ENABLED_PACK;
-            case "description" -> DESCRIPTION;
-            case "game_mode" -> GAME_MODE;
-            case "seed" -> SEED;
-            case "world_type" -> WORLD_TYPE;
-            default -> UNDEFINED;
-         };
+         Component var10000;
+         switch (var1) {
+            case "template_name" -> var10000 = TEMPLATE_NAME;
+            case "game_difficulty" -> var10000 = GAME_DIFFICULTY;
+            case "name" -> var10000 = NAME;
+            case "game_server_version" -> var10000 = GAME_SERVER_VERSION;
+            case "uploaded" -> var10000 = UPLOADED;
+            case "enabled_packs" -> var10000 = ENABLED_PACK;
+            case "description" -> var10000 = DESCRIPTION;
+            case "game_mode" -> var10000 = GAME_MODE;
+            case "seed" -> var10000 = SEED;
+            case "world_type" -> var10000 = WORLD_TYPE;
+            default -> var10000 = UNDEFINED;
+         }
+
+         return var10000;
       }
 
-      @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
          return true;
       }
 
-      @Override
       public Component getNarration() {
          return Component.translatable("narrator.select", this.key + " " + this.value);
       }

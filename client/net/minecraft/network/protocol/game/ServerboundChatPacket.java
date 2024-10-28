@@ -9,18 +9,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundChatPacket(String b, Instant c, long d, @Nullable MessageSignature e, LastSeenMessages.Update f)
-   implements Packet<ServerGamePacketListener> {
-   private final String message;
-   private final Instant timeStamp;
-   private final long salt;
-   @Nullable
-   private final MessageSignature signature;
-   private final LastSeenMessages.Update lastSeenMessages;
+public record ServerboundChatPacket(String message, Instant timeStamp, long salt, @Nullable MessageSignature signature, LastSeenMessages.Update lastSeenMessages) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatPacket> STREAM_CODEC = Packet.codec(ServerboundChatPacket::write, ServerboundChatPacket::new);
 
    private ServerboundChatPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(256), var1.readInstant(), var1.readLong(), var1.readNullable(MessageSignature::read), new LastSeenMessages.Update(var1));
+      this(var1.readUtf(256), var1.readInstant(), var1.readLong(), (MessageSignature)var1.readNullable(MessageSignature::read), new LastSeenMessages.Update(var1));
    }
 
    public ServerboundChatPacket(String var1, Instant var2, long var3, @Nullable MessageSignature var5, LastSeenMessages.Update var6) {
@@ -40,12 +33,32 @@ public record ServerboundChatPacket(String b, Instant c, long d, @Nullable Messa
       this.lastSeenMessages.write(var1);
    }
 
-   @Override
    public PacketType<ServerboundChatPacket> type() {
       return GamePacketTypes.SERVERBOUND_CHAT;
    }
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleChat(this);
+   }
+
+   public String message() {
+      return this.message;
+   }
+
+   public Instant timeStamp() {
+      return this.timeStamp;
+   }
+
+   public long salt() {
+      return this.salt;
+   }
+
+   @Nullable
+   public MessageSignature signature() {
+      return this.signature;
+   }
+
+   public LastSeenMessages.Update lastSeenMessages() {
+      return this.lastSeenMessages;
    }
 }

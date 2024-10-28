@@ -7,9 +7,11 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -32,15 +34,12 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
       this.socialInteractionsScreen = var1;
    }
 
-   @Override
    protected void renderListBackground(GuiGraphics var1) {
    }
 
-   @Override
    protected void renderListSeparators(GuiGraphics var1) {
    }
 
-   @Override
    protected void enableScissor(GuiGraphics var1) {
       var1.enableScissor(this.getX(), this.getY() + 4, this.getRight(), this.getBottom());
    }
@@ -54,50 +53,60 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
    private void addOnlinePlayers(Collection<UUID> var1, Map<UUID, PlayerEntry> var2) {
       ClientPacketListener var3 = this.minecraft.player.connection;
+      Iterator var4 = var1.iterator();
 
-      for(UUID var5 : var1) {
+      while(var4.hasNext()) {
+         UUID var5 = (UUID)var4.next();
          PlayerInfo var6 = var3.getPlayerInfo(var5);
          if (var6 != null) {
             boolean var7 = var6.hasVerifiableChat();
-            var2.put(var5, new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5, var6.getProfile().getName(), var6::getSkin, var7));
+            Minecraft var10004 = this.minecraft;
+            SocialInteractionsScreen var10005 = this.socialInteractionsScreen;
+            String var10007 = var6.getProfile().getName();
+            Objects.requireNonNull(var6);
+            var2.put(var5, new PlayerEntry(var10004, var10005, var5, var10007, var6::getSkin, var7));
          }
       }
+
    }
 
    private void updatePlayersFromChatLog(Map<UUID, PlayerEntry> var1, boolean var2) {
-      for(GameProfile var5 : collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog())) {
+      Collection var3 = collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog());
+      Iterator var4 = var3.iterator();
+
+      while(true) {
          PlayerEntry var6;
-         if (var2) {
-            var6 = var1.computeIfAbsent(
-               var5.getId(),
-               var2x -> {
-                  PlayerEntry var3 = new PlayerEntry(
-                     this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().lookupInsecure(var5), true
-                  );
+         do {
+            if (!var4.hasNext()) {
+               return;
+            }
+
+            GameProfile var5 = (GameProfile)var4.next();
+            if (var2) {
+               var6 = (PlayerEntry)var1.computeIfAbsent(var5.getId(), (var2x) -> {
+                  PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().lookupInsecure(var5), true);
                   var3.setRemoved(true);
                   return var3;
-               }
-            );
-         } else {
-            var6 = (PlayerEntry)var1.get(var5.getId());
-            if (var6 == null) {
-               continue;
+               });
+               break;
             }
-         }
+
+            var6 = (PlayerEntry)var1.get(var5.getId());
+         } while(var6 == null);
 
          var6.setHasRecentMessages(true);
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static Collection<GameProfile> collectProfilesFromChatLog(ChatLog var0) {
       ObjectLinkedOpenHashSet var1 = new ObjectLinkedOpenHashSet();
 
       for(int var2 = var0.end(); var2 >= var0.start(); --var2) {
          LoggedChatEvent var3 = var0.lookup(var2);
-         if (var3 instanceof LoggedChatMessage.Player var4 && var4.message().hasSignature()) {
-            var1.add(var4.profile());
+         if (var3 instanceof LoggedChatMessage.Player var4) {
+            if (var4.message().hasSignature()) {
+               var1.add(var4.profile());
+            }
          }
       }
 
@@ -105,7 +114,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    private void sortPlayerEntries() {
-      this.players.sort(Comparator.<PlayerEntry, Integer>comparing(var1 -> {
+      this.players.sort(Comparator.comparing((var1) -> {
          if (this.minecraft.isLocalPlayer(var1.getPlayerId())) {
             return 0;
          } else if (this.minecraft.getReportingContext().hasDraftReportFor(var1.getPlayerId())) {
@@ -115,7 +124,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
          } else {
             return var1.hasRecentMessages() ? 2 : 3;
          }
-      }).thenComparing(var0 -> {
+      }).thenComparing((var0) -> {
          if (!var0.getPlayerName().isBlank()) {
             int var1 = var0.getPlayerName().codePointAt(0);
             if (var1 == 95 || var1 >= 97 && var1 <= 122 || var1 >= 65 && var1 <= 90 || var1 >= 48 && var1 <= 57) {
@@ -138,9 +147,12 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
    private void updateFilteredPlayers() {
       if (this.filter != null) {
-         this.players.removeIf(var1 -> !var1.getPlayerName().toLowerCase(Locale.ROOT).contains(this.filter));
+         this.players.removeIf((var1) -> {
+            return !var1.getPlayerName().toLowerCase(Locale.ROOT).contains(this.filter);
+         });
          this.replaceEntries(this.players);
       }
+
    }
 
    public void setFilter(String var1) {
@@ -153,31 +165,43 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
    public void addPlayer(PlayerInfo var1, SocialInteractionsScreen.Page var2) {
       UUID var3 = var1.getProfile().getId();
+      Iterator var4 = this.players.iterator();
 
-      for(PlayerEntry var5 : this.players) {
+      PlayerEntry var5;
+      while(var4.hasNext()) {
+         var5 = (PlayerEntry)var4.next();
          if (var5.getPlayerId().equals(var3)) {
             var5.setRemoved(false);
             return;
          }
       }
 
-      if ((var2 == SocialInteractionsScreen.Page.ALL || this.minecraft.getPlayerSocialManager().shouldHideMessageFrom(var3))
-         && (Strings.isNullOrEmpty(this.filter) || var1.getProfile().getName().toLowerCase(Locale.ROOT).contains(this.filter))) {
+      if ((var2 == SocialInteractionsScreen.Page.ALL || this.minecraft.getPlayerSocialManager().shouldHideMessageFrom(var3)) && (Strings.isNullOrEmpty(this.filter) || var1.getProfile().getName().toLowerCase(Locale.ROOT).contains(this.filter))) {
          boolean var6 = var1.hasVerifiableChat();
-         PlayerEntry var7 = new PlayerEntry(
-            this.minecraft, this.socialInteractionsScreen, var1.getProfile().getId(), var1.getProfile().getName(), var1::getSkin, var6
-         );
-         this.addEntry(var7);
-         this.players.add(var7);
+         Minecraft var10002 = this.minecraft;
+         SocialInteractionsScreen var10003 = this.socialInteractionsScreen;
+         UUID var10004 = var1.getProfile().getId();
+         String var10005 = var1.getProfile().getName();
+         Objects.requireNonNull(var1);
+         var5 = new PlayerEntry(var10002, var10003, var10004, var10005, var1::getSkin, var6);
+         this.addEntry(var5);
+         this.players.add(var5);
       }
+
    }
 
    public void removePlayer(UUID var1) {
-      for(PlayerEntry var3 : this.players) {
-         if (var3.getPlayerId().equals(var1)) {
-            var3.setRemoved(true);
+      Iterator var2 = this.players.iterator();
+
+      PlayerEntry var3;
+      do {
+         if (!var2.hasNext()) {
             return;
          }
-      }
+
+         var3 = (PlayerEntry)var2.next();
+      } while(!var3.getPlayerId().equals(var1));
+
+      var3.setRemoved(true);
    }
 }

@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
@@ -55,7 +56,8 @@ public class UseBonemeal extends Behavior<Villager> {
             for(int var8 = -1; var8 <= 1; ++var8) {
                var3.setWithOffset(var2.blockPosition(), var6, var7, var8);
                if (this.validPos(var3, var1)) {
-                  if (var1.random.nextInt(++var5) == 0) {
+                  ++var5;
+                  if (var1.random.nextInt(var5) == 0) {
                      var4 = Optional.of(var3.immutable());
                   }
                }
@@ -80,10 +82,10 @@ public class UseBonemeal extends Behavior<Villager> {
    }
 
    private void setCurrentCropAsTarget(Villager var1) {
-      this.cropPos.ifPresent(var1x -> {
+      this.cropPos.ifPresent((var1x) -> {
          BlockPosTracker var2 = new BlockPosTracker(var1x);
-         var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, var2);
-         var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var2, 0.5F, 1));
+         var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)var2);
+         var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, 0.5F, 1)));
       });
    }
 
@@ -93,7 +95,7 @@ public class UseBonemeal extends Behavior<Villager> {
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {
-      BlockPos var5 = this.cropPos.get();
+      BlockPos var5 = (BlockPos)this.cropPos.get();
       if (var3 >= this.nextWorkCycleTime && var5.closerToCenterThan(var2.position(), 1.0)) {
          ItemStack var6 = ItemStack.EMPTY;
          SimpleContainer var7 = var2.getInventory();
@@ -116,5 +118,20 @@ public class UseBonemeal extends Behavior<Villager> {
 
          ++this.timeWorkedSoFar;
       }
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

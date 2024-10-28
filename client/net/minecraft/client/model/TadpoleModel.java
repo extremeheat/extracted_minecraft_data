@@ -31,12 +31,10 @@ public class TadpoleModel<T extends Tadpole> extends AgeableListModel<T> {
       return LayerDefinition.create(var0, 16, 16);
    }
 
-   @Override
    protected Iterable<ModelPart> headParts() {
       return ImmutableList.of(this.root);
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return ImmutableList.of(this.tail);
    }

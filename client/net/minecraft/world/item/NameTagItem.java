@@ -13,15 +13,13 @@ public class NameTagItem extends Item {
       super(var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
-      Component var5 = var1.get(DataComponents.CUSTOM_NAME);
+      Component var5 = (Component)var1.get(DataComponents.CUSTOM_NAME);
       if (var5 != null && !(var3 instanceof Player)) {
          if (!var2.level().isClientSide && var3.isAlive()) {
             var3.setCustomName(var5);
-            if (var3 instanceof Mob var6) {
+            if (var3 instanceof Mob) {
+               Mob var6 = (Mob)var3;
                var6.setPersistenceRequired();
             }
 

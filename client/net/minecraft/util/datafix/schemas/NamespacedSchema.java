@@ -1,9 +1,9 @@
 package net.minecraft.util.datafix.schemas;
 
-import com.mojang.datafixers.DSL.TypeReference;
+import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.Const.PrimitiveType;
+import com.mojang.datafixers.types.templates.Const;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
@@ -16,15 +16,19 @@ public class NamespacedSchema extends Schema {
       }
 
       public <T> T write(DynamicOps<T> var1, String var2) {
-         return (T)var1.createString(var2);
+         return var1.createString(var2);
       }
 
-      @Override
       public String toString() {
          return "NamespacedString";
       }
+
+      // $FF: synthetic method
+      public Object write(DynamicOps var1, Object var2) {
+         return this.write(var1, (String)var2);
+      }
    };
-   private static final Type<String> NAMESPACED_STRING = new PrimitiveType(NAMESPACED_STRING_CODEC);
+   private static final Type<String> NAMESPACED_STRING;
 
    public NamespacedSchema(int var1, Schema var2) {
       super(var1, var2);
@@ -39,7 +43,11 @@ public class NamespacedSchema extends Schema {
       return NAMESPACED_STRING;
    }
 
-   public Type<?> getChoiceType(TypeReference var1, String var2) {
+   public Type<?> getChoiceType(DSL.TypeReference var1, String var2) {
       return super.getChoiceType(var1, ensureNamespaced(var2));
+   }
+
+   static {
+      NAMESPACED_STRING = new Const.PrimitiveType(NAMESPACED_STRING_CODEC);
    }
 }

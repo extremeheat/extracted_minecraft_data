@@ -22,7 +22,6 @@ public abstract class ResettingWorldTask extends LongRunningTask {
 
    protected abstract void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException;
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
       int var2 = 0;
@@ -57,9 +56,9 @@ public abstract class ResettingWorldTask extends LongRunningTask {
             return;
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return this.title;
    }

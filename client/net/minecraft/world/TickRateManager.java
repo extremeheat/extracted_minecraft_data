@@ -7,13 +7,17 @@ import net.minecraft.world.entity.player.Player;
 public class TickRateManager {
    public static final float MIN_TICKRATE = 1.0F;
    protected float tickrate = 20.0F;
-   protected long nanosecondsPerTick = TimeUtil.NANOSECONDS_PER_SECOND / 20L;
-   protected int frozenTicksToRun = 0;
-   protected boolean runGameElements = true;
-   protected boolean isFrozen = false;
+   protected long nanosecondsPerTick;
+   protected int frozenTicksToRun;
+   protected boolean runGameElements;
+   protected boolean isFrozen;
 
    public TickRateManager() {
       super();
+      this.nanosecondsPerTick = TimeUtil.NANOSECONDS_PER_SECOND / 20L;
+      this.frozenTicksToRun = 0;
+      this.runGameElements = true;
+      this.isFrozen = false;
    }
 
    public void setTickRate(float var1) {
@@ -62,6 +66,7 @@ public class TickRateManager {
       if (this.frozenTicksToRun > 0) {
          --this.frozenTicksToRun;
       }
+
    }
 
    public boolean isEntityFrozen(Entity var1) {

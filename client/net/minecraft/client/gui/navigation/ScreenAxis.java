@@ -8,27 +8,44 @@ public enum ScreenAxis {
    }
 
    public ScreenAxis orthogonal() {
-      return switch(this) {
-         case HORIZONTAL -> VERTICAL;
-         case VERTICAL -> HORIZONTAL;
-      };
+      ScreenAxis var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = VERTICAL;
+         case 1 -> var10000 = HORIZONTAL;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public ScreenDirection getPositive() {
-      return switch(this) {
-         case HORIZONTAL -> ScreenDirection.RIGHT;
-         case VERTICAL -> ScreenDirection.DOWN;
-      };
+      ScreenDirection var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = ScreenDirection.RIGHT;
+         case 1 -> var10000 = ScreenDirection.DOWN;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public ScreenDirection getNegative() {
-      return switch(this) {
-         case HORIZONTAL -> ScreenDirection.LEFT;
-         case VERTICAL -> ScreenDirection.UP;
-      };
+      ScreenDirection var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = ScreenDirection.LEFT;
+         case 1 -> var10000 = ScreenDirection.UP;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public ScreenDirection getDirection(boolean var1) {
       return var1 ? this.getPositive() : this.getNegative();
+   }
+
+   // $FF: synthetic method
+   private static ScreenAxis[] $values() {
+      return new ScreenAxis[]{HORIZONTAL, VERTICAL};
    }
 }

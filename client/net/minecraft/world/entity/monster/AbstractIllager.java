@@ -14,21 +14,18 @@ public abstract class AbstractIllager extends Raider {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
    }
 
-   public AbstractIllager.IllagerArmPose getArmPose() {
+   public IllagerArmPose getArmPose() {
       return AbstractIllager.IllagerArmPose.CROSSED;
    }
 
-   @Override
    public boolean canAttack(LivingEntity var1) {
       return var1 instanceof AbstractVillager && var1.isBaby() ? false : super.canAttack(var1);
    }
 
-   @Override
    public boolean isAlliedTo(Entity var1) {
       if (super.isAlliedTo(var1)) {
          return true;
@@ -51,6 +48,11 @@ public abstract class AbstractIllager extends Raider {
 
       private IllagerArmPose() {
       }
+
+      // $FF: synthetic method
+      private static IllagerArmPose[] $values() {
+         return new IllagerArmPose[]{CROSSED, ATTACKING, SPELLCASTING, BOW_AND_ARROW, CROSSBOW_HOLD, CROSSBOW_CHARGE, CELEBRATING, NEUTRAL};
+      }
    }
 
    protected class RaiderOpenDoorGoal extends OpenDoorGoal {
@@ -58,7 +60,6 @@ public abstract class AbstractIllager extends Raider {
          super(var2, false);
       }
 
-      @Override
       public boolean canUse() {
          return super.canUse() && AbstractIllager.this.hasActiveRaid();
       }

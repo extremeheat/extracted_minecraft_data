@@ -38,4 +38,9 @@ public enum PlayerModelPart {
    public Component getName() {
       return this.name;
    }
+
+   // $FF: synthetic method
+   private static PlayerModelPart[] $values() {
+      return new PlayerModelPart[]{CAPE, JACKET, LEFT_SLEEVE, RIGHT_SLEEVE, LEFT_PANTS_LEG, RIGHT_PANTS_LEG, HAT};
+   }
 }

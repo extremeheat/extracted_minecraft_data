@@ -22,6 +22,11 @@ public enum Markings {
    }
 
    public static Markings byId(int var0) {
-      return BY_ID.apply(var0);
+      return (Markings)BY_ID.apply(var0);
+   }
+
+   // $FF: synthetic method
+   private static Markings[] $values() {
+      return new Markings[]{NONE, WHITE, WHITE_FIELD, WHITE_DOTS, BLACK_DOTS};
    }
 }

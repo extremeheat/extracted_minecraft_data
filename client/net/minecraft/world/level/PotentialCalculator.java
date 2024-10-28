@@ -1,11 +1,12 @@
 package net.minecraft.world.level;
 
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 
 public class PotentialCalculator {
-   private final List<PotentialCalculator.PointCharge> charges = Lists.newArrayList();
+   private final List<PointCharge> charges = Lists.newArrayList();
 
    public PotentialCalculator() {
       super();
@@ -13,8 +14,9 @@ public class PotentialCalculator {
 
    public void addCharge(BlockPos var1, double var2) {
       if (var2 != 0.0) {
-         this.charges.add(new PotentialCalculator.PointCharge(var1, var2));
+         this.charges.add(new PointCharge(var1, var2));
       }
+
    }
 
    public double getPotentialEnergyChange(BlockPos var1, double var2) {
@@ -23,15 +25,16 @@ public class PotentialCalculator {
       } else {
          double var4 = 0.0;
 
-         for(PotentialCalculator.PointCharge var7 : this.charges) {
-            var4 += var7.getPotentialChange(var1);
+         PointCharge var7;
+         for(Iterator var6 = this.charges.iterator(); var6.hasNext(); var4 += var7.getPotentialChange(var1)) {
+            var7 = (PointCharge)var6.next();
          }
 
          return var4 * var2;
       }
    }
 
-   static class PointCharge {
+   private static class PointCharge {
       private final BlockPos pos;
       private final double charge;
 

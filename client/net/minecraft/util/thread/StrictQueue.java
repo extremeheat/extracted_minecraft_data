@@ -16,7 +16,7 @@ public interface StrictQueue<T, F> {
 
    int size();
 
-   public static final class FixedPriorityQueue implements StrictQueue<StrictQueue.IntRunnable, Runnable> {
+   public static final class FixedPriorityQueue implements StrictQueue<IntRunnable, Runnable> {
       private final Queue<Runnable>[] queues;
       private final AtomicInteger size = new AtomicInteger();
 
@@ -27,11 +27,16 @@ public interface StrictQueue<T, F> {
          for(int var2 = 0; var2 < var1; ++var2) {
             this.queues[var2] = Queues.newConcurrentLinkedQueue();
          }
+
       }
 
       @Nullable
       public Runnable pop() {
-         for(Queue var4 : this.queues) {
+         Queue[] var1 = this.queues;
+         int var2 = var1.length;
+
+         for(int var3 = 0; var3 < var2; ++var3) {
+            Queue var4 = var1[var3];
             Runnable var5 = (Runnable)var4.poll();
             if (var5 != null) {
                this.size.decrementAndGet();
@@ -42,7 +47,7 @@ public interface StrictQueue<T, F> {
          return null;
       }
 
-      public boolean push(StrictQueue.IntRunnable var1) {
+      public boolean push(IntRunnable var1) {
          int var2 = var1.priority;
          if (var2 < this.queues.length && var2 >= 0) {
             this.queues[var2].add(var1);
@@ -53,14 +58,18 @@ public interface StrictQueue<T, F> {
          }
       }
 
-      @Override
       public boolean isEmpty() {
          return this.size.get() == 0;
       }
 
-      @Override
       public int size() {
          return this.size.get();
+      }
+
+      // $FF: synthetic method
+      @Nullable
+      public Object pop() {
+         return this.pop();
       }
    }
 
@@ -74,7 +83,6 @@ public interface StrictQueue<T, F> {
          this.task = var2;
       }
 
-      @Override
       public void run() {
          this.task.run();
       }
@@ -93,22 +101,18 @@ public interface StrictQueue<T, F> {
       }
 
       @Nullable
-      @Override
       public T pop() {
          return this.queue.poll();
       }
 
-      @Override
       public boolean push(T var1) {
-         return this.queue.add((T)var1);
+         return this.queue.add(var1);
       }
 
-      @Override
       public boolean isEmpty() {
          return this.queue.isEmpty();
       }
 
-      @Override
       public int size() {
          return this.queue.size();
       }

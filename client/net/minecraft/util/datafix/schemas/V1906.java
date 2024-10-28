@@ -17,12 +17,16 @@ public class V1906 extends NamespacedSchema {
       registerInventory(var1, var2, "minecraft:barrel");
       registerInventory(var1, var2, "minecraft:smoker");
       registerInventory(var1, var2, "minecraft:blast_furnace");
-      var1.register(var2, "minecraft:lectern", var1x -> DSL.optionalFields("Book", References.ITEM_STACK.in(var1)));
+      var1.register(var2, "minecraft:lectern", (var1x) -> {
+         return DSL.optionalFields("Book", References.ITEM_STACK.in(var1));
+      });
       var1.registerSimple(var2, "minecraft:bell");
       return var2;
    }
 
    protected static void registerInventory(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0))));
+      var0.register(var1, var2, () -> {
+         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0)));
+      });
    }
 }

@@ -8,7 +8,6 @@ import net.minecraft.WorldVersion;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
@@ -86,9 +85,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public MutableComponent getWorldVersionName() {
-      return StringUtil.isNullOrEmpty(this.levelVersion.minecraftVersionName())
-         ? Component.translatable("selectWorld.versionUnknown")
-         : Component.literal(this.levelVersion.minecraftVersionName());
+      return StringUtil.isNullOrEmpty(this.levelVersion.minecraftVersionName()) ? Component.translatable("selectWorld.versionUnknown") : Component.literal(this.levelVersion.minecraftVersionName());
    }
 
    public LevelVersion levelVersion() {
@@ -103,7 +100,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return this.backupStatus() == LevelSummary.BackupStatus.DOWNGRADE;
    }
 
-   public LevelSummary.BackupStatus backupStatus() {
+   public BackupStatus backupStatus() {
       WorldVersion var1 = SharedConstants.getCurrentVersion();
       int var2 = var1.getDataVersion().getVersion();
       int var3 = this.levelVersion.minecraftVersion().getVersion();
@@ -146,26 +143,24 @@ public class LevelSummary implements Comparable<LevelSummary> {
       } else if (!this.isCompatible()) {
          return Component.translatable("selectWorld.incompatible.info", this.getWorldVersionName()).withStyle(ChatFormatting.RED);
       } else {
-         MutableComponent var1 = this.isHardcore()
-            ? Component.empty().append(Component.translatable("gameMode.hardcore").withColor(-65536))
-            : Component.translatable("gameMode." + this.getGameMode().getName());
+         MutableComponent var1 = this.isHardcore() ? Component.empty().append((Component)Component.translatable("gameMode.hardcore").withColor(-65536)) : Component.translatable("gameMode." + this.getGameMode().getName());
          if (this.hasCommands()) {
-            var1.append(", ").append(Component.translatable("selectWorld.commands"));
+            var1.append(", ").append((Component)Component.translatable("selectWorld.commands"));
          }
 
          if (this.isExperimental()) {
-            var1.append(", ").append(Component.translatable("selectWorld.experimental").withStyle(ChatFormatting.YELLOW));
+            var1.append(", ").append((Component)Component.translatable("selectWorld.experimental").withStyle(ChatFormatting.YELLOW));
          }
 
          MutableComponent var2 = this.getWorldVersionName();
-         MutableComponent var3 = Component.literal(", ").append(Component.translatable("selectWorld.version")).append(CommonComponents.SPACE);
+         MutableComponent var3 = Component.literal(", ").append((Component)Component.translatable("selectWorld.version")).append(CommonComponents.SPACE);
          if (this.shouldBackup()) {
-            var3.append(var2.withStyle(this.isDowngrade() ? ChatFormatting.RED : ChatFormatting.ITALIC));
+            var3.append((Component)var2.withStyle(this.isDowngrade() ? ChatFormatting.RED : ChatFormatting.ITALIC));
          } else {
-            var3.append(var2);
+            var3.append((Component)var2);
          }
 
-         var1.append(var3);
+         var1.append((Component)var3);
          return var1;
       }
    }
@@ -194,6 +189,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return true;
    }
 
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((LevelSummary)var1);
+   }
+
    public static enum BackupStatus {
       NONE(false, false, ""),
       DOWNGRADE(true, true, "downgrade"),
@@ -220,61 +220,64 @@ public class LevelSummary implements Comparable<LevelSummary> {
       public String getTranslationKey() {
          return this.translationKey;
       }
+
+      // $FF: synthetic method
+      private static BackupStatus[] $values() {
+         return new BackupStatus[]{NONE, DOWNGRADE, UPGRADE_TO_SNAPSHOT};
+      }
    }
 
    public static class CorruptedLevelSummary extends LevelSummary {
-      private static final Component INFO = Component.translatable("recover_world.warning").withStyle(var0 -> var0.withColor(-65536));
+      private static final Component INFO = Component.translatable("recover_world.warning").withStyle((var0) -> {
+         return var0.withColor(-65536);
+      });
       private static final Component RECOVER = Component.translatable("recover_world.button");
       private final long lastPlayed;
 
       public CorruptedLevelSummary(String var1, Path var2, long var3) {
-         super(null, null, var1, false, false, false, var2);
+         super((LevelSettings)null, (LevelVersion)null, var1, false, false, false, var2);
          this.lastPlayed = var3;
       }
 
-      @Override
       public String getLevelName() {
          return this.getLevelId();
       }
 
-      @Override
       public Component getInfo() {
          return INFO;
       }
 
-      @Override
       public long getLastPlayed() {
          return this.lastPlayed;
       }
 
-      @Override
       public boolean isDisabled() {
          return false;
       }
 
-      @Override
       public Component primaryActionMessage() {
          return RECOVER;
       }
 
-      @Override
       public boolean primaryActionActive() {
          return true;
       }
 
-      @Override
       public boolean canUpload() {
          return false;
       }
 
-      @Override
       public boolean canEdit() {
          return false;
       }
 
-      @Override
       public boolean canRecreate() {
          return false;
+      }
+
+      // $FF: synthetic method
+      public int compareTo(Object var1) {
+         return super.compareTo((LevelSummary)var1);
       }
    }
 
@@ -283,52 +286,48 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private static final Component INFO = Component.translatable("symlink_warning.title").withColor(-65536);
 
       public SymlinkLevelSummary(String var1, Path var2) {
-         super(null, null, var1, false, false, false, var2);
+         super((LevelSettings)null, (LevelVersion)null, var1, false, false, false, var2);
       }
 
-      @Override
       public String getLevelName() {
          return this.getLevelId();
       }
 
-      @Override
       public Component getInfo() {
          return INFO;
       }
 
-      @Override
       public long getLastPlayed() {
          return -1L;
       }
 
-      @Override
       public boolean isDisabled() {
          return false;
       }
 
-      @Override
       public Component primaryActionMessage() {
          return MORE_INFO_BUTTON;
       }
 
-      @Override
       public boolean primaryActionActive() {
          return true;
       }
 
-      @Override
       public boolean canUpload() {
          return false;
       }
 
-      @Override
       public boolean canEdit() {
          return false;
       }
 
-      @Override
       public boolean canRecreate() {
          return false;
+      }
+
+      // $FF: synthetic method
+      public int compareTo(Object var1) {
+         return super.compareTo((LevelSummary)var1);
       }
    }
 }

@@ -19,37 +19,32 @@ public class LegacyRandomSource implements BitRandomSource {
       this.setSeed(var1);
    }
 
-   @Override
    public RandomSource fork() {
       return new LegacyRandomSource(this.nextLong());
    }
 
-   @Override
    public PositionalRandomFactory forkPositional() {
-      return new LegacyRandomSource.LegacyPositionalRandomFactory(this.nextLong());
+      return new LegacyPositionalRandomFactory(this.nextLong());
    }
 
-   @Override
    public void setSeed(long var1) {
       if (!this.seed.compareAndSet(this.seed.get(), (var1 ^ 25214903917L) & 281474976710655L)) {
-         throw ThreadingDetector.makeThreadingException("LegacyRandomSource", null);
+         throw ThreadingDetector.makeThreadingException("LegacyRandomSource", (Thread)null);
       } else {
          this.gaussianSource.reset();
       }
    }
 
-   @Override
    public int next(int var1) {
       long var2 = this.seed.get();
       long var4 = var2 * 25214903917L + 11L & 281474976710655L;
       if (!this.seed.compareAndSet(var2, var4)) {
-         throw ThreadingDetector.makeThreadingException("LegacyRandomSource", null);
+         throw ThreadingDetector.makeThreadingException("LegacyRandomSource", (Thread)null);
       } else {
          return (int)(var4 >> 48 - var1);
       }
    }
 
-   @Override
    public double nextGaussian() {
       return this.gaussianSource.nextGaussian();
    }
@@ -62,21 +57,18 @@ public class LegacyRandomSource implements BitRandomSource {
          this.seed = var1;
       }
 
-      @Override
       public RandomSource at(int var1, int var2, int var3) {
          long var4 = Mth.getSeed(var1, var2, var3);
          long var6 = var4 ^ this.seed;
          return new LegacyRandomSource(var6);
       }
 
-      @Override
       public RandomSource fromHashOf(String var1) {
          int var2 = var1.hashCode();
          return new LegacyRandomSource((long)var2 ^ this.seed);
       }
 
       @VisibleForTesting
-      @Override
       public void parityConfigString(StringBuilder var1) {
          var1.append("LegacyPositionalRandomFactory{").append(this.seed).append("}");
       }

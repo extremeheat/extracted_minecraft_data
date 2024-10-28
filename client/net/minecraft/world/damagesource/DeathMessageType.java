@@ -15,8 +15,12 @@ public enum DeathMessageType implements StringRepresentable {
       this.id = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
+   }
+
+   // $FF: synthetic method
+   private static DeathMessageType[] $values() {
+      return new DeathMessageType[]{DEFAULT, FALL_VARIANTS, INTENTIONAL_GAME_DESIGN};
    }
 }

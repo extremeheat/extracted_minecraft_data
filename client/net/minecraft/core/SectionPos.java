@@ -1,7 +1,7 @@
 package net.minecraft.core;
 
 import it.unimi.dsi.fastutil.longs.LongConsumer;
-import java.util.Spliterators.AbstractSpliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -209,7 +209,8 @@ public class SectionPos extends Vec3i {
       long var3 = 0L;
       var3 |= ((long)var0 & 4194303L) << 42;
       var3 |= ((long)var1 & 1048575L) << 0;
-      return var3 | ((long)var2 & 4194303L) << 20;
+      var3 |= ((long)var2 & 4194303L) << 20;
+      return var3;
    }
 
    public long asLong() {
@@ -238,10 +239,9 @@ public class SectionPos extends Vec3i {
    }
 
    public static Stream<SectionPos> betweenClosedStream(final int var0, final int var1, final int var2, final int var3, final int var4, final int var5) {
-      return StreamSupport.stream(new AbstractSpliterator<SectionPos>((long)((var3 - var0 + 1) * (var4 - var1 + 1) * (var5 - var2 + 1)), 64) {
+      return StreamSupport.stream(new Spliterators.AbstractSpliterator<SectionPos>((long)((var3 - var0 + 1) * (var4 - var1 + 1) * (var5 - var2 + 1)), 64) {
          final Cursor3D cursor = new Cursor3D(var0, var1, var2, var3, var4, var5);
 
-         @Override
          public boolean tryAdvance(Consumer<? super SectionPos> var1x) {
             if (this.cursor.advance()) {
                var1x.accept(new SectionPos(this.cursor.nextX(), this.cursor.nextY(), this.cursor.nextZ()));
@@ -279,5 +279,11 @@ public class SectionPos extends Vec3i {
             }
          }
       }
+
+   }
+
+   // $FF: synthetic method
+   public Vec3i offset(int var1, int var2, int var3) {
+      return this.offset(var1, var2, var3);
    }
 }

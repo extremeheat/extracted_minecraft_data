@@ -19,7 +19,6 @@ public class BandwidthDebugChart extends AbstractDebugChart {
       super(var1, var2);
    }
 
-   @Override
    protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
       this.drawLabeledLineAtValue(var1, var2, var3, var4, 64);
       this.drawLabeledLineAtValue(var1, var2, var3, var4, 1024);
@@ -36,7 +35,6 @@ public class BandwidthDebugChart extends AbstractDebugChart {
       var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4, -1);
    }
 
-   @Override
    protected String toDisplayString(double var1) {
       return toDisplayStringInternal(toBytesPerSecond(var1));
    }
@@ -49,7 +47,6 @@ public class BandwidthDebugChart extends AbstractDebugChart {
       }
    }
 
-   @Override
    protected int getSampleHeight(double var1) {
       return getSampleHeightInternal(toBytesPerSecond(var1));
    }
@@ -58,7 +55,6 @@ public class BandwidthDebugChart extends AbstractDebugChart {
       return (int)Math.round(Math.log(var0 + 1.0) * 60.0 / Math.log(1048576.0));
    }
 
-   @Override
    protected int getSampleColor(long var1) {
       return this.getSampleColor(toBytesPerSecond((double)var1), 0.0, -16711681, 8192.0, -6250241, 1.048576E7, -65536);
    }

@@ -29,17 +29,14 @@ public class DustParticleBase<T extends DustParticleOptionsBase> extends Texture
       return (this.random.nextFloat() * 0.2F + 0.8F) * var1 * var2;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public float getQuadSize(float var1) {
       return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.setSpriteFromAge(this.sprites);

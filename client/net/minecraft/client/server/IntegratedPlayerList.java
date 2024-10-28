@@ -5,6 +5,7 @@ import java.net.SocketAddress;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -18,7 +19,6 @@ public class IntegratedPlayerList extends PlayerList {
       this.setViewDistance(10);
    }
 
-   @Override
    protected void save(ServerPlayer var1) {
       if (this.getServer().isSingleplayerOwner(var1.getGameProfile())) {
          this.playerData = var1.saveWithoutId(new CompoundTag());
@@ -27,19 +27,20 @@ public class IntegratedPlayerList extends PlayerList {
       super.save(var1);
    }
 
-   @Override
    public Component canPlayerLogin(SocketAddress var1, GameProfile var2) {
-      return (Component)(this.getServer().isSingleplayerOwner(var2) && this.getPlayerByName(var2.getName()) != null
-         ? Component.translatable("multiplayer.disconnect.name_taken")
-         : super.canPlayerLogin(var1, var2));
+      return (Component)(this.getServer().isSingleplayerOwner(var2) && this.getPlayerByName(var2.getName()) != null ? Component.translatable("multiplayer.disconnect.name_taken") : super.canPlayerLogin(var1, var2));
    }
 
    public IntegratedServer getServer() {
       return (IntegratedServer)super.getServer();
    }
 
-   @Override
    public CompoundTag getSingleplayerData() {
       return this.playerData;
+   }
+
+   // $FF: synthetic method
+   public MinecraftServer getServer() {
+      return this.getServer();
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
@@ -24,10 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
 public class ZombieHorse extends AbstractHorse {
-   private static final EntityDimensions BABY_DIMENSIONS = EntityType.ZOMBIE_HORSE
-      .getDimensions()
-      .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.ZOMBIE_HORSE.getHeight() - 0.03125F, 0.0F))
-      .scale(0.5F);
+   private static final EntityDimensions BABY_DIMENSIONS;
 
    public ZombieHorse(EntityType<? extends ZombieHorse> var1, Level var2) {
       super(var1, var2);
@@ -45,43 +44,41 @@ public class ZombieHorse extends AbstractHorse {
       }
    }
 
-   @Override
    protected void randomizeAttributes(RandomSource var1) {
-      this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(generateJumpStrength(var1::nextDouble));
+      AttributeInstance var10000 = this.getAttribute(Attributes.JUMP_STRENGTH);
+      Objects.requireNonNull(var1);
+      var10000.setBaseValue(generateJumpStrength(var1::nextDouble));
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.ZOMBIE_HORSE_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.ZOMBIE_HORSE_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.ZOMBIE_HORSE_HURT;
    }
 
    @Nullable
-   @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.ZOMBIE_HORSE.create(var1);
+      return (AgeableMob)EntityType.ZOMBIE_HORSE.create(var1);
    }
 
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       return !this.isTamed() ? InteractionResult.PASS : super.mobInteract(var1, var2);
    }
 
-   @Override
    protected void addBehaviourGoals() {
    }
 
-   @Override
    public EntityDimensions getDefaultDimensions(Pose var1) {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   }
+
+   static {
+      BABY_DIMENSIONS = EntityType.ZOMBIE_HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.ZOMBIE_HORSE.getHeight() - 0.03125F, 0.0F)).scale(0.5F);
    }
 }

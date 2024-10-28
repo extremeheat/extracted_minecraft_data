@@ -17,6 +17,16 @@ public class Rotations {
          var1.writeFloat(var2.y);
          var1.writeFloat(var2.z);
       }
+
+      // $FF: synthetic method
+      public void encode(Object var1, Object var2) {
+         this.encode((ByteBuf)var1, (Rotations)var2);
+      }
+
+      // $FF: synthetic method
+      public Object decode(Object var1) {
+         return this.decode((ByteBuf)var1);
+      }
    };
    protected final float x;
    protected final float y;
@@ -41,12 +51,10 @@ public class Rotations {
       return var1;
    }
 
-   @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof Rotations)) {
+      if (!(var1 instanceof Rotations var2)) {
          return false;
       } else {
-         Rotations var2 = (Rotations)var1;
          return this.x == var2.x && this.y == var2.y && this.z == var2.z;
       }
    }

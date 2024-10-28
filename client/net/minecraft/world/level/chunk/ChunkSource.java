@@ -23,7 +23,6 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
    }
 
    @Nullable
-   @Override
    public LightChunk getChunkForLighting(int var1, int var2) {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY, false);
    }
@@ -41,7 +40,6 @@ public abstract class ChunkSource implements LightChunkGetter, AutoCloseable {
 
    public abstract int getLoadedChunksCount();
 
-   @Override
    public void close() throws IOException {
    }
 

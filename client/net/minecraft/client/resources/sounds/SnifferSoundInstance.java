@@ -17,12 +17,10 @@ public class SnifferSoundInstance extends AbstractTickableSoundInstance {
       this.delay = 0;
    }
 
-   @Override
    public boolean canPlaySound() {
       return !this.sniffer.isSilent();
    }
 
-   @Override
    public void tick() {
       if (!this.sniffer.isRemoved() && this.sniffer.getTarget() == null && this.sniffer.canPlayDiggingSound()) {
          this.x = (double)((float)this.sniffer.getX());

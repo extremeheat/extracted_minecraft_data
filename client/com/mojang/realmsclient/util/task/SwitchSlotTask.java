@@ -20,7 +20,6 @@ public class SwitchSlotTask extends LongRunningTask {
       this.callback = var4;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
 
@@ -49,9 +48,9 @@ public class SwitchSlotTask extends LongRunningTask {
             this.error(var5);
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

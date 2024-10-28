@@ -12,8 +12,7 @@ import net.minecraft.world.phys.Vec3;
 
 public interface PositionSource {
    Codec<PositionSource> CODEC = BuiltInRegistries.POSITION_SOURCE_TYPE.byNameCodec().dispatch(PositionSource::getType, PositionSourceType::codec);
-   StreamCodec<RegistryFriendlyByteBuf, PositionSource> STREAM_CODEC = ByteBufCodecs.registry(Registries.POSITION_SOURCE_TYPE)
-      .dispatch(PositionSource::getType, PositionSourceType::streamCodec);
+   StreamCodec<RegistryFriendlyByteBuf, PositionSource> STREAM_CODEC = ByteBufCodecs.registry(Registries.POSITION_SOURCE_TYPE).dispatch(PositionSource::getType, PositionSourceType::streamCodec);
 
    Optional<Vec3> getPosition(Level var1);
 

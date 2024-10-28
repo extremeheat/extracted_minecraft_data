@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
@@ -23,15 +24,18 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    private final Codec<Either<TagKey<E>, List<Holder<E>>>> registryAwareCodec;
 
    private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Holder<E>> var0, boolean var1) {
-      Codec var2 = ExtraCodecs.validate(var0.listOf(), ExtraCodecs.ensureHomogenous(Holder::kind));
-      return var1
-         ? var2
-         : Codec.either(var2, var0)
-            .xmap(var0x -> (List)var0x.map(var0xx -> var0xx, List::of), var0x -> var0x.size() == 1 ? Either.right((Holder)var0x.get(0)) : Either.left(var0x));
+      Codec var2 = var0.listOf().validate(ExtraCodecs.ensureHomogenous(Holder::kind));
+      return var1 ? var2 : Codec.either(var2, var0).xmap((var0x) -> {
+         return (List)var0x.map((var0) -> {
+            return var0;
+         }, List::of);
+      }, (var0x) -> {
+         return var0x.size() == 1 ? Either.right((Holder)var0x.get(0)) : Either.left(var0x);
+      });
    }
 
    public static <E> Codec<HolderSet<E>> create(ResourceKey<? extends Registry<E>> var0, Codec<Holder<E>> var1, boolean var2) {
-      return new HolderSetCodec<>(var0, var1, var2);
+      return new HolderSetCodec(var0, var1, var2);
    }
 
    private HolderSetCodec(ResourceKey<? extends Registry<E>> var1, Codec<Holder<E>> var2, boolean var3) {
@@ -42,69 +46,80 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
       this.registryAwareCodec = Codec.either(TagKey.hashedCodec(var1), this.homogenousListCodec);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<HolderSet<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
          if (var4.isPresent()) {
             HolderGetter var5 = (HolderGetter)var4.get();
-            return this.registryAwareCodec
-               .decode(var1, var2)
-               .flatMap(
-                  var1x -> {
-                     DataResult var2xx = (DataResult)((Either)var1x.getFirst())
-                        .map(var1xx -> lookupTag(var5, var1xx), var0x -> DataResult.success(HolderSet.direct(var0x)));
-                     return var2xx.map(var1xx -> Pair.of(var1xx, var1x.getSecond()));
-                  }
-               );
+            return this.registryAwareCodec.decode(var1, var2).flatMap((var1x) -> {
+               DataResult var2 = (DataResult)((Either)var1x.getFirst()).map((var1) -> {
+                  return lookupTag(var5, var1);
+               }, (var0) -> {
+                  return DataResult.success(HolderSet.direct(var0));
+               });
+               return var2.map((var1) -> {
+                  return Pair.of(var1, var1x.getSecond());
+               });
+            });
          }
       }
 
-      return this.decodeWithoutRegistry(var1, (T)var2);
+      return this.decodeWithoutRegistry(var1, var2);
    }
 
    private static <E> DataResult<HolderSet<E>> lookupTag(HolderGetter<E> var0, TagKey<E> var1) {
-      return (DataResult<HolderSet<E>>)var0.get(var1)
-         .map(DataResult::success)
-         .orElseGet(() -> DataResult.error(() -> "Missing tag: '" + var1.location() + "' in '" + var1.registry().location() + "'"));
+      return (DataResult)var0.get(var1).map(DataResult::success).orElseGet(() -> {
+         return DataResult.error(() -> {
+            String var10000 = String.valueOf(var1.location());
+            return "Missing tag: '" + var10000 + "' in '" + String.valueOf(var1.registry().location()) + "'";
+         });
+      });
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(HolderSet<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
          Optional var5 = var4.owner(this.registryKey);
          if (var5.isPresent()) {
-            if (!var1.canSerializeIn((HolderOwner<T>)var5.get())) {
-               return DataResult.error(() -> "HolderSet " + var1 + " is not valid in current registry set");
+            if (!var1.canSerializeIn((HolderOwner)var5.get())) {
+               return DataResult.error(() -> {
+                  return "HolderSet " + String.valueOf(var1) + " is not valid in current registry set";
+               });
             }
 
             return this.registryAwareCodec.encode(var1.unwrap().mapRight(List::copyOf), var2, var3);
          }
       }
 
-      return this.encodeWithoutRegistry(var1, var2, (T)var3);
+      return this.encodeWithoutRegistry(var1, var2, var3);
    }
 
    private <T> DataResult<Pair<HolderSet<E>, T>> decodeWithoutRegistry(DynamicOps<T> var1, T var2) {
-      return this.elementCodec.listOf().decode(var1, var2).flatMap(var0 -> {
-         ArrayList var1xx = new ArrayList();
+      return this.elementCodec.listOf().decode(var1, var2).flatMap((var0) -> {
+         ArrayList var1 = new ArrayList();
+         Iterator var2 = ((List)var0.getFirst()).iterator();
 
-         for(Holder var3 : (List)var0.getFirst()) {
+         while(var2.hasNext()) {
+            Holder var3 = (Holder)var2.next();
             if (!(var3 instanceof Holder.Direct)) {
-               return DataResult.error(() -> "Can't decode element " + var3 + " without registry");
+               return DataResult.error(() -> {
+                  return "Can't decode element " + String.valueOf(var3) + " without registry";
+               });
             }
 
             Holder.Direct var4 = (Holder.Direct)var3;
-            var1xx.add(var4);
+            var1.add(var4);
          }
 
-         return DataResult.success(new Pair(HolderSet.direct(var1xx), var0.getSecond()));
+         return DataResult.success(new Pair(HolderSet.direct((List)var1), var0.getSecond()));
       });
    }
 
    private <T> DataResult<T> encodeWithoutRegistry(HolderSet<E> var1, DynamicOps<T> var2, T var3) {
       return this.homogenousListCodec.encode(var1.stream().toList(), var2, var3);
+   }
+
+   // $FF: synthetic method
+   public DataResult encode(Object var1, DynamicOps var2, Object var3) {
+      return this.encode((HolderSet)var1, var2, var3);
    }
 }

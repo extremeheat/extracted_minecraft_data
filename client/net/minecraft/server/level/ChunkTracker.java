@@ -8,12 +8,10 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
       super(var1, var2, var3);
    }
 
-   @Override
    protected boolean isSource(long var1) {
       return var1 == ChunkPos.INVALID_CHUNK_POS;
    }
 
-   @Override
    protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
       if (!var4 || var3 < this.levelCount - 2) {
          ChunkPos var5 = new ChunkPos(var1);
@@ -28,10 +26,10 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
                }
             }
          }
+
       }
    }
 
-   @Override
    protected int getComputedLevel(long var1, long var3, int var5) {
       int var6 = var5;
       ChunkPos var7 = new ChunkPos(var1);
@@ -61,7 +59,6 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
       return var6;
    }
 
-   @Override
    protected int computeLevelFromNeighbor(long var1, long var3, int var5) {
       return var1 == ChunkPos.INVALID_CHUNK_POS ? this.getLevelFromSource(var3) : var5 + 1;
    }

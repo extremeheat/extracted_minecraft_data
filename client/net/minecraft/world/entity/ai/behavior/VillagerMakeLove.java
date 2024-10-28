@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -21,13 +22,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
    private long birthTimestamp;
 
    public VillagerMakeLove() {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
-         ),
-         350,
-         350
-      );
+      super(ImmutableMap.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT), 350, 350);
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
@@ -39,7 +34,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
    }
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
-      AgeableMob var5 = var2.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
+      AgeableMob var5 = (AgeableMob)var2.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
       BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
       var1.broadcastEntityEvent(var5, (byte)18);
       var1.broadcastEntityEvent(var2, (byte)18);
@@ -59,6 +54,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
             var1.broadcastEntityEvent(var5, (byte)12);
             var1.broadcastEntityEvent(var2, (byte)12);
          }
+
       }
    }
 
@@ -76,6 +72,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
             DebugPackets.sendPoiTicketCountPacket(var1, (BlockPos)var4.get());
          }
       }
+
    }
 
    protected void stop(ServerLevel var1, Villager var2, long var3) {
@@ -84,7 +81,9 @@ public class VillagerMakeLove extends Behavior<Villager> {
 
    private boolean isBreedingPossible(Villager var1) {
       Brain var2 = var1.getBrain();
-      Optional var3 = var2.getMemory(MemoryModuleType.BREED_TARGET).filter(var0 -> var0.getType() == EntityType.VILLAGER);
+      Optional var3 = var2.getMemory(MemoryModuleType.BREED_TARGET).filter((var0) -> {
+         return var0.getType() == EntityType.VILLAGER;
+      });
       if (var3.isEmpty()) {
          return false;
       } else {
@@ -93,7 +92,11 @@ public class VillagerMakeLove extends Behavior<Villager> {
    }
 
    private Optional<BlockPos> takeVacantBed(ServerLevel var1, Villager var2) {
-      return var1.getPoiManager().take(var0 -> var0.is(PoiTypes.HOME), (var2x, var3) -> this.canReach(var2, var3, var2x), var2.blockPosition(), 48);
+      return var1.getPoiManager().take((var0) -> {
+         return var0.is(PoiTypes.HOME);
+      }, (var2x, var3) -> {
+         return this.canReach(var2, var3, var2x);
+      }, var2.blockPosition(), 48);
    }
 
    private boolean canReach(Villager var1, BlockPos var2, Holder<PoiType> var3) {
@@ -118,6 +121,16 @@ public class VillagerMakeLove extends Behavior<Villager> {
 
    private void giveBedToChild(ServerLevel var1, Villager var2, BlockPos var3) {
       GlobalPos var4 = GlobalPos.of(var1.dimension(), var3);
-      var2.getBrain().setMemory(MemoryModuleType.HOME, var4);
+      var2.getBrain().setMemory(MemoryModuleType.HOME, (Object)var4);
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.client.resources.metadata.animation;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -17,17 +16,18 @@ public class AnimationMetadataSectionSerializer implements MetadataSectionSerial
    }
 
    public AnimationMetadataSection fromJson(JsonObject var1) {
-      Builder var2 = ImmutableList.builder();
+      ImmutableList.Builder var2 = ImmutableList.builder();
       int var3 = GsonHelper.getAsInt(var1, "frametime", 1);
       if (var3 != 1) {
          Validate.inclusiveBetween(1L, 2147483647L, (long)var3, "Invalid default frame time");
       }
 
+      int var5;
       if (var1.has("frames")) {
          try {
             JsonArray var4 = GsonHelper.getAsJsonArray(var1, "frames");
 
-            for(int var5 = 0; var5 < var4.size(); ++var5) {
+            for(var5 = 0; var5 < var4.size(); ++var5) {
                JsonElement var6 = var4.get(var5);
                AnimationFrame var7 = this.getFrame(var5, var6);
                if (var7 != null) {
@@ -35,22 +35,22 @@ public class AnimationMetadataSectionSerializer implements MetadataSectionSerial
                }
             }
          } catch (ClassCastException var8) {
-            throw new JsonParseException("Invalid animation->frames: expected array, was " + var1.get("frames"), var8);
+            throw new JsonParseException("Invalid animation->frames: expected array, was " + String.valueOf(var1.get("frames")), var8);
          }
       }
 
       int var9 = GsonHelper.getAsInt(var1, "width", -1);
-      int var10 = GsonHelper.getAsInt(var1, "height", -1);
+      var5 = GsonHelper.getAsInt(var1, "height", -1);
       if (var9 != -1) {
          Validate.inclusiveBetween(1L, 2147483647L, (long)var9, "Invalid width");
       }
 
-      if (var10 != -1) {
-         Validate.inclusiveBetween(1L, 2147483647L, (long)var10, "Invalid height");
+      if (var5 != -1) {
+         Validate.inclusiveBetween(1L, 2147483647L, (long)var5, "Invalid height");
       }
 
-      boolean var11 = GsonHelper.getAsBoolean(var1, "interpolate", false);
-      return new AnimationMetadataSection(var2.build(), var9, var10, var3, var11);
+      boolean var10 = GsonHelper.getAsBoolean(var1, "interpolate", false);
+      return new AnimationMetadataSection(var2.build(), var9, var5, var3, var10);
    }
 
    @Nullable
@@ -72,8 +72,12 @@ public class AnimationMetadataSectionSerializer implements MetadataSectionSerial
       }
    }
 
-   @Override
    public String getMetadataSectionName() {
       return "animation";
+   }
+
+   // $FF: synthetic method
+   public Object fromJson(JsonObject var1) {
+      return this.fromJson(var1);
    }
 }

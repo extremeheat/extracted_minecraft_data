@@ -40,37 +40,20 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
       var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(2, 8).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 6.0F, 3.0F), PartPose.offset(0.0F, 16.5F, -3.0F));
-      var1.addOrReplaceChild(
-         "tail", CubeListBuilder.create().texOffs(22, 1).addBox(-1.5F, -1.0F, -1.0F, 3.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 21.07F, 1.16F)
-      );
-      var1.addOrReplaceChild(
-         "left_wing", CubeListBuilder.create().texOffs(19, 8).addBox(-0.5F, 0.0F, -1.5F, 1.0F, 5.0F, 3.0F), PartPose.offset(1.5F, 16.94F, -2.76F)
-      );
-      var1.addOrReplaceChild(
-         "right_wing", CubeListBuilder.create().texOffs(19, 8).addBox(-0.5F, 0.0F, -1.5F, 1.0F, 5.0F, 3.0F), PartPose.offset(-1.5F, 16.94F, -2.76F)
-      );
-      PartDefinition var2 = var1.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(2, 2).addBox(-1.0F, -1.5F, -1.0F, 2.0F, 3.0F, 2.0F), PartPose.offset(0.0F, 15.69F, -2.76F)
-      );
-      var2.addOrReplaceChild(
-         "head2", CubeListBuilder.create().texOffs(10, 0).addBox(-1.0F, -0.5F, -2.0F, 2.0F, 1.0F, 4.0F), PartPose.offset(0.0F, -2.0F, -1.0F)
-      );
-      var2.addOrReplaceChild(
-         "beak1", CubeListBuilder.create().texOffs(11, 7).addBox(-0.5F, -1.0F, -0.5F, 1.0F, 2.0F, 1.0F), PartPose.offset(0.0F, -0.5F, -1.5F)
-      );
-      var2.addOrReplaceChild(
-         "beak2", CubeListBuilder.create().texOffs(16, 7).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 2.0F, 1.0F), PartPose.offset(0.0F, -1.75F, -2.45F)
-      );
-      var2.addOrReplaceChild(
-         "feather", CubeListBuilder.create().texOffs(2, 18).addBox(0.0F, -4.0F, -2.0F, 0.0F, 5.0F, 4.0F), PartPose.offset(0.0F, -2.15F, 0.15F)
-      );
+      var1.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(22, 1).addBox(-1.5F, -1.0F, -1.0F, 3.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 21.07F, 1.16F));
+      var1.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(19, 8).addBox(-0.5F, 0.0F, -1.5F, 1.0F, 5.0F, 3.0F), PartPose.offset(1.5F, 16.94F, -2.76F));
+      var1.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(19, 8).addBox(-0.5F, 0.0F, -1.5F, 1.0F, 5.0F, 3.0F), PartPose.offset(-1.5F, 16.94F, -2.76F));
+      PartDefinition var2 = var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(2, 2).addBox(-1.0F, -1.5F, -1.0F, 2.0F, 3.0F, 2.0F), PartPose.offset(0.0F, 15.69F, -2.76F));
+      var2.addOrReplaceChild("head2", CubeListBuilder.create().texOffs(10, 0).addBox(-1.0F, -0.5F, -2.0F, 2.0F, 1.0F, 4.0F), PartPose.offset(0.0F, -2.0F, -1.0F));
+      var2.addOrReplaceChild("beak1", CubeListBuilder.create().texOffs(11, 7).addBox(-0.5F, -1.0F, -0.5F, 1.0F, 2.0F, 1.0F), PartPose.offset(0.0F, -0.5F, -1.5F));
+      var2.addOrReplaceChild("beak2", CubeListBuilder.create().texOffs(16, 7).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 2.0F, 1.0F), PartPose.offset(0.0F, -1.75F, -2.45F));
+      var2.addOrReplaceChild("feather", CubeListBuilder.create().texOffs(2, 18).addBox(0.0F, -4.0F, -2.0F, 0.0F, 5.0F, 4.0F), PartPose.offset(0.0F, -2.15F, 0.15F));
       CubeListBuilder var3 = CubeListBuilder.create().texOffs(14, 18).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 2.0F, 1.0F);
       var1.addOrReplaceChild("left_leg", var3, PartPose.offset(1.0F, 22.0F, -1.05F));
       var1.addOrReplaceChild("right_leg", var3, PartPose.offset(-1.0F, 22.0F, -1.05F));
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
@@ -89,7 +72,7 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
       this.root.render(var1, var2, var3, var4);
    }
 
-   private void setupAnim(ParrotModel.State var1, int var2, float var3, float var4, float var5, float var6, float var7) {
+   private void setupAnim(State var1, int var2, float var3, float var4, float var5, float var6, float var7) {
       this.head.xRot = var7 * 0.017453292F;
       this.head.yRot = var6 * 0.017453292F;
       this.head.zRot = 0.0F;
@@ -98,10 +81,29 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
       this.tail.x = 0.0F;
       this.rightWing.x = -1.5F;
       this.leftWing.x = 1.5F;
-      switch(var1) {
-         case SITTING:
+      switch (var1.ordinal()) {
+         case 1:
+            ModelPart var10000 = this.leftLeg;
+            var10000.xRot += Mth.cos(var3 * 0.6662F) * 1.4F * var4;
+            var10000 = this.rightLeg;
+            var10000.xRot += Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var4;
+         case 0:
+         case 4:
+         default:
+            float var10 = var5 * 0.3F;
+            this.head.y = 15.69F + var10;
+            this.tail.xRot = 1.015F + Mth.cos(var3 * 0.6662F) * 0.3F * var4;
+            this.tail.y = 21.07F + var10;
+            this.body.y = 16.5F + var10;
+            this.leftWing.zRot = -0.0873F - var5;
+            this.leftWing.y = 16.94F + var10;
+            this.rightWing.zRot = 0.0873F + var5;
+            this.rightWing.y = 16.94F + var10;
+            this.leftLeg.y = 22.0F + var10;
+            this.rightLeg.y = 22.0F + var10;
+         case 2:
             break;
-         case PARTY:
+         case 3:
             float var8 = Mth.cos((float)var2);
             float var9 = Mth.sin((float)var2);
             this.head.x = var8;
@@ -119,28 +121,11 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
             this.rightWing.y = 16.94F + var9;
             this.tail.x = var8;
             this.tail.y = 21.07F + var9;
-            break;
-         case STANDING:
-            this.leftLeg.xRot += Mth.cos(var3 * 0.6662F) * 1.4F * var4;
-            this.rightLeg.xRot += Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var4;
-         case FLYING:
-         case ON_SHOULDER:
-         default:
-            float var10 = var5 * 0.3F;
-            this.head.y = 15.69F + var10;
-            this.tail.xRot = 1.015F + Mth.cos(var3 * 0.6662F) * 0.3F * var4;
-            this.tail.y = 21.07F + var10;
-            this.body.y = 16.5F + var10;
-            this.leftWing.zRot = -0.0873F - var5;
-            this.leftWing.y = 16.94F + var10;
-            this.rightWing.zRot = 0.0873F + var5;
-            this.rightWing.y = 16.94F + var10;
-            this.leftLeg.y = 22.0F + var10;
-            this.rightLeg.y = 22.0F + var10;
       }
+
    }
 
-   private void prepare(ParrotModel.State var1) {
+   private void prepare(State var1) {
       this.feather.xRot = -0.2214F;
       this.body.xRot = 0.4937F;
       this.leftWing.xRot = -0.6981F;
@@ -153,8 +138,17 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
       this.rightLeg.y = 22.0F;
       this.leftLeg.zRot = 0.0F;
       this.rightLeg.zRot = 0.0F;
-      switch(var1) {
-         case SITTING:
+      switch (var1.ordinal()) {
+         case 0:
+            ModelPart var10000 = this.leftLeg;
+            var10000.xRot += 0.6981317F;
+            var10000 = this.rightLeg;
+            var10000.xRot += 0.6981317F;
+         case 1:
+         case 4:
+         default:
+            break;
+         case 2:
             float var2 = 1.9F;
             this.head.y = 17.59F;
             this.tail.xRot = 1.5388988F;
@@ -169,20 +163,14 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
             ++this.leftLeg.xRot;
             ++this.rightLeg.xRot;
             break;
-         case PARTY:
+         case 3:
             this.leftLeg.zRot = -0.34906584F;
             this.rightLeg.zRot = 0.34906584F;
-         case STANDING:
-         case ON_SHOULDER:
-         default:
-            break;
-         case FLYING:
-            this.leftLeg.xRot += 0.6981317F;
-            this.rightLeg.xRot += 0.6981317F;
       }
+
    }
 
-   private static ParrotModel.State getState(Parrot var0) {
+   private static State getState(Parrot var0) {
       if (var0.isPartyParrot()) {
          return ParrotModel.State.PARTY;
       } else if (var0.isInSittingPose()) {
@@ -200,6 +188,11 @@ public class ParrotModel extends HierarchicalModel<Parrot> {
       ON_SHOULDER;
 
       private State() {
+      }
+
+      // $FF: synthetic method
+      private static State[] $values() {
+         return new State[]{FLYING, STANDING, SITTING, PARTY, ON_SHOULDER};
       }
    }
 }

@@ -17,4 +17,9 @@ public enum PacketFlow {
    public String id() {
       return this.id;
    }
+
+   // $FF: synthetic method
+   private static PacketFlow[] $values() {
+      return new PacketFlow[]{SERVERBOUND, CLIENTBOUND};
+   }
 }

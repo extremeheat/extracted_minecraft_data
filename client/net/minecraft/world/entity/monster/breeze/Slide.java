@@ -15,18 +15,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Slide extends Behavior<Breeze> {
    public Slide() {
-      super(
-         Map.of(
-            MemoryModuleType.ATTACK_TARGET,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_JUMP_COOLDOWN,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_SHOOT,
-            MemoryStatus.VALUE_ABSENT
-         )
-      );
+      super(Map.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_JUMP_COOLDOWN, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_SHOOT, MemoryStatus.VALUE_ABSENT));
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
@@ -34,7 +23,7 @@ public class Slide extends Behavior<Breeze> {
    }
 
    protected void start(ServerLevel var1, Breeze var2, long var3) {
-      LivingEntity var5 = var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+      LivingEntity var5 = (LivingEntity)var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
       if (var5 != null) {
          boolean var6 = var2.withinInnerCircleRange(var5.position());
          Vec3 var7 = null;
@@ -49,7 +38,7 @@ public class Slide extends Behavior<Breeze> {
             var7 = var2.getRandom().nextBoolean() ? BreezeUtil.randomPointBehindTarget(var5, var2.getRandom()) : randomPointInMiddleCircle(var2, var5);
          }
 
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(BlockPos.containing(var7), 0.6F, 1));
+         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(BlockPos.containing(var7), 0.6F, 1)));
       }
    }
 
@@ -58,5 +47,10 @@ public class Slide extends Behavior<Breeze> {
       double var3 = var2.length() - Mth.lerp(var0.getRandom().nextDouble(), 8.0, 4.0);
       Vec3 var5 = var2.normalize().multiply(var3, var3, var3);
       return var0.position().add(var5);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Breeze)var2, var3);
    }
 }

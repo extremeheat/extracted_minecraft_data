@@ -17,7 +17,6 @@ public class MoveBackToVillageGoal extends RandomStrollGoal {
       super(var1, var2, 10, var4);
    }
 
-   @Override
    public boolean canUse() {
       ServerLevel var1 = (ServerLevel)this.mob.level();
       BlockPos var2 = this.mob.blockPosition();
@@ -25,7 +24,6 @@ public class MoveBackToVillageGoal extends RandomStrollGoal {
    }
 
    @Nullable
-   @Override
    protected Vec3 getPosition() {
       ServerLevel var1 = (ServerLevel)this.mob.level();
       BlockPos var2 = this.mob.blockPosition();

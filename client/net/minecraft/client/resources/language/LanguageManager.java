@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -21,30 +22,33 @@ import org.slf4j.Logger;
 public class LanguageManager implements ResourceManagerReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final LanguageInfo DEFAULT_LANGUAGE = new LanguageInfo("US", "English", false);
-   private Map<String, LanguageInfo> languages = ImmutableMap.of("en_us", DEFAULT_LANGUAGE);
+   private Map<String, LanguageInfo> languages;
    private String currentCode;
 
    public LanguageManager(String var1) {
       super();
+      this.languages = ImmutableMap.of("en_us", DEFAULT_LANGUAGE);
       this.currentCode = var1;
    }
 
    private static Map<String, LanguageInfo> extractLanguages(Stream<PackResources> var0) {
       HashMap var1 = Maps.newHashMap();
-      var0.forEach(var1x -> {
+      var0.forEach((var1x) -> {
          try {
-            LanguageMetadataSection var2 = var1x.getMetadataSection(LanguageMetadataSection.TYPE);
+            LanguageMetadataSection var2 = (LanguageMetadataSection)var1x.getMetadataSection(LanguageMetadataSection.TYPE);
             if (var2 != null) {
-               var2.languages().forEach(var1::putIfAbsent);
+               Map var10000 = var2.languages();
+               Objects.requireNonNull(var1);
+               var10000.forEach(var1::putIfAbsent);
             }
          } catch (IOException | RuntimeException var3) {
             LOGGER.warn("Unable to parse language metadata section of resourcepack: {}", var1x.packId(), var3);
          }
+
       });
       return ImmutableMap.copyOf(var1);
    }
 
-   @Override
    public void onResourceManagerReload(ResourceManager var1) {
       this.languages = extractLanguages(var1.listPacks());
       ArrayList var2 = new ArrayList(2);
@@ -72,7 +76,7 @@ public class LanguageManager implements ResourceManagerReloadListener {
    }
 
    public SortedMap<String, LanguageInfo> getLanguages() {
-      return new TreeMap<>(this.languages);
+      return new TreeMap(this.languages);
    }
 
    @Nullable

@@ -21,4 +21,9 @@ public enum MapPostProcessing {
    public int id() {
       return this.id;
    }
+
+   // $FF: synthetic method
+   private static MapPostProcessing[] $values() {
+      return new MapPostProcessing[]{LOCK, SCALE};
+   }
 }

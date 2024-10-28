@@ -25,22 +25,7 @@ public interface VertexConsumer {
 
    void endVertex();
 
-   default void vertex(
-      float var1,
-      float var2,
-      float var3,
-      float var4,
-      float var5,
-      float var6,
-      float var7,
-      float var8,
-      float var9,
-      int var10,
-      int var11,
-      float var12,
-      float var13,
-      float var14
-   ) {
+   default void vertex(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, int var10, int var11, float var12, float var13, float var14) {
       this.vertex((double)var1, (double)var2, (double)var3);
       this.color(var4, var5, var6, var7);
       this.uv(var8, var9);
@@ -63,20 +48,18 @@ public interface VertexConsumer {
    }
 
    default VertexConsumer uv2(int var1) {
-      return this.uv2(var1 & 65535, var1 >> 16 & 65535);
+      return this.uv2(var1 & '\uffff', var1 >> 16 & '\uffff');
    }
 
    default VertexConsumer overlayCoords(int var1) {
-      return this.overlayCoords(var1 & 65535, var1 >> 16 & 65535);
+      return this.overlayCoords(var1 & '\uffff', var1 >> 16 & '\uffff');
    }
 
    default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float var3, float var4, float var5, float var6, int var7, int var8) {
       this.putBulkData(var1, var2, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, var3, var4, var5, var6, new int[]{var7, var7, var7, var7}, var8, false);
    }
 
-   default void putBulkData(
-      PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9, boolean var10
-   ) {
+   default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9, boolean var10) {
       float[] var11 = new float[]{var3[0], var3[1], var3[2], var3[3]};
       int[] var12 = new int[]{var8[0], var8[1], var8[2], var8[3]};
       int[] var13 = var2.getVertices();
@@ -100,10 +83,12 @@ public interface VertexConsumer {
             float var26;
             float var27;
             float var28;
+            float var30;
+            float var31;
             if (var10) {
                float var29 = (float)(var20.get(12) & 255) / 255.0F;
-               float var30 = (float)(var20.get(13) & 255) / 255.0F;
-               float var31 = (float)(var20.get(14) & 255) / 255.0F;
+               var30 = (float)(var20.get(13) & 255) / 255.0F;
+               var31 = (float)(var20.get(14) & 255) / 255.0F;
                var26 = var29 * var11[var22] * var4;
                var27 = var30 * var11[var22] * var5;
                var28 = var31 * var11[var22] * var6;
@@ -114,10 +99,10 @@ public interface VertexConsumer {
             }
 
             int var35 = var12[var22];
-            float var36 = var20.getFloat(16);
-            float var37 = var20.getFloat(20);
+            var30 = var20.getFloat(16);
+            var31 = var20.getFloat(20);
             Vector4f var32 = var15.transform(new Vector4f(var23, var24, var25, 1.0F));
-            this.vertex(var32.x(), var32.y(), var32.z(), var26, var27, var28, var7, var36, var37, var9, var35, var16.x(), var16.y(), var16.z());
+            this.vertex(var32.x(), var32.y(), var32.z(), var26, var27, var28, var7, var30, var31, var9, var35, var16.x(), var16.y(), var16.z());
          }
       } catch (Throwable var34) {
          if (var19 != null) {
@@ -134,6 +119,7 @@ public interface VertexConsumer {
       if (var19 != null) {
          var19.close();
       }
+
    }
 
    default VertexConsumer vertex(PoseStack.Pose var1, float var2, float var3, float var4) {

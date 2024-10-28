@@ -11,7 +11,6 @@ public class BooleanProperty extends Property<Boolean> {
       super(var1, Boolean.class);
    }
 
-   @Override
    public Collection<Boolean> getPossibleValues() {
       return this.values;
    }
@@ -20,7 +19,6 @@ public class BooleanProperty extends Property<Boolean> {
       return new BooleanProperty(var0);
    }
 
-   @Override
    public Optional<Boolean> getValue(String var1) {
       return !"true".equals(var1) && !"false".equals(var1) ? Optional.empty() : Optional.of(Boolean.valueOf(var1));
    }
@@ -29,22 +27,21 @@ public class BooleanProperty extends Property<Boolean> {
       return var1.toString();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof BooleanProperty var2 && super.equals(var1)) {
-            return this.values.equals(var2.values);
+         if (var1 instanceof BooleanProperty) {
+            BooleanProperty var2 = (BooleanProperty)var1;
+            if (super.equals(var1)) {
+               return this.values.equals(var2.values);
+            }
          }
 
          return false;
       }
    }
 
-   @Override
    public int generateHashCode() {
       return 31 * super.generateHashCode() + this.values.hashCode();
    }

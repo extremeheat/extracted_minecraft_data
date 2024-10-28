@@ -25,7 +25,6 @@ public class MoveTowardsTargetGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       this.target = this.mob.getTarget();
       if (this.target == null) {
@@ -45,17 +44,14 @@ public class MoveTowardsTargetGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.mob.getNavigation().isDone() && this.target.isAlive() && this.target.distanceToSqr(this.mob) < (double)(this.within * this.within);
    }
 
-   @Override
    public void stop() {
       this.target = null;
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().moveTo(this.wantedX, this.wantedY, this.wantedZ, this.speedModifier);
    }

@@ -23,7 +23,6 @@ public class FlintAndSteelItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Player var2 = var1.getPlayer();
       Level var3 = var1.getLevel();
@@ -48,7 +47,7 @@ public class FlintAndSteelItem extends Item {
          }
       } else {
          var3.playSound(var2, var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
-         var3.setBlock(var4, var5.setValue(BlockStateProperties.LIT, Boolean.valueOf(true)), 11);
+         var3.setBlock(var4, (BlockState)var5.setValue(BlockStateProperties.LIT, true), 11);
          var3.gameEvent(var2, GameEvent.BLOCK_CHANGE, var4);
          if (var2 != null) {
             var1.getItemInHand().hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));

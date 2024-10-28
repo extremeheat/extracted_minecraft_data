@@ -1,14 +1,12 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.Products.P1;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
+import com.mojang.datafixers.Products;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.Util;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -26,8 +24,10 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       this.compositePredicates = Util.allOf(var1);
    }
 
-   protected static <T extends LootItemConditionalFunction> P1<Mu<T>, List<LootItemCondition>> commonFields(Instance<T> var0) {
-      return var0.group(ExtraCodecs.strictOptionalField(LootItemConditions.DIRECT_CODEC.listOf(), "conditions", List.of()).forGetter(var0x -> var0x.predicates));
+   protected static <T extends LootItemConditionalFunction> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(RecordCodecBuilder.Instance<T> var0) {
+      return var0.group(LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
+         return var0x.predicates;
+      }));
    }
 
    public final ItemStack apply(ItemStack var1, LootContext var2) {
@@ -36,21 +36,48 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
 
    protected abstract ItemStack run(ItemStack var1, LootContext var2);
 
-   @Override
    public void validate(ValidationContext var1) {
       LootItemFunction.super.validate(var1);
 
       for(int var2 = 0; var2 < this.predicates.size(); ++var2) {
-         this.predicates.get(var2).validate(var1.forChild(".conditions[" + var2 + "]"));
+         ((LootItemCondition)this.predicates.get(var2)).validate(var1.forChild(".conditions[" + var2 + "]"));
+      }
+
+   }
+
+   protected static Builder<?> simpleBuilder(Function<List<LootItemCondition>, LootItemFunction> var0) {
+      return new DummyBuilder(var0);
+   }
+
+   // $FF: synthetic method
+   public Object apply(Object var1, Object var2) {
+      return this.apply((ItemStack)var1, (LootContext)var2);
+   }
+
+   static final class DummyBuilder extends Builder<DummyBuilder> {
+      private final Function<List<LootItemCondition>, LootItemFunction> constructor;
+
+      public DummyBuilder(Function<List<LootItemCondition>, LootItemFunction> var1) {
+         super();
+         this.constructor = var1;
+      }
+
+      protected DummyBuilder getThis() {
+         return this;
+      }
+
+      public LootItemFunction build() {
+         return (LootItemFunction)this.constructor.apply(this.getConditions());
+      }
+
+      // $FF: synthetic method
+      protected Builder getThis() {
+         return this.getThis();
       }
    }
 
-   protected static LootItemConditionalFunction.Builder<?> simpleBuilder(Function<List<LootItemCondition>, LootItemFunction> var0) {
-      return new LootItemConditionalFunction.DummyBuilder(var0);
-   }
-
-   public abstract static class Builder<T extends LootItemConditionalFunction.Builder<T>> implements LootItemFunction.Builder, ConditionUserBuilder<T> {
-      private final com.google.common.collect.ImmutableList.Builder<LootItemCondition> conditions = ImmutableList.builder();
+   public abstract static class Builder<T extends Builder<T>> implements LootItemFunction.Builder, ConditionUserBuilder<T> {
+      private final ImmutableList.Builder<LootItemCondition> conditions = ImmutableList.builder();
 
       public Builder() {
          super();
@@ -70,23 +97,15 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       protected List<LootItemCondition> getConditions() {
          return this.conditions.build();
       }
-   }
 
-   static final class DummyBuilder extends LootItemConditionalFunction.Builder<LootItemConditionalFunction.DummyBuilder> {
-      private final Function<List<LootItemCondition>, LootItemFunction> constructor;
-
-      public DummyBuilder(Function<List<LootItemCondition>, LootItemFunction> var1) {
-         super();
-         this.constructor = var1;
+      // $FF: synthetic method
+      public ConditionUserBuilder unwrap() {
+         return this.unwrap();
       }
 
-      protected LootItemConditionalFunction.DummyBuilder getThis() {
-         return this;
-      }
-
-      @Override
-      public LootItemFunction build() {
-         return this.constructor.apply(this.getConditions());
+      // $FF: synthetic method
+      public ConditionUserBuilder when(LootItemCondition.Builder var1) {
+         return this.when(var1);
       }
    }
 }

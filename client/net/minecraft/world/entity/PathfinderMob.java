@@ -1,5 +1,6 @@
 package net.minecraft.world.entity;
 
+import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
@@ -25,7 +26,6 @@ public abstract class PathfinderMob extends Mob {
       return 0.0F;
    }
 
-   @Override
    public boolean checkSpawnRules(LevelAccessor var1, MobSpawnType var2) {
       return this.getWalkTargetValue(this.blockPosition(), var1) >= 0.0F;
    }
@@ -38,17 +38,21 @@ public abstract class PathfinderMob extends Mob {
       if (this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)) {
          return this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent();
       } else {
-         for(WrappedGoal var2 : this.goalSelector.getAvailableGoals()) {
-            if (var2.isRunning() && var2.getGoal() instanceof PanicGoal) {
-               return true;
-            }
-         }
+         Iterator var1 = this.goalSelector.getAvailableGoals().iterator();
 
-         return false;
+         WrappedGoal var2;
+         do {
+            if (!var1.hasNext()) {
+               return false;
+            }
+
+            var2 = (WrappedGoal)var1.next();
+         } while(!var2.isRunning() || !(var2.getGoal() instanceof PanicGoal));
+
+         return true;
       }
    }
 
-   @Override
    protected void tickLeash() {
       super.tickLeash();
       Entity var1 = this.getLeashHolder();
@@ -71,20 +75,16 @@ public abstract class PathfinderMob extends Mob {
             double var3 = (var1.getX() - this.getX()) / (double)var2;
             double var5 = (var1.getY() - this.getY()) / (double)var2;
             double var7 = (var1.getZ() - this.getZ()) / (double)var2;
-            this.setDeltaMovement(
-               this.getDeltaMovement()
-                  .add(Math.copySign(var3 * var3 * 0.4, var3), Math.copySign(var5 * var5 * 0.4, var5), Math.copySign(var7 * var7 * 0.4, var7))
-            );
+            this.setDeltaMovement(this.getDeltaMovement().add(Math.copySign(var3 * var3 * 0.4, var3), Math.copySign(var5 * var5 * 0.4, var5), Math.copySign(var7 * var7 * 0.4, var7)));
             this.checkSlowFallDistance();
          } else if (this.shouldStayCloseToLeashHolder() && !this.isPanicking()) {
             this.goalSelector.enableControlFlag(Goal.Flag.MOVE);
             float var9 = 2.0F;
-            Vec3 var4 = new Vec3(var1.getX() - this.getX(), var1.getY() - this.getY(), var1.getZ() - this.getZ())
-               .normalize()
-               .scale((double)Math.max(var2 - 2.0F, 0.0F));
+            Vec3 var4 = (new Vec3(var1.getX() - this.getX(), var1.getY() - this.getY(), var1.getZ() - this.getZ())).normalize().scale((double)Math.max(var2 - 2.0F, 0.0F));
             this.getNavigation().moveTo(this.getX() + var4.x, this.getY() + var4.y, this.getZ() + var4.z, this.followLeashSpeed());
          }
       }
+
    }
 
    protected boolean shouldStayCloseToLeashHolder() {

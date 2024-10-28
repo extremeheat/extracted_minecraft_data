@@ -15,10 +15,10 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
@@ -31,11 +31,11 @@ public class BlockModelDefinition {
    private final Map<String, MultiVariant> variants = Maps.newLinkedHashMap();
    private MultiPart multiPart;
 
-   public static BlockModelDefinition fromStream(BlockModelDefinition.Context var0, Reader var1) {
-      return GsonHelper.fromJson(var0.gson, var1, BlockModelDefinition.class);
+   public static BlockModelDefinition fromStream(Context var0, Reader var1) {
+      return (BlockModelDefinition)GsonHelper.fromJson(var0.gson, var1, BlockModelDefinition.class);
    }
 
-   public static BlockModelDefinition fromJsonElement(BlockModelDefinition.Context var0, JsonElement var1) {
+   public static BlockModelDefinition fromJsonElement(Context var0, JsonElement var1) {
       return (BlockModelDefinition)var0.gson.fromJson(var1, BlockModelDefinition.class);
    }
 
@@ -49,18 +49,19 @@ public class BlockModelDefinition {
       super();
       BlockModelDefinition var2 = null;
 
-      for(BlockModelDefinition var4 : var1) {
+      BlockModelDefinition var4;
+      for(Iterator var3 = var1.iterator(); var3.hasNext(); this.variants.putAll(var4.variants)) {
+         var4 = (BlockModelDefinition)var3.next();
          if (var4.isMultiPart()) {
             this.variants.clear();
             var2 = var4;
          }
-
-         this.variants.putAll(var4.variants);
       }
 
       if (var2 != null) {
          this.multiPart = var2.multiPart;
       }
+
    }
 
    @VisibleForTesting
@@ -70,30 +71,29 @@ public class BlockModelDefinition {
 
    @VisibleForTesting
    public MultiVariant getVariant(String var1) {
-      MultiVariant var2 = this.variants.get(var1);
+      MultiVariant var2 = (MultiVariant)this.variants.get(var1);
       if (var2 == null) {
-         throw new BlockModelDefinition.MissingVariantException();
+         throw new MissingVariantException();
       } else {
          return var2;
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof BlockModelDefinition var2 && this.variants.equals(var2.variants)) {
-            return this.isMultiPart() ? this.multiPart.equals(var2.multiPart) : !var2.isMultiPart();
+         if (var1 instanceof BlockModelDefinition) {
+            BlockModelDefinition var2 = (BlockModelDefinition)var1;
+            if (this.variants.equals(var2.variants)) {
+               return this.isMultiPart() ? this.multiPart.equals(var2.multiPart) : !var2.isMultiPart();
+            }
          }
 
          return false;
       }
    }
 
-   @Override
    public int hashCode() {
       return 31 * this.variants.hashCode() + (this.isMultiPart() ? this.multiPart.hashCode() : 0);
    }
@@ -121,13 +121,7 @@ public class BlockModelDefinition {
    }
 
    public static final class Context {
-      protected final Gson gson = new GsonBuilder()
-         .registerTypeAdapter(BlockModelDefinition.class, new BlockModelDefinition.Deserializer())
-         .registerTypeAdapter(Variant.class, new Variant.Deserializer())
-         .registerTypeAdapter(MultiVariant.class, new MultiVariant.Deserializer())
-         .registerTypeAdapter(MultiPart.class, new MultiPart.Deserializer(this))
-         .registerTypeAdapter(Selector.class, new Selector.Deserializer())
-         .create();
+      protected final Gson gson = (new GsonBuilder()).registerTypeAdapter(BlockModelDefinition.class, new Deserializer()).registerTypeAdapter(Variant.class, new Variant.Deserializer()).registerTypeAdapter(MultiVariant.class, new MultiVariant.Deserializer()).registerTypeAdapter(MultiPart.class, new MultiPart.Deserializer(this)).registerTypeAdapter(Selector.class, new Selector.Deserializer()).create();
       private StateDefinition<Block, BlockState> definition;
 
       public Context() {
@@ -140,6 +134,12 @@ public class BlockModelDefinition {
 
       public void setDefinition(StateDefinition<Block, BlockState> var1) {
          this.definition = var1;
+      }
+   }
+
+   protected class MissingVariantException extends RuntimeException {
+      protected MissingVariantException() {
+         super();
       }
    }
 
@@ -163,8 +163,10 @@ public class BlockModelDefinition {
          HashMap var3 = Maps.newHashMap();
          if (var2.has("variants")) {
             JsonObject var4 = GsonHelper.getAsJsonObject(var2, "variants");
+            Iterator var5 = var4.entrySet().iterator();
 
-            for(Entry var6 : var4.entrySet()) {
+            while(var5.hasNext()) {
+               Map.Entry var6 = (Map.Entry)var5.next();
                var3.put((String)var6.getKey(), (MultiVariant)var1.deserialize((JsonElement)var6.getValue(), MultiVariant.class));
             }
          }
@@ -181,11 +183,10 @@ public class BlockModelDefinition {
             return (MultiPart)var1.deserialize(var3, MultiPart.class);
          }
       }
-   }
 
-   protected class MissingVariantException extends RuntimeException {
-      protected MissingVariantException() {
-         super();
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

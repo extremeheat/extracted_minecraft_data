@@ -23,7 +23,7 @@ public final class MemoryAccessor<F extends K1, Value> {
    }
 
    public void set(Value var1) {
-      this.brain.setMemory(this.memoryType, Optional.of((Value)var1));
+      this.brain.setMemory(this.memoryType, Optional.of(var1));
    }
 
    public void setOrErase(Optional<Value> var1) {
@@ -31,7 +31,7 @@ public final class MemoryAccessor<F extends K1, Value> {
    }
 
    public void setWithExpiry(Value var1, long var2) {
-      this.brain.setMemoryWithExpiry(this.memoryType, (Value)var1, var2);
+      this.brain.setMemoryWithExpiry(this.memoryType, var1, var2);
    }
 
    public void erase() {

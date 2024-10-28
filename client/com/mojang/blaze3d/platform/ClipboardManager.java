@@ -51,5 +51,6 @@ public class ClipboardManager {
             MemoryUtil.memFree(var6);
          }
       }
+
    }
 }

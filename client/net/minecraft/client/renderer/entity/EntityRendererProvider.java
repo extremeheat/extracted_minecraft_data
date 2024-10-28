@@ -12,7 +12,7 @@ import net.minecraft.world.entity.Entity;
 
 @FunctionalInterface
 public interface EntityRendererProvider<T extends Entity> {
-   EntityRenderer<T> create(EntityRendererProvider.Context var1);
+   EntityRenderer<T> create(Context var1);
 
    public static class Context {
       private final EntityRenderDispatcher entityRenderDispatcher;
@@ -23,15 +23,7 @@ public interface EntityRendererProvider<T extends Entity> {
       private final EntityModelSet modelSet;
       private final Font font;
 
-      public Context(
-         EntityRenderDispatcher var1,
-         ItemRenderer var2,
-         BlockRenderDispatcher var3,
-         ItemInHandRenderer var4,
-         ResourceManager var5,
-         EntityModelSet var6,
-         Font var7
-      ) {
+      public Context(EntityRenderDispatcher var1, ItemRenderer var2, BlockRenderDispatcher var3, ItemInHandRenderer var4, ResourceManager var5, EntityModelSet var6, Font var7) {
          super();
          this.entityRenderDispatcher = var1;
          this.itemRenderer = var2;

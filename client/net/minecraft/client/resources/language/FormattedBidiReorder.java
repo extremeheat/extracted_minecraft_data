@@ -6,6 +6,7 @@ import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.Bidi;
 import com.ibm.icu.text.BidiRun;
 import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.SubStringSource;
 import net.minecraft.util.FormattedCharSequence;
@@ -27,12 +28,12 @@ public class FormattedBidiReorder {
          var4.addAll(var2.substring(var7.getStart(), var7.getLength(), var7.isOddRun()));
       }
 
-      return FormattedCharSequence.composite(var4);
+      return FormattedCharSequence.composite((List)var4);
    }
 
    private static String shape(String var0) {
       try {
-         return new ArabicShaping(8).shape(var0);
+         return (new ArabicShaping(8)).shape(var0);
       } catch (Exception var2) {
          return var0;
       }

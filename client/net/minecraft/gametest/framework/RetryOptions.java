@@ -1,8 +1,6 @@
 package net.minecraft.gametest.framework;
 
-public record RetryOptions(int a, boolean b) {
-   private final int numberOfTries;
-   private final boolean haltOnFailure;
+public record RetryOptions(int numberOfTries, boolean haltOnFailure) {
    private static final RetryOptions NO_RETRIES = new RetryOptions(1, true);
 
    public RetryOptions(int var1, boolean var2) {
@@ -27,5 +25,13 @@ public record RetryOptions(int a, boolean b) {
 
    public boolean hasRetries() {
       return this.numberOfTries != 1;
+   }
+
+   public int numberOfTries() {
+      return this.numberOfTries;
+   }
+
+   public boolean haltOnFailure() {
+      return this.haltOnFailure;
    }
 }

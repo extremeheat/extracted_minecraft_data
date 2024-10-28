@@ -10,10 +10,11 @@ public class Subscription extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
    public long startDate;
    public int daysLeft;
-   public Subscription.SubscriptionType type = Subscription.SubscriptionType.NORMAL;
+   public SubscriptionType type;
 
    public Subscription() {
       super();
+      this.type = Subscription.SubscriptionType.NORMAL;
    }
 
    public static Subscription parse(String var0) {
@@ -32,7 +33,7 @@ public class Subscription extends ValueObject {
       return var1;
    }
 
-   private static Subscription.SubscriptionType typeFrom(String var0) {
+   private static SubscriptionType typeFrom(String var0) {
       try {
          return Subscription.SubscriptionType.valueOf(var0);
       } catch (Exception var2) {
@@ -45,6 +46,11 @@ public class Subscription extends ValueObject {
       RECURRING;
 
       private SubscriptionType() {
+      }
+
+      // $FF: synthetic method
+      private static SubscriptionType[] $values() {
+         return new SubscriptionType[]{NORMAL, RECURRING};
       }
    }
 }

@@ -2,17 +2,13 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 
-public record LightPredicate(MinMaxBounds.Ints b) {
-   private final MinMaxBounds.Ints composite;
-   public static final Codec<LightPredicate> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite))
-            .apply(var0, LightPredicate::new)
-   );
+public record LightPredicate(MinMaxBounds.Ints composite) {
+   public static final Codec<LightPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite)).apply(var0, LightPredicate::new);
+   });
 
    public LightPredicate(MinMaxBounds.Ints var1) {
       super();
@@ -27,18 +23,23 @@ public record LightPredicate(MinMaxBounds.Ints b) {
       }
    }
 
+   public MinMaxBounds.Ints composite() {
+      return this.composite;
+   }
+
    public static class Builder {
-      private MinMaxBounds.Ints composite = MinMaxBounds.Ints.ANY;
+      private MinMaxBounds.Ints composite;
 
       public Builder() {
          super();
+         this.composite = MinMaxBounds.Ints.ANY;
       }
 
-      public static LightPredicate.Builder light() {
-         return new LightPredicate.Builder();
+      public static Builder light() {
+         return new Builder();
       }
 
-      public LightPredicate.Builder setComposite(MinMaxBounds.Ints var1) {
+      public Builder setComposite(MinMaxBounds.Ints var1) {
          this.composite = var1;
          return this;
       }

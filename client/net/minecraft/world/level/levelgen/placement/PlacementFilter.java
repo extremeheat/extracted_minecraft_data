@@ -9,7 +9,6 @@ public abstract class PlacementFilter extends PlacementModifier {
       super();
    }
 
-   @Override
    public final Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
       return this.shouldPlace(var1, var2, var3) ? Stream.of(var3) : Stream.of();
    }

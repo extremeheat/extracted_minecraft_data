@@ -16,7 +16,7 @@ public class AttributeSupplier {
    }
 
    private AttributeInstance getAttributeInstance(Holder<Attribute> var1) {
-      AttributeInstance var2 = this.instances.get(var1);
+      AttributeInstance var2 = (AttributeInstance)this.instances.get(var1);
       if (var2 == null) {
          throw new IllegalArgumentException("Can't find attribute " + var1.getRegisteredName());
       } else {
@@ -35,7 +35,8 @@ public class AttributeSupplier {
    public double getModifierValue(Holder<Attribute> var1, UUID var2) {
       AttributeModifier var3 = this.getAttributeInstance(var1).getModifier(var2);
       if (var3 == null) {
-         throw new IllegalArgumentException("Can't find modifier " + var2 + " on attribute " + var1.getRegisteredName());
+         String var10002 = String.valueOf(var2);
+         throw new IllegalArgumentException("Can't find modifier " + var10002 + " on attribute " + var1.getRegisteredName());
       } else {
          return var3.amount();
       }
@@ -43,7 +44,7 @@ public class AttributeSupplier {
 
    @Nullable
    public AttributeInstance createInstance(Consumer<AttributeInstance> var1, Holder<Attribute> var2) {
-      AttributeInstance var3 = this.instances.get(var2);
+      AttributeInstance var3 = (AttributeInstance)this.instances.get(var2);
       if (var3 == null) {
          return null;
       } else {
@@ -53,8 +54,8 @@ public class AttributeSupplier {
       }
    }
 
-   public static AttributeSupplier.Builder builder() {
-      return new AttributeSupplier.Builder();
+   public static Builder builder() {
+      return new Builder();
    }
 
    public boolean hasAttribute(Holder<Attribute> var1) {
@@ -62,12 +63,12 @@ public class AttributeSupplier {
    }
 
    public boolean hasModifier(Holder<Attribute> var1, UUID var2) {
-      AttributeInstance var3 = this.instances.get(var1);
+      AttributeInstance var3 = (AttributeInstance)this.instances.get(var1);
       return var3 != null && var3.getModifier(var2) != null;
    }
 
    public static class Builder {
-      private final com.google.common.collect.ImmutableMap.Builder<Holder<Attribute>, AttributeInstance> builder = ImmutableMap.builder();
+      private final ImmutableMap.Builder<Holder<Attribute>, AttributeInstance> builder = ImmutableMap.builder();
       private boolean instanceFrozen;
 
       public Builder() {
@@ -75,7 +76,7 @@ public class AttributeSupplier {
       }
 
       private AttributeInstance create(Holder<Attribute> var1) {
-         AttributeInstance var2 = new AttributeInstance(var1, var2x -> {
+         AttributeInstance var2 = new AttributeInstance(var1, (var2x) -> {
             if (this.instanceFrozen) {
                throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + var1.getRegisteredName());
             }
@@ -84,12 +85,12 @@ public class AttributeSupplier {
          return var2;
       }
 
-      public AttributeSupplier.Builder add(Holder<Attribute> var1) {
+      public Builder add(Holder<Attribute> var1) {
          this.create(var1);
          return this;
       }
 
-      public AttributeSupplier.Builder add(Holder<Attribute> var1, double var2) {
+      public Builder add(Holder<Attribute> var1, double var2) {
          AttributeInstance var4 = this.create(var1);
          var4.setBaseValue(var2);
          return this;

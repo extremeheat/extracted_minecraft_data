@@ -4,11 +4,9 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public abstract class ItemStackComponentRemainderFix extends DataFix {
    private final String name;
@@ -29,16 +27,13 @@ public abstract class ItemStackComponentRemainderFix extends DataFix {
    public final TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = var1.findField("components");
-      return this.fixTypeEverywhereTyped(
-         this.name,
-         var1,
-         var2x -> var2x.updateTyped(
-               var2,
-               var1xx -> var1xx.update(
-                     DSL.remainderFinder(), var1xxx -> ExtraDataFixUtils.renameAndFixField(var1xxx, this.componentId, this.newComponentId, this::fixComponent)
-                  )
-            )
-      );
+      return this.fixTypeEverywhereTyped(this.name, var1, (var2x) -> {
+         return var2x.updateTyped(var2, (var1) -> {
+            return var1.update(DSL.remainderFinder(), (var1x) -> {
+               return var1x.renameAndFixField(this.componentId, this.newComponentId, this::fixComponent);
+            });
+         });
+      });
    }
 
    protected abstract <T> Dynamic<T> fixComponent(Dynamic<T> var1);

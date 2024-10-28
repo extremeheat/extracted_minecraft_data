@@ -24,8 +24,8 @@ public class DefaultRandomPos {
       Vec3 var6 = var3.subtract(var0.getX(), var0.getY(), var0.getZ());
       boolean var7 = GoalUtils.mobRestricted(var0, var1);
       return RandomPos.generateRandomPos(var0, () -> {
-         BlockPos var7xx = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), var1, var2, 0, var6.x, var6.z, var4);
-         return var7xx == null ? null : generateRandomPosTowardDirection(var0, var1, var7, var7xx);
+         BlockPos var7x = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), var1, var2, 0, var6.x, var6.z, var4);
+         return var7x == null ? null : generateRandomPosTowardDirection(var0, var1, var7, var7x);
       });
    }
 
@@ -34,19 +34,14 @@ public class DefaultRandomPos {
       Vec3 var4 = var0.position().subtract(var3);
       boolean var5 = GoalUtils.mobRestricted(var0, var1);
       return RandomPos.generateRandomPos(var0, () -> {
-         BlockPos var5xx = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), var1, var2, 0, var4.x, var4.z, 1.5707963705062866);
-         return var5xx == null ? null : generateRandomPosTowardDirection(var0, var1, var5, var5xx);
+         BlockPos var5x = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), var1, var2, 0, var4.x, var4.z, 1.5707963705062866);
+         return var5x == null ? null : generateRandomPosTowardDirection(var0, var1, var5, var5x);
       });
    }
 
    @Nullable
    private static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, boolean var2, BlockPos var3) {
       BlockPos var4 = RandomPos.generateRandomPosTowardDirection(var0, var1, var0.getRandom(), var3);
-      return !GoalUtils.isOutsideLimits(var4, var0)
-            && !GoalUtils.isRestricted(var2, var0, var4)
-            && !GoalUtils.isNotStable(var0.getNavigation(), var4)
-            && !GoalUtils.hasMalus(var0, var4)
-         ? var4
-         : null;
+      return !GoalUtils.isOutsideLimits(var4, var0) && !GoalUtils.isRestricted(var2, var0, var4) && !GoalUtils.isNotStable(var0.getNavigation(), var4) && !GoalUtils.hasMalus(var0, var4) ? var4 : null;
    }
 }

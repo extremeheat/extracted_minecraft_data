@@ -13,7 +13,7 @@ import net.minecraft.world.entity.monster.breeze.Breeze;
 
 public class BreezeWindLayer extends RenderLayer<Breeze, BreezeModel<Breeze>> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/breeze/breeze_wind.png");
-   private static final BreezeModel<Breeze> MODEL = new BreezeModel<>(BreezeModel.createBodyLayer(128, 128).bakeRoot());
+   private static final BreezeModel<Breeze> MODEL = new BreezeModel(BreezeModel.createBodyLayer(128, 128).bakeRoot());
 
    public BreezeWindLayer(RenderLayerParent<Breeze, BreezeModel<Breeze>> var1) {
       super(var1);

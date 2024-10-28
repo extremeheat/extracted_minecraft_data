@@ -5,74 +5,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 enum AdvancementTabType {
-   ABOVE(
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_above_left_selected"),
-         new ResourceLocation("advancements/tab_above_middle_selected"),
-         new ResourceLocation("advancements/tab_above_right_selected")
-      ),
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_above_left"),
-         new ResourceLocation("advancements/tab_above_middle"),
-         new ResourceLocation("advancements/tab_above_right")
-      ),
-      28,
-      32,
-      8
-   ),
-   BELOW(
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_below_left_selected"),
-         new ResourceLocation("advancements/tab_below_middle_selected"),
-         new ResourceLocation("advancements/tab_below_right_selected")
-      ),
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_below_left"),
-         new ResourceLocation("advancements/tab_below_middle"),
-         new ResourceLocation("advancements/tab_below_right")
-      ),
-      28,
-      32,
-      8
-   ),
-   LEFT(
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_left_top_selected"),
-         new ResourceLocation("advancements/tab_left_middle_selected"),
-         new ResourceLocation("advancements/tab_left_bottom_selected")
-      ),
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_left_top"),
-         new ResourceLocation("advancements/tab_left_middle"),
-         new ResourceLocation("advancements/tab_left_bottom")
-      ),
-      32,
-      28,
-      5
-   ),
-   RIGHT(
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_right_top_selected"),
-         new ResourceLocation("advancements/tab_right_middle_selected"),
-         new ResourceLocation("advancements/tab_right_bottom_selected")
-      ),
-      new AdvancementTabType.Sprites(
-         new ResourceLocation("advancements/tab_right_top"),
-         new ResourceLocation("advancements/tab_right_middle"),
-         new ResourceLocation("advancements/tab_right_bottom")
-      ),
-      32,
-      28,
-      5
-   );
+   ABOVE(new Sprites(new ResourceLocation("advancements/tab_above_left_selected"), new ResourceLocation("advancements/tab_above_middle_selected"), new ResourceLocation("advancements/tab_above_right_selected")), new Sprites(new ResourceLocation("advancements/tab_above_left"), new ResourceLocation("advancements/tab_above_middle"), new ResourceLocation("advancements/tab_above_right")), 28, 32, 8),
+   BELOW(new Sprites(new ResourceLocation("advancements/tab_below_left_selected"), new ResourceLocation("advancements/tab_below_middle_selected"), new ResourceLocation("advancements/tab_below_right_selected")), new Sprites(new ResourceLocation("advancements/tab_below_left"), new ResourceLocation("advancements/tab_below_middle"), new ResourceLocation("advancements/tab_below_right")), 28, 32, 8),
+   LEFT(new Sprites(new ResourceLocation("advancements/tab_left_top_selected"), new ResourceLocation("advancements/tab_left_middle_selected"), new ResourceLocation("advancements/tab_left_bottom_selected")), new Sprites(new ResourceLocation("advancements/tab_left_top"), new ResourceLocation("advancements/tab_left_middle"), new ResourceLocation("advancements/tab_left_bottom")), 32, 28, 5),
+   RIGHT(new Sprites(new ResourceLocation("advancements/tab_right_top_selected"), new ResourceLocation("advancements/tab_right_middle_selected"), new ResourceLocation("advancements/tab_right_bottom_selected")), new Sprites(new ResourceLocation("advancements/tab_right_top"), new ResourceLocation("advancements/tab_right_middle"), new ResourceLocation("advancements/tab_right_bottom")), 32, 28, 5);
 
-   private final AdvancementTabType.Sprites selectedSprites;
-   private final AdvancementTabType.Sprites unselectedSprites;
+   private final Sprites selectedSprites;
+   private final Sprites unselectedSprites;
    private final int width;
    private final int height;
    private final int max;
 
-   private AdvancementTabType(AdvancementTabType.Sprites var3, AdvancementTabType.Sprites var4, int var5, int var6, int var7) {
+   private AdvancementTabType(Sprites var3, Sprites var4, int var5, int var6, int var7) {
       this.selectedSprites = var3;
       this.unselectedSprites = var4;
       this.width = var5;
@@ -85,7 +29,7 @@ enum AdvancementTabType {
    }
 
    public void draw(GuiGraphics var1, int var2, int var3, boolean var4, int var5) {
-      AdvancementTabType.Sprites var6 = var4 ? this.selectedSprites : this.unselectedSprites;
+      Sprites var6 = var4 ? this.selectedSprites : this.unselectedSprites;
       ResourceLocation var7;
       if (var5 == 0) {
          var7 = var6.first();
@@ -101,20 +45,20 @@ enum AdvancementTabType {
    public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {
       int var6 = var2 + this.getX(var4);
       int var7 = var3 + this.getY(var4);
-      switch(this) {
-         case ABOVE:
+      switch (this.ordinal()) {
+         case 0:
             var6 += 6;
             var7 += 9;
             break;
-         case BELOW:
+         case 1:
             var6 += 6;
             var7 += 6;
             break;
-         case LEFT:
+         case 2:
             var6 += 10;
             var7 += 5;
             break;
-         case RIGHT:
+         case 3:
             var6 += 6;
             var7 += 5;
       }
@@ -123,32 +67,38 @@ enum AdvancementTabType {
    }
 
    public int getX(int var1) {
-      switch(this) {
-         case ABOVE:
+      switch (this.ordinal()) {
+         case 0 -> {
             return (this.width + 4) * var1;
-         case BELOW:
+         }
+         case 1 -> {
             return (this.width + 4) * var1;
-         case LEFT:
+         }
+         case 2 -> {
             return -this.width + 4;
-         case RIGHT:
+         }
+         case 3 -> {
             return 248;
-         default:
-            throw new UnsupportedOperationException("Don't know what this tab type is!" + this);
+         }
+         default -> throw new UnsupportedOperationException("Don't know what this tab type is!" + String.valueOf(this));
       }
    }
 
    public int getY(int var1) {
-      switch(this) {
-         case ABOVE:
+      switch (this.ordinal()) {
+         case 0 -> {
             return -this.height + 4;
-         case BELOW:
+         }
+         case 1 -> {
             return 136;
-         case LEFT:
+         }
+         case 2 -> {
             return this.height * var1;
-         case RIGHT:
+         }
+         case 3 -> {
             return this.height * var1;
-         default:
-            throw new UnsupportedOperationException("Don't know what this tab type is!" + this);
+         }
+         default -> throw new UnsupportedOperationException("Don't know what this tab type is!" + String.valueOf(this));
       }
    }
 
@@ -158,16 +108,29 @@ enum AdvancementTabType {
       return var4 > (double)var8 && var4 < (double)(var8 + this.width) && var6 > (double)var9 && var6 < (double)(var9 + this.height);
    }
 
-   static record Sprites(ResourceLocation a, ResourceLocation b, ResourceLocation c) {
-      private final ResourceLocation first;
-      private final ResourceLocation middle;
-      private final ResourceLocation last;
+   // $FF: synthetic method
+   private static AdvancementTabType[] $values() {
+      return new AdvancementTabType[]{ABOVE, BELOW, LEFT, RIGHT};
+   }
 
+   private static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
       Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
          super();
          this.first = var1;
          this.middle = var2;
          this.last = var3;
+      }
+
+      public ResourceLocation first() {
+         return this.first;
+      }
+
+      public ResourceLocation middle() {
+         return this.middle;
+      }
+
+      public ResourceLocation last() {
+         return this.last;
       }
    }
 }

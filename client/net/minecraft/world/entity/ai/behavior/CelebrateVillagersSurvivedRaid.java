@@ -48,22 +48,18 @@ public class CelebrateVillagersSurvivedRaid extends Behavior<Villager> {
       }
 
       if (var5.nextInt(200) == 0 && MoveToSkySeeingSpot.hasNoBlocksAbove(var1, var2, var2.blockPosition())) {
-         DyeColor var6 = Util.getRandom(DyeColor.values(), var5);
+         DyeColor var6 = (DyeColor)Util.getRandom((Object[])DyeColor.values(), var5);
          int var7 = var5.nextInt(3);
          ItemStack var8 = this.getFirework(var6, var7);
          FireworkRocketEntity var9 = new FireworkRocketEntity(var2.level(), var2, var2.getX(), var2.getEyeY(), var2.getZ(), var8);
          var2.level().addFreshEntity(var9);
       }
+
    }
 
    private ItemStack getFirework(DyeColor var1, int var2) {
       ItemStack var3 = new ItemStack(Items.FIREWORK_ROCKET);
-      var3.set(
-         DataComponents.FIREWORKS,
-         new Fireworks(
-            (byte)var2, List.of(new FireworkExplosion(FireworkExplosion.Shape.BURST, IntList.of(var1.getFireworkColor()), IntList.of(), false, false))
-         )
-      );
+      var3.set(DataComponents.FIREWORKS, new Fireworks((byte)var2, List.of(new FireworkExplosion(FireworkExplosion.Shape.BURST, IntList.of(var1.getFireworkColor()), IntList.of(), false, false))));
       return var3;
    }
 }

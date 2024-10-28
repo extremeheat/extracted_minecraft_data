@@ -16,9 +16,10 @@ public class Variant implements Supplier<JsonElement> {
    }
 
    public <T> Variant with(VariantProperty<T> var1, T var2) {
-      VariantProperty.Value var3 = this.values.put(var1, var1.withValue(var2));
+      VariantProperty.Value var3 = (VariantProperty.Value)this.values.put(var1, var1.withValue(var2));
       if (var3 != null) {
-         throw new IllegalStateException("Replacing value of " + var3 + " with " + var2);
+         String var10002 = String.valueOf(var3);
+         throw new IllegalStateException("Replacing value of " + var10002 + " with " + String.valueOf(var2));
       } else {
          return this;
       }
@@ -37,7 +38,9 @@ public class Variant implements Supplier<JsonElement> {
 
    public JsonElement get() {
       JsonObject var1 = new JsonObject();
-      this.values.values().forEach(var1x -> var1x.addToVariant(var1));
+      this.values.values().forEach((var1x) -> {
+         var1x.addToVariant(var1);
+      });
       return var1;
    }
 
@@ -46,8 +49,15 @@ public class Variant implements Supplier<JsonElement> {
          return ((Variant)var0.get(0)).get();
       } else {
          JsonArray var1 = new JsonArray();
-         var0.forEach(var1x -> var1.add(var1x.get()));
+         var0.forEach((var1x) -> {
+            var1.add(var1x.get());
+         });
          return var1;
       }
+   }
+
+   // $FF: synthetic method
+   public Object get() {
+      return this.get();
    }
 }

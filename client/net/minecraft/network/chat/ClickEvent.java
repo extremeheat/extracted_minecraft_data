@@ -5,25 +5,26 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
 public class ClickEvent {
-   public static final Codec<ClickEvent> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(ClickEvent.Action.CODEC.forGetter(var0x -> var0x.action), Codec.STRING.fieldOf("value").forGetter(var0x -> var0x.value))
-            .apply(var0, ClickEvent::new)
-   );
-   private final ClickEvent.Action action;
+   public static final Codec<ClickEvent> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ClickEvent.Action.CODEC.forGetter((var0x) -> {
+         return var0x.action;
+      }), Codec.STRING.fieldOf("value").forGetter((var0x) -> {
+         return var0x.value;
+      })).apply(var0, ClickEvent::new);
+   });
+   private final Action action;
    private final String value;
 
-   public ClickEvent(ClickEvent.Action var1, String var2) {
+   public ClickEvent(Action var1, String var2) {
       super();
       this.action = var1;
       this.value = var2;
    }
 
-   public ClickEvent.Action getAction() {
+   public Action getAction() {
       return this.action;
    }
 
@@ -31,7 +32,6 @@ public class ClickEvent {
       return this.value;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -43,15 +43,15 @@ public class ClickEvent {
       }
    }
 
-   @Override
    public String toString() {
-      return "ClickEvent{action=" + this.action + ", value='" + this.value + "'}";
+      String var10000 = String.valueOf(this.action);
+      return "ClickEvent{action=" + var10000 + ", value='" + this.value + "'}";
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.action.hashCode();
-      return 31 * var1 + this.value.hashCode();
+      var1 = 31 * var1 + this.value.hashCode();
+      return var1;
    }
 
    public static enum Action implements StringRepresentable {
@@ -62,8 +62,8 @@ public class ClickEvent {
       CHANGE_PAGE("change_page", true),
       COPY_TO_CLIPBOARD("copy_to_clipboard", true);
 
-      public static final MapCodec<ClickEvent.Action> UNSAFE_CODEC = StringRepresentable.fromEnum(ClickEvent.Action::values).fieldOf("action");
-      public static final MapCodec<ClickEvent.Action> CODEC = ExtraCodecs.validate(UNSAFE_CODEC, ClickEvent.Action::filterForSerialization);
+      public static final MapCodec<Action> UNSAFE_CODEC = StringRepresentable.fromEnum(Action::values).fieldOf("action");
+      public static final MapCodec<Action> CODEC = UNSAFE_CODEC.validate(Action::filterForSerialization);
       private final boolean allowFromServer;
       private final String name;
 
@@ -76,13 +76,19 @@ public class ClickEvent {
          return this.allowFromServer;
       }
 
-      @Override
       public String getSerializedName() {
          return this.name;
       }
 
-      public static DataResult<ClickEvent.Action> filterForSerialization(ClickEvent.Action var0) {
-         return !var0.isAllowedFromServer() ? DataResult.error(() -> "Action not allowed: " + var0) : DataResult.success(var0, Lifecycle.stable());
+      public static DataResult<Action> filterForSerialization(Action var0) {
+         return !var0.isAllowedFromServer() ? DataResult.error(() -> {
+            return "Action not allowed: " + String.valueOf(var0);
+         }) : DataResult.success(var0, Lifecycle.stable());
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{OPEN_URL, OPEN_FILE, RUN_COMMAND, SUGGEST_COMMAND, CHANGE_PAGE, COPY_TO_CLIPBOARD};
       }
    }
 }

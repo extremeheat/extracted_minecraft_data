@@ -8,13 +8,13 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic4CommandExceptionType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
@@ -37,73 +37,28 @@ import net.minecraft.world.scores.PlayerTeam;
 
 public class SpreadPlayersCommand {
    private static final int MAX_ITERATION_COUNT = 10000;
-   private static final Dynamic4CommandExceptionType ERROR_FAILED_TO_SPREAD_TEAMS = new Dynamic4CommandExceptionType(
-      (var0, var1, var2, var3) -> Component.translatableEscape("commands.spreadplayers.failed.teams", var0, var1, var2, var3)
-   );
-   private static final Dynamic4CommandExceptionType ERROR_FAILED_TO_SPREAD_ENTITIES = new Dynamic4CommandExceptionType(
-      (var0, var1, var2, var3) -> Component.translatableEscape("commands.spreadplayers.failed.entities", var0, var1, var2, var3)
-   );
-   private static final Dynamic2CommandExceptionType ERROR_INVALID_MAX_HEIGHT = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("commands.spreadplayers.failed.invalid.height", var0, var1)
-   );
+   private static final Dynamic4CommandExceptionType ERROR_FAILED_TO_SPREAD_TEAMS = new Dynamic4CommandExceptionType((var0, var1, var2, var3) -> {
+      return Component.translatableEscape("commands.spreadplayers.failed.teams", var0, var1, var2, var3);
+   });
+   private static final Dynamic4CommandExceptionType ERROR_FAILED_TO_SPREAD_ENTITIES = new Dynamic4CommandExceptionType((var0, var1, var2, var3) -> {
+      return Component.translatableEscape("commands.spreadplayers.failed.entities", var0, var1, var2, var3);
+   });
+   private static final Dynamic2CommandExceptionType ERROR_INVALID_MAX_HEIGHT = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("commands.spreadplayers.failed.invalid.height", var0, var1);
+   });
 
    public SpreadPlayersCommand() {
       super();
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spreadplayers").requires(var0x -> var0x.hasPermission(2)))
-            .then(
-               Commands.argument("center", Vec2Argument.vec2())
-                  .then(
-                     Commands.argument("spreadDistance", FloatArgumentType.floatArg(0.0F))
-                        .then(
-                           ((RequiredArgumentBuilder)Commands.argument("maxRange", FloatArgumentType.floatArg(1.0F))
-                                 .then(
-                                    Commands.argument("respectTeams", BoolArgumentType.bool())
-                                       .then(
-                                          Commands.argument("targets", EntityArgument.entities())
-                                             .executes(
-                                                var0x -> spreadPlayers(
-                                                      (CommandSourceStack)var0x.getSource(),
-                                                      Vec2Argument.getVec2(var0x, "center"),
-                                                      FloatArgumentType.getFloat(var0x, "spreadDistance"),
-                                                      FloatArgumentType.getFloat(var0x, "maxRange"),
-                                                      ((CommandSourceStack)var0x.getSource()).getLevel().getMaxBuildHeight(),
-                                                      BoolArgumentType.getBool(var0x, "respectTeams"),
-                                                      EntityArgument.getEntities(var0x, "targets")
-                                                   )
-                                             )
-                                       )
-                                 ))
-                              .then(
-                                 Commands.literal("under")
-                                    .then(
-                                       Commands.argument("maxHeight", IntegerArgumentType.integer())
-                                          .then(
-                                             Commands.argument("respectTeams", BoolArgumentType.bool())
-                                                .then(
-                                                   Commands.argument("targets", EntityArgument.entities())
-                                                      .executes(
-                                                         var0x -> spreadPlayers(
-                                                               (CommandSourceStack)var0x.getSource(),
-                                                               Vec2Argument.getVec2(var0x, "center"),
-                                                               FloatArgumentType.getFloat(var0x, "spreadDistance"),
-                                                               FloatArgumentType.getFloat(var0x, "maxRange"),
-                                                               IntegerArgumentType.getInteger(var0x, "maxHeight"),
-                                                               BoolArgumentType.getBool(var0x, "respectTeams"),
-                                                               EntityArgument.getEntities(var0x, "targets")
-                                                            )
-                                                      )
-                                                )
-                                          )
-                                    )
-                              )
-                        )
-                  )
-            )
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spreadplayers").requires((var0x) -> {
+         return var0x.hasPermission(2);
+      })).then(Commands.argument("center", Vec2Argument.vec2()).then(Commands.argument("spreadDistance", FloatArgumentType.floatArg(0.0F)).then(((RequiredArgumentBuilder)Commands.argument("maxRange", FloatArgumentType.floatArg(1.0F)).then(Commands.argument("respectTeams", BoolArgumentType.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> {
+         return spreadPlayers((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "center"), FloatArgumentType.getFloat(var0x, "spreadDistance"), FloatArgumentType.getFloat(var0x, "maxRange"), ((CommandSourceStack)var0x.getSource()).getLevel().getMaxBuildHeight(), BoolArgumentType.getBool(var0x, "respectTeams"), EntityArgument.getEntities(var0x, "targets"));
+      })))).then(Commands.literal("under").then(Commands.argument("maxHeight", IntegerArgumentType.integer()).then(Commands.argument("respectTeams", BoolArgumentType.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> {
+         return spreadPlayers((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "center"), FloatArgumentType.getFloat(var0x, "spreadDistance"), FloatArgumentType.getFloat(var0x, "maxRange"), IntegerArgumentType.getInteger(var0x, "maxHeight"), BoolArgumentType.getBool(var0x, "respectTeams"), EntityArgument.getEntities(var0x, "targets"));
+      })))))))));
    }
 
    private static int spreadPlayers(CommandSourceStack var0, Vec2 var1, float var2, float var3, int var4, boolean var5, Collection<? extends Entity> var6) throws CommandSyntaxException {
@@ -117,46 +72,33 @@ public class SpreadPlayersCommand {
          double var12 = (double)(var1.y - var3);
          double var14 = (double)(var1.x + var3);
          double var16 = (double)(var1.y + var3);
-         SpreadPlayersCommand.Position[] var18 = createInitialPositions(var9, var5 ? getNumberOfTeams(var6) : var6.size(), var10, var12, var14, var16);
+         Position[] var18 = createInitialPositions(var9, var5 ? getNumberOfTeams(var6) : var6.size(), var10, var12, var14, var16);
          spreadPositions(var1, (double)var2, var7, var9, var10, var12, var14, var16, var4, var18, var5);
          double var19 = setPlayerPositions(var6, var7, var18, var4, var5);
-         var0.sendSuccess(
-            () -> Component.translatable(
-                  "commands.spreadplayers.success." + (var5 ? "teams" : "entities"), var18.length, var1.x, var1.y, String.format(Locale.ROOT, "%.2f", var19)
-               ),
-            true
-         );
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.spreadplayers.success." + (var5 ? "teams" : "entities"), var18.length, var1.x, var1.y, String.format(Locale.ROOT, "%.2f", var19));
+         }, true);
          return var18.length;
       }
    }
 
    private static int getNumberOfTeams(Collection<? extends Entity> var0) {
       HashSet var1 = Sets.newHashSet();
+      Iterator var2 = var0.iterator();
 
-      for(Entity var3 : var0) {
+      while(var2.hasNext()) {
+         Entity var3 = (Entity)var2.next();
          if (var3 instanceof Player) {
             var1.add(var3.getTeam());
          } else {
-            var1.add(null);
+            var1.add((Object)null);
          }
       }
 
       return var1.size();
    }
 
-   private static void spreadPositions(
-      Vec2 var0,
-      double var1,
-      ServerLevel var3,
-      RandomSource var4,
-      double var5,
-      double var7,
-      double var9,
-      double var11,
-      int var13,
-      SpreadPlayersCommand.Position[] var14,
-      boolean var15
-   ) throws CommandSyntaxException {
+   private static void spreadPositions(Vec2 var0, double var1, ServerLevel var3, RandomSource var4, double var5, double var7, double var9, double var11, int var13, Position[] var14, boolean var15) throws CommandSyntaxException {
       boolean var16 = true;
       double var18 = 3.4028234663852886E38;
 
@@ -165,14 +107,16 @@ public class SpreadPlayersCommand {
          var16 = false;
          var18 = 3.4028234663852886E38;
 
+         int var22;
+         Position var23;
          for(int var20 = 0; var20 < var14.length; ++var20) {
-            SpreadPlayersCommand.Position var21 = var14[var20];
-            int var22 = 0;
-            SpreadPlayersCommand.Position var23 = new SpreadPlayersCommand.Position();
+            Position var21 = var14[var20];
+            var22 = 0;
+            var23 = new Position();
 
             for(int var24 = 0; var24 < var14.length; ++var24) {
                if (var20 != var24) {
-                  SpreadPlayersCommand.Position var25 = var14[var24];
+                  Position var25 = var14[var24];
                   double var26 = var21.dist(var25);
                   var18 = Math.min(var26, var18);
                   if (var26 < var1) {
@@ -186,8 +130,8 @@ public class SpreadPlayersCommand {
             if (var22 > 0) {
                var23.x /= (double)var22;
                var23.z /= (double)var22;
-               double var32 = var23.getLength();
-               if (var32 > 0.0) {
+               double var30 = var23.getLength();
+               if (var30 > 0.0) {
                   var23.normalize();
                   var21.moveAway(var23);
                } else {
@@ -203,9 +147,13 @@ public class SpreadPlayersCommand {
          }
 
          if (!var16) {
-            for(SpreadPlayersCommand.Position var31 : var14) {
-               if (!var31.isSafe(var3, var13)) {
-                  var31.randomize(var4, var5, var7, var9, var11);
+            Position[] var28 = var14;
+            int var29 = var14.length;
+
+            for(var22 = 0; var22 < var29; ++var22) {
+               var23 = var28[var22];
+               if (!var23.isSafe(var3, var13)) {
+                  var23.randomize(var4, var5, var7, var9, var11);
                   var16 = true;
                }
             }
@@ -225,53 +173,53 @@ public class SpreadPlayersCommand {
       }
    }
 
-   private static double setPlayerPositions(Collection<? extends Entity> var0, ServerLevel var1, SpreadPlayersCommand.Position[] var2, int var3, boolean var4) {
+   private static double setPlayerPositions(Collection<? extends Entity> var0, ServerLevel var1, Position[] var2, int var3, boolean var4) {
       double var5 = 0.0;
       int var7 = 0;
       HashMap var8 = Maps.newHashMap();
 
-      for(Entity var10 : var0) {
-         SpreadPlayersCommand.Position var11;
+      double var20;
+      for(Iterator var9 = var0.iterator(); var9.hasNext(); var5 += var20) {
+         Entity var10 = (Entity)var9.next();
+         Position var11;
          if (var4) {
             PlayerTeam var12 = var10 instanceof Player ? var10.getTeam() : null;
             if (!var8.containsKey(var12)) {
                var8.put(var12, var2[var7++]);
             }
 
-            var11 = (SpreadPlayersCommand.Position)var8.get(var12);
+            var11 = (Position)var8.get(var12);
          } else {
             var11 = var2[var7++];
          }
 
-         var10.teleportTo(
-            var1,
-            (double)Mth.floor(var11.x) + 0.5,
-            (double)var11.getSpawnY(var1, var3),
-            (double)Mth.floor(var11.z) + 0.5,
-            Set.of(),
-            var10.getYRot(),
-            var10.getXRot()
-         );
-         double var20 = 1.7976931348623157E308;
+         var10.teleportTo(var1, (double)Mth.floor(var11.x) + 0.5, (double)var11.getSpawnY(var1, var3), (double)Mth.floor(var11.z) + 0.5, Set.of(), var10.getYRot(), var10.getXRot());
+         var20 = 1.7976931348623157E308;
+         Position[] var14 = var2;
+         int var15 = var2.length;
 
-         for(SpreadPlayersCommand.Position var17 : var2) {
+         for(int var16 = 0; var16 < var15; ++var16) {
+            Position var17 = var14[var16];
             if (var11 != var17) {
                double var18 = var11.dist(var17);
                var20 = Math.min(var18, var20);
             }
          }
-
-         var5 += var20;
       }
 
-      return var0.size() < 2 ? 0.0 : var5 / (double)var0.size();
+      if (var0.size() < 2) {
+         return 0.0;
+      } else {
+         var5 /= (double)var0.size();
+         return var5;
+      }
    }
 
-   private static SpreadPlayersCommand.Position[] createInitialPositions(RandomSource var0, int var1, double var2, double var4, double var6, double var8) {
-      SpreadPlayersCommand.Position[] var10 = new SpreadPlayersCommand.Position[var1];
+   private static Position[] createInitialPositions(RandomSource var0, int var1, double var2, double var4, double var6, double var8) {
+      Position[] var10 = new Position[var1];
 
       for(int var11 = 0; var11 < var10.length; ++var11) {
-         SpreadPlayersCommand.Position var12 = new SpreadPlayersCommand.Position();
+         Position var12 = new Position();
          var12.randomize(var0, var2, var4, var6, var8);
          var10[var11] = var12;
       }
@@ -279,7 +227,7 @@ public class SpreadPlayersCommand {
       return var10;
    }
 
-   static class Position {
+   private static class Position {
       double x;
       double z;
 
@@ -287,7 +235,7 @@ public class SpreadPlayersCommand {
          super();
       }
 
-      double dist(SpreadPlayersCommand.Position var1) {
+      double dist(Position var1) {
          double var2 = this.x - var1.x;
          double var4 = this.z - var1.z;
          return Math.sqrt(var2 * var2 + var4 * var4);
@@ -303,7 +251,7 @@ public class SpreadPlayersCommand {
          return Math.sqrt(this.x * this.x + this.z * this.z);
       }
 
-      public void moveAway(SpreadPlayersCommand.Position var1) {
+      public void moveAway(Position var1) {
          this.x -= var1.x;
          this.z -= var1.z;
       }

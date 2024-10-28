@@ -12,7 +12,6 @@ public class MemoryExpiryDataFix extends NamedEntityFix {
       super(var1, false, "Memory expiry data fix (" + var2 + ")", References.ENTITY, var2);
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fixTag);
    }

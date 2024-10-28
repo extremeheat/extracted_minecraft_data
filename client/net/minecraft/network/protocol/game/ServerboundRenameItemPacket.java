@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundRenameItemPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundRenameItemPacket> STREAM_CODEC = Packet.codec(
-      ServerboundRenameItemPacket::write, ServerboundRenameItemPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundRenameItemPacket> STREAM_CODEC = Packet.codec(ServerboundRenameItemPacket::write, ServerboundRenameItemPacket::new);
    private final String name;
 
    public ServerboundRenameItemPacket(String var1) {
@@ -25,7 +23,6 @@ public class ServerboundRenameItemPacket implements Packet<ServerGamePacketListe
       var1.writeUtf(this.name);
    }
 
-   @Override
    public PacketType<ServerboundRenameItemPacket> type() {
       return GamePacketTypes.SERVERBOUND_RENAME_ITEM;
    }

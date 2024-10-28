@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundCommandSuggestionPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundCommandSuggestionPacket> STREAM_CODEC = Packet.codec(
-      ServerboundCommandSuggestionPacket::write, ServerboundCommandSuggestionPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundCommandSuggestionPacket> STREAM_CODEC = Packet.codec(ServerboundCommandSuggestionPacket::write, ServerboundCommandSuggestionPacket::new);
    private final int id;
    private final String command;
 
@@ -29,7 +27,6 @@ public class ServerboundCommandSuggestionPacket implements Packet<ServerGamePack
       var1.writeUtf(this.command, 32500);
    }
 
-   @Override
    public PacketType<ServerboundCommandSuggestionPacket> type() {
       return GamePacketTypes.SERVERBOUND_COMMAND_SUGGESTION;
    }

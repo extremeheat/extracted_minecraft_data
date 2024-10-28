@@ -5,24 +5,29 @@ import java.util.List;
 import java.util.UUID;
 
 public interface PackReloadConfig {
-   void scheduleReload(PackReloadConfig.Callbacks var1);
+   void scheduleReload(Callbacks var1);
 
    public interface Callbacks {
       void onSuccess();
 
       void onFailure(boolean var1);
 
-      List<PackReloadConfig.IdAndPath> packsToLoad();
+      List<IdAndPath> packsToLoad();
    }
 
-   public static record IdAndPath(UUID a, Path b) {
-      private final UUID id;
-      private final Path path;
-
+   public static record IdAndPath(UUID id, Path path) {
       public IdAndPath(UUID var1, Path var2) {
          super();
          this.id = var1;
          this.path = var2;
+      }
+
+      public UUID id() {
+         return this.id;
+      }
+
+      public Path path() {
+         return this.path;
       }
    }
 }

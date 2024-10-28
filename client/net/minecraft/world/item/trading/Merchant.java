@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
@@ -37,13 +36,16 @@ public interface Merchant {
    }
 
    default void openTradingScreen(Player var1, Component var2, int var3) {
-      OptionalInt var4 = var1.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> new MerchantMenu(var1x, var2x, this), var2));
+      OptionalInt var4 = var1.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> {
+         return new MerchantMenu(var1x, var2x, this);
+      }, var2));
       if (var4.isPresent()) {
          MerchantOffers var5 = this.getOffers();
          if (!var5.isEmpty()) {
             var1.sendMerchantOffers(var4.getAsInt(), var5, var3, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
          }
       }
+
    }
 
    boolean isClientSide();

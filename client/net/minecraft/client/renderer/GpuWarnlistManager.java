@@ -2,9 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -12,7 +10,9 @@ import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +23,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
-public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnlistManager.Preparations> {
+public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparations> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final ResourceLocation GPU_WARNLIST_LOCATION = new ResourceLocation("gpu_warnlist.json");
    private ImmutableMap<String, String> warnings = ImmutableMap.of();
@@ -88,11 +88,13 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
    @Nullable
    public String getAllWarnings() {
       StringBuilder var1 = new StringBuilder();
-      this.warnings.forEach((var1x, var2) -> var1.append(var1x).append(": ").append(var2));
+      this.warnings.forEach((var1x, var2) -> {
+         var1.append(var1x).append(": ").append(var2);
+      });
       return var1.length() == 0 ? null : var1.toString();
    }
 
-   protected GpuWarnlistManager.Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
       ArrayList var3 = Lists.newArrayList();
       ArrayList var4 = Lists.newArrayList();
       ArrayList var5 = Lists.newArrayList();
@@ -107,15 +109,17 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
       }
 
       var2.endTick();
-      return new GpuWarnlistManager.Preparations(var3, var4, var5);
+      return new Preparations(var3, var4, var5);
    }
 
-   protected void apply(GpuWarnlistManager.Preparations var1, ResourceManager var2, ProfilerFiller var3) {
+   protected void apply(Preparations var1, ResourceManager var2, ProfilerFiller var3) {
       this.warnings = var1.apply();
    }
 
    private static void compilePatterns(JsonArray var0, List<Pattern> var1) {
-      var0.forEach(var1x -> var1.add(Pattern.compile(var1x.getAsString(), 2)));
+      var0.forEach((var1x) -> {
+         var1.add(Pattern.compile(var1x.getAsString(), 2));
+      });
    }
 
    @Nullable
@@ -123,14 +127,37 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
       var1.push("parse_json");
       JsonObject var2 = null;
 
-      try (BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION)) {
-         var2 = JsonParser.parseReader(var3).getAsJsonObject();
+      try {
+         BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
+
+         try {
+            var2 = JsonParser.parseReader(var3).getAsJsonObject();
+         } catch (Throwable var7) {
+            if (var3 != null) {
+               try {
+                  ((Reader)var3).close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
+               }
+            }
+
+            throw var7;
+         }
+
+         if (var3 != null) {
+            ((Reader)var3).close();
+         }
       } catch (JsonSyntaxException | IOException var8) {
          LOGGER.warn("Failed to load GPU warnlist");
       }
 
       var1.pop();
       return var2;
+   }
+
+   // $FF: synthetic method
+   protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+      return this.prepare(var1, var2);
    }
 
    protected static final class Preparations {
@@ -147,8 +174,10 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
 
       private static String matchAny(List<Pattern> var0, String var1) {
          ArrayList var2 = Lists.newArrayList();
+         Iterator var3 = var0.iterator();
 
-         for(Pattern var4 : var0) {
+         while(var3.hasNext()) {
+            Pattern var4 = (Pattern)var3.next();
             Matcher var5 = var4.matcher(var1);
 
             while(var5.find()) {
@@ -160,7 +189,7 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<GpuWarnli
       }
 
       ImmutableMap<String, String> apply() {
-         Builder var1 = new Builder();
+         ImmutableMap.Builder var1 = new ImmutableMap.Builder();
          String var2 = matchAny(this.rendererPatterns, GlUtil.getRenderer());
          if (!var2.isEmpty()) {
             var1.put("renderer", var2);

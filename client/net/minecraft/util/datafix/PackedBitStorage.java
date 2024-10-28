@@ -40,6 +40,7 @@ public class PackedBitStorage {
          int var8 = this.bits - var7;
          this.data[var5] = this.data[var5] >>> var8 << var8 | ((long)var2 & this.mask) >> var7;
       }
+
    }
 
    public int get(int var1) {

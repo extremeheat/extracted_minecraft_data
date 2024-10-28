@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
@@ -13,6 +15,7 @@ import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
@@ -50,9 +53,13 @@ public class ServerFunctionManager {
    }
 
    private void executeTagFunctions(Collection<CommandFunction<CommandSourceStack>> var1, ResourceLocation var2) {
-      this.server.getProfiler().push(var2::toString);
+      ProfilerFiller var10000 = this.server.getProfiler();
+      Objects.requireNonNull(var2);
+      var10000.push(var2::toString);
+      Iterator var3 = var1.iterator();
 
-      for(CommandFunction var4 : var1) {
+      while(var3.hasNext()) {
+         CommandFunction var4 = (CommandFunction)var3.next();
          this.execute(var4, this.getGameLoopSender());
       }
 
@@ -61,17 +68,22 @@ public class ServerFunctionManager {
 
    public void execute(CommandFunction<CommandSourceStack> var1, CommandSourceStack var2) {
       ProfilerFiller var3 = this.server.getProfiler();
-      var3.push(() -> "function " + var1.id());
+      var3.push(() -> {
+         return "function " + String.valueOf(var1.id());
+      });
 
       try {
-         InstantiatedFunction var4 = var1.instantiate(null, this.getDispatcher());
-         Commands.executeCommandInContext(var2, var2x -> ExecutionContext.queueInitialFunctionCall(var2x, var4, var2, CommandResultCallback.EMPTY));
+         InstantiatedFunction var4 = var1.instantiate((CompoundTag)null, this.getDispatcher());
+         Commands.executeCommandInContext(var2, (var2x) -> {
+            ExecutionContext.queueInitialFunctionCall(var2x, var4, var2, CommandResultCallback.EMPTY);
+         });
       } catch (FunctionInstantiationException var9) {
       } catch (Exception var10) {
          LOGGER.warn("Failed to execute function {}", var1.id(), var10);
       } finally {
          var3.pop();
       }
+
    }
 
    public void replaceLibrary(ServerFunctionLibrary var1) {

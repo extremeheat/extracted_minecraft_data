@@ -15,8 +15,12 @@ public enum DamageScaling implements StringRepresentable {
       this.id = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
+   }
+
+   // $FF: synthetic method
+   private static DamageScaling[] $values() {
+      return new DamageScaling[]{NEVER, WHEN_CAUSED_BY_LIVING_NON_PLAYER, ALWAYS};
    }
 }

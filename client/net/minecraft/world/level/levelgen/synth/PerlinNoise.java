@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -27,18 +28,20 @@ public class PerlinNoise {
    private final double lowestFreqInputFactor;
    private final double maxValue;
 
+   /** @deprecated */
    @Deprecated
    public static PerlinNoise createLegacyForBlendedNoise(RandomSource var0, IntStream var1) {
-      return new PerlinNoise(var0, makeAmplitudes(new IntRBTreeSet(var1.boxed().collect(ImmutableList.toImmutableList()))), false);
+      return new PerlinNoise(var0, makeAmplitudes(new IntRBTreeSet((Collection)var1.boxed().collect(ImmutableList.toImmutableList()))), false);
    }
 
+   /** @deprecated */
    @Deprecated
    public static PerlinNoise createLegacyForLegacyNetherBiome(RandomSource var0, int var1, DoubleList var2) {
       return new PerlinNoise(var0, Pair.of(var1, var2), false);
    }
 
    public static PerlinNoise create(RandomSource var0, IntStream var1) {
-      return create(var0, var1.boxed().collect(ImmutableList.toImmutableList()));
+      return create(var0, (List)var1.boxed().collect(ImmutableList.toImmutableList()));
    }
 
    public static PerlinNoise create(RandomSource var0, List<Integer> var1) {
@@ -80,15 +83,16 @@ public class PerlinNoise {
 
    protected PerlinNoise(RandomSource var1, Pair<Integer, DoubleList> var2, boolean var3) {
       super();
-      this.firstOctave = var2.getFirst();
+      this.firstOctave = (Integer)var2.getFirst();
       this.amplitudes = (DoubleList)var2.getSecond();
       int var4 = this.amplitudes.size();
       int var5 = -this.firstOctave;
       this.noiseLevels = new ImprovedNoise[var4];
+      int var7;
       if (var3) {
          PositionalRandomFactory var6 = var1.forkPositional();
 
-         for(int var7 = 0; var7 < var4; ++var7) {
+         for(var7 = 0; var7 < var4; ++var7) {
             if (this.amplitudes.getDouble(var7) != 0.0) {
                int var8 = this.firstOctave + var7;
                this.noiseLevels[var7] = new ImprovedNoise(var6.fromHashOf("octave_" + var8));
@@ -103,11 +107,11 @@ public class PerlinNoise {
             }
          }
 
-         for(int var12 = var5 - 1; var12 >= 0; --var12) {
-            if (var12 < var4) {
-               double var13 = this.amplitudes.getDouble(var12);
-               if (var13 != 0.0) {
-                  this.noiseLevels[var12] = new ImprovedNoise(var1);
+         for(var7 = var5 - 1; var7 >= 0; --var7) {
+            if (var7 < var4) {
+               double var12 = this.amplitudes.getDouble(var7);
+               if (var12 != 0.0) {
+                  this.noiseLevels[var7] = new ImprovedNoise(var1);
                } else {
                   skipOctave(var1);
                }
@@ -116,7 +120,9 @@ public class PerlinNoise {
             }
          }
 
-         if (Arrays.stream(this.noiseLevels).filter(Objects::nonNull).count() != this.amplitudes.stream().filter(var0 -> var0 != 0.0).count()) {
+         if (Arrays.stream(this.noiseLevels).filter(Objects::nonNull).count() != this.amplitudes.stream().filter((var0) -> {
+            return var0 != 0.0;
+         }).count()) {
             throw new IllegalStateException("Failed to create correct number of noise levels for given non-zero amplitudes");
          }
 
@@ -142,6 +148,7 @@ public class PerlinNoise {
       return this.getValue(var1, var3, var5, 0.0, 0.0, false);
    }
 
+   /** @deprecated */
    @Deprecated
    public double getValue(double var1, double var3, double var5, double var7, double var9, boolean var11) {
       double var12 = 0.0;
@@ -202,7 +209,9 @@ public class PerlinNoise {
    @VisibleForTesting
    public void parityConfigString(StringBuilder var1) {
       var1.append("PerlinNoise{");
-      List var2 = this.amplitudes.stream().map(var0 -> String.format(Locale.ROOT, "%.2f", var0)).toList();
+      List var2 = this.amplitudes.stream().map((var0) -> {
+         return String.format(Locale.ROOT, "%.2f", var0);
+      }).toList();
       var1.append("first octave: ").append(this.firstOctave).append(", amplitudes: ").append(var2).append(", noise levels: [");
 
       for(int var3 = 0; var3 < this.noiseLevels.length; ++var3) {

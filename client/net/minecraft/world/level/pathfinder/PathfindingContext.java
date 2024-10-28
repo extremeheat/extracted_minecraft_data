@@ -15,8 +15,6 @@ public class PathfindingContext {
    private final BlockPos mobPosition;
    private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public PathfindingContext(CollisionGetter var1, Mob var2) {
       super();
       this.level = var1;

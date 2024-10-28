@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.player.Abilities;
 
 public class ClientboundPlayerAbilitiesPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerAbilitiesPacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlayerAbilitiesPacket::write, ClientboundPlayerAbilitiesPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerAbilitiesPacket> STREAM_CODEC = Packet.codec(ClientboundPlayerAbilitiesPacket::write, ClientboundPlayerAbilitiesPacket::new);
    private static final int FLAG_INVULNERABLE = 1;
    private static final int FLAG_FLYING = 2;
    private static final int FLAG_CAN_FLY = 4;
@@ -65,7 +63,6 @@ public class ClientboundPlayerAbilitiesPacket implements Packet<ClientGamePacket
       var1.writeFloat(this.walkingSpeed);
    }
 
-   @Override
    public PacketType<ClientboundPlayerAbilitiesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_ABILITIES;
    }

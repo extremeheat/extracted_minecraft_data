@@ -21,7 +21,7 @@ public class Tutorial {
    private final Minecraft minecraft;
    @Nullable
    private TutorialStepInstance instance;
-   private final List<Tutorial.TimedToast> timedToasts = Lists.newArrayList();
+   private final List<TimedToast> timedToasts = Lists.newArrayList();
    private final BundleTutorial bundleTutorial;
 
    public Tutorial(Minecraft var1, Options var2) {
@@ -34,36 +34,42 @@ public class Tutorial {
       if (this.instance != null) {
          this.instance.onInput(var1);
       }
+
    }
 
    public void onMouse(double var1, double var3) {
       if (this.instance != null) {
          this.instance.onMouse(var1, var3);
       }
+
    }
 
    public void onLookAt(@Nullable ClientLevel var1, @Nullable HitResult var2) {
       if (this.instance != null && var2 != null && var1 != null) {
          this.instance.onLookAt(var1, var2);
       }
+
    }
 
    public void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
       if (this.instance != null) {
          this.instance.onDestroyBlock(var1, var2, var3, var4);
       }
+
    }
 
    public void onOpenInventory() {
       if (this.instance != null) {
          this.instance.onOpenInventory();
       }
+
    }
 
    public void onGetItem(ItemStack var1) {
       if (this.instance != null) {
          this.instance.onGetItem(var1);
       }
+
    }
 
    public void stop() {
@@ -82,17 +88,19 @@ public class Tutorial {
    }
 
    public void addTimedToast(TutorialToast var1, int var2) {
-      this.timedToasts.add(new Tutorial.TimedToast(var1, var2));
+      this.timedToasts.add(new TimedToast(var1, var2));
       this.minecraft.getToasts().addToast(var1);
    }
 
    public void removeTimedToast(TutorialToast var1) {
-      this.timedToasts.removeIf(var1x -> var1x.toast == var1);
+      this.timedToasts.removeIf((var1x) -> {
+         return var1x.toast == var1;
+      });
       var1.hide();
    }
 
    public void tick() {
-      this.timedToasts.removeIf(Tutorial.TimedToast::updateProgress);
+      this.timedToasts.removeIf(TimedToast::updateProgress);
       if (this.instance != null) {
          if (this.minecraft.level != null) {
             this.instance.tick();
@@ -102,6 +110,7 @@ public class Tutorial {
       } else if (this.minecraft.level != null) {
          this.start();
       }
+
    }
 
    public void setStep(TutorialSteps var1) {
@@ -111,6 +120,7 @@ public class Tutorial {
          this.instance.clear();
          this.instance = var1.create(this);
       }
+
    }
 
    public Minecraft getMinecraft() {

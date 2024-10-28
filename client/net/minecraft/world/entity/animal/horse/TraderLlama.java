@@ -26,43 +26,38 @@ public class TraderLlama extends Llama {
       super(var1, var2);
    }
 
-   @Override
    public boolean isTraderLlama() {
       return true;
    }
 
    @Nullable
-   @Override
    protected Llama makeNewLlama() {
-      return EntityType.TRADER_LLAMA.create(this.level());
+      return (Llama)EntityType.TRADER_LLAMA.create(this.level());
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("DespawnDelay", this.despawnDelay);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("DespawnDelay", 99)) {
          this.despawnDelay = var1.getInt("DespawnDelay");
       }
+
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
-      this.targetSelector.addGoal(1, new TraderLlama.TraderLlamaDefendWanderingTraderGoal(this));
+      this.targetSelector.addGoal(1, new TraderLlamaDefendWanderingTraderGoal(this));
    }
 
    public void setDespawnDelay(int var1) {
       this.despawnDelay = var1;
    }
 
-   @Override
    protected void doPlayerRide(Player var1) {
       Entity var2 = this.getLeashHolder();
       if (!(var2 instanceof WanderingTrader)) {
@@ -70,12 +65,12 @@ public class TraderLlama extends Llama {
       }
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       if (!this.level().isClientSide) {
          this.maybeDespawn();
       }
+
    }
 
    private void maybeDespawn() {
@@ -85,6 +80,7 @@ public class TraderLlama extends Llama {
             this.dropLeash(true, false);
             this.discard();
          }
+
       }
    }
 
@@ -101,7 +97,6 @@ public class TraderLlama extends Llama {
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var3 == MobSpawnType.EVENT) {
          this.setAge(0);
@@ -125,7 +120,6 @@ public class TraderLlama extends Llama {
          this.setFlags(EnumSet.of(Goal.Flag.TARGET));
       }
 
-      @Override
       public boolean canUse() {
          if (!this.llama.isLeashed()) {
             return false;
@@ -142,7 +136,6 @@ public class TraderLlama extends Llama {
          }
       }
 
-      @Override
       public void start() {
          this.mob.setTarget(this.ownerLastHurtBy);
          Entity var1 = this.llama.getLeashHolder();

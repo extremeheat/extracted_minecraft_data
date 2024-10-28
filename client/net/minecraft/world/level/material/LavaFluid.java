@@ -31,22 +31,18 @@ public abstract class LavaFluid extends FlowingFluid {
       super();
    }
 
-   @Override
    public Fluid getFlowing() {
       return Fluids.FLOWING_LAVA;
    }
 
-   @Override
    public Fluid getSource() {
       return Fluids.LAVA;
    }
 
-   @Override
    public Item getBucket() {
       return Items.LAVA_BUCKET;
    }
 
-   @Override
    public void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
       BlockPos var5 = var2.above();
       if (var1.getBlockState(var5).isAir() && !var1.getBlockState(var5).isSolidRender(var1, var5)) {
@@ -55,27 +51,16 @@ public abstract class LavaFluid extends FlowingFluid {
             double var8 = (double)var2.getY() + 1.0;
             double var10 = (double)var2.getZ() + var4.nextDouble();
             var1.addParticle(ParticleTypes.LAVA, var6, var8, var10, 0.0, 0.0, 0.0);
-            var1.playLocalSound(
-               var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false
-            );
+            var1.playLocalSound(var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
 
          if (var4.nextInt(200) == 0) {
-            var1.playLocalSound(
-               (double)var2.getX(),
-               (double)var2.getY(),
-               (double)var2.getZ(),
-               SoundEvents.LAVA_AMBIENT,
-               SoundSource.BLOCKS,
-               0.2F + var4.nextFloat() * 0.2F,
-               0.9F + var4.nextFloat() * 0.15F,
-               false
-            );
+            var1.playLocalSound((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.LAVA_AMBIENT, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
       }
+
    }
 
-   @Override
    public void randomTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
       if (var1.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
          int var5 = var4.nextInt(3);
@@ -110,11 +95,16 @@ public abstract class LavaFluid extends FlowingFluid {
                }
             }
          }
+
       }
    }
 
    private boolean hasFlammableNeighbours(LevelReader var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
+      Direction[] var3 = Direction.values();
+      int var4 = var3.length;
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         Direction var6 = var3[var5];
          if (this.isFlammable(var1, var2.relative(var6))) {
             return true;
          }
@@ -124,61 +114,45 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    private boolean isFlammable(LevelReader var1, BlockPos var2) {
-      return var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && !var1.hasChunkAt(var2)
-         ? false
-         : var1.getBlockState(var2).ignitedByLava();
+      return var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && !var1.hasChunkAt(var2) ? false : var1.getBlockState(var2).ignitedByLava();
    }
 
    @Nullable
-   @Override
    public ParticleOptions getDripParticle() {
       return ParticleTypes.DRIPPING_LAVA;
    }
 
-   @Override
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
       this.fizz(var1, var2);
    }
 
-   @Override
    public int getSlopeFindDistance(LevelReader var1) {
       return var1.dimensionType().ultraWarm() ? 4 : 2;
    }
 
-   @Override
    public BlockState createLegacyBlock(FluidState var1) {
-      return Blocks.LAVA.defaultBlockState().setValue(LiquidBlock.LEVEL, Integer.valueOf(getLegacyLevel(var1)));
+      return (BlockState)Blocks.LAVA.defaultBlockState().setValue(LiquidBlock.LEVEL, getLegacyLevel(var1));
    }
 
-   @Override
    public boolean isSame(Fluid var1) {
       return var1 == Fluids.LAVA || var1 == Fluids.FLOWING_LAVA;
    }
 
-   @Override
    public int getDropOff(LevelReader var1) {
       return var1.dimensionType().ultraWarm() ? 1 : 2;
    }
 
-   @Override
    public boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5) {
       return var1.getHeight(var2, var3) >= 0.44444445F && var4.is(FluidTags.WATER);
    }
 
-   @Override
    public int getTickDelay(LevelReader var1) {
       return var1.dimensionType().ultraWarm() ? 10 : 30;
    }
 
-   @Override
    public int getSpreadDelay(Level var1, BlockPos var2, FluidState var3, FluidState var4) {
       int var5 = this.getTickDelay(var1);
-      if (!var3.isEmpty()
-         && !var4.isEmpty()
-         && !var3.getValue(FALLING)
-         && !var4.getValue(FALLING)
-         && var4.getHeight(var1, var2) > var3.getHeight(var1, var2)
-         && var1.getRandom().nextInt(4) != 0) {
+      if (!var3.isEmpty() && !var4.isEmpty() && !(Boolean)var3.getValue(FALLING) && !(Boolean)var4.getValue(FALLING) && var4.getHeight(var1, var2) > var3.getHeight(var1, var2) && var1.getRandom().nextInt(4) != 0) {
          var5 *= 4;
       }
 
@@ -189,12 +163,10 @@ public abstract class LavaFluid extends FlowingFluid {
       var1.levelEvent(1501, var2, 0);
    }
 
-   @Override
    protected boolean canConvertToSource(Level var1) {
       return var1.getGameRules().getBoolean(GameRules.RULE_LAVA_SOURCE_CONVERSION);
    }
 
-   @Override
    protected void spreadTo(LevelAccessor var1, BlockPos var2, BlockState var3, Direction var4, FluidState var5) {
       if (var4 == Direction.DOWN) {
          FluidState var6 = var1.getFluidState(var2);
@@ -211,17 +183,14 @@ public abstract class LavaFluid extends FlowingFluid {
       super.spreadTo(var1, var2, var3, var4, var5);
    }
 
-   @Override
    protected boolean isRandomlyTicking() {
       return true;
    }
 
-   @Override
    protected float getExplosionResistance() {
       return 100.0F;
    }
 
-   @Override
    public Optional<SoundEvent> getPickupSound() {
       return Optional.of(SoundEvents.BUCKET_FILL_LAVA);
    }
@@ -231,18 +200,15 @@ public abstract class LavaFluid extends FlowingFluid {
          super();
       }
 
-      @Override
       protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {
          super.createFluidStateDefinition(var1);
          var1.add(LEVEL);
       }
 
-      @Override
       public int getAmount(FluidState var1) {
-         return var1.getValue(LEVEL);
+         return (Integer)var1.getValue(LEVEL);
       }
 
-      @Override
       public boolean isSource(FluidState var1) {
          return false;
       }
@@ -253,12 +219,10 @@ public abstract class LavaFluid extends FlowingFluid {
          super();
       }
 
-      @Override
       public int getAmount(FluidState var1) {
          return 8;
       }
 
-      @Override
       public boolean isSource(FluidState var1) {
          return true;
       }

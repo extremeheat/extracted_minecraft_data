@@ -15,6 +15,7 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import io.netty.util.ByteProcessor;
+import io.netty.util.ReferenceCounted;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +43,6 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -82,41 +83,52 @@ public class FriendlyByteBuf extends ByteBuf {
       this.source = var1;
    }
 
+   /** @deprecated */
    @Deprecated
    public <T> T readWithCodecTrusted(DynamicOps<Tag> var1, Codec<T> var2) {
       return this.readWithCodec(var1, var2, NbtAccounter.unlimitedHeap());
    }
 
+   /** @deprecated */
    @Deprecated
    public <T> T readWithCodec(DynamicOps<Tag> var1, Codec<T> var2, NbtAccounter var3) {
       Tag var4 = this.readNbt(var3);
-      return Util.getOrThrow(var2.parse(var1, var4), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var4));
+      return var2.parse(var1, var4).getOrThrow((var1x) -> {
+         return new DecoderException("Failed to decode: " + var1x + " " + String.valueOf(var4));
+      });
    }
 
+   /** @deprecated */
    @Deprecated
    public <T> FriendlyByteBuf writeWithCodec(DynamicOps<Tag> var1, Codec<T> var2, T var3) {
-      Tag var4 = Util.getOrThrow(var2.encodeStart(var1, var3), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var3));
+      Tag var4 = (Tag)var2.encodeStart(var1, var3).getOrThrow((var1x) -> {
+         return new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var3));
+      });
       this.writeNbt(var4);
       return this;
    }
 
    public <T> T readJsonWithCodec(Codec<T> var1) {
-      JsonElement var2 = GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
+      JsonElement var2 = (JsonElement)GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
       DataResult var3 = var1.parse(JsonOps.INSTANCE, var2);
-      return Util.getOrThrow(var3, var0 -> new DecoderException("Failed to decode json: " + var0));
+      return var3.getOrThrow((var0) -> {
+         return new DecoderException("Failed to decode json: " + var0);
+      });
    }
 
    public <T> void writeJsonWithCodec(Codec<T> var1, T var2) {
       DataResult var3 = var1.encodeStart(JsonOps.INSTANCE, var2);
-      this.writeUtf(GSON.toJson(Util.getOrThrow(var3, var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2))));
+      this.writeUtf(GSON.toJson((JsonElement)var3.getOrThrow((var1x) -> {
+         return new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var2));
+      })));
    }
 
    public static <T> IntFunction<T> limitValue(IntFunction<T> var0, int var1) {
-      return var2 -> {
+      return (var2) -> {
          if (var2 > var1) {
             throw new DecoderException("Value " + var2 + " is larger than limit " + var1);
          } else {
-            return (T)var0.apply(var2);
+            return var0.apply(var2);
          }
       };
    }
@@ -129,19 +141,22 @@ public class FriendlyByteBuf extends ByteBuf {
          var4.add(var2.decode(this));
       }
 
-      return (C)var4;
+      return var4;
    }
 
    public <T> void writeCollection(Collection<T> var1, StreamEncoder<? super FriendlyByteBuf, T> var2) {
       this.writeVarInt(var1.size());
+      Iterator var3 = var1.iterator();
 
-      for(Object var4 : var1) {
+      while(var3.hasNext()) {
+         Object var4 = var3.next();
          var2.encode(this, var4);
       }
+
    }
 
    public <T> List<T> readList(StreamDecoder<? super FriendlyByteBuf, T> var1) {
-      return this.readCollection(Lists::newArrayListWithCapacity, var1);
+      return (List)this.readCollection(Lists::newArrayListWithCapacity, var1);
    }
 
    public IntList readIntIdList() {
@@ -160,9 +175,7 @@ public class FriendlyByteBuf extends ByteBuf {
       var1.forEach(this::writeVarInt);
    }
 
-   public <K, V, M extends Map<K, V>> M readMap(
-      IntFunction<M> var1, StreamDecoder<? super FriendlyByteBuf, K> var2, StreamDecoder<? super FriendlyByteBuf, V> var3
-   ) {
+   public <K, V, M extends Map<K, V>> M readMap(IntFunction<M> var1, StreamDecoder<? super FriendlyByteBuf, K> var2, StreamDecoder<? super FriendlyByteBuf, V> var3) {
       int var4 = this.readVarInt();
       Map var5 = (Map)var1.apply(var4);
 
@@ -172,7 +185,7 @@ public class FriendlyByteBuf extends ByteBuf {
          var5.put(var7, var8);
       }
 
-      return (M)var5;
+      return var5;
    }
 
    public <K, V> Map<K, V> readMap(StreamDecoder<? super FriendlyByteBuf, K> var1, StreamDecoder<? super FriendlyByteBuf, V> var2) {
@@ -193,6 +206,7 @@ public class FriendlyByteBuf extends ByteBuf {
       for(int var3 = 0; var3 < var2; ++var3) {
          var1.accept(this);
       }
+
    }
 
    public <E extends Enum<E>> void writeEnumSet(EnumSet<E> var1, Class<E> var2) {
@@ -213,7 +227,7 @@ public class FriendlyByteBuf extends ByteBuf {
 
       for(int var5 = 0; var5 < var2.length; ++var5) {
          if (var3.get(var5)) {
-            var4.add((E)var2[var5]);
+            var4.add(var2[var5]);
          }
       }
 
@@ -227,10 +241,11 @@ public class FriendlyByteBuf extends ByteBuf {
       } else {
          this.writeBoolean(false);
       }
+
    }
 
    public <T> Optional<T> readOptional(StreamDecoder<? super FriendlyByteBuf, T> var1) {
-      return this.readBoolean() ? Optional.of((T)var1.decode(this)) : Optional.empty();
+      return this.readBoolean() ? Optional.of(var1.decode(this)) : Optional.empty();
    }
 
    @Nullable
@@ -240,7 +255,7 @@ public class FriendlyByteBuf extends ByteBuf {
 
    @Nullable
    public static <T, B extends ByteBuf> T readNullable(B var0, StreamDecoder<? super B, T> var1) {
-      return (T)(var0.readBoolean() ? var1.decode(var0) : null);
+      return var0.readBoolean() ? var1.decode(var0) : null;
    }
 
    public <T> void writeNullable(@Nullable T var1, StreamEncoder<? super FriendlyByteBuf, T> var2) {
@@ -254,6 +269,7 @@ public class FriendlyByteBuf extends ByteBuf {
       } else {
          var0.writeBoolean(false);
       }
+
    }
 
    public byte[] readByteArray() {
@@ -291,8 +307,11 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public FriendlyByteBuf writeVarIntArray(int[] var1) {
       this.writeVarInt(var1.length);
+      int[] var2 = var1;
+      int var3 = var1.length;
 
-      for(int var5 : var1) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         int var5 = var2[var4];
          this.writeVarInt(var5);
       }
 
@@ -320,8 +339,11 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public FriendlyByteBuf writeLongArray(long[] var1) {
       this.writeVarInt(var1.length);
+      long[] var2 = var1;
+      int var3 = var1.length;
 
-      for(long var5 : var1) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         long var5 = var2[var4];
          this.writeLong(var5);
       }
 
@@ -329,7 +351,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public long[] readLongArray() {
-      return this.readLongArray(null);
+      return this.readLongArray((long[])null);
    }
 
    public long[] readLongArray(@Nullable long[] var1) {
@@ -447,7 +469,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public <T extends Enum<T>> T readEnum(Class<T> var1) {
-      return (T)var1.getEnumConstants()[this.readVarInt()];
+      return ((Enum[])var1.getEnumConstants())[this.readVarInt()];
    }
 
    public FriendlyByteBuf writeEnum(Enum<?> var1) {
@@ -456,7 +478,7 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public <T> T readById(IntFunction<T> var1) {
       int var2 = this.readVarInt();
-      return (T)var1.apply(var2);
+      return var1.apply(var2);
    }
 
    public <T> FriendlyByteBuf writeById(ToIntFunction<T> var1, T var2) {
@@ -519,14 +541,14 @@ public class FriendlyByteBuf extends ByteBuf {
 
    @Nullable
    public CompoundTag readNbt() {
-      return readNbt(this);
+      return readNbt((ByteBuf)this);
    }
 
    @Nullable
    public static CompoundTag readNbt(ByteBuf var0) {
       Tag var1 = readNbt(var0, NbtAccounter.create(2097152L));
       if (var1 != null && !(var1 instanceof CompoundTag)) {
-         throw new DecoderException("Not a compound tag: " + var1);
+         throw new DecoderException("Not a compound tag: " + String.valueOf(var1));
       } else {
          return (CompoundTag)var1;
       }
@@ -534,9 +556,18 @@ public class FriendlyByteBuf extends ByteBuf {
 
    @Nullable
    public static Tag readNbt(ByteBuf var0, NbtAccounter var1) {
+      Tag var2;
       try {
-         Tag var2 = NbtIo.readAnyTag(new ByteBufInputStream(var0), var1);
-         return var2.getId() == 0 ? null : var2;
+         var2 = NbtIo.readAnyTag(new ByteBufInputStream(var0), var1);
+         if (var2.getId() == 0) {
+            return null;
+         }
+      } catch (IOException var4) {
+         throw new EncoderException(var4);
+      }
+
+      try {
+         return var2;
       } catch (IOException var3) {
          throw new EncoderException(var3);
       }
@@ -619,14 +650,12 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public BlockHitResult readBlockHitResult() {
       BlockPos var1 = this.readBlockPos();
-      Direction var2 = this.readEnum(Direction.class);
+      Direction var2 = (Direction)this.readEnum(Direction.class);
       float var3 = this.readFloat();
       float var4 = this.readFloat();
       float var5 = this.readFloat();
       boolean var6 = this.readBoolean();
-      return new BlockHitResult(
-         new Vec3((double)var1.getX() + (double)var3, (double)var1.getY() + (double)var4, (double)var1.getZ() + (double)var5), var2, var1, var6
-      );
+      return new BlockHitResult(new Vec3((double)var1.getX() + (double)var3, (double)var1.getY() + (double)var4, (double)var1.getZ() + (double)var5), var2, var1, var6);
    }
 
    public void writeBlockHitResult(BlockHitResult var1) {
@@ -656,7 +685,8 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public void writeFixedBitSet(BitSet var1, int var2) {
       if (var1.length() > var2) {
-         throw new EncoderException("BitSet is larger than expected size (" + var1.length() + ">" + var2 + ")");
+         int var10002 = var1.length();
+         throw new EncoderException("BitSet is larger than expected size (" + var10002 + ">" + var2 + ")");
       } else {
          byte[] var3 = var1.toByteArray();
          this.writeBytes(Arrays.copyOf(var3, Mth.positiveCeilDiv(var2, 8)));
@@ -1472,5 +1502,380 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public boolean release(int var1) {
       return this.source.release(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf touch(Object var1) {
+      return this.touch(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf touch() {
+      return this.touch();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf retain() {
+      return this.retain();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf retain(int var1) {
+      return this.retain(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeZero(int var1) {
+      return this.writeZero(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBytes(ByteBuffer var1) {
+      return this.writeBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBytes(byte[] var1, int var2, int var3) {
+      return this.writeBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBytes(byte[] var1) {
+      return this.writeBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBytes(ByteBuf var1, int var2, int var3) {
+      return this.writeBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBytes(ByteBuf var1, int var2) {
+      return this.writeBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBytes(ByteBuf var1) {
+      return this.writeBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeDouble(double var1) {
+      return this.writeDouble(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeFloat(float var1) {
+      return this.writeFloat(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeChar(int var1) {
+      return this.writeChar(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeLongLE(long var1) {
+      return this.writeLongLE(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeLong(long var1) {
+      return this.writeLong(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeIntLE(int var1) {
+      return this.writeIntLE(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeInt(int var1) {
+      return this.writeInt(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeMediumLE(int var1) {
+      return this.writeMediumLE(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeMedium(int var1) {
+      return this.writeMedium(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeShortLE(int var1) {
+      return this.writeShortLE(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeShort(int var1) {
+      return this.writeShort(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeByte(int var1) {
+      return this.writeByte(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writeBoolean(boolean var1) {
+      return this.writeBoolean(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf skipBytes(int var1) {
+      return this.skipBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(OutputStream var1, int var2) throws IOException {
+      return this.readBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(ByteBuffer var1) {
+      return this.readBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(byte[] var1, int var2, int var3) {
+      return this.readBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(byte[] var1) {
+      return this.readBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(ByteBuf var1, int var2, int var3) {
+      return this.readBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(ByteBuf var1, int var2) {
+      return this.readBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readBytes(ByteBuf var1) {
+      return this.readBytes(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setZero(int var1, int var2) {
+      return this.setZero(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBytes(int var1, ByteBuffer var2) {
+      return this.setBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBytes(int var1, byte[] var2, int var3, int var4) {
+      return this.setBytes(var1, var2, var3, var4);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBytes(int var1, byte[] var2) {
+      return this.setBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBytes(int var1, ByteBuf var2, int var3, int var4) {
+      return this.setBytes(var1, var2, var3, var4);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBytes(int var1, ByteBuf var2, int var3) {
+      return this.setBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBytes(int var1, ByteBuf var2) {
+      return this.setBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setDouble(int var1, double var2) {
+      return this.setDouble(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setFloat(int var1, float var2) {
+      return this.setFloat(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setChar(int var1, int var2) {
+      return this.setChar(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setLongLE(int var1, long var2) {
+      return this.setLongLE(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setLong(int var1, long var2) {
+      return this.setLong(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setIntLE(int var1, int var2) {
+      return this.setIntLE(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setInt(int var1, int var2) {
+      return this.setInt(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setMediumLE(int var1, int var2) {
+      return this.setMediumLE(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setMedium(int var1, int var2) {
+      return this.setMedium(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setShortLE(int var1, int var2) {
+      return this.setShortLE(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setShort(int var1, int var2) {
+      return this.setShort(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setByte(int var1, int var2) {
+      return this.setByte(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setBoolean(int var1, boolean var2) {
+      return this.setBoolean(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, OutputStream var2, int var3) throws IOException {
+      return this.getBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, ByteBuffer var2) {
+      return this.getBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, byte[] var2, int var3, int var4) {
+      return this.getBytes(var1, var2, var3, var4);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, byte[] var2) {
+      return this.getBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, ByteBuf var2, int var3, int var4) {
+      return this.getBytes(var1, var2, var3, var4);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, ByteBuf var2, int var3) {
+      return this.getBytes(var1, var2, var3);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf getBytes(int var1, ByteBuf var2) {
+      return this.getBytes(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf ensureWritable(int var1) {
+      return this.ensureWritable(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf discardSomeReadBytes() {
+      return this.discardSomeReadBytes();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf discardReadBytes() {
+      return this.discardReadBytes();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf resetWriterIndex() {
+      return this.resetWriterIndex();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf markWriterIndex() {
+      return this.markWriterIndex();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf resetReaderIndex() {
+      return this.resetReaderIndex();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf markReaderIndex() {
+      return this.markReaderIndex();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf clear() {
+      return this.clear();
+   }
+
+   // $FF: synthetic method
+   public ByteBuf setIndex(int var1, int var2) {
+      return this.setIndex(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf writerIndex(int var1) {
+      return this.writerIndex(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf readerIndex(int var1) {
+      return this.readerIndex(var1);
+   }
+
+   // $FF: synthetic method
+   public ByteBuf capacity(int var1) {
+      return this.capacity(var1);
+   }
+
+   // $FF: synthetic method
+   public ReferenceCounted touch(Object var1) {
+      return this.touch(var1);
+   }
+
+   // $FF: synthetic method
+   public ReferenceCounted touch() {
+      return this.touch();
+   }
+
+   // $FF: synthetic method
+   public ReferenceCounted retain(int var1) {
+      return this.retain(var1);
+   }
+
+   // $FF: synthetic method
+   public ReferenceCounted retain() {
+      return this.retain();
    }
 }

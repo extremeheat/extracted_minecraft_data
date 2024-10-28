@@ -63,39 +63,13 @@ public class AllayAi {
    }
 
    private static void initCoreActivity(Brain<Allay> var0) {
-      var0.addActivity(
-         Activity.CORE,
-         0,
-         ImmutableList.of(
-            new Swim(0.8F),
-            new AnimalPanic(2.5F),
-            new LookAtTargetSink(45, 90),
-            new MoveToTargetSink(),
-            new CountDownCooldownTicks(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS),
-            new CountDownCooldownTicks(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)
-         )
-      );
+      var0.addActivity(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new AnimalPanic(2.5F), new LookAtTargetSink(45, 90), new MoveToTargetSink(), new CountDownCooldownTicks(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS), new CountDownCooldownTicks(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)));
    }
 
    private static void initIdleActivity(Brain<Allay> var0) {
-      var0.addActivityWithConditions(
-         Activity.IDLE,
-         ImmutableList.of(
-            Pair.of(0, GoToWantedItem.create(var0x -> true, 1.75F, true, 32)),
-            Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20)),
-            Pair.of(2, StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F)),
-            Pair.of(3, SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60))),
-            Pair.of(
-               4,
-               new RunOne(
-                  ImmutableList.of(
-                     Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1)
-                  )
-               )
-            )
-         ),
-         ImmutableSet.of()
-      );
+      var0.addActivityWithConditions(Activity.IDLE, ImmutableList.of(Pair.of(0, GoToWantedItem.create((var0x) -> {
+         return true;
+      }, 1.75F, true, 32)), Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20)), Pair.of(2, StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F)), Pair.of(3, SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60))), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of());
    }
 
    public static void updateActivity(Allay var0) {
@@ -107,11 +81,12 @@ public class AllayAi {
       GlobalPos var3 = GlobalPos.of(var0.level().dimension(), var1);
       Optional var4 = var2.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
       if (var4.isEmpty()) {
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, var3);
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
+         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, (Object)var3);
+         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, (int)600);
       } else if (((GlobalPos)var4.get()).equals(var3)) {
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
+         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, (int)600);
       }
+
    }
 
    private static Optional<PositionTracker> getItemDepositPosition(LivingEntity var0) {
@@ -141,21 +116,22 @@ public class AllayAi {
    }
 
    private static Optional<PositionTracker> getLikedPlayerPositionTracker(LivingEntity var0) {
-      return getLikedPlayer(var0).map(var0x -> new EntityTracker(var0x, true));
+      return getLikedPlayer(var0).map((var0x) -> {
+         return new EntityTracker(var0x, true);
+      });
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static Optional<ServerPlayer> getLikedPlayer(LivingEntity var0) {
       Level var1 = var0.level();
       if (!var1.isClientSide() && var1 instanceof ServerLevel var2) {
          Optional var3 = var0.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
          if (var3.isPresent()) {
             Entity var4 = var2.getEntity((UUID)var3.get());
-            if (var4 instanceof ServerPlayer var5
-               && (((ServerPlayer)var5).gameMode.isSurvival() || ((ServerPlayer)var5).gameMode.isCreative())
-               && ((ServerPlayer)var5).closerThan(var0, 64.0)) {
-               return Optional.of((ServerPlayer)var5);
+            if (var4 instanceof ServerPlayer) {
+               ServerPlayer var5 = (ServerPlayer)var4;
+               if ((var5.gameMode.isSurvival() || var5.gameMode.isCreative()) && var5.closerThan(var0, 64.0)) {
+                  return Optional.of(var5);
+               }
             }
 
             return Optional.empty();

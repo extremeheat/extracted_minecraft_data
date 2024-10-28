@@ -44,45 +44,15 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild(
-         "right_leg", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(-4.0F, 8.0F, 0.0F)
-      );
-      var1.addOrReplaceChild(
-         "left_leg", CubeListBuilder.create().texOffs(0, 55).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(4.0F, 8.0F, 0.0F)
-      );
-      PartDefinition var2 = var1.addOrReplaceChild(
-         "body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -6.0F, -8.0F, 16.0F, 14.0F, 16.0F), PartPose.offset(0.0F, 1.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_bottom_bristle",
-         CubeListBuilder.create().texOffs(16, 65).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true),
-         PartPose.offsetAndRotation(-8.0F, 4.0F, -8.0F, 0.0F, 0.0F, -1.2217305F)
-      );
-      var2.addOrReplaceChild(
-         "right_middle_bristle",
-         CubeListBuilder.create().texOffs(16, 49).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true),
-         PartPose.offsetAndRotation(-8.0F, -1.0F, -8.0F, 0.0F, 0.0F, -1.134464F)
-      );
-      var2.addOrReplaceChild(
-         "right_top_bristle",
-         CubeListBuilder.create().texOffs(16, 33).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true),
-         PartPose.offsetAndRotation(-8.0F, -5.0F, -8.0F, 0.0F, 0.0F, -0.87266463F)
-      );
-      var2.addOrReplaceChild(
-         "left_top_bristle",
-         CubeListBuilder.create().texOffs(16, 33).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F),
-         PartPose.offsetAndRotation(8.0F, -6.0F, -8.0F, 0.0F, 0.0F, 0.87266463F)
-      );
-      var2.addOrReplaceChild(
-         "left_middle_bristle",
-         CubeListBuilder.create().texOffs(16, 49).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F),
-         PartPose.offsetAndRotation(8.0F, -2.0F, -8.0F, 0.0F, 0.0F, 1.134464F)
-      );
-      var2.addOrReplaceChild(
-         "left_bottom_bristle",
-         CubeListBuilder.create().texOffs(16, 65).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F),
-         PartPose.offsetAndRotation(8.0F, 3.0F, -8.0F, 0.0F, 0.0F, 1.2217305F)
-      );
+      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(-4.0F, 8.0F, 0.0F));
+      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 55).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 16.0F, 4.0F), PartPose.offset(4.0F, 8.0F, 0.0F));
+      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -6.0F, -8.0F, 16.0F, 14.0F, 16.0F), PartPose.offset(0.0F, 1.0F, 0.0F));
+      var2.addOrReplaceChild("right_bottom_bristle", CubeListBuilder.create().texOffs(16, 65).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, 4.0F, -8.0F, 0.0F, 0.0F, -1.2217305F));
+      var2.addOrReplaceChild("right_middle_bristle", CubeListBuilder.create().texOffs(16, 49).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, -1.0F, -8.0F, 0.0F, 0.0F, -1.134464F));
+      var2.addOrReplaceChild("right_top_bristle", CubeListBuilder.create().texOffs(16, 33).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F, true), PartPose.offsetAndRotation(-8.0F, -5.0F, -8.0F, 0.0F, 0.0F, -0.87266463F));
+      var2.addOrReplaceChild("left_top_bristle", CubeListBuilder.create().texOffs(16, 33).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, -6.0F, -8.0F, 0.0F, 0.0F, 0.87266463F));
+      var2.addOrReplaceChild("left_middle_bristle", CubeListBuilder.create().texOffs(16, 49).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, -2.0F, -8.0F, 0.0F, 0.0F, 1.134464F));
+      var2.addOrReplaceChild("left_bottom_bristle", CubeListBuilder.create().texOffs(16, 65).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 16.0F), PartPose.offsetAndRotation(8.0F, 3.0F, -8.0F, 0.0F, 0.0F, 1.2217305F));
       return LayerDefinition.create(var0, 64, 128);
    }
 
@@ -99,7 +69,8 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
       float var7 = 1.5F;
       this.body.zRot = 0.1F * Mth.sin(var2 * 1.5F) * 4.0F * var3;
       this.body.y = 2.0F;
-      this.body.y -= 2.0F * Mth.cos(var2 * 1.5F) * 2.0F * var3;
+      ModelPart var10000 = this.body;
+      var10000.y -= 2.0F * Mth.cos(var2 * 1.5F) * 2.0F * var3;
       this.leftLeg.xRot = Mth.sin(var2 * 1.5F * 0.5F) * 2.0F * var3;
       this.rightLeg.xRot = Mth.sin(var2 * 1.5F * 0.5F + 3.1415927F) * 2.0F * var3;
       this.leftLeg.zRot = 0.17453292F * Mth.cos(var2 * 1.5F * 0.5F) * var3;
@@ -113,23 +84,34 @@ public class StriderModel<T extends Strider> extends HierarchicalModel<T> {
       this.leftMiddleBristle.zRot = 1.134464F;
       this.leftBottomBristle.zRot = 1.2217305F;
       float var8 = Mth.cos(var2 * 1.5F + 3.1415927F) * var3;
-      this.rightBottomBristle.zRot += var8 * 1.3F;
-      this.rightMiddleBristle.zRot += var8 * 1.2F;
-      this.rightTopBristle.zRot += var8 * 0.6F;
-      this.leftTopBristle.zRot += var8 * 0.6F;
-      this.leftMiddleBristle.zRot += var8 * 1.2F;
-      this.leftBottomBristle.zRot += var8 * 1.3F;
+      var10000 = this.rightBottomBristle;
+      var10000.zRot += var8 * 1.3F;
+      var10000 = this.rightMiddleBristle;
+      var10000.zRot += var8 * 1.2F;
+      var10000 = this.rightTopBristle;
+      var10000.zRot += var8 * 0.6F;
+      var10000 = this.leftTopBristle;
+      var10000.zRot += var8 * 0.6F;
+      var10000 = this.leftMiddleBristle;
+      var10000.zRot += var8 * 1.2F;
+      var10000 = this.leftBottomBristle;
+      var10000.zRot += var8 * 1.3F;
       float var9 = 1.0F;
       float var10 = 1.0F;
-      this.rightBottomBristle.zRot += 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
-      this.rightMiddleBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
-      this.rightTopBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
-      this.leftTopBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
-      this.leftMiddleBristle.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
-      this.leftBottomBristle.zRot += 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
+      var10000 = this.rightBottomBristle;
+      var10000.zRot += 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
+      var10000 = this.rightMiddleBristle;
+      var10000.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
+      var10000 = this.rightTopBristle;
+      var10000.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
+      var10000 = this.leftTopBristle;
+      var10000.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.4F);
+      var10000 = this.leftMiddleBristle;
+      var10000.zRot += 0.1F * Mth.sin(var4 * 1.0F * 0.2F);
+      var10000 = this.leftBottomBristle;
+      var10000.zRot += 0.05F * Mth.sin(var4 * 1.0F * -0.4F);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

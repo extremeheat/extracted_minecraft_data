@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity.vault;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Iterator;
@@ -18,15 +17,17 @@ import net.minecraft.world.item.ItemStack;
 
 public class VaultServerData {
    static final String TAG_NAME = "server_data";
-   static Codec<VaultServerData> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               UUIDUtil.CODEC_LINKED_SET.optionalFieldOf("rewarded_players", Set.of()).forGetter(var0x -> var0x.rewardedPlayers),
-               Codec.LONG.optionalFieldOf("state_updating_resumes_at", 0L).forGetter(var0x -> var0x.stateUpdatingResumesAt),
-               ItemStack.CODEC.listOf().optionalFieldOf("items_to_eject", List.of()).forGetter(var0x -> var0x.itemsToEject),
-               Codec.INT.optionalFieldOf("total_ejections_needed", 0).forGetter(var0x -> var0x.totalEjectionsNeeded)
-            )
-            .apply(var0, VaultServerData::new)
-   );
+   static Codec<VaultServerData> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((var0x) -> {
+         return var0x.rewardedPlayers;
+      }), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((var0x) -> {
+         return var0x.stateUpdatingResumesAt;
+      }), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((var0x) -> {
+         return var0x.itemsToEject;
+      }), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((var0x) -> {
+         return var0x.totalEjectionsNeeded;
+      })).apply(var0, VaultServerData::new);
+   });
    private static final int MAX_REWARD_PLAYERS = 128;
    private final Set<UUID> rewardedPlayers = new ObjectLinkedOpenHashSet();
    private long stateUpdatingResumesAt;
@@ -103,7 +104,7 @@ public class VaultServerData {
    }
 
    ItemStack getNextItemToEject() {
-      return this.itemsToEject.isEmpty() ? ItemStack.EMPTY : Objects.requireNonNullElse(this.itemsToEject.get(this.itemsToEject.size() - 1), ItemStack.EMPTY);
+      return this.itemsToEject.isEmpty() ? ItemStack.EMPTY : (ItemStack)Objects.requireNonNullElse((ItemStack)this.itemsToEject.get(this.itemsToEject.size() - 1), ItemStack.EMPTY);
    }
 
    ItemStack popNextItemToEject() {
@@ -111,7 +112,7 @@ public class VaultServerData {
          return ItemStack.EMPTY;
       } else {
          this.markChanged();
-         return Objects.requireNonNullElse(this.itemsToEject.remove(this.itemsToEject.size() - 1), ItemStack.EMPTY);
+         return (ItemStack)Objects.requireNonNullElse((ItemStack)this.itemsToEject.remove(this.itemsToEject.size() - 1), ItemStack.EMPTY);
       }
    }
 

@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class CampfireSmokeParticle extends TextureSheetParticle {
@@ -20,7 +21,6 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
       this.zd = var12;
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -33,14 +33,35 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
          if (this.age >= this.lifetime - 60 && this.alpha > 0.01F) {
             this.alpha -= 0.015F;
          }
+
       } else {
          this.remove();
       }
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+   }
+
+   public static class SignalProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprites;
+
+      public SignalProvider(SpriteSet var1) {
+         super();
+         this.sprites = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         CampfireSmokeParticle var15 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, true);
+         var15.setAlpha(0.95F);
+         var15.pickSprite(this.sprites);
+         return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
    public static class CosyProvider implements ParticleProvider<SimpleParticleType> {
@@ -57,21 +78,10 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
          var15.pickSprite(this.sprites);
          return var15;
       }
-   }
 
-   public static class SignalProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprites;
-
-      public SignalProvider(SpriteSet var1) {
-         super();
-         this.sprites = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CampfireSmokeParticle var15 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, true);
-         var15.setAlpha(0.95F);
-         var15.pickSprite(this.sprites);
-         return var15;
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

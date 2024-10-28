@@ -19,17 +19,14 @@ public abstract class WaterAnimal extends PathfinderMob {
       this.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
-   @Override
    public boolean checkSpawnObstruction(LevelReader var1) {
       return var1.isUnobstructed(this);
    }
 
-   @Override
    public int getAmbientSoundInterval() {
       return 120;
    }
 
-   @Override
    public int getExperienceReward() {
       return 1 + this.level().random.nextInt(3);
    }
@@ -44,33 +41,26 @@ public abstract class WaterAnimal extends PathfinderMob {
       } else {
          this.setAirSupply(300);
       }
+
    }
 
-   @Override
    public void baseTick() {
       int var1 = this.getAirSupply();
       super.baseTick();
       this.handleAirSupply(var1);
    }
 
-   @Override
    public boolean isPushedByFluid() {
       return false;
    }
 
-   @Override
    public boolean canBeLeashed(Player var1) {
       return false;
    }
 
-   public static boolean checkSurfaceWaterAnimalSpawnRules(
-      EntityType<? extends WaterAnimal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
-   ) {
+   public static boolean checkSurfaceWaterAnimalSpawnRules(EntityType<? extends WaterAnimal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       int var5 = var1.getSeaLevel();
       int var6 = var5 - 13;
-      return var3.getY() >= var6
-         && var3.getY() <= var5
-         && var1.getFluidState(var3.below()).is(FluidTags.WATER)
-         && var1.getBlockState(var3.above()).is(Blocks.WATER);
+      return var3.getY() >= var6 && var3.getY() <= var5 && var1.getFluidState(var3.below()).is(FluidTags.WATER) && var1.getBlockState(var3.above()).is(Blocks.WATER);
    }
 }

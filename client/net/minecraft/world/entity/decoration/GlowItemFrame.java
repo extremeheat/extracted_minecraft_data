@@ -18,32 +18,26 @@ public class GlowItemFrame extends ItemFrame {
       super(EntityType.GLOW_ITEM_FRAME, var1, var2, var3);
    }
 
-   @Override
    public SoundEvent getRemoveItemSound() {
       return SoundEvents.GLOW_ITEM_FRAME_REMOVE_ITEM;
    }
 
-   @Override
    public SoundEvent getBreakSound() {
       return SoundEvents.GLOW_ITEM_FRAME_BREAK;
    }
 
-   @Override
    public SoundEvent getPlaceSound() {
       return SoundEvents.GLOW_ITEM_FRAME_PLACE;
    }
 
-   @Override
    public SoundEvent getAddItemSound() {
       return SoundEvents.GLOW_ITEM_FRAME_ADD_ITEM;
    }
 
-   @Override
    public SoundEvent getRotateItemSound() {
       return SoundEvents.GLOW_ITEM_FRAME_ROTATE_ITEM;
    }
 
-   @Override
    protected ItemStack getFrameItemStack() {
       return new ItemStack(Items.GLOW_ITEM_FRAME);
    }

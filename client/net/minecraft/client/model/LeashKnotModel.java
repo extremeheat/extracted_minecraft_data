@@ -26,12 +26,10 @@ public class LeashKnotModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.knot.yRot = var5 * 0.017453292F;
       this.knot.xRot = var6 * 0.017453292F;

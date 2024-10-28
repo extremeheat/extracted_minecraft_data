@@ -5,12 +5,10 @@ public class BindingCurseEnchantment extends Enchantment {
       super(var1);
    }
 
-   @Override
    public boolean isTreasureOnly() {
       return true;
    }
 
-   @Override
    public boolean isCurse() {
       return true;
    }

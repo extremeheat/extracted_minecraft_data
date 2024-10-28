@@ -8,11 +8,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundPlayerInfoRemovePacket(List<UUID> b) implements Packet<ClientGamePacketListener> {
-   private final List<UUID> profileIds;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlayerInfoRemovePacket::write, ClientboundPlayerInfoRemovePacket::new
-   );
+public record ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket> STREAM_CODEC = Packet.codec(ClientboundPlayerInfoRemovePacket::write, ClientboundPlayerInfoRemovePacket::new);
 
    private ClientboundPlayerInfoRemovePacket(FriendlyByteBuf var1) {
       this(var1.readList(UUIDUtil.STREAM_CODEC));
@@ -27,12 +24,15 @@ public record ClientboundPlayerInfoRemovePacket(List<UUID> b) implements Packet<
       var1.writeCollection(this.profileIds, UUIDUtil.STREAM_CODEC);
    }
 
-   @Override
    public PacketType<ClientboundPlayerInfoRemovePacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_INFO_REMOVE;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handlePlayerInfoRemove(this);
+   }
+
+   public List<UUID> profileIds() {
+      return this.profileIds;
    }
 }

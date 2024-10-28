@@ -7,7 +7,6 @@ public abstract class ReentrantBlockableEventLoop<R extends Runnable> extends Bl
       super(var1);
    }
 
-   @Override
    public boolean scheduleExecutables() {
       return this.runningTask() || super.scheduleExecutables();
    }
@@ -16,14 +15,14 @@ public abstract class ReentrantBlockableEventLoop<R extends Runnable> extends Bl
       return this.reentrantCount != 0;
    }
 
-   @Override
    public void doRunTask(R var1) {
       ++this.reentrantCount;
 
       try {
-         super.doRunTask((R)var1);
+         super.doRunTask(var1);
       } finally {
          --this.reentrantCount;
       }
+
    }
 }

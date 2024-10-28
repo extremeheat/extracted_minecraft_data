@@ -26,6 +26,7 @@ public class TrialSpawnerRenderer implements BlockEntityRenderer<TrialSpawnerBlo
          if (var10 != null) {
             SpawnerRenderer.renderEntityInSpawner(var2, var3, var4, var5, var10, this.entityRenderer, var9.getOSpin(), var9.getSpin());
          }
+
       }
    }
 }

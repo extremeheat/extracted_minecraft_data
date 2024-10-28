@@ -32,11 +32,11 @@ public abstract class ItemStackTagFix extends DataFix {
    public static UnaryOperator<Typed<?>> createFixer(Type<?> var0, Predicate<String> var1, UnaryOperator<Dynamic<?>> var2) {
       OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var4 = var0.findField("tag");
-      return var4x -> {
+      return (var4x) -> {
          Optional var5 = var4x.getOptional(var3);
-         return var5.isPresent() && var1.test((String)((Pair)var5.get()).getSecond())
-            ? var4x.updateTyped(var4, var1xx -> var1xx.update(DSL.remainderFinder(), var2))
-            : var4x;
+         return var5.isPresent() && var1.test((String)((Pair)var5.get()).getSecond()) ? var4x.updateTyped(var4, (var1x) -> {
+            return var1x.update(DSL.remainderFinder(), var2);
+         }) : var4x;
       };
    }
 

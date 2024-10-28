@@ -7,12 +7,14 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
+import java.util.Objects;
 import javax.sound.sampled.AudioFormat;
 import net.minecraft.client.sounds.AudioStream;
 import net.minecraft.util.Mth;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBVorbis;
+import org.lwjgl.stb.STBVorbisAlloc;
 import org.lwjgl.stb.STBVorbisInfo;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -34,14 +36,22 @@ public class OggAudioStream implements AudioStream {
          IntBuffer var3 = var2.mallocInt(1);
          IntBuffer var4 = var2.mallocInt(1);
 
-         while(this.handle == 0L) {
+         while(true) {
+            if (this.handle != 0L) {
+               this.buffer.position(this.buffer.position() + var3.get(0));
+               STBVorbisInfo var9 = STBVorbisInfo.mallocStack(var2);
+               STBVorbis.stb_vorbis_get_info(this.handle, var9);
+               this.audioFormat = new AudioFormat((float)var9.sample_rate(), 16, var9.channels(), true, false);
+               break;
+            }
+
             if (!this.refillFromStream()) {
                throw new IOException("Failed to find Ogg header");
             }
 
             int var5 = this.buffer.position();
             this.buffer.position(0);
-            this.handle = STBVorbis.stb_vorbis_open_pushdata(this.buffer, var3, var4, null);
+            this.handle = STBVorbis.stb_vorbis_open_pushdata(this.buffer, var3, var4, (STBVorbisAlloc)null);
             this.buffer.position(var5);
             int var6 = var4.get(0);
             if (var6 == 1) {
@@ -50,11 +60,6 @@ public class OggAudioStream implements AudioStream {
                throw new IOException("Failed to read Ogg file " + var6);
             }
          }
-
-         this.buffer.position(this.buffer.position() + var3.get(0));
-         STBVorbisInfo var9 = STBVorbisInfo.mallocStack(var2);
-         STBVorbis.stb_vorbis_get_info(this.handle, var9);
-         this.audioFormat = new AudioFormat((float)var9.sample_rate(), 16, var9.channels(), true, false);
       } catch (Throwable var8) {
          if (var2 != null) {
             try {
@@ -70,6 +75,7 @@ public class OggAudioStream implements AudioStream {
       if (var2 != null) {
          var2.close();
       }
+
    }
 
    private boolean refillFromStream() throws IOException {
@@ -106,17 +112,18 @@ public class OggAudioStream implements AudioStream {
          var3.flip();
          this.buffer = var3;
       }
+
    }
 
-   private boolean readFrame(OggAudioStream.OutputConcat var1) throws IOException {
+   private boolean readFrame(OutputConcat var1) throws IOException {
       if (this.handle == 0L) {
          return false;
       } else {
          MemoryStack var2 = MemoryStack.stackPush();
 
-         int var14;
+         boolean var14;
          label79: {
-            boolean var15;
+            boolean var11;
             label80: {
                try {
                   PointerBuffer var3 = var2.mallocPointer(1);
@@ -124,13 +131,13 @@ public class OggAudioStream implements AudioStream {
                   IntBuffer var5 = var2.mallocInt(1);
 
                   while(true) {
-                     var14 = STBVorbis.stb_vorbis_decode_frame_pushdata(this.handle, this.buffer, var4, var3, var5);
-                     this.buffer.position(this.buffer.position() + var14);
+                     int var6 = STBVorbis.stb_vorbis_decode_frame_pushdata(this.handle, this.buffer, var4, var3, var5);
+                     this.buffer.position(this.buffer.position() + var6);
                      int var7 = STBVorbis.stb_vorbis_get_error(this.handle);
                      if (var7 == 1) {
                         this.forwardBuffer();
                         if (!this.refillFromStream()) {
-                           var14 = 0;
+                           var14 = false;
                            break label79;
                         }
                      } else {
@@ -144,7 +151,7 @@ public class OggAudioStream implements AudioStream {
                            PointerBuffer var10 = var3.getPointerBuffer(var9);
                            if (var9 == 1) {
                               this.convertMono(var10.getFloatBuffer(0, var8), var1);
-                              var15 = true;
+                              var11 = true;
                               break label80;
                            }
 
@@ -153,7 +160,7 @@ public class OggAudioStream implements AudioStream {
                            }
 
                            this.convertStereo(var10.getFloatBuffer(0, var8), var10.getFloatBuffer(1, var8), var1);
-                           var15 = true;
+                           var11 = true;
                            break;
                         }
                      }
@@ -174,38 +181,39 @@ public class OggAudioStream implements AudioStream {
                   var2.close();
                }
 
-               return var15;
+               return var11;
             }
 
             if (var2 != null) {
                var2.close();
             }
 
-            return var15;
+            return var11;
          }
 
          if (var2 != null) {
             var2.close();
          }
 
-         return (boolean)var14;
+         return var14;
       }
    }
 
-   private void convertMono(FloatBuffer var1, OggAudioStream.OutputConcat var2) {
+   private void convertMono(FloatBuffer var1, OutputConcat var2) {
       while(var1.hasRemaining()) {
          var2.put(var1.get());
       }
+
    }
 
-   private void convertStereo(FloatBuffer var1, FloatBuffer var2, OggAudioStream.OutputConcat var3) {
+   private void convertStereo(FloatBuffer var1, FloatBuffer var2, OutputConcat var3) {
       while(var1.hasRemaining() && var2.hasRemaining()) {
          var3.put(var1.get());
          var3.put(var2.get());
       }
+
    }
 
-   @Override
    public void close() throws IOException {
       if (this.handle != 0L) {
          STBVorbis.stb_vorbis_close(this.handle);
@@ -216,14 +224,12 @@ public class OggAudioStream implements AudioStream {
       this.input.close();
    }
 
-   @Override
    public AudioFormat getFormat() {
       return this.audioFormat;
    }
 
-   @Override
    public ByteBuffer read(int var1) throws IOException {
-      OggAudioStream.OutputConcat var2 = new OggAudioStream.OutputConcat(var1 + 8192);
+      OutputConcat var2 = new OutputConcat(var1 + 8192);
 
       while(this.readFrame(var2) && var2.byteCount < var1) {
       }
@@ -232,7 +238,7 @@ public class OggAudioStream implements AudioStream {
    }
 
    public ByteBuffer readAll() throws IOException {
-      OggAudioStream.OutputConcat var1 = new OggAudioStream.OutputConcat(16384);
+      OutputConcat var1 = new OutputConcat(16384);
 
       while(this.readFrame(var1)) {
       }
@@ -240,7 +246,7 @@ public class OggAudioStream implements AudioStream {
       return var1.get();
    }
 
-   static class OutputConcat {
+   private static class OutputConcat {
       private final List<ByteBuffer> buffers = Lists.newArrayList();
       private final int bufferSize;
       int byteCount;
@@ -274,7 +280,9 @@ public class OggAudioStream implements AudioStream {
             return this.currentBuffer;
          } else {
             ByteBuffer var1 = BufferUtils.createByteBuffer(this.byteCount);
-            this.buffers.forEach(var1::put);
+            List var10000 = this.buffers;
+            Objects.requireNonNull(var1);
+            var10000.forEach(var1::put);
             var1.put(this.currentBuffer);
             var1.flip();
             return var1;

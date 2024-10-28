@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.InteractionHand;
 
 public class ClientboundOpenBookPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC = Packet.codec(
-      ClientboundOpenBookPacket::write, ClientboundOpenBookPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC = Packet.codec(ClientboundOpenBookPacket::write, ClientboundOpenBookPacket::new);
    private final InteractionHand hand;
 
    public ClientboundOpenBookPacket(InteractionHand var1) {
@@ -19,14 +17,13 @@ public class ClientboundOpenBookPacket implements Packet<ClientGamePacketListene
 
    private ClientboundOpenBookPacket(FriendlyByteBuf var1) {
       super();
-      this.hand = var1.readEnum(InteractionHand.class);
+      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
    }
 
    private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.hand);
    }
 
-   @Override
    public PacketType<ClientboundOpenBookPacket> type() {
       return GamePacketTypes.CLIENTBOUND_OPEN_BOOK;
    }

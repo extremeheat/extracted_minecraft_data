@@ -21,7 +21,7 @@ public interface PackResources extends AutoCloseable {
    @Nullable
    IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2);
 
-   void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4);
+   void listResources(PackType var1, String var2, String var3, ResourceOutput var4);
 
    Set<String> getNamespaces(PackType var1);
 
@@ -38,7 +38,6 @@ public interface PackResources extends AutoCloseable {
       return this.location().knownPackInfo();
    }
 
-   @Override
    void close();
 
    @FunctionalInterface

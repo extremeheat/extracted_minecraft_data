@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.heightproviders;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.Mth;
@@ -13,13 +12,13 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class UniformHeight extends HeightProvider {
-   public static final Codec<UniformHeight> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter(var0x -> var0x.minInclusive),
-               VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter(var0x -> var0x.maxInclusive)
-            )
-            .apply(var0, UniformHeight::new)
-   );
+   public static final MapCodec<UniformHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> {
+         return var0x.minInclusive;
+      }), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> {
+         return var0x.maxInclusive;
+      })).apply(var0, UniformHeight::new);
+   });
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;
@@ -35,7 +34,6 @@ public class UniformHeight extends HeightProvider {
       return new UniformHeight(var0, var1);
    }
 
-   @Override
    public int sample(RandomSource var1, WorldGenerationContext var2) {
       int var3 = this.minInclusive.resolveY(var2);
       int var4 = this.maxInclusive.resolveY(var2);
@@ -50,13 +48,12 @@ public class UniformHeight extends HeightProvider {
       }
    }
 
-   @Override
    public HeightProviderType<?> getType() {
       return HeightProviderType.UNIFORM;
    }
 
-   @Override
    public String toString() {
-      return "[" + this.minInclusive + "-" + this.maxInclusive + "]";
+      String var10000 = String.valueOf(this.minInclusive);
+      return "[" + var10000 + "-" + String.valueOf(this.maxInclusive) + "]";
    }
 }

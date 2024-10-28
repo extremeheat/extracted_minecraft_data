@@ -2,17 +2,15 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class WoolCarpetBlock extends CarpetBlock {
-   public static final MapCodec<WoolCarpetBlock> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(WoolCarpetBlock::getColor), propertiesCodec()).apply(var0, WoolCarpetBlock::new)
-   );
+   public static final MapCodec<WoolCarpetBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(DyeColor.CODEC.fieldOf("color").forGetter(WoolCarpetBlock::getColor), propertiesCodec()).apply(var0, WoolCarpetBlock::new);
+   });
    private final DyeColor color;
 
-   @Override
    public MapCodec<WoolCarpetBlock> codec() {
       return CODEC;
    }

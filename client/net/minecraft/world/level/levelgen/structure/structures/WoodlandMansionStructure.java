@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -20,31 +20,28 @@ import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class WoodlandMansionStructure extends Structure {
-   public static final Codec<WoodlandMansionStructure> CODEC = simpleCodec(WoodlandMansionStructure::new);
+   public static final MapCodec<WoodlandMansionStructure> CODEC = simpleCodec(WoodlandMansionStructure::new);
 
    public WoodlandMansionStructure(Structure.StructureSettings var1) {
       super(var1);
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       Rotation var2 = Rotation.getRandom(var1.random());
       BlockPos var3 = this.getLowestYIn5by5BoxOffset7Blocks(var1, var2);
-      return var3.getY() < 60
-         ? Optional.empty()
-         : Optional.of(new Structure.GenerationStub(var3, (Consumer<StructurePiecesBuilder>)(var4 -> this.generatePieces(var4, var1, var3, var2))));
+      return var3.getY() < 60 ? Optional.empty() : Optional.of(new Structure.GenerationStub(var3, (var4) -> {
+         this.generatePieces(var4, var1, var3, var2);
+      }));
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2, BlockPos var3, Rotation var4) {
       LinkedList var5 = Lists.newLinkedList();
       WoodlandMansionPieces.generateMansion(var2.structureTemplateManager(), var3, var4, var5, var2.random());
+      Objects.requireNonNull(var1);
       var5.forEach(var1::addPiece);
    }
 
-   @Override
-   public void afterPlace(
-      WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7
-   ) {
+   public void afterPlace(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7) {
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
       int var9 = var1.getMinBuildHeight();
       BoundingBox var10 = var7.calculateBoundingBox();
@@ -65,9 +62,9 @@ public class WoodlandMansionStructure extends Structure {
             }
          }
       }
+
    }
 
-   @Override
    public StructureType<?> type() {
       return StructureType.WOODLAND_MANSION;
    }

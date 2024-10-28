@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.inventory.RecipeBookType;
 
 public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookChangeSettingsPacket> STREAM_CODEC = Packet.codec(
-      ServerboundRecipeBookChangeSettingsPacket::write, ServerboundRecipeBookChangeSettingsPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookChangeSettingsPacket> STREAM_CODEC = Packet.codec(ServerboundRecipeBookChangeSettingsPacket::write, ServerboundRecipeBookChangeSettingsPacket::new);
    private final RecipeBookType bookType;
    private final boolean isOpen;
    private final boolean isFiltering;
@@ -23,7 +21,7 @@ public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerG
 
    private ServerboundRecipeBookChangeSettingsPacket(FriendlyByteBuf var1) {
       super();
-      this.bookType = var1.readEnum(RecipeBookType.class);
+      this.bookType = (RecipeBookType)var1.readEnum(RecipeBookType.class);
       this.isOpen = var1.readBoolean();
       this.isFiltering = var1.readBoolean();
    }
@@ -34,7 +32,6 @@ public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerG
       var1.writeBoolean(this.isFiltering);
    }
 
-   @Override
    public PacketType<ServerboundRecipeBookChangeSettingsPacket> type() {
       return GamePacketTypes.SERVERBOUND_RECIPE_BOOK_CHANGE_SETTINGS;
    }

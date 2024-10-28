@@ -12,8 +12,6 @@ import net.minecraft.util.valueproviders.FloatProvider;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.PointedDripstoneBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Column;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.LargeDripstoneConfiguration;
@@ -24,56 +22,40 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<LargeDripstoneConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
       LargeDripstoneConfiguration var4 = (LargeDripstoneConfiguration)var1.config();
       RandomSource var5 = var1.random();
-      PointedDripstoneBlock var6 = var4.block;
       if (!DripstoneUtils.isEmptyOrWater(var2, var3)) {
          return false;
       } else {
-         Optional var7 = Column.scan(
-            var2, var3, var4.floorToCeilingSearchRange, DripstoneUtils::isEmptyOrWater, var0 -> DripstoneUtils.isDripstoneBaseOrLava(var0)
-         );
-         if (var7.isEmpty()) {
-            return false;
-         } else if (var7.get() instanceof Column.Range || var6 == Blocks.POTATO_BUD && ((Column)var7.get()).getFloor().isPresent()) {
-            Column var8 = (Column)var7.get();
-            double var9 = var8 instanceof Column.Range var11 ? (double)var11.height() : (double)Mth.randomBetween(var5, 10.0F, 20.0F);
-            if (var9 < 4.0) {
+         Optional var6 = Column.scan(var2, var3, var4.floorToCeilingSearchRange, DripstoneUtils::isEmptyOrWater, DripstoneUtils::isDripstoneBaseOrLava);
+         if (!var6.isEmpty() && var6.get() instanceof Column.Range) {
+            Column.Range var7 = (Column.Range)var6.get();
+            if (var7.height() < 4) {
                return false;
             } else {
-               int var19 = (int)(var9 * (double)var4.maxColumnRadiusToCaveHeightRatio);
-               int var12 = Mth.clamp(var19, var4.columnRadius.getMinValue(), var4.columnRadius.getMaxValue());
-               int var13 = Mth.randomBetweenInclusive(var5, var4.columnRadius.getMinValue(), var12);
-               Optional var14;
-               if (var8.getCeiling().isPresent()) {
-                  var14 = Optional.of(makeDripstone(var3.atY(var8.getCeiling().getAsInt() - 1), false, var5, var13, var4.stalactiteBluntness, var4.heightScale));
+               int var8 = (int)((float)var7.height() * var4.maxColumnRadiusToCaveHeightRatio);
+               int var9 = Mth.clamp(var8, var4.columnRadius.getMinValue(), var4.columnRadius.getMaxValue());
+               int var10 = Mth.randomBetweenInclusive(var5, var4.columnRadius.getMinValue(), var9);
+               LargeDripstone var11 = makeDripstone(var3.atY(var7.ceiling() - 1), false, var5, var10, var4.stalactiteBluntness, var4.heightScale);
+               LargeDripstone var12 = makeDripstone(var3.atY(var7.floor() + 1), true, var5, var10, var4.stalagmiteBluntness, var4.heightScale);
+               WindOffsetter var13;
+               if (var11.isSuitableForWind(var4) && var12.isSuitableForWind(var4)) {
+                  var13 = new WindOffsetter(var3.getY(), var5, var4.windSpeed);
                } else {
-                  var14 = Optional.empty();
+                  var13 = LargeDripstoneFeature.WindOffsetter.noWind();
                }
 
-               LargeDripstoneFeature.LargeDripstone var15 = makeDripstone(
-                  var3.atY(var8.getFloor().getAsInt() + 1), true, var5, var13, var4.stalagmiteBluntness, var4.heightScale
-               );
-               LargeDripstoneFeature.WindOffsetter var16;
-               if (var14.isPresent() && ((LargeDripstoneFeature.LargeDripstone)var14.get()).isSuitableForWind(var4) && var15.isSuitableForWind(var4)) {
-                  var16 = new LargeDripstoneFeature.WindOffsetter(var3.getY(), var5, var4.windSpeed);
-               } else {
-                  var16 = LargeDripstoneFeature.WindOffsetter.noWind();
+               boolean var14 = var11.moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(var2, var13);
+               boolean var15 = var12.moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(var2, var13);
+               if (var14) {
+                  var11.placeBlocks(var2, var5, var13);
                }
 
-               boolean var17 = var14.isPresent()
-                  && ((LargeDripstoneFeature.LargeDripstone)var14.get()).moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(var2, var16);
-               boolean var18 = var15.moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(var2, var16);
-               if (var14.isPresent() && var17) {
-                  ((LargeDripstoneFeature.LargeDripstone)var14.get()).placeBlocks(var6, var2, var5, var16);
-               }
-
-               if (var18) {
-                  var15.placeBlocks(var6, var2, var5, var16);
+               if (var15) {
+                  var12.placeBlocks(var2, var5, var13);
                }
 
                return true;
@@ -84,13 +66,11 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       }
    }
 
-   private static LargeDripstoneFeature.LargeDripstone makeDripstone(
-      BlockPos var0, boolean var1, RandomSource var2, int var3, FloatProvider var4, FloatProvider var5
-   ) {
-      return new LargeDripstoneFeature.LargeDripstone(var0, var1, var3, (double)var4.sample(var2), (double)var5.sample(var2));
+   private static LargeDripstone makeDripstone(BlockPos var0, boolean var1, RandomSource var2, int var3, FloatProvider var4, FloatProvider var5) {
+      return new LargeDripstone(var0, var1, var3, (double)var4.sample(var2), (double)var5.sample(var2));
    }
 
-   private void placeDebugMarkers(WorldGenLevel var1, BlockPos var2, Column.Range var3, LargeDripstoneFeature.WindOffsetter var4) {
+   private void placeDebugMarkers(WorldGenLevel var1, BlockPos var2, Column.Range var3, WindOffsetter var4) {
       var1.setBlock(var4.offset(var2.atY(var3.ceiling() - 1)), Blocks.DIAMOND_BLOCK.defaultBlockState(), 2);
       var1.setBlock(var4.offset(var2.atY(var3.floor() + 1)), Blocks.GOLD_BLOCK.defaultBlockState(), 2);
 
@@ -100,9 +80,10 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
             var1.setBlock(var6, Blocks.CREEPER_HEAD.defaultBlockState(), 2);
          }
       }
+
    }
 
-   static final class LargeDripstone {
+   private static final class LargeDripstone {
       private BlockPos root;
       private final boolean pointingUp;
       private int radius;
@@ -130,7 +111,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          return !this.pointingUp ? this.root.getY() : this.root.getY() + this.getHeight();
       }
 
-      boolean moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(WorldGenLevel var1, LargeDripstoneFeature.WindOffsetter var2) {
+      boolean moveBackUntilBaseIsInsideStoneAndShrinkRadiusIfNecessary(WorldGenLevel var1, WindOffsetter var2) {
          while(this.radius > 1) {
             BlockPos.MutableBlockPos var3 = this.root.mutable();
             int var4 = Math.min(10, this.getHeight());
@@ -158,43 +139,38 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          return (int)DripstoneUtils.getDripstoneHeight((double)var1, (double)this.radius, this.scale, this.bluntness);
       }
 
-      void placeBlocks(PointedDripstoneBlock var1, WorldGenLevel var2, RandomSource var3, LargeDripstoneFeature.WindOffsetter var4) {
-         for(int var5 = -this.radius; var5 <= this.radius; ++var5) {
-            for(int var6 = -this.radius; var6 <= this.radius; ++var6) {
-               float var7 = Mth.sqrt((float)(var5 * var5 + var6 * var6));
-               if (!(var7 > (float)this.radius)) {
-                  int var8 = this.getHeightAtRadius(var7);
-                  if (var8 > 0) {
-                     if ((double)var3.nextFloat() < 0.2) {
-                        var8 = (int)((float)var8 * Mth.randomBetween(var3, 0.8F, 1.0F));
+      void placeBlocks(WorldGenLevel var1, RandomSource var2, WindOffsetter var3) {
+         for(int var4 = -this.radius; var4 <= this.radius; ++var4) {
+            for(int var5 = -this.radius; var5 <= this.radius; ++var5) {
+               float var6 = Mth.sqrt((float)(var4 * var4 + var5 * var5));
+               if (!(var6 > (float)this.radius)) {
+                  int var7 = this.getHeightAtRadius(var6);
+                  if (var7 > 0) {
+                     if ((double)var2.nextFloat() < 0.2) {
+                        var7 = (int)((float)var7 * Mth.randomBetween(var2, 0.8F, 1.0F));
                      }
 
-                     BlockPos.MutableBlockPos var9 = this.root.offset(var5, 0, var6).mutable();
-                     boolean var10 = false;
-                     int var11 = this.pointingUp && var1 == Blocks.POINTED_DRIPSTONE
-                        ? var2.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var9.getX(), var9.getZ())
-                        : 2147483647;
+                     BlockPos.MutableBlockPos var8 = this.root.offset(var4, 0, var5).mutable();
+                     boolean var9 = false;
+                     int var10 = this.pointingUp ? var1.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var8.getX(), var8.getZ()) : 2147483647;
 
-                     for(int var12 = 0; var12 < var8 && var9.getY() < var11; ++var12) {
-                        Object var13 = var4.offset(var9);
-                        if (Math.abs(((BlockPos)var13).getZ() - this.root.getZ()) > 16 || Math.abs(((BlockPos)var13).getX() - this.root.getX()) > 16) {
-                           var13 = var9;
-                        }
-
-                        if (DripstoneUtils.isEmptyOrWaterOrLava(var2, (BlockPos)var13)) {
-                           var10 = true;
-                           Block var14 = var1.getLargeBlock();
-                           var2.setBlock((BlockPos)var13, var14.defaultBlockState(), 2);
-                        } else if (var10 && var2.getBlockState((BlockPos)var13).is(BlockTags.BASE_STONE_OVERWORLD)) {
+                     for(int var11 = 0; var11 < var7 && var8.getY() < var10; ++var11) {
+                        BlockPos var12 = var3.offset(var8);
+                        if (DripstoneUtils.isEmptyOrWaterOrLava(var1, var12)) {
+                           var9 = true;
+                           Block var13 = Blocks.DRIPSTONE_BLOCK;
+                           var1.setBlock(var12, var13.defaultBlockState(), 2);
+                        } else if (var9 && var1.getBlockState(var12).is(BlockTags.BASE_STONE_OVERWORLD)) {
                            break;
                         }
 
-                        var9.move(this.pointingUp ? Direction.UP : Direction.DOWN);
+                        var8.move(this.pointingUp ? Direction.UP : Direction.DOWN);
                      }
                   }
                }
             }
          }
+
       }
 
       boolean isSuitableForWind(LargeDripstoneConfiguration var1) {
@@ -202,7 +178,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       }
    }
 
-   static final class WindOffsetter {
+   private static final class WindOffsetter {
       private final int originY;
       @Nullable
       private final Vec3 windSpeed;
@@ -221,8 +197,8 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
          this.windSpeed = null;
       }
 
-      static LargeDripstoneFeature.WindOffsetter noWind() {
-         return new LargeDripstoneFeature.WindOffsetter();
+      static WindOffsetter noWind() {
+         return new WindOffsetter();
       }
 
       BlockPos offset(BlockPos var1) {

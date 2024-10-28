@@ -27,37 +27,19 @@ public class Shoot extends Behavior<Breeze> {
 
    @VisibleForTesting
    public Shoot() {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.ATTACK_TARGET,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.BREEZE_SHOOT_COOLDOWN,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_SHOOT_CHARGING,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_SHOOT_RECOVERING,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_SHOOT,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.BREEZE_JUMP_TARGET,
-            MemoryStatus.VALUE_ABSENT
-         ),
-         SHOOT_INITIAL_DELAY_TICKS + 1 + SHOOT_RECOVER_DELAY_TICKS
-      );
+      super(ImmutableMap.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.BREEZE_SHOOT_COOLDOWN, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_SHOOT_CHARGING, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_SHOOT_RECOVERING, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_SHOOT, MemoryStatus.VALUE_PRESENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_ABSENT), SHOOT_INITIAL_DELAY_TICKS + 1 + SHOOT_RECOVER_DELAY_TICKS);
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
-      return var2.getPose() != Pose.STANDING
-         ? false
-         : var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).map(var1x -> isTargetWithinRange(var2, var1x)).map(var1x -> {
-            if (!var1x) {
-               var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_SHOOT);
-            }
-   
-            return var1x;
-         }).orElse(false);
+      return var2.getPose() != Pose.STANDING ? false : (Boolean)var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).map((var1x) -> {
+         return isTargetWithinRange(var2, var1x);
+      }).map((var1x) -> {
+         if (!var1x) {
+            var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_SHOOT);
+         }
+
+         return var1x;
+      }).orElse(false);
    }
 
    protected boolean canStillUse(ServerLevel var1, Breeze var2, long var3) {
@@ -65,7 +47,9 @@ public class Shoot extends Behavior<Breeze> {
    }
 
    protected void start(ServerLevel var1, Breeze var2, long var3) {
-      var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(var1x -> var2.setPose(Pose.SHOOTING));
+      var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((var1x) -> {
+         var2.setPose(Pose.SHOOTING);
+      });
       var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT_CHARGING, Unit.INSTANCE, (long)SHOOT_INITIAL_DELAY_TICKS);
       var2.playSound(SoundEvents.BREEZE_INHALE, 1.0F, 1.0F);
    }
@@ -81,7 +65,7 @@ public class Shoot extends Behavior<Breeze> {
 
    protected void tick(ServerLevel var1, Breeze var2, long var3) {
       Brain var5 = var2.getBrain();
-      LivingEntity var6 = var5.getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
+      LivingEntity var6 = (LivingEntity)var5.getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
       if (var6 != null) {
          var2.lookAt(EntityAnchorArgument.Anchor.EYES, var6.position());
          if (!var5.getMemory(MemoryModuleType.BREEZE_SHOOT_CHARGING).isPresent() && !var5.getMemory(MemoryModuleType.BREEZE_SHOOT_RECOVERING).isPresent()) {
@@ -95,6 +79,7 @@ public class Shoot extends Behavior<Breeze> {
                var13.shoot(var7, var9, var11, 0.7F, (float)(5 - var1.getDifficulty().getId() * 4));
                var1.addFreshEntity(var13);
             }
+
          }
       }
    }
@@ -109,5 +94,20 @@ public class Shoot extends Behavior<Breeze> {
    private static boolean isTargetWithinRange(Breeze var0, LivingEntity var1) {
       double var2 = var0.position().distanceToSqr(var1.position());
       return var2 > 4.0 && var2 < 256.0;
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Breeze)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Breeze)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Breeze)var2, var3);
    }
 }

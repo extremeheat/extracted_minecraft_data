@@ -25,42 +25,34 @@ public class BuiltInModel implements BakedModel {
       this.usesBlockLight = var4;
    }
 
-   @Override
    public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, RandomSource var3) {
       return Collections.emptyList();
    }
 
-   @Override
    public boolean useAmbientOcclusion() {
       return false;
    }
 
-   @Override
    public boolean isGui3d() {
       return true;
    }
 
-   @Override
    public boolean usesBlockLight() {
       return this.usesBlockLight;
    }
 
-   @Override
    public boolean isCustomRenderer() {
       return true;
    }
 
-   @Override
    public TextureAtlasSprite getParticleIcon() {
       return this.particleTexture;
    }
 
-   @Override
    public ItemTransforms getTransforms() {
       return this.itemTransforms;
    }
 
-   @Override
    public ItemOverrides getOverrides() {
       return this.overrides;
    }

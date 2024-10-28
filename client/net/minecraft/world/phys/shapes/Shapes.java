@@ -6,6 +6,7 @@ import com.google.common.math.IntMath;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Objects;
 import net.minecraft.Util;
 import net.minecraft.core.AxisCycle;
@@ -15,18 +16,13 @@ import net.minecraft.world.phys.AABB;
 public final class Shapes {
    public static final double EPSILON = 1.0E-7;
    public static final double BIG_EPSILON = 1.0E-6;
-   private static final VoxelShape BLOCK = Util.make(() -> {
+   private static final VoxelShape BLOCK = (VoxelShape)Util.make(() -> {
       BitSetDiscreteVoxelShape var0 = new BitSetDiscreteVoxelShape(1, 1, 1);
-      var0.fill(0, 0, 0);
+      ((DiscreteVoxelShape)var0).fill(0, 0, 0);
       return new CubeVoxelShape(var0);
    });
    public static final VoxelShape INFINITY = box(-1.0 / 0.0, -1.0 / 0.0, -1.0 / 0.0, 1.0 / 0.0, 1.0 / 0.0, 1.0 / 0.0);
-   private static final VoxelShape EMPTY = new ArrayVoxelShape(
-      new BitSetDiscreteVoxelShape(0, 0, 0),
-      new DoubleArrayList(new double[]{0.0}),
-      new DoubleArrayList(new double[]{0.0}),
-      new DoubleArrayList(new double[]{0.0})
-   );
+   private static final VoxelShape EMPTY = new ArrayVoxelShape(new BitSetDiscreteVoxelShape(0, 0, 0), new DoubleArrayList(new double[]{0.0}), new DoubleArrayList(new double[]{0.0}), new DoubleArrayList(new double[]{0.0}));
 
    public Shapes() {
       super();
@@ -53,31 +49,18 @@ public final class Shapes {
          int var12 = findBits(var0, var6);
          int var13 = findBits(var2, var8);
          int var14 = findBits(var4, var10);
-         if (var12 < 0 || var13 < 0 || var14 < 0) {
-            return new ArrayVoxelShape(
-               BLOCK.shape,
-               DoubleArrayList.wrap(new double[]{var0, var6}),
-               DoubleArrayList.wrap(new double[]{var2, var8}),
-               DoubleArrayList.wrap(new double[]{var4, var10})
-            );
-         } else if (var12 == 0 && var13 == 0 && var14 == 0) {
-            return block();
+         if (var12 >= 0 && var13 >= 0 && var14 >= 0) {
+            if (var12 == 0 && var13 == 0 && var14 == 0) {
+               return block();
+            } else {
+               int var15 = 1 << var12;
+               int var16 = 1 << var13;
+               int var17 = 1 << var14;
+               BitSetDiscreteVoxelShape var18 = BitSetDiscreteVoxelShape.withFilledBounds(var15, var16, var17, (int)Math.round(var0 * (double)var15), (int)Math.round(var2 * (double)var16), (int)Math.round(var4 * (double)var17), (int)Math.round(var6 * (double)var15), (int)Math.round(var8 * (double)var16), (int)Math.round(var10 * (double)var17));
+               return new CubeVoxelShape(var18);
+            }
          } else {
-            int var15 = 1 << var12;
-            int var16 = 1 << var13;
-            int var17 = 1 << var14;
-            BitSetDiscreteVoxelShape var18 = BitSetDiscreteVoxelShape.withFilledBounds(
-               var15,
-               var16,
-               var17,
-               (int)Math.round(var0 * (double)var15),
-               (int)Math.round(var2 * (double)var16),
-               (int)Math.round(var4 * (double)var17),
-               (int)Math.round(var6 * (double)var15),
-               (int)Math.round(var8 * (double)var16),
-               (int)Math.round(var10 * (double)var17)
-            );
-            return new CubeVoxelShape(var18);
+            return new ArrayVoxelShape(BLOCK.shape, DoubleArrayList.wrap(new double[]{var0, var6}), DoubleArrayList.wrap(new double[]{var2, var8}), DoubleArrayList.wrap(new double[]{var4, var10}));
          }
       } else {
          return empty();
@@ -117,7 +100,7 @@ public final class Shapes {
    }
 
    public static VoxelShape or(VoxelShape var0, VoxelShape... var1) {
-      return Arrays.stream(var1).reduce(var0, Shapes::or);
+      return (VoxelShape)Arrays.stream(var1).reduce(var0, Shapes::or);
    }
 
    public static VoxelShape join(VoxelShape var0, VoxelShape var1, BooleanOp var2) {
@@ -139,13 +122,9 @@ public final class Shapes {
          } else {
             IndexMerger var5 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var3, var4);
             IndexMerger var6 = createIndexMerger(var5.size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var3, var4);
-            IndexMerger var7 = createIndexMerger(
-               (var5.size() - 1) * (var6.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var3, var4
-            );
+            IndexMerger var7 = createIndexMerger((var5.size() - 1) * (var6.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var3, var4);
             BitSetDiscreteVoxelShape var8 = BitSetDiscreteVoxelShape.join(var0.shape, var1.shape, var5, var6, var7, var2);
-            return (VoxelShape)(var5 instanceof DiscreteCubeMerger && var6 instanceof DiscreteCubeMerger && var7 instanceof DiscreteCubeMerger
-               ? new CubeVoxelShape(var8)
-               : new ArrayVoxelShape(var8, var5.getList(), var6.getList(), var7.getList()));
+            return (VoxelShape)(var5 instanceof DiscreteCubeMerger && var6 instanceof DiscreteCubeMerger && var7 instanceof DiscreteCubeMerger ? new CubeVoxelShape(var8) : new ArrayVoxelShape(var8, var5.getList(), var6.getList(), var7.getList()));
          }
       }
    }
@@ -162,8 +141,11 @@ public final class Shapes {
             } else {
                boolean var5 = var2.apply(true, false);
                boolean var6 = var2.apply(false, true);
+               Direction.Axis[] var7 = AxisCycle.AXIS_VALUES;
+               int var8 = var7.length;
 
-               for(Direction.Axis var10 : AxisCycle.AXIS_VALUES) {
+               for(int var9 = 0; var9 < var8; ++var9) {
+                  Direction.Axis var10 = var7[var9];
                   if (var0.max(var10) < var1.min(var10) - 1.0E-7) {
                      return var5 || var6;
                   }
@@ -175,9 +157,7 @@ public final class Shapes {
 
                IndexMerger var11 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var5, var6);
                IndexMerger var12 = createIndexMerger(var11.size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var5, var6);
-               IndexMerger var13 = createIndexMerger(
-                  (var11.size() - 1) * (var12.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var5, var6
-               );
+               IndexMerger var13 = createIndexMerger((var11.size() - 1) * (var12.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var5, var6);
                return joinIsNotEmpty(var11, var12, var13, var0.shape, var1.shape, var2);
             }
          } else {
@@ -187,22 +167,22 @@ public final class Shapes {
    }
 
    private static boolean joinIsNotEmpty(IndexMerger var0, IndexMerger var1, IndexMerger var2, DiscreteVoxelShape var3, DiscreteVoxelShape var4, BooleanOp var5) {
-      return !var0.forMergedIndexes(
-         (var5x, var6, var7) -> var1.forMergedIndexes(
-               (var6x, var7x, var8) -> var2.forMergedIndexes(
-                     (var7xx, var8x, var9) -> !var5.apply(var3.isFullWide(var5x, var6x, var7xx), var4.isFullWide(var6, var7x, var8x))
-                  )
-            )
-      );
+      return !var0.forMergedIndexes((var5x, var6, var7) -> {
+         return var1.forMergedIndexes((var6x, var7x, var8) -> {
+            return var2.forMergedIndexes((var7, var8x, var9) -> {
+               return !var5.apply(var3.isFullWide(var5x, var6x, var7), var4.isFullWide(var6, var7x, var8x));
+            });
+         });
+      });
    }
 
    public static double collide(Direction.Axis var0, AABB var1, Iterable<VoxelShape> var2, double var3) {
-      for(VoxelShape var6 : var2) {
+      VoxelShape var6;
+      for(Iterator var5 = var2.iterator(); var5.hasNext(); var3 = var6.collide(var0, var1, var3)) {
+         var6 = (VoxelShape)var5.next();
          if (Math.abs(var3) < 1.0E-7) {
             return 0.0;
          }
-
-         var3 = var6.collide(var0, var1, var3);
       }
 
       return var3;
@@ -219,9 +199,7 @@ public final class Shapes {
          VoxelShape var5 = var4 == Direction.AxisDirection.POSITIVE ? var0 : var1;
          VoxelShape var6 = var4 == Direction.AxisDirection.POSITIVE ? var1 : var0;
          BooleanOp var7 = var4 == Direction.AxisDirection.POSITIVE ? BooleanOp.ONLY_FIRST : BooleanOp.ONLY_SECOND;
-         return DoubleMath.fuzzyEquals(var5.max(var3), 1.0, 1.0E-7)
-            && DoubleMath.fuzzyEquals(var6.min(var3), 0.0, 1.0E-7)
-            && !joinIsNotEmpty(new SliceShape(var5, var3, var5.shape.getSize(var3) - 1), new SliceShape(var6, var3, 0), var7);
+         return DoubleMath.fuzzyEquals(var5.max(var3), 1.0, 1.0E-7) && DoubleMath.fuzzyEquals(var6.min(var3), 0.0, 1.0E-7) && !joinIsNotEmpty(new SliceShape(var5, var3, var5.shape.getSize(var3) - 1), new SliceShape(var6, var3, 0), var7);
       }
    }
 
@@ -258,23 +236,21 @@ public final class Shapes {
             var6 = empty();
          }
 
-         return !joinIsNotEmpty(
-            block(),
-            joinUnoptimized(new SliceShape(var5, var3, var5.shape.getSize(var3) - 1), new SliceShape(var6, var3, 0), BooleanOp.OR),
-            BooleanOp.ONLY_FIRST
-         );
+         return !joinIsNotEmpty(block(), joinUnoptimized(new SliceShape(var5, var3, var5.shape.getSize(var3) - 1), new SliceShape(var6, var3, 0), BooleanOp.OR), BooleanOp.ONLY_FIRST);
       } else {
          return true;
       }
    }
 
    public static boolean faceShapeOccludes(VoxelShape var0, VoxelShape var1) {
-      if (var0 == block() || var1 == block()) {
-         return true;
-      } else if (var0.isEmpty() && var1.isEmpty()) {
-         return false;
+      if (var0 != block() && var1 != block()) {
+         if (var0.isEmpty() && var1.isEmpty()) {
+            return false;
+         } else {
+            return !joinIsNotEmpty(block(), joinUnoptimized(var0, var1, BooleanOp.OR), BooleanOp.ONLY_FIRST);
+         }
       } else {
-         return !joinIsNotEmpty(block(), joinUnoptimized(var0, var1, BooleanOp.OR), BooleanOp.ONLY_FIRST);
+         return true;
       }
    }
 

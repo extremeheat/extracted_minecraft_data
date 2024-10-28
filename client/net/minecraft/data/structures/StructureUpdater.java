@@ -16,7 +16,6 @@ public class StructureUpdater implements SnbtToNbt.Filter {
       super();
    }
 
-   @Override
    public CompoundTag apply(String var1, CompoundTag var2) {
       return var1.startsWith("data/minecraft/structures/") ? update(var1, var2) : var2;
    }

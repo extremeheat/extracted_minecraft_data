@@ -4,16 +4,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPacketPayload {
-   private final HiveDebugPayload.HiveInfo hiveInfo;
+public record HiveDebugPayload(HiveInfo hiveInfo) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, HiveDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(HiveDebugPayload::write, HiveDebugPayload::new);
    public static final CustomPacketPayload.Type<HiveDebugPayload> TYPE = CustomPacketPayload.createType("debug/hive");
 
    private HiveDebugPayload(FriendlyByteBuf var1) {
-      this(new HiveDebugPayload.HiveInfo(var1));
+      this(new HiveInfo(var1));
    }
 
-   public HiveDebugPayload(HiveDebugPayload.HiveInfo var1) {
+   public HiveDebugPayload(HiveInfo var1) {
       super();
       this.hiveInfo = var1;
    }
@@ -22,18 +21,15 @@ public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPac
       this.hiveInfo.write(var1);
    }
 
-   @Override
    public CustomPacketPayload.Type<HiveDebugPayload> type() {
       return TYPE;
    }
 
-   public static record HiveInfo(BlockPos a, String b, int c, int d, boolean e) {
-      private final BlockPos pos;
-      private final String hiveType;
-      private final int occupantCount;
-      private final int honeyLevel;
-      private final boolean sedated;
+   public HiveInfo hiveInfo() {
+      return this.hiveInfo;
+   }
 
+   public static record HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
       public HiveInfo(FriendlyByteBuf var1) {
          this(var1.readBlockPos(), var1.readUtf(), var1.readInt(), var1.readInt(), var1.readBoolean());
       }
@@ -53,6 +49,26 @@ public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPac
          var1.writeInt(this.occupantCount);
          var1.writeInt(this.honeyLevel);
          var1.writeBoolean(this.sedated);
+      }
+
+      public BlockPos pos() {
+         return this.pos;
+      }
+
+      public String hiveType() {
+         return this.hiveType;
+      }
+
+      public int occupantCount() {
+         return this.occupantCount;
+      }
+
+      public int honeyLevel() {
+         return this.honeyLevel;
+      }
+
+      public boolean sedated() {
+         return this.sedated;
       }
    }
 }

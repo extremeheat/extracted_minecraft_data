@@ -23,9 +23,8 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
       this.connection = var2;
    }
 
-   @Override
    public void handleIntention(ClientIntentionPacket var1) {
-      switch(var1.intention()) {
+      switch (var1.intention()) {
          case LOGIN:
             this.beginLogin(var1, false);
             break;
@@ -49,8 +48,9 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
             }
             break;
          default:
-            throw new UnsupportedOperationException("Invalid intention " + var1.intention());
+            throw new UnsupportedOperationException("Invalid intention " + String.valueOf(var1.intention()));
       }
+
    }
 
    private void beginLogin(ClientIntentionPacket var1, boolean var2) {
@@ -68,13 +68,12 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
       } else {
          this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, var2));
       }
+
    }
 
-   @Override
    public void onDisconnect(Component var1) {
    }
 
-   @Override
    public boolean isAcceptingMessages() {
       return this.connection.isConnected();
    }

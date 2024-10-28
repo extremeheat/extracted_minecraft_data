@@ -20,6 +20,7 @@ public class Target extends Node {
          this.bestHeuristic = var1;
          this.bestNode = var2;
       }
+
    }
 
    public Node getBestNode() {

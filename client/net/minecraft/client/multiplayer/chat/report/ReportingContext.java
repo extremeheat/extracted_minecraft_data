@@ -34,25 +34,19 @@ public final class ReportingContext {
    public void draftReportHandled(Minecraft var1, Screen var2, Runnable var3, boolean var4) {
       if (this.draftReport != null) {
          Report var5 = this.draftReport.copy();
-         var1.setScreen(
-            new ConfirmScreen(
-               var5x -> {
-                  this.setReportDraft(null);
-                  if (var5x) {
-                     var1.setScreen(var5.createScreen(var2, this));
-                  } else {
-                     var3.run();
-                  }
-               },
-               Component.translatable(var4 ? "gui.abuseReport.draft.quittotitle.title" : "gui.abuseReport.draft.title"),
-               Component.translatable(var4 ? "gui.abuseReport.draft.quittotitle.content" : "gui.abuseReport.draft.content"),
-               Component.translatable("gui.abuseReport.draft.edit"),
-               Component.translatable("gui.abuseReport.draft.discard")
-            )
-         );
+         var1.setScreen(new ConfirmScreen((var5x) -> {
+            this.setReportDraft((Report)null);
+            if (var5x) {
+               var1.setScreen(var5.createScreen(var2, this));
+            } else {
+               var3.run();
+            }
+
+         }, Component.translatable(var4 ? "gui.abuseReport.draft.quittotitle.title" : "gui.abuseReport.draft.title"), Component.translatable(var4 ? "gui.abuseReport.draft.quittotitle.content" : "gui.abuseReport.draft.content"), Component.translatable("gui.abuseReport.draft.edit"), Component.translatable("gui.abuseReport.draft.discard")));
       } else {
          var3.run();
       }
+
    }
 
    public AbuseReportSender sender() {

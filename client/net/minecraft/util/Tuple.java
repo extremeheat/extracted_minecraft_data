@@ -6,8 +6,8 @@ public class Tuple<A, B> {
 
    public Tuple(A var1, B var2) {
       super();
-      this.a = (A)var1;
-      this.b = (B)var2;
+      this.a = var1;
+      this.b = var2;
    }
 
    public A getA() {
@@ -15,7 +15,7 @@ public class Tuple<A, B> {
    }
 
    public void setA(A var1) {
-      this.a = (A)var1;
+      this.a = var1;
    }
 
    public B getB() {
@@ -23,6 +23,6 @@ public class Tuple<A, B> {
    }
 
    public void setB(B var1) {
-      this.b = (B)var1;
+      this.b = var1;
    }
 }

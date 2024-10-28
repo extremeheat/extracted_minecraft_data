@@ -11,9 +11,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 
 public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateMobEffectPacket> STREAM_CODEC = Packet.codec(
-      ClientboundUpdateMobEffectPacket::write, ClientboundUpdateMobEffectPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateMobEffectPacket> STREAM_CODEC = Packet.codec(ClientboundUpdateMobEffectPacket::write, ClientboundUpdateMobEffectPacket::new);
    private static final int FLAG_AMBIENT = 1;
    private static final int FLAG_VISIBLE = 2;
    private static final int FLAG_SHOW_ICON = 4;
@@ -53,7 +51,7 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
    private ClientboundUpdateMobEffectPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.entityId = var1.readVarInt();
-      this.effect = ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).decode(var1);
+      this.effect = (Holder)ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).decode(var1);
       this.effectAmplifier = var1.readVarInt();
       this.effectDurationTicks = var1.readVarInt();
       this.flags = var1.readByte();
@@ -67,7 +65,6 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
       var1.writeByte(this.flags);
    }
 
-   @Override
    public PacketType<ClientboundUpdateMobEffectPacket> type() {
       return GamePacketTypes.CLIENTBOUND_UPDATE_MOB_EFFECT;
    }

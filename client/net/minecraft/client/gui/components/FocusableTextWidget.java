@@ -33,12 +33,10 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       this.setMaxWidth(var1 - this.padding * 4);
    }
 
-   @Override
    protected void updateWidgetNarration(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.getMessage());
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isFocused() || this.alwaysShowBorder) {
          int var5 = this.getX() - this.padding;
@@ -53,7 +51,6 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       super.renderWidget(var1, var2, var3, var4);
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
    }
 }

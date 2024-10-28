@@ -67,12 +67,10 @@ public final class ServerAddress {
       }
    }
 
-   @Override
    public String toString() {
       return this.hostAndPort.toString();
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -81,7 +79,6 @@ public final class ServerAddress {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.hostAndPort.hashCode();
    }

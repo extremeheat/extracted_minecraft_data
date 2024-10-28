@@ -16,8 +16,7 @@ import net.minecraft.world.level.block.Blocks;
 
 public interface Recipe<C extends Container> {
    Codec<Recipe<?>> CODEC = BuiltInRegistries.RECIPE_SERIALIZER.byNameCodec().dispatch(Recipe::getSerializer, RecipeSerializer::codec);
-   StreamCodec<RegistryFriendlyByteBuf, Recipe<?>> STREAM_CODEC = ByteBufCodecs.registry(Registries.RECIPE_SERIALIZER)
-      .dispatch(Recipe::getSerializer, RecipeSerializer::streamCodec);
+   StreamCodec<RegistryFriendlyByteBuf, Recipe<?>> STREAM_CODEC = ByteBufCodecs.registry(Registries.RECIPE_SERIALIZER).dispatch(Recipe::getSerializer, RecipeSerializer::streamCodec);
 
    boolean matches(C var1, Level var2);
 
@@ -66,6 +65,8 @@ public interface Recipe<C extends Container> {
 
    default boolean isIncomplete() {
       NonNullList var1 = this.getIngredients();
-      return var1.isEmpty() || var1.stream().anyMatch(var0 -> var0.getItems().length == 0);
+      return var1.isEmpty() || var1.stream().anyMatch((var0) -> {
+         return var0.getItems().length == 0;
+      });
    }
 }

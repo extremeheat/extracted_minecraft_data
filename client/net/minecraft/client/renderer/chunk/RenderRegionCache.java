@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class RenderRegionCache {
-   private final Long2ObjectMap<RenderRegionCache.ChunkInfo> chunkInfoCache = new Long2ObjectOpenHashMap();
+   private final Long2ObjectMap<ChunkInfo> chunkInfoCache = new Long2ObjectOpenHashMap();
 
    public RenderRegionCache() {
       super();
@@ -22,14 +22,14 @@ public class RenderRegionCache {
       int var6 = SectionPos.blockToSectionCoord(var2.getZ() - var4);
       int var7 = SectionPos.blockToSectionCoord(var3.getX() + var4);
       int var8 = SectionPos.blockToSectionCoord(var3.getZ() + var4);
-      RenderRegionCache.ChunkInfo[][] var9 = new RenderRegionCache.ChunkInfo[var7 - var5 + 1][var8 - var6 + 1];
+      ChunkInfo[][] var9 = new ChunkInfo[var7 - var5 + 1][var8 - var6 + 1];
 
+      int var11;
       for(int var10 = var5; var10 <= var7; ++var10) {
-         for(int var11 = var6; var11 <= var8; ++var11) {
-            var9[var10 - var5][var11 - var6] = (RenderRegionCache.ChunkInfo)this.chunkInfoCache
-               .computeIfAbsent(
-                  ChunkPos.asLong(var10, var11), var1x -> new RenderRegionCache.ChunkInfo(var1.getChunk(ChunkPos.getX(var1x), ChunkPos.getZ(var1x)))
-               );
+         for(var11 = var6; var11 <= var8; ++var11) {
+            var9[var10 - var5][var11 - var6] = (ChunkInfo)this.chunkInfoCache.computeIfAbsent(ChunkPos.asLong(var10, var11), (var1x) -> {
+               return new ChunkInfo(var1.getChunk(ChunkPos.getX(var1x), ChunkPos.getZ(var1x)));
+            });
          }
       }
 
@@ -38,9 +38,9 @@ public class RenderRegionCache {
       } else {
          RenderChunk[][] var13 = new RenderChunk[var7 - var5 + 1][var8 - var6 + 1];
 
-         for(int var14 = var5; var14 <= var7; ++var14) {
+         for(var11 = var5; var11 <= var7; ++var11) {
             for(int var12 = var6; var12 <= var8; ++var12) {
-               var13[var14 - var5][var12 - var6] = var9[var14 - var5][var12 - var6].renderChunk();
+               var13[var11 - var5][var12 - var6] = var9[var11 - var5][var12 - var6].renderChunk();
             }
          }
 
@@ -48,7 +48,7 @@ public class RenderRegionCache {
       }
    }
 
-   private static boolean isAllEmpty(BlockPos var0, BlockPos var1, int var2, int var3, RenderRegionCache.ChunkInfo[][] var4) {
+   private static boolean isAllEmpty(BlockPos var0, BlockPos var1, int var2, int var3, ChunkInfo[][] var4) {
       int var5 = SectionPos.blockToSectionCoord(var0.getX());
       int var6 = SectionPos.blockToSectionCoord(var0.getZ());
       int var7 = SectionPos.blockToSectionCoord(var1.getX());
@@ -66,7 +66,7 @@ public class RenderRegionCache {
       return true;
    }
 
-   static final class ChunkInfo {
+   private static final class ChunkInfo {
       private final LevelChunk chunk;
       @Nullable
       private RenderChunk renderChunk;

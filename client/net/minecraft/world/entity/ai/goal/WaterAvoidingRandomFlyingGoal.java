@@ -12,7 +12,6 @@ public class WaterAvoidingRandomFlyingGoal extends WaterAvoidingRandomStrollGoal
    }
 
    @Nullable
-   @Override
    protected Vec3 getPosition() {
       Vec3 var1 = this.mob.getViewVector(0.0F);
       boolean var2 = true;

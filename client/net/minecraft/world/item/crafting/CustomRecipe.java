@@ -11,17 +11,14 @@ public abstract class CustomRecipe implements CraftingRecipe {
       this.category = var1;
    }
 
-   @Override
    public boolean isSpecial() {
       return true;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return ItemStack.EMPTY;
    }
 
-   @Override
    public CraftingBookCategory category() {
       return this.category;
    }

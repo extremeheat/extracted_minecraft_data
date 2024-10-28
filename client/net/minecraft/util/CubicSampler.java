@@ -11,7 +11,7 @@ public class CubicSampler {
       super();
    }
 
-   public static Vec3 gaussianSampleVec3(Vec3 var0, CubicSampler.Vec3Fetcher var1) {
+   public static Vec3 gaussianSampleVec3(Vec3 var0, Vec3Fetcher var1) {
       int var2 = Mth.floor(var0.x());
       int var3 = Mth.floor(var0.y());
       int var4 = Mth.floor(var0.z());
@@ -39,7 +39,8 @@ public class CubicSampler {
          }
       }
 
-      return var13.scale(1.0 / var11);
+      var13 = var13.scale(1.0 / var11);
+      return var13;
    }
 
    @FunctionalInterface

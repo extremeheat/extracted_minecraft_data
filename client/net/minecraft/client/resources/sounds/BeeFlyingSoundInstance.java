@@ -9,12 +9,10 @@ public class BeeFlyingSoundInstance extends BeeSoundInstance {
       super(var1, SoundEvents.BEE_LOOP, SoundSource.NEUTRAL);
    }
 
-   @Override
    protected AbstractTickableSoundInstance getAlternativeSoundInstance() {
       return new BeeAggressiveSoundInstance(this.bee);
    }
 
-   @Override
    protected boolean shouldSwitchSounds() {
       return this.bee.isAngry();
    }

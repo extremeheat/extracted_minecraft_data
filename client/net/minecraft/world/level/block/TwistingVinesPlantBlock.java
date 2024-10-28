@@ -9,7 +9,6 @@ public class TwistingVinesPlantBlock extends GrowingPlantBodyBlock {
    public static final MapCodec<TwistingVinesPlantBlock> CODEC = simpleCodec(TwistingVinesPlantBlock::new);
    public static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 16.0, 12.0);
 
-   @Override
    public MapCodec<TwistingVinesPlantBlock> codec() {
       return CODEC;
    }
@@ -18,7 +17,6 @@ public class TwistingVinesPlantBlock extends GrowingPlantBodyBlock {
       super(var1, Direction.UP, SHAPE, false);
    }
 
-   @Override
    protected GrowingPlantHeadBlock getHeadBlock() {
       return (GrowingPlantHeadBlock)Blocks.TWISTING_VINES;
    }

@@ -1,5 +1,6 @@
 package net.minecraft.server.level.progress;
 
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import net.minecraft.util.thread.ProcessorMailbox;
@@ -23,27 +24,34 @@ public class ProcessorChunkProgressListener implements ChunkProgressListener {
       return var2;
    }
 
-   @Override
    public void updateSpawnPos(ChunkPos var1) {
-      this.mailbox.tell(() -> this.delegate.updateSpawnPos(var1));
+      this.mailbox.tell(() -> {
+         this.delegate.updateSpawnPos(var1);
+      });
    }
 
-   @Override
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
       if (this.started) {
-         this.mailbox.tell(() -> this.delegate.onStatusChange(var1, var2));
+         this.mailbox.tell(() -> {
+            this.delegate.onStatusChange(var1, var2);
+         });
       }
+
    }
 
-   @Override
    public void start() {
       this.started = true;
-      this.mailbox.tell(this.delegate::start);
+      ProcessorMailbox var10000 = this.mailbox;
+      ChunkProgressListener var10001 = this.delegate;
+      Objects.requireNonNull(var10001);
+      var10000.tell(var10001::start);
    }
 
-   @Override
    public void stop() {
       this.started = false;
-      this.mailbox.tell(this.delegate::stop);
+      ProcessorMailbox var10000 = this.mailbox;
+      ChunkProgressListener var10001 = this.delegate;
+      Objects.requireNonNull(var10001);
+      var10000.tell(var10001::stop);
    }
 }

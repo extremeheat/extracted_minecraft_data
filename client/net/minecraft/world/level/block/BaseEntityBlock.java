@@ -16,15 +16,12 @@ public abstract class BaseEntityBlock extends Block implements EntityBlock {
       super(var1);
    }
 
-   @Override
    protected abstract MapCodec<? extends BaseEntityBlock> codec();
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
-   @Override
    protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       super.triggerEvent(var1, var2, var3, var4, var5);
       BlockEntity var6 = var2.getBlockEntity(var3);
@@ -32,16 +29,13 @@ public abstract class BaseEntityBlock extends Block implements EntityBlock {
    }
 
    @Nullable
-   @Override
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
       return var4 instanceof MenuProvider ? (MenuProvider)var4 : null;
    }
 
    @Nullable
-   protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-      BlockEntityType<A> var0, BlockEntityType<E> var1, BlockEntityTicker<? super E> var2
-   ) {
+   protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> var0, BlockEntityType<E> var1, BlockEntityTicker<? super E> var2) {
       return var1 == var0 ? var2 : null;
    }
 }

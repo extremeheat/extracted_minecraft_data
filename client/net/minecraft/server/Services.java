@@ -10,11 +10,7 @@ import javax.annotation.Nullable;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.SignatureValidator;
 
-public record Services(MinecraftSessionService a, ServicesKeySet b, GameProfileRepository c, GameProfileCache d) {
-   private final MinecraftSessionService sessionService;
-   private final ServicesKeySet servicesKeySet;
-   private final GameProfileRepository profileRepository;
-   private final GameProfileCache profileCache;
+public record Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache) {
    private static final String USERID_CACHE_FILE = "usercache.json";
 
    public Services(MinecraftSessionService var1, ServicesKeySet var2, GameProfileRepository var3, GameProfileCache var4) {
@@ -39,5 +35,21 @@ public record Services(MinecraftSessionService a, ServicesKeySet b, GameProfileR
 
    public boolean canValidateProfileKeys() {
       return !this.servicesKeySet.keys(ServicesKeyType.PROFILE_KEY).isEmpty();
+   }
+
+   public MinecraftSessionService sessionService() {
+      return this.sessionService;
+   }
+
+   public ServicesKeySet servicesKeySet() {
+      return this.servicesKeySet;
+   }
+
+   public GameProfileRepository profileRepository() {
+      return this.profileRepository;
+   }
+
+   public GameProfileCache profileCache() {
+      return this.profileCache;
    }
 }

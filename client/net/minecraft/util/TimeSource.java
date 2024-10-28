@@ -8,7 +8,6 @@ public interface TimeSource {
    long get(TimeUnit var1);
 
    public interface NanoTimeSource extends TimeSource, LongSupplier {
-      @Override
       default long get(TimeUnit var1) {
          return var1.convert(this.getAsLong(), TimeUnit.NANOSECONDS);
       }

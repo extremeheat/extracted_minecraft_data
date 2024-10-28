@@ -8,7 +8,7 @@ import net.minecraft.world.entity.Entity;
 public abstract class EntityModel<T extends Entity> extends Model {
    public float attackTime;
    public boolean riding;
-   public boolean young = true;
+   public boolean young;
 
    protected EntityModel() {
       this(RenderType::entityCutoutNoCull);
@@ -16,6 +16,7 @@ public abstract class EntityModel<T extends Entity> extends Model {
 
    protected EntityModel(Function<ResourceLocation, RenderType> var1) {
       super(var1);
+      this.young = true;
    }
 
    public abstract void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6);

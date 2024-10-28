@@ -13,7 +13,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 
 public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
    private static final ResourceLocation EXPERIENCE_ORB_LOCATION = new ResourceLocation("textures/entity/experience_orb.png");
-   private static final RenderType RENDER_TYPE = RenderType.itemEntityTranslucentCull(EXPERIENCE_ORB_LOCATION);
+   private static final RenderType RENDER_TYPE;
 
    public ExperienceOrbRenderer(EntityRendererProvider.Context var1) {
       super(var1);
@@ -56,16 +56,14 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, float var3, int var4, int var5, int var6, float var7, float var8, int var9) {
-      var0.vertex(var1, var2, var3, 0.0F)
-         .color(var4, var5, var6, 128)
-         .uv(var7, var8)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var9)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var0.vertex(var1, var2, var3, 0.0F).color(var4, var5, var6, 128).uv(var7, var8).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var9).normal(var1, 0.0F, 1.0F, 0.0F).endVertex();
    }
 
    public ResourceLocation getTextureLocation(ExperienceOrb var1) {
       return EXPERIENCE_ORB_LOCATION;
+   }
+
+   static {
+      RENDER_TYPE = RenderType.itemEntityTranslucentCull(EXPERIENCE_ORB_LOCATION);
    }
 }

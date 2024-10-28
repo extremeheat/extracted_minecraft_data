@@ -14,6 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -39,52 +40,49 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackMob {
-   private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID = SynchedEntityData.defineId(SnowGolem.class, EntityDataSerializers.BYTE);
+   private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID;
    private static final byte PUMPKIN_FLAG = 16;
 
    public SnowGolem(EntityType<? extends SnowGolem> var1, Level var2) {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new RangedAttackGoal(this, 1.25, 20, 10.0F));
       this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0, 1.0000001E-5F));
       this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false, var0 -> var0 instanceof Enemy));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Mob.class, 10, true, false, (var0) -> {
+         return var0 instanceof Enemy;
+      }));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 4.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_PUMPKIN_ID, (byte)16);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Pumpkin", this.hasPumpkin());
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("Pumpkin")) {
          this.setPumpkin(var1.getBoolean("Pumpkin"));
       }
+
    }
 
-   @Override
    public boolean isSensitiveToWater() {
       return true;
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       if (!this.level().isClientSide) {
@@ -109,9 +107,9 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
             }
          }
       }
+
    }
 
-   @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
       Snowball var3 = new Snowball(this.level(), this);
       double var4 = var1.getEyeY() - 1.100000023841858;
@@ -124,7 +122,6 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       this.level().addFreshEntity(var3);
    }
 
-   @Override
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
@@ -140,53 +137,53 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       }
    }
 
-   @Override
    public void shear(SoundSource var1) {
-      this.level().playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
+      this.level().playSound((Player)null, (Entity)this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
       if (!this.level().isClientSide()) {
          this.setPumpkin(false);
          this.spawnAtLocation(new ItemStack(Items.CARVED_PUMPKIN), this.getEyeHeight());
       }
+
    }
 
-   @Override
    public boolean readyForShearing() {
       return this.isAlive() && this.hasPumpkin();
    }
 
    public boolean hasPumpkin() {
-      return (this.entityData.get(DATA_PUMPKIN_ID) & 16) != 0;
+      return ((Byte)this.entityData.get(DATA_PUMPKIN_ID) & 16) != 0;
    }
 
    public void setPumpkin(boolean var1) {
-      byte var2 = this.entityData.get(DATA_PUMPKIN_ID);
+      byte var2 = (Byte)this.entityData.get(DATA_PUMPKIN_ID);
       if (var1) {
          this.entityData.set(DATA_PUMPKIN_ID, (byte)(var2 | 16));
       } else {
          this.entityData.set(DATA_PUMPKIN_ID, (byte)(var2 & -17));
       }
+
    }
 
    @Nullable
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.SNOW_GOLEM_AMBIENT;
    }
 
    @Nullable
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.SNOW_GOLEM_HURT;
    }
 
    @Nullable
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.SNOW_GOLEM_DEATH;
    }
 
-   @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.75F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
+   }
+
+   static {
+      DATA_PUMPKIN_ID = SynchedEntityData.defineId(SnowGolem.class, EntityDataSerializers.BYTE);
    }
 }

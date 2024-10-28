@@ -9,7 +9,6 @@ public class BedItem extends BlockItem {
       super(var1, var2);
    }
 
-   @Override
    protected boolean placeBlock(BlockPlaceContext var1, BlockState var2) {
       return var1.getLevel().setBlock(var1.getClickedPos(), var2, 26);
    }

@@ -3,11 +3,10 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -21,16 +20,13 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class LootingEnchantFunction extends LootItemConditionalFunction {
    public static final int NO_LIMIT = 0;
-   public static final Codec<LootingEnchantFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  NumberProviders.CODEC.fieldOf("count").forGetter(var0x -> var0x.value),
-                  ExtraCodecs.strictOptionalField(Codec.INT, "limit", 0).forGetter(var0x -> var0x.limit)
-               )
-            )
-            .apply(var0, LootingEnchantFunction::new)
-   );
+   public static final MapCodec<LootingEnchantFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> {
+         return var0x.value;
+      }), Codec.INT.optionalFieldOf("limit", 0).forGetter((var0x) -> {
+         return var0x.limit;
+      }))).apply(var0, LootingEnchantFunction::new);
+   });
    private final NumberProvider value;
    private final int limit;
 
@@ -40,12 +36,10 @@ public class LootingEnchantFunction extends LootItemConditionalFunction {
       this.limit = var3;
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.LOOTING_ENCHANT;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return Sets.union(ImmutableSet.of(LootContextParams.KILLER_ENTITY), this.value.getReferencedContextParams());
    }
@@ -54,9 +48,8 @@ public class LootingEnchantFunction extends LootItemConditionalFunction {
       return this.limit > 0;
    }
 
-   @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      Entity var3 = var2.getParamOrNull(LootContextParams.KILLER_ENTITY);
+      Entity var3 = (Entity)var2.getParamOrNull(LootContextParams.KILLER_ENTITY);
       if (var3 instanceof LivingEntity) {
          int var4 = EnchantmentHelper.getMobLooting((LivingEntity)var3);
          if (var4 == 0) {
@@ -73,11 +66,11 @@ public class LootingEnchantFunction extends LootItemConditionalFunction {
       return var1;
    }
 
-   public static LootingEnchantFunction.Builder lootingMultiplier(NumberProvider var0) {
-      return new LootingEnchantFunction.Builder(var0);
+   public static Builder lootingMultiplier(NumberProvider var0) {
+      return new Builder(var0);
    }
 
-   public static class Builder extends LootItemConditionalFunction.Builder<LootingEnchantFunction.Builder> {
+   public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private final NumberProvider count;
       private int limit = 0;
 
@@ -86,18 +79,22 @@ public class LootingEnchantFunction extends LootItemConditionalFunction {
          this.count = var1;
       }
 
-      protected LootingEnchantFunction.Builder getThis() {
+      protected Builder getThis() {
          return this;
       }
 
-      public LootingEnchantFunction.Builder setLimit(int var1) {
+      public Builder setLimit(int var1) {
          this.limit = var1;
          return this;
       }
 
-      @Override
       public LootItemFunction build() {
          return new LootingEnchantFunction(this.getConditions(), this.count, this.limit);
+      }
+
+      // $FF: synthetic method
+      protected LootItemConditionalFunction.Builder getThis() {
+         return this.getThis();
       }
    }
 }

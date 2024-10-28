@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.Util;
@@ -23,12 +23,14 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    private final Function<LivingEntity, Double> closeEnoughDistance;
 
    public FollowTemptation(Function<LivingEntity, Float> var1) {
-      this(var1, var0 -> 2.5);
+      this(var1, (var0) -> {
+         return 2.5;
+      });
    }
 
    public FollowTemptation(Function<LivingEntity, Float> var1, Function<LivingEntity, Double> var2) {
-      super(Util.make(() -> {
-         Builder var0 = ImmutableMap.builder();
+      super((Map)Util.make(() -> {
+         ImmutableMap.Builder var0 = ImmutableMap.builder();
          var0.put(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED);
          var0.put(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED);
          var0.put(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT);
@@ -43,45 +45,58 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    }
 
    protected float getSpeedModifier(PathfinderMob var1) {
-      return this.speedModifier.apply(var1);
+      return (Float)this.speedModifier.apply(var1);
    }
 
    private Optional<Player> getTemptingPlayer(PathfinderMob var1) {
       return var1.getBrain().getMemory(MemoryModuleType.TEMPTING_PLAYER);
    }
 
-   @Override
    protected boolean timedOut(long var1) {
       return false;
    }
 
    protected boolean canStillUse(ServerLevel var1, PathfinderMob var2, long var3) {
-      return this.getTemptingPlayer(var2).isPresent()
-         && !var2.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET)
-         && !var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+      return this.getTemptingPlayer(var2).isPresent() && !var2.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET) && !var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
    }
 
    protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, true);
+      var2.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, (Object)true);
    }
 
    protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {
       Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, 100);
-      var5.setMemory(MemoryModuleType.IS_TEMPTED, false);
+      var5.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, (int)100);
+      var5.setMemory(MemoryModuleType.IS_TEMPTED, (Object)false);
       var5.eraseMemory(MemoryModuleType.WALK_TARGET);
       var5.eraseMemory(MemoryModuleType.LOOK_TARGET);
    }
 
    protected void tick(ServerLevel var1, PathfinderMob var2, long var3) {
-      Player var5 = this.getTemptingPlayer(var2).get();
+      Player var5 = (Player)this.getTemptingPlayer(var2).get();
       Brain var6 = var2.getBrain();
-      var6.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var5, true));
-      double var7 = this.closeEnoughDistance.apply(var2);
+      var6.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var5, true)));
+      double var7 = (Double)this.closeEnoughDistance.apply(var2);
       if (var2.distanceToSqr(var5) < Mth.square(var7)) {
          var6.eraseMemory(MemoryModuleType.WALK_TARGET);
       } else {
-         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, false), this.getSpeedModifier(var2), 2));
+         var6.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new EntityTracker(var5, false), this.getSpeedModifier(var2), 2)));
       }
+
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (PathfinderMob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (PathfinderMob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (PathfinderMob)var2, var3);
    }
 }

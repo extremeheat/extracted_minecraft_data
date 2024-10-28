@@ -25,7 +25,7 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
    public SoundEventRegistration deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
       JsonObject var4 = GsonHelper.convertToJsonObject(var1, "entry");
       boolean var5 = GsonHelper.getAsBoolean(var4, "replace", false);
-      String var6 = GsonHelper.getAsString(var4, "subtitle", null);
+      String var6 = GsonHelper.getAsString(var4, "subtitle", (String)null);
       List var7 = this.getSounds(var4);
       return new SoundEventRegistration(var7, var5, var6);
    }
@@ -72,5 +72,10 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
       }
 
       return var3;
+   }
+
+   // $FF: synthetic method
+   public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+      return this.deserialize(var1, var2, var3);
    }
 }

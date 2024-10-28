@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
@@ -31,7 +32,7 @@ public abstract class EntityRenderer<T extends Entity> {
 
    public final int getPackedLightCoords(T var1, float var2) {
       BlockPos var3 = BlockPos.containing(var1.getLightProbePosition(var2));
-      return LightTexture.pack(this.getBlockLightLevel((T)var1, var3), this.getSkyLightLevel((T)var1, var3));
+      return LightTexture.pack(this.getBlockLightLevel(var1, var3), this.getSkyLightLevel(var1, var3));
    }
 
    protected int getSkyLightLevel(T var1, BlockPos var2) {
@@ -63,7 +64,7 @@ public abstract class EntityRenderer<T extends Entity> {
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       if (this.shouldShowName(var1)) {
-         this.renderNameTag((T)var1, var1.getDisplayName(), var4, var5, var6, var3);
+         this.renderNameTag(var1, var1.getDisplayName(), var4, var5, var6, var3);
       }
    }
 
@@ -92,12 +93,10 @@ public abstract class EntityRenderer<T extends Entity> {
             float var13 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
             int var14 = (int)(var13 * 255.0F) << 24;
             Font var15 = this.getFont();
-            float var16 = (float)(-var15.width(var2) / 2);
-            var15.drawInBatch(
-               var2, var16, (float)var11, 553648127, false, var12, var4, var10 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var14, var5
-            );
+            float var16 = (float)(-var15.width((FormattedText)var2) / 2);
+            var15.drawInBatch(var2, var16, (float)var11, 553648127, false, var12, var4, var10 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var14, var5);
             if (var10) {
-               var15.drawInBatch(var2, var16, (float)var11, -1, false, var12, var4, Font.DisplayMode.NORMAL, 0, var5);
+               var15.drawInBatch((Component)var2, var16, (float)var11, -1, false, var12, var4, Font.DisplayMode.NORMAL, 0, var5);
             }
 
             var3.popPose();

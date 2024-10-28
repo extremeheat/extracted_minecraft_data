@@ -2,9 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -18,7 +16,9 @@ public class GoToClosestVillage {
    }
 
    public static BehaviorControl<Villager> create(float var0, int var1) {
-      return BehaviorBuilder.create(var2 -> var2.group(var2.absent(MemoryModuleType.WALK_TARGET)).apply(var2, var2x -> (var3, var4, var5) -> {
+      return BehaviorBuilder.create((var2) -> {
+         return var2.group(var2.absent(MemoryModuleType.WALK_TARGET)).apply(var2, (var2x) -> {
+            return (var3, var4, var5) -> {
                if (var3.isVillage(var4.blockPosition())) {
                   return false;
                } else {
@@ -27,7 +27,9 @@ public class GoToClosestVillage {
                   Vec3 var9 = null;
 
                   for(int var10 = 0; var10 < 5; ++var10) {
-                     Vec3 var11 = LandRandomPos.getPos(var4, 15, 7, var1xxxx -> (double)(-var7.sectionsToVillage(SectionPos.of(var1xxxx))));
+                     Vec3 var11 = LandRandomPos.getPos(var4, 15, 7, (var1x) -> {
+                        return (double)(-var7.sectionsToVillage(SectionPos.of(var1x)));
+                     });
                      if (var11 != null) {
                         int var12 = var7.sectionsToVillage(SectionPos.of(BlockPos.containing(var11)));
                         if (var12 < var8) {
@@ -47,6 +49,8 @@ public class GoToClosestVillage {
 
                   return true;
                }
-            }));
+            };
+         });
+      });
    }
 }

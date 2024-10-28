@@ -11,14 +11,14 @@ public abstract class AbstractSoundInstance implements SoundInstance {
    protected Sound sound;
    protected final SoundSource source;
    protected final ResourceLocation location;
-   protected float volume = 1.0F;
-   protected float pitch = 1.0F;
+   protected float volume;
+   protected float pitch;
    protected double x;
    protected double y;
    protected double z;
    protected boolean looping;
    protected int delay;
-   protected SoundInstance.Attenuation attenuation = SoundInstance.Attenuation.LINEAR;
+   protected SoundInstance.Attenuation attenuation;
    protected boolean relative;
    protected RandomSource random;
 
@@ -28,17 +28,18 @@ public abstract class AbstractSoundInstance implements SoundInstance {
 
    protected AbstractSoundInstance(ResourceLocation var1, SoundSource var2, RandomSource var3) {
       super();
+      this.volume = 1.0F;
+      this.pitch = 1.0F;
+      this.attenuation = SoundInstance.Attenuation.LINEAR;
       this.location = var1;
       this.source = var2;
       this.random = var3;
    }
 
-   @Override
    public ResourceLocation getLocation() {
       return this.location;
    }
 
-   @Override
    public WeighedSoundEvents resolve(SoundManager var1) {
       if (this.location.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
          this.sound = SoundManager.INTENTIONALLY_EMPTY_SOUND;
@@ -55,63 +56,51 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       }
    }
 
-   @Override
    public Sound getSound() {
       return this.sound;
    }
 
-   @Override
    public SoundSource getSource() {
       return this.source;
    }
 
-   @Override
    public boolean isLooping() {
       return this.looping;
    }
 
-   @Override
    public int getDelay() {
       return this.delay;
    }
 
-   @Override
    public float getVolume() {
       return this.volume * this.sound.getVolume().sample(this.random);
    }
 
-   @Override
    public float getPitch() {
       return this.pitch * this.sound.getPitch().sample(this.random);
    }
 
-   @Override
    public double getX() {
       return this.x;
    }
 
-   @Override
    public double getY() {
       return this.y;
    }
 
-   @Override
    public double getZ() {
       return this.z;
    }
 
-   @Override
    public SoundInstance.Attenuation getAttenuation() {
       return this.attenuation;
    }
 
-   @Override
    public boolean isRelative() {
       return this.relative;
    }
 
-   @Override
    public String toString() {
-      return "SoundInstance[" + this.location + "]";
+      return "SoundInstance[" + String.valueOf(this.location) + "]";
    }
 }

@@ -15,10 +15,9 @@ public abstract class ResourceLookupRule<C, V> implements Rule<StringReader, V>,
    protected ResourceLookupRule(Atom<ResourceLocation> var1, C var2) {
       super();
       this.idParser = var1;
-      this.context = (C)var2;
+      this.context = var2;
    }
 
-   @Override
    public Optional<V> parse(ParseState<StringReader> var1) {
       ((StringReader)var1.input()).skipWhitespace();
       int var2 = var1.mark();

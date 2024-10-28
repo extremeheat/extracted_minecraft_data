@@ -1,6 +1,7 @@
 package net.minecraft.client.resources.metadata.animation;
 
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 
 public class AnimationMetadataSection {
@@ -9,7 +10,6 @@ public class AnimationMetadataSection {
    public static final int DEFAULT_FRAME_TIME = 1;
    public static final int UNKNOWN_SIZE = -1;
    public static final AnimationMetadataSection EMPTY = new AnimationMetadataSection(Lists.newArrayList(), -1, -1, 1, false) {
-      @Override
       public FrameSize calculateFrameSize(int var1, int var2) {
          return new FrameSize(var1, var2);
       }
@@ -48,10 +48,14 @@ public class AnimationMetadataSection {
       return this.interpolatedFrames;
    }
 
-   public void forEachFrame(AnimationMetadataSection.FrameOutput var1) {
-      for(AnimationFrame var3 : this.frames) {
+   public void forEachFrame(FrameOutput var1) {
+      Iterator var2 = this.frames.iterator();
+
+      while(var2.hasNext()) {
+         AnimationFrame var3 = (AnimationFrame)var2.next();
          var1.accept(var3.getIndex(), var3.getTime(this.defaultFrameTime));
       }
+
    }
 
    @FunctionalInterface

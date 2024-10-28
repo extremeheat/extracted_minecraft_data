@@ -8,7 +8,6 @@ import net.minecraft.world.level.Level;
 
 public interface ContainerLevelAccess {
    ContainerLevelAccess NULL = new ContainerLevelAccess() {
-      @Override
       public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1) {
          return Optional.empty();
       }
@@ -16,9 +15,8 @@ public interface ContainerLevelAccess {
 
    static ContainerLevelAccess create(final Level var0, final BlockPos var1) {
       return new ContainerLevelAccess() {
-         @Override
          public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1x) {
-            return Optional.of((T)var1x.apply(var0, var1));
+            return Optional.of(var1x.apply(var0, var1));
          }
       };
    }
@@ -26,7 +24,7 @@ public interface ContainerLevelAccess {
    <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1);
 
    default <T> T evaluate(BiFunction<Level, BlockPos, T> var1, T var2) {
-      return this.<T>evaluate(var1).orElse((T)var2);
+      return this.evaluate(var1).orElse(var2);
    }
 
    default void execute(BiConsumer<Level, BlockPos> var1) {

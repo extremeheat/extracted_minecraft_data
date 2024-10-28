@@ -1,15 +1,13 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public interface PlacementModifierType<P extends PlacementModifier> {
    PlacementModifierType<BlockPredicateFilter> BLOCK_PREDICATE_FILTER = register("block_predicate_filter", BlockPredicateFilter.CODEC);
    PlacementModifierType<RarityFilter> RARITY_FILTER = register("rarity_filter", RarityFilter.CODEC);
-   PlacementModifierType<SurfaceRelativeThresholdFilter> SURFACE_RELATIVE_THRESHOLD_FILTER = register(
-      "surface_relative_threshold_filter", SurfaceRelativeThresholdFilter.CODEC
-   );
+   PlacementModifierType<SurfaceRelativeThresholdFilter> SURFACE_RELATIVE_THRESHOLD_FILTER = register("surface_relative_threshold_filter", SurfaceRelativeThresholdFilter.CODEC);
    PlacementModifierType<SurfaceWaterDepthFilter> SURFACE_WATER_DEPTH_FILTER = register("surface_water_depth_filter", SurfaceWaterDepthFilter.CODEC);
    PlacementModifierType<BiomeFilter> BIOME_FILTER = register("biome", BiomeFilter.CODEC);
    PlacementModifierType<CountPlacement> COUNT = register("count", CountPlacement.CODEC);
@@ -19,14 +17,15 @@ public interface PlacementModifierType<P extends PlacementModifier> {
    PlacementModifierType<EnvironmentScanPlacement> ENVIRONMENT_SCAN = register("environment_scan", EnvironmentScanPlacement.CODEC);
    PlacementModifierType<HeightmapPlacement> HEIGHTMAP = register("heightmap", HeightmapPlacement.CODEC);
    PlacementModifierType<HeightRangePlacement> HEIGHT_RANGE = register("height_range", HeightRangePlacement.CODEC);
-   PlacementModifierType<CloudPlacement> CLOUD = register("cloud", CloudPlacement.CODEC);
    PlacementModifierType<InSquarePlacement> IN_SQUARE = register("in_square", InSquarePlacement.CODEC);
    PlacementModifierType<RandomOffsetPlacement> RANDOM_OFFSET = register("random_offset", RandomOffsetPlacement.CODEC);
    PlacementModifierType<CarvingMaskPlacement> CARVING_MASK_PLACEMENT = register("carving_mask", CarvingMaskPlacement.CODEC);
 
-   Codec<P> codec();
+   MapCodec<P> codec();
 
-   private static <P extends PlacementModifier> PlacementModifierType<P> register(String var0, Codec<P> var1) {
-      return Registry.register(BuiltInRegistries.PLACEMENT_MODIFIER_TYPE, var0, () -> var1);
+   private static <P extends PlacementModifier> PlacementModifierType<P> register(String var0, MapCodec<P> var1) {
+      return (PlacementModifierType)Registry.register(BuiltInRegistries.PLACEMENT_MODIFIER_TYPE, (String)var0, () -> {
+         return var1;
+      });
    }
 }

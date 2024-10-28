@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.BaseCoralWallFanBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -32,7 +31,6 @@ public class BoneMealItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -60,21 +58,21 @@ public class BoneMealItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static boolean growCrop(ItemStack var0, Level var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
       Block var5 = var3.getBlock();
-      if (var5 instanceof BonemealableBlock var4 && var4.isValidBonemealTarget(var1, var2, var3)) {
-         if (var1 instanceof ServerLevel) {
-            if (var4.isBonemealSuccess(var1, var1.random, var2, var3)) {
-               var4.performBonemeal((ServerLevel)var1, var1.random, var2, var3);
+      if (var5 instanceof BonemealableBlock var4) {
+         if (var4.isValidBonemealTarget(var1, var2, var3)) {
+            if (var1 instanceof ServerLevel) {
+               if (var4.isBonemealSuccess(var1, var1.random, var2, var3)) {
+                  var4.performBonemeal((ServerLevel)var1, var1.random, var2, var3);
+               }
+
+               var0.shrink(1);
             }
 
-            var0.shrink(1);
+            return true;
          }
-
-         return true;
       }
 
       return false;
@@ -102,24 +100,24 @@ public class BoneMealItem extends Item {
                Holder var10 = var1.getBiome(var6);
                if (var10.is(BiomeTags.PRODUCES_CORALS_FROM_BONEMEAL)) {
                   if (var5 == 0 && var3 != null && var3.getAxis().isHorizontal()) {
-                     var7 = BuiltInRegistries.BLOCK
-                        .getRandomElementOf(BlockTags.WALL_CORALS, var1.random)
-                        .map(var0x -> var0x.value().defaultBlockState())
-                        .orElse(var7);
+                     var7 = (BlockState)BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, var1.random).map((var0x) -> {
+                        return ((Block)var0x.value()).defaultBlockState();
+                     }).orElse(var7);
                      if (var7.hasProperty(BaseCoralWallFanBlock.FACING)) {
-                        var7 = var7.setValue(BaseCoralWallFanBlock.FACING, var3);
+                        var7 = (BlockState)var7.setValue(BaseCoralWallFanBlock.FACING, var3);
                      }
                   } else if (var4.nextInt(4) == 0) {
-                     var7 = BuiltInRegistries.BLOCK
-                        .getRandomElementOf(BlockTags.UNDERWATER_BONEMEALS, var1.random)
-                        .map(var0x -> var0x.value().defaultBlockState())
-                        .orElse(var7);
+                     var7 = (BlockState)BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.UNDERWATER_BONEMEALS, var1.random).map((var0x) -> {
+                        return ((Block)var0x.value()).defaultBlockState();
+                     }).orElse(var7);
                   }
                }
 
-               if (var7.is(BlockTags.WALL_CORALS, var0x -> var0x.hasProperty(BaseCoralWallFanBlock.FACING))) {
+               if (var7.is(BlockTags.WALL_CORALS, (var0x) -> {
+                  return var0x.hasProperty(BaseCoralWallFanBlock.FACING);
+               })) {
                   for(int var9 = 0; !var7.canSurvive(var1, var6) && var9 < 4; ++var9) {
-                     var7 = var7.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var4));
+                     var7 = (BlockState)var7.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var4));
                   }
                }
 
@@ -141,22 +139,19 @@ public class BoneMealItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static void addGrowthParticles(LevelAccessor var0, BlockPos var1, int var2) {
       BlockState var3 = var0.getBlockState(var1);
       Block var5 = var3.getBlock();
-      if (var5 instanceof BonemealableBlock var4) {
+      if (var5 instanceof BonemealableBlock) {
+         BonemealableBlock var4 = (BonemealableBlock)var5;
          BlockPos var6 = var4.getParticlePos(var1);
-         switch(var4.getType()) {
-            case NEIGHBOR_SPREADER:
-               ParticleUtils.spawnParticles(var0, var6, var2 * 3, 3.0, 1.0, false, ParticleTypes.HAPPY_VILLAGER);
-               break;
-            case GROWER:
-               ParticleUtils.spawnParticleInBlock(var0, var6, var2, ParticleTypes.HAPPY_VILLAGER);
+         switch (var4.getType()) {
+            case NEIGHBOR_SPREADER -> ParticleUtils.spawnParticles(var0, var6, var2 * 3, 3.0, 1.0, false, ParticleTypes.HAPPY_VILLAGER);
+            case GROWER -> ParticleUtils.spawnParticleInBlock(var0, var6, var2, ParticleTypes.HAPPY_VILLAGER);
          }
       } else if (var3.is(Blocks.WATER)) {
          ParticleUtils.spawnParticles(var0, var1, var2 * 3, 3.0, 1.0, false, ParticleTypes.HAPPY_VILLAGER);
       }
+
    }
 }

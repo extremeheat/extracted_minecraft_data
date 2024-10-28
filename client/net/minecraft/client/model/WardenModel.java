@@ -57,38 +57,16 @@ public class WardenModel<T extends Warden> extends HierarchicalModel<T> {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
       PartDefinition var2 = var1.addOrReplaceChild("bone", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild(
-         "body", CubeListBuilder.create().texOffs(0, 0).addBox(-9.0F, -13.0F, -4.0F, 18.0F, 21.0F, 11.0F), PartPose.offset(0.0F, -21.0F, 0.0F)
-      );
-      var3.addOrReplaceChild(
-         "right_ribcage", CubeListBuilder.create().texOffs(90, 11).addBox(-2.0F, -11.0F, -0.1F, 9.0F, 21.0F, 0.0F), PartPose.offset(-7.0F, -2.0F, -4.0F)
-      );
-      var3.addOrReplaceChild(
-         "left_ribcage",
-         CubeListBuilder.create().texOffs(90, 11).mirror().addBox(-7.0F, -11.0F, -0.1F, 9.0F, 21.0F, 0.0F).mirror(false),
-         PartPose.offset(7.0F, -2.0F, -4.0F)
-      );
-      PartDefinition var4 = var3.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(0, 32).addBox(-8.0F, -16.0F, -5.0F, 16.0F, 16.0F, 10.0F), PartPose.offset(0.0F, -13.0F, 0.0F)
-      );
-      var4.addOrReplaceChild(
-         "right_tendril", CubeListBuilder.create().texOffs(52, 32).addBox(-16.0F, -13.0F, 0.0F, 16.0F, 16.0F, 0.0F), PartPose.offset(-8.0F, -12.0F, 0.0F)
-      );
-      var4.addOrReplaceChild(
-         "left_tendril", CubeListBuilder.create().texOffs(58, 0).addBox(0.0F, -13.0F, 0.0F, 16.0F, 16.0F, 0.0F), PartPose.offset(8.0F, -12.0F, 0.0F)
-      );
-      var3.addOrReplaceChild(
-         "right_arm", CubeListBuilder.create().texOffs(44, 50).addBox(-4.0F, 0.0F, -4.0F, 8.0F, 28.0F, 8.0F), PartPose.offset(-13.0F, -13.0F, 1.0F)
-      );
-      var3.addOrReplaceChild(
-         "left_arm", CubeListBuilder.create().texOffs(0, 58).addBox(-4.0F, 0.0F, -4.0F, 8.0F, 28.0F, 8.0F), PartPose.offset(13.0F, -13.0F, 1.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_leg", CubeListBuilder.create().texOffs(76, 48).addBox(-3.1F, 0.0F, -3.0F, 6.0F, 13.0F, 6.0F), PartPose.offset(-5.9F, -13.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "left_leg", CubeListBuilder.create().texOffs(76, 76).addBox(-2.9F, 0.0F, -3.0F, 6.0F, 13.0F, 6.0F), PartPose.offset(5.9F, -13.0F, 0.0F)
-      );
+      PartDefinition var3 = var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-9.0F, -13.0F, -4.0F, 18.0F, 21.0F, 11.0F), PartPose.offset(0.0F, -21.0F, 0.0F));
+      var3.addOrReplaceChild("right_ribcage", CubeListBuilder.create().texOffs(90, 11).addBox(-2.0F, -11.0F, -0.1F, 9.0F, 21.0F, 0.0F), PartPose.offset(-7.0F, -2.0F, -4.0F));
+      var3.addOrReplaceChild("left_ribcage", CubeListBuilder.create().texOffs(90, 11).mirror().addBox(-7.0F, -11.0F, -0.1F, 9.0F, 21.0F, 0.0F).mirror(false), PartPose.offset(7.0F, -2.0F, -4.0F));
+      PartDefinition var4 = var3.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 32).addBox(-8.0F, -16.0F, -5.0F, 16.0F, 16.0F, 10.0F), PartPose.offset(0.0F, -13.0F, 0.0F));
+      var4.addOrReplaceChild("right_tendril", CubeListBuilder.create().texOffs(52, 32).addBox(-16.0F, -13.0F, 0.0F, 16.0F, 16.0F, 0.0F), PartPose.offset(-8.0F, -12.0F, 0.0F));
+      var4.addOrReplaceChild("left_tendril", CubeListBuilder.create().texOffs(58, 0).addBox(0.0F, -13.0F, 0.0F, 16.0F, 16.0F, 0.0F), PartPose.offset(8.0F, -12.0F, 0.0F));
+      var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(44, 50).addBox(-4.0F, 0.0F, -4.0F, 8.0F, 28.0F, 8.0F), PartPose.offset(-13.0F, -13.0F, 1.0F));
+      var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(0, 58).addBox(-4.0F, 0.0F, -4.0F, 8.0F, 28.0F, 8.0F), PartPose.offset(13.0F, -13.0F, 1.0F));
+      var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(76, 48).addBox(-3.1F, 0.0F, -3.0F, 6.0F, 13.0F, 6.0F), PartPose.offset(-5.9F, -13.0F, 0.0F));
+      var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(76, 76).addBox(-2.9F, 0.0F, -3.0F, 6.0F, 13.0F, 6.0F), PartPose.offset(5.9F, -13.0F, 0.0F));
       return LayerDefinition.create(var0, 128, 128);
    }
 
@@ -98,7 +76,7 @@ public class WardenModel<T extends Warden> extends HierarchicalModel<T> {
       this.animateHeadLookTarget(var5, var6);
       this.animateWalk(var2, var3);
       this.animateIdlePose(var4);
-      this.animateTendrils((T)var1, var4, var7);
+      this.animateTendrils(var1, var4, var7);
       this.animate(var1.attackAnimationState, WardenAnimation.WARDEN_ATTACK, var4);
       this.animate(var1.sonicBoomAnimationState, WardenAnimation.WARDEN_SONIC_BOOM, var4);
       this.animate(var1.diggingAnimationState, WardenAnimation.WARDEN_DIG, var4);
@@ -116,10 +94,14 @@ public class WardenModel<T extends Warden> extends HierarchicalModel<T> {
       float var2 = var1 * 0.1F;
       float var3 = Mth.cos(var2);
       float var4 = Mth.sin(var2);
-      this.head.zRot += 0.06F * var3;
-      this.head.xRot += 0.06F * var4;
-      this.body.zRot += 0.025F * var4;
-      this.body.xRot += 0.025F * var3;
+      ModelPart var10000 = this.head;
+      var10000.zRot += 0.06F * var3;
+      var10000 = this.head;
+      var10000.xRot += 0.06F * var4;
+      var10000 = this.body;
+      var10000.zRot += 0.025F * var4;
+      var10000 = this.body;
+      var10000.xRot += 0.025F * var3;
    }
 
    private void animateWalk(float var1, float var2) {
@@ -128,8 +110,10 @@ public class WardenModel<T extends Warden> extends HierarchicalModel<T> {
       float var5 = Mth.cos(var4);
       float var6 = Mth.sin(var4);
       float var7 = Math.min(0.35F, var3);
-      this.head.zRot += 0.3F * var6 * var3;
-      this.head.xRot += 1.2F * Mth.cos(var4 + 1.5707964F) * var7;
+      ModelPart var10000 = this.head;
+      var10000.zRot += 0.3F * var6 * var3;
+      var10000 = this.head;
+      var10000.xRot += 1.2F * Mth.cos(var4 + 1.5707964F) * var7;
       this.body.zRot = 0.1F * var6 * var3;
       this.body.xRot = 1.0F * var5 * var7;
       this.leftLeg.xRot = 1.0F * var5 * var3;
@@ -158,7 +142,6 @@ public class WardenModel<T extends Warden> extends HierarchicalModel<T> {
       this.rightTendril.xRot = -var4;
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

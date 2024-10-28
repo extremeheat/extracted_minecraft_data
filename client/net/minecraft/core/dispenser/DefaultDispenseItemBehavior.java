@@ -12,16 +12,15 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
       super();
    }
 
-   @Override
    public final ItemStack dispense(BlockSource var1, ItemStack var2) {
       ItemStack var3 = this.execute(var1, var2);
       this.playSound(var1);
-      this.playAnimation(var1, var1.state().getValue(DispenserBlock.FACING));
+      this.playAnimation(var1, (Direction)var1.state().getValue(DispenserBlock.FACING));
       return var3;
    }
 
    protected ItemStack execute(BlockSource var1, ItemStack var2) {
-      Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+      Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
       Position var4 = DispenserBlock.getDispensePosition(var1);
       ItemStack var5 = var2.split(1);
       spawnItem(var1.level(), var5, 6, var3, var4);
@@ -40,11 +39,7 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
 
       ItemEntity var11 = new ItemEntity(var0, var5, var7, var9, var1);
       double var12 = var0.random.nextDouble() * 0.1 + 0.2;
-      var11.setDeltaMovement(
-         var0.random.triangle((double)var3.getStepX() * var12, 0.0172275 * (double)var2),
-         var0.random.triangle(0.2, 0.0172275 * (double)var2),
-         var0.random.triangle((double)var3.getStepZ() * var12, 0.0172275 * (double)var2)
-      );
+      var11.setDeltaMovement(var0.random.triangle((double)var3.getStepX() * var12, 0.0172275 * (double)var2), var0.random.triangle(0.2, 0.0172275 * (double)var2), var0.random.triangle((double)var3.getStepZ() * var12, 0.0172275 * (double)var2));
       var0.addFreshEntity(var11);
    }
 

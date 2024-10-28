@@ -17,7 +17,6 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<TwistingVinesConfig> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -69,9 +68,7 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
       for(int var6 = 1; var6 <= var3; ++var6) {
          if (var0.isEmptyBlock(var2)) {
             if (var6 == var3 || !var0.isEmptyBlock(var2.above())) {
-               var0.setBlock(
-                  var2, Blocks.TWISTING_VINES.defaultBlockState().setValue(GrowingPlantHeadBlock.AGE, Integer.valueOf(Mth.nextInt(var1, var4, var5))), 2
-               );
+               var0.setBlock(var2, (BlockState)Blocks.TWISTING_VINES.defaultBlockState().setValue(GrowingPlantHeadBlock.AGE, Mth.nextInt(var1, var4, var5)), 2);
                break;
             }
 
@@ -80,6 +77,7 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
 
          var2.move(Direction.UP);
       }
+
    }
 
    private static boolean isInvalidPlacementLocation(LevelAccessor var0, BlockPos var1) {
@@ -87,10 +85,7 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
          return true;
       } else {
          BlockState var2 = var0.getBlockState(var1.below());
-         return !var2.is(Blocks.NETHERRACK)
-            && !var2.is(Blocks.WARPED_NYLIUM)
-            && !var2.is(Blocks.WARPED_WART_BLOCK)
-            && !var2.is(Blocks.CORRUPTED_PEELGRASS_BLOCK);
+         return !var2.is(Blocks.NETHERRACK) && !var2.is(Blocks.WARPED_NYLIUM) && !var2.is(Blocks.WARPED_WART_BLOCK);
       }
    }
 }

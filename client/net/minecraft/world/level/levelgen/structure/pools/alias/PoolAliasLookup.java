@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pools.alias;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
@@ -11,7 +10,9 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 @FunctionalInterface
 public interface PoolAliasLookup {
-   PoolAliasLookup EMPTY = var0 -> var0;
+   PoolAliasLookup EMPTY = (var0) -> {
+      return var0;
+   };
 
    ResourceKey<StructureTemplatePool> lookup(ResourceKey<StructureTemplatePool> var1);
 
@@ -20,10 +21,17 @@ public interface PoolAliasLookup {
          return EMPTY;
       } else {
          RandomSource var4 = RandomSource.create(var2).forkPositional().at(var1);
-         Builder var5 = ImmutableMap.builder();
-         var0.forEach(var2x -> var2x.forEachResolved(var4, var5::put));
+         ImmutableMap.Builder var5 = ImmutableMap.builder();
+         var0.forEach((var2x) -> {
+            Objects.requireNonNull(var5);
+            var2x.forEachResolved(var4, var5::put);
+         });
          ImmutableMap var6 = var5.build();
-         return var1x -> Objects.requireNonNull(var6.getOrDefault(var1x, var1x), () -> "alias " + var1x + " was mapped to null value");
+         return (var1x) -> {
+            return (ResourceKey)Objects.requireNonNull((ResourceKey)var6.getOrDefault(var1x, var1x), () -> {
+               return "alias " + String.valueOf(var1x) + " was mapped to null value";
+            });
+         };
       }
    }
 }

@@ -20,11 +20,7 @@ public class TradeWithVillager extends Behavior<Villager> {
    private Set<Item> trades = ImmutableSet.of();
 
    public TradeWithVillager() {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.INTERACTION_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
-         )
-      );
+      super(ImmutableMap.of(MemoryModuleType.INTERACTION_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT));
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
@@ -50,14 +46,14 @@ public class TradeWithVillager extends Behavior<Villager> {
             throwHalfStack(var2, Villager.FOOD_POINTS.keySet(), var5);
          }
 
-         if (var5.getVillagerData().getProfession() == VillagerProfession.FARMER
-            && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
+         if (var5.getVillagerData().getProfession() == VillagerProfession.FARMER && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
             throwHalfStack(var2, ImmutableSet.of(Items.WHEAT), var5);
          }
 
          if (!this.trades.isEmpty() && var2.getInventory().hasAnyOf(this.trades)) {
             throwHalfStack(var2, this.trades, var5);
          }
+
       }
    }
 
@@ -68,7 +64,9 @@ public class TradeWithVillager extends Behavior<Villager> {
    private static Set<Item> figureOutWhatIAmWillingToTrade(Villager var0, Villager var1) {
       ImmutableSet var2 = var1.getVillagerData().getProfession().requestedItems();
       ImmutableSet var3 = var0.getVillagerData().getProfession().requestedItems();
-      return var2.stream().filter(var1x -> !var3.contains(var1x)).collect(Collectors.toSet());
+      return (Set)var2.stream().filter((var1x) -> {
+         return !var3.contains(var1x);
+      }).collect(Collectors.toSet());
    }
 
    private static void throwHalfStack(Villager var0, Set<Item> var1, LivingEntity var2) {
@@ -109,5 +107,16 @@ public class TradeWithVillager extends Behavior<Villager> {
       if (!var4.isEmpty()) {
          BehaviorUtils.throwItem(var0, var4, var2.position());
       }
+
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

@@ -16,7 +16,7 @@ public class ServerActivity extends ValueObject {
       ServerActivity var1 = new ServerActivity();
 
       try {
-         var1.profileUuid = JsonUtils.getStringOr("profileUuid", var0, null);
+         var1.profileUuid = JsonUtils.getStringOr("profileUuid", var0, (String)null);
          var1.joinTime = JsonUtils.getLongOr("joinTime", var0, -9223372036854775808L);
          var1.leaveTime = JsonUtils.getLongOr("leaveTime", var0, -9223372036854775808L);
       } catch (Exception var3) {

@@ -12,7 +12,6 @@ public class DoubleHighBlockItem extends BlockItem {
       super(var1, var2);
    }
 
-   @Override
    protected boolean placeBlock(BlockPlaceContext var1, BlockState var2) {
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos().above();

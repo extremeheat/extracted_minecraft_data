@@ -48,15 +48,13 @@ public class TextureAtlasSprite {
    }
 
    @Nullable
-   public TextureAtlasSprite.Ticker createTicker() {
+   public Ticker createTicker() {
       final SpriteTicker var1 = this.contents.createTicker();
-      return var1 != null ? new TextureAtlasSprite.Ticker() {
-         @Override
+      return var1 != null ? new Ticker() {
          public void tickAndUpload() {
             var1.tickAndUpload(TextureAtlasSprite.this.x, TextureAtlasSprite.this.y);
          }
 
-         @Override
          public void close() {
             var1.close();
          }
@@ -95,9 +93,9 @@ public class TextureAtlasSprite {
       return this.atlasLocation;
    }
 
-   @Override
    public String toString() {
-      return "TextureAtlasSprite{contents='" + this.contents + "', u0=" + this.u0 + ", u1=" + this.u1 + ", v0=" + this.v0 + ", v1=" + this.v1 + "}";
+      String var10000 = String.valueOf(this.contents);
+      return "TextureAtlasSprite{contents='" + var10000 + "', u0=" + this.u0 + ", u1=" + this.u1 + ", v0=" + this.v0 + ", v1=" + this.v1 + "}";
    }
 
    public void uploadFirstFrame() {
@@ -121,7 +119,6 @@ public class TextureAtlasSprite {
    public interface Ticker extends AutoCloseable {
       void tickAndUpload();
 
-      @Override
       void close();
    }
 }

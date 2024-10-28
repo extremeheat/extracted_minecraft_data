@@ -5,12 +5,10 @@ public class InstantenousMobEffect extends MobEffect {
       super(var1, var2);
    }
 
-   @Override
    public boolean isInstantenous() {
       return true;
    }
 
-   @Override
    public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
       return var1 >= 1;
    }

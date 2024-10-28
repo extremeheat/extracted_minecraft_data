@@ -8,65 +8,68 @@ import java.util.function.Consumer;
 import net.minecraft.Util;
 
 public class EqualSpacingLayout extends AbstractLayout {
-   private final EqualSpacingLayout.Orientation orientation;
-   private final List<EqualSpacingLayout.ChildContainer> children = new ArrayList<>();
-   private final LayoutSettings defaultChildLayoutSettings = LayoutSettings.defaults();
+   private final Orientation orientation;
+   private final List<ChildContainer> children;
+   private final LayoutSettings defaultChildLayoutSettings;
 
-   public EqualSpacingLayout(int var1, int var2, EqualSpacingLayout.Orientation var3) {
+   public EqualSpacingLayout(int var1, int var2, Orientation var3) {
       this(0, 0, var1, var2, var3);
    }
 
-   public EqualSpacingLayout(int var1, int var2, int var3, int var4, EqualSpacingLayout.Orientation var5) {
+   public EqualSpacingLayout(int var1, int var2, int var3, int var4, Orientation var5) {
       super(var1, var2, var3, var4);
+      this.children = new ArrayList();
+      this.defaultChildLayoutSettings = LayoutSettings.defaults();
       this.orientation = var5;
    }
 
-   @Override
    public void arrangeElements() {
       super.arrangeElements();
       if (!this.children.isEmpty()) {
          int var1 = 0;
-         int var2 = this.orientation.getSecondaryLength(this);
+         int var2 = this.orientation.getSecondaryLength((LayoutElement)this);
 
-         for(EqualSpacingLayout.ChildContainer var4 : this.children) {
+         ChildContainer var4;
+         for(Iterator var3 = this.children.iterator(); var3.hasNext(); var2 = Math.max(var2, this.orientation.getSecondaryLength(var4))) {
+            var4 = (ChildContainer)var3.next();
             var1 += this.orientation.getPrimaryLength(var4);
-            var2 = Math.max(var2, this.orientation.getSecondaryLength(var4));
          }
 
-         int var10 = this.orientation.getPrimaryLength(this) - var1;
+         int var10 = this.orientation.getPrimaryLength((LayoutElement)this) - var1;
          int var11 = this.orientation.getPrimaryPosition(this);
          Iterator var5 = this.children.iterator();
-         EqualSpacingLayout.ChildContainer var6 = (EqualSpacingLayout.ChildContainer)var5.next();
+         ChildContainer var6 = (ChildContainer)var5.next();
          this.orientation.setPrimaryPosition(var6, var11);
          var11 += this.orientation.getPrimaryLength(var6);
-         EqualSpacingLayout.ChildContainer var8;
+         ChildContainer var8;
          if (this.children.size() >= 2) {
             for(Divisor var7 = new Divisor(var10, this.children.size() - 1); var7.hasNext(); var11 += this.orientation.getPrimaryLength(var8)) {
                var11 += var7.nextInt();
-               var8 = (EqualSpacingLayout.ChildContainer)var5.next();
+               var8 = (ChildContainer)var5.next();
                this.orientation.setPrimaryPosition(var8, var11);
             }
          }
 
-         int var14 = this.orientation.getSecondaryPosition(this);
+         int var12 = this.orientation.getSecondaryPosition(this);
+         Iterator var13 = this.children.iterator();
 
-         for(EqualSpacingLayout.ChildContainer var9 : this.children) {
-            this.orientation.setSecondaryPosition(var9, var14, var2);
+         while(var13.hasNext()) {
+            ChildContainer var9 = (ChildContainer)var13.next();
+            this.orientation.setSecondaryPosition(var9, var12, var2);
          }
 
-         switch(this.orientation) {
-            case HORIZONTAL:
-               this.height = var2;
-               break;
-            case VERTICAL:
-               this.width = var2;
+         switch (this.orientation.ordinal()) {
+            case 0 -> this.height = var2;
+            case 1 -> this.width = var2;
          }
+
       }
    }
 
-   @Override
    public void visitChildren(Consumer<LayoutElement> var1) {
-      this.children.forEach(var1x -> var1.accept(var1x.child));
+      this.children.forEach((var1x) -> {
+         var1.accept(var1x.child);
+      });
    }
 
    public LayoutSettings newChildLayoutSettings() {
@@ -78,22 +81,16 @@ public class EqualSpacingLayout extends AbstractLayout {
    }
 
    public <T extends LayoutElement> T addChild(T var1) {
-      return this.addChild((T)var1, this.newChildLayoutSettings());
+      return this.addChild(var1, this.newChildLayoutSettings());
    }
 
    public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
-      this.children.add(new EqualSpacingLayout.ChildContainer(var1, var2));
-      return (T)var1;
+      this.children.add(new ChildContainer(var1, var2));
+      return var1;
    }
 
    public <T extends LayoutElement> T addChild(T var1, Consumer<LayoutSettings> var2) {
-      return this.addChild((T)var1, Util.make(this.newChildLayoutSettings(), var2));
-   }
-
-   static class ChildContainer extends AbstractLayout.AbstractChildWrapper {
-      protected ChildContainer(LayoutElement var1, LayoutSettings var2) {
-         super(var1, var2);
-      }
+      return this.addChild(var1, (LayoutSettings)Util.make(this.newChildLayoutSettings(), var2));
    }
 
    public static enum Orientation {
@@ -104,65 +101,96 @@ public class EqualSpacingLayout extends AbstractLayout {
       }
 
       int getPrimaryLength(LayoutElement var1) {
-         return switch(this) {
-            case HORIZONTAL -> var1.getWidth();
-            case VERTICAL -> var1.getHeight();
-         };
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.getWidth();
+            case 1 -> var10000 = var1.getHeight();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
 
-      int getPrimaryLength(EqualSpacingLayout.ChildContainer var1) {
-         return switch(this) {
-            case HORIZONTAL -> var1.getWidth();
-            case VERTICAL -> var1.getHeight();
-         };
+      int getPrimaryLength(ChildContainer var1) {
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.getWidth();
+            case 1 -> var10000 = var1.getHeight();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
 
       int getSecondaryLength(LayoutElement var1) {
-         return switch(this) {
-            case HORIZONTAL -> var1.getHeight();
-            case VERTICAL -> var1.getWidth();
-         };
-      }
-
-      int getSecondaryLength(EqualSpacingLayout.ChildContainer var1) {
-         return switch(this) {
-            case HORIZONTAL -> var1.getHeight();
-            case VERTICAL -> var1.getWidth();
-         };
-      }
-
-      void setPrimaryPosition(EqualSpacingLayout.ChildContainer var1, int var2) {
-         switch(this) {
-            case HORIZONTAL:
-               var1.setX(var2, var1.getWidth());
-               break;
-            case VERTICAL:
-               var1.setY(var2, var1.getHeight());
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.getHeight();
+            case 1 -> var10000 = var1.getWidth();
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
+
+         return var10000;
       }
 
-      void setSecondaryPosition(EqualSpacingLayout.ChildContainer var1, int var2, int var3) {
-         switch(this) {
-            case HORIZONTAL:
-               var1.setY(var2, var3);
-               break;
-            case VERTICAL:
-               var1.setX(var2, var3);
+      int getSecondaryLength(ChildContainer var1) {
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.getHeight();
+            case 1 -> var10000 = var1.getWidth();
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
+
+         return var10000;
+      }
+
+      void setPrimaryPosition(ChildContainer var1, int var2) {
+         switch (this.ordinal()) {
+            case 0 -> var1.setX(var2, var1.getWidth());
+            case 1 -> var1.setY(var2, var1.getHeight());
+         }
+
+      }
+
+      void setSecondaryPosition(ChildContainer var1, int var2, int var3) {
+         switch (this.ordinal()) {
+            case 0 -> var1.setY(var2, var3);
+            case 1 -> var1.setX(var2, var3);
+         }
+
       }
 
       int getPrimaryPosition(LayoutElement var1) {
-         return switch(this) {
-            case HORIZONTAL -> var1.getX();
-            case VERTICAL -> var1.getY();
-         };
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.getX();
+            case 1 -> var10000 = var1.getY();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
 
       int getSecondaryPosition(LayoutElement var1) {
-         return switch(this) {
-            case HORIZONTAL -> var1.getY();
-            case VERTICAL -> var1.getX();
-         };
+         int var10000;
+         switch (this.ordinal()) {
+            case 0 -> var10000 = var1.getY();
+            case 1 -> var10000 = var1.getX();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
+
+      // $FF: synthetic method
+      private static Orientation[] $values() {
+         return new Orientation[]{HORIZONTAL, VERTICAL};
+      }
+   }
+
+   static class ChildContainer extends AbstractLayout.AbstractChildWrapper {
+      protected ChildContainer(LayoutElement var1, LayoutSettings var2) {
+         super(var1, var2);
       }
    }
 }

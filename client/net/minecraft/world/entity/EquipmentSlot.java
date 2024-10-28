@@ -12,19 +12,19 @@ public enum EquipmentSlot implements StringRepresentable {
    BODY(EquipmentSlot.Type.BODY, 0, 6, "body");
 
    public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.fromEnum(EquipmentSlot::values);
-   private final EquipmentSlot.Type type;
+   private final Type type;
    private final int index;
    private final int filterFlag;
    private final String name;
 
-   private EquipmentSlot(EquipmentSlot.Type var3, int var4, int var5, String var6) {
+   private EquipmentSlot(Type var3, int var4, int var5, String var6) {
       this.type = var3;
       this.index = var4;
       this.filterFlag = var5;
       this.name = var6;
    }
 
-   public EquipmentSlot.Type getType() {
+   public Type getType() {
       return this.type;
    }
 
@@ -48,13 +48,12 @@ public enum EquipmentSlot implements StringRepresentable {
       return this.type == EquipmentSlot.Type.ARMOR;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    public static EquipmentSlot byName(String var0) {
-      EquipmentSlot var1 = CODEC.byName(var0);
+      EquipmentSlot var1 = (EquipmentSlot)CODEC.byName(var0);
       if (var1 != null) {
          return var1;
       } else {
@@ -62,14 +61,24 @@ public enum EquipmentSlot implements StringRepresentable {
       }
    }
 
-   public static EquipmentSlot byTypeAndIndex(EquipmentSlot.Type var0, int var1) {
-      for(EquipmentSlot var5 : values()) {
+   public static EquipmentSlot byTypeAndIndex(Type var0, int var1) {
+      EquipmentSlot[] var2 = values();
+      int var3 = var2.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         EquipmentSlot var5 = var2[var4];
          if (var5.getType() == var0 && var5.getIndex() == var1) {
             return var5;
          }
       }
 
-      throw new IllegalArgumentException("Invalid slot '" + var0 + "': " + var1);
+      String var10002 = String.valueOf(var0);
+      throw new IllegalArgumentException("Invalid slot '" + var10002 + "': " + var1);
+   }
+
+   // $FF: synthetic method
+   private static EquipmentSlot[] $values() {
+      return new EquipmentSlot[]{MAINHAND, OFFHAND, FEET, LEGS, CHEST, HEAD, BODY};
    }
 
    public static enum Type {
@@ -78,6 +87,11 @@ public enum EquipmentSlot implements StringRepresentable {
       BODY;
 
       private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{HAND, ARMOR, BODY};
       }
    }
 }

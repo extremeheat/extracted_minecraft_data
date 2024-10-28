@@ -10,7 +10,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class PoweredBlock extends Block {
    public static final MapCodec<PoweredBlock> CODEC = simpleCodec(PoweredBlock::new);
 
-   @Override
    public MapCodec<PoweredBlock> codec() {
       return CODEC;
    }
@@ -19,12 +18,10 @@ public class PoweredBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return 15;
    }

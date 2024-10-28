@@ -13,7 +13,6 @@ import net.minecraft.world.phys.Vec3;
 public class SlimeBlock extends HalfTransparentBlock {
    public static final MapCodec<SlimeBlock> CODEC = simpleCodec(SlimeBlock::new);
 
-   @Override
    public MapCodec<SlimeBlock> codec() {
       return CODEC;
    }
@@ -22,22 +21,22 @@ public class SlimeBlock extends HalfTransparentBlock {
       super(var1);
    }
 
-   @Override
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
       if (var4.isSuppressingBounce()) {
          super.fallOn(var1, var2, var3, var4, var5);
       } else {
          var4.causeFallDamage(var5, 0.0F, var1.damageSources().fall());
       }
+
    }
 
-   @Override
    public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {
       if (var2.isSuppressingBounce()) {
          super.updateEntityAfterFallOn(var1, var2);
       } else {
          this.bounceUp(var2);
       }
+
    }
 
    private void bounceUp(Entity var1) {
@@ -46,9 +45,9 @@ public class SlimeBlock extends HalfTransparentBlock {
          double var3 = var1 instanceof LivingEntity ? 1.0 : 0.8;
          var1.setDeltaMovement(var2.x, -var2.y * var3, var2.z);
       }
+
    }
 
-   @Override
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
       double var5 = Math.abs(var4.getDeltaMovement().y);
       if (var5 < 0.1 && !var4.isSteppingCarefully()) {

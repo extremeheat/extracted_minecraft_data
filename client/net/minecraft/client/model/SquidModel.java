@@ -17,7 +17,9 @@ public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
    public SquidModel(ModelPart var1) {
       super();
       this.root = var1;
-      Arrays.setAll(this.tentacles, var1x -> var1.getChild(createTentacleName(var1x)));
+      Arrays.setAll(this.tentacles, (var1x) -> {
+         return var1.getChild(createTentacleName(var1x));
+      });
    }
 
    private static String createTentacleName(int var0) {
@@ -29,9 +31,7 @@ public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
       PartDefinition var1 = var0.getRoot();
       CubeDeformation var2 = new CubeDeformation(0.02F);
       boolean var3 = true;
-      var1.addOrReplaceChild(
-         "body", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 16.0F, 12.0F, var2), PartPose.offset(0.0F, 8.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 16.0F, 12.0F, var2), PartPose.offset(0.0F, 8.0F, 0.0F));
       boolean var4 = true;
       CubeListBuilder var5 = CubeListBuilder.create().texOffs(48, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 18.0F, 2.0F);
 
@@ -48,14 +48,17 @@ public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      for(ModelPart var10 : this.tentacles) {
+      ModelPart[] var7 = this.tentacles;
+      int var8 = var7.length;
+
+      for(int var9 = 0; var9 < var8; ++var9) {
+         ModelPart var10 = var7[var9];
          var10.xRot = var4;
       }
+
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

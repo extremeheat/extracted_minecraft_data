@@ -1,7 +1,7 @@
 package net.minecraft.world.inventory;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import net.minecraft.core.BlockPos;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.Iterator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -28,14 +28,8 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    private static final int INV_SLOT_END = 30;
    private static final int USE_ROW_SLOT_START = 30;
    private static final int USE_ROW_SLOT_END = 39;
-   private final Container resultSlots = new ResultContainer();
-   final Container repairSlots = new SimpleContainer(2) {
-      @Override
-      public void setChanged() {
-         super.setChanged();
-         GrindstoneMenu.this.slotsChanged(this);
-      }
-   };
+   private final Container resultSlots;
+   final Container repairSlots;
    private final ContainerLevelAccess access;
 
    public GrindstoneMenu(int var1, Inventory var2) {
@@ -44,26 +38,29 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
    public GrindstoneMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
       super(MenuType.GRINDSTONE, var1);
+      this.resultSlots = new ResultContainer();
+      this.repairSlots = new SimpleContainer(2) {
+         public void setChanged() {
+            super.setChanged();
+            GrindstoneMenu.this.slotsChanged(this);
+         }
+      };
       this.access = var3;
-      this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
-         @Override
+      this.addSlot(new Slot(this, this.repairSlots, 0, 49, 19) {
          public boolean mayPlace(ItemStack var1) {
             return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
          }
       });
-      this.addSlot(new Slot(this.repairSlots, 1, 49, 40) {
-         @Override
+      this.addSlot(new Slot(this, this.repairSlots, 1, 49, 40) {
          public boolean mayPlace(ItemStack var1) {
             return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
          }
       });
       this.addSlot(new Slot(this.resultSlots, 2, 129, 34) {
-         @Override
          public boolean mayPlace(ItemStack var1) {
             return false;
          }
 
-         @Override
          public void onTake(Player var1, ItemStack var2) {
             var3.execute((var1x, var2x) -> {
                if (var1x instanceof ServerLevel) {
@@ -91,8 +88,10 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          private int getExperienceFromItem(ItemStack var1) {
             int var2 = 0;
             ItemEnchantments var3x = EnchantmentHelper.getEnchantmentsForCrafting(var1);
+            Iterator var4 = var3x.entrySet().iterator();
 
-            for(Entry var5 : var3x.entrySet()) {
+            while(var4.hasNext()) {
+               Object2IntMap.Entry var5 = (Object2IntMap.Entry)var4.next();
                Enchantment var6 = (Enchantment)((Holder)var5.getKey()).value();
                int var7 = var5.getIntValue();
                if (!var6.isCurse()) {
@@ -104,23 +103,25 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
+      int var4;
+      for(var4 = 0; var4 < 3; ++var4) {
          for(int var5 = 0; var5 < 9; ++var5) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
-         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
+      for(var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var2, var4, 8 + var4 * 18, 142));
       }
+
    }
 
-   @Override
    public void slotsChanged(Container var1) {
       super.slotsChanged(var1);
       if (var1 == this.repairSlots) {
          this.createResult();
       }
+
    }
 
    private void createResult() {
@@ -174,20 +175,33 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    }
 
    private void mergeEnchantsFrom(ItemStack var1, ItemStack var2) {
-      EnchantmentHelper.updateEnchantments(var1, var1x -> {
-         ItemEnchantments var2xx = EnchantmentHelper.getEnchantmentsForCrafting(var2);
+      EnchantmentHelper.updateEnchantments(var1, (var1x) -> {
+         ItemEnchantments var2x = EnchantmentHelper.getEnchantmentsForCrafting(var2);
+         Iterator var3 = var2x.entrySet().iterator();
 
-         for(Entry var4 : var2xx.entrySet()) {
-            Enchantment var5 = (Enchantment)((Holder)var4.getKey()).value();
-            if (!var5.isCurse() || var1x.getLevel(var5) == 0) {
-               var1x.upgrade(var5, var4.getIntValue());
-            }
+         while(true) {
+            Object2IntMap.Entry var4;
+            Enchantment var5;
+            do {
+               if (!var3.hasNext()) {
+                  return;
+               }
+
+               var4 = (Object2IntMap.Entry)var3.next();
+               var5 = (Enchantment)((Holder)var4.getKey()).value();
+            } while(var5.isCurse() && var1x.getLevel(var5) != 0);
+
+            var1x.upgrade(var5, var4.getIntValue());
          }
       });
    }
 
    private ItemStack removeNonCursesFrom(ItemStack var1) {
-      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, var0 -> var0.removeIf(var0x -> !var0x.value().isCurse()));
+      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, (var0) -> {
+         var0.removeIf((var0x) -> {
+            return !((Enchantment)var0x.value()).isCurse();
+         });
+      });
       if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
          var1 = var1.transmuteCopy(Items.BOOK, var1.getCount());
       }
@@ -202,21 +216,20 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       return var1;
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.repairSlots));
+      this.access.execute((var2, var3) -> {
+         this.clearContainer(var1, this.repairSlots);
+      });
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return stillValid(this.access, var1, Blocks.GRINDSTONE);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();

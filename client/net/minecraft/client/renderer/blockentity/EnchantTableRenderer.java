@@ -14,7 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
 
 public class EnchantTableRenderer implements BlockEntityRenderer<EnchantmentTableBlockEntity> {
-   public static final Material BOOK_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/enchanting_table_book"));
+   public static final Material BOOK_LOCATION;
    private final BookModel bookModel;
 
    public EnchantTableRenderer(BlockEntityRendererProvider.Context var1) {
@@ -27,10 +27,9 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantmentTabl
       var3.translate(0.5F, 0.75F, 0.5F);
       float var7 = (float)var1.time + var2;
       var3.translate(0.0F, 0.1F + Mth.sin(var7 * 0.1F) * 0.01F, 0.0F);
-      float var8 = var1.rot - var1.oRot;
 
-      while(var8 >= 3.1415927F) {
-         var8 -= 6.2831855F;
+      float var8;
+      for(var8 = var1.rot - var1.oRot; var8 >= 3.1415927F; var8 -= 6.2831855F) {
       }
 
       while(var8 < -3.1415927F) {
@@ -48,5 +47,9 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantmentTabl
       VertexConsumer var14 = BOOK_LOCATION.buffer(var4, RenderType::entitySolid);
       this.bookModel.render(var3, var14, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
       var3.popPose();
+   }
+
+   static {
+      BOOK_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/enchanting_table_book"));
    }
 }

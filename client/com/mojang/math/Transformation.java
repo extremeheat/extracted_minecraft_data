@@ -2,7 +2,6 @@ package com.mojang.math;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -17,18 +16,18 @@ import org.joml.Vector3fc;
 
 public final class Transformation {
    private final Matrix4f matrix;
-   public static final Codec<Transformation> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter(var0x -> var0x.translation),
-               ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter(var0x -> var0x.leftRotation),
-               ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter(var0x -> var0x.scale),
-               ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter(var0x -> var0x.rightRotation)
-            )
-            .apply(var0, Transformation::new)
-   );
-   public static final Codec<Transformation> EXTENDED_CODEC = ExtraCodecs.withAlternative(
-      CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix)
-   );
+   public static final Codec<Transformation> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter((var0x) -> {
+         return var0x.translation;
+      }), ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter((var0x) -> {
+         return var0x.leftRotation;
+      }), ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter((var0x) -> {
+         return var0x.scale;
+      }), ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter((var0x) -> {
+         return var0x.rightRotation;
+      })).apply(var0, Transformation::new);
+   });
+   public static final Codec<Transformation> EXTENDED_CODEC;
    private boolean decomposed;
    @Nullable
    private Vector3f translation;
@@ -38,15 +37,7 @@ public final class Transformation {
    private Vector3f scale;
    @Nullable
    private Quaternionf rightRotation;
-   private static final Transformation IDENTITY = Util.make(() -> {
-      Transformation var0 = new Transformation(new Matrix4f());
-      var0.translation = new Vector3f();
-      var0.leftRotation = new Quaternionf();
-      var0.scale = new Vector3f(1.0F, 1.0F, 1.0F);
-      var0.rightRotation = new Quaternionf();
-      var0.decomposed = true;
-      return var0;
-   });
+   private static final Transformation IDENTITY;
 
    public Transformation(@Nullable Matrix4f var1) {
       super();
@@ -55,6 +46,7 @@ public final class Transformation {
       } else {
          this.matrix = var1;
       }
+
    }
 
    public Transformation(@Nullable Vector3f var1, @Nullable Quaternionf var2, @Nullable Vector3f var3, @Nullable Quaternionf var4) {
@@ -90,13 +82,14 @@ public final class Transformation {
    private void ensureDecomposed() {
       if (!this.decomposed) {
          float var1 = 1.0F / this.matrix.m33();
-         Triple var2 = MatrixUtil.svdDecompose(new Matrix3f(this.matrix).scale(var1));
+         Triple var2 = MatrixUtil.svdDecompose((new Matrix3f(this.matrix)).scale(var1));
          this.translation = this.matrix.getTranslation(new Vector3f()).mul(var1);
          this.leftRotation = new Quaternionf((Quaternionfc)var2.getLeft());
          this.scale = new Vector3f((Vector3fc)var2.getMiddle());
          this.rightRotation = new Quaternionf((Quaternionfc)var2.getRight());
          this.decomposed = true;
       }
+
    }
 
    private static Matrix4f compose(@Nullable Vector3f var0, @Nullable Quaternionf var1, @Nullable Vector3f var2, @Nullable Quaternionf var3) {
@@ -144,7 +137,6 @@ public final class Transformation {
       return new Quaternionf(this.rightRotation);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -156,9 +148,8 @@ public final class Transformation {
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.matrix);
+      return Objects.hash(new Object[]{this.matrix});
    }
 
    public Transformation slerp(Transformation var1, float var2) {
@@ -171,5 +162,18 @@ public final class Transformation {
       var5.lerp(var1.getScale(), var2);
       var6.slerp(var1.getRightRotation(), var2);
       return new Transformation(var3, var4, var5, var6);
+   }
+
+   static {
+      EXTENDED_CODEC = Codec.withAlternative(CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix));
+      IDENTITY = (Transformation)Util.make(() -> {
+         Transformation var0 = new Transformation(new Matrix4f());
+         var0.translation = new Vector3f();
+         var0.leftRotation = new Quaternionf();
+         var0.scale = new Vector3f(1.0F, 1.0F, 1.0F);
+         var0.rightRotation = new Quaternionf();
+         var0.decomposed = true;
+         return var0;
+      });
    }
 }

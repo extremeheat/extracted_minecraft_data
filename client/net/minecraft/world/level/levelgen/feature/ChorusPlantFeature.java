@@ -13,7 +13,6 @@ public class ChorusPlantFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();

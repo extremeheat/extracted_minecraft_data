@@ -32,6 +32,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
+   /** @deprecated */
    @Deprecated
    private final Block block;
 
@@ -40,11 +41,10 @@ public class BlockItem extends Item {
       this.block = var1;
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       InteractionResult var2 = this.place(new BlockPlaceContext(var1));
       if (!var2.consumesAction() && var1.getItemInHand().has(DataComponents.FOOD)) {
-         InteractionResult var3 = this.use(var1.getLevel(), var1.getPlayer(), var1.getHand()).getResult();
+         InteractionResult var3 = super.use(var1.getLevel(), var1.getPlayer(), var1.getHand()).getResult();
          return var3 == InteractionResult.CONSUME ? InteractionResult.CONSUME_PARTIAL : var3;
       } else {
          return var2;
@@ -104,8 +104,10 @@ public class BlockItem extends Item {
    private static void updateBlockEntityComponents(Level var0, BlockPos var1, ItemStack var2) {
       BlockEntity var3 = var0.getBlockEntity(var1);
       if (var3 != null) {
-         var3.applyComponents(var2.getComponents());
+         var3.applyComponentsFromItemStack(var2);
+         var3.setChanged();
       }
+
    }
 
    protected boolean updateCustomBlockEntityTag(BlockPos var1, Level var2, @Nullable Player var3, ItemStack var4, BlockState var5) {
@@ -119,7 +121,7 @@ public class BlockItem extends Item {
    }
 
    private BlockState updateBlockStateFromTag(BlockPos var1, Level var2, ItemStack var3, BlockState var4) {
-      BlockItemStateProperties var5 = var3.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+      BlockItemStateProperties var5 = (BlockItemStateProperties)var3.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
       if (var5.isEmpty()) {
          return var4;
       } else {
@@ -135,8 +137,7 @@ public class BlockItem extends Item {
    protected boolean canPlace(BlockPlaceContext var1, BlockState var2) {
       Player var3 = var1.getPlayer();
       CollisionContext var4 = var3 == null ? CollisionContext.empty() : CollisionContext.of(var3);
-      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos()))
-         && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), var4);
+      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), var4);
    }
 
    protected boolean mustSurvive() {
@@ -152,7 +153,7 @@ public class BlockItem extends Item {
       if (var4 == null) {
          return false;
       } else {
-         CustomData var5 = var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         CustomData var5 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
          if (!var5.isEmpty()) {
             BlockEntity var6 = var0.getBlockEntity(var2);
             if (var6 != null) {
@@ -168,15 +169,13 @@ public class BlockItem extends Item {
       }
    }
 
-   @Override
    public String getDescriptionId() {
       return this.getBlock().getDescriptionId();
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      this.getBlock().appendHoverText(var1, var2, var3, var4, var2 != null ? var2.registryAccess() : null);
+      this.getBlock().appendHoverText(var1, var2, var3, var4);
    }
 
    public Block getBlock() {
@@ -187,17 +186,16 @@ public class BlockItem extends Item {
       var1.put(this.getBlock(), var2);
    }
 
-   @Override
    public boolean canFitInsideContainerItems() {
       return !(this.getBlock() instanceof ShulkerBoxBlock);
    }
 
-   @Override
    public void onDestroyed(ItemEntity var1) {
-      ItemContainerContents var2 = var1.getItem().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      ItemContainerContents var2 = (ItemContainerContents)var1.getItem().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       if (var2 != null) {
          ItemUtils.onContainerDestroyed(var1, var2.stream());
       }
+
    }
 
    public static void setBlockEntityData(ItemStack var0, BlockEntityType<?> var1, CompoundTag var2) {
@@ -208,9 +206,9 @@ public class BlockItem extends Item {
          BlockEntity.addEntityType(var2, var1);
          var0.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(var2));
       }
+
    }
 
-   @Override
    public FeatureFlagSet requiredFeatures() {
       return this.getBlock().requiredFeatures();
    }

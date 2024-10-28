@@ -14,9 +14,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class ClientboundSetObjectivePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetObjectivePacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetObjectivePacket::write, ClientboundSetObjectivePacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetObjectivePacket> STREAM_CODEC = Packet.codec(ClientboundSetObjectivePacket::write, ClientboundSetObjectivePacket::new);
    public static final int METHOD_ADD = 0;
    public static final int METHOD_REMOVE = 1;
    public static final int METHOD_CHANGE = 2;
@@ -44,10 +42,11 @@ public class ClientboundSetObjectivePacket implements Packet<ClientGamePacketLis
          this.renderType = ObjectiveCriteria.RenderType.INTEGER;
          this.numberFormat = Optional.empty();
       } else {
-         this.displayName = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
-         this.renderType = var1.readEnum(ObjectiveCriteria.RenderType.class);
-         this.numberFormat = NumberFormatTypes.OPTIONAL_STREAM_CODEC.decode(var1);
+         this.displayName = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
+         this.renderType = (ObjectiveCriteria.RenderType)var1.readEnum(ObjectiveCriteria.RenderType.class);
+         this.numberFormat = (Optional)NumberFormatTypes.OPTIONAL_STREAM_CODEC.decode(var1);
       }
+
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -58,9 +57,9 @@ public class ClientboundSetObjectivePacket implements Packet<ClientGamePacketLis
          var1.writeEnum(this.renderType);
          NumberFormatTypes.OPTIONAL_STREAM_CODEC.encode(var1, this.numberFormat);
       }
+
    }
 
-   @Override
    public PacketType<ClientboundSetObjectivePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_OBJECTIVE;
    }

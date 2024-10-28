@@ -22,12 +22,12 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> {
-   public static final Material SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/base"));
-   public static final Material ACTIVE_SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/cage"));
-   public static final Material WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/wind"));
-   public static final Material VERTICAL_WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/wind_vertical"));
-   public static final Material OPEN_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/open_eye"));
-   public static final Material CLOSED_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/closed_eye"));
+   public static final Material SHELL_TEXTURE;
+   public static final Material ACTIVE_SHELL_TEXTURE;
+   public static final Material WIND_TEXTURE;
+   public static final Material VERTICAL_WIND_TEXTURE;
+   public static final Material OPEN_EYE_TEXTURE;
+   public static final Material CLOSED_EYE_TEXTURE;
    private final ModelPart eye;
    private final ModelPart wind;
    private final ModelPart shell;
@@ -46,9 +46,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
    public static LayerDefinition createEyeLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild(
-         "eye", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, 0.0F, 8.0F, 8.0F, 0.0F, new CubeDeformation(0.01F)), PartPose.ZERO
-      );
+      var1.addOrReplaceChild("eye", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, 0.0F, 8.0F, 8.0F, 0.0F, new CubeDeformation(0.01F)), PartPose.ZERO);
       return LayerDefinition.create(var0, 16, 16);
    }
 
@@ -75,31 +73,32 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
 
    public void render(ConduitBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       float var7 = (float)var1.tickCount + var2;
+      float var8;
       if (!var1.isActive()) {
-         float var16 = var1.getActiveRotation(0.0F);
-         VertexConsumer var18 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
+         var8 = var1.getActiveRotation(0.0F);
+         VertexConsumer var16 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose(new Quaternionf().rotationY(var16 * 0.017453292F));
-         this.shell.render(var3, var18, var5, var6);
+         var3.mulPose((new Quaternionf()).rotationY(var8 * 0.017453292F));
+         this.shell.render(var3, var16, var5, var6);
          var3.popPose();
       } else {
-         float var8 = var1.getActiveRotation(var2) * 57.295776F;
+         var8 = var1.getActiveRotation(var2) * 57.295776F;
          float var9 = Mth.sin(var7 * 0.1F) / 2.0F + 0.5F;
-         var9 = var9 * var9 + var9;
+         var9 += var9 * var9;
          var3.pushPose();
          var3.translate(0.5F, 0.3F + var9 * 0.2F, 0.5F);
-         Vector3f var10 = new Vector3f(0.5F, 1.0F, 0.5F).normalize();
-         var3.mulPose(new Quaternionf().rotationAxis(var8 * 0.017453292F, var10));
+         Vector3f var10 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();
+         var3.mulPose((new Quaternionf()).rotationAxis(var8 * 0.017453292F, var10));
          this.cage.render(var3, ACTIVE_SHELL_TEXTURE.buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
          var3.popPose();
          int var11 = var1.tickCount / 66 % 3;
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
          if (var11 == 1) {
-            var3.mulPose(new Quaternionf().rotationX(1.5707964F));
+            var3.mulPose((new Quaternionf()).rotationX(1.5707964F));
          } else if (var11 == 2) {
-            var3.mulPose(new Quaternionf().rotationZ(1.5707964F));
+            var3.mulPose((new Quaternionf()).rotationZ(1.5707964F));
          }
 
          VertexConsumer var12 = (var11 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull);
@@ -108,7 +107,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
          var3.scale(0.875F, 0.875F, 0.875F);
-         var3.mulPose(new Quaternionf().rotationXYZ(3.1415927F, 0.0F, 3.1415927F));
+         var3.mulPose((new Quaternionf()).rotationXYZ(3.1415927F, 0.0F, 3.1415927F));
          this.wind.render(var3, var12, var5, var6);
          var3.popPose();
          Camera var13 = this.renderer.camera;
@@ -116,11 +115,20 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
          var3.translate(0.5F, 0.3F + var9 * 0.2F, 0.5F);
          var3.scale(0.5F, 0.5F, 0.5F);
          float var14 = -var13.getYRot();
-         var3.mulPose(new Quaternionf().rotationYXZ(var14 * 0.017453292F, var13.getXRot() * 0.017453292F, 3.1415927F));
+         var3.mulPose((new Quaternionf()).rotationYXZ(var14 * 0.017453292F, var13.getXRot() * 0.017453292F, 3.1415927F));
          float var15 = 1.3333334F;
          var3.scale(1.3333334F, 1.3333334F, 1.3333334F);
          this.eye.render(var3, (var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
          var3.popPose();
       }
+   }
+
+   static {
+      SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/base"));
+      ACTIVE_SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/cage"));
+      WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/wind"));
+      VERTICAL_WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/wind_vertical"));
+      OPEN_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/open_eye"));
+      CLOSED_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/closed_eye"));
    }
 }

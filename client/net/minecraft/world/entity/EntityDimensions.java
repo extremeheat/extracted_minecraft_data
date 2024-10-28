@@ -3,13 +3,7 @@ package net.minecraft.world.entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public record EntityDimensions(float a, float b, float c, EntityAttachments d, boolean e) {
-   private final float width;
-   private final float height;
-   private final float eyeHeight;
-   private final EntityAttachments attachments;
-   private final boolean fixed;
-
+public record EntityDimensions(float width, float height, float eyeHeight, EntityAttachments attachments, boolean fixed) {
    private EntityDimensions(float var1, float var2, boolean var3) {
       this(var1, var2, defaultEyeHeight(var2), EntityAttachments.createDefault(var1, var2), var3);
    }
@@ -42,9 +36,7 @@ public record EntityDimensions(float a, float b, float c, EntityAttachments d, b
    }
 
    public EntityDimensions scale(float var1, float var2) {
-      return !this.fixed && (var1 != 1.0F || var2 != 1.0F)
-         ? new EntityDimensions(this.width * var1, this.height * var2, this.eyeHeight * var2, this.attachments.scale(var1, var2, var1), false)
-         : this;
+      return !this.fixed && (var1 != 1.0F || var2 != 1.0F) ? new EntityDimensions(this.width * var1, this.height * var2, this.eyeHeight * var2, this.attachments.scale(var1, var2, var1), false) : this;
    }
 
    public static EntityDimensions scalable(float var0, float var1) {
@@ -61,5 +53,25 @@ public record EntityDimensions(float a, float b, float c, EntityAttachments d, b
 
    public EntityDimensions withAttachments(EntityAttachments.Builder var1) {
       return new EntityDimensions(this.width, this.height, this.eyeHeight, var1.build(this.width, this.height), this.fixed);
+   }
+
+   public float width() {
+      return this.width;
+   }
+
+   public float height() {
+      return this.height;
+   }
+
+   public float eyeHeight() {
+      return this.eyeHeight;
+   }
+
+   public EntityAttachments attachments() {
+      return this.attachments;
+   }
+
+   public boolean fixed() {
+      return this.fixed;
    }
 }

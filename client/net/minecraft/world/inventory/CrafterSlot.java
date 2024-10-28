@@ -11,12 +11,10 @@ public class CrafterSlot extends Slot {
       this.menu = var5;
    }
 
-   @Override
    public boolean mayPlace(ItemStack var1) {
       return !this.menu.isSlotDisabled(this.index) && super.mayPlace(var1);
    }
 
-   @Override
    public void setChanged() {
       super.setChanged();
       this.menu.slotsChanged(this.container);

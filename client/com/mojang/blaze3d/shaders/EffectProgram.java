@@ -7,7 +7,6 @@ import java.io.InputStream;
 
 public class EffectProgram extends Program {
    private static final GlslPreprocessor PREPROCESSOR = new GlslPreprocessor() {
-      @Override
       public String applyImport(boolean var1, String var2) {
          return "#error Import statement not supported";
       }
@@ -24,13 +23,13 @@ public class EffectProgram extends Program {
       this.attachToShader(var1);
    }
 
-   @Override
    public void close() {
       RenderSystem.assertOnRenderThread();
       --this.references;
       if (this.references <= 0) {
          super.close();
       }
+
    }
 
    public static EffectProgram compileShader(Program.Type var0, String var1, InputStream var2, String var3) throws IOException {

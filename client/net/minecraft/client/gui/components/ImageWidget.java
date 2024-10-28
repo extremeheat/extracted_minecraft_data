@@ -15,47 +15,29 @@ public abstract class ImageWidget extends AbstractWidget {
    }
 
    public static ImageWidget texture(int var0, int var1, ResourceLocation var2, int var3, int var4) {
-      return new ImageWidget.Texture(0, 0, var0, var1, var2, var3, var4);
+      return new Texture(0, 0, var0, var1, var2, var3, var4);
    }
 
    public static ImageWidget sprite(int var0, int var1, ResourceLocation var2) {
-      return new ImageWidget.Sprite(0, 0, var0, var1, var2);
+      return new Sprite(0, 0, var0, var1, var2);
    }
 
-   @Override
    protected void updateWidgetNarration(NarrationElementOutput var1) {
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
    }
 
-   @Override
    public boolean isActive() {
       return false;
    }
 
    @Nullable
-   @Override
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 
-   static class Sprite extends ImageWidget {
-      private final ResourceLocation sprite;
-
-      public Sprite(int var1, int var2, int var3, int var4, ResourceLocation var5) {
-         super(var1, var2, var3, var4);
-         this.sprite = var5;
-      }
-
-      @Override
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blitSprite(this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
-      }
-   }
-
-   static class Texture extends ImageWidget {
+   private static class Texture extends ImageWidget {
       private final ResourceLocation texture;
       private final int textureWidth;
       private final int textureHeight;
@@ -67,21 +49,21 @@ public abstract class ImageWidget extends AbstractWidget {
          this.textureHeight = var7;
       }
 
-      @Override
       protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blit(
-            this.texture,
-            this.getX(),
-            this.getY(),
-            this.getWidth(),
-            this.getHeight(),
-            0.0F,
-            0.0F,
-            this.getWidth(),
-            this.getHeight(),
-            this.textureWidth,
-            this.textureHeight
-         );
+         var1.blit(this.texture, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
+      }
+   }
+
+   static class Sprite extends ImageWidget {
+      private final ResourceLocation sprite;
+
+      public Sprite(int var1, int var2, int var3, int var4, ResourceLocation var5) {
+         super(var1, var2, var3, var4);
+         this.sprite = var5;
+      }
+
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         var1.blitSprite(this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
    }
 }

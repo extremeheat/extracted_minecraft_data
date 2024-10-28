@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class SnowflakeParticle extends TextureSheetParticle {
@@ -19,12 +20,10 @@ public class SnowflakeParticle extends TextureSheetParticle {
       this.setSpriteFromAge(var14);
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.setSpriteFromAge(this.sprites);
@@ -45,6 +44,11 @@ public class SnowflakeParticle extends TextureSheetParticle {
          SnowflakeParticle var15 = new SnowflakeParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
          var15.setColor(0.923F, 0.964F, 0.999F);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

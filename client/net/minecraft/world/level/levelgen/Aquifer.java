@@ -14,19 +14,17 @@ import net.minecraft.world.level.dimension.DimensionType;
 import org.apache.commons.lang3.mutable.MutableDouble;
 
 public interface Aquifer {
-   static Aquifer create(NoiseChunk var0, ChunkPos var1, NoiseRouter var2, PositionalRandomFactory var3, int var4, int var5, Aquifer.FluidPicker var6) {
-      return new Aquifer.NoiseBasedAquifer(var0, var1, var2, var3, var4, var5, var6);
+   static Aquifer create(NoiseChunk var0, ChunkPos var1, NoiseRouter var2, PositionalRandomFactory var3, int var4, int var5, FluidPicker var6) {
+      return new NoiseBasedAquifer(var0, var1, var2, var3, var4, var5, var6);
    }
 
-   static Aquifer createDisabled(final Aquifer.FluidPicker var0) {
+   static Aquifer createDisabled(final FluidPicker var0) {
       return new Aquifer() {
          @Nullable
-         @Override
          public BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
             return var2 > 0.0 ? null : var0.computeFluid(var1.blockX(), var1.blockY(), var1.blockZ()).at(var1.blockY());
          }
 
-         @Override
          public boolean shouldScheduleFluidUpdate() {
             return false;
          }
@@ -37,25 +35,6 @@ public interface Aquifer {
    BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2);
 
    boolean shouldScheduleFluidUpdate();
-
-   public interface FluidPicker {
-      Aquifer.FluidStatus computeFluid(int var1, int var2, int var3);
-   }
-
-   public static final class FluidStatus {
-      final int fluidLevel;
-      final BlockState fluidType;
-
-      public FluidStatus(int var1, BlockState var2) {
-         super();
-         this.fluidLevel = var1;
-         this.fluidType = var2;
-      }
-
-      public BlockState at(int var1) {
-         return var1 < this.fluidLevel ? this.fluidType : Blocks.AIR.defaultBlockState();
-      }
-   }
 
    public static class NoiseBasedAquifer implements Aquifer {
       private static final int X_RANGE = 10;
@@ -75,9 +54,9 @@ public interface Aquifer {
       private final DensityFunction fluidLevelSpreadNoise;
       private final DensityFunction lavaNoise;
       private final PositionalRandomFactory positionalRandomFactory;
-      private final Aquifer.FluidStatus[] aquiferCache;
+      private final FluidStatus[] aquiferCache;
       private final long[] aquiferLocationCache;
-      private final Aquifer.FluidPicker globalFluidPicker;
+      private final FluidPicker globalFluidPicker;
       private final DensityFunction erosion;
       private final DensityFunction depth;
       private boolean shouldScheduleFluidUpdate;
@@ -86,11 +65,9 @@ public interface Aquifer {
       private final int minGridZ;
       private final int gridSizeX;
       private final int gridSizeZ;
-      private static final int[][] SURFACE_SAMPLING_OFFSETS_IN_CHUNKS = new int[][]{
-         {0, 0}, {-2, -1}, {-1, -1}, {0, -1}, {1, -1}, {-3, 0}, {-2, 0}, {-1, 0}, {1, 0}, {-2, 1}, {-1, 1}, {0, 1}, {1, 1}
-      };
+      private static final int[][] SURFACE_SAMPLING_OFFSETS_IN_CHUNKS = new int[][]{{0, 0}, {-2, -1}, {-1, -1}, {0, -1}, {1, -1}, {-3, 0}, {-2, 0}, {-1, 0}, {1, 0}, {-2, 1}, {-1, 1}, {0, 1}, {1, 1}};
 
-      NoiseBasedAquifer(NoiseChunk var1, ChunkPos var2, NoiseRouter var3, PositionalRandomFactory var4, int var5, int var6, Aquifer.FluidPicker var7) {
+      NoiseBasedAquifer(NoiseChunk var1, ChunkPos var2, NoiseRouter var3, PositionalRandomFactory var4, int var5, int var6, FluidPicker var7) {
          super();
          this.noiseChunk = var1;
          this.barrierNoise = var3.barrierNoise();
@@ -111,7 +88,7 @@ public interface Aquifer {
          int var11 = this.gridZ(var2.getMaxBlockZ()) + 1;
          this.gridSizeZ = var11 - this.minGridZ + 1;
          int var12 = this.gridSizeX * var10 * this.gridSizeZ;
-         this.aquiferCache = new Aquifer.FluidStatus[var12];
+         this.aquiferCache = new FluidStatus[var12];
          this.aquiferLocationCache = new long[var12];
          Arrays.fill(this.aquiferLocationCache, 9223372036854775807L);
       }
@@ -124,7 +101,6 @@ public interface Aquifer {
       }
 
       @Nullable
-      @Override
       public BlockState computeSubstance(DensityFunction.FunctionContext var1, double var2) {
          int var4 = var1.blockX();
          int var5 = var1.blockY();
@@ -133,7 +109,7 @@ public interface Aquifer {
             this.shouldScheduleFluidUpdate = false;
             return null;
          } else {
-            Aquifer.FluidStatus var7 = this.globalFluidPicker.computeFluid(var4, var5, var6);
+            FluidStatus var7 = this.globalFluidPicker.computeFluid(var4, var5, var6);
             if (var7.at(var5).is(Blocks.LAVA)) {
                this.shouldScheduleFluidUpdate = false;
                return Blocks.LAVA.defaultBlockState();
@@ -189,7 +165,7 @@ public interface Aquifer {
                   }
                }
 
-               Aquifer.FluidStatus var36 = this.getAquiferStatus(var14);
+               FluidStatus var36 = this.getAquiferStatus(var14);
                double var37 = similarity(var11, var12);
                BlockState var38 = var36.at(var5);
                if (var37 <= 0.0) {
@@ -200,26 +176,27 @@ public interface Aquifer {
                   return var38;
                } else {
                   MutableDouble var39 = new MutableDouble(0.0 / 0.0);
-                  Aquifer.FluidStatus var40 = this.getAquiferStatus(var16);
+                  FluidStatus var40 = this.getAquiferStatus(var16);
                   double var41 = var37 * this.calculatePressure(var1, var39, var36, var40);
                   if (var2 + var41 > 0.0) {
                      this.shouldScheduleFluidUpdate = false;
                      return null;
                   } else {
-                     Aquifer.FluidStatus var42 = this.getAquiferStatus(var18);
+                     FluidStatus var42 = this.getAquiferStatus(var18);
                      double var30 = similarity(var11, var13);
+                     double var44;
                      if (var30 > 0.0) {
-                        double var44 = var37 * var30 * this.calculatePressure(var1, var39, var36, var42);
+                        var44 = var37 * var30 * this.calculatePressure(var1, var39, var36, var42);
                         if (var2 + var44 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     double var45 = similarity(var12, var13);
-                     if (var45 > 0.0) {
-                        double var46 = var37 * var45 * this.calculatePressure(var1, var39, var40, var42);
-                        if (var2 + var46 > 0.0) {
+                     var44 = similarity(var12, var13);
+                     if (var44 > 0.0) {
+                        double var45 = var37 * var44 * this.calculatePressure(var1, var39, var40, var42);
+                        if (var2 + var45 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
@@ -233,7 +210,6 @@ public interface Aquifer {
          }
       }
 
-      @Override
       public boolean shouldScheduleFluidUpdate() {
          return this.shouldScheduleFluidUpdate;
       }
@@ -243,7 +219,7 @@ public interface Aquifer {
          return 1.0 - (double)Math.abs(var1 - var0) / 25.0;
       }
 
-      private double calculatePressure(DensityFunction.FunctionContext var1, MutableDouble var2, Aquifer.FluidStatus var3, Aquifer.FluidStatus var4) {
+      private double calculatePressure(DensityFunction.FunctionContext var1, MutableDouble var2, FluidStatus var3, FluidStatus var4) {
          int var5 = var1.blockY();
          BlockState var6 = var3.at(var5);
          BlockState var7 = var4.at(var5);
@@ -263,23 +239,24 @@ public interface Aquifer {
                double var25 = 3.0;
                double var27 = var13 - Math.abs(var11);
                double var29;
+               double var31;
                if (var11 > 0.0) {
-                  double var31 = 0.0 + var27;
+                  var31 = 0.0 + var27;
                   if (var31 > 0.0) {
                      var29 = var31 / 1.5;
                   } else {
                      var29 = var31 / 2.5;
                   }
                } else {
-                  double var39 = 3.0 + var27;
-                  if (var39 > 0.0) {
-                     var29 = var39 / 3.0;
+                  var31 = 3.0 + var27;
+                  if (var31 > 0.0) {
+                     var29 = var31 / 3.0;
                   } else {
-                     var29 = var39 / 10.0;
+                     var29 = var31 / 10.0;
                   }
                }
 
-               double var40 = 2.0;
+               var31 = 2.0;
                double var33;
                if (!(var29 < -2.0) && !(var29 > 2.0)) {
                   double var35 = var2.getValue();
@@ -313,7 +290,7 @@ public interface Aquifer {
          return Math.floorDiv(var1, 16);
       }
 
-      private Aquifer.FluidStatus getAquiferStatus(long var1) {
+      private FluidStatus getAquiferStatus(long var1) {
          int var3 = BlockPos.getX(var1);
          int var4 = BlockPos.getY(var1);
          int var5 = BlockPos.getZ(var1);
@@ -321,24 +298,27 @@ public interface Aquifer {
          int var7 = this.gridY(var4);
          int var8 = this.gridZ(var5);
          int var9 = this.getIndex(var6, var7, var8);
-         Aquifer.FluidStatus var10 = this.aquiferCache[var9];
+         FluidStatus var10 = this.aquiferCache[var9];
          if (var10 != null) {
             return var10;
          } else {
-            Aquifer.FluidStatus var11 = this.computeFluid(var3, var4, var5);
+            FluidStatus var11 = this.computeFluid(var3, var4, var5);
             this.aquiferCache[var9] = var11;
             return var11;
          }
       }
 
-      private Aquifer.FluidStatus computeFluid(int var1, int var2, int var3) {
-         Aquifer.FluidStatus var4 = this.globalFluidPicker.computeFluid(var1, var2, var3);
+      private FluidStatus computeFluid(int var1, int var2, int var3) {
+         FluidStatus var4 = this.globalFluidPicker.computeFluid(var1, var2, var3);
          int var5 = 2147483647;
          int var6 = var2 + 12;
          int var7 = var2 - 12;
          boolean var8 = false;
+         int[][] var9 = SURFACE_SAMPLING_OFFSETS_IN_CHUNKS;
+         int var10 = var9.length;
 
-         for(int[] var12 : SURFACE_SAMPLING_OFFSETS_IN_CHUNKS) {
+         for(int var11 = 0; var11 < var10; ++var11) {
+            int[] var12 = var9[var11];
             int var13 = var1 + SectionPos.sectionToBlockCoord(var12[0]);
             int var14 = var3 + SectionPos.sectionToBlockCoord(var12[1]);
             int var15 = this.noiseChunk.preliminarySurfaceLevel(var13, var14);
@@ -350,7 +330,7 @@ public interface Aquifer {
 
             boolean var18 = var6 > var16;
             if (var18 || var17) {
-               Aquifer.FluidStatus var19 = this.globalFluidPicker.computeFluid(var13, var16, var14);
+               FluidStatus var19 = this.globalFluidPicker.computeFluid(var13, var16, var14);
                if (!var19.at(var16).isAir()) {
                   if (var17) {
                      var8 = true;
@@ -366,18 +346,19 @@ public interface Aquifer {
          }
 
          int var20 = this.computeSurfaceLevel(var1, var2, var3, var4, var5, var8);
-         return new Aquifer.FluidStatus(var20, this.computeFluidType(var1, var2, var3, var4, var20));
+         return new FluidStatus(var20, this.computeFluidType(var1, var2, var3, var4, var20));
       }
 
-      private int computeSurfaceLevel(int var1, int var2, int var3, Aquifer.FluidStatus var4, int var5, boolean var6) {
+      private int computeSurfaceLevel(int var1, int var2, int var3, FluidStatus var4, int var5, boolean var6) {
          DensityFunction.SinglePointContext var7 = new DensityFunction.SinglePointContext(var1, var2, var3);
          double var8;
          double var10;
+         int var12;
          if (OverworldBiomeBuilder.isDeepDarkRegion(this.erosion, this.depth, var7)) {
             var8 = -1.0;
             var10 = -1.0;
          } else {
-            int var12 = var5 + 8 - var2;
+            var12 = var5 + 8 - var2;
             boolean var13 = true;
             double var14 = var6 ? Mth.clampedMap((double)var12, 0.0, 64.0, 1.0, 0.0) : 0.0;
             double var16 = Mth.clamp(this.fluidLevelFloodednessNoise.compute(var7), -1.0, 1.0);
@@ -387,16 +368,15 @@ public interface Aquifer {
             var10 = var16 - var18;
          }
 
-         int var22;
          if (var10 > 0.0) {
-            var22 = var4.fluidLevel;
+            var12 = var4.fluidLevel;
          } else if (var8 > 0.0) {
-            var22 = this.computeRandomizedFluidSurfaceLevel(var1, var2, var3, var5);
+            var12 = this.computeRandomizedFluidSurfaceLevel(var1, var2, var3, var5);
          } else {
-            var22 = DimensionType.WAY_BELOW_MIN_Y;
+            var12 = DimensionType.WAY_BELOW_MIN_Y;
          }
 
-         return var22;
+         return var12;
       }
 
       private int computeRandomizedFluidSurfaceLevel(int var1, int var2, int var3, int var4) {
@@ -413,7 +393,7 @@ public interface Aquifer {
          return Math.min(var4, var15);
       }
 
-      private BlockState computeFluidType(int var1, int var2, int var3, Aquifer.FluidStatus var4, int var5) {
+      private BlockState computeFluidType(int var1, int var2, int var3, FluidStatus var4, int var5) {
          BlockState var6 = var4.fluidType;
          if (var5 <= -10 && var5 != DimensionType.WAY_BELOW_MIN_Y && var4.fluidType != Blocks.LAVA.defaultBlockState()) {
             boolean var7 = true;
@@ -428,6 +408,25 @@ public interface Aquifer {
          }
 
          return var6;
+      }
+   }
+
+   public interface FluidPicker {
+      FluidStatus computeFluid(int var1, int var2, int var3);
+   }
+
+   public static final class FluidStatus {
+      final int fluidLevel;
+      final BlockState fluidType;
+
+      public FluidStatus(int var1, BlockState var2) {
+         super();
+         this.fluidLevel = var1;
+         this.fluidType = var2;
+      }
+
+      public BlockState at(int var1) {
+         return var1 < this.fluidLevel ? this.fluidType : Blocks.AIR.defaultBlockState();
       }
    }
 }

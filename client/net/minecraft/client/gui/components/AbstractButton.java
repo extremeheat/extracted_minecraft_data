@@ -11,9 +11,7 @@ import net.minecraft.util.Mth;
 
 public abstract class AbstractButton extends AbstractWidget {
    protected static final int TEXT_MARGIN = 2;
-   private static final WidgetSprites SPRITES = new WidgetSprites(
-      new ResourceLocation("widget/button"), new ResourceLocation("widget/button_disabled"), new ResourceLocation("widget/button_highlighted")
-   );
+   private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("widget/button"), new ResourceLocation("widget/button_disabled"), new ResourceLocation("widget/button_highlighted"));
 
    public AbstractButton(int var1, int var2, int var3, int var4, Component var5) {
       super(var1, var2, var3, var4, var5);
@@ -21,7 +19,6 @@ public abstract class AbstractButton extends AbstractWidget {
 
    public abstract void onPress();
 
-   @Override
    protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
       var1.setColor(1.0F, 1.0F, 1.0F, this.alpha);
@@ -37,19 +34,19 @@ public abstract class AbstractButton extends AbstractWidget {
       this.renderScrollingString(var1, var2, 2, var3);
    }
 
-   @Override
    public void onClick(double var1, double var3) {
       this.onPress();
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (!this.active || !this.visible) {
-         return false;
-      } else if (CommonInputs.selected(var1)) {
-         this.playDownSound(Minecraft.getInstance().getSoundManager());
-         this.onPress();
-         return true;
+      if (this.active && this.visible) {
+         if (CommonInputs.selected(var1)) {
+            this.playDownSound(Minecraft.getInstance().getSoundManager());
+            this.onPress();
+            return true;
+         } else {
+            return false;
+         }
       } else {
          return false;
       }

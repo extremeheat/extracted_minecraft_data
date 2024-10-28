@@ -46,27 +46,23 @@ public class Squid extends WaterAnimal {
       this.tentacleSpeed = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
    }
 
-   @Override
    protected void registerGoals() {
-      this.goalSelector.addGoal(0, new Squid.SquidRandomMovementGoal(this));
-      this.goalSelector.addGoal(1, new Squid.SquidFleeGoal());
+      this.goalSelector.addGoal(0, new SquidRandomMovementGoal(this, this));
+      this.goalSelector.addGoal(1, new SquidFleeGoal());
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0);
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.SQUID_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.SQUID_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.SQUID_DEATH;
    }
@@ -75,27 +71,22 @@ public class Squid extends WaterAnimal {
       return SoundEvents.SQUID_SQUIRT;
    }
 
-   @Override
    public boolean canBeLeashed(Player var1) {
       return !this.isLeashed();
    }
 
-   @Override
    protected float getSoundVolume() {
       return 0.4F;
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.08;
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       this.xBodyRotO = this.xBodyRot;
@@ -157,9 +148,9 @@ public class Squid extends WaterAnimal {
 
          this.xBodyRot += (-90.0F - this.xBodyRot) * 0.02F;
       }
+
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (super.hurt(var1, var2) && this.getLastHurtByMob() != null) {
          if (!this.level().isClientSide) {
@@ -174,7 +165,8 @@ public class Squid extends WaterAnimal {
 
    private Vec3 rotateVector(Vec3 var1) {
       Vec3 var2 = var1.xRot(this.xBodyRotO * 0.017453292F);
-      return var2.yRot(-this.yBodyRotO * 0.017453292F);
+      var2 = var2.yRot(-this.yBodyRotO * 0.017453292F);
+      return var2;
    }
 
    private void spawnInk() {
@@ -186,24 +178,24 @@ public class Squid extends WaterAnimal {
          Vec3 var4 = var3.scale(0.3 + (double)(this.random.nextFloat() * 2.0F));
          ((ServerLevel)this.level()).sendParticles(this.getInkParticle(), var1.x, var1.y + 0.5, var1.z, 0, var4.x, var4.y, var4.z, 0.10000000149011612);
       }
+
    }
 
    protected ParticleOptions getInkParticle() {
       return ParticleTypes.SQUID_INK;
    }
 
-   @Override
    public void travel(Vec3 var1) {
       this.move(MoverType.SELF, this.getDeltaMovement());
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 19) {
          this.tentacleMovement = 0.0F;
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
    public void setMovementVector(float var1, float var2, float var3) {
@@ -216,7 +208,34 @@ public class Squid extends WaterAnimal {
       return this.tx != 0.0F || this.ty != 0.0F || this.tz != 0.0F;
    }
 
-   class SquidFleeGoal extends Goal {
+   private class SquidRandomMovementGoal extends Goal {
+      private final Squid squid;
+
+      public SquidRandomMovementGoal(Squid var1, Squid var2) {
+         super();
+         this.squid = var2;
+      }
+
+      public boolean canUse() {
+         return true;
+      }
+
+      public void tick() {
+         int var1 = this.squid.getNoActionTime();
+         if (var1 > 100) {
+            this.squid.setMovementVector(0.0F, 0.0F, 0.0F);
+         } else if (this.squid.getRandom().nextInt(reducedTickDelay(50)) == 0 || !this.squid.wasTouchingWater || !this.squid.hasMovementVector()) {
+            float var2 = this.squid.getRandom().nextFloat() * 6.2831855F;
+            float var3 = Mth.cos(var2) * 0.2F;
+            float var4 = -0.1F + this.squid.getRandom().nextFloat() * 0.2F;
+            float var5 = Mth.sin(var2) * 0.2F;
+            this.squid.setMovementVector(var3, var4, var5);
+         }
+
+      }
+   }
+
+   private class SquidFleeGoal extends Goal {
       private static final float SQUID_FLEE_SPEED = 3.0F;
       private static final float SQUID_FLEE_MIN_DISTANCE = 5.0F;
       private static final float SQUID_FLEE_MAX_DISTANCE = 10.0F;
@@ -226,7 +245,6 @@ public class Squid extends WaterAnimal {
          super();
       }
 
-      @Override
       public boolean canUse() {
          LivingEntity var1 = Squid.this.getLastHurtByMob();
          if (Squid.this.isInWater() && var1 != null) {
@@ -236,26 +254,21 @@ public class Squid extends WaterAnimal {
          }
       }
 
-      @Override
       public void start() {
          this.fleeTicks = 0;
       }
 
-      @Override
       public boolean requiresUpdateEveryTick() {
          return true;
       }
 
-      @Override
       public void tick() {
          ++this.fleeTicks;
          LivingEntity var1 = Squid.this.getLastHurtByMob();
          if (var1 != null) {
             Vec3 var2 = new Vec3(Squid.this.getX() - var1.getX(), Squid.this.getY() - var1.getY(), Squid.this.getZ() - var1.getZ());
-            BlockState var3 = Squid.this.level()
-               .getBlockState(BlockPos.containing(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
-            FluidState var4 = Squid.this.level()
-               .getFluidState(BlockPos.containing(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
+            BlockState var3 = Squid.this.level().getBlockState(BlockPos.containing(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
+            FluidState var4 = Squid.this.level().getFluidState(BlockPos.containing(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
             if (var4.is(FluidTags.WATER) || var3.isAir()) {
                double var5 = var2.length();
                if (var5 > 0.0) {
@@ -280,34 +293,7 @@ public class Squid extends WaterAnimal {
             if (this.fleeTicks % 10 == 5) {
                Squid.this.level().addParticle(ParticleTypes.BUBBLE, Squid.this.getX(), Squid.this.getY(), Squid.this.getZ(), 0.0, 0.0, 0.0);
             }
-         }
-      }
-   }
 
-   class SquidRandomMovementGoal extends Goal {
-      private final Squid squid;
-
-      public SquidRandomMovementGoal(Squid var2) {
-         super();
-         this.squid = var2;
-      }
-
-      @Override
-      public boolean canUse() {
-         return true;
-      }
-
-      @Override
-      public void tick() {
-         int var1 = this.squid.getNoActionTime();
-         if (var1 > 100) {
-            this.squid.setMovementVector(0.0F, 0.0F, 0.0F);
-         } else if (this.squid.getRandom().nextInt(reducedTickDelay(50)) == 0 || !this.squid.wasTouchingWater || !this.squid.hasMovementVector()) {
-            float var2 = this.squid.getRandom().nextFloat() * 6.2831855F;
-            float var3 = Mth.cos(var2) * 0.2F;
-            float var4 = -0.1F + this.squid.getRandom().nextFloat() * 0.2F;
-            float var5 = Mth.sin(var2) * 0.2F;
-            this.squid.setMovementVector(var3, var4, var5);
          }
       }
    }

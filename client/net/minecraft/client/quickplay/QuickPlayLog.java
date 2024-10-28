@@ -2,18 +2,18 @@ package net.minecraft.client.quickplay;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -24,19 +24,17 @@ import org.slf4j.Logger;
 
 public class QuickPlayLog {
    private static final QuickPlayLog INACTIVE = new QuickPlayLog("") {
-      @Override
       public void log(Minecraft var1) {
       }
 
-      @Override
-      public void setWorldData(QuickPlayLog.Type var1, String var2, String var3) {
+      public void setWorldData(Type var1, String var2, String var3) {
       }
    };
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Gson GSON = new GsonBuilder().create();
+   private static final Gson GSON = (new GsonBuilder()).create();
    private final Path path;
    @Nullable
-   private QuickPlayLog.QuickPlayWorld worldData;
+   private QuickPlayWorld worldData;
 
    QuickPlayLog(String var1) {
       super();
@@ -47,79 +45,60 @@ public class QuickPlayLog {
       return var0 == null ? INACTIVE : new QuickPlayLog(var0);
    }
 
-   public void setWorldData(QuickPlayLog.Type var1, String var2, String var3) {
-      this.worldData = new QuickPlayLog.QuickPlayWorld(var1, var2, var3);
+   public void setWorldData(Type var1, String var2, String var3) {
+      this.worldData = new QuickPlayWorld(var1, var2, var3);
    }
 
    public void log(Minecraft var1) {
       if (var1.gameMode != null && this.worldData != null) {
-         Util.ioPool()
-            .execute(
-               () -> {
-                  try {
-                     Files.deleteIfExists(this.path);
-                  } catch (IOException var3) {
-                     LOGGER.error("Failed to delete quickplay log file {}", this.path, var3);
-                  }
-      
-                  QuickPlayLog.QuickPlayEntry var2 = new QuickPlayLog.QuickPlayEntry(this.worldData, Instant.now(), var1.gameMode.getPlayerMode());
-                  Codec.list(QuickPlayLog.QuickPlayEntry.CODEC)
-                     .encodeStart(JsonOps.INSTANCE, List.of(var2))
-                     .resultOrPartial(Util.prefix("Quick Play: ", LOGGER::error))
-                     .ifPresent(var1xx -> {
-                        try {
-                           Files.createDirectories(this.path.getParent());
-                           Files.writeString(this.path, GSON.toJson(var1xx));
-                        } catch (IOException var3xx) {
-                           LOGGER.error("Failed to write to quickplay log file {}", this.path, var3xx);
-                        }
-                     });
+         Util.ioPool().execute(() -> {
+            try {
+               Files.deleteIfExists(this.path);
+            } catch (IOException var3) {
+               LOGGER.error("Failed to delete quickplay log file {}", this.path, var3);
+            }
+
+            QuickPlayEntry var2 = new QuickPlayEntry(this.worldData, Instant.now(), var1.gameMode.getPlayerMode());
+            DataResult var10000 = Codec.list(QuickPlayLog.QuickPlayEntry.CODEC).encodeStart(JsonOps.INSTANCE, List.of(var2));
+            Logger var10002 = LOGGER;
+            Objects.requireNonNull(var10002);
+            var10000.resultOrPartial(Util.prefix("Quick Play: ", var10002::error)).ifPresent((var1x) -> {
+               try {
+                  Files.createDirectories(this.path.getParent());
+                  Files.writeString(this.path, GSON.toJson(var1x));
+               } catch (IOException var3) {
+                  LOGGER.error("Failed to write to quickplay log file {}", this.path, var3);
                }
-            );
+
+            });
+         });
       } else {
          LOGGER.error("Failed to log session for quickplay. Missing world data or gamemode");
       }
    }
 
-   static record QuickPlayEntry(QuickPlayLog.QuickPlayWorld b, Instant c, GameType d) {
-      private final QuickPlayLog.QuickPlayWorld quickPlayWorld;
-      private final Instant lastPlayedTime;
-      private final GameType gamemode;
-      public static final Codec<QuickPlayLog.QuickPlayEntry> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  QuickPlayLog.QuickPlayWorld.MAP_CODEC.forGetter(QuickPlayLog.QuickPlayEntry::quickPlayWorld),
-                  ExtraCodecs.INSTANT_ISO8601.fieldOf("lastPlayedTime").forGetter(QuickPlayLog.QuickPlayEntry::lastPlayedTime),
-                  GameType.CODEC.fieldOf("gamemode").forGetter(QuickPlayLog.QuickPlayEntry::gamemode)
-               )
-               .apply(var0, QuickPlayLog.QuickPlayEntry::new)
-      );
+   private static record QuickPlayWorld(Type type, String id, String name) {
+      public static final MapCodec<QuickPlayWorld> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return var0.group(QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayWorld::type), ExtraCodecs.ESCAPED_STRING.fieldOf("id").forGetter(QuickPlayWorld::id), Codec.STRING.fieldOf("name").forGetter(QuickPlayWorld::name)).apply(var0, QuickPlayWorld::new);
+      });
 
-      QuickPlayEntry(QuickPlayLog.QuickPlayWorld var1, Instant var2, GameType var3) {
-         super();
-         this.quickPlayWorld = var1;
-         this.lastPlayedTime = var2;
-         this.gamemode = var3;
-      }
-   }
-
-   static record QuickPlayWorld(QuickPlayLog.Type b, String c, String d) {
-      private final QuickPlayLog.Type type;
-      private final String id;
-      private final String name;
-      public static final MapCodec<QuickPlayLog.QuickPlayWorld> MAP_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayLog.QuickPlayWorld::type),
-                  ExtraCodecs.ESCAPED_STRING.fieldOf("id").forGetter(QuickPlayLog.QuickPlayWorld::id),
-                  Codec.STRING.fieldOf("name").forGetter(QuickPlayLog.QuickPlayWorld::name)
-               )
-               .apply(var0, QuickPlayLog.QuickPlayWorld::new)
-      );
-
-      QuickPlayWorld(QuickPlayLog.Type var1, String var2, String var3) {
+      QuickPlayWorld(Type var1, String var2, String var3) {
          super();
          this.type = var1;
          this.id = var2;
          this.name = var3;
+      }
+
+      public Type type() {
+         return this.type;
+      }
+
+      public String id() {
+         return this.id;
+      }
+
+      public String name() {
+         return this.name;
       }
    }
 
@@ -128,16 +107,45 @@ public class QuickPlayLog {
       MULTIPLAYER("multiplayer"),
       REALMS("realms");
 
-      static final Codec<QuickPlayLog.Type> CODEC = StringRepresentable.fromEnum(QuickPlayLog.Type::values);
+      static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
       private final String name;
 
       private Type(String var3) {
          this.name = var3;
       }
 
-      @Override
       public String getSerializedName() {
          return this.name;
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{SINGLEPLAYER, MULTIPLAYER, REALMS};
+      }
+   }
+
+   static record QuickPlayEntry(QuickPlayWorld quickPlayWorld, Instant lastPlayedTime, GameType gamemode) {
+      public static final Codec<QuickPlayEntry> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(QuickPlayLog.QuickPlayWorld.MAP_CODEC.forGetter(QuickPlayEntry::quickPlayWorld), ExtraCodecs.INSTANT_ISO8601.fieldOf("lastPlayedTime").forGetter(QuickPlayEntry::lastPlayedTime), GameType.CODEC.fieldOf("gamemode").forGetter(QuickPlayEntry::gamemode)).apply(var0, QuickPlayEntry::new);
+      });
+
+      QuickPlayEntry(QuickPlayWorld var1, Instant var2, GameType var3) {
+         super();
+         this.quickPlayWorld = var1;
+         this.lastPlayedTime = var2;
+         this.gamemode = var3;
+      }
+
+      public QuickPlayWorld quickPlayWorld() {
+         return this.quickPlayWorld;
+      }
+
+      public Instant lastPlayedTime() {
+         return this.lastPlayedTime;
+      }
+
+      public GameType gamemode() {
+         return this.gamemode;
       }
    }
 }

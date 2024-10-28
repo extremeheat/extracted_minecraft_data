@@ -23,47 +23,39 @@ public class WeightedBakedModel implements BakedModel {
       super();
       this.list = var1;
       this.totalWeight = WeightedRandom.getTotalWeight(var1);
-      this.wrapped = (BakedModel)((WeightedEntry.Wrapper)var1.get(0)).getData();
+      this.wrapped = (BakedModel)((WeightedEntry.Wrapper)var1.get(0)).data();
    }
 
-   @Override
    public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, RandomSource var3) {
-      return WeightedRandom.getWeightedItem(this.list, Math.abs((int)var3.nextLong()) % this.totalWeight)
-         .map(var3x -> var3x.getData().getQuads(var1, var2, var3))
-         .orElse(Collections.emptyList());
+      return (List)WeightedRandom.getWeightedItem(this.list, Math.abs((int)var3.nextLong()) % this.totalWeight).map((var3x) -> {
+         return ((BakedModel)var3x.data()).getQuads(var1, var2, var3);
+      }).orElse(Collections.emptyList());
    }
 
-   @Override
    public boolean useAmbientOcclusion() {
       return this.wrapped.useAmbientOcclusion();
    }
 
-   @Override
    public boolean isGui3d() {
       return this.wrapped.isGui3d();
    }
 
-   @Override
    public boolean usesBlockLight() {
       return this.wrapped.usesBlockLight();
    }
 
-   @Override
    public boolean isCustomRenderer() {
       return this.wrapped.isCustomRenderer();
    }
 
-   @Override
    public TextureAtlasSprite getParticleIcon() {
       return this.wrapped.getParticleIcon();
    }
 
-   @Override
    public ItemTransforms getTransforms() {
       return this.wrapped.getTransforms();
    }
 
-   @Override
    public ItemOverrides getOverrides() {
       return this.wrapped.getOverrides();
    }
@@ -75,7 +67,7 @@ public class WeightedBakedModel implements BakedModel {
          super();
       }
 
-      public WeightedBakedModel.Builder add(@Nullable BakedModel var1, int var2) {
+      public Builder add(@Nullable BakedModel var1, int var2) {
          if (var1 != null) {
             this.list.add(WeightedEntry.wrap(var1, var2));
          }
@@ -88,7 +80,7 @@ public class WeightedBakedModel implements BakedModel {
          if (this.list.isEmpty()) {
             return null;
          } else {
-            return (BakedModel)(this.list.size() == 1 ? this.list.get(0).getData() : new WeightedBakedModel(this.list));
+            return (BakedModel)(this.list.size() == 1 ? (BakedModel)((WeightedEntry.Wrapper)this.list.get(0)).data() : new WeightedBakedModel(this.list));
          }
       }
    }

@@ -16,30 +16,25 @@ public class SpyglassItem extends Item {
       super(var1);
    }
 
-   @Override
    public int getUseDuration(ItemStack var1) {
       return 1200;
    }
 
-   @Override
    public UseAnim getUseAnimation(ItemStack var1) {
       return UseAnim.SPYGLASS;
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       var2.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
       var2.awardStat(Stats.ITEM_USED.get(this));
       return ItemUtils.startUsingInstantly(var1, var2, var3);
    }
 
-   @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       this.stopUsing(var3);
       return var1;
    }
 
-   @Override
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       this.stopUsing(var3);
    }

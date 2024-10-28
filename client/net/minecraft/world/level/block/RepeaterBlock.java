@@ -21,78 +21,61 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class RepeaterBlock extends DiodeBlock {
    public static final MapCodec<RepeaterBlock> CODEC = simpleCodec(RepeaterBlock::new);
-   public static final BooleanProperty LOCKED = BlockStateProperties.LOCKED;
-   public static final IntegerProperty DELAY = BlockStateProperties.DELAY;
+   public static final BooleanProperty LOCKED;
+   public static final IntegerProperty DELAY;
 
-   @Override
    public MapCodec<RepeaterBlock> codec() {
       return CODEC;
    }
 
    protected RepeaterBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(
-         this.stateDefinition
-            .any()
-            .setValue(FACING, Direction.NORTH)
-            .setValue(DELAY, Integer.valueOf(1))
-            .setValue(LOCKED, Boolean.valueOf(false))
-            .setValue(POWERED, Boolean.valueOf(false))
-      );
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(DELAY, 1)).setValue(LOCKED, false)).setValue(POWERED, false));
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
-         var2.setBlock(var3, var1.cycle(DELAY), 3);
+         var2.setBlock(var3, (BlockState)var1.cycle(DELAY), 3);
          return InteractionResult.sidedSuccess(var2.isClientSide);
       }
    }
 
-   @Override
    protected int getDelay(BlockState var1) {
-      return var1.getValue(DELAY) * 2;
+      return (Integer)var1.getValue(DELAY) * 2;
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = super.getStateForPlacement(var1);
-      return var2.setValue(LOCKED, Boolean.valueOf(this.isLocked(var1.getLevel(), var1.getClickedPos(), var2)));
+      return (BlockState)var2.setValue(LOCKED, this.isLocked(var1.getLevel(), var1.getClickedPos(), var2));
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.DOWN && !this.canSurviveOn(var4, var6, var3)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         return !var4.isClientSide() && var2.getAxis() != var1.getValue(FACING).getAxis()
-            ? var1.setValue(LOCKED, Boolean.valueOf(this.isLocked(var4, var5, var1)))
-            : super.updateShape(var1, var2, var3, var4, var5, var6);
+         return !var4.isClientSide() && var2.getAxis() != ((Direction)var1.getValue(FACING)).getAxis() ? (BlockState)var1.setValue(LOCKED, this.isLocked(var4, var5, var1)) : super.updateShape(var1, var2, var3, var4, var5, var6);
       }
    }
 
-   @Override
    public boolean isLocked(LevelReader var1, BlockPos var2, BlockState var3) {
       return this.getAlternateSignal(var1, var2, var3) > 0;
    }
 
-   @Override
    protected boolean sideInputDiodesOnly() {
       return true;
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(POWERED)) {
-         Direction var5 = var1.getValue(FACING);
+      if ((Boolean)var1.getValue(POWERED)) {
+         Direction var5 = (Direction)var1.getValue(FACING);
          double var6 = (double)var3.getX() + 0.5 + (var4.nextDouble() - 0.5) * 0.2;
          double var8 = (double)var3.getY() + 0.4 + (var4.nextDouble() - 0.5) * 0.2;
          double var10 = (double)var3.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 0.2;
          float var12 = -5.0F;
          if (var4.nextBoolean()) {
-            var12 = (float)(var1.getValue(DELAY) * 2 - 1);
+            var12 = (float)((Integer)var1.getValue(DELAY) * 2 - 1);
          }
 
          var12 /= 16.0F;
@@ -102,8 +85,12 @@ public class RepeaterBlock extends DiodeBlock {
       }
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, DELAY, LOCKED, POWERED);
+   }
+
+   static {
+      LOCKED = BlockStateProperties.LOCKED;
+      DELAY = BlockStateProperties.DELAY;
    }
 }

@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -31,33 +30,32 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.slf4j.Logger;
 
 public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
-   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(Codec.BOOL.fieldOf("automatic").forGetter(var0x -> var0x.automatic), propertiesCodec()).apply(var0, CommandBlock::new)
-   );
+   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.BOOL.fieldOf("automatic").forGetter((var0x) -> {
+         return var0x.automatic;
+      }), propertiesCodec()).apply(var0, CommandBlock::new);
+   });
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final DirectionProperty FACING = DirectionalBlock.FACING;
-   public static final BooleanProperty CONDITIONAL = BlockStateProperties.CONDITIONAL;
+   public static final DirectionProperty FACING;
+   public static final BooleanProperty CONDITIONAL;
    private final boolean automatic;
 
-   @Override
    public MapCodec<CommandBlock> codec() {
       return CODEC;
    }
 
    public CommandBlock(boolean var1, BlockBehaviour.Properties var2) {
       super(var2);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(CONDITIONAL, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(CONDITIONAL, false));
       this.automatic = var1;
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       CommandBlockEntity var3 = new CommandBlockEntity(var1, var2);
       var3.setAutomatic(this.automatic);
       return var3;
    }
 
-   @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
          BlockEntity var7 = var2.getBlockEntity(var3);
@@ -71,14 +69,12 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
                   var8.markConditionMet();
                   var2.scheduleTick(var3, this, 1);
                }
+
             }
          }
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof CommandBlockEntity var6) {
@@ -107,6 +103,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
          var2.updateNeighbourForOutputSignal(var3, this);
       }
+
    }
 
    private void execute(BlockState var1, Level var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
@@ -116,10 +113,9 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
          var4.setSuccessCount(0);
       }
 
-      executeChain(var2, var3, var1.getValue(FACING));
+      executeChain(var2, var3, (Direction)var1.getValue(FACING));
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof CommandBlockEntity && var4.canUseGameMasterBlocks()) {
@@ -130,22 +126,18 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   @Override
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
       return var4 instanceof CommandBlockEntity ? ((CommandBlockEntity)var4).getCommandBlock().getSuccessCount() : 0;
    }
 
-   @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
       BlockEntity var6 = var1.getBlockEntity(var2);
-      if (var6 instanceof CommandBlockEntity) {
-         CommandBlockEntity var7 = (CommandBlockEntity)var6;
+      if (var6 instanceof CommandBlockEntity var7) {
          BaseCommandBlock var8 = var7.getCommandBlock();
          if (!var1.isClientSide) {
             if (!var5.has(DataComponents.BLOCK_ENTITY_DATA)) {
@@ -158,32 +150,28 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
                var7.setPowered(var9);
             }
          }
+
       }
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
+      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, CONDITIONAL);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
    }
 
    private static void executeChain(Level var0, BlockPos var1, Direction var2) {
@@ -192,7 +180,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
       int var5;
       BlockState var6;
-      for(var5 = var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH); var5-- > 0; var2 = var6.getValue(FACING)) {
+      for(var5 = var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH); var5-- > 0; var2 = (Direction)var6.getValue(FACING)) {
          var3.move(var2);
          var6 = var0.getBlockState(var3);
          Block var7 = var6.getBlock();
@@ -228,5 +216,11 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
          int var11 = Math.max(var4.getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH), 0);
          LOGGER.warn("Command Block chain tried to execute more than {} steps!", var11);
       }
+
+   }
+
+   static {
+      FACING = DirectionalBlock.FACING;
+      CONDITIONAL = BlockStateProperties.CONDITIONAL;
    }
 }

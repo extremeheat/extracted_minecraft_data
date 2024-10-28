@@ -12,12 +12,10 @@ public class TieredItem extends Item {
       return this.tier;
    }
 
-   @Override
    public int getEnchantmentValue() {
       return this.tier.getEnchantmentValue();
    }
 
-   @Override
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
       return this.tier.getRepairIngredient().test(var2) || super.isValidRepairItem(var1, var2);
    }

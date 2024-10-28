@@ -6,24 +6,7 @@ import net.minecraft.util.Mth;
 public class BaseAshSmokeParticle extends TextureSheetParticle {
    private final SpriteSet sprites;
 
-   protected BaseAshSmokeParticle(
-      ClientLevel var1,
-      double var2,
-      double var4,
-      double var6,
-      float var8,
-      float var9,
-      float var10,
-      double var11,
-      double var13,
-      double var15,
-      float var17,
-      SpriteSet var18,
-      float var19,
-      int var20,
-      float var21,
-      boolean var22
-   ) {
+   protected BaseAshSmokeParticle(ClientLevel var1, double var2, double var4, double var6, float var8, float var9, float var10, double var11, double var13, double var15, float var17, SpriteSet var18, float var19, int var20, float var21, boolean var22) {
       super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
       this.friction = 0.96F;
       this.gravity = var21;
@@ -46,17 +29,14 @@ public class BaseAshSmokeParticle extends TextureSheetParticle {
       this.hasPhysics = var22;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public float getQuadSize(float var1) {
       return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.setSpriteFromAge(this.sprites);

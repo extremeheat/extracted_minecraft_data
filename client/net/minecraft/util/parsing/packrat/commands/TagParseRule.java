@@ -14,13 +14,12 @@ public class TagParseRule implements Rule<StringReader, Tag> {
       super();
    }
 
-   @Override
    public Optional<Tag> parse(ParseState<StringReader> var1) {
       ((StringReader)var1.input()).skipWhitespace();
       int var2 = var1.mark();
 
       try {
-         return Optional.of(new TagParser((StringReader)var1.input()).readValue());
+         return Optional.of((new TagParser((StringReader)var1.input())).readValue());
       } catch (Exception var4) {
          var1.errorCollector().store(var2, var4);
          return Optional.empty();

@@ -12,6 +12,7 @@ import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.RecordItem;
@@ -24,7 +25,7 @@ import net.minecraft.world.ticks.ContainerSingleItem;
 
 public class JukeboxBlockEntity extends BlockEntity implements Clearable, ContainerSingleItem.BlockContainerSingleItem {
    private static final int SONG_END_PADDING = 20;
-   private ItemStack item = ItemStack.EMPTY;
+   private ItemStack item;
    private int ticksSinceLastEvent;
    private long tickCount;
    private long recordStartedTick;
@@ -32,13 +33,13 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
 
    public JukeboxBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.JUKEBOX, var1, var2);
+      this.item = ItemStack.EMPTY;
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("RecordItem", 10)) {
-         this.item = ItemStack.parse(var2, var1.getCompound("RecordItem")).orElse(ItemStack.EMPTY);
+         this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("RecordItem")).orElse(ItemStack.EMPTY);
       } else {
          this.item = ItemStack.EMPTY;
       }
@@ -48,7 +49,6 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       this.tickCount = var1.getLong("TickCount");
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.getTheItem().isEmpty()) {
@@ -66,9 +66,10 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
 
    private void setHasRecordBlockState(@Nullable Entity var1, boolean var2) {
       if (this.level.getBlockState(this.getBlockPos()) == this.getBlockState()) {
-         this.level.setBlock(this.getBlockPos(), this.getBlockState().setValue(JukeboxBlock.HAS_RECORD, Boolean.valueOf(var2)), 2);
+         this.level.setBlock(this.getBlockPos(), (BlockState)this.getBlockState().setValue(JukeboxBlock.HAS_RECORD, var2), 2);
          this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(var1, this.getBlockState()));
       }
+
    }
 
    @VisibleForTesting
@@ -76,7 +77,7 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       this.recordStartedTick = this.tickCount;
       this.isPlaying = true;
       this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
-      this.level.levelEvent(null, 1010, this.getBlockPos(), Item.getId(this.getTheItem().getItem()));
+      this.level.levelEvent((Player)null, 1010, this.getBlockPos(), Item.getId(this.getTheItem().getItem()));
       this.setChanged();
    }
 
@@ -92,8 +93,9 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       ++this.ticksSinceLastEvent;
       if (this.isRecordPlaying()) {
          Item var5 = this.getTheItem().getItem();
-         if (var5 instanceof RecordItem var4) {
-            if (this.shouldRecordStopPlaying((RecordItem)var4)) {
+         if (var5 instanceof RecordItem) {
+            RecordItem var4 = (RecordItem)var5;
+            if (this.shouldRecordStopPlaying(var4)) {
                this.stopPlaying();
             } else if (this.shouldSendJukeboxPlayingEvent()) {
                this.ticksSinceLastEvent = 0;
@@ -114,62 +116,55 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       return this.ticksSinceLastEvent >= 20;
    }
 
-   @Override
    public ItemStack getTheItem() {
       return this.item;
    }
 
-   @Override
    public ItemStack splitTheItem(int var1) {
       ItemStack var2 = this.item;
       this.item = ItemStack.EMPTY;
       if (!var2.isEmpty()) {
-         this.setHasRecordBlockState(null, false);
+         this.setHasRecordBlockState((Entity)null, false);
          this.stopPlaying();
       }
 
       return var2;
    }
 
-   @Override
    public void setTheItem(ItemStack var1) {
       if (var1.is(ItemTags.MUSIC_DISCS) && this.level != null) {
          this.item = var1;
-         this.setHasRecordBlockState(null, true);
+         this.setHasRecordBlockState((Entity)null, true);
          this.startPlaying();
       } else if (var1.isEmpty()) {
          this.splitTheItem(1);
       }
+
    }
 
-   @Override
    public int getMaxStackSize() {
       return 1;
    }
 
-   @Override
    public BlockEntity getContainerBlockEntity() {
       return this;
    }
 
-   @Override
    public boolean canPlaceItem(int var1, ItemStack var2) {
       return var2.is(ItemTags.MUSIC_DISCS) && this.getItem(var1).isEmpty();
    }
 
-   @Override
    public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
       return var1.hasAnyMatching(ItemStack::isEmpty);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void spawnMusicParticles(Level var1, BlockPos var2) {
       if (var1 instanceof ServerLevel var3) {
          Vec3 var4 = Vec3.atBottomCenterOf(var2).add(0.0, 1.2000000476837158, 0.0);
          float var5 = (float)var1.getRandom().nextInt(4) / 24.0F;
          var3.sendParticles(ParticleTypes.NOTE, var4.x(), var4.y(), var4.z(), 0, (double)var5, 0.0, 0.0, 1.0);
       }
+
    }
 
    public void popOutRecord() {

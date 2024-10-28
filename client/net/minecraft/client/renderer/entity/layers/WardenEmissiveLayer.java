@@ -15,12 +15,10 @@ import net.minecraft.world.entity.monster.warden.Warden;
 
 public class WardenEmissiveLayer<T extends Warden, M extends WardenModel<T>> extends RenderLayer<T, M> {
    private final ResourceLocation texture;
-   private final WardenEmissiveLayer.AlphaFunction<T> alphaFunction;
-   private final WardenEmissiveLayer.DrawSelector<T, M> drawSelector;
+   private final AlphaFunction<T> alphaFunction;
+   private final DrawSelector<T, M> drawSelector;
 
-   public WardenEmissiveLayer(
-      RenderLayerParent<T, M> var1, ResourceLocation var2, WardenEmissiveLayer.AlphaFunction<T> var3, WardenEmissiveLayer.DrawSelector<T, M> var4
-   ) {
+   public WardenEmissiveLayer(RenderLayerParent<T, M> var1, ResourceLocation var2, AlphaFunction<T> var3, DrawSelector<T, M> var4) {
       super(var1);
       this.texture = var2;
       this.alphaFunction = var3;
@@ -31,22 +29,25 @@ public class WardenEmissiveLayer<T extends Warden, M extends WardenModel<T>> ext
       if (!var4.isInvisible()) {
          this.onlyDrawSelectedParts();
          VertexConsumer var11 = var2.getBuffer(RenderType.entityTranslucentEmissive(this.texture));
-         this.getParentModel()
-            .renderToBuffer(
-               var1, var11, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), 1.0F, 1.0F, 1.0F, this.alphaFunction.apply((T)var4, var7, var8)
-            );
+         ((WardenModel)this.getParentModel()).renderToBuffer(var1, var11, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), 1.0F, 1.0F, 1.0F, this.alphaFunction.apply(var4, var7, var8));
          this.resetDrawForAllParts();
       }
    }
 
    private void onlyDrawSelectedParts() {
-      List var1 = this.drawSelector.getPartsToDraw(this.getParentModel());
-      this.getParentModel().root().getAllParts().forEach(var0 -> var0.skipDraw = true);
-      var1.forEach(var0 -> var0.skipDraw = false);
+      List var1 = this.drawSelector.getPartsToDraw((WardenModel)this.getParentModel());
+      ((WardenModel)this.getParentModel()).root().getAllParts().forEach((var0) -> {
+         var0.skipDraw = true;
+      });
+      var1.forEach((var0) -> {
+         var0.skipDraw = false;
+      });
    }
 
    private void resetDrawForAllParts() {
-      this.getParentModel().root().getAllParts().forEach(var0 -> var0.skipDraw = false);
+      ((WardenModel)this.getParentModel()).root().getAllParts().forEach((var0) -> {
+         var0.skipDraw = false;
+      });
    }
 
    public interface AlphaFunction<T extends Warden> {

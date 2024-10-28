@@ -8,7 +8,6 @@ public class NoOpFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       return true;
    }

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -16,20 +17,23 @@ public interface ChangeOverTimeBlock<T extends Enum<T>> {
    default void changeOverTime(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       float var5 = 0.05688889F;
       if (var4.nextFloat() < 0.05688889F) {
-         this.getNextState(var1, var2, var3, var4).ifPresent(var2x -> var2.setBlockAndUpdate(var3, var2x));
+         this.getNextState(var1, var2, var3, var4).ifPresent((var2x) -> {
+            var2.setBlockAndUpdate(var3, var2x);
+         });
       }
+
    }
 
    T getAge();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    default Optional<BlockState> getNextState(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       int var5 = this.getAge().ordinal();
       int var6 = 0;
       int var7 = 0;
+      Iterator var8 = BlockPos.withinManhattan(var3, 4, 4, 4).iterator();
 
-      for(BlockPos var9 : BlockPos.withinManhattan(var3, 4, 4, 4)) {
+      while(var8.hasNext()) {
+         BlockPos var9 = (BlockPos)var8.next();
          int var10 = var9.distManhattan(var3);
          if (var10 > 4) {
             break;
@@ -37,7 +41,8 @@ public interface ChangeOverTimeBlock<T extends Enum<T>> {
 
          if (!var9.equals(var3)) {
             Block var12 = var2.getBlockState(var9).getBlock();
-            if (var12 instanceof ChangeOverTimeBlock var11) {
+            if (var12 instanceof ChangeOverTimeBlock) {
+               ChangeOverTimeBlock var11 = (ChangeOverTimeBlock)var12;
                Enum var16 = var11.getAge();
                if (this.getAge().getClass() == var16.getClass()) {
                   int var13 = var16.ordinal();

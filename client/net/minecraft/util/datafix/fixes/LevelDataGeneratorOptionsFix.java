@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -21,14 +20,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.util.GsonHelper;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {
-   static final Map<String, String> MAP = Util.make(Maps.newHashMap(), var0 -> {
+   static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put("0", "minecraft:ocean");
       var0.put("1", "minecraft:plains");
       var0.put("2", "minecraft:desert");
@@ -111,20 +109,20 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.LEVEL);
-      return this.fixTypeEverywhereTyped(
-         "LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, var1x -> Util.writeAndReadTypedOrThrow(var1x, var1, var0x -> {
-               Optional var1xxx = var0x.get("generatorOptions").asString().result();
-               if ("flat".equalsIgnoreCase(var0x.get("generatorName").asString(""))) {
-                  String var3 = var1xxx.orElse("");
-                  return var0x.set("generatorOptions", convert(var3, var0x.getOps()));
-               } else if ("buffet".equalsIgnoreCase(var0x.get("generatorName").asString("")) && var1xxx.isPresent()) {
-                  Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1xxx.get(), true));
-                  return var0x.set("generatorOptions", var2.convert(var0x.getOps()));
-               } else {
-                  return var0x;
-               }
-            })
-      );
+      return this.fixTypeEverywhereTyped("LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, (var1x) -> {
+         return Util.writeAndReadTypedOrThrow(var1x, var1, (var0) -> {
+            Optional var1 = var0.get("generatorOptions").asString().result();
+            if ("flat".equalsIgnoreCase(var0.get("generatorName").asString(""))) {
+               String var3 = (String)var1.orElse("");
+               return var0.set("generatorOptions", convert(var3, var0.getOps()));
+            } else if ("buffet".equalsIgnoreCase(var0.get("generatorName").asString("")) && var1.isPresent()) {
+               Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1.get(), true));
+               return var0.set("generatorOptions", var2.convert(var0.getOps()));
+            } else {
+               return var0;
+            }
+         });
+      });
    }
 
    private static <T> Dynamic<T> convert(String var0, DynamicOps<T> var1) {
@@ -134,22 +132,28 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
       Object var3;
       if (!var0.isEmpty() && var2.hasNext()) {
          var3 = getLayersInfoFromString((String)var2.next());
-         if (!var3.isEmpty()) {
+         if (!((List)var3).isEmpty()) {
             if (var2.hasNext()) {
-               var4 = MAP.getOrDefault(var2.next(), "minecraft:plains");
+               var4 = (String)MAP.getOrDefault(var2.next(), "minecraft:plains");
             }
 
             if (var2.hasNext()) {
                String[] var6 = ((String)var2.next()).toLowerCase(Locale.ROOT).split(",");
+               String[] var7 = var6;
+               int var8 = var6.length;
 
-               for(String var10 : var6) {
+               for(int var9 = 0; var9 < var8; ++var9) {
+                  String var10 = var7[var9];
                   String[] var11 = var10.split("\\(", 2);
                   if (!var11[0].isEmpty()) {
                      var5.put(var11[0], Maps.newHashMap());
                      if (var11.length > 1 && var11[1].endsWith(")") && var11[1].length() > 1) {
                         String[] var12 = var11[1].substring(0, var11[1].length() - 1).split(" ");
+                        String[] var13 = var12;
+                        int var14 = var12.length;
 
-                        for(String var16 : var12) {
+                        for(int var15 = 0; var15 < var14; ++var15) {
+                           String var16 = var13[var15];
                            String[] var17 = var16.split("=", 2);
                            if (var17.length == 2) {
                               ((Map)var5.get(var11[0])).put(var17[0], var17[1]);
@@ -164,45 +168,21 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
          }
       } else {
          var3 = Lists.newArrayList();
-         var3.add(Pair.of(1, "minecraft:bedrock"));
-         var3.add(Pair.of(2, "minecraft:dirt"));
-         var3.add(Pair.of(1, "minecraft:grass_block"));
+         ((List)var3).add(Pair.of(1, "minecraft:bedrock"));
+         ((List)var3).add(Pair.of(2, "minecraft:dirt"));
+         ((List)var3).add(Pair.of(1, "minecraft:grass_block"));
          var5.put("village", Maps.newHashMap());
       }
 
-      Object var18 = var1.createList(
-         var3.stream()
-            .map(
-               var1x -> var1.createMap(
-                     ImmutableMap.of(
-                        var1.createString("height"), var1.createInt(var1x.getFirst()), var1.createString("block"), var1.createString((String)var1x.getSecond())
-                     )
-                  )
-            )
-      );
-      Object var19 = var1.createMap(
-         var5.entrySet()
-            .stream()
-            .map(
-               var1x -> Pair.of(
-                     var1.createString(((String)var1x.getKey()).toLowerCase(Locale.ROOT)),
-                     var1.createMap(
-                        ((Map)var1x.getValue())
-                           .entrySet()
-                           .stream()
-                           .map(var1xx -> Pair.of(var1.createString((String)var1xx.getKey()), var1.createString((String)var1xx.getValue())))
-                           .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))
-                     )
-                  )
-            )
-            .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))
-      );
-      return new Dynamic(
-         var1,
-         var1.createMap(
-            ImmutableMap.of(var1.createString("layers"), var18, var1.createString("biome"), var1.createString(var4), var1.createString("structures"), var19)
-         )
-      );
+      Object var18 = var1.createList(((List)var3).stream().map((var1x) -> {
+         return var1.createMap(ImmutableMap.of(var1.createString("height"), var1.createInt((Integer)var1x.getFirst()), var1.createString("block"), var1.createString((String)var1x.getSecond())));
+      }));
+      Object var19 = var1.createMap((Map)var5.entrySet().stream().map((var1x) -> {
+         return Pair.of(var1.createString(((String)var1x.getKey()).toLowerCase(Locale.ROOT)), var1.createMap((Map)((Map)var1x.getValue()).entrySet().stream().map((var1xx) -> {
+            return Pair.of(var1.createString((String)var1xx.getKey()), var1.createString((String)var1xx.getValue()));
+         }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))));
+      }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("layers"), var18, var1.createString("biome"), var1.createString(var4), var1.createString("structures"), var19)));
    }
 
    @Nullable
@@ -226,8 +206,11 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
    private static List<Pair<Integer, String>> getLayersInfoFromString(String var0) {
       ArrayList var1 = Lists.newArrayList();
       String[] var2 = var0.split(",");
+      String[] var3 = var2;
+      int var4 = var2.length;
 
-      for(String var6 : var2) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         String var6 = var3[var5];
          Pair var7 = getLayerInfoFromString(var6);
          if (var7 == null) {
             return Collections.emptyList();

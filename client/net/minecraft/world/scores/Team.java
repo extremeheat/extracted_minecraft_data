@@ -30,15 +30,15 @@ public abstract class Team {
 
    public abstract boolean isAllowFriendlyFire();
 
-   public abstract Team.Visibility getNameTagVisibility();
+   public abstract Visibility getNameTagVisibility();
 
    public abstract ChatFormatting getColor();
 
    public abstract Collection<String> getPlayers();
 
-   public abstract Team.Visibility getDeathMessageVisibility();
+   public abstract Visibility getDeathMessageVisibility();
 
-   public abstract Team.CollisionRule getCollisionRule();
+   public abstract CollisionRule getCollisionRule();
 
    public static enum CollisionRule {
       ALWAYS("always", 0),
@@ -46,13 +46,17 @@ public abstract class Team {
       PUSH_OTHER_TEAMS("pushOtherTeams", 2),
       PUSH_OWN_TEAM("pushOwnTeam", 3);
 
-      private static final Map<String, Team.CollisionRule> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.name, var0 -> var0));
+      private static final Map<String, CollisionRule> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
+         return var0.name;
+      }, (var0) -> {
+         return var0;
+      }));
       public final String name;
       public final int id;
 
       @Nullable
-      public static Team.CollisionRule byName(String var0) {
-         return BY_NAME.get(var0);
+      public static CollisionRule byName(String var0) {
+         return (CollisionRule)BY_NAME.get(var0);
       }
 
       private CollisionRule(String var3, int var4) {
@@ -63,6 +67,11 @@ public abstract class Team {
       public Component getDisplayName() {
          return Component.translatable("team.collision." + this.name);
       }
+
+      // $FF: synthetic method
+      private static CollisionRule[] $values() {
+         return new CollisionRule[]{ALWAYS, NEVER, PUSH_OTHER_TEAMS, PUSH_OWN_TEAM};
+      }
    }
 
    public static enum Visibility {
@@ -71,17 +80,21 @@ public abstract class Team {
       HIDE_FOR_OTHER_TEAMS("hideForOtherTeams", 2),
       HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
-      private static final Map<String, Team.Visibility> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.name, var0 -> var0));
+      private static final Map<String, Visibility> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
+         return var0.name;
+      }, (var0) -> {
+         return var0;
+      }));
       public final String name;
       public final int id;
 
       public static String[] getAllNames() {
-         return BY_NAME.keySet().toArray(new String[0]);
+         return (String[])BY_NAME.keySet().toArray(new String[0]);
       }
 
       @Nullable
-      public static Team.Visibility byName(String var0) {
-         return BY_NAME.get(var0);
+      public static Visibility byName(String var0) {
+         return (Visibility)BY_NAME.get(var0);
       }
 
       private Visibility(String var3, int var4) {
@@ -91,6 +104,11 @@ public abstract class Team {
 
       public Component getDisplayName() {
          return Component.translatable("team.visibility." + this.name);
+      }
+
+      // $FF: synthetic method
+      private static Visibility[] $values() {
+         return new Visibility[]{ALWAYS, NEVER, HIDE_FOR_OTHER_TEAMS, HIDE_FOR_OWN_TEAM};
       }
    }
 }

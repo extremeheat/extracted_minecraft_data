@@ -9,9 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 
 public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundStopSoundPacket> STREAM_CODEC = Packet.codec(
-      ClientboundStopSoundPacket::write, ClientboundStopSoundPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundStopSoundPacket> STREAM_CODEC = Packet.codec(ClientboundStopSoundPacket::write, ClientboundStopSoundPacket::new);
    private static final int HAS_SOURCE = 1;
    private static final int HAS_SOUND = 2;
    @Nullable
@@ -29,7 +27,7 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       super();
       byte var2 = var1.readByte();
       if ((var2 & 1) > 0) {
-         this.source = var1.readEnum(SoundSource.class);
+         this.source = (SoundSource)var1.readEnum(SoundSource.class);
       } else {
          this.source = null;
       }
@@ -39,6 +37,7 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       } else {
          this.name = null;
       }
+
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -57,9 +56,9 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       } else {
          var1.writeByte(0);
       }
+
    }
 
-   @Override
    public PacketType<ClientboundStopSoundPacket> type() {
       return GamePacketTypes.CLIENTBOUND_STOP_SOUND;
    }

@@ -1,7 +1,9 @@
 package net.minecraft.world.entity.ai.goal;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
 
 public class FollowParentGoal extends Goal {
@@ -20,7 +22,6 @@ public class FollowParentGoal extends Goal {
       this.speedModifier = var2;
    }
 
-   @Override
    public boolean canUse() {
       if (this.animal.getAge() >= 0) {
          return false;
@@ -28,8 +29,10 @@ public class FollowParentGoal extends Goal {
          List var1 = this.animal.level().getEntitiesOfClass(this.animal.getClass(), this.animal.getBoundingBox().inflate(8.0, 4.0, 8.0));
          Animal var2 = null;
          double var3 = 1.7976931348623157E308;
+         Iterator var5 = var1.iterator();
 
-         for(Animal var6 : var1) {
+         while(var5.hasNext()) {
+            Animal var6 = (Animal)var5.next();
             if (var6.getAge() >= 0) {
                double var7 = this.animal.distanceToSqr(var6);
                if (!(var7 > var3)) {
@@ -50,7 +53,6 @@ public class FollowParentGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       if (this.animal.getAge() >= 0) {
          return false;
@@ -62,21 +64,18 @@ public class FollowParentGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.timeToRecalcPath = 0;
    }
 
-   @Override
    public void stop() {
       this.parent = null;
    }
 
-   @Override
    public void tick() {
       if (--this.timeToRecalcPath <= 0) {
          this.timeToRecalcPath = this.adjustedTickDelay(10);
-         this.animal.getNavigation().moveTo(this.parent, this.speedModifier);
+         this.animal.getNavigation().moveTo((Entity)this.parent, this.speedModifier);
       }
    }
 }

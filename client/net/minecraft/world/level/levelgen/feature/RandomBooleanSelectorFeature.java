@@ -13,7 +13,6 @@ public class RandomBooleanSelectorFeature extends Feature<RandomBooleanFeatureCo
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<RandomBooleanFeatureConfiguration> var1) {
       RandomSource var2 = var1.random();
       RandomBooleanFeatureConfiguration var3 = (RandomBooleanFeatureConfiguration)var1.config();

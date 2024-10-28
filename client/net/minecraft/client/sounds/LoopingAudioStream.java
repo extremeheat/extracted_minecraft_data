@@ -8,37 +8,34 @@ import java.nio.ByteBuffer;
 import javax.sound.sampled.AudioFormat;
 
 public class LoopingAudioStream implements AudioStream {
-   private final LoopingAudioStream.AudioStreamProvider provider;
+   private final AudioStreamProvider provider;
    private AudioStream stream;
    private final BufferedInputStream bufferedInputStream;
 
-   public LoopingAudioStream(LoopingAudioStream.AudioStreamProvider var1, InputStream var2) throws IOException {
+   public LoopingAudioStream(AudioStreamProvider var1, InputStream var2) throws IOException {
       super();
       this.provider = var1;
       this.bufferedInputStream = new BufferedInputStream(var2);
       this.bufferedInputStream.mark(2147483647);
-      this.stream = var1.create(new LoopingAudioStream.NoCloseBuffer(this.bufferedInputStream));
+      this.stream = var1.create(new NoCloseBuffer(this.bufferedInputStream));
    }
 
-   @Override
    public AudioFormat getFormat() {
       return this.stream.getFormat();
    }
 
-   @Override
    public ByteBuffer read(int var1) throws IOException {
       ByteBuffer var2 = this.stream.read(var1);
       if (!var2.hasRemaining()) {
          this.stream.close();
          this.bufferedInputStream.reset();
-         this.stream = this.provider.create(new LoopingAudioStream.NoCloseBuffer(this.bufferedInputStream));
+         this.stream = this.provider.create(new NoCloseBuffer(this.bufferedInputStream));
          var2 = this.stream.read(var1);
       }
 
       return var2;
    }
 
-   @Override
    public void close() throws IOException {
       this.stream.close();
       this.bufferedInputStream.close();
@@ -49,12 +46,11 @@ public class LoopingAudioStream implements AudioStream {
       AudioStream create(InputStream var1) throws IOException;
    }
 
-   static class NoCloseBuffer extends FilterInputStream {
+   private static class NoCloseBuffer extends FilterInputStream {
       NoCloseBuffer(InputStream var1) {
          super(var1);
       }
 
-      @Override
       public void close() {
       }
    }

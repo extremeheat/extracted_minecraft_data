@@ -9,12 +9,10 @@ public abstract class AbstractDragonSittingPhase extends AbstractDragonPhaseInst
       super(var1);
    }
 
-   @Override
    public boolean isSitting() {
       return true;
    }
 
-   @Override
    public float onHurt(DamageSource var1, float var2) {
       if (var1.getDirectEntity() instanceof AbstractArrow) {
          var1.getDirectEntity().igniteForSeconds(1);

@@ -26,31 +26,19 @@ public class ElytraModel<T extends LivingEntity> extends AgeableListModel<T> {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
       CubeDeformation var2 = new CubeDeformation(1.0F);
-      var1.addOrReplaceChild(
-         "left_wing",
-         CubeListBuilder.create().texOffs(22, 0).addBox(-10.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2),
-         PartPose.offsetAndRotation(5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, -0.2617994F)
-      );
-      var1.addOrReplaceChild(
-         "right_wing",
-         CubeListBuilder.create().texOffs(22, 0).mirror().addBox(0.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2),
-         PartPose.offsetAndRotation(-5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, 0.2617994F)
-      );
+      var1.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(22, 0).addBox(-10.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2), PartPose.offsetAndRotation(5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, -0.2617994F));
+      var1.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(22, 0).mirror().addBox(0.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2), PartPose.offsetAndRotation(-5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, 0.2617994F));
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
    protected Iterable<ModelPart> headParts() {
       return ImmutableList.of();
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return ImmutableList.of(this.leftWing, this.rightWing);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       float var7 = 0.2617994F;
       float var8 = -0.2617994F;

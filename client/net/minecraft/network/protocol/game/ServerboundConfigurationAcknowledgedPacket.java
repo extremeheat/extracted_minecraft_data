@@ -7,13 +7,12 @@ import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundConfigurationAcknowledgedPacket implements Packet<ServerGamePacketListener> {
    public static final ServerboundConfigurationAcknowledgedPacket INSTANCE = new ServerboundConfigurationAcknowledgedPacket();
-   public static final StreamCodec<ByteBuf, ServerboundConfigurationAcknowledgedPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+   public static final StreamCodec<ByteBuf, ServerboundConfigurationAcknowledgedPacket> STREAM_CODEC;
 
    private ServerboundConfigurationAcknowledgedPacket() {
       super();
    }
 
-   @Override
    public PacketType<ServerboundConfigurationAcknowledgedPacket> type() {
       return GamePacketTypes.SERVERBOUND_CONFIGURATION_ACKNOWLEDGED;
    }
@@ -22,8 +21,11 @@ public class ServerboundConfigurationAcknowledgedPacket implements Packet<Server
       var1.handleConfigurationAcknowledged(this);
    }
 
-   @Override
    public boolean isTerminal() {
       return true;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.unit(INSTANCE);
    }
 }

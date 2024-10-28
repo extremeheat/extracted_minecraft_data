@@ -24,7 +24,6 @@ public enum RailShape implements StringRepresentable {
       return this.name;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
@@ -33,8 +32,12 @@ public enum RailShape implements StringRepresentable {
       return this == ASCENDING_NORTH || this == ASCENDING_EAST || this == ASCENDING_SOUTH || this == ASCENDING_WEST;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static RailShape[] $values() {
+      return new RailShape[]{NORTH_SOUTH, EAST_WEST, ASCENDING_EAST, ASCENDING_WEST, ASCENDING_NORTH, ASCENDING_SOUTH, SOUTH_EAST, SOUTH_WEST, NORTH_WEST, NORTH_EAST};
    }
 }

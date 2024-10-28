@@ -18,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
 public abstract class AbstractClientPlayer extends Player {
    @Nullable
    private PlayerInfo playerInfo;
-   protected Vec3 deltaMovementOnPreviousTick = Vec3.ZERO;
+   protected Vec3 deltaMovementOnPreviousTick;
    public float elytraRotX;
    public float elytraRotY;
    public float elytraRotZ;
@@ -26,16 +26,15 @@ public abstract class AbstractClientPlayer extends Player {
 
    public AbstractClientPlayer(ClientLevel var1, GameProfile var2) {
       super(var1, var1.getSharedSpawnPos(), var1.getSharedSpawnAngle(), var2);
+      this.deltaMovementOnPreviousTick = Vec3.ZERO;
       this.clientLevel = var1;
    }
 
-   @Override
    public boolean isSpectator() {
       PlayerInfo var1 = this.getPlayerInfo();
       return var1 != null && var1.getGameMode() == GameType.SPECTATOR;
    }
 
-   @Override
    public boolean isCreative() {
       PlayerInfo var1 = this.getPlayerInfo();
       return var1 != null && var1.getGameMode() == GameType.CREATIVE;
@@ -50,7 +49,6 @@ public abstract class AbstractClientPlayer extends Player {
       return this.playerInfo;
    }
 
-   @Override
    public void tick() {
       this.deltaMovementOnPreviousTick = this.getDeltaMovement();
       super.tick();
@@ -93,6 +91,6 @@ public abstract class AbstractClientPlayer extends Player {
          }
       }
 
-      return Mth.lerp(Minecraft.getInstance().options.fovEffectScale().get().floatValue(), 1.0F, var1);
+      return Mth.lerp(((Double)Minecraft.getInstance().options.fovEffectScale().get()).floatValue(), 1.0F, var1);
    }
 }

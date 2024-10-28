@@ -9,7 +9,6 @@ import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
@@ -18,19 +17,17 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public final class CustomData {
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
-   public static final Codec<CustomData> CODEC = CompoundTag.CODEC.xmap(CustomData::new, var0 -> var0.tag);
-   public static final Codec<CustomData> CODEC_WITH_ID = ExtraCodecs.validate(
-      CODEC, var0 -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + var0)
-   );
+   public static final Codec<CustomData> CODEC;
+   public static final Codec<CustomData> CODEC_WITH_ID;
+   /** @deprecated */
    @Deprecated
-   public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, var0 -> var0.tag);
+   public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC;
    private final CompoundTag tag;
 
    private CustomData(CompoundTag var1) {
@@ -43,8 +40,8 @@ public final class CustomData {
    }
 
    public static Predicate<ItemStack> itemMatcher(DataComponentType<CustomData> var0, CompoundTag var1) {
-      return var2 -> {
-         CustomData var3 = var2.getOrDefault(var0, EMPTY);
+      return (var2) -> {
+         CustomData var3 = (CustomData)var2.getOrDefault(var0, EMPTY);
          return var3.matchedBy(var1);
       };
    }
@@ -54,12 +51,13 @@ public final class CustomData {
    }
 
    public static void update(DataComponentType<CustomData> var0, ItemStack var1, Consumer<CompoundTag> var2) {
-      CustomData var3 = var1.getOrDefault(var0, EMPTY).update(var2);
+      CustomData var3 = ((CustomData)var1.getOrDefault(var0, EMPTY)).update(var2);
       if (var3.tag.isEmpty()) {
          var1.remove(var0);
       } else {
          var1.set(var0, var3);
       }
+
    }
 
    public static void set(DataComponentType<CustomData> var0, ItemStack var1, CompoundTag var2) {
@@ -68,6 +66,7 @@ public final class CustomData {
       } else {
          var1.remove(var0);
       }
+
    }
 
    public CustomData update(Consumer<CompoundTag> var1) {
@@ -85,11 +84,11 @@ public final class CustomData {
    }
 
    public boolean loadInto(BlockEntity var1, HolderLookup.Provider var2) {
-      CompoundTag var3 = var1.saveWithoutMetadata(var2);
+      CompoundTag var3 = var1.saveCustomOnly(var2);
       CompoundTag var4 = var3.copy();
       var3.merge(this.tag);
       if (!var3.equals(var4)) {
-         var1.load(var3, var2);
+         var1.loadCustomOnly(var3, var2);
          var1.setChanged();
          return true;
       } else {
@@ -98,11 +97,13 @@ public final class CustomData {
    }
 
    public <T> DataResult<CustomData> update(MapEncoder<T> var1, T var2) {
-      return var1.encode(var2, NbtOps.INSTANCE, NbtOps.INSTANCE.mapBuilder()).build(this.tag).map(var0 -> new CustomData((CompoundTag)var0));
+      return var1.encode(var2, NbtOps.INSTANCE, NbtOps.INSTANCE.mapBuilder()).build(this.tag).map((var0) -> {
+         return new CustomData((CompoundTag)var0);
+      });
    }
 
    public <T> DataResult<T> read(MapDecoder<T> var1) {
-      MapLike var2 = Util.getOrThrow(NbtOps.INSTANCE.getMap((Tag)this.tag), IllegalStateException::new);
+      MapLike var2 = (MapLike)NbtOps.INSTANCE.getMap((Tag)this.tag).getOrThrow();
       return var1.decode(NbtOps.INSTANCE, var2);
    }
 
@@ -122,27 +123,42 @@ public final class CustomData {
       return this.tag.contains(var1);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (var1 == this) {
          return true;
+      } else if (var1 instanceof CustomData) {
+         CustomData var2 = (CustomData)var1;
+         return this.tag.equals(var2.tag);
       } else {
-         return var1 instanceof CustomData var2 ? this.tag.equals(var2.tag) : false;
+         return false;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.tag.hashCode();
    }
 
-   @Override
    public String toString() {
       return this.tag.toString();
    }
 
+   /** @deprecated */
    @Deprecated
    public CompoundTag getUnsafe() {
       return this.tag;
+   }
+
+   static {
+      CODEC = CompoundTag.CODEC.xmap(CustomData::new, (var0) -> {
+         return var0.tag;
+      });
+      CODEC_WITH_ID = CODEC.validate((var0) -> {
+         return var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> {
+            return "Missing id for entity in: " + String.valueOf(var0);
+         });
+      });
+      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> {
+         return var0.tag;
+      });
    }
 }

@@ -5,8 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
-public record CatVariant(ResourceLocation l) {
-   private final ResourceLocation texture;
+public record CatVariant(ResourceLocation texture) {
    public static final ResourceKey<CatVariant> TABBY = createKey("tabby");
    public static final ResourceKey<CatVariant> BLACK = createKey("black");
    public static final ResourceKey<CatVariant> RED = createKey("red");
@@ -43,6 +42,10 @@ public record CatVariant(ResourceLocation l) {
    }
 
    private static CatVariant register(Registry<CatVariant> var0, ResourceKey<CatVariant> var1, String var2) {
-      return Registry.register(var0, var1, new CatVariant(new ResourceLocation(var2)));
+      return (CatVariant)Registry.register(var0, (ResourceKey)var1, new CatVariant(new ResourceLocation(var2)));
+   }
+
+   public ResourceLocation texture() {
+      return this.texture;
    }
 }

@@ -4,10 +4,7 @@ import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 
-public record GivensParameters(float a, float b) {
-   private final float sinHalf;
-   private final float cosHalf;
-
+public record GivensParameters(float sinHalf, float cosHalf) {
    public GivensParameters(float var1, float var2) {
       super();
       this.sinHalf = var1;
@@ -92,5 +89,13 @@ public record GivensParameters(float a, float b) {
       var1.m10 = -var3;
       var1.m22 = 1.0F;
       return var1;
+   }
+
+   public float sinHalf() {
+      return this.sinHalf;
+   }
+
+   public float cosHalf() {
+      return this.cosHalf;
    }
 }

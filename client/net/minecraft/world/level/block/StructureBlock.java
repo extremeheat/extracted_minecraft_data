@@ -21,24 +21,21 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    public static final MapCodec<StructureBlock> CODEC = simpleCodec(StructureBlock::new);
-   public static final EnumProperty<StructureMode> MODE = BlockStateProperties.STRUCTUREBLOCK_MODE;
+   public static final EnumProperty<StructureMode> MODE;
 
-   @Override
    public MapCodec<StructureBlock> codec() {
       return CODEC;
    }
 
    protected StructureBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(MODE, StructureMode.LOAD));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(MODE, StructureMode.LOAD));
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new StructureBlockEntity(var1, var2);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof StructureBlockEntity) {
@@ -48,7 +45,6 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       if (!var1.isClientSide) {
          if (var4 != null) {
@@ -57,20 +53,18 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
                ((StructureBlockEntity)var6).createdBy(var4);
             }
          }
+
       }
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(MODE);
    }
 
-   @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2 instanceof ServerLevel) {
          BlockEntity var7 = var2.getBlockEntity(var3);
@@ -84,12 +78,13 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
             } else if (!var9 && var10) {
                var8.setPowered(false);
             }
+
          }
       }
    }
 
    private void trigger(ServerLevel var1, StructureBlockEntity var2) {
-      switch(var2.getMode()) {
+      switch (var2.getMode()) {
          case SAVE:
             var2.saveStructure(false);
             break;
@@ -100,5 +95,10 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
             var2.unloadStructure();
          case DATA:
       }
+
+   }
+
+   static {
+      MODE = BlockStateProperties.STRUCTUREBLOCK_MODE;
    }
 }

@@ -22,7 +22,6 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
       this.placeSound = var2;
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       InteractionResult var2 = super.useOn(var1);
       Player var3 = var1.getPlayer();
@@ -34,17 +33,14 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
       return var2;
    }
 
-   @Override
    public String getDescriptionId() {
       return this.getOrCreateDescriptionId();
    }
 
-   @Override
    protected SoundEvent getPlaceSound(BlockState var1) {
       return this.placeSound;
    }
 
-   @Override
    public boolean emptyContents(@Nullable Player var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
       if (var2.isInWorldBounds(var3) && var2.isEmptyBlock(var3)) {
          if (!var2.isClientSide) {

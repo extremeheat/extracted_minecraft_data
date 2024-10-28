@@ -1,10 +1,10 @@
 package net.minecraft.client.animation;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 import net.minecraft.client.model.HierarchicalModel;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
@@ -15,28 +15,35 @@ public class KeyframeAnimations {
 
    public static void animate(HierarchicalModel<?> var0, AnimationDefinition var1, long var2, float var4, Vector3f var5) {
       float var6 = getElapsedSeconds(var1, var2);
+      Iterator var7 = var1.boneAnimations().entrySet().iterator();
 
-      for(Entry var8 : var1.boneAnimations().entrySet()) {
+      while(var7.hasNext()) {
+         Map.Entry var8 = (Map.Entry)var7.next();
          Optional var9 = var0.getAnyDescendantWithName((String)var8.getKey());
          List var10 = (List)var8.getValue();
-         var9.ifPresent(var4x -> var10.forEach(var4xx -> {
-               Keyframe[] var5xx = var4xx.keyframes();
-               int var6xx = Math.max(0, Mth.binarySearch(0, var5xx.length, var2xxx -> var6 <= var5x[var2xxx].timestamp()) - 1);
-               int var7 = Math.min(var5xx.length - 1, var6xx + 1);
-               Keyframe var8xx = var5xx[var6xx];
-               Keyframe var9xx = var5xx[var7];
-               float var10xx = var6 - var8xx.timestamp();
+         var9.ifPresent((var4x) -> {
+            var10.forEach((var4xx) -> {
+               Keyframe[] var5x = var4xx.keyframes();
+               int var6x = Math.max(0, Mth.binarySearch(0, var5x.length, (var2) -> {
+                  return var6 <= var5x[var2].timestamp();
+               }) - 1);
+               int var7 = Math.min(var5x.length - 1, var6x + 1);
+               Keyframe var8 = var5x[var6x];
+               Keyframe var9 = var5x[var7];
+               float var10 = var6 - var8.timestamp();
                float var11;
-               if (var7 != var6xx) {
-                  var11 = Mth.clamp(var10xx / (var9xx.timestamp() - var8xx.timestamp()), 0.0F, 1.0F);
+               if (var7 != var6x) {
+                  var11 = Mth.clamp(var10 / (var9.timestamp() - var8.timestamp()), 0.0F, 1.0F);
                } else {
                   var11 = 0.0F;
                }
 
-               var9xx.interpolation().apply(var5, var11, var5xx, var6xx, var7, var4);
+               var9.interpolation().apply(var5, var11, var5x, var6x, var7, var4);
                var4xx.target().apply(var4x, var5);
-            }));
+            });
+         });
       }
+
    }
 
    private static float getElapsedSeconds(AnimationDefinition var0, long var1) {

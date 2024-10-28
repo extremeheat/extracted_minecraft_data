@@ -16,14 +16,10 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
 
 public class MultiNoiseBiomeSource extends BiomeSource {
-   private static final MapCodec<Holder<Biome>> ENTRY_CODEC = Biome.CODEC.fieldOf("biome");
-   public static final MapCodec<Climate.ParameterList<Holder<Biome>>> DIRECT_CODEC = Climate.ParameterList.codec(ENTRY_CODEC).fieldOf("biomes");
-   private static final MapCodec<Holder<MultiNoiseBiomeSourceParameterList>> PRESET_CODEC = MultiNoiseBiomeSourceParameterList.CODEC
-      .fieldOf("preset")
-      .withLifecycle(Lifecycle.stable());
-   public static final Codec<MultiNoiseBiomeSource> CODEC = Codec.mapEither(DIRECT_CODEC, PRESET_CODEC)
-      .xmap(MultiNoiseBiomeSource::new, var0 -> var0.parameters)
-      .codec();
+   private static final MapCodec<Holder<Biome>> ENTRY_CODEC;
+   public static final MapCodec<Climate.ParameterList<Holder<Biome>>> DIRECT_CODEC;
+   private static final MapCodec<Holder<MultiNoiseBiomeSourceParameterList>> PRESET_CODEC;
+   public static final MapCodec<MultiNoiseBiomeSource> CODEC;
    private final Either<Climate.ParameterList<Holder<Biome>>, Holder<MultiNoiseBiomeSourceParameterList>> parameters;
 
    private MultiNoiseBiomeSource(Either<Climate.ParameterList<Holder<Biome>>, Holder<MultiNoiseBiomeSourceParameterList>> var1) {
@@ -40,16 +36,18 @@ public class MultiNoiseBiomeSource extends BiomeSource {
    }
 
    private Climate.ParameterList<Holder<Biome>> parameters() {
-      return (Climate.ParameterList<Holder<Biome>>)this.parameters.map(var0 -> var0, var0 -> ((MultiNoiseBiomeSourceParameterList)var0.value()).parameters());
+      return (Climate.ParameterList)this.parameters.map((var0) -> {
+         return var0;
+      }, (var0) -> {
+         return ((MultiNoiseBiomeSourceParameterList)var0.value()).parameters();
+      });
    }
 
-   @Override
    protected Stream<Holder<Biome>> collectPossibleBiomes() {
       return this.parameters().values().stream().map(Pair::getSecond);
    }
 
-   @Override
-   protected Codec<? extends BiomeSource> codec() {
+   protected MapCodec<? extends BiomeSource> codec() {
       return CODEC;
    }
 
@@ -58,17 +56,15 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       return var2.isPresent() && ((Holder)var2.get()).is(var1);
    }
 
-   @Override
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4) {
       return this.getNoiseBiome(var4.sample(var1, var2, var3));
    }
 
    @VisibleForDebug
    public Holder<Biome> getNoiseBiome(Climate.TargetPoint var1) {
-      return this.parameters().findValue(var1);
+      return (Holder)this.parameters().findValue(var1);
    }
 
-   @Override
    public void addDebugInfo(List<String> var1, BlockPos var2, Climate.Sampler var3) {
       int var4 = QuartPos.fromBlock(var2.getX());
       int var5 = QuartPos.fromBlock(var2.getY());
@@ -81,17 +77,16 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       float var12 = Climate.unquantizeCoord(var7.weirdness());
       double var13 = (double)NoiseRouterData.peaksAndValleys(var12);
       OverworldBiomeBuilder var15 = new OverworldBiomeBuilder();
-      var1.add(
-         "Biome builder PV: "
-            + OverworldBiomeBuilder.getDebugStringForPeaksAndValleys(var13)
-            + " C: "
-            + var15.getDebugStringForContinentalness((double)var8)
-            + " E: "
-            + var15.getDebugStringForErosion((double)var9)
-            + " T: "
-            + var15.getDebugStringForTemperature((double)var10)
-            + " H: "
-            + var15.getDebugStringForHumidity((double)var11)
-      );
+      String var10001 = OverworldBiomeBuilder.getDebugStringForPeaksAndValleys(var13);
+      var1.add("Biome builder PV: " + var10001 + " C: " + var15.getDebugStringForContinentalness((double)var8) + " E: " + var15.getDebugStringForErosion((double)var9) + " T: " + var15.getDebugStringForTemperature((double)var10) + " H: " + var15.getDebugStringForHumidity((double)var11));
+   }
+
+   static {
+      ENTRY_CODEC = Biome.CODEC.fieldOf("biome");
+      DIRECT_CODEC = Climate.ParameterList.codec(ENTRY_CODEC).fieldOf("biomes");
+      PRESET_CODEC = MultiNoiseBiomeSourceParameterList.CODEC.fieldOf("preset").withLifecycle(Lifecycle.stable());
+      CODEC = Codec.mapEither(DIRECT_CODEC, PRESET_CODEC).xmap(MultiNoiseBiomeSource::new, (var0) -> {
+         return var0.parameters;
+      });
    }
 }

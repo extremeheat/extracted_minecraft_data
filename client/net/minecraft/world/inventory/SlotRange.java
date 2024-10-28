@@ -12,17 +12,14 @@ public interface SlotRange extends StringRepresentable {
 
    static SlotRange of(final String var0, final IntList var1) {
       return new SlotRange() {
-         @Override
          public IntList slots() {
             return var1;
          }
 
-         @Override
          public String getSerializedName() {
             return var0;
          }
 
-         @Override
          public String toString() {
             return var0;
          }

@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
+import java.util.Iterator;
 import java.util.stream.IntStream;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,6 @@ public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       RandomSource var2 = var1.random();
       WorldGenLevel var3 = var1.level();
@@ -44,8 +44,10 @@ public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
                var3.setBlock(var12, Blocks.CHEST.defaultBlockState(), 2);
                RandomizableContainer.setBlockEntityLootTable(var3, var2, var12, BuiltInLootTables.SPAWN_BONUS_CHEST);
                BlockState var13 = Blocks.TORCH.defaultBlockState();
+               Iterator var14 = Direction.Plane.HORIZONTAL.iterator();
 
-               for(Direction var15 : Direction.Plane.HORIZONTAL) {
+               while(var14.hasNext()) {
+                  Direction var15 = (Direction)var14.next();
                   BlockPos var16 = var12.relative(var15);
                   if (var13.canSurvive(var3, var16)) {
                      var3.setBlock(var16, var13, 2);

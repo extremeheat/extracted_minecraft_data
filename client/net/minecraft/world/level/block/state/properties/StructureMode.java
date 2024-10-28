@@ -17,12 +17,16 @@ public enum StructureMode implements StringRepresentable {
       this.displayName = Component.translatable("structure_block.mode_info." + var3);
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    public Component getDisplayName() {
       return this.displayName;
+   }
+
+   // $FF: synthetic method
+   private static StructureMode[] $values() {
+      return new StructureMode[]{SAVE, LOAD, CORNER, DATA};
    }
 }

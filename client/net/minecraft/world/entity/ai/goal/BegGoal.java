@@ -28,13 +28,11 @@ public class BegGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.LOOK));
    }
 
-   @Override
    public boolean canUse() {
       this.player = this.level.getNearestPlayer(this.begTargeting, this.wolf);
       return this.player == null ? false : this.playerHoldingInteresting(this.player);
    }
 
-   @Override
    public boolean canContinueToUse() {
       if (!this.player.isAlive()) {
          return false;
@@ -45,26 +43,27 @@ public class BegGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.wolf.setIsInterested(true);
       this.lookTime = this.adjustedTickDelay(40 + this.wolf.getRandom().nextInt(40));
    }
 
-   @Override
    public void stop() {
       this.wolf.setIsInterested(false);
       this.player = null;
    }
 
-   @Override
    public void tick() {
       this.wolf.getLookControl().setLookAt(this.player.getX(), this.player.getEyeY(), this.player.getZ(), 10.0F, (float)this.wolf.getMaxHeadXRot());
       --this.lookTime;
    }
 
    private boolean playerHoldingInteresting(Player var1) {
-      for(InteractionHand var5 : InteractionHand.values()) {
+      InteractionHand[] var2 = InteractionHand.values();
+      int var3 = var2.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         InteractionHand var5 = var2[var4];
          ItemStack var6 = var1.getItemInHand(var5);
          if (this.wolf.isTame() && var6.is(Items.BONE)) {
             return true;

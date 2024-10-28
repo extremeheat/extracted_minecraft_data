@@ -19,22 +19,16 @@ public abstract class BaseTorchBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected abstract MapCodec<? extends BaseTorchBlock> codec();
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABB;
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2 == Direction.DOWN && !this.canSurvive(var1, var4, var5)
-         ? Blocks.AIR.defaultBlockState()
-         : super.updateShape(var1, var2, var3, var4, var5, var6);
+      return var2 == Direction.DOWN && !this.canSurvive(var1, var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return canSupportCenter(var2, var3.below(), Direction.UP);
    }

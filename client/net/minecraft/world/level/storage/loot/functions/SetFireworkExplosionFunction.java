@@ -1,47 +1,40 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
-   public static final Codec<SetFireworkExplosionFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  ExtraCodecs.strictOptionalField(FireworkExplosion.Shape.CODEC, "shape").forGetter(var0x -> var0x.shape),
-                  ExtraCodecs.strictOptionalField(FireworkExplosion.COLOR_LIST_CODEC, "colors").forGetter(var0x -> var0x.colors),
-                  ExtraCodecs.strictOptionalField(FireworkExplosion.COLOR_LIST_CODEC, "fade_colors").forGetter(var0x -> var0x.fadeColors),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "trail").forGetter(var0x -> var0x.trail),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "twinkle").forGetter(var0x -> var0x.twinkle)
-               )
-            )
-            .apply(var0, SetFireworkExplosionFunction::new)
-   );
-   public static final FireworkExplosion DEFAULT_VALUE = new FireworkExplosion(FireworkExplosion.Shape.SMALL_BALL, IntList.of(), IntList.of(), false, false);
+   public static final MapCodec<SetFireworkExplosionFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return commonFields(var0).and(var0.group(FireworkExplosion.Shape.CODEC.optionalFieldOf("shape").forGetter((var0x) -> {
+         return var0x.shape;
+      }), FireworkExplosion.COLOR_LIST_CODEC.optionalFieldOf("colors").forGetter((var0x) -> {
+         return var0x.colors;
+      }), FireworkExplosion.COLOR_LIST_CODEC.optionalFieldOf("fade_colors").forGetter((var0x) -> {
+         return var0x.fadeColors;
+      }), Codec.BOOL.optionalFieldOf("trail").forGetter((var0x) -> {
+         return var0x.trail;
+      }), Codec.BOOL.optionalFieldOf("twinkle").forGetter((var0x) -> {
+         return var0x.twinkle;
+      }))).apply(var0, SetFireworkExplosionFunction::new);
+   });
+   public static final FireworkExplosion DEFAULT_VALUE;
    final Optional<FireworkExplosion.Shape> shape;
    final Optional<IntList> colors;
    final Optional<IntList> fadeColors;
    final Optional<Boolean> trail;
    final Optional<Boolean> twinkle;
 
-   public SetFireworkExplosionFunction(
-      List<LootItemCondition> var1,
-      Optional<FireworkExplosion.Shape> var2,
-      Optional<IntList> var3,
-      Optional<IntList> var4,
-      Optional<Boolean> var5,
-      Optional<Boolean> var6
-   ) {
+   public SetFireworkExplosionFunction(List<LootItemCondition> var1, Optional<FireworkExplosion.Shape> var2, Optional<IntList> var3, Optional<IntList> var4, Optional<Boolean> var5, Optional<Boolean> var6) {
       super(var1);
       this.shape = var2;
       this.colors = var3;
@@ -50,24 +43,34 @@ public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
       this.twinkle = var6;
    }
 
-   @Override
    protected ItemStack run(ItemStack var1, LootContext var2) {
       var1.update(DataComponents.FIREWORK_EXPLOSION, DEFAULT_VALUE, this::apply);
       return var1;
    }
 
    private FireworkExplosion apply(FireworkExplosion var1) {
-      return new FireworkExplosion(
-         this.shape.orElseGet(var1::shape),
-         (IntList)this.colors.orElseGet(var1::colors),
-         (IntList)this.fadeColors.orElseGet(var1::fadeColors),
-         this.trail.orElseGet(var1::hasTrail),
-         this.twinkle.orElseGet(var1::hasTwinkle)
-      );
+      Optional var10002 = this.shape;
+      Objects.requireNonNull(var1);
+      FireworkExplosion.Shape var3 = (FireworkExplosion.Shape)var10002.orElseGet(var1::shape);
+      Optional var10003 = this.colors;
+      Objects.requireNonNull(var1);
+      IntList var4 = (IntList)var10003.orElseGet(var1::colors);
+      Optional var10004 = this.fadeColors;
+      Objects.requireNonNull(var1);
+      IntList var5 = (IntList)var10004.orElseGet(var1::fadeColors);
+      Optional var10005 = this.trail;
+      Objects.requireNonNull(var1);
+      boolean var2 = (Boolean)var10005.orElseGet(var1::hasTrail);
+      Optional var10006 = this.twinkle;
+      Objects.requireNonNull(var1);
+      return new FireworkExplosion(var3, var4, var5, var2, (Boolean)var10006.orElseGet(var1::hasTwinkle));
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.SET_FIREWORK_EXPLOSION;
+   }
+
+   static {
+      DEFAULT_VALUE = new FireworkExplosion(FireworkExplosion.Shape.SMALL_BALL, IntList.of(), IntList.of(), false, false);
    }
 }

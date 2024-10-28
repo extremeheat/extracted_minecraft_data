@@ -24,29 +24,29 @@ public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
       this.volume = 0.0F;
    }
 
-   @Override
    public boolean canPlaySound() {
       return !this.minecart.isSilent();
    }
 
-   @Override
    public boolean canStartSilent() {
       return true;
    }
 
-   @Override
    public void tick() {
-      if (this.minecart.isRemoved() || !this.player.isPassenger() || this.player.getVehicle() != this.minecart) {
-         this.stop();
-      } else if (this.underwaterSound != this.player.isUnderWater()) {
-         this.volume = 0.0F;
-      } else {
-         float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
-         if (var1 >= 0.01F) {
-            this.volume = Mth.clampedLerp(0.0F, 0.75F, var1);
-         } else {
+      if (!this.minecart.isRemoved() && this.player.isPassenger() && this.player.getVehicle() == this.minecart) {
+         if (this.underwaterSound != this.player.isUnderWater()) {
             this.volume = 0.0F;
+         } else {
+            float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
+            if (var1 >= 0.01F) {
+               this.volume = Mth.clampedLerp(0.0F, 0.75F, var1);
+            } else {
+               this.volume = 0.0F;
+            }
+
          }
+      } else {
+         this.stop();
       }
    }
 }

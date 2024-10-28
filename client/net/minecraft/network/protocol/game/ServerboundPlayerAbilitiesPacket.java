@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.player.Abilities;
 
 public class ServerboundPlayerAbilitiesPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerAbilitiesPacket> STREAM_CODEC = Packet.codec(
-      ServerboundPlayerAbilitiesPacket::write, ServerboundPlayerAbilitiesPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerAbilitiesPacket> STREAM_CODEC = Packet.codec(ServerboundPlayerAbilitiesPacket::write, ServerboundPlayerAbilitiesPacket::new);
    private static final int FLAG_FLYING = 2;
    private final boolean isFlying;
 
@@ -33,7 +31,6 @@ public class ServerboundPlayerAbilitiesPacket implements Packet<ServerGamePacket
       var1.writeByte(var2);
    }
 
-   @Override
    public PacketType<ServerboundPlayerAbilitiesPacket> type() {
       return GamePacketTypes.SERVERBOUND_PLAYER_ABILITIES;
    }

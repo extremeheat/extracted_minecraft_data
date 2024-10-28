@@ -1,9 +1,11 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
@@ -31,7 +33,6 @@ public class BreedGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
-   @Override
    public boolean canUse() {
       if (!this.animal.isInLove()) {
          return false;
@@ -41,25 +42,23 @@ public class BreedGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.partner.isAlive() && this.partner.isInLove() && this.loveTime < 60 && !this.partner.isPanicking();
    }
 
-   @Override
    public void stop() {
       this.partner = null;
       this.loveTime = 0;
    }
 
-   @Override
    public void tick() {
       this.animal.getLookControl().setLookAt(this.partner, 10.0F, (float)this.animal.getMaxHeadXRot());
-      this.animal.getNavigation().moveTo(this.partner, this.speedModifier);
+      this.animal.getNavigation().moveTo((Entity)this.partner, this.speedModifier);
       ++this.loveTime;
       if (this.loveTime >= this.adjustedTickDelay(60) && this.animal.distanceToSqr(this.partner) < 9.0) {
          this.breed();
       }
+
    }
 
    @Nullable
@@ -67,8 +66,10 @@ public class BreedGoal extends Goal {
       List var1 = this.level.getNearbyEntities(this.partnerClass, PARTNER_TARGETING, this.animal, this.animal.getBoundingBox().inflate(8.0));
       double var2 = 1.7976931348623157E308;
       Animal var4 = null;
+      Iterator var5 = var1.iterator();
 
-      for(Animal var6 : var1) {
+      while(var5.hasNext()) {
+         Animal var6 = (Animal)var5.next();
          if (this.animal.canMate(var6) && !var6.isPanicking() && this.animal.distanceToSqr(var6) < var2) {
             var4 = var6;
             var2 = this.animal.distanceToSqr(var6);

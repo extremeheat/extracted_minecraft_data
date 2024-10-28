@@ -13,7 +13,7 @@ public class ForcedChunksSavedData extends SavedData {
    private final LongSet chunks;
 
    public static SavedData.Factory<ForcedChunksSavedData> factory() {
-      return new SavedData.Factory<>(ForcedChunksSavedData::new, ForcedChunksSavedData::load, DataFixTypes.SAVED_DATA_FORCED_CHUNKS);
+      return new SavedData.Factory(ForcedChunksSavedData::new, ForcedChunksSavedData::load, DataFixTypes.SAVED_DATA_FORCED_CHUNKS);
    }
 
    private ForcedChunksSavedData(LongSet var1) {
@@ -29,7 +29,6 @@ public class ForcedChunksSavedData extends SavedData {
       return new ForcedChunksSavedData(new LongOpenHashSet(var0.getLongArray("Forced")));
    }
 
-   @Override
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putLongArray("Forced", this.chunks.toLongArray());
       return var1;

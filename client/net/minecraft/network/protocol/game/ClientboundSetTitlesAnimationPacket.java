@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetTitlesAnimationPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetTitlesAnimationPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetTitlesAnimationPacket::write, ClientboundSetTitlesAnimationPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetTitlesAnimationPacket> STREAM_CODEC = Packet.codec(ClientboundSetTitlesAnimationPacket::write, ClientboundSetTitlesAnimationPacket::new);
    private final int fadeIn;
    private final int stay;
    private final int fadeOut;
@@ -33,7 +31,6 @@ public class ClientboundSetTitlesAnimationPacket implements Packet<ClientGamePac
       var1.writeInt(this.fadeOut);
    }
 
-   @Override
    public PacketType<ClientboundSetTitlesAnimationPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_TITLES_ANIMATION;
    }

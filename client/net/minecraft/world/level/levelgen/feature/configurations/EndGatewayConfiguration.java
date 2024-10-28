@@ -2,15 +2,17 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 
 public class EndGatewayConfiguration implements FeatureConfiguration {
-   public static final Codec<EndGatewayConfiguration> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(BlockPos.CODEC.optionalFieldOf("exit").forGetter(var0x -> var0x.exit), Codec.BOOL.fieldOf("exact").forGetter(var0x -> var0x.exact))
-            .apply(var0, EndGatewayConfiguration::new)
-   );
+   public static final Codec<EndGatewayConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(BlockPos.CODEC.optionalFieldOf("exit").forGetter((var0x) -> {
+         return var0x.exit;
+      }), Codec.BOOL.fieldOf("exact").forGetter((var0x) -> {
+         return var0x.exact;
+      })).apply(var0, EndGatewayConfiguration::new);
+   });
    private final Optional<BlockPos> exit;
    private final boolean exact;
 

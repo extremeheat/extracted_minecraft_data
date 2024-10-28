@@ -20,16 +20,14 @@ public class CommandsReport implements DataProvider {
       this.registries = var2;
    }
 
-   @Override
    public CompletableFuture<?> run(CachedOutput var1) {
       Path var2 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("commands.json");
-      return this.registries.thenCompose(var2x -> {
-         CommandDispatcher var3 = new Commands(Commands.CommandSelection.ALL, Commands.createValidationContext(var2x)).getDispatcher();
+      return this.registries.thenCompose((var2x) -> {
+         CommandDispatcher var3 = (new Commands(Commands.CommandSelection.ALL, Commands.createValidationContext(var2x))).getDispatcher();
          return DataProvider.saveStable(var1, ArgumentUtils.serializeNodeToJson(var3, var3.getRoot()), var2);
       });
    }
 
-   @Override
    public final String getName() {
       return "Command Syntax";
    }

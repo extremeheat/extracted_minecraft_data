@@ -30,7 +30,8 @@ public class CommonLinks {
    }
 
    public static String extendRealms(String var0, UUID var1, boolean var2) {
-      return extendRealms(var0, var1) + "&ref=" + (var2 ? "expiredTrial" : "expiredRealm");
+      String var10000 = extendRealms(var0, var1);
+      return var10000 + "&ref=" + (var2 ? "expiredTrial" : "expiredRealm");
    }
 
    public static String extendRealms(String var0, UUID var1) {

@@ -6,14 +6,13 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 
 public class ProtectionEnchantment extends Enchantment {
-   public final ProtectionEnchantment.Type type;
+   public final Type type;
 
-   public ProtectionEnchantment(Enchantment.EnchantmentDefinition var1, ProtectionEnchantment.Type var2) {
+   public ProtectionEnchantment(Enchantment.EnchantmentDefinition var1, Type var2) {
       super(var1);
       this.type = var2;
    }
 
-   @Override
    public int getDamageProtection(int var1, DamageSource var2) {
       if (var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return 0;
@@ -30,9 +29,6 @@ public class ProtectionEnchantment extends Enchantment {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean checkCompatibility(Enchantment var1) {
       if (var1 instanceof ProtectionEnchantment var2) {
          if (this.type == var2.type) {
@@ -71,6 +67,11 @@ public class ProtectionEnchantment extends Enchantment {
       PROJECTILE;
 
       private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{ALL, FIRE, FALL, EXPLOSION, PROJECTILE};
       }
    }
 }

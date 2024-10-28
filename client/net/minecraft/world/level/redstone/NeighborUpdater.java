@@ -23,11 +23,16 @@ public interface NeighborUpdater {
    void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5);
 
    default void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3) {
-      for(Direction var7 : UPDATE_ORDER) {
+      Direction[] var4 = UPDATE_ORDER;
+      int var5 = var4.length;
+
+      for(int var6 = 0; var6 < var5; ++var6) {
+         Direction var7 = var4[var6];
          if (var7 != var3) {
             this.neighborChanged(var1.relative(var7), var2, var1);
          }
       }
+
    }
 
    static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
@@ -42,18 +47,13 @@ public interface NeighborUpdater {
       } catch (Throwable var9) {
          CrashReport var7 = CrashReport.forThrowable(var9, "Exception while updating neighbours");
          CrashReportCategory var8 = var7.addCategory("Block being updated");
-         var8.setDetail(
-            "Source block type",
-            () -> {
-               try {
-                  return String.format(
-                     Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName()
-                  );
-               } catch (Throwable var2xx) {
-                  return "ID #" + BuiltInRegistries.BLOCK.getKey(var3);
-               }
+         var8.setDetail("Source block type", () -> {
+            try {
+               return String.format(Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName());
+            } catch (Throwable var2) {
+               return "ID #" + String.valueOf(BuiltInRegistries.BLOCK.getKey(var3));
             }
-         );
+         });
          CrashReportCategory.populateBlockDetails(var8, var0, var2, var1);
          throw new ReportedException(var7);
       }

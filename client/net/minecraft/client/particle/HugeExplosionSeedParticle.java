@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 
@@ -10,7 +11,6 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
       this.lifetime = 8;
    }
 
-   @Override
    public void tick() {
       for(int var1 = 0; var1 < 6; ++var1) {
          double var2 = this.x + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
@@ -23,6 +23,7 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
       if (this.age == this.lifetime) {
          this.remove();
       }
+
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -32,6 +33,11 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new HugeExplosionSeedParticle(var2, var3, var5, var7);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

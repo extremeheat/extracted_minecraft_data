@@ -9,7 +9,6 @@ public class NoopRenderer<T extends Entity> extends EntityRenderer<T> {
       super(var1);
    }
 
-   @Override
    public ResourceLocation getTextureLocation(T var1) {
       return TextureAtlas.LOCATION_BLOCKS;
    }

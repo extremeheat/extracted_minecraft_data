@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import java.nio.IntBuffer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -27,7 +28,10 @@ public abstract class RenderTarget {
    public int frameBufferId;
    protected int colorTextureId;
    protected int depthBufferId;
-   private final float[] clearChannels = Util.make(() -> new float[]{1.0F, 1.0F, 1.0F, 0.0F});
+   private final float[] clearChannels = (float[])Util.make(() -> {
+      float[] var0 = new float[]{1.0F, 1.0F, 1.0F, 0.0F};
+      return var0;
+   });
    public int filterMode;
 
    public RenderTarget(boolean var1) {
@@ -40,10 +44,13 @@ public abstract class RenderTarget {
 
    public void resize(int var1, int var2, boolean var3) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this._resize(var1, var2, var3));
+         RenderSystem.recordRenderCall(() -> {
+            this._resize(var1, var2, var3);
+         });
       } else {
          this._resize(var1, var2, var3);
       }
+
    }
 
    private void _resize(int var1, int var2, boolean var3) {
@@ -76,6 +83,7 @@ public abstract class RenderTarget {
          GlStateManager._glDeleteFramebuffers(this.frameBufferId);
          this.frameBufferId = -1;
       }
+
    }
 
    public void copyDepthFrom(RenderTarget var1) {
@@ -104,14 +112,14 @@ public abstract class RenderTarget {
             GlStateManager._texParameter(3553, 34892, 0);
             GlStateManager._texParameter(3553, 10242, 33071);
             GlStateManager._texParameter(3553, 10243, 33071);
-            GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, null);
+            GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, (IntBuffer)null);
          }
 
          this.setFilterMode(9728, true);
          GlStateManager._bindTexture(this.colorTextureId);
          GlStateManager._texParameter(3553, 10242, 33071);
          GlStateManager._texParameter(3553, 10243, 33071);
-         GlStateManager._texImage2D(3553, 0, 32856, this.width, this.height, 0, 6408, 5121, null);
+         GlStateManager._texImage2D(3553, 0, 32856, this.width, this.height, 0, 6408, 5121, (IntBuffer)null);
          GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
          GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorTextureId, 0);
          if (this.useDepth) {
@@ -139,6 +147,7 @@ public abstract class RenderTarget {
          GlStateManager._texParameter(3553, 10240, var1);
          GlStateManager._bindTexture(0);
       }
+
    }
 
    public void checkStatus() {
@@ -175,10 +184,13 @@ public abstract class RenderTarget {
 
    public void bindWrite(boolean var1) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this._bindWrite(var1));
+         RenderSystem.recordRenderCall(() -> {
+            this._bindWrite(var1);
+         });
       } else {
          this._bindWrite(var1);
       }
+
    }
 
    private void _bindWrite(boolean var1) {
@@ -187,14 +199,18 @@ public abstract class RenderTarget {
       if (var1) {
          GlStateManager._viewport(0, 0, this.viewWidth, this.viewHeight);
       }
+
    }
 
    public void unbindWrite() {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> GlStateManager._glBindFramebuffer(36160, 0));
+         RenderSystem.recordRenderCall(() -> {
+            GlStateManager._glBindFramebuffer(36160, 0);
+         });
       } else {
          GlStateManager._glBindFramebuffer(36160, 0);
       }
+
    }
 
    public void setClearColor(float var1, float var2, float var3, float var4) {
@@ -211,10 +227,13 @@ public abstract class RenderTarget {
    public void blitToScreen(int var1, int var2, boolean var3) {
       RenderSystem.assertOnGameThreadOrInit();
       if (!RenderSystem.isInInitPhase()) {
-         RenderSystem.recordRenderCall(() -> this._blitToScreen(var1, var2, var3));
+         RenderSystem.recordRenderCall(() -> {
+            this._blitToScreen(var1, var2, var3);
+         });
       } else {
          this._blitToScreen(var1, var2, var3);
       }
+
    }
 
    private void _blitToScreen(int var1, int var2, boolean var3) {
@@ -230,10 +249,10 @@ public abstract class RenderTarget {
       Minecraft var4 = Minecraft.getInstance();
       ShaderInstance var5 = var4.gameRenderer.blitShader;
       var5.setSampler("DiffuseSampler", this.colorTextureId);
-      Matrix4f var6 = new Matrix4f().setOrtho(0.0F, (float)var1, (float)var2, 0.0F, 1000.0F, 3000.0F);
+      Matrix4f var6 = (new Matrix4f()).setOrtho(0.0F, (float)var1, (float)var2, 0.0F, 1000.0F, 3000.0F);
       RenderSystem.setProjectionMatrix(var6, VertexSorting.ORTHOGRAPHIC_Z);
       if (var5.MODEL_VIEW_MATRIX != null) {
-         var5.MODEL_VIEW_MATRIX.set(new Matrix4f().translation(0.0F, 0.0F, -2000.0F));
+         var5.MODEL_VIEW_MATRIX.set((new Matrix4f()).translation(0.0F, 0.0F, -2000.0F));
       }
 
       if (var5.PROJECTION_MATRIX != null) {

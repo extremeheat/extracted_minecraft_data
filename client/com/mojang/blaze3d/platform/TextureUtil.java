@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
@@ -68,8 +69,9 @@ public class TextureUtil {
       }
 
       for(int var5 = 0; var5 <= var2; ++var5) {
-         GlStateManager._texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, null);
+         GlStateManager._texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, (IntBuffer)null);
       }
+
    }
 
    private static void bind(int var0) {
@@ -79,7 +81,11 @@ public class TextureUtil {
 
    public static ByteBuffer readResource(InputStream var0) throws IOException {
       ReadableByteChannel var1 = Channels.newChannel(var0);
-      return var1 instanceof SeekableByteChannel var2 ? readResource(var1, (int)var2.size() + 1) : readResource(var1, 8192);
+      if (var1 instanceof SeekableByteChannel var2) {
+         return readResource(var1, (int)var2.size() + 1);
+      } else {
+         return readResource(var1, 8192);
+      }
    }
 
    private static ByteBuffer readResource(ReadableByteChannel var0, int var1) throws IOException {
@@ -100,7 +106,7 @@ public class TextureUtil {
    }
 
    public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5) {
-      writeAsPNG(var0, var1, var2, var3, var4, var5, null);
+      writeAsPNG(var0, var1, var2, var3, var4, var5, (IntUnaryOperator)null);
    }
 
    public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5, @Nullable IntUnaryOperator var6) {
@@ -111,19 +117,34 @@ public class TextureUtil {
          int var8 = var4 >> var7;
          int var9 = var5 >> var7;
 
-         try (NativeImage var10 = new NativeImage(var8, var9, false)) {
-            var10.downloadTexture(var7, false);
-            if (var6 != null) {
-               var10.applyToAllPixels(var6);
+         try {
+            NativeImage var10 = new NativeImage(var8, var9, false);
+
+            try {
+               var10.downloadTexture(var7, false);
+               if (var6 != null) {
+                  var10.applyToAllPixels(var6);
+               }
+
+               Path var11 = var0.resolve(var1 + "_" + var7 + ".png");
+               var10.writeToFile(var11);
+               LOGGER.debug("Exported png to: {}", var11.toAbsolutePath());
+            } catch (Throwable var14) {
+               try {
+                  var10.close();
+               } catch (Throwable var13) {
+                  var14.addSuppressed(var13);
+               }
+
+               throw var14;
             }
 
-            Path var11 = var0.resolve(var1 + "_" + var7 + ".png");
-            var10.writeToFile(var11);
-            LOGGER.debug("Exported png to: {}", var11.toAbsolutePath());
+            var10.close();
          } catch (IOException var15) {
             LOGGER.debug("Unable to write: ", var15);
          }
       }
+
    }
 
    public static Path getDebugTexturePath(Path var0) {

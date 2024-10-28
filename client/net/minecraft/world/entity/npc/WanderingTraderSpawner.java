@@ -1,9 +1,9 @@
 package net.minecraft.world.entity.npc;
 
+import java.util.Iterator;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BiomeTags;
@@ -16,6 +16,7 @@ import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.horse.TraderLlama;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
@@ -49,9 +50,9 @@ public class WanderingTraderSpawner implements CustomSpawner {
          this.spawnChance = 25;
          var1.setWanderingTraderSpawnChance(this.spawnChance);
       }
+
    }
 
-   @Override
    public int tick(ServerLevel var1, boolean var2, boolean var3) {
       if (!var1.getGameRules().getBoolean(GameRules.RULE_DO_TRADER_SPAWNING)) {
          return 0;
@@ -91,18 +92,22 @@ public class WanderingTraderSpawner implements CustomSpawner {
       } else if (this.random.nextInt(10) != 0) {
          return false;
       } else {
-         BlockPos var3 = var2.blockPosition();
+         BlockPos var3 = ((Player)var2).blockPosition();
          boolean var4 = true;
          PoiManager var5 = var1.getPoiManager();
-         Optional var6 = var5.find(var0 -> var0.is(PoiTypes.MEETING), var0 -> true, var3, 48, PoiManager.Occupancy.ANY);
-         BlockPos var7 = var6.orElse(var3);
+         Optional var6 = var5.find((var0) -> {
+            return var0.is(PoiTypes.MEETING);
+         }, (var0) -> {
+            return true;
+         }, var3, 48, PoiManager.Occupancy.ANY);
+         BlockPos var7 = (BlockPos)var6.orElse(var3);
          BlockPos var8 = this.findSpawnPositionNear(var1, var7, 48);
          if (var8 != null && this.hasEnoughSpace(var1, var8)) {
             if (var1.getBiome(var8).is(BiomeTags.WITHOUT_WANDERING_TRADER_SPAWNS)) {
                return false;
             }
 
-            WanderingTrader var9 = EntityType.WANDERING_TRADER.spawn(var1, var8, MobSpawnType.EVENT);
+            WanderingTrader var9 = (WanderingTrader)EntityType.WANDERING_TRADER.spawn(var1, var8, MobSpawnType.EVENT);
             if (var9 != null) {
                for(int var10 = 0; var10 < 2; ++var10) {
                   this.tryToSpawnLlamaFor(var1, var9, 4);
@@ -123,7 +128,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
    private void tryToSpawnLlamaFor(ServerLevel var1, WanderingTrader var2, int var3) {
       BlockPos var4 = this.findSpawnPositionNear(var1, var2.blockPosition(), var3);
       if (var4 != null) {
-         TraderLlama var5 = EntityType.TRADER_LLAMA.spawn(var1, var4, MobSpawnType.EVENT);
+         TraderLlama var5 = (TraderLlama)EntityType.TRADER_LLAMA.spawn(var1, var4, MobSpawnType.EVENT);
          if (var5 != null) {
             var5.setLeashedTo(var2, true);
          }
@@ -150,12 +155,17 @@ public class WanderingTraderSpawner implements CustomSpawner {
    }
 
    private boolean hasEnoughSpace(BlockGetter var1, BlockPos var2) {
-      for(BlockPos var4 : BlockPos.betweenClosed(var2, var2.offset(1, 2, 1))) {
-         if (!var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty()) {
-            return false;
-         }
-      }
+      Iterator var3 = BlockPos.betweenClosed(var2, var2.offset(1, 2, 1)).iterator();
 
-      return true;
+      BlockPos var4;
+      do {
+         if (!var3.hasNext()) {
+            return true;
+         }
+
+         var4 = (BlockPos)var3.next();
+      } while(var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty());
+
+      return false;
    }
 }

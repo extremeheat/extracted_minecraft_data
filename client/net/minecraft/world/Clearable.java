@@ -9,5 +9,6 @@ public interface Clearable {
       if (var0 instanceof Clearable) {
          ((Clearable)var0).clearContent();
       }
+
    }
 }

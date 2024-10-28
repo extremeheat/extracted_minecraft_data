@@ -33,23 +33,32 @@ public interface WorldData {
    void setModdedInfo(String var1, boolean var2);
 
    default void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Known server brands", () -> String.join(", ", this.getKnownServerBrands()));
-      var1.setDetail("Removed feature flags", () -> String.join(", ", this.getRemovedFeatureFlags()));
-      var1.setDetail("Level was modded", () -> Boolean.toString(this.wasModded()));
+      var1.setDetail("Known server brands", () -> {
+         return String.join(", ", this.getKnownServerBrands());
+      });
+      var1.setDetail("Removed feature flags", () -> {
+         return String.join(", ", this.getRemovedFeatureFlags());
+      });
+      var1.setDetail("Level was modded", () -> {
+         return Boolean.toString(this.wasModded());
+      });
       var1.setDetail("Level storage version", () -> {
-         int var1xx = this.getVersion();
-         return String.format(Locale.ROOT, "0x%05X - %s", var1xx, this.getStorageVersionName(var1xx));
+         int var1 = this.getVersion();
+         return String.format(Locale.ROOT, "0x%05X - %s", var1, this.getStorageVersionName(var1));
       });
    }
 
    default String getStorageVersionName(int var1) {
-      switch(var1) {
-         case 19132:
+      switch (var1) {
+         case 19132 -> {
             return "McRegion";
-         case 19133:
+         }
+         case 19133 -> {
             return "Anvil";
-         default:
+         }
+         default -> {
             return "Unknown?";
+         }
       }
    }
 

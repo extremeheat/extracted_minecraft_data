@@ -35,9 +35,7 @@ public class VaultRenderer implements BlockEntityRenderer<VaultBlockEntity> {
       }
    }
 
-   public static void renderItemInside(
-      float var0, Level var1, PoseStack var2, MultiBufferSource var3, int var4, ItemStack var5, ItemRenderer var6, float var7, float var8, RandomSource var9
-   ) {
+   public static void renderItemInside(float var0, Level var1, PoseStack var2, MultiBufferSource var3, int var4, ItemStack var5, ItemRenderer var6, float var7, float var8, RandomSource var9) {
       var2.pushPose();
       var2.translate(0.5F, 0.4F, 0.5F);
       var2.mulPose(Axis.YP.rotationDegrees(Mth.rotLerp(var0, var7, var8)));

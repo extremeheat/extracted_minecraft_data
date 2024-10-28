@@ -36,19 +36,7 @@ public class Frustum {
       double var8 = Math.ceil(this.camX / (double)var1) * (double)var1;
       double var10 = Math.ceil(this.camY / (double)var1) * (double)var1;
 
-      for(double var12 = Math.ceil(this.camZ / (double)var1) * (double)var1;
-         this.intersection
-               .intersectAab(
-                  (float)(var2 - this.camX),
-                  (float)(var4 - this.camY),
-                  (float)(var6 - this.camZ),
-                  (float)(var8 - this.camX),
-                  (float)(var10 - this.camY),
-                  (float)(var12 - this.camZ)
-               )
-            != -2;
-         this.camZ -= (double)(this.viewVector.z() * 4.0F)
-      ) {
+      for(double var12 = Math.ceil(this.camZ / (double)var1) * (double)var1; this.intersection.intersectAab((float)(var2 - this.camX), (float)(var4 - this.camY), (float)(var6 - this.camZ), (float)(var8 - this.camX), (float)(var10 - this.camY), (float)(var12 - this.camZ)) != -2; this.camZ -= (double)(this.viewVector.z() * 4.0F)) {
          this.camX -= (double)(this.viewVector.x() * 4.0F);
          this.camY -= (double)(this.viewVector.y() * 4.0F);
       }
@@ -69,10 +57,10 @@ public class Frustum {
    }
 
    public boolean isVisible(AABB var1) {
-      return this.isVisible(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
+      return this.cubeInFrustum(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
    }
 
-   public boolean isVisible(double var1, double var3, double var5, double var7, double var9, double var11) {
+   private boolean cubeInFrustum(double var1, double var3, double var5, double var7, double var9, double var11) {
       float var13 = (float)(var1 - this.camX);
       float var14 = (float)(var3 - this.camY);
       float var15 = (float)(var5 - this.camZ);

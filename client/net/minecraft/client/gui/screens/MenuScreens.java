@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.screens.inventory.CrafterScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.DispenserScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentScreen;
-import net.minecraft.client.gui.screens.inventory.FletchingScreen;
 import net.minecraft.client.gui.screens.inventory.FurnaceScreen;
 import net.minecraft.client.gui.screens.inventory.GrindstoneScreen;
 import net.minecraft.client.gui.screens.inventory.HopperScreen;
@@ -23,8 +23,6 @@ import net.minecraft.client.gui.screens.inventory.LecternScreen;
 import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
-import net.minecraft.client.gui.screens.inventory.PoisonousPotatoCutterScreen;
-import net.minecraft.client.gui.screens.inventory.PotatoRefineryScreen;
 import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.client.gui.screens.inventory.SmokerScreen;
@@ -38,14 +36,14 @@ import org.slf4j.Logger;
 
 public class MenuScreens {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<MenuType<?>, MenuScreens.ScreenConstructor<?, ?>> SCREENS = Maps.newHashMap();
+   private static final Map<MenuType<?>, ScreenConstructor<?, ?>> SCREENS = Maps.newHashMap();
 
    public MenuScreens() {
       super();
    }
 
    public static <T extends AbstractContainerMenu> void create(MenuType<T> var0, Minecraft var1, int var2, Component var3) {
-      MenuScreens.ScreenConstructor var4 = getConstructor(var0);
+      ScreenConstructor var4 = getConstructor(var0);
       if (var4 == null) {
          LOGGER.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(var0));
       } else {
@@ -54,23 +52,23 @@ public class MenuScreens {
    }
 
    @Nullable
-   private static <T extends AbstractContainerMenu> MenuScreens.ScreenConstructor<T, ?> getConstructor(MenuType<T> var0) {
-      return (MenuScreens.ScreenConstructor<T, ?>)SCREENS.get(var0);
+   private static <T extends AbstractContainerMenu> ScreenConstructor<T, ?> getConstructor(MenuType<T> var0) {
+      return (ScreenConstructor)SCREENS.get(var0);
    }
 
-   private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(
-      MenuType<? extends M> var0, MenuScreens.ScreenConstructor<M, U> var1
-   ) {
-      MenuScreens.ScreenConstructor var2 = SCREENS.put(var0, var1);
+   private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(MenuType<? extends M> var0, ScreenConstructor<M, U> var1) {
+      ScreenConstructor var2 = (ScreenConstructor)SCREENS.put(var0, var1);
       if (var2 != null) {
-         throw new IllegalStateException("Duplicate registration for " + BuiltInRegistries.MENU.getKey(var0));
+         throw new IllegalStateException("Duplicate registration for " + String.valueOf(BuiltInRegistries.MENU.getKey(var0)));
       }
    }
 
    public static boolean selfTest() {
       boolean var0 = false;
+      Iterator var1 = BuiltInRegistries.MENU.iterator();
 
-      for(MenuType var2 : BuiltInRegistries.MENU) {
+      while(var1.hasNext()) {
+         MenuType var2 = (MenuType)var1.next();
          if (!SCREENS.containsKey(var2)) {
             LOGGER.debug("Menu {} has no matching screen", BuiltInRegistries.MENU.getKey(var2));
             var0 = true;
@@ -93,7 +91,6 @@ public class MenuScreens {
       register(MenuType.BEACON, BeaconScreen::new);
       register(MenuType.BLAST_FURNACE, BlastFurnaceScreen::new);
       register(MenuType.BREWING_STAND, BrewingStandScreen::new);
-      register(MenuType.FLETCHING, FletchingScreen::new);
       register(MenuType.CRAFTING, CraftingScreen::new);
       register(MenuType.ENCHANTMENT, EnchantmentScreen::new);
       register(MenuType.FURNACE, FurnaceScreen::new);
@@ -107,13 +104,11 @@ public class MenuScreens {
       register(MenuType.SMOKER, SmokerScreen::new);
       register(MenuType.CARTOGRAPHY_TABLE, CartographyTableScreen::new);
       register(MenuType.STONECUTTER, StonecutterScreen::new);
-      register(MenuType.POISONOUS_POTATO_CUTTER, PoisonousPotatoCutterScreen::new);
-      register(MenuType.POTATO_REFINERY, PotatoRefineryScreen::new);
    }
 
    interface ScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {
       default void fromPacket(Component var1, MenuType<T> var2, Minecraft var3, int var4) {
-         Screen var5 = this.create((T)var2.create(var4, var3.player.getInventory()), var3.player.getInventory(), var1);
+         Screen var5 = this.create(var2.create(var4, var3.player.getInventory()), var3.player.getInventory(), var1);
          var3.player.containerMenu = ((MenuAccess)var5).getMenu();
          var3.setScreen(var5);
       }

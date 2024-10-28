@@ -22,32 +22,33 @@ public class ShulkerBoxMenu extends AbstractContainerMenu {
       boolean var4 = true;
       boolean var5 = true;
 
-      for(int var6 = 0; var6 < 3; ++var6) {
-         for(int var7 = 0; var7 < 9; ++var7) {
+      int var6;
+      int var7;
+      for(var6 = 0; var6 < 3; ++var6) {
+         for(var7 = 0; var7 < 9; ++var7) {
             this.addSlot(new ShulkerBoxSlot(var3, var7 + var6 * 9, 8 + var7 * 18, 18 + var6 * 18));
          }
       }
 
-      for(int var8 = 0; var8 < 3; ++var8) {
-         for(int var10 = 0; var10 < 9; ++var10) {
-            this.addSlot(new Slot(var2, var10 + var8 * 9 + 9, 8 + var10 * 18, 84 + var8 * 18));
+      for(var6 = 0; var6 < 3; ++var6) {
+         for(var7 = 0; var7 < 9; ++var7) {
+            this.addSlot(new Slot(var2, var7 + var6 * 9 + 9, 8 + var7 * 18, 84 + var6 * 18));
          }
       }
 
-      for(int var9 = 0; var9 < 9; ++var9) {
-         this.addSlot(new Slot(var2, var9, 8 + var9 * 18, 142));
+      for(var6 = 0; var6 < 9; ++var6) {
+         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
       }
+
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.container.stillValid(var1);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -69,7 +70,6 @@ public class ShulkerBoxMenu extends AbstractContainerMenu {
       return var3;
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
       this.container.stopOpen(var1);

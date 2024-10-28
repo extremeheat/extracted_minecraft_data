@@ -1,13 +1,16 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.animal.Animal;
 
 public class AnimalMakeLove extends Behavior<Animal> {
@@ -25,21 +28,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
    }
 
    public AnimalMakeLove(EntityType<? extends Animal> var1, float var2, int var3) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.BREED_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.IS_PANICKING,
-            MemoryStatus.VALUE_ABSENT
-         ),
-         110
-      );
+      super(ImmutableMap.of(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT, MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT), 110);
       this.partnerType = var1;
       this.speedModifier = var2;
       this.closeEnoughDistance = var3;
@@ -50,9 +39,9 @@ public class AnimalMakeLove extends Behavior<Animal> {
    }
 
    protected void start(ServerLevel var1, Animal var2, long var3) {
-      Animal var5 = this.findValidBreedPartner(var2).get();
-      var2.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var5);
-      var5.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var2);
+      Animal var5 = (Animal)this.findValidBreedPartner(var2).get();
+      var2.getBrain().setMemory(MemoryModuleType.BREED_TARGET, (Object)var5);
+      var5.getBrain().setMemory(MemoryModuleType.BREED_TARGET, (Object)var2);
       BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier, this.closeEnoughDistance);
       int var6 = 60 + var2.getRandom().nextInt(50);
       this.spawnChildAtTime = var3 + (long)var6;
@@ -63,12 +52,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
          return false;
       } else {
          Animal var5 = this.getBreedTarget(var2);
-         return var5.isAlive()
-            && var2.canMate(var5)
-            && BehaviorUtils.entityIsVisible(var2.getBrain(), var5)
-            && var3 <= this.spawnChildAtTime
-            && !var2.isPanicking()
-            && !var5.isPanicking();
+         return var5.isAlive() && var2.canMate(var5) && BehaviorUtils.entityIsVisible(var2.getBrain(), var5) && var3 <= this.spawnChildAtTime && !var2.isPanicking() && !var5.isPanicking();
       }
    }
 
@@ -81,6 +65,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
             var2.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
             var5.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
          }
+
       }
    }
 
@@ -97,16 +82,38 @@ public class AnimalMakeLove extends Behavior<Animal> {
 
    private boolean hasBreedTargetOfRightType(Animal var1) {
       Brain var2 = var1.getBrain();
-      return var2.hasMemoryValue(MemoryModuleType.BREED_TARGET) && var2.getMemory(MemoryModuleType.BREED_TARGET).get().getType() == this.partnerType;
+      return var2.hasMemoryValue(MemoryModuleType.BREED_TARGET) && ((AgeableMob)var2.getMemory(MemoryModuleType.BREED_TARGET).get()).getType() == this.partnerType;
    }
 
    private Optional<? extends Animal> findValidBreedPartner(Animal var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get().findClosest(var2 -> {
-         if (var2.getType() == this.partnerType && var2 instanceof Animal var3 && var1.canMate((Animal)var3) && !((Animal)var3).isPanicking()) {
-            return true;
+      Optional var10000 = ((NearestVisibleLivingEntities)var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get()).findClosest((var2) -> {
+         boolean var10000;
+         if (var2.getType() == this.partnerType && var2 instanceof Animal var3) {
+            if (var1.canMate(var3) && !var3.isPanicking()) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
-      }).map(Animal.class::cast);
+         var10000 = false;
+         return var10000;
+      });
+      Objects.requireNonNull(Animal.class);
+      return var10000.map(Animal.class::cast);
+   }
+
+   // $FF: synthetic method
+   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+      return this.canStillUse(var1, (Animal)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Animal)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Animal)var2, var3);
    }
 }

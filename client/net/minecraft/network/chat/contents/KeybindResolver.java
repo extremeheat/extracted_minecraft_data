@@ -5,7 +5,11 @@ import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
 
 public class KeybindResolver {
-   static Function<String, Supplier<Component>> keyResolver = var0 -> () -> Component.literal(var0);
+   static Function<String, Supplier<Component>> keyResolver = (var0) -> {
+      return () -> {
+         return Component.literal(var0);
+      };
+   };
 
    public KeybindResolver() {
       super();

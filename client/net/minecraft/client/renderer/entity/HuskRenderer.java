@@ -18,7 +18,6 @@ public class HuskRenderer extends ZombieRenderer {
       super.scale(var1, var2, var3);
    }
 
-   @Override
    public ResourceLocation getTextureLocation(Zombie var1) {
       return HUSK_LOCATION;
    }

@@ -16,6 +16,7 @@ public class BufferUploader {
          invalidate();
          VertexBuffer.unbind();
       }
+
    }
 
    public static void invalidate() {
@@ -24,10 +25,13 @@ public class BufferUploader {
 
    public static void drawWithShader(BufferBuilder.RenderedBuffer var0) {
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> _drawWithShader(var0));
+         RenderSystem.recordRenderCall(() -> {
+            _drawWithShader(var0);
+         });
       } else {
          _drawWithShader(var0);
       }
+
    }
 
    private static void _drawWithShader(BufferBuilder.RenderedBuffer var0) {
@@ -35,6 +39,7 @@ public class BufferUploader {
       if (var1 != null) {
          var1.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
       }
+
    }
 
    public static void draw(BufferBuilder.RenderedBuffer var0) {
@@ -42,6 +47,7 @@ public class BufferUploader {
       if (var1 != null) {
          var1.draw();
       }
+
    }
 
    @Nullable
@@ -68,5 +74,6 @@ public class BufferUploader {
          var0.bind();
          lastImmediateBuffer = var0;
       }
+
    }
 }

@@ -38,17 +38,15 @@ public class RepairItemRecipe extends CustomRecipe {
          }
       }
 
-      return var2 != null && var3 != null && canCombine(var2, var3) ? Pair.of(var2, var3) : null;
+      if (var2 != null && var3 != null && canCombine(var2, var3)) {
+         return Pair.of(var2, var3);
+      } else {
+         return null;
+      }
    }
 
    private static boolean canCombine(ItemStack var0, ItemStack var1) {
-      return var1.is(var0.getItem())
-         && var0.getCount() == 1
-         && var1.getCount() == 1
-         && var0.has(DataComponents.MAX_DAMAGE)
-         && var1.has(DataComponents.MAX_DAMAGE)
-         && var0.has(DataComponents.DAMAGE)
-         && var1.has(DataComponents.DAMAGE);
+      return var1.is(var0.getItem()) && var0.getCount() == 1 && var1.getCount() == 1 && var0.has(DataComponents.MAX_DAMAGE) && var1.has(DataComponents.MAX_DAMAGE) && var0.has(DataComponents.DAMAGE) && var1.has(DataComponents.DAMAGE);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {
@@ -71,24 +69,23 @@ public class RepairItemRecipe extends CustomRecipe {
          var10.setDamageValue(Math.max(var6 - var9, 0));
          ItemEnchantments var11 = EnchantmentHelper.getEnchantmentsForCrafting(var4);
          ItemEnchantments var12 = EnchantmentHelper.getEnchantmentsForCrafting(var5);
-         EnchantmentHelper.updateEnchantments(
-            var10, var3x -> var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Holder::value).filter(Enchantment::isCurse).forEach(var3xx -> {
-                  int var4xx = Math.max(var11.getLevel(var3xx), var12.getLevel(var3xx));
-                  if (var4xx > 0) {
-                     var3x.upgrade(var3xx, var4xx);
-                  }
-               })
-         );
+         EnchantmentHelper.updateEnchantments(var10, (var3x) -> {
+            var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Holder::value).filter(Enchantment::isCurse).forEach((var3) -> {
+               int var4 = Math.max(var11.getLevel(var3), var12.getLevel(var3));
+               if (var4 > 0) {
+                  var3x.upgrade(var3, var4);
+               }
+
+            });
+         });
          return var10;
       }
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.REPAIR_ITEM;
    }

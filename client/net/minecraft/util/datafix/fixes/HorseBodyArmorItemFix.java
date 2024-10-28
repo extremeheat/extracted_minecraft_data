@@ -12,14 +12,14 @@ public class HorseBodyArmorItemFix extends NamedEntityWriteReadFix {
       this.previousBodyArmorTag = var3;
    }
 
-   @Override
    protected <T> Dynamic<T> fix(Dynamic<T> var1) {
       Optional var2 = var1.get(this.previousBodyArmorTag).result();
       if (var2.isPresent()) {
          Dynamic var3 = (Dynamic)var2.get();
          Dynamic var4 = var1.remove(this.previousBodyArmorTag);
          var4 = var4.set("body_armor_item", var3);
-         return var4.set("body_armor_drop_chance", var1.createFloat(2.0F));
+         var4 = var4.set("body_armor_drop_chance", var1.createFloat(2.0F));
+         return var4;
       } else {
          return var1;
       }

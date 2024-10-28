@@ -8,10 +8,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 
-public record EntityTypePredicate(HolderSet<EntityType<?>> b) {
-   private final HolderSet<EntityType<?>> types;
-   public static final Codec<EntityTypePredicate> CODEC = RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE)
-      .xmap(EntityTypePredicate::new, EntityTypePredicate::types);
+public record EntityTypePredicate(HolderSet<EntityType<?>> types) {
+   public static final Codec<EntityTypePredicate> CODEC;
 
    public EntityTypePredicate(HolderSet<EntityType<?>> var1) {
       super();
@@ -28,5 +26,13 @@ public record EntityTypePredicate(HolderSet<EntityType<?>> b) {
 
    public boolean matches(EntityType<?> var1) {
       return var1.is(this.types);
+   }
+
+   public HolderSet<EntityType<?>> types() {
+      return this.types;
+   }
+
+   static {
+      CODEC = RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).xmap(EntityTypePredicate::new, EntityTypePredicate::types);
    }
 }

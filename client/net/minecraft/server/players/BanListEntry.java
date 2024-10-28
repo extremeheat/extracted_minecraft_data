@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 
 public abstract class BanListEntry<T> extends StoredUserEntry<T> {
-   public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
+   public static final SimpleDateFormat DATE_FORMAT;
    public static final String EXPIRES_NEVER = "forever";
    protected final Date created;
    protected final String source;
@@ -18,7 +18,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    protected final String reason;
 
    public BanListEntry(@Nullable T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
-      super((T)var1);
+      super(var1);
       this.created = var2 == null ? new Date() : var2;
       this.source = var3 == null ? "(Unknown)" : var3;
       this.expires = var4;
@@ -26,7 +26,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    }
 
    protected BanListEntry(@Nullable T var1, JsonObject var2) {
-      super((T)var1);
+      super(var1);
 
       Date var3;
       try {
@@ -68,16 +68,18 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
 
    public abstract Component getDisplayName();
 
-   @Override
    boolean hasExpired() {
       return this.expires == null ? false : this.expires.before(new Date());
    }
 
-   @Override
    protected void serialize(JsonObject var1) {
       var1.addProperty("created", DATE_FORMAT.format(this.created));
       var1.addProperty("source", this.source);
       var1.addProperty("expires", this.expires == null ? "forever" : DATE_FORMAT.format(this.expires));
       var1.addProperty("reason", this.reason);
+   }
+
+   static {
+      DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
    }
 }

@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 @FunctionalInterface
 public interface ServerAddressResolver {
    Logger LOGGER = LogUtils.getLogger();
-   ServerAddressResolver SYSTEM = var0 -> {
+   ServerAddressResolver SYSTEM = (var0) -> {
       try {
          InetAddress var1 = InetAddress.getByName(var0.getHost());
          return Optional.of(ResolvedServerAddress.from(new InetSocketAddress(var1, var0.getPort())));

@@ -1,7 +1,5 @@
 package net.minecraft.world;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.HolderLookup;
@@ -17,32 +15,12 @@ public class ContainerHelper {
       super();
    }
 
-   public static int tryAddItem(Container var0, ItemStack var1) {
-      IntArrayList var2 = new IntArrayList();
-
-      for(int var3 = 0; var3 < var0.getContainerSize(); ++var3) {
-         ItemStack var4 = var0.getItem(var3);
-         if (var4.isEmpty()) {
-            var2.add(var3);
-         }
-      }
-
-      if (var2.isEmpty()) {
-         return -1;
-      } else {
-         Collections.shuffle(var2);
-         int var5 = var2.getInt(0);
-         var0.setItem(var5, var1);
-         return var5;
-      }
-   }
-
    public static ItemStack removeItem(List<ItemStack> var0, int var1, int var2) {
       return var1 >= 0 && var1 < var0.size() && !((ItemStack)var0.get(var1)).isEmpty() && var2 > 0 ? ((ItemStack)var0.get(var1)).split(var2) : ItemStack.EMPTY;
    }
 
    public static ItemStack takeItem(List<ItemStack> var0, int var1) {
-      return var1 >= 0 && var1 < var0.size() ? var0.set(var1, ItemStack.EMPTY) : ItemStack.EMPTY;
+      return var1 >= 0 && var1 < var0.size() ? (ItemStack)var0.set(var1, ItemStack.EMPTY) : ItemStack.EMPTY;
    }
 
    public static CompoundTag saveAllItems(CompoundTag var0, NonNullList<ItemStack> var1, HolderLookup.Provider var2) {
@@ -75,9 +53,10 @@ public class ContainerHelper {
          CompoundTag var5 = var3.getCompound(var4);
          int var6 = var5.getByte("Slot") & 255;
          if (var6 >= 0 && var6 < var1.size()) {
-            var1.set(var6, ItemStack.parse(var2, var5).orElse(ItemStack.EMPTY));
+            var1.set(var6, (ItemStack)ItemStack.parse(var2, var5).orElse(ItemStack.EMPTY));
          }
       }
+
    }
 
    public static int clearOrCountMatchingItems(Container var0, Predicate<ItemStack> var1, int var2, boolean var3) {
@@ -97,14 +76,16 @@ public class ContainerHelper {
    }
 
    public static int clearOrCountMatchingItems(ItemStack var0, Predicate<ItemStack> var1, int var2, boolean var3) {
-      if (var0.isEmpty() || !var1.test(var0)) {
-         return 0;
-      } else if (var3) {
-         return var0.getCount();
+      if (!var0.isEmpty() && var1.test(var0)) {
+         if (var3) {
+            return var0.getCount();
+         } else {
+            int var4 = var2 < 0 ? var0.getCount() : Math.min(var2, var0.getCount());
+            var0.shrink(var4);
+            return var4;
+         }
       } else {
-         int var4 = var2 < 0 ? var0.getCount() : Math.min(var2, var0.getCount());
-         var0.shrink(var4);
-         return var4;
+         return 0;
       }
    }
 }

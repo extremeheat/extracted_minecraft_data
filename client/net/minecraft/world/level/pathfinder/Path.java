@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 public class Path {
    private final List<Node> nodes;
    @Nullable
-   private Path.DebugData debugData;
+   private DebugData debugData;
    private int nextNodeIndex;
    private final BlockPos target;
    private final float distToTarget;
@@ -23,7 +23,7 @@ public class Path {
       super();
       this.nodes = var1;
       this.target = var2;
-      this.distToTarget = var1.isEmpty() ? 3.4028235E38F : this.nodes.get(this.nodes.size() - 1).distanceManhattan(this.target);
+      this.distToTarget = var1.isEmpty() ? 3.4028235E38F : ((Node)this.nodes.get(this.nodes.size() - 1)).distanceManhattan(this.target);
       this.reached = var3;
    }
 
@@ -41,17 +41,18 @@ public class Path {
 
    @Nullable
    public Node getEndNode() {
-      return !this.nodes.isEmpty() ? this.nodes.get(this.nodes.size() - 1) : null;
+      return !this.nodes.isEmpty() ? (Node)this.nodes.get(this.nodes.size() - 1) : null;
    }
 
    public Node getNode(int var1) {
-      return this.nodes.get(var1);
+      return (Node)this.nodes.get(var1);
    }
 
    public void truncateNodes(int var1) {
       if (this.nodes.size() > var1) {
          this.nodes.subList(var1, this.nodes.size()).clear();
       }
+
    }
 
    public void replaceNode(int var1, Node var2) {
@@ -71,7 +72,7 @@ public class Path {
    }
 
    public Vec3 getEntityPosAtNode(Entity var1, int var2) {
-      Node var3 = this.nodes.get(var2);
+      Node var3 = (Node)this.nodes.get(var2);
       double var4 = (double)var3.x + (double)((int)(var1.getBbWidth() + 1.0F)) * 0.5;
       double var6 = (double)var3.y;
       double var8 = (double)var3.z + (double)((int)(var1.getBbWidth() + 1.0F)) * 0.5;
@@ -79,7 +80,7 @@ public class Path {
    }
 
    public BlockPos getNodePos(int var1) {
-      return this.nodes.get(var1).asBlockPos();
+      return ((Node)this.nodes.get(var1)).asBlockPos();
    }
 
    public Vec3 getNextEntityPos(Entity var1) {
@@ -87,16 +88,16 @@ public class Path {
    }
 
    public BlockPos getNextNodePos() {
-      return this.nodes.get(this.nextNodeIndex).asBlockPos();
+      return ((Node)this.nodes.get(this.nextNodeIndex)).asBlockPos();
    }
 
    public Node getNextNode() {
-      return this.nodes.get(this.nextNodeIndex);
+      return (Node)this.nodes.get(this.nextNodeIndex);
    }
 
    @Nullable
    public Node getPreviousNode() {
-      return this.nextNodeIndex > 0 ? this.nodes.get(this.nextNodeIndex - 1) : null;
+      return this.nextNodeIndex > 0 ? (Node)this.nodes.get(this.nextNodeIndex - 1) : null;
    }
 
    public boolean sameAs(@Nullable Path var1) {
@@ -106,8 +107,8 @@ public class Path {
          return false;
       } else {
          for(int var2 = 0; var2 < this.nodes.size(); ++var2) {
-            Node var3 = this.nodes.get(var2);
-            Node var4 = var1.nodes.get(var2);
+            Node var3 = (Node)this.nodes.get(var2);
+            Node var4 = (Node)var1.nodes.get(var2);
             if (var3.x != var4.x || var3.y != var4.y || var3.z != var4.z) {
                return false;
             }
@@ -123,11 +124,11 @@ public class Path {
 
    @VisibleForDebug
    void setDebug(Node[] var1, Node[] var2, Set<Target> var3) {
-      this.debugData = new Path.DebugData(var1, var2, var3);
+      this.debugData = new DebugData(var1, var2, var3);
    }
 
    @Nullable
-   public Path.DebugData debugData() {
+   public DebugData debugData() {
       return this.debugData;
    }
 
@@ -136,7 +137,9 @@ public class Path {
          var1.writeBoolean(this.reached);
          var1.writeInt(this.nextNodeIndex);
          var1.writeBlockPos(this.target);
-         var1.writeCollection(this.nodes, (var0, var1x) -> var1x.writeToStream(var0));
+         var1.writeCollection(this.nodes, (var0, var1x) -> {
+            var1x.writeToStream(var0);
+         });
          this.debugData.write(var1);
       }
    }
@@ -146,14 +149,13 @@ public class Path {
       int var2 = var0.readInt();
       BlockPos var3 = var0.readBlockPos();
       List var4 = var0.readList(Node::createFromStream);
-      Path.DebugData var5 = Path.DebugData.read(var0);
+      DebugData var5 = Path.DebugData.read(var0);
       Path var6 = new Path(var4, var3, var1);
       var6.debugData = var5;
       var6.nextNodeIndex = var2;
       return var6;
    }
 
-   @Override
    public String toString() {
       return "Path(length=" + this.nodes.size() + ")";
    }
@@ -178,10 +180,14 @@ public class Path {
 
    static void writeNodeArray(FriendlyByteBuf var0, Node[] var1) {
       var0.writeVarInt(var1.length);
+      Node[] var2 = var1;
+      int var3 = var1.length;
 
-      for(Node var5 : var1) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         Node var5 = var2[var4];
          var5.writeToStream(var0);
       }
+
    }
 
    public Path copy() {
@@ -191,9 +197,7 @@ public class Path {
       return var1;
    }
 
-   public static record DebugData(Node[] a, Node[] b, Set<Target> c) {
-      private final Node[] openSet;
-      private final Node[] closedSet;
+   public static record DebugData(Node[] openSet, Node[] closedSet, Set<Target> targetNodes) {
       final Set<Target> targetNodes;
 
       public DebugData(Node[] var1, Node[] var2, Set<Target> var3) {
@@ -204,16 +208,30 @@ public class Path {
       }
 
       public void write(FriendlyByteBuf var1) {
-         var1.writeCollection(this.targetNodes, (var0, var1x) -> var1x.writeToStream(var0));
+         var1.writeCollection(this.targetNodes, (var0, var1x) -> {
+            var1x.writeToStream(var0);
+         });
          Path.writeNodeArray(var1, this.openSet);
          Path.writeNodeArray(var1, this.closedSet);
       }
 
-      public static Path.DebugData read(FriendlyByteBuf var0) {
-         HashSet var1 = var0.readCollection(HashSet::new, Target::createFromStream);
+      public static DebugData read(FriendlyByteBuf var0) {
+         HashSet var1 = (HashSet)var0.readCollection(HashSet::new, Target::createFromStream);
          Node[] var2 = Path.readNodeArray(var0);
          Node[] var3 = Path.readNodeArray(var0);
-         return new Path.DebugData(var2, var3, var1);
+         return new DebugData(var2, var3, var1);
+      }
+
+      public Node[] openSet() {
+         return this.openSet;
+      }
+
+      public Node[] closedSet() {
+         return this.closedSet;
+      }
+
+      public Set<Target> targetNodes() {
+         return this.targetNodes;
       }
    }
 }

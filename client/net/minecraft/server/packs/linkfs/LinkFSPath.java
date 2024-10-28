@@ -2,47 +2,43 @@ package net.minecraft.server.packs.linkfs;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.ProviderMismatchException;
 import java.nio.file.ReadOnlyFileSystemException;
+import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.nio.file.WatchEvent.Kind;
-import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 class LinkFSPath implements Path {
    private static final BasicFileAttributes DIRECTORY_ATTRIBUTES = new DummyFileAttributes() {
-      @Override
       public boolean isRegularFile() {
          return false;
       }
 
-      @Override
       public boolean isDirectory() {
          return true;
       }
    };
    private static final BasicFileAttributes FILE_ATTRIBUTES = new DummyFileAttributes() {
-      @Override
       public boolean isRegularFile() {
          return true;
       }
 
-      @Override
       public boolean isDirectory() {
          return false;
       }
@@ -74,14 +70,10 @@ class LinkFSPath implements Path {
       return this.fileSystem;
    }
 
-   @Override
    public boolean isAbsolute() {
       return this.pathContents != PathContents.RELATIVE;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public File toFile() {
       PathContents var2 = this.pathContents;
       if (var2 instanceof PathContents.FileContents var1) {
@@ -97,7 +89,7 @@ class LinkFSPath implements Path {
    }
 
    public LinkFSPath getFileName() {
-      return this.createRelativePath(null, this.name);
+      return this.createRelativePath((LinkFSPath)null, this.name);
    }
 
    @Nullable
@@ -105,7 +97,6 @@ class LinkFSPath implements Path {
       return this.parent;
    }
 
-   @Override
    public int getNameCount() {
       return this.pathToRoot().size();
    }
@@ -115,7 +106,7 @@ class LinkFSPath implements Path {
          return List.of();
       } else {
          if (this.pathToRoot == null) {
-            Builder var1 = ImmutableList.builder();
+            ImmutableList.Builder var1 = ImmutableList.builder();
             if (this.parent != null) {
                var1.addAll(this.parent.pathToRoot());
             }
@@ -131,7 +122,7 @@ class LinkFSPath implements Path {
    public LinkFSPath getName(int var1) {
       List var2 = this.pathToRoot();
       if (var1 >= 0 && var1 < var2.size()) {
-         return this.createRelativePath(null, (String)var2.get(var1));
+         return this.createRelativePath((LinkFSPath)null, (String)var2.get(var1));
       } else {
          throw new IllegalArgumentException("Invalid index: " + var1);
       }
@@ -152,13 +143,11 @@ class LinkFSPath implements Path {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean startsWith(Path var1) {
       if (var1.isAbsolute() != this.isAbsolute()) {
          return false;
-      } else if (var1 instanceof LinkFSPath var2) {
+      } else if (var1 instanceof LinkFSPath) {
+         LinkFSPath var2 = (LinkFSPath)var1;
          if (var2.fileSystem != this.fileSystem) {
             return false;
          } else {
@@ -182,13 +171,11 @@ class LinkFSPath implements Path {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean endsWith(Path var1) {
       if (var1.isAbsolute() && !this.isAbsolute()) {
          return false;
-      } else if (var1 instanceof LinkFSPath var2) {
+      } else if (var1 instanceof LinkFSPath) {
+         LinkFSPath var2 = (LinkFSPath)var1;
          if (var2.fileSystem != this.fileSystem) {
             return false;
          } else {
@@ -225,22 +212,22 @@ class LinkFSPath implements Path {
    private LinkFSPath resolve(List<String> var1) {
       LinkFSPath var2 = this;
 
-      for(String var4 : var1) {
-         var2 = var2.resolveName(var4);
+      String var4;
+      for(Iterator var3 = var1.iterator(); var3.hasNext(); var2 = var2.resolveName(var4)) {
+         var4 = (String)var3.next();
       }
 
       return var2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    LinkFSPath resolveName(String var1) {
       if (isRelativeOrMissing(this.pathContents)) {
          return new LinkFSPath(this.fileSystem, var1, this, this.pathContents);
       } else {
          PathContents var3 = this.pathContents;
-         if (var3 instanceof PathContents.DirectoryContents var2) {
-            LinkFSPath var4 = var2.children().get(var1);
+         if (var3 instanceof PathContents.DirectoryContents) {
+            PathContents.DirectoryContents var2 = (PathContents.DirectoryContents)var3;
+            LinkFSPath var4 = (LinkFSPath)var2.children().get(var1);
             return var4 != null ? var4 : new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
          } else if (this.pathContents instanceof PathContents.FileContents) {
             return new LinkFSPath(this.fileSystem, var1, this, PathContents.MISSING);
@@ -275,41 +262,36 @@ class LinkFSPath implements Path {
       }
    }
 
-   @Override
    public URI toUri() {
       try {
-         return new URI("x-mc-link", this.fileSystem.store().name(), this.pathToString(), null);
+         return new URI("x-mc-link", this.fileSystem.store().name(), this.pathToString(), (String)null);
       } catch (URISyntaxException var2) {
          throw new AssertionError("Failed to create URI", var2);
       }
    }
 
    public LinkFSPath toAbsolutePath() {
-      return this.isAbsolute() ? this : this.fileSystem.rootPath().resolve(this);
+      return this.isAbsolute() ? this : this.fileSystem.rootPath().resolve((Path)this);
    }
 
    public LinkFSPath toRealPath(LinkOption... var1) {
       return this.toAbsolutePath();
    }
 
-   @Override
-   public WatchKey register(WatchService var1, Kind<?>[] var2, Modifier... var3) {
+   public WatchKey register(WatchService var1, WatchEvent.Kind<?>[] var2, WatchEvent.Modifier... var3) {
       throw new UnsupportedOperationException();
    }
 
-   @Override
    public int compareTo(Path var1) {
       LinkFSPath var2 = this.toLinkPath(var1);
       return PATH_COMPARATOR.compare(this, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean equals(Object var1) {
       if (var1 == this) {
          return true;
-      } else if (var1 instanceof LinkFSPath var2) {
+      } else if (var1 instanceof LinkFSPath) {
+         LinkFSPath var2 = (LinkFSPath)var1;
          if (this.fileSystem != var2.fileSystem) {
             return false;
          } else {
@@ -331,12 +313,10 @@ class LinkFSPath implements Path {
       return !isRelativeOrMissing(this.pathContents);
    }
 
-   @Override
    public int hashCode() {
       return this.hasRealContents() ? this.pathContents.hashCode() : this.name.hashCode();
    }
 
-   @Override
    public String toString() {
       return this.pathToString();
    }
@@ -359,8 +339,11 @@ class LinkFSPath implements Path {
       if (var1 == null) {
          throw new NullPointerException();
       } else {
-         if (var1 instanceof LinkFSPath var2 && ((LinkFSPath)var2).fileSystem == this.fileSystem) {
-            return (LinkFSPath)var2;
+         if (var1 instanceof LinkFSPath) {
+            LinkFSPath var2 = (LinkFSPath)var1;
+            if (var2.fileSystem == this.fileSystem) {
+               return var2;
+            }
          }
 
          throw new ProviderMismatchException();
@@ -374,28 +357,39 @@ class LinkFSPath implements Path {
    @Nullable
    public Path getTargetPath() {
       PathContents var2 = this.pathContents;
-      return var2 instanceof PathContents.FileContents var1 ? var1.contents() : null;
+      Path var10000;
+      if (var2 instanceof PathContents.FileContents var1) {
+         var10000 = var1.contents();
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
    @Nullable
    public PathContents.DirectoryContents getDirectoryContents() {
       PathContents var2 = this.pathContents;
-      return var2 instanceof PathContents.DirectoryContents var1 ? var1 : null;
+      PathContents.DirectoryContents var10000;
+      if (var2 instanceof PathContents.DirectoryContents var1) {
+         var10000 = var1;
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
    public BasicFileAttributeView getBasicAttributeView() {
       return new BasicFileAttributeView() {
-         @Override
          public String name() {
             return "basic";
          }
 
-         @Override
          public BasicFileAttributes readAttributes() throws IOException {
             return LinkFSPath.this.getBasicAttributes();
          }
 
-         @Override
          public void setTimes(FileTime var1, FileTime var2, FileTime var3) {
             throw new ReadOnlyFileSystemException();
          }
@@ -410,5 +404,62 @@ class LinkFSPath implements Path {
       } else {
          throw new NoSuchFileException(this.pathToString());
       }
+   }
+
+   // $FF: synthetic method
+   public Path toRealPath(LinkOption[] var1) throws IOException {
+      return this.toRealPath(var1);
+   }
+
+   // $FF: synthetic method
+   public Path toAbsolutePath() {
+      return this.toAbsolutePath();
+   }
+
+   // $FF: synthetic method
+   public Path relativize(Path var1) {
+      return this.relativize(var1);
+   }
+
+   // $FF: synthetic method
+   public Path resolve(Path var1) {
+      return this.resolve(var1);
+   }
+
+   // $FF: synthetic method
+   public Path normalize() {
+      return this.normalize();
+   }
+
+   // $FF: synthetic method
+   public Path subpath(int var1, int var2) {
+      return this.subpath(var1, var2);
+   }
+
+   // $FF: synthetic method
+   public Path getName(int var1) {
+      return this.getName(var1);
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public Path getParent() {
+      return this.getParent();
+   }
+
+   // $FF: synthetic method
+   public Path getFileName() {
+      return this.getFileName();
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public Path getRoot() {
+      return this.getRoot();
+   }
+
+   // $FF: synthetic method
+   public FileSystem getFileSystem() {
+      return this.getFileSystem();
    }
 }

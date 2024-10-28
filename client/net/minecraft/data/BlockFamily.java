@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.Block;
 
 public class BlockFamily {
    private final Block baseBlock;
-   final Map<BlockFamily.Variant, Block> variants = Maps.newHashMap();
+   final Map<Variant, Block> variants = Maps.newHashMap();
    boolean generateModel = true;
    boolean generateRecipe = true;
    @Nullable
@@ -26,12 +26,12 @@ public class BlockFamily {
       return this.baseBlock;
    }
 
-   public Map<BlockFamily.Variant, Block> getVariants() {
+   public Map<Variant, Block> getVariants() {
       return this.variants;
    }
 
-   public Block get(BlockFamily.Variant var1) {
-      return this.variants.get(var1);
+   public Block get(Variant var1) {
+      return (Block)this.variants.get(var1);
    }
 
    public boolean shouldGenerateModel() {
@@ -62,108 +62,108 @@ public class BlockFamily {
          return this.family;
       }
 
-      public BlockFamily.Builder button(Block var1) {
+      public Builder button(Block var1) {
          this.family.variants.put(BlockFamily.Variant.BUTTON, var1);
          return this;
       }
 
-      public BlockFamily.Builder chiseled(Block var1) {
+      public Builder chiseled(Block var1) {
          this.family.variants.put(BlockFamily.Variant.CHISELED, var1);
          return this;
       }
 
-      public BlockFamily.Builder mosaic(Block var1) {
+      public Builder mosaic(Block var1) {
          this.family.variants.put(BlockFamily.Variant.MOSAIC, var1);
          return this;
       }
 
-      public BlockFamily.Builder cracked(Block var1) {
+      public Builder cracked(Block var1) {
          this.family.variants.put(BlockFamily.Variant.CRACKED, var1);
          return this;
       }
 
-      public BlockFamily.Builder cut(Block var1) {
+      public Builder cut(Block var1) {
          this.family.variants.put(BlockFamily.Variant.CUT, var1);
          return this;
       }
 
-      public BlockFamily.Builder door(Block var1) {
+      public Builder door(Block var1) {
          this.family.variants.put(BlockFamily.Variant.DOOR, var1);
          return this;
       }
 
-      public BlockFamily.Builder customFence(Block var1) {
+      public Builder customFence(Block var1) {
          this.family.variants.put(BlockFamily.Variant.CUSTOM_FENCE, var1);
          return this;
       }
 
-      public BlockFamily.Builder fence(Block var1) {
+      public Builder fence(Block var1) {
          this.family.variants.put(BlockFamily.Variant.FENCE, var1);
          return this;
       }
 
-      public BlockFamily.Builder customFenceGate(Block var1) {
+      public Builder customFenceGate(Block var1) {
          this.family.variants.put(BlockFamily.Variant.CUSTOM_FENCE_GATE, var1);
          return this;
       }
 
-      public BlockFamily.Builder fenceGate(Block var1) {
+      public Builder fenceGate(Block var1) {
          this.family.variants.put(BlockFamily.Variant.FENCE_GATE, var1);
          return this;
       }
 
-      public BlockFamily.Builder sign(Block var1, Block var2) {
+      public Builder sign(Block var1, Block var2) {
          this.family.variants.put(BlockFamily.Variant.SIGN, var1);
          this.family.variants.put(BlockFamily.Variant.WALL_SIGN, var2);
          return this;
       }
 
-      public BlockFamily.Builder slab(Block var1) {
+      public Builder slab(Block var1) {
          this.family.variants.put(BlockFamily.Variant.SLAB, var1);
          return this;
       }
 
-      public BlockFamily.Builder stairs(Block var1) {
+      public Builder stairs(Block var1) {
          this.family.variants.put(BlockFamily.Variant.STAIRS, var1);
          return this;
       }
 
-      public BlockFamily.Builder pressurePlate(Block var1) {
+      public Builder pressurePlate(Block var1) {
          this.family.variants.put(BlockFamily.Variant.PRESSURE_PLATE, var1);
          return this;
       }
 
-      public BlockFamily.Builder polished(Block var1) {
+      public Builder polished(Block var1) {
          this.family.variants.put(BlockFamily.Variant.POLISHED, var1);
          return this;
       }
 
-      public BlockFamily.Builder trapdoor(Block var1) {
+      public Builder trapdoor(Block var1) {
          this.family.variants.put(BlockFamily.Variant.TRAPDOOR, var1);
          return this;
       }
 
-      public BlockFamily.Builder wall(Block var1) {
+      public Builder wall(Block var1) {
          this.family.variants.put(BlockFamily.Variant.WALL, var1);
          return this;
       }
 
-      public BlockFamily.Builder dontGenerateModel() {
+      public Builder dontGenerateModel() {
          this.family.generateModel = false;
          return this;
       }
 
-      public BlockFamily.Builder dontGenerateRecipe() {
+      public Builder dontGenerateRecipe() {
          this.family.generateRecipe = false;
          return this;
       }
 
-      public BlockFamily.Builder recipeGroupPrefix(String var1) {
+      public Builder recipeGroupPrefix(String var1) {
          this.family.recipeGroupPrefix = var1;
          return this;
       }
 
-      public BlockFamily.Builder recipeUnlockedBy(String var1) {
+      public Builder recipeUnlockedBy(String var1) {
          this.family.recipeUnlockedBy = var1;
          return this;
       }
@@ -197,6 +197,11 @@ public class BlockFamily {
 
       public String getRecipeGroup() {
          return this.recipeGroup;
+      }
+
+      // $FF: synthetic method
+      private static Variant[] $values() {
+         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN};
       }
    }
 }

@@ -9,7 +9,9 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -34,7 +36,6 @@ public class PostPass implements AutoCloseable {
       this.filterMode = var5 ? 9729 : 9728;
    }
 
-   @Override
    public void close() {
       this.effect.close();
    }
@@ -59,11 +60,14 @@ public class PostPass implements AutoCloseable {
       float var2 = (float)this.outTarget.width;
       float var3 = (float)this.outTarget.height;
       RenderSystem.viewport(0, 0, (int)var2, (int)var3);
-      this.effect.setSampler("DiffuseSampler", this.inTarget::getColorTextureId);
+      EffectInstance var10000 = this.effect;
+      RenderTarget var10002 = this.inTarget;
+      Objects.requireNonNull(var10002);
+      var10000.setSampler("DiffuseSampler", var10002::getColorTextureId);
 
       for(int var4 = 0; var4 < this.auxAssets.size(); ++var4) {
-         this.effect.setSampler(this.auxNames.get(var4), this.auxAssets.get(var4));
-         this.effect.safeGetUniform("AuxSize" + var4).set((float)this.auxWidths.get(var4).intValue(), (float)this.auxHeights.get(var4).intValue());
+         this.effect.setSampler((String)this.auxNames.get(var4), (IntSupplier)this.auxAssets.get(var4));
+         this.effect.safeGetUniform("AuxSize" + var4).set((float)(Integer)this.auxWidths.get(var4), (float)(Integer)this.auxHeights.get(var4));
       }
 
       this.effect.safeGetUniform("ProjMat").set(this.shaderOrthoMatrix);
@@ -87,12 +91,15 @@ public class PostPass implements AutoCloseable {
       this.effect.clear();
       this.outTarget.unbindWrite();
       this.inTarget.unbindRead();
+      Iterator var6 = this.auxAssets.iterator();
 
-      for(Object var7 : this.auxAssets) {
+      while(var6.hasNext()) {
+         Object var7 = var6.next();
          if (var7 instanceof RenderTarget) {
             ((RenderTarget)var7).unbindRead();
          }
       }
+
    }
 
    public EffectInstance getEffect() {

@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UTFDataFormatException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -23,21 +24,46 @@ import net.minecraft.util.DelegateDataOutput;
 import net.minecraft.util.FastBufferedInputStream;
 
 public class NbtIo {
-   private static final OpenOption[] SYNC_OUTPUT_OPTIONS = new OpenOption[]{
-      StandardOpenOption.SYNC, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
-   };
+   private static final OpenOption[] SYNC_OUTPUT_OPTIONS;
 
    public NbtIo() {
       super();
    }
 
    public static CompoundTag readCompressed(Path var0, NbtAccounter var1) throws IOException {
+      InputStream var2 = Files.newInputStream(var0);
+
       CompoundTag var4;
-      try (
-         InputStream var2 = Files.newInputStream(var0);
+      try {
          FastBufferedInputStream var3 = new FastBufferedInputStream(var2);
-      ) {
-         var4 = readCompressed(var3, var1);
+
+         try {
+            var4 = readCompressed((InputStream)var3, var1);
+         } catch (Throwable var8) {
+            try {
+               ((InputStream)var3).close();
+            } catch (Throwable var7) {
+               var8.addSuppressed(var7);
+            }
+
+            throw var8;
+         }
+
+         ((InputStream)var3).close();
+      } catch (Throwable var9) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var6) {
+               var9.addSuppressed(var6);
+            }
+         }
+
+         throw var9;
+      }
+
+      if (var2 != null) {
+         var2.close();
       }
 
       return var4;
@@ -52,65 +78,239 @@ public class NbtIo {
    }
 
    public static CompoundTag readCompressed(InputStream var0, NbtAccounter var1) throws IOException {
+      DataInputStream var2 = createDecompressorStream(var0);
+
       CompoundTag var3;
-      try (DataInputStream var2 = createDecompressorStream(var0)) {
+      try {
          var3 = read(var2, var1);
+      } catch (Throwable var6) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+         }
+
+         throw var6;
+      }
+
+      if (var2 != null) {
+         var2.close();
       }
 
       return var3;
    }
 
    public static void parseCompressed(Path var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      try (
-         InputStream var3 = Files.newInputStream(var0);
+      InputStream var3 = Files.newInputStream(var0);
+
+      try {
          FastBufferedInputStream var4 = new FastBufferedInputStream(var3);
-      ) {
-         parseCompressed(var4, var1, var2);
+
+         try {
+            parseCompressed((InputStream)var4, var1, var2);
+         } catch (Throwable var9) {
+            try {
+               ((InputStream)var4).close();
+            } catch (Throwable var8) {
+               var9.addSuppressed(var8);
+            }
+
+            throw var9;
+         }
+
+         ((InputStream)var4).close();
+      } catch (Throwable var10) {
+         if (var3 != null) {
+            try {
+               var3.close();
+            } catch (Throwable var7) {
+               var10.addSuppressed(var7);
+            }
+         }
+
+         throw var10;
       }
+
+      if (var3 != null) {
+         var3.close();
+      }
+
    }
 
    public static void parseCompressed(InputStream var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      try (DataInputStream var3 = createDecompressorStream(var0)) {
+      DataInputStream var3 = createDecompressorStream(var0);
+
+      try {
          parse(var3, var1, var2);
+      } catch (Throwable var7) {
+         if (var3 != null) {
+            try {
+               var3.close();
+            } catch (Throwable var6) {
+               var7.addSuppressed(var6);
+            }
+         }
+
+         throw var7;
       }
+
+      if (var3 != null) {
+         var3.close();
+      }
+
    }
 
    public static void writeCompressed(CompoundTag var0, Path var1) throws IOException {
-      try (
-         OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+      OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+
+      try {
          BufferedOutputStream var3 = new BufferedOutputStream(var2);
-      ) {
-         writeCompressed(var0, var3);
+
+         try {
+            writeCompressed(var0, (OutputStream)var3);
+         } catch (Throwable var8) {
+            try {
+               ((OutputStream)var3).close();
+            } catch (Throwable var7) {
+               var8.addSuppressed(var7);
+            }
+
+            throw var8;
+         }
+
+         ((OutputStream)var3).close();
+      } catch (Throwable var9) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var6) {
+               var9.addSuppressed(var6);
+            }
+         }
+
+         throw var9;
       }
+
+      if (var2 != null) {
+         var2.close();
+      }
+
    }
 
    public static void writeCompressed(CompoundTag var0, OutputStream var1) throws IOException {
-      try (DataOutputStream var2 = createCompressorStream(var1)) {
-         write(var0, var2);
+      DataOutputStream var2 = createCompressorStream(var1);
+
+      try {
+         write(var0, (DataOutput)var2);
+      } catch (Throwable var6) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+         }
+
+         throw var6;
       }
+
+      if (var2 != null) {
+         var2.close();
+      }
+
    }
 
    public static void write(CompoundTag var0, Path var1) throws IOException {
-      try (
-         OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+      OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+
+      try {
          BufferedOutputStream var3 = new BufferedOutputStream(var2);
-         DataOutputStream var4 = new DataOutputStream(var3);
-      ) {
-         write(var0, var4);
+
+         try {
+            DataOutputStream var4 = new DataOutputStream(var3);
+
+            try {
+               write(var0, (DataOutput)var4);
+            } catch (Throwable var10) {
+               try {
+                  var4.close();
+               } catch (Throwable var9) {
+                  var10.addSuppressed(var9);
+               }
+
+               throw var10;
+            }
+
+            var4.close();
+         } catch (Throwable var11) {
+            try {
+               ((OutputStream)var3).close();
+            } catch (Throwable var8) {
+               var11.addSuppressed(var8);
+            }
+
+            throw var11;
+         }
+
+         ((OutputStream)var3).close();
+      } catch (Throwable var12) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var7) {
+               var12.addSuppressed(var7);
+            }
+         }
+
+         throw var12;
       }
+
+      if (var2 != null) {
+         var2.close();
+      }
+
    }
 
    @Nullable
    public static CompoundTag read(Path var0) throws IOException {
-      if (!Files.exists(var0)) {
+      if (!Files.exists(var0, new LinkOption[0])) {
          return null;
       } else {
+         InputStream var1 = Files.newInputStream(var0);
+
          CompoundTag var3;
-         try (
-            InputStream var1 = Files.newInputStream(var0);
+         try {
             DataInputStream var2 = new DataInputStream(var1);
-         ) {
-            var3 = read(var2, NbtAccounter.unlimitedHeap());
+
+            try {
+               var3 = read(var2, NbtAccounter.unlimitedHeap());
+            } catch (Throwable var7) {
+               try {
+                  var2.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
+               }
+
+               throw var7;
+            }
+
+            var2.close();
+         } catch (Throwable var8) {
+            if (var1 != null) {
+               try {
+                  var1.close();
+               } catch (Throwable var5) {
+                  var8.addSuppressed(var5);
+               }
+            }
+
+            throw var8;
+         }
+
+         if (var1 != null) {
+            var1.close();
          }
 
          return var3;
@@ -140,8 +340,9 @@ public class NbtIo {
          if (var1.visitRootEntry(EndTag.TYPE) == StreamTagVisitor.ValueResult.CONTINUE) {
             var1.visitEnd();
          }
+
       } else {
-         switch(var1.visitRootEntry(var3)) {
+         switch (var1.visitRootEntry(var3)) {
             case HALT:
             default:
                break;
@@ -153,6 +354,7 @@ public class NbtIo {
                StringTag.skipString(var0);
                var3.parse(var0, var1, var2);
          }
+
       }
    }
 
@@ -177,7 +379,7 @@ public class NbtIo {
    }
 
    public static void writeUnnamedTagWithFallback(Tag var0, DataOutput var1) throws IOException {
-      writeUnnamedTag(var0, new NbtIo.StringFallbackDataOutput(var1));
+      writeUnnamedTag(var0, new StringFallbackDataOutput(var1));
    }
 
    private static Tag readUnnamedTag(DataInput var0, NbtAccounter var1) throws IOException {
@@ -196,9 +398,13 @@ public class NbtIo {
       } catch (IOException var6) {
          CrashReport var4 = CrashReport.forThrowable(var6, "Loading NBT data");
          CrashReportCategory var5 = var4.addCategory("NBT Tag");
-         var5.setDetail("Tag type", var2);
+         var5.setDetail("Tag type", (Object)var2);
          throw new ReportedNbtException(var4);
       }
+   }
+
+   static {
+      SYNC_OUTPUT_OPTIONS = new OpenOption[]{StandardOpenOption.SYNC, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
    }
 
    public static class StringFallbackDataOutput extends DelegateDataOutput {
@@ -206,7 +412,6 @@ public class NbtIo {
          super(var1);
       }
 
-      @Override
       public void writeUTF(String var1) throws IOException {
          try {
             super.writeUTF(var1);
@@ -214,6 +419,7 @@ public class NbtIo {
             Util.logAndPauseIfInIde("Failed to write NBT String", var3);
             super.writeUTF("");
          }
+
       }
    }
 }

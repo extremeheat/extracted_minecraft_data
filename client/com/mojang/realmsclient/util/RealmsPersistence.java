@@ -20,20 +20,20 @@ public class RealmsPersistence {
       super();
    }
 
-   public RealmsPersistence.RealmsPersistenceData read() {
+   public RealmsPersistenceData read() {
       return readFile();
    }
 
-   public void save(RealmsPersistence.RealmsPersistenceData var1) {
+   public void save(RealmsPersistenceData var1) {
       writeFile(var1);
    }
 
-   public static RealmsPersistence.RealmsPersistenceData readFile() {
+   public static RealmsPersistenceData readFile() {
       Path var0 = getPathToData();
 
       try {
          String var1 = Files.readString(var0, StandardCharsets.UTF_8);
-         RealmsPersistence.RealmsPersistenceData var2 = GSON.fromJson(var1, RealmsPersistence.RealmsPersistenceData.class);
+         RealmsPersistenceData var2 = (RealmsPersistenceData)GSON.fromJson(var1, RealmsPersistenceData.class);
          if (var2 != null) {
             return var2;
          }
@@ -42,16 +42,17 @@ public class RealmsPersistence {
          LOGGER.warn("Failed to read Realms storage {}", var0, var4);
       }
 
-      return new RealmsPersistence.RealmsPersistenceData();
+      return new RealmsPersistenceData();
    }
 
-   public static void writeFile(RealmsPersistence.RealmsPersistenceData var0) {
+   public static void writeFile(RealmsPersistenceData var0) {
       Path var1 = getPathToData();
 
       try {
-         Files.writeString(var1, GSON.toJson(var0), StandardCharsets.UTF_8);
+         Files.writeString(var1, GSON.toJson((ReflectionBasedSerialization)var0), StandardCharsets.UTF_8);
       } catch (Exception var3) {
       }
+
    }
 
    private static Path getPathToData() {

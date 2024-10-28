@@ -2,6 +2,8 @@ package net.minecraft.client.multiplayer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -13,7 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 public class TagCollector {
-   private final Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> tags = new HashMap<>();
+   private final Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> tags = new HashMap();
 
    public TagCollector() {
       super();
@@ -37,15 +39,24 @@ public class TagCollector {
          if (var2.test(var2x)) {
             var3.applyToRegistry(var1.registryOrThrow(var2x));
          }
+
       });
    }
 
    public void updateTags(RegistryAccess var1, boolean var2) {
       if (var2) {
-         this.applyTags(var1, RegistrySynchronization.NETWORKABLE_REGISTRIES::contains);
+         Set var10002 = RegistrySynchronization.NETWORKABLE_REGISTRIES;
+         Objects.requireNonNull(var10002);
+         this.applyTags(var1, var10002::contains);
       } else {
-         var1.registries().filter(var0 -> !RegistrySynchronization.NETWORKABLE_REGISTRIES.contains(var0.key())).forEach(var0 -> var0.value().resetTags());
-         this.applyTags(var1, var0 -> true);
+         var1.registries().filter((var0) -> {
+            return !RegistrySynchronization.NETWORKABLE_REGISTRIES.contains(var0.key());
+         }).forEach((var0) -> {
+            var0.value().resetTags();
+         });
+         this.applyTags(var1, (var0) -> {
+            return true;
+         });
          refreshBuiltInTagDependentData();
       }
 

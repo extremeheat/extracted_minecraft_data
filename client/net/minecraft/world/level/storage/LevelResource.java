@@ -24,7 +24,6 @@ public class LevelResource {
       return this.id;
    }
 
-   @Override
    public String toString() {
       return "/" + this.id;
    }

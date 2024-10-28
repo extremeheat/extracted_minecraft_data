@@ -52,7 +52,7 @@ public interface SignalGetter extends BlockGetter {
       } else if (var4.is(Blocks.REDSTONE_BLOCK)) {
          return 15;
       } else if (var4.is(Blocks.REDSTONE_WIRE)) {
-         return var4.getValue(RedStoneWireBlock.POWER);
+         return (Integer)var4.getValue(RedStoneWireBlock.POWER);
       } else {
          return var4.isSignalSource() ? this.getDirectSignal(var1, var2) : 0;
       }
@@ -86,8 +86,11 @@ public interface SignalGetter extends BlockGetter {
 
    default int getBestNeighborSignal(BlockPos var1) {
       int var2 = 0;
+      Direction[] var3 = DIRECTIONS;
+      int var4 = var3.length;
 
-      for(Direction var6 : DIRECTIONS) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         Direction var6 = var3[var5];
          int var7 = this.getSignal(var1.relative(var6), var6);
          if (var7 >= 15) {
             return 15;

@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundMoveVehiclePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundMoveVehiclePacket> STREAM_CODEC = Packet.codec(
-      ClientboundMoveVehiclePacket::write, ClientboundMoveVehiclePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundMoveVehiclePacket> STREAM_CODEC = Packet.codec(ClientboundMoveVehiclePacket::write, ClientboundMoveVehiclePacket::new);
    private final double x;
    private final double y;
    private final double z;
@@ -42,7 +40,6 @@ public class ClientboundMoveVehiclePacket implements Packet<ClientGamePacketList
       var1.writeFloat(this.xRot);
    }
 
-   @Override
    public PacketType<ClientboundMoveVehiclePacket> type() {
       return GamePacketTypes.CLIENTBOUND_MOVE_VEHICLE;
    }

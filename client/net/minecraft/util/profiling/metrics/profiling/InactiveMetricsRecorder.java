@@ -10,29 +10,23 @@ public class InactiveMetricsRecorder implements MetricsRecorder {
       super();
    }
 
-   @Override
    public void end() {
    }
 
-   @Override
    public void cancel() {
    }
 
-   @Override
    public void startTick() {
    }
 
-   @Override
    public boolean isRecording() {
       return false;
    }
 
-   @Override
    public ProfilerFiller getProfiler() {
       return InactiveProfiler.INSTANCE;
    }
 
-   @Override
    public void endTick() {
    }
 }

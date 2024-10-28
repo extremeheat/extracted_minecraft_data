@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 
@@ -17,26 +18,22 @@ public class LavaParticle extends TextureSheetParticle {
       this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public int getLightColor(float var1) {
       int var2 = super.getLightColor(var1);
       boolean var3 = true;
-      int var4 = var2 >> 16 & 0xFF;
+      int var4 = var2 >> 16 & 255;
       return 240 | var4 << 16;
    }
 
-   @Override
    public float getQuadSize(float var1) {
       float var2 = ((float)this.age + var1) / (float)this.lifetime;
       return this.quadSize * (1.0F - var2 * var2);
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (!this.removed) {
@@ -45,6 +42,7 @@ public class LavaParticle extends TextureSheetParticle {
             this.level.addParticle(ParticleTypes.SMOKE, this.x, this.y, this.z, this.xd, this.yd, this.zd);
          }
       }
+
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -59,6 +57,11 @@ public class LavaParticle extends TextureSheetParticle {
          LavaParticle var15 = new LavaParticle(var2, var3, var5, var7);
          var15.pickSprite(this.sprite);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

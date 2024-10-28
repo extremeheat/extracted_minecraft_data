@@ -13,13 +13,16 @@ public enum WallSide implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String toString() {
       return this.getSerializedName();
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static WallSide[] $values() {
+      return new WallSide[]{NONE, LOW, TALL};
    }
 }

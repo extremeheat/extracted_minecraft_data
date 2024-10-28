@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class MangroveLeavesBlock extends LeavesBlock implements BonemealableBlock {
    public static final MapCodec<MangroveLeavesBlock> CODEC = simpleCodec(MangroveLeavesBlock::new);
 
-   @Override
    public MapCodec<MangroveLeavesBlock> codec() {
       return CODEC;
    }
@@ -21,22 +20,18 @@ public class MangroveLeavesBlock extends LeavesBlock implements BonemealableBloc
       super(var1);
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return var1.getBlockState(var2.below()).isAir();
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       var1.setBlock(var3.below(), MangrovePropaguleBlock.createNewHangingPropagule(), 2);
    }
 
-   @Override
    public BlockPos getParticlePos(BlockPos var1) {
       return var1.below();
    }

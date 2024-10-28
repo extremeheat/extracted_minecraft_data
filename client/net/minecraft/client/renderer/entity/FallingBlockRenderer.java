@@ -31,20 +31,7 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity> {
             var4.pushPose();
             BlockPos var9 = BlockPos.containing(var1.getX(), var1.getBoundingBox().maxY, var1.getZ());
             var4.translate(-0.5, 0.0, -0.5);
-            this.dispatcher
-               .getModelRenderer()
-               .tesselateBlock(
-                  var8,
-                  this.dispatcher.getBlockModel(var7),
-                  var7,
-                  var9,
-                  var4,
-                  var5.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var7)),
-                  false,
-                  RandomSource.create(),
-                  var7.getSeed(var1.getStartPos()),
-                  OverlayTexture.NO_OVERLAY
-               );
+            this.dispatcher.getModelRenderer().tesselateBlock(var8, this.dispatcher.getBlockModel(var7), var7, var9, var4, var5.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var7)), false, RandomSource.create(), var7.getSeed(var1.getStartPos()), OverlayTexture.NO_OVERLAY);
             var4.popPose();
             super.render(var1, var2, var3, var4, var5, var6);
          }

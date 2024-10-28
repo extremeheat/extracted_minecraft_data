@@ -14,6 +14,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.Node;
 
 public class SleepInBed extends Behavior<LivingEntity> {
    public static final int COOLDOWN_AFTER_BEING_WOKEN = 100;
@@ -23,7 +24,6 @@ public class SleepInBed extends Behavior<LivingEntity> {
       super(ImmutableMap.of(MemoryModuleType.HOME, MemoryStatus.VALUE_PRESENT, MemoryModuleType.LAST_WOKEN, MemoryStatus.REGISTERED));
    }
 
-   @Override
    protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
       if (var2.isPassenger()) {
          return false;
@@ -35,19 +35,18 @@ public class SleepInBed extends Behavior<LivingEntity> {
          } else {
             Optional var5 = var3.getMemory(MemoryModuleType.LAST_WOKEN);
             if (var5.isPresent()) {
-               long var6 = var1.getGameTime() - var5.get();
+               long var6 = var1.getGameTime() - (Long)var5.get();
                if (var6 > 0L && var6 < 100L) {
                   return false;
                }
             }
 
             BlockState var8 = var1.getBlockState(var4.pos());
-            return var4.pos().closerToCenterThan(var2.position(), 2.0) && var8.is(BlockTags.BEDS) && !var8.getValue(BedBlock.OCCUPIED);
+            return var4.pos().closerToCenterThan(var2.position(), 2.0) && var8.is(BlockTags.BEDS) && !(Boolean)var8.getValue(BedBlock.OCCUPIED);
          }
       }
    }
 
-   @Override
    protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
       Optional var5 = var2.getBrain().getMemory(MemoryModuleType.HOME);
       if (var5.isEmpty()) {
@@ -58,12 +57,11 @@ public class SleepInBed extends Behavior<LivingEntity> {
       }
    }
 
-   @Override
    protected void start(ServerLevel var1, LivingEntity var2, long var3) {
       if (var3 > this.nextOkStartTime) {
          Brain var5 = var2.getBrain();
          if (var5.hasMemoryValue(MemoryModuleType.DOORS_TO_CLOSE)) {
-            Set var6 = var5.getMemory(MemoryModuleType.DOORS_TO_CLOSE).get();
+            Set var6 = (Set)var5.getMemory(MemoryModuleType.DOORS_TO_CLOSE).get();
             Optional var7;
             if (var5.hasMemoryValue(MemoryModuleType.NEAREST_LIVING_ENTITIES)) {
                var7 = var5.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
@@ -71,23 +69,23 @@ public class SleepInBed extends Behavior<LivingEntity> {
                var7 = Optional.empty();
             }
 
-            InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(var1, var2, null, null, var6, var7);
+            InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(var1, var2, (Node)null, (Node)null, var6, var7);
          }
 
          var2.startSleeping(((GlobalPos)var2.getBrain().getMemory(MemoryModuleType.HOME).get()).pos());
       }
+
    }
 
-   @Override
    protected boolean timedOut(long var1) {
       return false;
    }
 
-   @Override
    protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
       if (var2.isSleeping()) {
          var2.stopSleeping();
          this.nextOkStartTime = var3 + 40L;
       }
+
    }
 }

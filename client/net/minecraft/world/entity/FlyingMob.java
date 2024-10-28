@@ -10,11 +10,9 @@ public abstract class FlyingMob extends Mob {
       super(var1, var2);
    }
 
-   @Override
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
    }
 
-   @Override
    public void travel(Vec3 var1) {
       if (this.isControlledByLocalInstance()) {
          if (this.isInWater()) {
@@ -46,7 +44,6 @@ public abstract class FlyingMob extends Mob {
       this.calculateEntityAnimation(false);
    }
 
-   @Override
    public boolean onClimbable() {
       return false;
    }

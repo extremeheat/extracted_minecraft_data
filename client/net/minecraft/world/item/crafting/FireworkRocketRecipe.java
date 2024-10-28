@@ -11,9 +11,9 @@ import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.Level;
 
 public class FireworkRocketRecipe extends CustomRecipe {
-   private static final Ingredient PAPER_INGREDIENT = Ingredient.of(Items.PAPER);
-   private static final Ingredient GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
-   private static final Ingredient STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
+   private static final Ingredient PAPER_INGREDIENT;
+   private static final Ingredient GUNPOWDER_INGREDIENT;
+   private static final Ingredient STAR_INGREDIENT;
 
    public FireworkRocketRecipe(CraftingBookCategory var1) {
       super(var1);
@@ -33,7 +33,8 @@ public class FireworkRocketRecipe extends CustomRecipe {
 
                var3 = true;
             } else if (GUNPOWDER_INGREDIENT.test(var6)) {
-               if (++var4 > 3) {
+               ++var4;
+               if (var4 > 3) {
                   return false;
                }
             } else if (!STAR_INGREDIENT.test(var6)) {
@@ -55,7 +56,7 @@ public class FireworkRocketRecipe extends CustomRecipe {
             if (GUNPOWDER_INGREDIENT.test(var6)) {
                ++var4;
             } else if (STAR_INGREDIENT.test(var6)) {
-               FireworkExplosion var7 = var6.get(DataComponents.FIREWORK_EXPLOSION);
+               FireworkExplosion var7 = (FireworkExplosion)var6.get(DataComponents.FIREWORK_EXPLOSION);
                if (var7 != null) {
                   var3.add(var7);
                }
@@ -68,18 +69,21 @@ public class FireworkRocketRecipe extends CustomRecipe {
       return var8;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return new ItemStack(Items.FIREWORK_ROCKET);
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.FIREWORK_ROCKET;
+   }
+
+   static {
+      PAPER_INGREDIENT = Ingredient.of(Items.PAPER);
+      GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
+      STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
    }
 }

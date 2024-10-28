@@ -27,7 +27,6 @@ public class OpenServerTask extends LongRunningTask {
       this.minecraft = var4;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
 
@@ -50,6 +49,7 @@ public class OpenServerTask extends LongRunningTask {
                   } else {
                      this.minecraft.setScreen(this.returnScreen);
                   }
+
                });
                break;
             }
@@ -68,9 +68,9 @@ public class OpenServerTask extends LongRunningTask {
             this.error(var5);
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

@@ -5,11 +5,11 @@ import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -30,7 +30,6 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -40,10 +39,8 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
-import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stats;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
@@ -61,9 +58,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.BlockHitResult;
@@ -112,11 +108,9 @@ public class Gui {
    private static final ResourceLocation PUMPKIN_BLUR_LOCATION = new ResourceLocation("textures/misc/pumpkinblur.png");
    private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = new ResourceLocation("textures/misc/spyglass_scope.png");
    private static final ResourceLocation POWDER_SNOW_OUTLINE_LOCATION = new ResourceLocation("textures/misc/powder_snow_outline.png");
-   private static final Comparator<PlayerScoreEntry> SCORE_DISPLAY_ORDER = Comparator.comparing(PlayerScoreEntry::value)
-      .reversed()
-      .thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER);
-   private static final Component DEMO_EXPIRED_TEXT = Component.translatable("demo.demoExpired");
-   private static final Component SAVING_TEXT = Component.translatable("menu.savingLevel");
+   private static final Comparator<PlayerScoreEntry> SCORE_DISPLAY_ORDER;
+   private static final Component DEMO_EXPIRED_TEXT;
+   private static final Component SAVING_TEXT;
    private static final int COLOR_WHITE = 16777215;
    private static final float MIN_CROSSHAIR_ATTACK_SPEED = 5.0F;
    private static final int NUM_HEARTS_PER_ROW = 10;
@@ -137,7 +131,7 @@ public class Gui {
    private boolean chatDisabledByPlayerShown;
    public float vignetteBrightness = 1.0F;
    private int toolHighlightTimer;
-   private ItemStack lastToolHighlight = ItemStack.EMPTY;
+   private ItemStack lastToolHighlight;
    private final DebugScreenOverlay debugOverlay;
    private final SubtitleOverlay subtitleOverlay;
    private final SpectatorGui spectatorGui;
@@ -157,14 +151,13 @@ public class Gui {
    private long healthBlinkTime;
    private float autosaveIndicatorValue;
    private float lastAutosaveIndicatorValue;
-   private final LayeredDraw layers = new LayeredDraw();
+   private final LayeredDraw layers;
    private float scopeScale;
-   @Nullable
-   private GuiGraphics.DrawString dialogue = null;
-   private String questKey = "";
 
    public Gui(Minecraft var1) {
       super();
+      this.lastToolHighlight = ItemStack.EMPTY;
+      this.layers = new LayeredDraw();
       this.minecraft = var1;
       this.debugOverlay = new DebugScreenOverlay(var1);
       this.spectatorGui = new SpectatorGui(var1);
@@ -173,28 +166,22 @@ public class Gui {
       this.bossOverlay = new BossHealthOverlay(var1);
       this.subtitleOverlay = new SubtitleOverlay(var1);
       this.resetTitleTimes();
-      LayeredDraw var2 = new LayeredDraw()
-         .add(this::renderCameraOverlays)
-         .add(this::renderMissionDialogue)
-         .add(this::renderCrosshair)
-         .add(this::renderHotbarAndDecorations)
-         .add(this::renderExperienceLevel)
-         .add(this::renderEffects)
-         .add((var1x, var2x) -> this.bossOverlay.render(var1x));
-      LayeredDraw var3 = new LayeredDraw()
-         .add(this::renderDemoOverlay)
-         .add((var1x, var2x) -> {
-            if (this.debugOverlay.showDebugScreen()) {
-               this.debugOverlay.render(var1x);
-            }
-         })
-         .add(this::renderScoreboardSidebar)
-         .add(this::renderOverlayMessage)
-         .add(this::renderTitle)
-         .add(this::renderChat)
-         .add(this::renderTabList)
-         .add((var1x, var2x) -> this.subtitleOverlay.render(var1x));
-      this.layers.add(var2, () -> !var1.options.hideGui).add(this::renderSleepOverlay).add(var3, () -> !var1.options.hideGui);
+      LayeredDraw var2 = (new LayeredDraw()).add(this::renderCameraOverlays).add(this::renderCrosshair).add(this::renderHotbarAndDecorations).add(this::renderExperienceLevel).add(this::renderEffects).add((var1x, var2x) -> {
+         this.bossOverlay.render(var1x);
+      });
+      LayeredDraw var3 = (new LayeredDraw()).add(this::renderDemoOverlay).add((var1x, var2x) -> {
+         if (this.debugOverlay.showDebugScreen()) {
+            this.debugOverlay.render(var1x);
+         }
+
+      }).add(this::renderScoreboardSidebar).add(this::renderOverlayMessage).add(this::renderTitle).add(this::renderChat).add(this::renderTabList).add((var1x, var2x) -> {
+         this.subtitleOverlay.render(var1x);
+      });
+      this.layers.add(var2, () -> {
+         return !var1.options.hideGui;
+      }).add(this::renderSleepOverlay).add(var3, () -> {
+         return !var1.options.hideGui;
+      });
    }
 
    public void resetTitleTimes() {
@@ -236,6 +223,7 @@ public class Gui {
       if (var5 > 0.0F && !this.minecraft.player.hasEffect(MobEffects.CONFUSION)) {
          this.renderPortalOverlay(var1, var5);
       }
+
    }
 
    private void renderSleepOverlay(GuiGraphics var1, float var2) {
@@ -271,74 +259,14 @@ public class Gui {
                var6 = Mth.hsvToRgb(var4 / 50.0F, 0.7F, 0.6F) & 16777215;
             }
 
-            int var7 = var5 << 24 & 0xFF000000;
-            int var8 = var3.width(this.overlayMessageString);
+            int var7 = var5 << 24 & -16777216;
+            int var8 = var3.width((FormattedText)this.overlayMessageString);
             this.drawBackdrop(var1, var3, -4, var8, 16777215 | var7);
-            var1.drawString(var3, this.overlayMessageString, -var8 / 2, -4, var6 | var7);
+            var1.drawString(var3, (Component)this.overlayMessageString, -var8 / 2, -4, var6 | var7);
             var1.pose().popPose();
          }
 
          this.minecraft.getProfiler().pop();
-      }
-   }
-
-   private void renderMissionDialogue(GuiGraphics var1, float var2) {
-      ItemStack var3 = this.minecraft.player.getInventory().getArmor(3);
-      if (!var3.is(Items.POISONOUS_POTATO_PLANT)) {
-         this.dialogue = null;
-      } else {
-         float var4 = (float)this.getGuiTicks() + var2;
-         PoseStack var5 = var1.pose();
-         Font var6 = this.getFont();
-         ItemStack var7 = new ItemStack(Items.POISONOUS_POTATO_PLANT);
-         var7.set(DataComponents.HOVERED, true);
-         if (this.dialogue == null || !this.questKey.equals(this.minecraft.player.getQuestKey())) {
-            this.questKey = this.minecraft.player.getQuestKey();
-            MutableComponent var8 = Component.translatable(
-               this.questKey,
-               this.minecraft.player.getDisplayName(),
-               this.minecraft.options.keyJump.getTranslatedKeyMessage(),
-               this.minecraft.options.keyUse.getTranslatedKeyMessage()
-            );
-            this.dialogue = var1.beginString((double)var4, 2.0, var6, var8.getString(), 16777215, var1.guiWidth() - 72);
-         }
-
-         if (this.minecraft.player.getEntityData().get(Player.DATA_POTATO_QUEST_COMPLETED)) {
-            this.minecraft.getConnection().send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.REQUEST_STATS));
-            String var9 = Stats.CUSTOM
-               .get(Stats.POTATO_QUEST_TIME)
-               .format(this.minecraft.player.getStats().getValue(Stats.CUSTOM.get(Stats.POTATO_QUEST_TIME)));
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-            var5.pushPose();
-            var1.drawCenteredString(var6, Component.translatable("stat.minecraft.potato_quest_time_format", var9), var1.guiWidth() / 2, 48, 16777215);
-            var5.popPose();
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
-         }
-
-         if (!((double)var4 - this.dialogue.getLastTick() > 200.0)) {
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-            var1.fill(0, 0, var1.guiWidth(), 32, 0, 1073741824);
-            var1.fillGradient(0, 32, var1.guiWidth(), 64, 1073741824, 0);
-            var5.pushPose();
-            var5.translate(-4.0F, -12.0F, 0.0F);
-            var5.scale(4.0F, 4.0F, 1.0F);
-            var5.rotateAround(Axis.ZP.rotationDegrees(Mth.sin(((float)this.tickCount + var2) / 5.0F) * 20.0F), 8.0F, 8.0F, 0.0F);
-            var1.renderItem(var7, 0, 0);
-            var5.popPose();
-            var5.pushPose();
-            if (this.dialogue.draw((double)var4, 72, 16)) {
-               this.minecraft
-                  .getSoundManager()
-                  .play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_FLUTE, Mth.randomBetween(this.minecraft.player.getRandom(), 1.25F, 1.75F)));
-            }
-
-            var5.popPose();
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(true);
-         }
       }
    }
 
@@ -363,17 +291,17 @@ public class Gui {
             var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2), 0.0F);
             var1.pose().pushPose();
             var1.pose().scale(4.0F, 4.0F, 4.0F);
-            int var10 = var5 << 24 & 0xFF000000;
-            int var7 = var3.width(this.title);
-            this.drawBackdrop(var1, var3, -10, var7, 16777215 | var10);
-            var1.drawString(var3, this.title, -var7 / 2, -10, 16777215 | var10);
+            int var9 = var5 << 24 & -16777216;
+            int var7 = var3.width((FormattedText)this.title);
+            this.drawBackdrop(var1, var3, -10, var7, 16777215 | var9);
+            var1.drawString(var3, (Component)this.title, -var7 / 2, -10, 16777215 | var9);
             var1.pose().popPose();
             if (this.subtitle != null) {
                var1.pose().pushPose();
                var1.pose().scale(2.0F, 2.0F, 2.0F);
-               int var8 = var3.width(this.subtitle);
-               this.drawBackdrop(var1, var3, 5, var8, 16777215 | var10);
-               var1.drawString(var3, this.subtitle, -var8 / 2, 5, 16777215 | var10);
+               int var8 = var3.width((FormattedText)this.subtitle);
+               this.drawBackdrop(var1, var3, 5, var8, 16777215 | var9);
+               var1.drawString(var3, (Component)this.subtitle, -var8 / 2, 5, 16777215 | var9);
                var1.pose().popPose();
             }
 
@@ -391,6 +319,7 @@ public class Gui {
          int var5 = Mth.floor(this.minecraft.mouseHandler.ypos() * (double)var3.getGuiScaledHeight() / (double)var3.getScreenHeight());
          this.chat.render(var1, this.tickCount, var4, var5, false);
       }
+
    }
 
    private void renderScoreboardSidebar(GuiGraphics var1, float var2) {
@@ -408,26 +337,32 @@ public class Gui {
       if (var7 != null) {
          this.displayScoreboardSidebar(var1, var7);
       }
+
    }
 
    private void renderTabList(GuiGraphics var1, float var2) {
       Scoreboard var3 = this.minecraft.level.getScoreboard();
       Objective var4 = var3.getDisplayObjective(DisplaySlot.LIST);
-      if (!this.minecraft.options.keyPlayerList.isDown()
-         || this.minecraft.isLocalServer() && this.minecraft.player.connection.getListedOnlinePlayers().size() <= 1 && var4 == null) {
+      if (!this.minecraft.options.keyPlayerList.isDown() || this.minecraft.isLocalServer() && this.minecraft.player.connection.getListedOnlinePlayers().size() <= 1 && var4 == null) {
          this.tabList.setVisible(false);
       } else {
          this.tabList.setVisible(true);
          this.tabList.render(var1, var1.guiWidth(), var3, var4);
       }
+
    }
 
    private void drawBackdrop(GuiGraphics var1, Font var2, int var3, int var4, int var5) {
       int var6 = this.minecraft.options.getBackgroundColor(0.0F);
       if (var6 != 0) {
          int var7 = -var4 / 2;
-         var1.fill(var7 - 2, var3 - 2, var7 + var4 + 2, var3 + 9 + 2, FastColor.ARGB32.multiply(var6, var5));
+         int var10001 = var7 - 2;
+         int var10002 = var3 - 2;
+         int var10003 = var7 + var4 + 2;
+         Objects.requireNonNull(var2);
+         var1.fill(var10001, var10002, var10003, var3 + 9 + 2, FastColor.ARGB32.multiply(var6, var5));
       }
+
    }
 
    private void renderCrosshair(GuiGraphics var1, float var2) {
@@ -435,7 +370,7 @@ public class Gui {
       if (var3.getCameraType().isFirstPerson()) {
          if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
             RenderSystem.enableBlend();
-            if (this.debugOverlay.showDebugScreen() && !this.minecraft.player.isReducedDebugInfo() && !var3.reducedDebugInfo().get()) {
+            if (this.debugOverlay.showDebugScreen() && !this.minecraft.player.isReducedDebugInfo() && !(Boolean)var3.reducedDebugInfo().get()) {
                Camera var10 = this.minecraft.gameRenderer.getMainCamera();
                Matrix4fStack var11 = RenderSystem.getModelViewStack();
                var11.pushMatrix();
@@ -449,12 +384,7 @@ public class Gui {
                var11.popMatrix();
                RenderSystem.applyModelViewMatrix();
             } else {
-               RenderSystem.blendFuncSeparate(
-                  GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
-                  GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR,
-                  GlStateManager.SourceFactor.ONE,
-                  GlStateManager.DestFactor.ZERO
-               );
+               RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
                boolean var4 = true;
                var1.blitSprite(CROSSHAIR_SPRITE, (var1.guiWidth() - 15) / 2, (var1.guiHeight() - 15) / 2, 15, 15);
                if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
@@ -492,72 +422,80 @@ public class Gui {
       } else if (var1.getType() == HitResult.Type.BLOCK) {
          BlockPos var2 = ((BlockHitResult)var1).getBlockPos();
          ClientLevel var3 = this.minecraft.level;
-         return var3.getBlockState(var2).getMenuProvider(var3, var2) != null;
+         return ((Level)var3).getBlockState(var2).getMenuProvider(var3, var2) != null;
       } else {
          return false;
       }
    }
 
    private void renderEffects(GuiGraphics var1, float var2) {
-      Collection var3 = this.minecraft.player.getActiveEffects();
-      if (!var3.isEmpty()) {
-         Screen var5 = this.minecraft.screen;
-         if (var5 instanceof EffectRenderingInventoryScreen var4 && var4.canSeeEffects()) {
-            return;
-         }
+      Collection var3;
+      label40: {
+         var3 = this.minecraft.player.getActiveEffects();
+         if (!var3.isEmpty()) {
+            Screen var5 = this.minecraft.screen;
+            if (!(var5 instanceof EffectRenderingInventoryScreen)) {
+               break label40;
+            }
 
-         RenderSystem.enableBlend();
-         int var18 = 0;
-         int var19 = 0;
-         MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
-         ArrayList var7 = Lists.newArrayListWithExpectedSize(var3.size());
-
-         for(MobEffectInstance var9 : Ordering.natural().reverse().sortedCopy(var3)) {
-            Holder var10 = var9.getEffect();
-            if (var9.showIcon()) {
-               int var11 = var1.guiWidth();
-               int var12 = 1;
-               if (this.minecraft.isDemo()) {
-                  var12 += 15;
-               }
-
-               if (((MobEffect)var10.value()).isBeneficial()) {
-                  ++var18;
-                  var11 -= 25 * var18;
-               } else {
-                  ++var19;
-                  var11 -= 25 * var19;
-                  var12 += 26;
-               }
-
-               float var13 = 1.0F;
-               if (var9.isAmbient()) {
-                  var1.blitSprite(EFFECT_BACKGROUND_AMBIENT_SPRITE, var11, var12, 24, 24);
-               } else {
-                  var1.blitSprite(EFFECT_BACKGROUND_SPRITE, var11, var12, 24, 24);
-                  if (var9.endsWithin(200)) {
-                     int var14 = var9.getDuration();
-                     int var15 = 10 - var14 / 20;
-                     var13 = Mth.clamp((float)var14 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F)
-                        + Mth.cos((float)var14 * 3.1415927F / 5.0F) * Mth.clamp((float)var15 / 10.0F * 0.25F, 0.0F, 0.25F);
-                  }
-               }
-
-               TextureAtlasSprite var21 = var6.get(var10);
-               int var22 = var11;
-               int var16 = var12;
-               float var17 = var13;
-               var7.add(() -> {
-                  var1.setColor(1.0F, 1.0F, 1.0F, var17);
-                  var1.blit(var22 + 3, var16 + 3, 0, 18, 18, var21);
-                  var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-               });
+            EffectRenderingInventoryScreen var4 = (EffectRenderingInventoryScreen)var5;
+            if (!var4.canSeeEffects()) {
+               break label40;
             }
          }
 
-         var7.forEach(Runnable::run);
-         RenderSystem.disableBlend();
+         return;
       }
+
+      RenderSystem.enableBlend();
+      int var18 = 0;
+      int var19 = 0;
+      MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
+      ArrayList var7 = Lists.newArrayListWithExpectedSize(var3.size());
+      Iterator var8 = Ordering.natural().reverse().sortedCopy(var3).iterator();
+
+      while(var8.hasNext()) {
+         MobEffectInstance var9 = (MobEffectInstance)var8.next();
+         Holder var10 = var9.getEffect();
+         if (var9.showIcon()) {
+            int var11 = var1.guiWidth();
+            int var12 = 1;
+            if (this.minecraft.isDemo()) {
+               var12 += 15;
+            }
+
+            if (((MobEffect)var10.value()).isBeneficial()) {
+               ++var18;
+               var11 -= 25 * var18;
+            } else {
+               ++var19;
+               var11 -= 25 * var19;
+               var12 += 26;
+            }
+
+            float var13 = 1.0F;
+            if (var9.isAmbient()) {
+               var1.blitSprite(EFFECT_BACKGROUND_AMBIENT_SPRITE, var11, var12, 24, 24);
+            } else {
+               var1.blitSprite(EFFECT_BACKGROUND_SPRITE, var11, var12, 24, 24);
+               if (var9.endsWithin(200)) {
+                  int var14 = var9.getDuration();
+                  int var15 = 10 - var14 / 20;
+                  var13 = Mth.clamp((float)var14 / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((float)var14 * 3.1415927F / 5.0F) * Mth.clamp((float)var15 / 10.0F * 0.25F, 0.0F, 0.25F);
+               }
+            }
+
+            TextureAtlasSprite var20 = var6.get(var10);
+            var7.add(() -> {
+               var1.setColor(1.0F, 1.0F, 1.0F, var13);
+               var1.blit(var11 + 3, var12 + 3, 0, 18, 18, var20);
+               var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            });
+         }
+      }
+
+      var7.forEach(Runnable::run);
+      RenderSystem.disableBlend();
    }
 
    private void renderHotbarAndDecorations(GuiGraphics var1, float var2) {
@@ -585,6 +523,7 @@ public class Gui {
       } else if (this.minecraft.player.isSpectator()) {
          this.spectatorGui.renderTooltip(var1);
       }
+
    }
 
    private void renderItemHotbar(GuiGraphics var1, float var2) {
@@ -612,43 +551,42 @@ public class Gui {
          RenderSystem.disableBlend();
          int var9 = 1;
 
-         for(int var10 = 0; var10 < 9; ++var10) {
-            int var11 = var6 - 90 + var10 * 20 + 2;
-            int var12 = var1.guiHeight() - 16 - 3;
-            ItemStack var13 = var3.getInventory().items.get(var10);
-            if (var13.has(DataComponents.HOVERED)) {
-               var13.set(DataComponents.HOVERED, var3.getInventory().selected == var10);
-            }
-
-            this.renderSlot(var1, var11, var12, var2, var3, var3.getInventory().items.get(var10), var9++);
+         int var10;
+         int var11;
+         int var12;
+         for(var10 = 0; var10 < 9; ++var10) {
+            var11 = var6 - 90 + var10 * 20 + 2;
+            var12 = var1.guiHeight() - 16 - 3;
+            this.renderSlot(var1, var11, var12, var2, var3, (ItemStack)var3.getInventory().items.get(var10), var9++);
          }
 
          if (!var4.isEmpty()) {
-            int var16 = var1.guiHeight() - 16 - 3;
+            var10 = var1.guiHeight() - 16 - 3;
             if (var5 == HumanoidArm.LEFT) {
-               this.renderSlot(var1, var6 - 91 - 26, var16, var2, var3, var4, var9++);
+               this.renderSlot(var1, var6 - 91 - 26, var10, var2, var3, var4, var9++);
             } else {
-               this.renderSlot(var1, var6 + 91 + 10, var16, var2, var3, var4, var9++);
+               this.renderSlot(var1, var6 + 91 + 10, var10, var2, var3, var4, var9++);
             }
          }
 
          if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
             RenderSystem.enableBlend();
-            float var17 = this.minecraft.player.getAttackStrengthScale(0.0F);
-            if (var17 < 1.0F) {
-               int var18 = var1.guiHeight() - 20;
-               int var19 = var6 + 91 + 6;
+            float var14 = this.minecraft.player.getAttackStrengthScale(0.0F);
+            if (var14 < 1.0F) {
+               var11 = var1.guiHeight() - 20;
+               var12 = var6 + 91 + 6;
                if (var5 == HumanoidArm.RIGHT) {
-                  var19 = var6 - 91 - 22;
+                  var12 = var6 - 91 - 22;
                }
 
-               int var20 = (int)(var17 * 19.0F);
-               var1.blitSprite(HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
-               var1.blitSprite(HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var20, var19, var18 + 18 - var20, 18, var20);
+               int var13 = (int)(var14 * 19.0F);
+               var1.blitSprite(HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var12, var11, 18, 18);
+               var1.blitSprite(HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var12, var11 + 18 - var13, 18, var13);
             }
 
             RenderSystem.disableBlend();
          }
+
       }
    }
 
@@ -693,16 +631,17 @@ public class Gui {
       int var3 = this.minecraft.player.experienceLevel;
       if (this.isExperienceBarVisible() && var3 > 0) {
          this.minecraft.getProfiler().push("expLevel");
-         String var4 = var3 + "";
+         String var4 = "" + var3;
          int var5 = (var1.guiWidth() - this.getFont().width(var4)) / 2;
          int var6 = var1.guiHeight() - 31 - 4;
-         var1.drawString(this.getFont(), var4, var5 + 1, var6, 0, false);
-         var1.drawString(this.getFont(), var4, var5 - 1, var6, 0, false);
-         var1.drawString(this.getFont(), var4, var5, var6 + 1, 0, false);
-         var1.drawString(this.getFont(), var4, var5, var6 - 1, 0, false);
+         var1.drawString(this.getFont(), (String)var4, var5 + 1, var6, 0, false);
+         var1.drawString(this.getFont(), (String)var4, var5 - 1, var6, 0, false);
+         var1.drawString(this.getFont(), (String)var4, var5, var6 + 1, 0, false);
+         var1.drawString(this.getFont(), (String)var4, var5, var6 - 1, 0, false);
          var1.drawString(this.getFont(), var4, var5, var6, 8453920, false);
          this.minecraft.getProfiler().pop();
       }
+
    }
 
    private boolean isExperienceBarVisible() {
@@ -717,7 +656,7 @@ public class Gui {
             var2.withStyle(ChatFormatting.ITALIC);
          }
 
-         int var3 = this.getFont().width(var2);
+         int var3 = this.getFont().width((FormattedText)var2);
          int var4 = (var1.guiWidth() - var3) / 2;
          int var5 = var1.guiHeight() - 59;
          if (!this.minecraft.gameMode.canHurtPlayer()) {
@@ -730,8 +669,12 @@ public class Gui {
          }
 
          if (var6 > 0) {
-            var1.fill(var4 - 2, var5 - 2, var4 + var3 + 2, var5 + 9 + 2, this.minecraft.options.getBackgroundColor(0));
-            var1.drawString(this.getFont(), var2, var4, var5, 16777215 + (var6 << 24));
+            int var10001 = var4 - 2;
+            int var10002 = var5 - 2;
+            int var10003 = var4 + var3 + 2;
+            Objects.requireNonNull(this.getFont());
+            var1.fill(var10001, var10002, var10003, var5 + 9 + 2, this.minecraft.options.getBackgroundColor(0));
+            var1.drawString(this.getFont(), (Component)var2, var4, var5, 16777215 + (var6 << 24));
          }
       }
 
@@ -745,10 +688,7 @@ public class Gui {
          if (this.minecraft.level.getGameTime() >= 120500L) {
             var3 = DEMO_EXPIRED_TEXT;
          } else {
-            var3 = Component.translatable(
-               "demo.remainingTime",
-               StringUtil.formatTickDuration((int)(120500L - this.minecraft.level.getGameTime()), this.minecraft.level.tickRateManager().tickrate())
-            );
+            var3 = Component.translatable("demo.remainingTime", StringUtil.formatTickDuration((int)(120500L - this.minecraft.level.getGameTime()), this.minecraft.level.tickRateManager().tickrate()));
          }
 
          int var4 = this.getFont().width((FormattedText)var3);
@@ -760,65 +700,100 @@ public class Gui {
    private void displayScoreboardSidebar(GuiGraphics var1, Objective var2) {
       Scoreboard var3 = var2.getScoreboard();
       NumberFormat var4 = var2.numberFormatOrDefault(StyledFormat.SIDEBAR_DEFAULT);
+      1DisplayEntry[] var5 = (1DisplayEntry[])var3.listPlayerScores(var2).stream().filter((var0) -> {
+         return !var0.isHidden();
+      }).sorted(SCORE_DISPLAY_ORDER).limit(15L).map((var3x) -> {
+         PlayerTeam var4x = var3.getPlayersTeam(var3x.owner());
+         Component var5 = var3x.ownerName();
+         MutableComponent var6 = PlayerTeam.formatNameForTeam(var4x, var5);
+         MutableComponent var7 = var3x.formatValue(var4);
+         int var8 = this.getFont().width((FormattedText)var7);
 
-      record 1DisplayEntry(Component a, Component b, int c) {
-         final Component name;
-         final Component score;
-         final int scoreWidth;
+         record 1DisplayEntry(Component name, Component score, int scoreWidth) {
+            final Component name;
+            final Component score;
+            final int scoreWidth;
 
-         _DisplayEntry/* $VF was: 1DisplayEntry*/(Component var1, Component var2, int var3) {
-            super();
-            this.name = var1;
-            this.score = var2;
-            this.scoreWidth = var3;
+            _DisplayEntry/* $FF was: 1DisplayEntry*/(Component var1, Component var2, int var3) {
+               super();
+               this.name = var1;
+               this.score = var2;
+               this.scoreWidth = var3;
+            }
+
+            public Component name() {
+               return this.name;
+            }
+
+            public Component score() {
+               return this.score;
+            }
+
+            public int scoreWidth() {
+               return this.scoreWidth;
+            }
          }
-      }
 
-      1DisplayEntry[] var5 = var3.listPlayerScores(var2).stream().filter(var0 -> !var0.isHidden()).sorted(SCORE_DISPLAY_ORDER).limit(15L).map(var3x -> {
-         PlayerTeam var4xx = var3.getPlayersTeam(var3x.owner());
-         Component var5xx = var3x.ownerName();
-         MutableComponent var6xx = PlayerTeam.formatNameForTeam(var4xx, var5xx);
-         MutableComponent var7xx = var3x.formatValue(var4);
-         int var8xx = this.getFont().width(var7xx);
-         return new 1DisplayEntry(var6xx, var7xx, var8xx);
-      }).toArray(var0 -> new 1DisplayEntry[var0]);
+         return new 1DisplayEntry(var6, var7, var8);
+      }).toArray((var0) -> {
+         return new 1DisplayEntry[var0];
+      });
       Component var6 = var2.getDisplayName();
-      int var7 = this.getFont().width(var6);
+      int var7 = this.getFont().width((FormattedText)var6);
       int var8 = var7;
       int var9 = this.getFont().width(": ");
+      1DisplayEntry[] var10 = var5;
+      int var11 = var5.length;
 
-      for(1DisplayEntry var13 : var5) {
-         var8 = Math.max(var8, this.getFont().width(var13.name) + (var13.scoreWidth > 0 ? var9 + var13.scoreWidth : 0));
+      for(int var12 = 0; var12 < var11; ++var12) {
+         1DisplayEntry var13 = var10[var12];
+         var8 = Math.max(var8, this.getFont().width((FormattedText)var13.name) + (var13.scoreWidth > 0 ? var9 + var13.scoreWidth : 0));
       }
 
-      int var14 = var8;
       var1.drawManaged(() -> {
-         int var6xx = var5.length;
-         int var7xx = var6xx * 9;
-         int var8xx = var1.guiHeight() / 2 + var7xx / 3;
-         boolean var9xx = true;
-         int var10 = var1.guiWidth() - var14 - 3;
+         int var6x = var5.length;
+         Objects.requireNonNull(this.getFont());
+         int var7x = var6x * 9;
+         int var8x = var1.guiHeight() / 2 + var7x / 3;
+         boolean var9 = true;
+         int var10 = var1.guiWidth() - var8 - 3;
          int var11 = var1.guiWidth() - 3 + 2;
          int var12 = this.minecraft.options.getBackgroundColor(0.3F);
-         int var13xx = this.minecraft.options.getBackgroundColor(0.4F);
-         int var14xx = var8xx - var6xx * 9;
-         var1.fill(var10 - 2, var14xx - 9 - 1, var11, var14xx - 1, var13xx);
-         var1.fill(var10 - 2, var14xx - 1, var11, var8xx, var12);
-         var1.drawString(this.getFont(), var6, var10 + var14 / 2 - var7 / 2, var14xx - 9, -1, false);
+         int var13 = this.minecraft.options.getBackgroundColor(0.4F);
+         Objects.requireNonNull(this.getFont());
+         int var14 = var8x - var6x * 9;
+         int var10001 = var10 - 2;
+         Objects.requireNonNull(this.getFont());
+         var1.fill(var10001, var14 - 9 - 1, var11, var14 - 1, var13);
+         var1.fill(var10 - 2, var14 - 1, var11, var8x, var12);
+         Font var18 = this.getFont();
+         int var10003 = var10 + var8 / 2 - var7 / 2;
+         Objects.requireNonNull(this.getFont());
+         var1.drawString(var18, (Component)var6, var10003, var14 - 9, -1, false);
 
-         for(int var15 = 0; var15 < var6xx; ++var15) {
+         for(int var15 = 0; var15 < var6x; ++var15) {
             1DisplayEntry var16 = var5[var15];
-            int var17 = var8xx - (var6xx - var15) * 9;
-            var1.drawString(this.getFont(), var16.name, var10, var17, -1, false);
-            var1.drawString(this.getFont(), var16.score, var11 - var16.scoreWidth, var17, -1, false);
+            var10001 = var6x - var15;
+            Objects.requireNonNull(this.getFont());
+            int var17 = var8x - var10001 * 9;
+            var1.drawString(this.getFont(), (Component)var16.name, var10, var17, -1, false);
+            var1.drawString(this.getFont(), (Component)var16.score, var11 - var16.scoreWidth, var17, -1, false);
          }
+
       });
    }
 
    @Nullable
    private Player getCameraPlayer() {
       Entity var2 = this.minecraft.getCameraEntity();
-      return var2 instanceof Player var1 ? var1 : null;
+      Player var10000;
+      if (var2 instanceof Player var1) {
+         var10000 = var1;
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
    @Nullable
@@ -955,7 +930,7 @@ public class Gui {
    }
 
    private void renderHearts(GuiGraphics var1, Player var2, int var3, int var4, int var5, int var6, float var7, int var8, int var9, int var10, boolean var11) {
-      Gui.HeartType var12 = Gui.HeartType.forPlayer(var2);
+      HeartType var12 = Gui.HeartType.forPlayer(var2);
       boolean var13 = var2.level().getLevelData().isHardcore();
       int var14 = Mth.ceil((double)var7 / 2.0);
       int var15 = Mth.ceil((double)var10 / 2.0);
@@ -985,19 +960,21 @@ public class Gui {
             }
          }
 
+         boolean var26;
          if (var11 && var22 < var9) {
-            boolean var26 = var22 + 1 == var9;
+            var26 = var22 + 1 == var9;
             this.renderHeart(var1, var12, var20, var21, var13, true, var26);
          }
 
          if (var22 < var8) {
-            boolean var27 = var22 + 1 == var8;
-            this.renderHeart(var1, var12, var20, var21, var13, false, var27);
+            var26 = var22 + 1 == var8;
+            this.renderHeart(var1, var12, var20, var21, var13, false, var26);
          }
       }
+
    }
 
-   private void renderHeart(GuiGraphics var1, Gui.HeartType var2, int var3, int var4, boolean var5, boolean var6, boolean var7) {
+   private void renderHeart(GuiGraphics var1, HeartType var2, int var3, int var4, boolean var5, boolean var6, boolean var7) {
       RenderSystem.enableBlend();
       var1.blitSprite(var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
       RenderSystem.disableBlend();
@@ -1119,8 +1096,9 @@ public class Gui {
    private void renderVignette(GuiGraphics var1, @Nullable Entity var2) {
       WorldBorder var3 = this.minecraft.level.getWorldBorder();
       float var4 = 0.0F;
+      float var5;
       if (var2 != null) {
-         float var5 = (float)var3.getDistanceToBorder(var2);
+         var5 = (float)var3.getDistanceToBorder(var2);
          double var6 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime() * 1000.0, Math.abs(var3.getLerpTarget() - var3.getSize()));
          double var8 = Math.max((double)var3.getWarningBlocks(), var6);
          if ((double)var5 < var8) {
@@ -1131,16 +1109,14 @@ public class Gui {
       RenderSystem.disableDepthTest();
       RenderSystem.depthMask(false);
       RenderSystem.enableBlend();
-      RenderSystem.blendFuncSeparate(
-         GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
-      );
+      RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
       if (var4 > 0.0F) {
          var4 = Mth.clamp(var4, 0.0F, 1.0F);
          var1.setColor(0.0F, var4, var4, 1.0F);
       } else {
-         float var11 = this.vignetteBrightness;
-         var11 = Mth.clamp(var11, 0.0F, 1.0F);
-         var1.setColor(var11, var11, var11, 1.0F);
+         var5 = this.vignetteBrightness;
+         var5 = Mth.clamp(var5, 0.0F, 1.0F);
+         var1.setColor(var5, var5, var5, 1.0F);
       }
 
       var1.blit(VIGNETTE_LOCATION, 0, 0, -90, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight());
@@ -1162,13 +1138,8 @@ public class Gui {
       RenderSystem.depthMask(false);
       RenderSystem.enableBlend();
       var1.setColor(1.0F, 1.0F, 1.0F, var2);
-      Block var3 = Blocks.NETHER_PORTAL;
-      if (this.minecraft.level.isPotato() || this.minecraft.player.level().getBlockState(this.minecraft.player.blockPosition()).is(Blocks.POTATO_PORTAL)) {
-         var3 = Blocks.POTATO_PORTAL;
-      }
-
-      TextureAtlasSprite var4 = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(var3.defaultBlockState());
-      var1.blit(0, 0, -90, var1.guiWidth(), var1.guiHeight(), var4);
+      TextureAtlasSprite var3 = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(Blocks.NETHER_PORTAL.defaultBlockState());
+      var1.blit(0, 0, -90, var1.guiWidth(), var1.guiHeight(), var3);
       RenderSystem.disableBlend();
       RenderSystem.depthMask(true);
       RenderSystem.enableDepthTest();
@@ -1200,6 +1171,7 @@ public class Gui {
       if (!var1) {
          this.tick();
       }
+
    }
 
    private void tick() {
@@ -1225,12 +1197,12 @@ public class Gui {
          ItemStack var2 = this.minecraft.player.getInventory().getSelected();
          if (var2.isEmpty()) {
             this.toolHighlightTimer = 0;
-         } else if (this.lastToolHighlight.isEmpty()
-            || !var2.is(this.lastToolHighlight.getItem())
-            || !var2.getHoverName().equals(this.lastToolHighlight.getHoverName())) {
-            this.toolHighlightTimer = (int)(40.0 * this.minecraft.options.notificationDisplayTime().get());
-         } else if (this.toolHighlightTimer > 0) {
-            --this.toolHighlightTimer;
+         } else if (!this.lastToolHighlight.isEmpty() && var2.is(this.lastToolHighlight.getItem()) && var2.getHoverName().equals(this.lastToolHighlight.getHoverName())) {
+            if (this.toolHighlightTimer > 0) {
+               --this.toolHighlightTimer;
+            }
+         } else {
+            this.toolHighlightTimer = (int)(40.0 * (Double)this.minecraft.options.notificationDisplayTime().get());
          }
 
          this.lastToolHighlight = var2;
@@ -1241,7 +1213,7 @@ public class Gui {
 
    private void tickAutosaveIndicator() {
       IntegratedServer var1 = this.minecraft.getSingleplayerServer();
-      boolean var2 = var1 != null && var1.isCurrentlySaving();
+      boolean var2 = var1 != null && ((MinecraftServer)var1).isCurrentlySaving();
       this.lastAutosaveIndicatorValue = this.autosaveIndicatorValue;
       this.autosaveIndicatorValue = Mth.lerp(0.2F, this.autosaveIndicatorValue, var2 ? 1.0F : 0.0F);
    }
@@ -1249,7 +1221,7 @@ public class Gui {
    public void setNowPlaying(Component var1) {
       MutableComponent var2 = Component.translatable("record.nowPlaying", var1);
       this.setOverlayMessage(var2, true);
-      this.minecraft.getNarrator().sayNow(var2);
+      this.minecraft.getNarrator().sayNow((Component)var2);
    }
 
    public void setOverlayMessage(Component var1, boolean var2) {
@@ -1283,6 +1255,7 @@ public class Gui {
       if (this.titleTime > 0) {
          this.titleTime = this.titleFadeInTime + this.titleStayTime + this.titleFadeOutTime;
       }
+
    }
 
    public void setSubtitle(Component var1) {
@@ -1341,80 +1314,31 @@ public class Gui {
    }
 
    public void renderSavingIndicator(GuiGraphics var1, float var2) {
-      if (this.minecraft.options.showAutosaveIndicator().get() && (this.autosaveIndicatorValue > 0.0F || this.lastAutosaveIndicatorValue > 0.0F)) {
-         int var3 = Mth.floor(
-            255.0F * Mth.clamp(Mth.lerp(this.minecraft.getFrameTime(), this.lastAutosaveIndicatorValue, this.autosaveIndicatorValue), 0.0F, 1.0F)
-         );
+      if ((Boolean)this.minecraft.options.showAutosaveIndicator().get() && (this.autosaveIndicatorValue > 0.0F || this.lastAutosaveIndicatorValue > 0.0F)) {
+         int var3 = Mth.floor(255.0F * Mth.clamp(Mth.lerp(this.minecraft.getFrameTime(), this.lastAutosaveIndicatorValue, this.autosaveIndicatorValue), 0.0F, 1.0F));
          if (var3 > 8) {
             Font var4 = this.getFont();
-            int var5 = var4.width(SAVING_TEXT);
-            int var6 = 16777215 | var3 << 24 & 0xFF000000;
+            int var5 = var4.width((FormattedText)SAVING_TEXT);
+            int var6 = 16777215 | var3 << 24 & -16777216;
             var1.drawString(var4, SAVING_TEXT, var1.guiWidth() - var5 - 10, var1.guiHeight() - 15, var6);
          }
       }
+
    }
 
-   static enum HeartType {
-      CONTAINER(
-         new ResourceLocation("hud/heart/container"),
-         new ResourceLocation("hud/heart/container_blinking"),
-         new ResourceLocation("hud/heart/container"),
-         new ResourceLocation("hud/heart/container_blinking"),
-         new ResourceLocation("hud/heart/container_hardcore"),
-         new ResourceLocation("hud/heart/container_hardcore_blinking"),
-         new ResourceLocation("hud/heart/container_hardcore"),
-         new ResourceLocation("hud/heart/container_hardcore_blinking")
-      ),
-      NORMAL(
-         new ResourceLocation("hud/heart/full"),
-         new ResourceLocation("hud/heart/full_blinking"),
-         new ResourceLocation("hud/heart/half"),
-         new ResourceLocation("hud/heart/half_blinking"),
-         new ResourceLocation("hud/heart/hardcore_full"),
-         new ResourceLocation("hud/heart/hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/hardcore_half"),
-         new ResourceLocation("hud/heart/hardcore_half_blinking")
-      ),
-      POISIONED(
-         new ResourceLocation("hud/heart/poisoned_full"),
-         new ResourceLocation("hud/heart/poisoned_full_blinking"),
-         new ResourceLocation("hud/heart/poisoned_half"),
-         new ResourceLocation("hud/heart/poisoned_half_blinking"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_full"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_half"),
-         new ResourceLocation("hud/heart/poisoned_hardcore_half_blinking")
-      ),
-      WITHERED(
-         new ResourceLocation("hud/heart/withered_full"),
-         new ResourceLocation("hud/heart/withered_full_blinking"),
-         new ResourceLocation("hud/heart/withered_half"),
-         new ResourceLocation("hud/heart/withered_half_blinking"),
-         new ResourceLocation("hud/heart/withered_hardcore_full"),
-         new ResourceLocation("hud/heart/withered_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/withered_hardcore_half"),
-         new ResourceLocation("hud/heart/withered_hardcore_half_blinking")
-      ),
-      ABSORBING(
-         new ResourceLocation("hud/heart/absorbing_full"),
-         new ResourceLocation("hud/heart/absorbing_full_blinking"),
-         new ResourceLocation("hud/heart/absorbing_half"),
-         new ResourceLocation("hud/heart/absorbing_half_blinking"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_full"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_half"),
-         new ResourceLocation("hud/heart/absorbing_hardcore_half_blinking")
-      ),
-      FROZEN(
-         new ResourceLocation("hud/heart/frozen_full"),
-         new ResourceLocation("hud/heart/frozen_full_blinking"),
-         new ResourceLocation("hud/heart/frozen_half"),
-         new ResourceLocation("hud/heart/frozen_half_blinking"),
-         new ResourceLocation("hud/heart/frozen_hardcore_full"),
-         new ResourceLocation("hud/heart/frozen_hardcore_full_blinking"),
-         new ResourceLocation("hud/heart/frozen_hardcore_half"),
-         new ResourceLocation("hud/heart/frozen_hardcore_half_blinking")
-      );
+   static {
+      SCORE_DISPLAY_ORDER = Comparator.comparing(PlayerScoreEntry::value).reversed().thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER);
+      DEMO_EXPIRED_TEXT = Component.translatable("demo.demoExpired");
+      SAVING_TEXT = Component.translatable("menu.savingLevel");
+   }
+
+   private static enum HeartType {
+      CONTAINER(new ResourceLocation("hud/heart/container"), new ResourceLocation("hud/heart/container_blinking"), new ResourceLocation("hud/heart/container"), new ResourceLocation("hud/heart/container_blinking"), new ResourceLocation("hud/heart/container_hardcore"), new ResourceLocation("hud/heart/container_hardcore_blinking"), new ResourceLocation("hud/heart/container_hardcore"), new ResourceLocation("hud/heart/container_hardcore_blinking")),
+      NORMAL(new ResourceLocation("hud/heart/full"), new ResourceLocation("hud/heart/full_blinking"), new ResourceLocation("hud/heart/half"), new ResourceLocation("hud/heart/half_blinking"), new ResourceLocation("hud/heart/hardcore_full"), new ResourceLocation("hud/heart/hardcore_full_blinking"), new ResourceLocation("hud/heart/hardcore_half"), new ResourceLocation("hud/heart/hardcore_half_blinking")),
+      POISIONED(new ResourceLocation("hud/heart/poisoned_full"), new ResourceLocation("hud/heart/poisoned_full_blinking"), new ResourceLocation("hud/heart/poisoned_half"), new ResourceLocation("hud/heart/poisoned_half_blinking"), new ResourceLocation("hud/heart/poisoned_hardcore_full"), new ResourceLocation("hud/heart/poisoned_hardcore_full_blinking"), new ResourceLocation("hud/heart/poisoned_hardcore_half"), new ResourceLocation("hud/heart/poisoned_hardcore_half_blinking")),
+      WITHERED(new ResourceLocation("hud/heart/withered_full"), new ResourceLocation("hud/heart/withered_full_blinking"), new ResourceLocation("hud/heart/withered_half"), new ResourceLocation("hud/heart/withered_half_blinking"), new ResourceLocation("hud/heart/withered_hardcore_full"), new ResourceLocation("hud/heart/withered_hardcore_full_blinking"), new ResourceLocation("hud/heart/withered_hardcore_half"), new ResourceLocation("hud/heart/withered_hardcore_half_blinking")),
+      ABSORBING(new ResourceLocation("hud/heart/absorbing_full"), new ResourceLocation("hud/heart/absorbing_full_blinking"), new ResourceLocation("hud/heart/absorbing_half"), new ResourceLocation("hud/heart/absorbing_half_blinking"), new ResourceLocation("hud/heart/absorbing_hardcore_full"), new ResourceLocation("hud/heart/absorbing_hardcore_full_blinking"), new ResourceLocation("hud/heart/absorbing_hardcore_half"), new ResourceLocation("hud/heart/absorbing_hardcore_half_blinking")),
+      FROZEN(new ResourceLocation("hud/heart/frozen_full"), new ResourceLocation("hud/heart/frozen_full_blinking"), new ResourceLocation("hud/heart/frozen_half"), new ResourceLocation("hud/heart/frozen_half_blinking"), new ResourceLocation("hud/heart/frozen_hardcore_full"), new ResourceLocation("hud/heart/frozen_hardcore_full_blinking"), new ResourceLocation("hud/heart/frozen_hardcore_half"), new ResourceLocation("hud/heart/frozen_hardcore_half_blinking"));
 
       private final ResourceLocation full;
       private final ResourceLocation fullBlinking;
@@ -1425,16 +1349,7 @@ public class Gui {
       private final ResourceLocation hardcoreHalf;
       private final ResourceLocation hardcoreHalfBlinking;
 
-      private HeartType(
-         ResourceLocation var3,
-         ResourceLocation var4,
-         ResourceLocation var5,
-         ResourceLocation var6,
-         ResourceLocation var7,
-         ResourceLocation var8,
-         ResourceLocation var9,
-         ResourceLocation var10
-      ) {
+      private HeartType(ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7, ResourceLocation var8, ResourceLocation var9, ResourceLocation var10) {
          this.full = var3;
          this.fullBlinking = var4;
          this.half = var5;
@@ -1459,8 +1374,8 @@ public class Gui {
          }
       }
 
-      static Gui.HeartType forPlayer(Player var0) {
-         Gui.HeartType var1;
+      static HeartType forPlayer(Player var0) {
+         HeartType var1;
          if (var0.hasEffect(MobEffects.POISON)) {
             var1 = POISIONED;
          } else if (var0.hasEffect(MobEffects.WITHER)) {
@@ -1472,6 +1387,11 @@ public class Gui {
          }
 
          return var1;
+      }
+
+      // $FF: synthetic method
+      private static HeartType[] $values() {
+         return new HeartType[]{CONTAINER, NORMAL, POISIONED, WITHERED, ABSORBING, FROZEN};
       }
    }
 }

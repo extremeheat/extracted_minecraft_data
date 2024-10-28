@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -35,7 +34,6 @@ public class BrushItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Player var2 = var1.getPlayer();
       if (var2 != null && this.calculateHitResult(var2).getType() == HitResult.Type.BLOCK) {
@@ -45,57 +43,54 @@ public class BrushItem extends Item {
       return InteractionResult.CONSUME;
    }
 
-   @Override
    public UseAnim getUseAnimation(ItemStack var1) {
       return UseAnim.BRUSH;
    }
 
-   @Override
    public int getUseDuration(ItemStack var1) {
       return 200;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
       if (var4 >= 0 && var2 instanceof Player var5) {
-         HitResult var6 = this.calculateHitResult((Player)var5);
-         if (var6 instanceof BlockHitResult var7 && var6.getType() == HitResult.Type.BLOCK) {
-            int var8 = this.getUseDuration(var3) - var4 + 1;
-            boolean var9 = var8 % 10 == 5;
-            if (var9) {
-               BlockPos var10 = ((BlockHitResult)var7).getBlockPos();
-               BlockState var11 = var1.getBlockState(var10);
-               HumanoidArm var12 = var2.getUsedItemHand() == InteractionHand.MAIN_HAND
-                  ? ((Player)var5).getMainArm()
-                  : ((Player)var5).getMainArm().getOpposite();
-               if (var11.shouldSpawnTerrainParticles() && var11.getRenderShape() != RenderShape.INVISIBLE) {
-                  this.spawnDustParticles(var1, (BlockHitResult)var7, var11, var2.getViewVector(0.0F), var12);
-               }
+         HitResult var6 = this.calculateHitResult(var5);
+         if (var6 instanceof BlockHitResult var7) {
+            if (var6.getType() == HitResult.Type.BLOCK) {
+               int var8 = this.getUseDuration(var3) - var4 + 1;
+               boolean var9 = var8 % 10 == 5;
+               if (var9) {
+                  BlockPos var10 = var7.getBlockPos();
+                  BlockState var11 = var1.getBlockState(var10);
+                  HumanoidArm var12 = var2.getUsedItemHand() == InteractionHand.MAIN_HAND ? var5.getMainArm() : var5.getMainArm().getOpposite();
+                  if (var11.shouldSpawnTerrainParticles() && var11.getRenderShape() != RenderShape.INVISIBLE) {
+                     this.spawnDustParticles(var1, var7, var11, var2.getViewVector(0.0F), var12);
+                  }
 
-               Block var15 = var11.getBlock();
-               SoundEvent var13;
-               if (var15 instanceof BrushableBlock var14) {
-                  var13 = var14.getBrushSound();
-               } else {
-                  var13 = SoundEvents.BRUSH_GENERIC;
-               }
+                  Block var15 = var11.getBlock();
+                  SoundEvent var13;
+                  if (var15 instanceof BrushableBlock) {
+                     BrushableBlock var14 = (BrushableBlock)var15;
+                     var13 = var14.getBrushSound();
+                  } else {
+                     var13 = SoundEvents.BRUSH_GENERIC;
+                  }
 
-               var1.playSound((Player)var5, var10, var13, SoundSource.BLOCKS);
-               if (!var1.isClientSide()) {
-                  BlockEntity var18 = var1.getBlockEntity(var10);
-                  if (var18 instanceof BrushableBlockEntity var17) {
-                     boolean var19 = var17.brush(var1.getGameTime(), (Player)var5, ((BlockHitResult)var7).getDirection());
-                     if (var19) {
-                        EquipmentSlot var16 = var3.equals(((Player)var5).getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
-                        var3.hurtAndBreak(1, var2, var16);
+                  var1.playSound(var5, var10, var13, SoundSource.BLOCKS);
+                  if (!var1.isClientSide()) {
+                     BlockEntity var18 = var1.getBlockEntity(var10);
+                     if (var18 instanceof BrushableBlockEntity) {
+                        BrushableBlockEntity var17 = (BrushableBlockEntity)var18;
+                        boolean var19 = var17.brush(var1.getGameTime(), var5, var7.getDirection());
+                        if (var19) {
+                           EquipmentSlot var16 = var3.equals(var5.getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
+                           var3.hurtAndBreak(1, var2, var16);
+                        }
                      }
                   }
                }
-            }
 
-            return;
+               return;
+            }
          }
 
          var2.releaseUsingItem();
@@ -105,7 +100,9 @@ public class BrushItem extends Item {
    }
 
    private HitResult calculateHitResult(Player var1) {
-      return ProjectileUtil.getHitResultOnViewVector(var1, var0 -> !var0.isSpectator() && var0.isPickable(), var1.blockInteractionRange());
+      return ProjectileUtil.getHitResultOnViewVector(var1, (var0) -> {
+         return !var0.isSpectator() && var0.isPickable();
+      }, var1.blockInteractionRange());
    }
 
    private void spawnDustParticles(Level var1, BlockHitResult var2, BlockState var3, Vec3 var4, HumanoidArm var5) {
@@ -114,26 +111,16 @@ public class BrushItem extends Item {
       int var9 = var1.getRandom().nextInt(7, 12);
       BlockParticleOption var10 = new BlockParticleOption(ParticleTypes.BLOCK, var3);
       Direction var11 = var2.getDirection();
-      BrushItem.DustParticlesDelta var12 = BrushItem.DustParticlesDelta.fromDirection(var4, var11);
+      DustParticlesDelta var12 = BrushItem.DustParticlesDelta.fromDirection(var4, var11);
       Vec3 var13 = var2.getLocation();
 
       for(int var14 = 0; var14 < var9; ++var14) {
-         var1.addParticle(
-            var10,
-            var13.x - (double)(var11 == Direction.WEST ? 1.0E-6F : 0.0F),
-            var13.y,
-            var13.z - (double)(var11 == Direction.NORTH ? 1.0E-6F : 0.0F),
-            var12.xd() * (double)var8 * 3.0 * var1.getRandom().nextDouble(),
-            0.0,
-            var12.zd() * (double)var8 * 3.0 * var1.getRandom().nextDouble()
-         );
+         var1.addParticle(var10, var13.x - (double)(var11 == Direction.WEST ? 1.0E-6F : 0.0F), var13.y, var13.z - (double)(var11 == Direction.NORTH ? 1.0E-6F : 0.0F), var12.xd() * (double)var8 * 3.0 * var1.getRandom().nextDouble(), 0.0, var12.zd() * (double)var8 * 3.0 * var1.getRandom().nextDouble());
       }
+
    }
 
-   static record DustParticlesDelta(double a, double b, double c) {
-      private final double xd;
-      private final double yd;
-      private final double zd;
+   static record DustParticlesDelta(double xd, double yd, double zd) {
       private static final double ALONG_SIDE_DELTA = 1.0;
       private static final double OUT_FROM_SIDE_DELTA = 0.1;
 
@@ -144,16 +131,43 @@ public class BrushItem extends Item {
          this.zd = var5;
       }
 
-      public static BrushItem.DustParticlesDelta fromDirection(Vec3 var0, Direction var1) {
+      public static DustParticlesDelta fromDirection(Vec3 var0, Direction var1) {
          double var2 = 0.0;
+         DustParticlesDelta var10000;
+         switch (var1) {
+            case DOWN:
+            case UP:
+               var10000 = new DustParticlesDelta(var0.z(), 0.0, -var0.x());
+               break;
+            case NORTH:
+               var10000 = new DustParticlesDelta(1.0, 0.0, -0.1);
+               break;
+            case SOUTH:
+               var10000 = new DustParticlesDelta(-1.0, 0.0, 0.1);
+               break;
+            case WEST:
+               var10000 = new DustParticlesDelta(-0.1, 0.0, -1.0);
+               break;
+            case EAST:
+               var10000 = new DustParticlesDelta(0.1, 0.0, 1.0);
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
 
-         return switch(var1) {
-            case DOWN, UP -> new BrushItem.DustParticlesDelta(var0.z(), 0.0, -var0.x());
-            case NORTH -> new BrushItem.DustParticlesDelta(1.0, 0.0, -0.1);
-            case SOUTH -> new BrushItem.DustParticlesDelta(-1.0, 0.0, 0.1);
-            case WEST -> new BrushItem.DustParticlesDelta(-0.1, 0.0, -1.0);
-            case EAST -> new BrushItem.DustParticlesDelta(0.1, 0.0, 1.0);
-         };
+         return var10000;
+      }
+
+      public double xd() {
+         return this.xd;
+      }
+
+      public double yd() {
+         return this.yd;
+      }
+
+      public double zd() {
+         return this.zd;
       }
    }
 }

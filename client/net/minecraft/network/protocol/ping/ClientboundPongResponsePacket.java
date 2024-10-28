@@ -5,11 +5,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundPongResponsePacket(long b) implements Packet<ClientPongPacketListener> {
-   private final long time;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPongResponsePacket> STREAM_CODEC = Packet.codec(
-      ClientboundPongResponsePacket::write, ClientboundPongResponsePacket::new
-   );
+public record ClientboundPongResponsePacket(long time) implements Packet<ClientPongPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPongResponsePacket> STREAM_CODEC = Packet.codec(ClientboundPongResponsePacket::write, ClientboundPongResponsePacket::new);
 
    private ClientboundPongResponsePacket(FriendlyByteBuf var1) {
       this(var1.readLong());
@@ -24,12 +21,15 @@ public record ClientboundPongResponsePacket(long b) implements Packet<ClientPong
       var1.writeLong(this.time);
    }
 
-   @Override
    public PacketType<ClientboundPongResponsePacket> type() {
       return PingPacketTypes.CLIENTBOUND_PONG_RESPONSE;
    }
 
    public void handle(ClientPongPacketListener var1) {
       var1.handlePongResponse(this);
+   }
+
+   public long time() {
+      return this.time;
    }
 }

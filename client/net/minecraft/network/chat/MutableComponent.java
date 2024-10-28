@@ -1,7 +1,6 @@
 package net.minecraft.network.chat;
 
 import com.google.common.collect.Lists;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -14,12 +13,13 @@ public class MutableComponent implements Component {
    private final ComponentContents contents;
    private final List<Component> siblings;
    private Style style;
-   private FormattedCharSequence visualOrderText = FormattedCharSequence.EMPTY;
+   private FormattedCharSequence visualOrderText;
    @Nullable
    private Language decomposedWith;
 
    MutableComponent(ComponentContents var1, List<Component> var2, Style var3) {
       super();
+      this.visualOrderText = FormattedCharSequence.EMPTY;
       this.contents = var1;
       this.siblings = var2;
       this.style = var3;
@@ -29,12 +29,10 @@ public class MutableComponent implements Component {
       return new MutableComponent(var0, Lists.newArrayList(), Style.EMPTY);
    }
 
-   @Override
    public ComponentContents getContents() {
       return this.contents;
    }
 
-   @Override
    public List<Component> getSiblings() {
       return this.siblings;
    }
@@ -44,39 +42,21 @@ public class MutableComponent implements Component {
       return this;
    }
 
-   @Override
    public Style getStyle() {
       return this.style;
    }
 
    public MutableComponent append(String var1) {
-      return this.append(Component.literal(var1));
+      return this.append((Component)Component.literal(var1));
    }
 
-   public MutableComponent append(Component... var1) {
-      this.siblings.addAll(Arrays.asList(var1));
-      return this;
-   }
-
-   public MutableComponent append(Object... var1) {
-      for(Object var5 : var1) {
-         if (var5 instanceof Component var7) {
-            this.append((Component)var7);
-         } else {
-            if (!(var5 instanceof String)) {
-               throw new IllegalArgumentException("Don't know how to turn " + var5 + " into a Component");
-            }
-
-            String var6 = (String)var5;
-            this.append(Component.literal(var6));
-         }
-      }
-
+   public MutableComponent append(Component var1) {
+      this.siblings.add(var1);
       return this;
    }
 
    public MutableComponent withStyle(UnaryOperator<Style> var1) {
-      this.setStyle(var1.apply(this.getStyle()));
+      this.setStyle((Style)var1.apply(this.getStyle()));
       return this;
    }
 
@@ -100,18 +80,16 @@ public class MutableComponent implements Component {
       return this;
    }
 
-   @Override
    public FormattedCharSequence getVisualOrderText() {
       Language var1 = Language.getInstance();
       if (this.decomposedWith != var1) {
-         this.visualOrderText = var1.getVisualOrder(this);
+         this.visualOrderText = var1.getVisualOrder((FormattedText)this);
          this.decomposedWith = var1;
       }
 
       return this.visualOrderText;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -123,12 +101,10 @@ public class MutableComponent implements Component {
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.contents, this.style, this.siblings);
+      return Objects.hash(new Object[]{this.contents, this.style, this.siblings});
    }
 
-   @Override
    public String toString() {
       StringBuilder var1 = new StringBuilder(this.contents.toString());
       boolean var2 = !this.style.isEmpty();

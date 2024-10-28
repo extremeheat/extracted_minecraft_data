@@ -73,7 +73,7 @@ public class CommonComponents {
    }
 
    public static Component joinLines(Component... var0) {
-      return joinLines(Arrays.asList(var0));
+      return joinLines((Collection)Arrays.asList(var0));
    }
 
    public static Component joinLines(Collection<? extends Component> var0) {

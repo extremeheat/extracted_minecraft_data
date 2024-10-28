@@ -21,14 +21,12 @@ public class CapeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abs
       super(var1);
    }
 
-   public void render(
-      PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4, float var5, float var6, float var7, float var8, float var9, float var10
-   ) {
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if (!var4.isInvisible() && var4.isModelPartShown(PlayerModelPart.CAPE)) {
          PlayerSkin var11 = var4.getSkin();
          if (var11.capeTexture() != null) {
             ItemStack var12 = var4.getItemBySlot(EquipmentSlot.CHEST);
-            if (!var12.is(Items.ELYTRA) && !var12.is(Items.POISONOUS_POLYTRA)) {
+            if (!var12.is(Items.ELYTRA)) {
                var1.pushPose();
                var1.translate(0.0F, 0.0F, 0.125F);
                double var13 = Mth.lerp((double)var7, var4.xCloakO, var4.xCloak) - Mth.lerp((double)var7, var4.xo, var4.getX());
@@ -57,7 +55,7 @@ public class CapeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abs
                var1.mulPose(Axis.ZP.rotationDegrees(var26 / 2.0F));
                var1.mulPose(Axis.YP.rotationDegrees(180.0F - var26 / 2.0F));
                VertexConsumer var28 = var2.getBuffer(RenderType.entitySolid(var11.capeTexture()));
-               this.getParentModel().renderCloak(var1, var28, var3, OverlayTexture.NO_OVERLAY);
+               ((PlayerModel)this.getParentModel()).renderCloak(var1, var28, var3, OverlayTexture.NO_OVERLAY);
                var1.popPose();
             }
          }

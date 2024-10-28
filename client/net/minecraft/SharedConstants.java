@@ -1,7 +1,7 @@
 package net.minecraft;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.DSL.TypeReference;
+import com.mojang.datafixers.DSL;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import java.time.Duration;
@@ -12,25 +12,34 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 
 public class SharedConstants {
+   /** @deprecated */
    @Deprecated
    public static final boolean SNAPSHOT = true;
+   /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 3824;
+   public static final int WORLD_VERSION = 3827;
+   /** @deprecated */
    @Deprecated
-   public static final String SERIES = "april2024";
+   public static final String SERIES = "main";
+   /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "24w14potato";
+   public static final String VERSION_STRING = "24w14a";
+   /** @deprecated */
    @Deprecated
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 766;
+   /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 183;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 184;
    public static final int SNBT_NAG_VERSION = 3798;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean THROW_ON_TASK_FAILURE = false;
+   public static final boolean CRASH_EAGERLY = true;
+   /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 30;
+   public static final int RESOURCE_PACK_FORMAT = 31;
+   /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 36;
+   public static final int DATA_PACK_FORMAT = 38;
+   /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
@@ -109,7 +118,7 @@ public class SharedConstants {
    public static final boolean DEBUG_SUBTITLES = false;
    public static final int FAKE_MS_LATENCY = 0;
    public static final int FAKE_MS_JITTER = 0;
-   public static final Level NETTY_LEAK_DETECTION = Level.DISABLED;
+   public static final ResourceLeakDetector.Level NETTY_LEAK_DETECTION;
    public static final boolean COMMAND_STACK_TRACES = false;
    public static final boolean DEBUG_WORLD_RECREATE = false;
    public static final boolean DEBUG_SHOW_SERVER_DEBUG_VALUES = false;
@@ -118,13 +127,13 @@ public class SharedConstants {
    public static final boolean DEBUG_RESOURCE_GENERATION_OVERRIDE = false;
    public static final boolean DEBUG_FORCE_TELEMETRY = false;
    public static final boolean DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND = false;
-   public static final long MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();
+   public static final long MAXIMUM_TICK_TIME_NANOS;
    public static final float MAXIMUM_BLOCK_EXPLOSION_RESISTANCE = 3600000.0F;
    public static final boolean USE_WORKFLOWS_HOOKS = false;
    public static final boolean USE_DEVONLY = false;
-   public static boolean CHECK_DATA_FIXER_SCHEMA = true;
+   public static boolean CHECK_DATA_FIXER_SCHEMA;
    public static boolean IS_RUNNING_IN_IDE;
-   public static Set<TypeReference> DATA_FIX_TYPES_TO_OPTIMIZE = Set.of();
+   public static Set<DSL.TypeReference> DATA_FIX_TYPES_TO_OPTIMIZE;
    public static final int WORLD_RESOLUTION = 16;
    public static final int MAX_CHAT_LENGTH = 256;
    public static final int MAX_USER_INPUT_COMMAND_LENGTH = 32500;
@@ -132,7 +141,7 @@ public class SharedConstants {
    public static final int MAX_PLAYER_NAME_LENGTH = 16;
    public static final int MAX_CHAINED_NEIGHBOR_UPDATES = 1000000;
    public static final int MAX_RENDER_DISTANCE = 32;
-   public static final char[] ILLEGAL_FILE_CHARACTERS = new char[]{'/', '\n', '\r', '\t', '\u0000', '\f', '`', '?', '*', '\\', '<', '>', '|', '"', ':'};
+   public static final char[] ILLEGAL_FILE_CHARACTERS;
    public static final int TICKS_PER_SECOND = 20;
    public static final int MILLIS_PER_TICK = 50;
    public static final int TICKS_PER_MINUTE = 1200;
@@ -154,12 +163,14 @@ public class SharedConstants {
       } else if (var0 != CURRENT_VERSION) {
          throw new IllegalStateException("Cannot override the current game version!");
       }
+
    }
 
    public static void tryDetectVersion() {
       if (CURRENT_VERSION == null) {
          CURRENT_VERSION = DetectedVersion.tryDetectVersion();
       }
+
    }
 
    public static WorldVersion getCurrentVersion() {
@@ -171,7 +182,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742007;
+      return 1073742008;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {
@@ -189,6 +200,11 @@ public class SharedConstants {
    }
 
    static {
+      NETTY_LEAK_DETECTION = Level.DISABLED;
+      MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();
+      CHECK_DATA_FIXER_SCHEMA = true;
+      DATA_FIX_TYPES_TO_OPTIMIZE = Set.of();
+      ILLEGAL_FILE_CHARACTERS = new char[]{'/', '\n', '\r', '\t', '\u0000', '\f', '`', '?', '*', '\\', '<', '>', '|', '"', ':'};
       ResourceLeakDetector.setLevel(NETTY_LEAK_DETECTION);
       CommandSyntaxException.ENABLE_COMMAND_STACK_TRACES = false;
       CommandSyntaxException.BUILT_IN_EXCEPTIONS = new BrigadierExceptions();

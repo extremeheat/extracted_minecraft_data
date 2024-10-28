@@ -15,19 +15,25 @@ public class OpenAlUtil {
    }
 
    private static String alErrorToString(int var0) {
-      switch(var0) {
-         case 40961:
+      switch (var0) {
+         case 40961 -> {
             return "Invalid name parameter.";
-         case 40962:
+         }
+         case 40962 -> {
             return "Invalid enumerated parameter value.";
-         case 40963:
+         }
+         case 40963 -> {
             return "Invalid parameter parameter value.";
-         case 40964:
+         }
+         case 40964 -> {
             return "Invalid operation.";
-         case 40965:
+         }
+         case 40965 -> {
             return "Unable to allocate memory.";
-         default:
+         }
+         default -> {
             return "An unrecognized error occurred.";
+         }
       }
    }
 
@@ -42,19 +48,25 @@ public class OpenAlUtil {
    }
 
    private static String alcErrorToString(int var0) {
-      switch(var0) {
-         case 40961:
+      switch (var0) {
+         case 40961 -> {
             return "Invalid device.";
-         case 40962:
+         }
+         case 40962 -> {
             return "Invalid context.";
-         case 40963:
+         }
+         case 40963 -> {
             return "Illegal enum.";
-         case 40964:
+         }
+         case 40964 -> {
             return "Invalid value.";
-         case 40965:
+         }
+         case 40965 -> {
             return "Unable to allocate memory.";
-         default:
+         }
+         default -> {
             return "An unrecognized error occurred.";
+         }
       }
    }
 
@@ -69,7 +81,7 @@ public class OpenAlUtil {
    }
 
    static int audioFormatToOpenAl(AudioFormat var0) {
-      Encoding var1 = var0.getEncoding();
+      AudioFormat.Encoding var1 = var0.getEncoding();
       int var2 = var0.getChannels();
       int var3 = var0.getSampleSizeInBits();
       if (var1.equals(Encoding.PCM_UNSIGNED) || var1.equals(Encoding.PCM_SIGNED)) {
@@ -92,6 +104,6 @@ public class OpenAlUtil {
          }
       }
 
-      throw new IllegalArgumentException("Invalid audio format: " + var0);
+      throw new IllegalArgumentException("Invalid audio format: " + String.valueOf(var0));
    }
 }

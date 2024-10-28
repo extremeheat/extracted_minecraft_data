@@ -21,16 +21,7 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
       return var2.nextFloat() <= var1.probability;
    }
 
-   public boolean carve(
-      CarvingContext var1,
-      CanyonCarverConfiguration var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      RandomSource var5,
-      Aquifer var6,
-      ChunkPos var7,
-      CarvingMask var8
-   ) {
+   public boolean carve(CarvingContext var1, CanyonCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8) {
       int var9 = (this.getRange() * 2 - 1) * 16;
       double var10 = (double)var7.getBlockX(var5.nextInt(16));
       int var12 = var2.y.sample(var5, var1);
@@ -45,24 +36,7 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
       return true;
    }
 
-   private void doCarve(
-      CarvingContext var1,
-      CanyonCarverConfiguration var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      long var5,
-      Aquifer var7,
-      double var8,
-      double var10,
-      double var12,
-      float var14,
-      float var15,
-      float var16,
-      int var17,
-      int var18,
-      double var19,
-      CarvingMask var21
-   ) {
+   private void doCarve(CarvingContext var1, CanyonCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, long var5, Aquifer var7, double var8, double var10, double var12, float var14, float var15, float var16, int var17, int var18, double var19, CarvingMask var21) {
       RandomSource var22 = RandomSource.create(var5);
       float[] var23 = this.initWidthFactors(var1, var2, var22);
       float var24 = 0.0F;
@@ -90,22 +64,12 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
                return;
             }
 
-            this.carveEllipsoid(
-               var1,
-               var2,
-               var3,
-               var4,
-               var7,
-               var8,
-               var10,
-               var12,
-               var27,
-               var29,
-               var21,
-               (var2x, var3x, var5x, var7x, var9) -> this.shouldSkip(var2x, var23, var3x, var5x, var7x, var9)
-            );
+            this.carveEllipsoid(var1, var2, var3, var4, var7, var8, var10, var12, var27, var29, var21, (var2x, var3x, var5x, var7x, var9) -> {
+               return this.shouldSkip(var2x, var23, var3x, var5x, var7x, var9);
+            });
          }
       }
+
    }
 
    private float[] initWidthFactors(CarvingContext var1, CanyonCarverConfiguration var2, RandomSource var3) {

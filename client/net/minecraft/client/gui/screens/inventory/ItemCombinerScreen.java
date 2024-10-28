@@ -13,27 +13,24 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
    private final ResourceLocation menuResource;
 
    public ItemCombinerScreen(T var1, Inventory var2, Component var3, ResourceLocation var4) {
-      super((T)var1, var2, var3);
+      super(var1, var2, var3);
       this.menuResource = var4;
    }
 
    protected void subInit() {
    }
 
-   @Override
    protected void init() {
       super.init();
       this.subInit();
-      this.menu.addSlotListener(this);
+      ((ItemCombinerMenu)this.menu).addSlotListener(this);
    }
 
-   @Override
    public void removed() {
       super.removed();
-      this.menu.removeSlotListener(this);
+      ((ItemCombinerMenu)this.menu).removeSlotListener(this);
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderFg(var1, var2, var3, var4);
@@ -43,7 +40,6 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
    protected void renderFg(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       var1.blit(this.menuResource, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
       this.renderErrorIcon(var1, this.leftPos, this.topPos);
@@ -51,11 +47,9 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
 
    protected abstract void renderErrorIcon(GuiGraphics var1, int var2, int var3);
 
-   @Override
    public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
    }
 
-   @Override
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
    }
 }

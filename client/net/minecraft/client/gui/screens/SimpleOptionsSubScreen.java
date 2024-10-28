@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -19,9 +20,8 @@ public abstract class SimpleOptionsSubScreen extends OptionsSubScreen {
       this.smallOptions = var4;
    }
 
-   @Override
    protected void init() {
-      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
+      this.list = (OptionsList)this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
       this.list.addSmall(this.smallOptions);
       this.narratorButton = this.list.findOption(this.options.narrator());
       if (this.narratorButton != null) {
@@ -31,7 +31,6 @@ public abstract class SimpleOptionsSubScreen extends OptionsSubScreen {
       super.init();
    }
 
-   @Override
    protected void repositionElements() {
       super.repositionElements();
       this.list.updateSize(this.width, this.layout);
@@ -39,7 +38,8 @@ public abstract class SimpleOptionsSubScreen extends OptionsSubScreen {
 
    public void updateNarratorButton() {
       if (this.narratorButton instanceof CycleButton) {
-         ((CycleButton)this.narratorButton).setValue(this.options.narrator().get());
+         ((CycleButton)this.narratorButton).setValue((NarratorStatus)this.options.narrator().get());
       }
+
    }
 }

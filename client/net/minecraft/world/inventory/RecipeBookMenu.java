@@ -13,7 +13,7 @@ public abstract class RecipeBookMenu<C extends Container> extends AbstractContai
    }
 
    public void handlePlacement(boolean var1, RecipeHolder<?> var2, ServerPlayer var3) {
-      new ServerPlaceRecipe<>(this).recipeClicked(var3, var2, var1);
+      (new ServerPlaceRecipe(this)).recipeClicked(var3, var2, var1);
    }
 
    public abstract void fillCraftSlotsStackedContents(StackedContents var1);

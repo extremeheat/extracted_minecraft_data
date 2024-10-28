@@ -15,9 +15,7 @@ public final class MissingTextureAtlasSprite {
    private static final int MISSING_IMAGE_HEIGHT = 16;
    private static final String MISSING_TEXTURE_NAME = "missingno";
    private static final ResourceLocation MISSING_TEXTURE_LOCATION = new ResourceLocation("missingno");
-   private static final ResourceMetadata SPRITE_METADATA = new ResourceMetadata.Builder()
-      .put(AnimationMetadataSection.SERIALIZER, new AnimationMetadataSection(ImmutableList.of(new AnimationFrame(0, -1)), 16, 16, 1, false))
-      .build();
+   private static final ResourceMetadata SPRITE_METADATA;
    @Nullable
    private static DynamicTexture missingTexture;
 
@@ -57,9 +55,13 @@ public final class MissingTextureAtlasSprite {
          NativeImage var0 = generateMissingImage(16, 16);
          var0.untrack();
          missingTexture = new DynamicTexture(var0);
-         Minecraft.getInstance().getTextureManager().register(MISSING_TEXTURE_LOCATION, missingTexture);
+         Minecraft.getInstance().getTextureManager().register((ResourceLocation)MISSING_TEXTURE_LOCATION, (AbstractTexture)missingTexture);
       }
 
       return missingTexture;
+   }
+
+   static {
+      SPRITE_METADATA = (new ResourceMetadata.Builder()).put(AnimationMetadataSection.SERIALIZER, new AnimationMetadataSection(ImmutableList.of(new AnimationFrame(0, -1)), 16, 16, 1, false)).build();
    }
 }

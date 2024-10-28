@@ -4,9 +4,13 @@ import com.google.common.collect.Comparators;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import java.util.BitSet;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchFinishedPacket;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchStartPacket;
 import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
@@ -46,6 +50,7 @@ public class PlayerChunkSender {
       if (!this.pendingChunks.remove(var2.toLong()) && var1.isAlive()) {
          var1.connection.send(new ClientboundForgetLevelChunkPacket(var2));
       }
+
    }
 
    public void sendNextChunks(ServerPlayer var1) {
@@ -61,8 +66,10 @@ public class PlayerChunkSender {
                   ServerGamePacketListenerImpl var6 = var1.connection;
                   ++this.unacknowledgedBatches;
                   var6.send(ClientboundChunkBatchStartPacket.INSTANCE);
+                  Iterator var7 = var5.iterator();
 
-                  for(LevelChunk var8 : var5) {
+                  while(var7.hasNext()) {
+                     LevelChunk var8 = (LevelChunk)var7.next();
                      sendChunk(var6, var3, var8);
                   }
 
@@ -75,33 +82,33 @@ public class PlayerChunkSender {
    }
 
    private static void sendChunk(ServerGamePacketListenerImpl var0, ServerLevel var1, LevelChunk var2) {
-      var0.send(new ClientboundLevelChunkWithLightPacket(var2, var1.getLightEngine(), null, null));
+      var0.send(new ClientboundLevelChunkWithLightPacket(var2, var1.getLightEngine(), (BitSet)null, (BitSet)null));
       ChunkPos var3 = var2.getPos();
       DebugPackets.sendPoiPacketsForChunk(var1, var3);
    }
 
    private List<LevelChunk> collectChunksToSend(ChunkMap var1, ChunkPos var2) {
       int var4 = Mth.floor(this.batchQuota);
+      LongStream var10000;
       List var3;
       if (!this.memoryConnection && this.pendingChunks.size() > var4) {
-         var3 = this.pendingChunks
-            .stream()
-            .collect(Comparators.least(var4, Comparator.comparingInt(var2::distanceSquared)))
-            .stream()
-            .mapToLong(Long::longValue)
-            .mapToObj(var1::getChunkToSend)
-            .filter(Objects::nonNull)
-            .toList();
+         Stream var7 = this.pendingChunks.stream();
+         Objects.requireNonNull(var2);
+         var10000 = ((List)var7.collect(Comparators.least(var4, Comparator.comparingInt(var2::distanceSquared)))).stream().mapToLong(Long::longValue);
+         Objects.requireNonNull(var1);
+         var3 = var10000.mapToObj(var1::getChunkToSend).filter(Objects::nonNull).toList();
       } else {
-         var3 = this.pendingChunks
-            .longStream()
-            .mapToObj(var1::getChunkToSend)
-            .filter(Objects::nonNull)
-            .sorted(Comparator.comparingInt(var1x -> var2.distanceSquared(var1x.getPos())))
-            .toList();
+         var10000 = this.pendingChunks.longStream();
+         Objects.requireNonNull(var1);
+         var3 = var10000.mapToObj(var1::getChunkToSend).filter(Objects::nonNull).sorted(Comparator.comparingInt((var1x) -> {
+            return var2.distanceSquared(var1x.getPos());
+         })).toList();
       }
 
-      for(LevelChunk var6 : var3) {
+      Iterator var5 = var3.iterator();
+
+      while(var5.hasNext()) {
+         LevelChunk var6 = (LevelChunk)var5.next();
          this.pendingChunks.remove(var6.getPos().toLong());
       }
 

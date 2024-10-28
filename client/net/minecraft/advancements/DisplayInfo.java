@@ -2,33 +2,20 @@ package net.minecraft.advancements;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public class DisplayInfo {
-   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ItemStack.CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon),
-               ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle),
-               ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription),
-               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "background").forGetter(DisplayInfo::getBackground),
-               ExtraCodecs.strictOptionalField(AdvancementType.CODEC, "frame", AdvancementType.TASK).forGetter(DisplayInfo::getType),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_toast", true).forGetter(DisplayInfo::shouldShowToast),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "hidden", false).forGetter(DisplayInfo::isHidden)
-            )
-            .apply(var0, DisplayInfo::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.ofMember(
-      DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork
-   );
+   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ItemStack.CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ResourceLocation.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(var0, DisplayInfo::new);
+   });
+   public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.ofMember(DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork);
    private final Component title;
    private final Component description;
    private final ItemStack icon;
@@ -40,9 +27,7 @@ public class DisplayInfo {
    private float x;
    private float y;
 
-   public DisplayInfo(
-      ItemStack var1, Component var2, Component var3, Optional<ResourceLocation> var4, AdvancementType var5, boolean var6, boolean var7, boolean var8
-   ) {
+   public DisplayInfo(ItemStack var1, Component var2, Component var3, Optional<ResourceLocation> var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
       super();
       this.title = var2;
       this.description = var3;
@@ -118,16 +103,18 @@ public class DisplayInfo {
       }
 
       var1.writeInt(var2);
-      this.background.ifPresent(var1::writeResourceLocation);
+      Optional var10000 = this.background;
+      Objects.requireNonNull(var1);
+      var10000.ifPresent(var1::writeResourceLocation);
       var1.writeFloat(this.x);
       var1.writeFloat(this.y);
    }
 
    private static DisplayInfo fromNetwork(RegistryFriendlyByteBuf var0) {
-      Component var1 = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
-      Component var2 = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
-      ItemStack var3 = ItemStack.STREAM_CODEC.decode(var0);
-      AdvancementType var4 = var0.readEnum(AdvancementType.class);
+      Component var1 = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
+      Component var2 = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
+      ItemStack var3 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
+      AdvancementType var4 = (AdvancementType)var0.readEnum(AdvancementType.class);
       int var5 = var0.readInt();
       Optional var6 = (var5 & 1) != 0 ? Optional.of(var0.readResourceLocation()) : Optional.empty();
       boolean var7 = (var5 & 2) != 0;

@@ -20,7 +20,6 @@ public final class ModelLayerLocation {
       return this.layer;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -32,14 +31,14 @@ public final class ModelLayerLocation {
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.model.hashCode();
-      return 31 * var1 + this.layer.hashCode();
+      var1 = 31 * var1 + this.layer.hashCode();
+      return var1;
    }
 
-   @Override
    public String toString() {
-      return this.model + "#" + this.layer;
+      String var10000 = String.valueOf(this.model);
+      return var10000 + "#" + this.layer;
    }
 }

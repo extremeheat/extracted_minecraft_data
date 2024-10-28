@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class SoulFireBlock extends BaseFireBlock {
    public static final MapCodec<SoulFireBlock> CODEC = simpleCodec(SoulFireBlock::new);
 
-   @Override
    public MapCodec<SoulFireBlock> codec() {
       return CODEC;
    }
@@ -21,12 +20,10 @@ public class SoulFireBlock extends BaseFireBlock {
       super(var1, 2.0F);
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return this.canSurvive(var1, var4, var5) ? this.defaultBlockState() : Blocks.AIR.defaultBlockState();
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return canSurviveOnBlock(var2.getBlockState(var3.below()));
    }
@@ -35,7 +32,6 @@ public class SoulFireBlock extends BaseFireBlock {
       return var0.is(BlockTags.SOUL_FIRE_BASE_BLOCKS);
    }
 
-   @Override
    protected boolean canBurn(BlockState var1) {
       return true;
    }

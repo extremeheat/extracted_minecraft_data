@@ -30,7 +30,6 @@ public class LanServerPinger extends Thread {
       this.socket = new DatagramSocket();
    }
 
-   @Override
    public void run() {
       String var1 = createPingString(this.motd, this.serverAddress);
       byte[] var2 = var1.getBytes(StandardCharsets.UTF_8);
@@ -50,9 +49,9 @@ public class LanServerPinger extends Thread {
          } catch (InterruptedException var5) {
          }
       }
+
    }
 
-   @Override
    public void interrupt() {
       super.interrupt();
       this.isRunning = false;

@@ -4,12 +4,9 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -29,20 +26,21 @@ public abstract class BlockRenameFix extends DataFix {
       if (!Objects.equals(var1, var2)) {
          throw new IllegalStateException("block type is not what was expected.");
       } else {
-         TypeRewriteRule var3 = this.fixTypeEverywhere(this.name + " for block", var2, var1x -> var1xx -> var1xx.mapSecond(this::renameBlock));
-         TypeRewriteRule var4 = this.fixTypeEverywhereTyped(
-            this.name + " for block_state",
-            this.getInputSchema().getType(References.BLOCK_STATE),
-            var1x -> var1x.update(DSL.remainderFinder(), this::fixBlockState)
-         );
-         TypeRewriteRule var5 = this.fixTypeEverywhereTyped(
-            this.name + " for flat_block_state",
-            this.getInputSchema().getType(References.FLAT_BLOCK_STATE),
-            var1x -> var1x.update(
-                  DSL.remainderFinder(),
-                  var1xx -> (Dynamic)DataFixUtils.orElse(var1xx.asString().result().map(this::fixFlatBlockState).map(var1xx::createString), var1xx)
-               )
-         );
+         TypeRewriteRule var3 = this.fixTypeEverywhere(this.name + " for block", var2, (var1x) -> {
+            return (var1) -> {
+               return var1.mapSecond(this::renameBlock);
+            };
+         });
+         TypeRewriteRule var4 = this.fixTypeEverywhereTyped(this.name + " for block_state", this.getInputSchema().getType(References.BLOCK_STATE), (var1x) -> {
+            return var1x.update(DSL.remainderFinder(), this::fixBlockState);
+         });
+         TypeRewriteRule var5 = this.fixTypeEverywhereTyped(this.name + " for flat_block_state", this.getInputSchema().getType(References.FLAT_BLOCK_STATE), (var1x) -> {
+            return var1x.update(DSL.remainderFinder(), (var1) -> {
+               Optional var10000 = var1.asString().result().map(this::fixFlatBlockState);
+               Objects.requireNonNull(var1);
+               return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createString), var1);
+            });
+         });
          return TypeRewriteRule.seq(var3, new TypeRewriteRule[]{var4, var5});
       }
    }
@@ -73,7 +71,6 @@ public abstract class BlockRenameFix extends DataFix {
 
    public static DataFix create(Schema var0, String var1, final Function<String, String> var2) {
       return new BlockRenameFix(var0, var1) {
-         @Override
          protected String renameBlock(String var1) {
             return (String)var2.apply(var1);
          }

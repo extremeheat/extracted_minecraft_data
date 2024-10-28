@@ -17,9 +17,7 @@ public class SpectatorPage {
    }
 
    public SpectatorMenuItem getItem(int var1) {
-      return var1 >= 0 && var1 < this.items.size()
-         ? (SpectatorMenuItem)MoreObjects.firstNonNull(this.items.get(var1), SpectatorMenu.EMPTY_SLOT)
-         : SpectatorMenu.EMPTY_SLOT;
+      return var1 >= 0 && var1 < this.items.size() ? (SpectatorMenuItem)MoreObjects.firstNonNull((SpectatorMenuItem)this.items.get(var1), SpectatorMenu.EMPTY_SLOT) : SpectatorMenu.EMPTY_SLOT;
    }
 
    public int getSelectedSlot() {

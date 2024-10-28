@@ -15,12 +15,10 @@ public class LoggedPrintStream extends PrintStream {
       this.name = var1;
    }
 
-   @Override
    public void println(@Nullable String var1) {
       this.logLine(var1);
    }
 
-   @Override
    public void println(Object var1) {
       this.logLine(String.valueOf(var1));
    }

@@ -40,12 +40,11 @@ public class MultiPartBakedModel implements BakedModel {
       this.overrides = var2.getOverrides();
    }
 
-   @Override
    public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, RandomSource var3) {
       if (var1 == null) {
          return Collections.emptyList();
       } else {
-         BitSet var4 = this.selectorCache.get(var1);
+         BitSet var4 = (BitSet)this.selectorCache.get(var1);
          if (var4 == null) {
             var4 = new BitSet();
 
@@ -72,37 +71,30 @@ public class MultiPartBakedModel implements BakedModel {
       }
    }
 
-   @Override
    public boolean useAmbientOcclusion() {
       return this.hasAmbientOcclusion;
    }
 
-   @Override
    public boolean isGui3d() {
       return this.isGui3d;
    }
 
-   @Override
    public boolean usesBlockLight() {
       return this.usesBlockLight;
    }
 
-   @Override
    public boolean isCustomRenderer() {
       return false;
    }
 
-   @Override
    public TextureAtlasSprite getParticleIcon() {
       return this.particleIcon;
    }
 
-   @Override
    public ItemTransforms getTransforms() {
       return this.transforms;
    }
 
-   @Override
    public ItemOverrides getOverrides() {
       return this.overrides;
    }

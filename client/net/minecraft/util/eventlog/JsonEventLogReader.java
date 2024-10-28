@@ -11,7 +11,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.Reader;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 
 public interface JsonEventLogReader<T> extends Closeable {
    static <T> JsonEventLogReader<T> create(final Codec<T> var0, Reader var1) {
@@ -19,23 +18,31 @@ public interface JsonEventLogReader<T> extends Closeable {
       var2.setLenient(true);
       return new JsonEventLogReader<T>() {
          @Nullable
-         @Override
          public T next() throws IOException {
+            JsonParseException var1;
             try {
-               if (!var2.hasNext()) {
-                  return null;
-               } else {
-                  JsonElement var1 = JsonParser.parseReader(var2);
-                  return Util.getOrThrow(var0.parse(JsonOps.INSTANCE, var1), IOException::new);
+               try {
+                  if (!var2.hasNext()) {
+                     return null;
+                  }
+               } catch (JsonParseException var3) {
+                  var1 = var3;
+                  throw new IOException(var1);
                }
-            } catch (JsonParseException var2x) {
-               throw new IOException(var2x);
-            } catch (EOFException var3) {
+
+               try {
+                  JsonElement var5 = JsonParser.parseReader(var2);
+                  return var0.parse(JsonOps.INSTANCE, var5).getOrThrow(IOException::new);
+               } catch (JsonParseException var2x) {
+                  var1 = var2x;
+               }
+            } catch (EOFException var4) {
                return null;
             }
+
+            throw new IOException(var1);
          }
 
-         @Override
          public void close() throws IOException {
             var2.close();
          }

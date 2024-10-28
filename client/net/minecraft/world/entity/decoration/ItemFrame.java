@@ -42,14 +42,15 @@ import org.slf4j.Logger;
 
 public class ItemFrame extends HangingEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.ITEM_STACK);
-   private static final EntityDataAccessor<Integer> DATA_ROTATION = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.INT);
+   private static final EntityDataAccessor<ItemStack> DATA_ITEM;
+   private static final EntityDataAccessor<Integer> DATA_ROTATION;
    public static final int NUM_ROTATIONS = 8;
-   private float dropChance = 1.0F;
+   private float dropChance;
    private boolean fixed;
 
    public ItemFrame(EntityType<? extends ItemFrame> var1, Level var2) {
       super(var1, var2);
+      this.dropChance = 1.0F;
    }
 
    public ItemFrame(Level var1, BlockPos var2, Direction var3) {
@@ -58,16 +59,15 @@ public class ItemFrame extends HangingEntity {
 
    public ItemFrame(EntityType<? extends ItemFrame> var1, Level var2, BlockPos var3, Direction var4) {
       super(var1, var2, var3);
+      this.dropChance = 1.0F;
       this.setDirection(var4);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_ITEM, ItemStack.EMPTY);
       var1.define(DATA_ROTATION, 0);
    }
 
-   @Override
    protected void setDirection(Direction var1) {
       Validate.notNull(var1);
       this.direction = var1;
@@ -84,7 +84,6 @@ public class ItemFrame extends HangingEntity {
       this.recalculateBoundingBox();
    }
 
-   @Override
    protected void recalculateBoundingBox() {
       if (this.direction != null) {
          double var1 = 0.46875;
@@ -96,15 +95,10 @@ public class ItemFrame extends HangingEntity {
          double var11 = (double)this.getHeight();
          double var13 = (double)this.getWidth();
          Direction.Axis var15 = this.direction.getAxis();
-         switch(var15) {
-            case X:
-               var9 = 1.0;
-               break;
-            case Y:
-               var11 = 1.0;
-               break;
-            case Z:
-               var13 = 1.0;
+         switch (var15) {
+            case X -> var9 = 1.0;
+            case Y -> var11 = 1.0;
+            case Z -> var13 = 1.0;
          }
 
          var9 /= 32.0;
@@ -114,7 +108,6 @@ public class ItemFrame extends HangingEntity {
       }
    }
 
-   @Override
    public boolean survives() {
       if (this.fixed) {
          return true;
@@ -122,33 +115,29 @@ public class ItemFrame extends HangingEntity {
          return false;
       } else {
          BlockState var1 = this.level().getBlockState(this.pos.relative(this.direction.getOpposite()));
-         return var1.isSolid() || this.direction.getAxis().isHorizontal() && DiodeBlock.isDiode(var1)
-            ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty()
-            : false;
+         return var1.isSolid() || this.direction.getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities((Entity)this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
       }
    }
 
-   @Override
    public void move(MoverType var1, Vec3 var2) {
       if (!this.fixed) {
          super.move(var1, var2);
       }
+
    }
 
-   @Override
    public void push(double var1, double var3, double var5) {
       if (!this.fixed) {
          super.push(var1, var3, var5);
       }
+
    }
 
-   @Override
    public void kill() {
       this.removeFramedMap(this.getItem());
       super.kill();
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.fixed) {
          return !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !var1.isCreativePlayer() ? false : super.hurt(var1, var2);
@@ -171,24 +160,20 @@ public class ItemFrame extends HangingEntity {
       return SoundEvents.ITEM_FRAME_REMOVE_ITEM;
    }
 
-   @Override
    public int getWidth() {
       return 12;
    }
 
-   @Override
    public int getHeight() {
       return 12;
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       double var3 = 16.0;
       var3 *= 64.0 * getViewScale();
       return var1 < var3 * var3;
    }
 
-   @Override
    public void dropItem(@Nullable Entity var1) {
       this.playSound(this.getBreakSound(), 1.0F, 1.0F);
       this.dropItem(var1, true);
@@ -199,7 +184,6 @@ public class ItemFrame extends HangingEntity {
       return SoundEvents.ITEM_FRAME_BREAK;
    }
 
-   @Override
    public void playPlacementSound() {
       this.playSound(this.getPlaceSound(), 1.0F, 1.0F);
    }
@@ -216,10 +200,14 @@ public class ItemFrame extends HangingEntity {
             if (var1 == null) {
                this.removeFramedMap(var3);
             }
+
          } else {
-            if (var1 instanceof Player var4 && var4.hasInfiniteMaterials()) {
-               this.removeFramedMap(var3);
-               return;
+            if (var1 instanceof Player) {
+               Player var4 = (Player)var1;
+               if (var4.hasInfiniteMaterials()) {
+                  this.removeFramedMap(var3);
+                  return;
+               }
             }
 
             if (var2) {
@@ -233,6 +221,7 @@ public class ItemFrame extends HangingEntity {
                   this.spawnAtLocation(var3);
                }
             }
+
          }
       }
    }
@@ -247,16 +236,16 @@ public class ItemFrame extends HangingEntity {
          }
       }
 
-      var1.setEntityRepresentation(null);
+      var1.setEntityRepresentation((Entity)null);
    }
 
    public ItemStack getItem() {
-      return this.getEntityData().get(DATA_ITEM);
+      return (ItemStack)this.getEntityData().get(DATA_ITEM);
    }
 
    @Nullable
    public MapId getFramedMapId() {
-      return this.getItem().get(DataComponents.MAP_ID);
+      return (MapId)this.getItem().get(DataComponents.MAP_ID);
    }
 
    public boolean hasFramedMap() {
@@ -281,21 +270,19 @@ public class ItemFrame extends HangingEntity {
       if (var2 && this.pos != null) {
          this.level().updateNeighbourForOutputSignal(this.pos, Blocks.AIR);
       }
+
    }
 
    public SoundEvent getAddItemSound() {
       return SoundEvents.ITEM_FRAME_ADD_ITEM;
    }
 
-   @Override
    public SlotAccess getSlot(int var1) {
       return var1 == 0 ? new SlotAccess() {
-         @Override
          public ItemStack get() {
             return ItemFrame.this.getItem();
          }
 
-         @Override
          public boolean set(ItemStack var1) {
             ItemFrame.this.setItem(var1);
             return true;
@@ -303,11 +290,11 @@ public class ItemFrame extends HangingEntity {
       } : super.getSlot(var1);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (var1.equals(DATA_ITEM)) {
          this.onItemChanged(this.getItem());
       }
+
    }
 
    private void onItemChanged(ItemStack var1) {
@@ -319,7 +306,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public int getRotation() {
-      return this.getEntityData().get(DATA_ROTATION);
+      return (Integer)this.getEntityData().get(DATA_ROTATION);
    }
 
    public void setRotation(int var1) {
@@ -331,9 +318,9 @@ public class ItemFrame extends HangingEntity {
       if (var2 && this.pos != null) {
          this.level().updateNeighbourForOutputSignal(this.pos, Blocks.AIR);
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (!this.getItem().isEmpty()) {
@@ -347,13 +334,12 @@ public class ItemFrame extends HangingEntity {
       var1.putBoolean("Fixed", this.fixed);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       ItemStack var2;
       if (var1.contains("Item", 10)) {
          CompoundTag var3 = var1.getCompound("Item");
-         var2 = ItemStack.parse(this.registryAccess(), var3).orElse(ItemStack.EMPTY);
+         var2 = (ItemStack)ItemStack.parse(this.registryAccess(), var3).orElse(ItemStack.EMPTY);
       } else {
          var2 = ItemStack.EMPTY;
       }
@@ -376,7 +362,6 @@ public class ItemFrame extends HangingEntity {
       this.fixed = var1.getBoolean("Fixed");
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       boolean var4 = !this.getItem().isEmpty();
@@ -417,18 +402,15 @@ public class ItemFrame extends HangingEntity {
       return this.getItem().isEmpty() ? 0 : this.getRotation() % 8 + 1;
    }
 
-   @Override
    public Packet<ClientGamePacketListener> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
    }
 
-   @Override
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
       this.setDirection(Direction.from3DDataValue(var1.getData()));
    }
 
-   @Override
    public ItemStack getPickResult() {
       ItemStack var1 = this.getItem();
       return var1.isEmpty() ? this.getFrameItemStack() : var1.copy();
@@ -438,10 +420,14 @@ public class ItemFrame extends HangingEntity {
       return new ItemStack(Items.ITEM_FRAME);
    }
 
-   @Override
    public float getVisualRotationYInDegrees() {
       Direction var1 = this.getDirection();
       int var2 = var1.getAxis().isVertical() ? 90 * var1.getAxisDirection().getStep() : 0;
       return (float)Mth.wrapDegrees(180 + var1.get2DDataValue() * 90 + this.getRotation() * 45 + var2);
+   }
+
+   static {
+      DATA_ITEM = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ROTATION = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.INT);
    }
 }

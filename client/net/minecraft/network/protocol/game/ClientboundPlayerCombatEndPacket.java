@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.damagesource.CombatTracker;
 
 public class ClientboundPlayerCombatEndPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerCombatEndPacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlayerCombatEndPacket::write, ClientboundPlayerCombatEndPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerCombatEndPacket> STREAM_CODEC = Packet.codec(ClientboundPlayerCombatEndPacket::write, ClientboundPlayerCombatEndPacket::new);
    private final int duration;
 
    public ClientboundPlayerCombatEndPacket(CombatTracker var1) {
@@ -30,7 +28,6 @@ public class ClientboundPlayerCombatEndPacket implements Packet<ClientGamePacket
       var1.writeVarInt(this.duration);
    }
 
-   @Override
    public PacketType<ClientboundPlayerCombatEndPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_COMBAT_END;
    }

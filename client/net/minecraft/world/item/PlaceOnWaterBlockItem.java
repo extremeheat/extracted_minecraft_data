@@ -15,16 +15,14 @@ public class PlaceOnWaterBlockItem extends BlockItem {
       super(var1, var2);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       return InteractionResult.PASS;
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       BlockHitResult var4 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);
       BlockHitResult var5 = var4.withPosition(var4.getBlockPos().above());
       InteractionResult var6 = super.useOn(new UseOnContext(var2, var3, var5));
-      return new InteractionResultHolder<>(var6, var2.getItemInHand(var3));
+      return new InteractionResultHolder(var6, var2.getItemInHand(var3));
    }
 }

@@ -5,7 +5,6 @@ import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Deque;
 import javax.annotation.Nullable;
@@ -23,31 +22,34 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
 
    public void add(T var1, int var2) {
       if (var2 == this.highestPrio && this.highestPrioQueue != null) {
-         this.highestPrioQueue.addLast((T)var1);
+         this.highestPrioQueue.addLast(var1);
       } else {
-         Deque var3 = (Deque)this.queuesByPriority.computeIfAbsent(var2, var0 -> Queues.newArrayDeque());
+         Deque var3 = (Deque)this.queuesByPriority.computeIfAbsent(var2, (var0) -> {
+            return Queues.newArrayDeque();
+         });
          var3.addLast(var1);
          if (var2 >= this.highestPrio) {
             this.highestPrioQueue = var3;
             this.highestPrio = var2;
          }
+
       }
    }
 
    @Nullable
    protected T computeNext() {
       if (this.highestPrioQueue == null) {
-         return (T)this.endOfData();
+         return this.endOfData();
       } else {
          Object var1 = this.highestPrioQueue.removeFirst();
          if (var1 == null) {
-            return (T)this.endOfData();
+            return this.endOfData();
          } else {
             if (this.highestPrioQueue.isEmpty()) {
                this.switchCacheToNextHighestPrioQueue();
             }
 
-            return (T)var1;
+            return var1;
          }
       }
    }
@@ -58,7 +60,7 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
       ObjectIterator var3 = Int2ObjectMaps.fastIterable(this.queuesByPriority).iterator();
 
       while(var3.hasNext()) {
-         Entry var4 = (Entry)var3.next();
+         Int2ObjectMap.Entry var4 = (Int2ObjectMap.Entry)var3.next();
          Deque var5 = (Deque)var4.getValue();
          int var6 = var4.getIntKey();
          if (var6 > var1 && !var5.isEmpty()) {

@@ -12,17 +12,16 @@ public class IsInWaterSensor extends Sensor<LivingEntity> {
       super();
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of(MemoryModuleType.IS_IN_WATER);
    }
 
-   @Override
    protected void doTick(ServerLevel var1, LivingEntity var2) {
       if (var2.isInWater()) {
-         var2.getBrain().setMemory(MemoryModuleType.IS_IN_WATER, Unit.INSTANCE);
+         var2.getBrain().setMemory(MemoryModuleType.IS_IN_WATER, (Object)Unit.INSTANCE);
       } else {
          var2.getBrain().eraseMemory(MemoryModuleType.IS_IN_WATER);
       }
+
    }
 }

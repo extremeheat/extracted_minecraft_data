@@ -45,7 +45,6 @@ public class EnderDragonPhase<T extends DragonPhaseInstance> {
       return this.id;
    }
 
-   @Override
    public String toString() {
       return this.name + " (#" + this.id + ")";
    }
@@ -60,7 +59,7 @@ public class EnderDragonPhase<T extends DragonPhaseInstance> {
 
    private static <T extends DragonPhaseInstance> EnderDragonPhase<T> create(Class<T> var0, String var1) {
       EnderDragonPhase var2 = new EnderDragonPhase(phases.length, var0, var1);
-      phases = Arrays.copyOf(phases, phases.length + 1);
+      phases = (EnderDragonPhase[])Arrays.copyOf(phases, phases.length + 1);
       phases[var2.getId()] = var2;
       return var2;
    }

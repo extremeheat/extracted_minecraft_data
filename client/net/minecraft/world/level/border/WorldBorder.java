@@ -2,6 +2,7 @@ package net.minecraft.world.level.border;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.DynamicLike;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -25,25 +26,19 @@ public class WorldBorder {
    private double centerX;
    private double centerZ;
    int absoluteMaxSize = 29999984;
-   private WorldBorder.BorderExtent extent = new WorldBorder.StaticBorderExtent(5.9999968E7);
-   public static final WorldBorder.Settings DEFAULT_SETTINGS = new WorldBorder.Settings(0.0, 0.0, 0.2, 5.0, 5, 15, 5.9999968E7, 0L, 0.0);
+   private BorderExtent extent = new StaticBorderExtent(5.9999968E7);
+   public static final Settings DEFAULT_SETTINGS = new Settings(0.0, 0.0, 0.2, 5.0, 5, 15, 5.9999968E7, 0L, 0.0);
 
    public WorldBorder() {
       super();
    }
 
    public boolean isWithinBounds(BlockPos var1) {
-      return (double)(var1.getX() + 1) > this.getMinX()
-         && (double)var1.getX() < this.getMaxX()
-         && (double)(var1.getZ() + 1) > this.getMinZ()
-         && (double)var1.getZ() < this.getMaxZ();
+      return (double)(var1.getX() + 1) > this.getMinX() && (double)var1.getX() < this.getMaxX() && (double)(var1.getZ() + 1) > this.getMinZ() && (double)var1.getZ() < this.getMaxZ();
    }
 
    public boolean isWithinBounds(ChunkPos var1) {
-      return (double)var1.getMaxBlockX() > this.getMinX()
-         && (double)var1.getMinBlockX() < this.getMaxX()
-         && (double)var1.getMaxBlockZ() > this.getMinZ()
-         && (double)var1.getMinBlockZ() < this.getMaxZ();
+      return (double)var1.getMaxBlockX() > this.getMinX() && (double)var1.getMinBlockX() < this.getMaxX() && (double)var1.getMaxBlockZ() > this.getMinZ() && (double)var1.getMinBlockZ() < this.getMaxZ();
    }
 
    public boolean isWithinBounds(double var1, double var3) {
@@ -117,10 +112,13 @@ public class WorldBorder {
       this.centerX = var1;
       this.centerZ = var3;
       this.extent.onCenterChange();
+      Iterator var5 = this.getListeners().iterator();
 
-      for(BorderChangeListener var6 : this.getListeners()) {
+      while(var5.hasNext()) {
+         BorderChangeListener var6 = (BorderChangeListener)var5.next();
          var6.onBorderCenterSet(this, var1, var3);
       }
+
    }
 
    public double getSize() {
@@ -136,19 +134,25 @@ public class WorldBorder {
    }
 
    public void setSize(double var1) {
-      this.extent = new WorldBorder.StaticBorderExtent(var1);
+      this.extent = new StaticBorderExtent(var1);
+      Iterator var3 = this.getListeners().iterator();
 
-      for(BorderChangeListener var4 : this.getListeners()) {
+      while(var3.hasNext()) {
+         BorderChangeListener var4 = (BorderChangeListener)var3.next();
          var4.onBorderSizeSet(this, var1);
       }
+
    }
 
    public void lerpSizeBetween(double var1, double var3, long var5) {
-      this.extent = (WorldBorder.BorderExtent)(var1 == var3 ? new WorldBorder.StaticBorderExtent(var3) : new WorldBorder.MovingBorderExtent(var1, var3, var5));
+      this.extent = (BorderExtent)(var1 == var3 ? new StaticBorderExtent(var3) : new MovingBorderExtent(var1, var3, var5));
+      Iterator var7 = this.getListeners().iterator();
 
-      for(BorderChangeListener var8 : this.getListeners()) {
+      while(var7.hasNext()) {
+         BorderChangeListener var8 = (BorderChangeListener)var7.next();
          var8.onBorderSizeLerping(this, var1, var3, var5);
       }
+
    }
 
    protected List<BorderChangeListener> getListeners() {
@@ -178,10 +182,13 @@ public class WorldBorder {
 
    public void setDamageSafeZone(double var1) {
       this.damageSafeZone = var1;
+      Iterator var3 = this.getListeners().iterator();
 
-      for(BorderChangeListener var4 : this.getListeners()) {
+      while(var3.hasNext()) {
+         BorderChangeListener var4 = (BorderChangeListener)var3.next();
          var4.onBorderSetDamageSafeZOne(this, var1);
       }
+
    }
 
    public double getDamagePerBlock() {
@@ -190,10 +197,13 @@ public class WorldBorder {
 
    public void setDamagePerBlock(double var1) {
       this.damagePerBlock = var1;
+      Iterator var3 = this.getListeners().iterator();
 
-      for(BorderChangeListener var4 : this.getListeners()) {
+      while(var3.hasNext()) {
+         BorderChangeListener var4 = (BorderChangeListener)var3.next();
          var4.onBorderSetDamagePerBlock(this, var1);
       }
+
    }
 
    public double getLerpSpeed() {
@@ -206,10 +216,13 @@ public class WorldBorder {
 
    public void setWarningTime(int var1) {
       this.warningTime = var1;
+      Iterator var2 = this.getListeners().iterator();
 
-      for(BorderChangeListener var3 : this.getListeners()) {
+      while(var2.hasNext()) {
+         BorderChangeListener var3 = (BorderChangeListener)var2.next();
          var3.onBorderSetWarningTime(this, var1);
       }
+
    }
 
    public int getWarningBlocks() {
@@ -218,21 +231,24 @@ public class WorldBorder {
 
    public void setWarningBlocks(int var1) {
       this.warningBlocks = var1;
+      Iterator var2 = this.getListeners().iterator();
 
-      for(BorderChangeListener var3 : this.getListeners()) {
+      while(var2.hasNext()) {
+         BorderChangeListener var3 = (BorderChangeListener)var2.next();
          var3.onBorderSetWarningBlocks(this, var1);
       }
+
    }
 
    public void tick() {
       this.extent = this.extent.update();
    }
 
-   public WorldBorder.Settings createSettings() {
-      return new WorldBorder.Settings(this);
+   public Settings createSettings() {
+      return new Settings(this);
    }
 
-   public void applySettings(WorldBorder.Settings var1) {
+   public void applySettings(Settings var1) {
       this.setCenter(var1.getCenterX(), var1.getCenterZ());
       this.setDamagePerBlock(var1.getDamagePerBlock());
       this.setDamageSafeZone(var1.getSafeZone());
@@ -243,9 +259,85 @@ public class WorldBorder {
       } else {
          this.setSize(var1.getSize());
       }
+
    }
 
-   interface BorderExtent {
+   private class StaticBorderExtent implements BorderExtent {
+      private final double size;
+      private double minX;
+      private double minZ;
+      private double maxX;
+      private double maxZ;
+      private VoxelShape shape;
+
+      public StaticBorderExtent(double var2) {
+         super();
+         this.size = var2;
+         this.updateBox();
+      }
+
+      public double getMinX() {
+         return this.minX;
+      }
+
+      public double getMaxX() {
+         return this.maxX;
+      }
+
+      public double getMinZ() {
+         return this.minZ;
+      }
+
+      public double getMaxZ() {
+         return this.maxZ;
+      }
+
+      public double getSize() {
+         return this.size;
+      }
+
+      public BorderStatus getStatus() {
+         return BorderStatus.STATIONARY;
+      }
+
+      public double getLerpSpeed() {
+         return 0.0;
+      }
+
+      public long getLerpRemainingTime() {
+         return 0L;
+      }
+
+      public double getLerpTarget() {
+         return this.size;
+      }
+
+      private void updateBox() {
+         this.minX = Mth.clamp(WorldBorder.this.getCenterX() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.minZ = Mth.clamp(WorldBorder.this.getCenterZ() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.maxX = Mth.clamp(WorldBorder.this.getCenterX() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.maxZ = Mth.clamp(WorldBorder.this.getCenterZ() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.shape = Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX()), -1.0 / 0.0, Math.floor(this.getMinZ()), Math.ceil(this.getMaxX()), 1.0 / 0.0, Math.ceil(this.getMaxZ())), BooleanOp.ONLY_FIRST);
+      }
+
+      public void onAbsoluteMaxSizeChange() {
+         this.updateBox();
+      }
+
+      public void onCenterChange() {
+         this.updateBox();
+      }
+
+      public BorderExtent update() {
+         return this;
+      }
+
+      public VoxelShape getCollisionShape() {
+         return this.shape;
+      }
+   }
+
+   private interface BorderExtent {
       double getMinX();
 
       double getMaxX();
@@ -268,12 +360,12 @@ public class WorldBorder {
 
       void onCenterChange();
 
-      WorldBorder.BorderExtent update();
+      BorderExtent update();
 
       VoxelShape getCollisionShape();
    }
 
-   class MovingBorderExtent implements WorldBorder.BorderExtent {
+   class MovingBorderExtent implements BorderExtent {
       private final double from;
       private final double to;
       private final long lerpEnd;
@@ -289,80 +381,55 @@ public class WorldBorder {
          this.lerpEnd = this.lerpBegin + var6;
       }
 
-      @Override
       public double getMinX() {
-         return Mth.clamp(
-            WorldBorder.this.getCenterX() - this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
+         return Mth.clamp(WorldBorder.this.getCenterX() - this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      @Override
       public double getMinZ() {
-         return Mth.clamp(
-            WorldBorder.this.getCenterZ() - this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
+         return Mth.clamp(WorldBorder.this.getCenterZ() - this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      @Override
       public double getMaxX() {
-         return Mth.clamp(
-            WorldBorder.this.getCenterX() + this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
+         return Mth.clamp(WorldBorder.this.getCenterX() + this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      @Override
       public double getMaxZ() {
-         return Mth.clamp(
-            WorldBorder.this.getCenterZ() + this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
+         return Mth.clamp(WorldBorder.this.getCenterZ() + this.getSize() / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
-      @Override
       public double getSize() {
          double var1 = (double)(Util.getMillis() - this.lerpBegin) / this.lerpDuration;
          return var1 < 1.0 ? Mth.lerp(var1, this.from, this.to) : this.to;
       }
 
-      @Override
       public double getLerpSpeed() {
          return Math.abs(this.from - this.to) / (double)(this.lerpEnd - this.lerpBegin);
       }
 
-      @Override
       public long getLerpRemainingTime() {
          return this.lerpEnd - Util.getMillis();
       }
 
-      @Override
       public double getLerpTarget() {
          return this.to;
       }
 
-      @Override
       public BorderStatus getStatus() {
          return this.to < this.from ? BorderStatus.SHRINKING : BorderStatus.GROWING;
       }
 
-      @Override
       public void onCenterChange() {
       }
 
-      @Override
       public void onAbsoluteMaxSizeChange() {
       }
 
-      @Override
-      public WorldBorder.BorderExtent update() {
-         return (WorldBorder.BorderExtent)(this.getLerpRemainingTime() <= 0L ? WorldBorder.this.new StaticBorderExtent(this.to) : this);
+      public BorderExtent update() {
+         return (BorderExtent)(this.getLerpRemainingTime() <= 0L ? WorldBorder.this.new StaticBorderExtent(this.to) : this);
       }
 
-      @Override
       public VoxelShape getCollisionShape() {
-         return Shapes.join(
-            Shapes.INFINITY,
-            Shapes.box(Math.floor(this.getMinX()), -1.0 / 0.0, Math.floor(this.getMinZ()), Math.ceil(this.getMaxX()), 1.0 / 0.0, Math.ceil(this.getMaxZ())),
-            BooleanOp.ONLY_FIRST
-         );
+         return Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX()), -1.0 / 0.0, Math.floor(this.getMinZ()), Math.ceil(this.getMaxX()), 1.0 / 0.0, Math.ceil(this.getMaxZ())), BooleanOp.ONLY_FIRST);
       }
    }
 
@@ -439,7 +506,7 @@ public class WorldBorder {
          return this.sizeLerpTarget;
       }
 
-      public static WorldBorder.Settings read(DynamicLike<?> var0, WorldBorder.Settings var1) {
+      public static Settings read(DynamicLike<?> var0, Settings var1) {
          double var2 = Mth.clamp(var0.get("BorderCenterX").asDouble(var1.centerX), -2.9999984E7, 2.9999984E7);
          double var4 = Mth.clamp(var0.get("BorderCenterZ").asDouble(var1.centerZ), -2.9999984E7, 2.9999984E7);
          double var6 = var0.get("BorderSize").asDouble(var1.size);
@@ -449,7 +516,7 @@ public class WorldBorder {
          double var14 = var0.get("BorderDamagePerBlock").asDouble(var1.damagePerBlock);
          int var16 = var0.get("BorderWarningBlocks").asInt(var1.warningBlocks);
          int var17 = var0.get("BorderWarningTime").asInt(var1.warningTime);
-         return new WorldBorder.Settings(var2, var4, var14, var12, var16, var17, var6, var8, var10);
+         return new Settings(var2, var4, var14, var12, var16, var17, var6, var8, var10);
       }
 
       public void write(CompoundTag var1) {
@@ -462,106 +529,6 @@ public class WorldBorder {
          var1.putDouble("BorderSizeLerpTarget", this.sizeLerpTarget);
          var1.putDouble("BorderWarningBlocks", (double)this.warningBlocks);
          var1.putDouble("BorderWarningTime", (double)this.warningTime);
-      }
-   }
-
-   class StaticBorderExtent implements WorldBorder.BorderExtent {
-      private final double size;
-      private double minX;
-      private double minZ;
-      private double maxX;
-      private double maxZ;
-      private VoxelShape shape;
-
-      public StaticBorderExtent(double var2) {
-         super();
-         this.size = var2;
-         this.updateBox();
-      }
-
-      @Override
-      public double getMinX() {
-         return this.minX;
-      }
-
-      @Override
-      public double getMaxX() {
-         return this.maxX;
-      }
-
-      @Override
-      public double getMinZ() {
-         return this.minZ;
-      }
-
-      @Override
-      public double getMaxZ() {
-         return this.maxZ;
-      }
-
-      @Override
-      public double getSize() {
-         return this.size;
-      }
-
-      @Override
-      public BorderStatus getStatus() {
-         return BorderStatus.STATIONARY;
-      }
-
-      @Override
-      public double getLerpSpeed() {
-         return 0.0;
-      }
-
-      @Override
-      public long getLerpRemainingTime() {
-         return 0L;
-      }
-
-      @Override
-      public double getLerpTarget() {
-         return this.size;
-      }
-
-      private void updateBox() {
-         this.minX = Mth.clamp(
-            WorldBorder.this.getCenterX() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
-         this.minZ = Mth.clamp(
-            WorldBorder.this.getCenterZ() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
-         this.maxX = Mth.clamp(
-            WorldBorder.this.getCenterX() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
-         this.maxZ = Mth.clamp(
-            WorldBorder.this.getCenterZ() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize
-         );
-         this.shape = Shapes.join(
-            Shapes.INFINITY,
-            Shapes.box(Math.floor(this.getMinX()), -1.0 / 0.0, Math.floor(this.getMinZ()), Math.ceil(this.getMaxX()), 1.0 / 0.0, Math.ceil(this.getMaxZ())),
-            BooleanOp.ONLY_FIRST
-         );
-      }
-
-      @Override
-      public void onAbsoluteMaxSizeChange() {
-         this.updateBox();
-      }
-
-      @Override
-      public void onCenterChange() {
-         this.updateBox();
-      }
-
-      @Override
-      public WorldBorder.BorderExtent update() {
-         return this;
-      }
-
-      @Override
-      public VoxelShape getCollisionShape() {
-         return this.shape;
       }
    }
 }

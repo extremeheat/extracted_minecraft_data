@@ -8,6 +8,7 @@ import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.levelgen.ThreadSafeLegacyRandomSource;
 
 public interface RandomSource {
+   /** @deprecated */
    @Deprecated
    double GAUSSIAN_SPREAD_FACTOR = 2.297;
 
@@ -15,6 +16,7 @@ public interface RandomSource {
       return create(RandomSupport.generateUniqueSeed());
    }
 
+   /** @deprecated */
    @Deprecated
    static RandomSource createThreadSafe() {
       return new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
@@ -60,6 +62,7 @@ public interface RandomSource {
       for(int var2 = 0; var2 < var1; ++var2) {
          this.nextInt();
       }
+
    }
 
    default int nextInt(int var1, int var2) {
@@ -68,9 +71,5 @@ public interface RandomSource {
       } else {
          return var1 + this.nextInt(var2 - var1);
       }
-   }
-
-   default float nextFloat(float var1, float var2) {
-      return var1 + this.nextFloat() * (var2 - var1);
    }
 }

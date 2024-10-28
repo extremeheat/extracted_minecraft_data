@@ -9,13 +9,16 @@ public enum DoorHingeSide implements StringRepresentable {
    private DoorHingeSide() {
    }
 
-   @Override
    public String toString() {
       return this.getSerializedName();
    }
 
-   @Override
    public String getSerializedName() {
       return this == LEFT ? "left" : "right";
+   }
+
+   // $FF: synthetic method
+   private static DoorHingeSide[] $values() {
+      return new DoorHingeSide[]{LEFT, RIGHT};
    }
 }

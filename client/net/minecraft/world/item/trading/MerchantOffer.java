@@ -2,7 +2,6 @@ package net.minecraft.world.item.trading;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,24 +9,30 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 public class MerchantOffer {
-   public static final Codec<MerchantOffer> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ItemCost.CODEC.fieldOf("buy").forGetter(var0x -> var0x.baseCostA),
-               ItemCost.CODEC.optionalFieldOf("buyB").forGetter(var0x -> var0x.costB),
-               ItemStack.CODEC.fieldOf("sell").forGetter(var0x -> var0x.result),
-               Codec.INT.optionalFieldOf("uses", 0).forGetter(var0x -> var0x.uses),
-               Codec.INT.optionalFieldOf("maxUses", 4).forGetter(var0x -> var0x.maxUses),
-               Codec.BOOL.optionalFieldOf("rewardExp", true).forGetter(var0x -> var0x.rewardExp),
-               Codec.INT.optionalFieldOf("specialPrice", 0).forGetter(var0x -> var0x.specialPriceDiff),
-               Codec.INT.optionalFieldOf("demand", 0).forGetter(var0x -> var0x.demand),
-               Codec.FLOAT.optionalFieldOf("priceMultiplier", 0.0F).forGetter(var0x -> var0x.priceMultiplier),
-               Codec.INT.optionalFieldOf("xp", 1).forGetter(var0x -> var0x.xp)
-            )
-            .apply(var0, MerchantOffer::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, MerchantOffer> STREAM_CODEC = StreamCodec.of(
-      MerchantOffer::writeToStream, MerchantOffer::createFromStream
-   );
+   public static final Codec<MerchantOffer> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ItemCost.CODEC.fieldOf("buy").forGetter((var0x) -> {
+         return var0x.baseCostA;
+      }), ItemCost.CODEC.lenientOptionalFieldOf("buyB").forGetter((var0x) -> {
+         return var0x.costB;
+      }), ItemStack.CODEC.fieldOf("sell").forGetter((var0x) -> {
+         return var0x.result;
+      }), Codec.INT.lenientOptionalFieldOf("uses", 0).forGetter((var0x) -> {
+         return var0x.uses;
+      }), Codec.INT.lenientOptionalFieldOf("maxUses", 4).forGetter((var0x) -> {
+         return var0x.maxUses;
+      }), Codec.BOOL.lenientOptionalFieldOf("rewardExp", true).forGetter((var0x) -> {
+         return var0x.rewardExp;
+      }), Codec.INT.lenientOptionalFieldOf("specialPrice", 0).forGetter((var0x) -> {
+         return var0x.specialPriceDiff;
+      }), Codec.INT.lenientOptionalFieldOf("demand", 0).forGetter((var0x) -> {
+         return var0x.demand;
+      }), Codec.FLOAT.lenientOptionalFieldOf("priceMultiplier", 0.0F).forGetter((var0x) -> {
+         return var0x.priceMultiplier;
+      }), Codec.INT.lenientOptionalFieldOf("xp", 1).forGetter((var0x) -> {
+         return var0x.xp;
+      })).apply(var0, MerchantOffer::new);
+   });
+   public static final StreamCodec<RegistryFriendlyByteBuf, MerchantOffer> STREAM_CODEC = StreamCodec.of(MerchantOffer::writeToStream, MerchantOffer::createFromStream);
    private final ItemCost baseCostA;
    private final Optional<ItemCost> costB;
    private final ItemStack result;
@@ -70,18 +75,7 @@ public class MerchantOffer {
    }
 
    private MerchantOffer(MerchantOffer var1) {
-      this(
-         var1.baseCostA,
-         var1.costB,
-         var1.result.copy(),
-         var1.uses,
-         var1.maxUses,
-         var1.rewardExp,
-         var1.specialPriceDiff,
-         var1.demand,
-         var1.priceMultiplier,
-         var1.xp
-      );
+      this(var1.baseCostA, var1.costB, var1.result.copy(), var1.uses, var1.maxUses, var1.rewardExp, var1.specialPriceDiff, var1.demand, var1.priceMultiplier, var1.xp);
    }
 
    public ItemStack getBaseCostA() {
@@ -99,7 +93,7 @@ public class MerchantOffer {
    }
 
    public ItemStack getCostB() {
-      return this.costB.map(ItemCost::itemStack).orElse(ItemStack.EMPTY);
+      return (ItemStack)this.costB.map(ItemCost::itemStack).orElse(ItemStack.EMPTY);
    }
 
    public ItemCost getItemCostA() {
@@ -183,12 +177,14 @@ public class MerchantOffer {
    }
 
    public boolean satisfiedBy(ItemStack var1, ItemStack var2) {
-      if (!this.baseCostA.test(var1) || var1.getCount() < this.getModifiedCostCount(this.baseCostA)) {
-         return false;
-      } else if (!this.costB.isPresent()) {
-         return var2.isEmpty();
+      if (this.baseCostA.test(var1) && var1.getCount() >= this.getModifiedCostCount(this.baseCostA)) {
+         if (!this.costB.isPresent()) {
+            return var2.isEmpty();
+         } else {
+            return ((ItemCost)this.costB.get()).test(var2) && var2.getCount() >= ((ItemCost)this.costB.get()).count();
+         }
       } else {
-         return ((ItemCost)this.costB.get()).test(var2) && var2.getCount() >= ((ItemCost)this.costB.get()).count();
+         return false;
       }
    }
 
@@ -224,8 +220,8 @@ public class MerchantOffer {
 
    public static MerchantOffer createFromStream(RegistryFriendlyByteBuf var0) {
       ItemCost var1 = (ItemCost)ItemCost.STREAM_CODEC.decode(var0);
-      ItemStack var2 = ItemStack.STREAM_CODEC.decode(var0);
-      Optional var3 = ItemCost.OPTIONAL_STREAM_CODEC.decode(var0);
+      ItemStack var2 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
+      Optional var3 = (Optional)ItemCost.OPTIONAL_STREAM_CODEC.decode(var0);
       boolean var4 = var0.readBoolean();
       int var5 = var0.readInt();
       int var6 = var0.readInt();

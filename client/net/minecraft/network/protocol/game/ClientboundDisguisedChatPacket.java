@@ -8,16 +8,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundDisguisedChatPacket(Component b, ChatType.Bound c) implements Packet<ClientGamePacketListener> {
-   private final Component message;
-   private final ChatType.Bound chatType;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDisguisedChatPacket> STREAM_CODEC = StreamCodec.composite(
-      ComponentSerialization.TRUSTED_STREAM_CODEC,
-      ClientboundDisguisedChatPacket::message,
-      ChatType.Bound.STREAM_CODEC,
-      ClientboundDisguisedChatPacket::chatType,
-      ClientboundDisguisedChatPacket::new
-   );
+public record ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDisguisedChatPacket> STREAM_CODEC;
 
    public ClientboundDisguisedChatPacket(Component var1, ChatType.Bound var2) {
       super();
@@ -25,7 +17,6 @@ public record ClientboundDisguisedChatPacket(Component b, ChatType.Bound c) impl
       this.chatType = var2;
    }
 
-   @Override
    public PacketType<ClientboundDisguisedChatPacket> type() {
       return GamePacketTypes.CLIENTBOUND_DISGUISED_CHAT;
    }
@@ -34,8 +25,19 @@ public record ClientboundDisguisedChatPacket(Component b, ChatType.Bound c) impl
       var1.handleDisguisedChat(this);
    }
 
-   @Override
    public boolean isSkippable() {
       return true;
+   }
+
+   public Component message() {
+      return this.message;
+   }
+
+   public ChatType.Bound chatType() {
+      return this.chatType;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundDisguisedChatPacket::message, ChatType.Bound.STREAM_CODEC, ClientboundDisguisedChatPacket::chatType, ClientboundDisguisedChatPacket::new);
    }
 }

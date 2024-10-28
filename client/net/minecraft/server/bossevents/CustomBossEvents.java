@@ -2,6 +2,7 @@ package net.minecraft.server.bossevents;
 
 import com.google.common.collect.Maps;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
@@ -19,7 +20,7 @@ public class CustomBossEvents {
 
    @Nullable
    public CustomBossEvent get(ResourceLocation var1) {
-      return this.events.get(var1);
+      return (CustomBossEvent)this.events.get(var1);
    }
 
    public CustomBossEvent create(ResourceLocation var1, Component var2) {
@@ -42,8 +43,10 @@ public class CustomBossEvents {
 
    public CompoundTag save(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
+      Iterator var3 = this.events.values().iterator();
 
-      for(CustomBossEvent var4 : this.events.values()) {
+      while(var3.hasNext()) {
+         CustomBossEvent var4 = (CustomBossEvent)var3.next();
          var2.put(var4.getTextId().toString(), var4.save(var1));
       }
 
@@ -51,21 +54,33 @@ public class CustomBossEvents {
    }
 
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      for(String var4 : var1.getAllKeys()) {
+      Iterator var3 = var1.getAllKeys().iterator();
+
+      while(var3.hasNext()) {
+         String var4 = (String)var3.next();
          ResourceLocation var5 = new ResourceLocation(var4);
          this.events.put(var5, CustomBossEvent.load(var1.getCompound(var4), var5, var2));
       }
+
    }
 
    public void onPlayerConnect(ServerPlayer var1) {
-      for(CustomBossEvent var3 : this.events.values()) {
+      Iterator var2 = this.events.values().iterator();
+
+      while(var2.hasNext()) {
+         CustomBossEvent var3 = (CustomBossEvent)var2.next();
          var3.onPlayerConnect(var1);
       }
+
    }
 
    public void onPlayerDisconnect(ServerPlayer var1) {
-      for(CustomBossEvent var3 : this.events.values()) {
+      Iterator var2 = this.events.values().iterator();
+
+      while(var2.hasNext()) {
+         CustomBossEvent var3 = (CustomBossEvent)var2.next();
          var3.onPlayerDisconnect(var1);
       }
+
    }
 }

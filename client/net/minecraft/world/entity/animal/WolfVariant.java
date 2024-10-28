@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -13,16 +12,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 
 public final class WolfVariant {
-   public static final Codec<WolfVariant> DIRECT_CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ResourceLocation.CODEC.fieldOf("wild_texture").forGetter(var0x -> var0x.wildTexture),
-               ResourceLocation.CODEC.fieldOf("tame_texture").forGetter(var0x -> var0x.tameTexture),
-               ResourceLocation.CODEC.fieldOf("angry_texture").forGetter(var0x -> var0x.angryTexture),
-               RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(WolfVariant::biomes)
-            )
-            .apply(var0, WolfVariant::new)
-   );
-   public static final Codec<Holder<WolfVariant>> CODEC = RegistryFileCodec.create(Registries.WOLF_VARIANT, DIRECT_CODEC);
+   public static final Codec<WolfVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ResourceLocation.CODEC.fieldOf("wild_texture").forGetter((var0x) -> {
+         return var0x.wildTexture;
+      }), ResourceLocation.CODEC.fieldOf("tame_texture").forGetter((var0x) -> {
+         return var0x.tameTexture;
+      }), ResourceLocation.CODEC.fieldOf("angry_texture").forGetter((var0x) -> {
+         return var0x.angryTexture;
+      }), RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(WolfVariant::biomes)).apply(var0, WolfVariant::new);
+   });
+   public static final Codec<Holder<WolfVariant>> CODEC;
    private final ResourceLocation wildTexture;
    private final ResourceLocation tameTexture;
    private final ResourceLocation angryTexture;
@@ -43,7 +42,9 @@ public final class WolfVariant {
    }
 
    private static ResourceLocation fullTextureId(ResourceLocation var0) {
-      return var0.withPath(var0x -> "textures/" + var0x + ".png");
+      return var0.withPath((var0x) -> {
+         return "textures/" + var0x + ".png";
+      });
    }
 
    public ResourceLocation wildTexture() {
@@ -62,7 +63,6 @@ public final class WolfVariant {
       return this.biomes;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (var1 == this) {
          return true;
@@ -70,19 +70,20 @@ public final class WolfVariant {
          return false;
       } else {
          WolfVariant var2 = (WolfVariant)var1;
-         return Objects.equals(this.wildTexture, var2.wildTexture)
-            && Objects.equals(this.tameTexture, var2.tameTexture)
-            && Objects.equals(this.angryTexture, var2.angryTexture)
-            && Objects.equals(this.biomes, var2.biomes);
+         return Objects.equals(this.wildTexture, var2.wildTexture) && Objects.equals(this.tameTexture, var2.tameTexture) && Objects.equals(this.angryTexture, var2.angryTexture) && Objects.equals(this.biomes, var2.biomes);
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = 1;
       var1 = 31 * var1 + this.wildTexture.hashCode();
       var1 = 31 * var1 + this.tameTexture.hashCode();
       var1 = 31 * var1 + this.angryTexture.hashCode();
-      return 31 * var1 + this.biomes.hashCode();
+      var1 = 31 * var1 + this.biomes.hashCode();
+      return var1;
+   }
+
+   static {
+      CODEC = RegistryFileCodec.create(Registries.WOLF_VARIANT, DIRECT_CODEC);
    }
 }

@@ -14,7 +14,6 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
          return new ByteArrayTag(readAccounted(var1, var2));
       }
 
-      @Override
       public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
          return var2.visit(readAccounted(var1, var3));
       }
@@ -28,19 +27,21 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
          return var3;
       }
 
-      @Override
       public void skip(DataInput var1, NbtAccounter var2) throws IOException {
          var1.skipBytes(var1.readInt() * 1);
       }
 
-      @Override
       public String getName() {
          return "BYTE[]";
       }
 
-      @Override
       public String getPrettyName() {
          return "TAG_Byte_Array";
+      }
+
+      // $FF: synthetic method
+      public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return this.load(var1, var2);
       }
    };
    private byte[] data;
@@ -65,40 +66,33 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       return var1;
    }
 
-   @Override
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
       var1.write(this.data);
    }
 
-   @Override
    public int sizeInBytes() {
       return 24 + 1 * this.data.length;
    }
 
-   @Override
    public byte getId() {
       return 7;
    }
 
-   @Override
    public TagType<ByteArrayTag> getType() {
       return TYPE;
    }
 
-   @Override
    public String toString() {
       return this.getAsString();
    }
 
-   @Override
    public Tag copy() {
       byte[] var1 = new byte[this.data.length];
       System.arraycopy(this.data, 0, var1, 0, this.data.length);
       return new ByteArrayTag(var1);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -107,12 +101,10 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       }
    }
 
-   @Override
    public int hashCode() {
       return Arrays.hashCode(this.data);
    }
 
-   @Override
    public void accept(TagVisitor var1) {
       var1.visitByteArray(this);
    }
@@ -121,7 +113,6 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       return this.data;
    }
 
-   @Override
    public int size() {
       return this.data.length;
    }
@@ -140,7 +131,6 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       this.data = ArrayUtils.add(this.data, var1, var2.getAsByte());
    }
 
-   @Override
    public boolean setTag(int var1, Tag var2) {
       if (var2 instanceof NumericTag) {
          this.data[var1] = ((NumericTag)var2).getAsByte();
@@ -150,7 +140,6 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       }
    }
 
-   @Override
    public boolean addTag(int var1, Tag var2) {
       if (var2 instanceof NumericTag) {
          this.data = ArrayUtils.add(this.data, var1, ((NumericTag)var2).getAsByte());
@@ -166,18 +155,50 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       return ByteTag.valueOf(var2);
    }
 
-   @Override
    public byte getElementType() {
       return 1;
    }
 
-   @Override
    public void clear() {
       this.data = new byte[0];
    }
 
-   @Override
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
       return var1.visit(this.data);
+   }
+
+   // $FF: synthetic method
+   public Tag remove(int var1) {
+      return this.remove(var1);
+   }
+
+   // $FF: synthetic method
+   public void add(int var1, Tag var2) {
+      this.add(var1, (ByteTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Tag set(int var1, Tag var2) {
+      return this.set(var1, (ByteTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object remove(int var1) {
+      return this.remove(var1);
+   }
+
+   // $FF: synthetic method
+   public void add(int var1, Object var2) {
+      this.add(var1, (ByteTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object set(int var1, Object var2) {
+      return this.set(var1, (ByteTag)var2);
+   }
+
+   // $FF: synthetic method
+   public Object get(int var1) {
+      return this.get(var1);
    }
 }

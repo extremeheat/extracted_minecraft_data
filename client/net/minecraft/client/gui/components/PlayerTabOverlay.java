@@ -5,8 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -20,6 +22,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
@@ -51,9 +54,13 @@ public class PlayerTabOverlay {
    private static final ResourceLocation HEART_FULL_SPRITE = new ResourceLocation("hud/heart/full");
    private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = new ResourceLocation("hud/heart/absorbing_half_blinking");
    private static final ResourceLocation HEART_HALF_SPRITE = new ResourceLocation("hud/heart/half");
-   private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.<PlayerInfo>comparingInt(var0 -> var0.getGameMode() == GameType.SPECTATOR ? 1 : 0)
-      .thenComparing(var0 -> Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, ""))
-      .thenComparing(var0 -> var0.getProfile().getName(), String::compareToIgnoreCase);
+   private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.comparingInt((var0) -> {
+      return var0.getGameMode() == GameType.SPECTATOR ? 1 : 0;
+   }).thenComparing((var0) -> {
+      return (String)Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, "");
+   }).thenComparing((var0) -> {
+      return var0.getProfile().getName();
+   }, String::compareToIgnoreCase);
    public static final int MAX_ROWS_PER_COL = 20;
    private final Minecraft minecraft;
    private final Gui gui;
@@ -62,7 +69,7 @@ public class PlayerTabOverlay {
    @Nullable
    private Component header;
    private boolean visible;
-   private final Map<UUID, PlayerTabOverlay.HealthState> healthStates = new Object2ObjectOpenHashMap();
+   private final Map<UUID, HealthState> healthStates = new Object2ObjectOpenHashMap();
 
    public PlayerTabOverlay(Minecraft var1, Gui var2) {
       super();
@@ -71,9 +78,7 @@ public class PlayerTabOverlay {
    }
 
    public Component getNameForDisplay(PlayerInfo var1) {
-      return var1.getTabListDisplayName() != null
-         ? this.decorateName(var1, var1.getTabListDisplayName().copy())
-         : this.decorateName(var1, PlayerTeam.formatNameForTeam(var1.getTeam(), Component.literal(var1.getProfile().getName())));
+      return var1.getTabListDisplayName() != null ? this.decorateName(var1, var1.getTabListDisplayName().copy()) : this.decorateName(var1, PlayerTeam.formatNameForTeam(var1.getTeam(), Component.literal(var1.getProfile().getName())));
    }
 
    private Component decorateName(PlayerInfo var1, MutableComponent var2) {
@@ -85,10 +90,11 @@ public class PlayerTabOverlay {
          this.healthStates.clear();
          this.visible = var1;
          if (var1) {
-            MutableComponent var2 = ComponentUtils.formatList(this.getPlayerInfos(), Component.literal(", "), this::getNameForDisplay);
-            this.minecraft.getNarrator().sayNow(Component.translatable("multiplayer.player.list.narration", var2));
+            MutableComponent var2 = ComponentUtils.formatList(this.getPlayerInfos(), (Component)Component.literal(", "), this::getNameForDisplay);
+            this.minecraft.getNarrator().sayNow((Component)Component.translatable("multiplayer.player.list.narration", var2));
          }
       }
+
    }
 
    private List<PlayerInfo> getPlayerInfos() {
@@ -102,12 +108,17 @@ public class PlayerTabOverlay {
       int var8 = 0;
       int var9 = 0;
 
-      for(PlayerInfo var11 : var5) {
-         Component var12 = this.getNameForDisplay(var11);
-         var8 = Math.max(var8, this.minecraft.font.width(var12));
-         int var13 = 0;
-         MutableComponent var14 = null;
-         int var15 = 0;
+      Component var12;
+      int var13;
+      MutableComponent var14;
+      int var15;
+      for(Iterator var10 = var5.iterator(); var10.hasNext(); var6.add(new ScoreDisplayEntry(var12, var13, var14, var15))) {
+         PlayerInfo var11 = (PlayerInfo)var10.next();
+         var12 = this.getNameForDisplay(var11);
+         var8 = Math.max(var8, this.minecraft.font.width((FormattedText)var12));
+         var13 = 0;
+         var14 = null;
+         var15 = 0;
          if (var4 != null) {
             ScoreHolder var16 = ScoreHolder.fromGameProfile(var11.getProfile());
             ReadOnlyScoreInfo var17 = var3.getPlayerScoreInfo(var16, var4);
@@ -118,17 +129,19 @@ public class PlayerTabOverlay {
             if (var4.getRenderType() != ObjectiveCriteria.RenderType.HEARTS) {
                NumberFormat var18 = var4.numberFormatOrDefault(StyledFormat.PLAYER_LIST_DEFAULT);
                var14 = ReadOnlyScoreInfo.safeFormatValue(var17, var18);
-               var15 = this.minecraft.font.width(var14);
+               var15 = this.minecraft.font.width((FormattedText)var14);
                var9 = Math.max(var9, var15 > 0 ? var7 + var15 : 0);
             }
          }
-
-         var6.add(new PlayerTabOverlay.ScoreDisplayEntry(var12, var13, var14, var15));
       }
 
       if (!this.healthStates.isEmpty()) {
-         Set var33 = var5.stream().map(var0 -> var0.getProfile().getId()).collect(Collectors.toSet());
-         this.healthStates.keySet().removeIf(var1x -> !var33.contains(var1x));
+         Set var33 = (Set)var5.stream().map((var0) -> {
+            return var0.getProfile().getId();
+         }).collect(Collectors.toSet());
+         this.healthStates.keySet().removeIf((var1x) -> {
+            return !var33.contains(var1x);
+         });
       }
 
       int var34 = var5.size();
@@ -151,53 +164,68 @@ public class PlayerTabOverlay {
          var38 = 0;
       }
 
-      int var39 = Math.min(var36 * ((var37 ? 9 : 0) + var8 + var38 + 13), var2 - 50) / var36;
-      int var40 = var2 / 2 - (var39 * var36 + (var36 - 1) * 5) / 2;
-      int var41 = 10;
-      int var43 = var39 * var36 + (var36 - 1) * 5;
+      var15 = Math.min(var36 * ((var37 ? 9 : 0) + var8 + var38 + 13), var2 - 50) / var36;
+      int var39 = var2 / 2 - (var15 * var36 + (var36 - 1) * 5) / 2;
+      int var40 = 10;
+      int var41 = var15 * var36 + (var36 - 1) * 5;
       List var19 = null;
       if (this.header != null) {
          var19 = this.minecraft.font.split(this.header, var2 - 50);
 
-         for(FormattedCharSequence var21 : var19) {
-            var43 = Math.max(var43, this.minecraft.font.width(var21));
+         FormattedCharSequence var21;
+         for(Iterator var20 = var19.iterator(); var20.hasNext(); var41 = Math.max(var41, this.minecraft.font.width(var21))) {
+            var21 = (FormattedCharSequence)var20.next();
          }
       }
 
-      List var44 = null;
+      List var42 = null;
+      FormattedCharSequence var22;
+      Iterator var43;
       if (this.footer != null) {
-         var44 = this.minecraft.font.split(this.footer, var2 - 50);
+         var42 = this.minecraft.font.split(this.footer, var2 - 50);
 
-         for(FormattedCharSequence var22 : var44) {
-            var43 = Math.max(var43, this.minecraft.font.width(var22));
+         for(var43 = var42.iterator(); var43.hasNext(); var41 = Math.max(var41, this.minecraft.font.width(var22))) {
+            var22 = (FormattedCharSequence)var43.next();
          }
       }
 
+      int var10001;
+      int var10002;
+      int var10003;
+      int var10005;
+      int var23;
       if (var19 != null) {
-         var1.fill(var2 / 2 - var43 / 2 - 1, var41 - 1, var2 / 2 + var43 / 2 + 1, var41 + var19.size() * 9, -2147483648);
+         var10001 = var2 / 2 - var41 / 2 - 1;
+         var10002 = var40 - 1;
+         var10003 = var2 / 2 + var41 / 2 + 1;
+         var10005 = var19.size();
+         Objects.requireNonNull(this.minecraft.font);
+         var1.fill(var10001, var10002, var10003, var40 + var10005 * 9, -2147483648);
 
-         for(FormattedCharSequence var48 : var19) {
-            int var23 = this.minecraft.font.width(var48);
-            var1.drawString(this.minecraft.font, var48, var2 / 2 - var23 / 2, var41, -1);
-            var41 += 9;
+         for(var43 = var19.iterator(); var43.hasNext(); var40 += 9) {
+            var22 = (FormattedCharSequence)var43.next();
+            var23 = this.minecraft.font.width(var22);
+            var1.drawString(this.minecraft.font, (FormattedCharSequence)var22, var2 / 2 - var23 / 2, var40, -1);
+            Objects.requireNonNull(this.minecraft.font);
          }
 
-         ++var41;
+         ++var40;
       }
 
-      var1.fill(var2 / 2 - var43 / 2 - 1, var41 - 1, var2 / 2 + var43 / 2 + 1, var41 + var35 * 9, -2147483648);
-      int var47 = this.minecraft.options.getBackgroundColor(553648127);
+      var1.fill(var2 / 2 - var41 / 2 - 1, var40 - 1, var2 / 2 + var41 / 2 + 1, var40 + var35 * 9, -2147483648);
+      int var44 = this.minecraft.options.getBackgroundColor(553648127);
 
-      for(int var49 = 0; var49 < var34; ++var49) {
-         int var51 = var49 / var35;
-         int var24 = var49 % var35;
-         int var25 = var40 + var51 * var39 + var51 * 5;
-         int var26 = var41 + var24 * 9;
-         var1.fill(var25, var26, var25 + var39, var26 + 8, var47);
+      int var24;
+      for(int var45 = 0; var45 < var34; ++var45) {
+         var23 = var45 / var35;
+         var24 = var45 % var35;
+         int var25 = var39 + var23 * var15 + var23 * 5;
+         int var26 = var40 + var24 * 9;
+         var1.fill(var25, var26, var25 + var15, var26 + 8, var44);
          RenderSystem.enableBlend();
-         if (var49 < var5.size()) {
-            PlayerInfo var27 = (PlayerInfo)var5.get(var49);
-            PlayerTabOverlay.ScoreDisplayEntry var28 = (PlayerTabOverlay.ScoreDisplayEntry)var6.get(var49);
+         if (var45 < var5.size()) {
+            PlayerInfo var27 = (PlayerInfo)var5.get(var45);
+            ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var45);
             GameProfile var29 = var27.getProfile();
             if (var37) {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
@@ -209,27 +237,34 @@ public class PlayerTabOverlay {
 
             var1.drawString(this.minecraft.font, var28.name, var25, var26, var27.getGameMode() == GameType.SPECTATOR ? -1862270977 : -1);
             if (var4 != null && var27.getGameMode() != GameType.SPECTATOR) {
-               int var54 = var25 + var8 + 1;
-               int var55 = var54 + var38;
-               if (var55 - var54 > 5) {
-                  this.renderTablistScore(var4, var26, var28, var54, var55, var29.getId(), var1);
+               int var48 = var25 + var8 + 1;
+               int var49 = var48 + var38;
+               if (var49 - var48 > 5) {
+                  this.renderTablistScore(var4, var26, var28, var48, var49, var29.getId(), var1);
                }
             }
 
-            this.renderPingIcon(var1, var39, var25 - (var37 ? 9 : 0), var26, var27);
+            this.renderPingIcon(var1, var15, var25 - (var37 ? 9 : 0), var26, var27);
          }
       }
 
-      if (var44 != null) {
-         var41 += var35 * 9 + 1;
-         var1.fill(var2 / 2 - var43 / 2 - 1, var41 - 1, var2 / 2 + var43 / 2 + 1, var41 + var44.size() * 9, -2147483648);
+      if (var42 != null) {
+         var40 += var35 * 9 + 1;
+         var10001 = var2 / 2 - var41 / 2 - 1;
+         var10002 = var40 - 1;
+         var10003 = var2 / 2 + var41 / 2 + 1;
+         var10005 = var42.size();
+         Objects.requireNonNull(this.minecraft.font);
+         var1.fill(var10001, var10002, var10003, var40 + var10005 * 9, -2147483648);
 
-         for(FormattedCharSequence var52 : var44) {
-            int var53 = this.minecraft.font.width(var52);
-            var1.drawString(this.minecraft.font, var52, var2 / 2 - var53 / 2, var41, -1);
-            var41 += 9;
+         for(Iterator var46 = var42.iterator(); var46.hasNext(); var40 += 9) {
+            FormattedCharSequence var47 = (FormattedCharSequence)var46.next();
+            var24 = this.minecraft.font.width(var47);
+            var1.drawString(this.minecraft.font, (FormattedCharSequence)var47, var2 / 2 - var24 / 2, var40, -1);
+            Objects.requireNonNull(this.minecraft.font);
          }
       }
+
    }
 
    protected void renderPingIcon(GuiGraphics var1, int var2, int var3, int var4, PlayerInfo var5) {
@@ -254,62 +289,67 @@ public class PlayerTabOverlay {
       var1.pose().popPose();
    }
 
-   private void renderTablistScore(Objective var1, int var2, PlayerTabOverlay.ScoreDisplayEntry var3, int var4, int var5, UUID var6, GuiGraphics var7) {
+   private void renderTablistScore(Objective var1, int var2, ScoreDisplayEntry var3, int var4, int var5, UUID var6, GuiGraphics var7) {
       if (var1.getRenderType() == ObjectiveCriteria.RenderType.HEARTS) {
          this.renderTablistHearts(var2, var4, var5, var6, var7, var3.score);
       } else if (var3.formattedScore != null) {
          var7.drawString(this.minecraft.font, var3.formattedScore, var5 - var3.scoreWidth, var2, 16777215);
       }
+
    }
 
    private void renderTablistHearts(int var1, int var2, int var3, UUID var4, GuiGraphics var5, int var6) {
-      PlayerTabOverlay.HealthState var7 = this.healthStates.computeIfAbsent(var4, var1x -> new PlayerTabOverlay.HealthState(var6));
+      HealthState var7 = (HealthState)this.healthStates.computeIfAbsent(var4, (var1x) -> {
+         return new HealthState(var6);
+      });
       var7.update(var6, (long)this.gui.getGuiTicks());
       int var8 = Mth.positiveCeilDiv(Math.max(var6, var7.displayedValue()), 2);
       int var9 = Math.max(var6, Math.max(var7.displayedValue(), 20)) / 2;
       boolean var10 = var7.isBlinking((long)this.gui.getGuiTicks());
       if (var8 > 0) {
          int var11 = Mth.floor(Math.min((float)(var3 - var2 - 4) / (float)var9, 9.0F));
+         int var13;
          if (var11 <= 3) {
             float var17 = Mth.clamp((float)var6 / 20.0F, 0.0F, 1.0F);
-            int var19 = (int)((1.0F - var17) * 255.0F) << 16 | (int)(var17 * 255.0F) << 8;
+            var13 = (int)((1.0F - var17) * 255.0F) << 16 | (int)(var17 * 255.0F) << 8;
             float var14 = (float)var6 / 2.0F;
             MutableComponent var15 = Component.translatable("multiplayer.player.list.hp", var14);
             MutableComponent var16;
-            if (var3 - this.minecraft.font.width(var15) >= var2) {
+            if (var3 - this.minecraft.font.width((FormattedText)var15) >= var2) {
                var16 = var15;
             } else {
                var16 = Component.literal(Float.toString(var14));
             }
 
-            var5.drawString(this.minecraft.font, var16, (var3 + var2 - this.minecraft.font.width(var16)) / 2, var1, var19);
+            var5.drawString(this.minecraft.font, (Component)var16, (var3 + var2 - this.minecraft.font.width((FormattedText)var16)) / 2, var1, var13);
          } else {
             ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
 
-            for(int var13 = var8; var13 < var9; ++var13) {
+            for(var13 = var8; var13 < var9; ++var13) {
                var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
             }
 
-            for(int var18 = 0; var18 < var8; ++var18) {
-               var5.blitSprite(var12, var2 + var18 * var11, var1, 9, 9);
+            for(var13 = 0; var13 < var8; ++var13) {
+               var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
                if (var10) {
-                  if (var18 * 2 + 1 < var7.displayedValue()) {
-                     var5.blitSprite(HEART_FULL_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                  if (var13 * 2 + 1 < var7.displayedValue()) {
+                     var5.blitSprite(HEART_FULL_BLINKING_SPRITE, var2 + var13 * var11, var1, 9, 9);
                   }
 
-                  if (var18 * 2 + 1 == var7.displayedValue()) {
-                     var5.blitSprite(HEART_HALF_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
+                  if (var13 * 2 + 1 == var7.displayedValue()) {
+                     var5.blitSprite(HEART_HALF_BLINKING_SPRITE, var2 + var13 * var11, var1, 9, 9);
                   }
                }
 
-               if (var18 * 2 + 1 < var6) {
-                  var5.blitSprite(var18 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE, var2 + var18 * var11, var1, 9, 9);
+               if (var13 * 2 + 1 < var6) {
+                  var5.blitSprite(var13 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE, var2 + var13 * var11, var1, 9, 9);
                }
 
-               if (var18 * 2 + 1 == var6) {
-                  var5.blitSprite(var18 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE, var2 + var18 * var11, var1, 9, 9);
+               if (var13 * 2 + 1 == var6) {
+                  var5.blitSprite(var13 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE, var2 + var13 * var11, var1, 9, 9);
                }
             }
+
          }
       }
    }
@@ -327,7 +367,40 @@ public class PlayerTabOverlay {
       this.footer = null;
    }
 
-   static class HealthState {
+   private static record ScoreDisplayEntry(Component name, int score, @Nullable Component formattedScore, int scoreWidth) {
+      final Component name;
+      final int score;
+      @Nullable
+      final Component formattedScore;
+      final int scoreWidth;
+
+      ScoreDisplayEntry(Component var1, int var2, @Nullable Component var3, int var4) {
+         super();
+         this.name = var1;
+         this.score = var2;
+         this.formattedScore = var3;
+         this.scoreWidth = var4;
+      }
+
+      public Component name() {
+         return this.name;
+      }
+
+      public int score() {
+         return this.score;
+      }
+
+      @Nullable
+      public Component formattedScore() {
+         return this.formattedScore;
+      }
+
+      public int scoreWidth() {
+         return this.scoreWidth;
+      }
+   }
+
+   private static class HealthState {
       private static final long DISPLAY_UPDATE_DELAY = 20L;
       private static final long DECREASE_BLINK_DURATION = 20L;
       private static final long INCREASE_BLINK_DURATION = 10L;
@@ -353,6 +426,7 @@ public class PlayerTabOverlay {
          if (var2 - this.lastUpdateTick > 20L) {
             this.displayedValue = var1;
          }
+
       }
 
       public int displayedValue() {
@@ -361,22 +435,6 @@ public class PlayerTabOverlay {
 
       public boolean isBlinking(long var1) {
          return this.blinkUntilTick > var1 && (this.blinkUntilTick - var1) % 6L >= 3L;
-      }
-   }
-
-   static record ScoreDisplayEntry(Component a, int b, @Nullable Component c, int d) {
-      final Component name;
-      final int score;
-      @Nullable
-      final Component formattedScore;
-      final int scoreWidth;
-
-      ScoreDisplayEntry(Component var1, int var2, @Nullable Component var3, int var4) {
-         super();
-         this.name = var1;
-         this.score = var2;
-         this.formattedScore = var3;
-         this.scoreWidth = var4;
       }
    }
 }

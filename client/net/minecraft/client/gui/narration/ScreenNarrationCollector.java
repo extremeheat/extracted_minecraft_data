@@ -7,9 +7,11 @@ import java.util.function.Consumer;
 
 public class ScreenNarrationCollector {
    int generation;
-   final Map<ScreenNarrationCollector.EntryKey, ScreenNarrationCollector.NarrationEntry> entries = Maps.newTreeMap(
-      Comparator.<ScreenNarrationCollector.EntryKey, NarratedElementType>comparing(var0 -> var0.type).thenComparing(var0 -> var0.depth)
-   );
+   final Map<EntryKey, NarrationEntry> entries = Maps.newTreeMap(Comparator.comparing((var0) -> {
+      return var0.type;
+   }).thenComparing((var0) -> {
+      return var0.depth;
+   }));
 
    public ScreenNarrationCollector() {
       super();
@@ -17,12 +19,12 @@ public class ScreenNarrationCollector {
 
    public void update(Consumer<NarrationElementOutput> var1) {
       ++this.generation;
-      var1.accept(new ScreenNarrationCollector.Output(0));
+      var1.accept(new Output(0));
    }
 
    public String collectNarrationText(boolean var1) {
       final StringBuilder var2 = new StringBuilder();
-      Consumer var3 = new Consumer<String>() {
+      Consumer var3 = new Consumer<String>(this) {
          private boolean firstEntry = true;
 
          public void accept(String var1) {
@@ -33,37 +35,53 @@ public class ScreenNarrationCollector {
             this.firstEntry = false;
             var2.append(var1);
          }
+
+         // $FF: synthetic method
+         public void accept(Object var1) {
+            this.accept((String)var1);
+         }
       };
       this.entries.forEach((var3x, var4) -> {
          if (var4.generation == this.generation && (var1 || !var4.alreadyNarrated)) {
             var4.contents.getText(var3);
             var4.alreadyNarrated = true;
          }
+
       });
       return var2.toString();
    }
 
-   static class EntryKey {
-      final NarratedElementType type;
-      final int depth;
+   class Output implements NarrationElementOutput {
+      private final int depth;
 
-      EntryKey(NarratedElementType var1, int var2) {
+      Output(int var2) {
          super();
-         this.type = var1;
          this.depth = var2;
+      }
+
+      public void add(NarratedElementType var1, NarrationThunk<?> var2) {
+         ((NarrationEntry)ScreenNarrationCollector.this.entries.computeIfAbsent(new EntryKey(var1, this.depth), (var0) -> {
+            return new NarrationEntry();
+         })).update(ScreenNarrationCollector.this.generation, var2);
+      }
+
+      public NarrationElementOutput nest() {
+         return ScreenNarrationCollector.this.new Output(this.depth + 1);
       }
    }
 
    static class NarrationEntry {
-      NarrationThunk<?> contents = NarrationThunk.EMPTY;
-      int generation = -1;
+      NarrationThunk<?> contents;
+      int generation;
       boolean alreadyNarrated;
 
       NarrationEntry() {
          super();
+         this.contents = NarrationThunk.EMPTY;
+         this.generation = -1;
       }
 
-      public ScreenNarrationCollector.NarrationEntry update(int var1, NarrationThunk<?> var2) {
+      public NarrationEntry update(int var1, NarrationThunk<?> var2) {
          if (!this.contents.equals(var2)) {
             this.contents = var2;
             this.alreadyNarrated = false;
@@ -76,24 +94,14 @@ public class ScreenNarrationCollector {
       }
    }
 
-   class Output implements NarrationElementOutput {
-      private final int depth;
+   private static class EntryKey {
+      final NarratedElementType type;
+      final int depth;
 
-      Output(int var2) {
+      EntryKey(NarratedElementType var1, int var2) {
          super();
+         this.type = var1;
          this.depth = var2;
-      }
-
-      @Override
-      public void add(NarratedElementType var1, NarrationThunk<?> var2) {
-         ScreenNarrationCollector.this.entries
-            .computeIfAbsent(new ScreenNarrationCollector.EntryKey(var1, this.depth), var0 -> new ScreenNarrationCollector.NarrationEntry())
-            .update(ScreenNarrationCollector.this.generation, var2);
-      }
-
-      @Override
-      public NarrationElementOutput nest() {
-         return ScreenNarrationCollector.this.new Output(this.depth + 1);
       }
    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.server.packs;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.URI;
@@ -10,6 +9,7 @@ import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,13 +29,17 @@ import org.slf4j.Logger;
 
 public class VanillaPackResourcesBuilder {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static Consumer<VanillaPackResourcesBuilder> developmentConfig = var0 -> {
+   public static Consumer<VanillaPackResourcesBuilder> developmentConfig = (var0) -> {
    };
-   private static final Map<PackType, Path> ROOT_DIR_BY_TYPE = Util.make(() -> {
+   private static final Map<PackType, Path> ROOT_DIR_BY_TYPE = (Map)Util.make(() -> {
+      Class var0 = VanillaPackResources.class;
       synchronized(VanillaPackResources.class) {
-         Builder var1 = ImmutableMap.builder();
+         ImmutableMap.Builder var1 = ImmutableMap.builder();
+         PackType[] var2 = PackType.values();
+         int var3 = var2.length;
 
-         for(PackType var5 : PackType.values()) {
+         for(int var4 = 0; var4 < var3; ++var4) {
+            PackType var5 = var2[var4];
             String var6 = "/" + var5.getDirectory() + "/.mcassetsroot";
             URL var7 = VanillaPackResources.class.getResource(var6);
             if (var7 == null) {
@@ -59,10 +63,10 @@ public class VanillaPackResourcesBuilder {
          return var1.build();
       }
    });
-   private final Set<Path> rootPaths = new LinkedHashSet<>();
-   private final Map<PackType, Set<Path>> pathsForType = new EnumMap<>(PackType.class);
+   private final Set<Path> rootPaths = new LinkedHashSet();
+   private final Map<PackType, Set<Path>> pathsForType = new EnumMap(PackType.class);
    private BuiltInMetadata metadata = BuiltInMetadata.of();
-   private final Set<String> namespaces = new HashSet<>();
+   private final Set<String> namespaces = new HashSet();
 
    public VanillaPackResourcesBuilder() {
       super();
@@ -85,10 +89,10 @@ public class VanillaPackResourcesBuilder {
    }
 
    private boolean validateDirPath(Path var1) {
-      if (!Files.exists(var1)) {
+      if (!Files.exists(var1, new LinkOption[0])) {
          return false;
-      } else if (!Files.isDirectory(var1)) {
-         throw new IllegalArgumentException("Path " + var1.toAbsolutePath() + " is not directory");
+      } else if (!Files.isDirectory(var1, new LinkOption[0])) {
+         throw new IllegalArgumentException("Path " + String.valueOf(var1.toAbsolutePath()) + " is not directory");
       } else {
          return true;
       }
@@ -98,12 +102,16 @@ public class VanillaPackResourcesBuilder {
       if (this.validateDirPath(var1)) {
          this.rootPaths.add(var1);
       }
+
    }
 
    private void pushPathForType(PackType var1, Path var2) {
       if (this.validateDirPath(var2)) {
-         this.pathsForType.computeIfAbsent(var1, var0 -> new LinkedHashSet()).add(var2);
+         ((Set)this.pathsForType.computeIfAbsent(var1, (var0) -> {
+            return new LinkedHashSet();
+         })).add(var2);
       }
+
    }
 
    public VanillaPackResourcesBuilder pushJarResources() {
@@ -147,8 +155,11 @@ public class VanillaPackResourcesBuilder {
 
    public VanillaPackResourcesBuilder pushUniversalPath(Path var1) {
       this.pushRootPath(var1);
+      PackType[] var2 = PackType.values();
+      int var3 = var2.length;
 
-      for(PackType var5 : PackType.values()) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         PackType var5 = var2[var4];
          this.pushPathForType(var5, var1.resolve(var5.getDirectory()));
       }
 
@@ -172,10 +183,13 @@ public class VanillaPackResourcesBuilder {
    }
 
    public VanillaPackResources build(PackLocationInfo var1) {
-      EnumMap var2 = new EnumMap<>(PackType.class);
+      EnumMap var2 = new EnumMap(PackType.class);
+      PackType[] var3 = PackType.values();
+      int var4 = var3.length;
 
-      for(PackType var6 : PackType.values()) {
-         List var7 = copyAndReverse(this.pathsForType.getOrDefault(var6, Set.of()));
+      for(int var5 = 0; var5 < var4; ++var5) {
+         PackType var6 = var3[var5];
+         List var7 = copyAndReverse((Collection)this.pathsForType.getOrDefault(var6, Set.of()));
          var2.put(var6, var7);
       }
 

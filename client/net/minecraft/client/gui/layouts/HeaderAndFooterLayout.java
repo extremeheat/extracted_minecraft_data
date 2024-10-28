@@ -9,9 +9,9 @@ import net.minecraft.network.chat.Component;
 public class HeaderAndFooterLayout implements Layout {
    public static final int DEFAULT_HEADER_AND_FOOTER_HEIGHT = 33;
    private static final int CONTENT_MARGIN_TOP = 30;
-   private final FrameLayout headerFrame = new FrameLayout();
-   private final FrameLayout footerFrame = new FrameLayout();
-   private final FrameLayout contentsFrame = new FrameLayout();
+   private final FrameLayout headerFrame;
+   private final FrameLayout footerFrame;
+   private final FrameLayout contentsFrame;
    private final Screen screen;
    private int headerHeight;
    private int footerHeight;
@@ -26,6 +26,9 @@ public class HeaderAndFooterLayout implements Layout {
 
    public HeaderAndFooterLayout(Screen var1, int var2, int var3) {
       super();
+      this.headerFrame = new FrameLayout();
+      this.footerFrame = new FrameLayout();
+      this.contentsFrame = new FrameLayout();
       this.screen = var1;
       this.headerHeight = var2;
       this.footerHeight = var3;
@@ -33,30 +36,24 @@ public class HeaderAndFooterLayout implements Layout {
       this.footerFrame.defaultChildLayoutSetting().align(0.5F, 0.5F);
    }
 
-   @Override
    public void setX(int var1) {
    }
 
-   @Override
    public void setY(int var1) {
    }
 
-   @Override
    public int getX() {
       return 0;
    }
 
-   @Override
    public int getY() {
       return 0;
    }
 
-   @Override
    public int getWidth() {
       return this.screen.width;
    }
 
-   @Override
    public int getHeight() {
       return this.screen.height;
    }
@@ -81,14 +78,12 @@ public class HeaderAndFooterLayout implements Layout {
       return this.screen.height - this.getHeaderHeight() - this.getFooterHeight();
    }
 
-   @Override
    public void visitChildren(Consumer<LayoutElement> var1) {
       this.headerFrame.visitChildren(var1);
       this.contentsFrame.visitChildren(var1);
       this.footerFrame.visitChildren(var1);
    }
 
-   @Override
    public void arrangeElements() {
       int var1 = this.getHeaderHeight();
       int var2 = this.getFooterHeight();
@@ -108,11 +103,11 @@ public class HeaderAndFooterLayout implements Layout {
    }
 
    public <T extends LayoutElement> T addToHeader(T var1) {
-      return this.headerFrame.addChild((T)var1);
+      return this.headerFrame.addChild(var1);
    }
 
    public <T extends LayoutElement> T addToHeader(T var1, Consumer<LayoutSettings> var2) {
-      return this.headerFrame.addChild((T)var1, var2);
+      return this.headerFrame.addChild(var1, var2);
    }
 
    public void addTitleHeader(Component var1, Font var2) {
@@ -120,18 +115,18 @@ public class HeaderAndFooterLayout implements Layout {
    }
 
    public <T extends LayoutElement> T addToFooter(T var1) {
-      return this.footerFrame.addChild((T)var1);
+      return this.footerFrame.addChild(var1);
    }
 
    public <T extends LayoutElement> T addToFooter(T var1, Consumer<LayoutSettings> var2) {
-      return this.footerFrame.addChild((T)var1, var2);
+      return this.footerFrame.addChild(var1, var2);
    }
 
    public <T extends LayoutElement> T addToContents(T var1) {
-      return this.contentsFrame.addChild((T)var1);
+      return this.contentsFrame.addChild(var1);
    }
 
    public <T extends LayoutElement> T addToContents(T var1, Consumer<LayoutSettings> var2) {
-      return this.contentsFrame.addChild((T)var1, var2);
+      return this.contentsFrame.addChild(var1, var2);
    }
 }

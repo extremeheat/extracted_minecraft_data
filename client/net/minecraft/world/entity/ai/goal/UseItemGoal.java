@@ -23,27 +23,24 @@ public class UseItemGoal<T extends Mob> extends Goal {
       this.canUseSelector = var4;
    }
 
-   @Override
    public boolean canUse() {
       return this.canUseSelector.test(this.mob);
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.mob.isUsingItem();
    }
 
-   @Override
    public void start() {
       this.mob.setItemSlot(EquipmentSlot.MAINHAND, this.item.copy());
       this.mob.startUsingItem(InteractionHand.MAIN_HAND);
    }
 
-   @Override
    public void stop() {
       this.mob.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
       if (this.finishUsingSound != null) {
          this.mob.playSound(this.finishUsingSound, 1.0F, this.mob.getRandom().nextFloat() * 0.2F + 0.9F);
       }
+
    }
 }

@@ -2,24 +2,11 @@ package net.minecraft.world.damagesource;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
-public record DamageType(String b, DamageScaling c, float d, DamageEffects e, DeathMessageType f) {
-   private final String msgId;
-   private final DamageScaling scaling;
-   private final float exhaustion;
-   private final DamageEffects effects;
-   private final DeathMessageType deathMessageType;
-   public static final Codec<DamageType> DIRECT_CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.STRING.fieldOf("message_id").forGetter(DamageType::msgId),
-               DamageScaling.CODEC.fieldOf("scaling").forGetter(DamageType::scaling),
-               Codec.FLOAT.fieldOf("exhaustion").forGetter(DamageType::exhaustion),
-               DamageEffects.CODEC.optionalFieldOf("effects", DamageEffects.HURT).forGetter(DamageType::effects),
-               DeathMessageType.CODEC.optionalFieldOf("death_message_type", DeathMessageType.DEFAULT).forGetter(DamageType::deathMessageType)
-            )
-            .apply(var0, DamageType::new)
-   );
+public record DamageType(String msgId, DamageScaling scaling, float exhaustion, DamageEffects effects, DeathMessageType deathMessageType) {
+   public static final Codec<DamageType> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(Codec.STRING.fieldOf("message_id").forGetter(DamageType::msgId), DamageScaling.CODEC.fieldOf("scaling").forGetter(DamageType::scaling), Codec.FLOAT.fieldOf("exhaustion").forGetter(DamageType::exhaustion), DamageEffects.CODEC.optionalFieldOf("effects", DamageEffects.HURT).forGetter(DamageType::effects), DeathMessageType.CODEC.optionalFieldOf("death_message_type", DeathMessageType.DEFAULT).forGetter(DamageType::deathMessageType)).apply(var0, DamageType::new);
+   });
 
    public DamageType(String var1, DamageScaling var2, float var3) {
       this(var1, var2, var3, DamageEffects.HURT, DeathMessageType.DEFAULT);
@@ -44,5 +31,25 @@ public record DamageType(String b, DamageScaling c, float d, DamageEffects e, De
       this.exhaustion = var3;
       this.effects = var4;
       this.deathMessageType = var5;
+   }
+
+   public String msgId() {
+      return this.msgId;
+   }
+
+   public DamageScaling scaling() {
+      return this.scaling;
+   }
+
+   public float exhaustion() {
+      return this.exhaustion;
+   }
+
+   public DamageEffects effects() {
+      return this.effects;
+   }
+
+   public DeathMessageType deathMessageType() {
+      return this.deathMessageType;
    }
 }

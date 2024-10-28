@@ -13,7 +13,6 @@ public abstract class AbstractStringWidget extends AbstractWidget {
       this.font = var6;
    }
 
-   @Override
    protected void updateWidgetNarration(NarrationElementOutput var1) {
    }
 

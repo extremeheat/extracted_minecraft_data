@@ -8,10 +8,12 @@ public interface TelemetryEventSender {
    };
 
    default TelemetryEventSender decorate(Consumer<TelemetryPropertyMap.Builder> var1) {
-      return (var2, var3) -> this.send(var2, var2x -> {
+      return (var2, var3) -> {
+         this.send(var2, (var2x) -> {
             var3.accept(var2x);
             var1.accept(var2x);
          });
+      };
    }
 
    void send(TelemetryEventType var1, Consumer<TelemetryPropertyMap.Builder> var2);

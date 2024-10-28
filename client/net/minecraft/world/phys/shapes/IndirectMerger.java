@@ -27,23 +27,26 @@ public class IndirectMerger implements IndexMerger {
       int var14 = 0;
 
       while(true) {
-         boolean var15 = var13 >= var7;
-         boolean var16 = var14 >= var8;
-         if (var15 && var16) {
-            this.resultLength = Math.max(1, var12);
-            return;
-         }
-
-         boolean var17 = !var15 && (var16 || var1.getDouble(var13) < var2.getDouble(var14) + 1.0E-7);
-         if (var17) {
-            ++var13;
-            if (var10 && (var14 == 0 || var16)) {
-               continue;
+         boolean var17;
+         while(true) {
+            boolean var15 = var13 >= var7;
+            boolean var16 = var14 >= var8;
+            if (var15 && var16) {
+               this.resultLength = Math.max(1, var12);
+               return;
             }
-         } else {
-            ++var14;
-            if (var11 && (var13 == 0 || var15)) {
-               continue;
+
+            var17 = !var15 && (var16 || var1.getDouble(var13) < var2.getDouble(var14) + 1.0E-7);
+            if (var17) {
+               ++var13;
+               if (!var10 || var14 != 0 && !var16) {
+                  break;
+               }
+            } else {
+               ++var14;
+               if (!var11 || var13 != 0 && !var15) {
+                  break;
+               }
             }
          }
 
@@ -63,7 +66,6 @@ public class IndirectMerger implements IndexMerger {
       }
    }
 
-   @Override
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.resultLength - 1;
 
@@ -76,12 +78,10 @@ public class IndirectMerger implements IndexMerger {
       return true;
    }
 
-   @Override
    public int size() {
       return this.resultLength;
    }
 
-   @Override
    public DoubleList getList() {
       return (DoubleList)(this.resultLength <= 1 ? EMPTY : DoubleArrayList.wrap(this.result, this.resultLength));
    }

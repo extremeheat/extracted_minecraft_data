@@ -47,11 +47,11 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 
 public class IronGolem extends AbstractGolem implements NeutralMob {
-   protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(IronGolem.class, EntityDataSerializers.BYTE);
+   protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final int IRON_INGOT_HEAL_AMOUNT = 25;
    private int attackAnimationTick;
    private int offerFlowerTick;
-   private static final UniformInt PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
+   private static final UniformInt PERSISTENT_ANGER_TIME;
    private int remainingPersistentAngerTime;
    @Nullable
    private UUID persistentAngerTarget;
@@ -60,7 +60,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0, true));
       this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.9, 32.0F));
@@ -70,34 +69,27 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
       this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
-      this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
-      this.targetSelector
-         .addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, var0 -> var0 instanceof Enemy && !(var0 instanceof Creeper)));
-      this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
+      this.targetSelector.addGoal(2, new HurtByTargetGoal(this, new Class[0]));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Mob.class, 5, false, false, (var0) -> {
+         return var0 instanceof Enemy && !(var0 instanceof Creeper);
+      }));
+      this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal(this, false));
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes()
-         .add(Attributes.MAX_HEALTH, 100.0)
-         .add(Attributes.MOVEMENT_SPEED, 0.25)
-         .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
-         .add(Attributes.ATTACK_DAMAGE, 15.0)
-         .add(Attributes.STEP_HEIGHT, 1.0);
+      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 100.0).add(Attributes.MOVEMENT_SPEED, 0.25).add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.ATTACK_DAMAGE, 15.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   @Override
    protected int decreaseAirSupply(int var1) {
       return var1;
    }
 
-   @Override
    protected void doPush(Entity var1) {
       if (var1 instanceof Enemy && !(var1 instanceof Creeper) && this.getRandom().nextInt(20) == 0) {
          this.setTarget((LivingEntity)var1);
@@ -106,7 +98,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       super.doPush(var1);
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       if (this.attackAnimationTick > 0) {
@@ -120,14 +111,13 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       if (!this.level().isClientSide) {
          this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
+
    }
 
-   @Override
    public boolean canSpawnSprintParticle() {
       return this.getDeltaMovement().horizontalDistanceSqr() > 2.500000277905201E-7 && this.random.nextInt(5) == 0;
    }
 
-   @Override
    public boolean canAttackType(EntityType<?> var1) {
       if (this.isPlayerCreated() && var1 == EntityType.PLAYER) {
          return false;
@@ -136,42 +126,35 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       }
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("PlayerCreated", this.isPlayerCreated());
       this.addPersistentAngerSaveData(var1);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setPlayerCreated(var1.getBoolean("PlayerCreated"));
       this.readPersistentAngerSaveData(this.level(), var1);
    }
 
-   @Override
    public void startPersistentAngerTimer() {
       this.setRemainingPersistentAngerTime(PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   @Override
    public void setRemainingPersistentAngerTime(int var1) {
       this.remainingPersistentAngerTime = var1;
    }
 
-   @Override
    public int getRemainingPersistentAngerTime() {
       return this.remainingPersistentAngerTime;
    }
 
-   @Override
    public void setPersistentAngerTarget(@Nullable UUID var1) {
       this.persistentAngerTarget = var1;
    }
 
    @Nullable
-   @Override
    public UUID getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
@@ -180,7 +163,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
    }
 
-   @Override
    public boolean doHurtTarget(Entity var1) {
       this.attackAnimationTick = 10;
       this.level().broadcastEntityEvent(this, (byte)4);
@@ -188,7 +170,15 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       float var3 = (int)var2 > 0 ? var2 / 2.0F + (float)this.random.nextInt((int)var2) : var2;
       boolean var4 = var1.hurt(this.damageSources().mobAttack(this), var3);
       if (var4) {
-         double var5 = var1 instanceof LivingEntity var7 ? var7.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
+         double var10000;
+         if (var1 instanceof LivingEntity) {
+            LivingEntity var7 = (LivingEntity)var1;
+            var10000 = var7.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+         } else {
+            var10000 = 0.0;
+         }
+
+         double var5 = var10000;
          double var9 = Math.max(0.0, 1.0 - var5);
          var1.setDeltaMovement(var1.getDeltaMovement().add(0.0, 0.4000000059604645 * var9, 0.0));
          this.doEnchantDamageEffects(this, var1);
@@ -198,7 +188,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return var4;
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       Crackiness.Level var3 = this.getCrackiness();
       boolean var4 = super.hurt(var1, var2);
@@ -213,7 +202,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return Crackiness.GOLEM.byFraction(this.getHealth() / this.getMaxHealth());
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 4) {
          this.attackAnimationTick = 10;
@@ -225,6 +213,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
    public int getAttackAnimationTick() {
@@ -239,19 +228,17 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          this.offerFlowerTick = 0;
          this.level().broadcastEntityEvent(this, (byte)34);
       }
+
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.IRON_GOLEM_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.IRON_GOLEM_DEATH;
    }
 
-   @Override
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (!var3.is(Items.IRON_INGOT)) {
@@ -270,7 +257,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       }
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.IRON_GOLEM_STEP, 1.0F, 1.0F);
    }
@@ -280,24 +266,23 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    public boolean isPlayerCreated() {
-      return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
+      return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }
 
    public void setPlayerCreated(boolean var1) {
-      byte var2 = this.entityData.get(DATA_FLAGS_ID);
+      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       if (var1) {
          this.entityData.set(DATA_FLAGS_ID, (byte)(var2 | 1));
       } else {
          this.entityData.set(DATA_FLAGS_ID, (byte)(var2 & -2));
       }
+
    }
 
-   @Override
    public void die(DamageSource var1) {
       super.die(var1);
    }
 
-   @Override
    public boolean checkSpawnObstruction(LevelReader var1) {
       BlockPos var2 = this.blockPosition();
       BlockPos var3 = var2.below();
@@ -313,13 +298,16 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
             }
          }
 
-         return NaturalSpawner.isValidEmptySpawnBlock(var1, var2, var1.getBlockState(var2), Fluids.EMPTY.defaultFluidState(), EntityType.IRON_GOLEM)
-            && var1.isUnobstructed(this);
+         return NaturalSpawner.isValidEmptySpawnBlock(var1, var2, var1.getBlockState(var2), Fluids.EMPTY.defaultFluidState(), EntityType.IRON_GOLEM) && var1.isUnobstructed(this);
       }
    }
 
-   @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.875F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
+   }
+
+   static {
+      DATA_FLAGS_ID = SynchedEntityData.defineId(IronGolem.class, EntityDataSerializers.BYTE);
+      PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 }

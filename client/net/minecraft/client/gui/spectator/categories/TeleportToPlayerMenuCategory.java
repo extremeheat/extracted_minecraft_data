@@ -16,7 +16,9 @@ import net.minecraft.world.level.GameType;
 
 public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
    private static final ResourceLocation TELEPORT_TO_PLAYER_SPRITE = new ResourceLocation("spectator/teleport_to_player");
-   private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing(var0 -> var0.getProfile().getId());
+   private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing((var0) -> {
+      return var0.getProfile().getId();
+   });
    private static final Component TELEPORT_TEXT = Component.translatable("spectatorMenu.teleport");
    private static final Component TELEPORT_PROMPT = Component.translatable("spectatorMenu.teleport.prompt");
    private final List<SpectatorMenuItem> items;
@@ -27,39 +29,33 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
 
    public TeleportToPlayerMenuCategory(Collection<PlayerInfo> var1) {
       super();
-      this.items = var1.stream()
-         .filter(var0 -> var0.getGameMode() != GameType.SPECTATOR)
-         .sorted(PROFILE_ORDER)
-         .map(var0 -> new PlayerMenuItem(var0.getProfile()))
-         .toList();
+      this.items = var1.stream().filter((var0) -> {
+         return var0.getGameMode() != GameType.SPECTATOR;
+      }).sorted(PROFILE_ORDER).map((var0) -> {
+         return new PlayerMenuItem(var0.getProfile());
+      }).toList();
    }
 
-   @Override
    public List<SpectatorMenuItem> getItems() {
       return this.items;
    }
 
-   @Override
    public Component getPrompt() {
       return TELEPORT_PROMPT;
    }
 
-   @Override
    public void selectItem(SpectatorMenu var1) {
       var1.selectCategory(this);
    }
 
-   @Override
    public Component getName() {
       return TELEPORT_TEXT;
    }
 
-   @Override
    public void renderIcon(GuiGraphics var1, float var2, int var3) {
       var1.blitSprite(TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16);
    }
 
-   @Override
    public boolean isEnabled() {
       return !this.items.isEmpty();
    }

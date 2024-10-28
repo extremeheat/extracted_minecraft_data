@@ -5,28 +5,11 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Player;
 
-public record ClientInformation(String b, int c, ChatVisiblity d, boolean e, int f, HumanoidArm g, boolean h, boolean i) {
-   private final String language;
-   private final int viewDistance;
-   private final ChatVisiblity chatVisibility;
-   private final boolean chatColors;
-   private final int modelCustomisation;
-   private final HumanoidArm mainHand;
-   private final boolean textFilteringEnabled;
-   private final boolean allowsListing;
+public record ClientInformation(String language, int viewDistance, ChatVisiblity chatVisibility, boolean chatColors, int modelCustomisation, HumanoidArm mainHand, boolean textFilteringEnabled, boolean allowsListing) {
    public static final int MAX_LANGUAGE_LENGTH = 16;
 
    public ClientInformation(FriendlyByteBuf var1) {
-      this(
-         var1.readUtf(16),
-         var1.readByte(),
-         var1.readEnum(ChatVisiblity.class),
-         var1.readBoolean(),
-         var1.readUnsignedByte(),
-         var1.readEnum(HumanoidArm.class),
-         var1.readBoolean(),
-         var1.readBoolean()
-      );
+      this(var1.readUtf(16), var1.readByte(), (ChatVisiblity)var1.readEnum(ChatVisiblity.class), var1.readBoolean(), var1.readUnsignedByte(), (HumanoidArm)var1.readEnum(HumanoidArm.class), var1.readBoolean(), var1.readBoolean());
    }
 
    public ClientInformation(String var1, int var2, ChatVisiblity var3, boolean var4, int var5, HumanoidArm var6, boolean var7, boolean var8) {
@@ -54,5 +37,37 @@ public record ClientInformation(String b, int c, ChatVisiblity d, boolean e, int
 
    public static ClientInformation createDefault() {
       return new ClientInformation("en_us", 2, ChatVisiblity.FULL, true, 0, Player.DEFAULT_MAIN_HAND, false, false);
+   }
+
+   public String language() {
+      return this.language;
+   }
+
+   public int viewDistance() {
+      return this.viewDistance;
+   }
+
+   public ChatVisiblity chatVisibility() {
+      return this.chatVisibility;
+   }
+
+   public boolean chatColors() {
+      return this.chatColors;
+   }
+
+   public int modelCustomisation() {
+      return this.modelCustomisation;
+   }
+
+   public HumanoidArm mainHand() {
+      return this.mainHand;
+   }
+
+   public boolean textFilteringEnabled() {
+      return this.textFilteringEnabled;
+   }
+
+   public boolean allowsListing() {
+      return this.allowsListing;
    }
 }

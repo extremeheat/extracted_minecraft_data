@@ -8,10 +8,9 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.List.ListType;
+import com.mojang.datafixers.types.templates.List;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import java.util.List;
 import java.util.stream.LongStream;
 import net.minecraft.util.Mth;
 
@@ -32,40 +31,42 @@ public class BitStorageAlignFix extends DataFix {
       Type var2 = var1.findFieldType("Level");
       OpticFinder var3 = DSL.fieldFinder("Level", var2);
       OpticFinder var4 = var3.type().findField("Sections");
-      Type var5 = ((ListType)var4.type()).getElement();
+      Type var5 = ((List.ListType)var4.type()).getElement();
       OpticFinder var6 = DSL.typeFinder(var5);
       Type var7 = DSL.named(References.BLOCK_STATE.typeName(), DSL.remainderType());
       OpticFinder var8 = DSL.fieldFinder("Palette", DSL.list(var7));
-      return this.fixTypeEverywhereTyped(
-         "BitStorageAlignFix",
-         var1,
-         this.getOutputSchema().getType(References.CHUNK),
-         var5x -> var5x.updateTyped(var3, var4xx -> this.updateHeightmaps(updateSections(var4, var6, var8, var4xx)))
-      );
+      return this.fixTypeEverywhereTyped("BitStorageAlignFix", var1, this.getOutputSchema().getType(References.CHUNK), (var5x) -> {
+         return var5x.updateTyped(var3, (var4x) -> {
+            return this.updateHeightmaps(updateSections(var4, var6, var8, var4x));
+         });
+      });
    }
 
    private Typed<?> updateHeightmaps(Typed<?> var1) {
-      return var1.update(
-         DSL.remainderFinder(),
-         var0 -> var0.update("Heightmaps", var1x -> var1x.updateMapValues(var1xx -> var1xx.mapSecond(var1xxx -> updateBitStorage(var0, var1xxx, 256, 9))))
-      );
+      return var1.update(DSL.remainderFinder(), (var0) -> {
+         return var0.update("Heightmaps", (var1) -> {
+            return var1.updateMapValues((var1x) -> {
+               return var1x.mapSecond((var1) -> {
+                  return updateBitStorage(var0, var1, 256, 9);
+               });
+            });
+         });
+      });
    }
 
-   private static Typed<?> updateSections(OpticFinder<?> var0, OpticFinder<?> var1, OpticFinder<List<Pair<String, Dynamic<?>>>> var2, Typed<?> var3) {
-      return var3.updateTyped(
-         var0,
-         var2x -> var2x.updateTyped(
-               var1,
-               var1xx -> {
-                  int var2xxx = var1xx.getOptional(var2).map(var0xxx -> Math.max(4, DataFixUtils.ceillog2(var0xxx.size()))).orElse(0);
-                  return var2xxx != 0 && !Mth.isPowerOfTwo(var2xxx)
-                     ? var1xx.update(
-                        DSL.remainderFinder(), var1xxx -> var1xxx.update("BlockStates", var2xxx -> updateBitStorage(var1xxx, var2xxx, 4096, var2xx))
-                     )
-                     : var1xx;
-               }
-            )
-      );
+   private static Typed<?> updateSections(OpticFinder<?> var0, OpticFinder<?> var1, OpticFinder<java.util.List<Pair<String, Dynamic<?>>>> var2, Typed<?> var3) {
+      return var3.updateTyped(var0, (var2x) -> {
+         return var2x.updateTyped(var1, (var1x) -> {
+            int var2x = (Integer)var1x.getOptional(var2).map((var0) -> {
+               return Math.max(4, DataFixUtils.ceillog2(var0.size()));
+            }).orElse(0);
+            return var2x != 0 && !Mth.isPowerOfTwo(var2x) ? var1x.update(DSL.remainderFinder(), (var1) -> {
+               return var1.update("BlockStates", (var2) -> {
+                  return updateBitStorage(var1, var2, 4096, var2x);
+               });
+            }) : var1x;
+         });
+      });
    }
 
    private static Dynamic<?> updateBitStorage(Dynamic<?> var0, Dynamic<?> var1, int var2, int var3) {
@@ -102,21 +103,22 @@ public class BitStorageAlignFix extends DataFix {
             }
 
             long var23;
+            int var25;
             if (var20 == var21) {
                var23 = var14 >>> var22 & var4;
             } else {
-               int var25 = 64 - var22;
+               var25 = 64 - var22;
                var23 = (var14 >>> var22 | var16 << var25) & var4;
             }
 
-            int var26 = var10 + var1;
-            if (var26 >= 64) {
+            var25 = var10 + var1;
+            if (var25 >= 64) {
                var8[var9++] = var11;
                var11 = var23;
                var10 = var1;
             } else {
                var11 |= var23 << var10;
-               var10 = var26;
+               var10 = var25;
             }
          }
 

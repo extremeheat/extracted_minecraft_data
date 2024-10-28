@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -15,14 +14,11 @@ import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.nbt.CompoundTag;
 
-public record EntityDataSource(String d, @Nullable EntitySelector e) implements DataSource {
-   private final String selectorPattern;
-   @Nullable
-   private final EntitySelector compiledSelector;
-   public static final MapCodec<EntityDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new)
-   );
-   public static final DataSource.Type<EntityDataSource> TYPE = new DataSource.Type<>(SUB_CODEC, "entity");
+public record EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) implements DataSource {
+   public static final MapCodec<EntityDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new);
+   });
+   public static final DataSource.Type<EntityDataSource> TYPE;
 
    public EntityDataSource(String var1) {
       this(var1, compileSelector(var1));
@@ -44,7 +40,6 @@ public record EntityDataSource(String d, @Nullable EntitySelector e) implements 
       }
    }
 
-   @Override
    public Stream<CompoundTag> getData(CommandSourceStack var1) throws CommandSyntaxException {
       if (this.compiledSelector != null) {
          List var2 = this.compiledSelector.findEntities(var1);
@@ -54,31 +49,46 @@ public record EntityDataSource(String d, @Nullable EntitySelector e) implements 
       }
    }
 
-   @Override
    public DataSource.Type<?> type() {
       return TYPE;
    }
 
-   @Override
    public String toString() {
       return "entity=" + this.selectorPattern;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof EntityDataSource var2 && this.selectorPattern.equals(var2.selectorPattern)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof EntityDataSource) {
+            EntityDataSource var2 = (EntityDataSource)var1;
+            if (this.selectorPattern.equals(var2.selectorPattern)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.selectorPattern.hashCode();
+   }
+
+   public String selectorPattern() {
+      return this.selectorPattern;
+   }
+
+   @Nullable
+   public EntitySelector compiledSelector() {
+      return this.compiledSelector;
+   }
+
+   static {
+      TYPE = new DataSource.Type(SUB_CODEC, "entity");
    }
 }

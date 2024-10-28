@@ -28,6 +28,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
          TextureUtil.prepareImage(this.getId(), this.pixels.getWidth(), this.pixels.getHeight());
          this.upload();
       }
+
    }
 
    public DynamicTexture(int var1, int var2, boolean var3) {
@@ -37,7 +38,6 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
       TextureUtil.prepareImage(this.getId(), this.pixels.getWidth(), this.pixels.getHeight());
    }
 
-   @Override
    public void load(ResourceManager var1) {
    }
 
@@ -48,6 +48,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
       } else {
          LOGGER.warn("Trying to upload disposed texture {}", this.getId());
       }
+
    }
 
    @Nullable
@@ -63,21 +64,21 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
       this.pixels = var1;
    }
 
-   @Override
    public void close() {
       if (this.pixels != null) {
          this.pixels.close();
          this.releaseId();
          this.pixels = null;
       }
+
    }
 
-   @Override
    public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
       if (this.pixels != null) {
          String var3 = var1.toDebugFileName() + ".png";
          Path var4 = var2.resolve(var3);
          this.pixels.writeToFile(var4);
       }
+
    }
 }

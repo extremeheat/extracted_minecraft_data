@@ -14,9 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAddEntityPacket> STREAM_CODEC = Packet.codec(
-      ClientboundAddEntityPacket::write, ClientboundAddEntityPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAddEntityPacket> STREAM_CODEC = Packet.codec(ClientboundAddEntityPacket::write, ClientboundAddEntityPacket::new);
    private static final double MAGICAL_QUANTIZATION = 8000.0;
    private static final double LIMIT = 3.9;
    private final int id;
@@ -38,40 +36,14 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    }
 
    public ClientboundAddEntityPacket(Entity var1, int var2) {
-      this(
-         var1.getId(),
-         var1.getUUID(),
-         var1.getX(),
-         var1.getY(),
-         var1.getZ(),
-         var1.getXRot(),
-         var1.getYRot(),
-         var1.getType(),
-         var2,
-         var1.getDeltaMovement(),
-         (double)var1.getYHeadRot()
-      );
+      this(var1.getId(), var1.getUUID(), var1.getX(), var1.getY(), var1.getZ(), var1.getXRot(), var1.getYRot(), var1.getType(), var2, var1.getDeltaMovement(), (double)var1.getYHeadRot());
    }
 
    public ClientboundAddEntityPacket(Entity var1, int var2, BlockPos var3) {
-      this(
-         var1.getId(),
-         var1.getUUID(),
-         (double)var3.getX(),
-         (double)var3.getY(),
-         (double)var3.getZ(),
-         var1.getXRot(),
-         var1.getYRot(),
-         var1.getType(),
-         var2,
-         var1.getDeltaMovement(),
-         (double)var1.getYHeadRot()
-      );
+      this(var1.getId(), var1.getUUID(), (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var1.getXRot(), var1.getYRot(), var1.getType(), var2, var1.getDeltaMovement(), (double)var1.getYHeadRot());
    }
 
-   public ClientboundAddEntityPacket(
-      int var1, UUID var2, double var3, double var5, double var7, float var9, float var10, EntityType<?> var11, int var12, Vec3 var13, double var14
-   ) {
+   public ClientboundAddEntityPacket(int var1, UUID var2, double var3, double var5, double var7, float var9, float var10, EntityType<?> var11, int var12, Vec3 var13, double var14) {
       super();
       this.id = var1;
       this.uuid = var2;
@@ -92,7 +64,7 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       super();
       this.id = var1.readVarInt();
       this.uuid = var1.readUUID();
-      this.type = ByteBufCodecs.registry(Registries.ENTITY_TYPE).decode(var1);
+      this.type = (EntityType)ByteBufCodecs.registry(Registries.ENTITY_TYPE).decode(var1);
       this.x = var1.readDouble();
       this.y = var1.readDouble();
       this.z = var1.readDouble();
@@ -121,7 +93,6 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       var1.writeShort(this.za);
    }
 
-   @Override
    public PacketType<ClientboundAddEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_ADD_ENTITY;
    }

@@ -20,7 +20,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       if (var1 < 0) {
          throw new IllegalArgumentException("Initial capacity (" + var1 + ") is negative");
       } else {
-         this.contents = (T[])castRawArray(new Object[var1]);
+         this.contents = castRawArray(new Object[var1]);
       }
    }
 
@@ -29,7 +29,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    }
 
    public static <T extends Comparable<T>> SortedArraySet<T> create(int var0) {
-      return new SortedArraySet<>(var0, Comparator.naturalOrder());
+      return new SortedArraySet(var0, Comparator.naturalOrder());
    }
 
    public static <T> SortedArraySet<T> create(Comparator<T> var0) {
@@ -37,11 +37,11 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    }
 
    public static <T> SortedArraySet<T> create(Comparator<T> var0, int var1) {
-      return new SortedArraySet<>(var1, var0);
+      return new SortedArraySet(var1, var0);
    }
 
    private static <T> T[] castRawArray(Object[] var0) {
-      return (T[])var0;
+      return var0;
    }
 
    private int findIndex(T var1) {
@@ -52,14 +52,13 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       return -var0 - 1;
    }
 
-   @Override
    public boolean add(T var1) {
-      int var2 = this.findIndex((T)var1);
+      int var2 = this.findIndex(var1);
       if (var2 >= 0) {
          return false;
       } else {
          int var3 = getInsertionPosition(var2);
-         this.addInternal((T)var1, var3);
+         this.addInternal(var1, var3);
          return true;
       }
    }
@@ -74,7 +73,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
 
          Object[] var2 = new Object[var1];
          System.arraycopy(this.contents, 0, var2, 0, this.size);
-         this.contents = (T[])castRawArray(var2);
+         this.contents = castRawArray(var2);
       }
    }
 
@@ -84,7 +83,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
          System.arraycopy(this.contents, var2, this.contents, var2 + 1, this.size - var2);
       }
 
-      this.contents[var2] = (T)var1;
+      this.contents[var2] = var1;
       ++this.size;
    }
 
@@ -102,18 +101,17 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    }
 
    public T addOrGet(T var1) {
-      int var2 = this.findIndex((T)var1);
+      int var2 = this.findIndex(var1);
       if (var2 >= 0) {
          return this.getInternal(var2);
       } else {
-         this.addInternal((T)var1, getInsertionPosition(var2));
-         return (T)var1;
+         this.addInternal(var1, getInsertionPosition(var2));
+         return var1;
       }
    }
 
-   @Override
    public boolean remove(Object var1) {
-      int var2 = this.findIndex((T)var1);
+      int var2 = this.findIndex(var1);
       if (var2 >= 0) {
          this.removeInternal(var2);
          return true;
@@ -124,7 +122,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
 
    @Nullable
    public T get(T var1) {
-      int var2 = this.findIndex((T)var1);
+      int var2 = this.findIndex(var1);
       return var2 >= 0 ? this.getInternal(var2) : null;
    }
 
@@ -136,63 +134,57 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       return this.getInternal(this.size - 1);
    }
 
-   @Override
    public boolean contains(Object var1) {
-      int var2 = this.findIndex((T)var1);
+      int var2 = this.findIndex(var1);
       return var2 >= 0;
    }
 
-   @Override
    public Iterator<T> iterator() {
-      return new SortedArraySet.ArrayIterator();
+      return new ArrayIterator();
    }
 
-   @Override
    public int size() {
       return this.size;
    }
 
-   @Override
    public Object[] toArray() {
       return Arrays.copyOf(this.contents, this.size, Object[].class);
    }
 
-   @Override
    public <U> U[] toArray(U[] var1) {
       if (var1.length < this.size) {
-         return (U[])Arrays.copyOf(this.contents, this.size, var1.getClass());
+         return Arrays.copyOf(this.contents, this.size, var1.getClass());
       } else {
          System.arraycopy(this.contents, 0, var1, 0, this.size);
          if (var1.length > this.size) {
             var1[this.size] = null;
          }
 
-         return (U[])var1;
+         return var1;
       }
    }
 
-   @Override
    public void clear() {
-      Arrays.fill(this.contents, 0, this.size, null);
+      Arrays.fill(this.contents, 0, this.size, (Object)null);
       this.size = 0;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof SortedArraySet var2 && this.comparator.equals(var2.comparator)) {
-            return this.size == var2.size && Arrays.equals(this.contents, var2.contents);
+         if (var1 instanceof SortedArraySet) {
+            SortedArraySet var2 = (SortedArraySet)var1;
+            if (this.comparator.equals(var2.comparator)) {
+               return this.size == var2.size && Arrays.equals(this.contents, var2.contents);
+            }
          }
 
          return super.equals(var1);
       }
    }
 
-   class ArrayIterator implements Iterator<T> {
+   private class ArrayIterator implements Iterator<T> {
       private int index;
       private int last = -1;
 
@@ -200,12 +192,10 @@ public class SortedArraySet<T> extends AbstractSet<T> {
          super();
       }
 
-      @Override
       public boolean hasNext() {
          return this.index < SortedArraySet.this.size;
       }
 
-      @Override
       public T next() {
          if (this.index >= SortedArraySet.this.size) {
             throw new NoSuchElementException();
@@ -215,7 +205,6 @@ public class SortedArraySet<T> extends AbstractSet<T> {
          }
       }
 
-      @Override
       public void remove() {
          if (this.last == -1) {
             throw new IllegalStateException();

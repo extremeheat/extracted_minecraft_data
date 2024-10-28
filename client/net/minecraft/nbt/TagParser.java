@@ -12,6 +12,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Lifecycle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import net.minecraft.network.chat.Component;
 
@@ -19,15 +20,15 @@ public class TagParser {
    public static final SimpleCommandExceptionType ERROR_TRAILING_DATA = new SimpleCommandExceptionType(Component.translatable("argument.nbt.trailing"));
    public static final SimpleCommandExceptionType ERROR_EXPECTED_KEY = new SimpleCommandExceptionType(Component.translatable("argument.nbt.expected.key"));
    public static final SimpleCommandExceptionType ERROR_EXPECTED_VALUE = new SimpleCommandExceptionType(Component.translatable("argument.nbt.expected.value"));
-   public static final Dynamic2CommandExceptionType ERROR_INSERT_MIXED_LIST = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("argument.nbt.list.mixed", var0, var1)
-   );
-   public static final Dynamic2CommandExceptionType ERROR_INSERT_MIXED_ARRAY = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("argument.nbt.array.mixed", var0, var1)
-   );
-   public static final DynamicCommandExceptionType ERROR_INVALID_ARRAY = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.nbt.array.invalid", var0)
-   );
+   public static final Dynamic2CommandExceptionType ERROR_INSERT_MIXED_LIST = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("argument.nbt.list.mixed", var0, var1);
+   });
+   public static final Dynamic2CommandExceptionType ERROR_INSERT_MIXED_ARRAY = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("argument.nbt.array.mixed", var0, var1);
+   });
+   public static final DynamicCommandExceptionType ERROR_INVALID_ARRAY = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.nbt.array.invalid", var0);
+   });
    public static final char ELEMENT_SEPARATOR = ',';
    public static final char NAME_VALUE_SEPARATOR = ':';
    private static final char LIST_OPEN = '[';
@@ -41,17 +42,11 @@ public class TagParser {
    private static final Pattern LONG_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)l", 2);
    private static final Pattern SHORT_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)s", 2);
    private static final Pattern INT_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)");
-   public static final Codec<CompoundTag> AS_CODEC = Codec.STRING.comapFlatMap(var0 -> {
-      try {
-         return DataResult.success(new TagParser(new StringReader(var0)).readSingleStruct(), Lifecycle.stable());
-      } catch (CommandSyntaxException var2) {
-         return DataResult.error(var2::getMessage);
-      }
-   }, CompoundTag::toString);
+   public static final Codec<CompoundTag> AS_CODEC;
    private final StringReader reader;
 
    public static CompoundTag parseTag(String var0) throws CommandSyntaxException {
-      return new TagParser(new StringReader(var0)).readSingleStruct();
+      return (new TagParser(new StringReader(var0))).readSingleStruct();
    }
 
    @VisibleForTesting
@@ -153,9 +148,7 @@ public class TagParser {
    }
 
    protected Tag readList() throws CommandSyntaxException {
-      return this.reader.canRead(3) && !StringReader.isQuotedStringStart(this.reader.peek(1)) && this.reader.peek(2) == ';'
-         ? this.readArrayTag()
-         : this.readListTag();
+      return this.reader.canRead(3) && !StringReader.isQuotedStringStart(this.reader.peek(1)) && this.reader.peek(2) == ';' ? this.readArrayTag() : this.readListTag();
    }
 
    public CompoundTag readStruct() throws CommandSyntaxException {
@@ -244,34 +237,35 @@ public class TagParser {
    private <T extends Number> List<T> readArray(TagType<?> var1, TagType<?> var2) throws CommandSyntaxException {
       ArrayList var3 = Lists.newArrayList();
 
-      while(this.reader.peek() != ']') {
-         int var4 = this.reader.getCursor();
-         Tag var5 = this.readValue();
-         TagType var6 = var5.getType();
-         if (var6 != var2) {
-            this.reader.setCursor(var4);
-            throw ERROR_INSERT_MIXED_ARRAY.createWithContext(this.reader, var6.getPrettyName(), var1.getPrettyName());
+      while(true) {
+         if (this.reader.peek() != ']') {
+            int var4 = this.reader.getCursor();
+            Tag var5 = this.readValue();
+            TagType var6 = var5.getType();
+            if (var6 != var2) {
+               this.reader.setCursor(var4);
+               throw ERROR_INSERT_MIXED_ARRAY.createWithContext(this.reader, var6.getPrettyName(), var1.getPrettyName());
+            }
+
+            if (var2 == ByteTag.TYPE) {
+               var3.add(((NumericTag)var5).getAsByte());
+            } else if (var2 == LongTag.TYPE) {
+               var3.add(((NumericTag)var5).getAsLong());
+            } else {
+               var3.add(((NumericTag)var5).getAsInt());
+            }
+
+            if (this.hasElementSeparator()) {
+               if (!this.reader.canRead()) {
+                  throw ERROR_EXPECTED_VALUE.createWithContext(this.reader);
+               }
+               continue;
+            }
          }
 
-         if (var2 == ByteTag.TYPE) {
-            var3.add(((NumericTag)var5).getAsByte());
-         } else if (var2 == LongTag.TYPE) {
-            var3.add(((NumericTag)var5).getAsLong());
-         } else {
-            var3.add(((NumericTag)var5).getAsInt());
-         }
-
-         if (!this.hasElementSeparator()) {
-            break;
-         }
-
-         if (!this.reader.canRead()) {
-            throw ERROR_EXPECTED_VALUE.createWithContext(this.reader);
-         }
+         this.expect(']');
+         return var3;
       }
-
-      this.expect(']');
-      return var3;
    }
 
    private boolean hasElementSeparator() {
@@ -288,5 +282,16 @@ public class TagParser {
    private void expect(char var1) throws CommandSyntaxException {
       this.reader.skipWhitespace();
       this.reader.expect(var1);
+   }
+
+   static {
+      AS_CODEC = Codec.STRING.comapFlatMap((var0) -> {
+         try {
+            return DataResult.success((new TagParser(new StringReader(var0))).readSingleStruct(), Lifecycle.stable());
+         } catch (CommandSyntaxException var2) {
+            Objects.requireNonNull(var2);
+            return DataResult.error(var2::getMessage);
+         }
+      }, CompoundTag::toString);
    }
 }

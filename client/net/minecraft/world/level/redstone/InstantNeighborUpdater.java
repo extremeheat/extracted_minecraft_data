@@ -14,18 +14,15 @@ public class InstantNeighborUpdater implements NeighborUpdater {
       this.level = var1;
    }
 
-   @Override
    public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this.level, var1, var2, var3, var4, var5, var6 - 1);
    }
 
-   @Override
    public void neighborChanged(BlockPos var1, Block var2, BlockPos var3) {
       BlockState var4 = this.level.getBlockState(var1);
       this.neighborChanged(var4, var1, var2, var3, false);
    }
 
-   @Override
    public void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
       NeighborUpdater.executeUpdate(this.level, var1, var2, var3, var4, var5);
    }

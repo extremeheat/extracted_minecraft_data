@@ -14,17 +14,14 @@ public class BlastFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
       super(BlockEntityType.BLAST_FURNACE, var1, var2, RecipeType.BLASTING);
    }
 
-   @Override
    protected Component getDefaultName() {
       return Component.translatable("container.blast_furnace");
    }
 
-   @Override
    protected int getBurnDuration(ItemStack var1) {
       return super.getBurnDuration(var1) / 2;
    }
 
-   @Override
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
       return new BlastFurnaceMenu(var1, var2, this, this.dataAccess);
    }

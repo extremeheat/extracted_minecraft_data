@@ -11,17 +11,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.RecipeBookSettings;
 
 public class ClientboundRecipePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundRecipePacket> STREAM_CODEC = Packet.codec(
-      ClientboundRecipePacket::write, ClientboundRecipePacket::new
-   );
-   private final ClientboundRecipePacket.State state;
+   public static final StreamCodec<FriendlyByteBuf, ClientboundRecipePacket> STREAM_CODEC = Packet.codec(ClientboundRecipePacket::write, ClientboundRecipePacket::new);
+   private final State state;
    private final List<ResourceLocation> recipes;
    private final List<ResourceLocation> toHighlight;
    private final RecipeBookSettings bookSettings;
 
-   public ClientboundRecipePacket(
-      ClientboundRecipePacket.State var1, Collection<ResourceLocation> var2, Collection<ResourceLocation> var3, RecipeBookSettings var4
-   ) {
+   public ClientboundRecipePacket(State var1, Collection<ResourceLocation> var2, Collection<ResourceLocation> var3, RecipeBookSettings var4) {
       super();
       this.state = var1;
       this.recipes = ImmutableList.copyOf(var2);
@@ -31,7 +27,7 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
 
    private ClientboundRecipePacket(FriendlyByteBuf var1) {
       super();
-      this.state = var1.readEnum(ClientboundRecipePacket.State.class);
+      this.state = (State)var1.readEnum(State.class);
       this.bookSettings = RecipeBookSettings.read(var1);
       this.recipes = var1.readList(FriendlyByteBuf::readResourceLocation);
       if (this.state == ClientboundRecipePacket.State.INIT) {
@@ -39,6 +35,7 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       } else {
          this.toHighlight = ImmutableList.of();
       }
+
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -48,9 +45,9 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       if (this.state == ClientboundRecipePacket.State.INIT) {
          var1.writeCollection(this.toHighlight, FriendlyByteBuf::writeResourceLocation);
       }
+
    }
 
-   @Override
    public PacketType<ClientboundRecipePacket> type() {
       return GamePacketTypes.CLIENTBOUND_RECIPE;
    }
@@ -71,7 +68,7 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       return this.bookSettings;
    }
 
-   public ClientboundRecipePacket.State getState() {
+   public State getState() {
       return this.state;
    }
 
@@ -81,6 +78,11 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       REMOVE;
 
       private State() {
+      }
+
+      // $FF: synthetic method
+      private static State[] $values() {
+         return new State[]{INIT, ADD, REMOVE};
       }
    }
 }

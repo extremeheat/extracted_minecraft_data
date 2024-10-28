@@ -14,8 +14,7 @@ public class LootContextParam<T> {
       return this.name;
    }
 
-   @Override
    public String toString() {
-      return "<parameter " + this.name + ">";
+      return "<parameter " + String.valueOf(this.name) + ">";
    }
 }

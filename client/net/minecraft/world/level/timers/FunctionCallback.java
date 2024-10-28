@@ -1,6 +1,5 @@
 package net.minecraft.world.level.timers;
 
-import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -16,7 +15,14 @@ public class FunctionCallback implements TimerCallback<MinecraftServer> {
 
    public void handle(MinecraftServer var1, TimerQueue<MinecraftServer> var2, long var3) {
       ServerFunctionManager var5 = var1.getFunctions();
-      var5.get(this.functionId).ifPresent(var1x -> var5.execute(var1x, var5.getGameLoopSender()));
+      var5.get(this.functionId).ifPresent((var1x) -> {
+         var5.execute(var1x, var5.getGameLoopSender());
+      });
+   }
+
+   // $FF: synthetic method
+   public void handle(Object var1, TimerQueue var2, long var3) {
+      this.handle((MinecraftServer)var1, var2, var3);
    }
 
    public static class Serializer extends TimerCallback.Serializer<MinecraftServer, FunctionCallback> {
@@ -31,6 +37,11 @@ public class FunctionCallback implements TimerCallback<MinecraftServer> {
       public FunctionCallback deserialize(CompoundTag var1) {
          ResourceLocation var2 = new ResourceLocation(var1.getString("Name"));
          return new FunctionCallback(var2);
+      }
+
+      // $FF: synthetic method
+      public TimerCallback deserialize(CompoundTag var1) {
+         return this.deserialize(var1);
       }
    }
 }

@@ -26,6 +26,7 @@ public abstract class DynamicGraphMinFixedPoint {
                if (var1 > var3) {
                   super.rehash(var1);
                }
+
             }
          };
          this.computedLevels.defaultReturnValue((byte)-1);
@@ -44,10 +45,11 @@ public abstract class DynamicGraphMinFixedPoint {
 
    public void removeIf(LongPredicate var1) {
       LongArrayList var2 = new LongArrayList();
-      this.computedLevels.keySet().forEach(var2x -> {
+      this.computedLevels.keySet().forEach((var2x) -> {
          if (var1.test(var2x)) {
             var2.add(var2x);
          }
+
       });
       var2.forEach(this::removeFromQueue);
    }
@@ -94,6 +96,7 @@ public abstract class DynamicGraphMinFixedPoint {
             this.priorityQueue.dequeue(var3, var11, this.levelCount);
             this.computedLevels.remove(var3);
          }
+
       }
    }
 
@@ -115,6 +118,7 @@ public abstract class DynamicGraphMinFixedPoint {
             this.checkEdge(var1, var3, this.levelCount - 1, var10 ? var9 : this.getLevel(var3), var7, var6);
          }
       }
+
    }
 
    protected final boolean hasWork() {

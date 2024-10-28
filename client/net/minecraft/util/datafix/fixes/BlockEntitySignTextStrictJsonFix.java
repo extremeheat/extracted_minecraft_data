@@ -15,13 +15,13 @@ public class BlockEntitySignTextStrictJsonFix extends NamedEntityFix {
       return var1.update(var2, ComponentDataFixUtils::rewriteFromLenient);
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), var1x -> {
+      return var1.update(DSL.remainderFinder(), (var1x) -> {
          var1x = this.updateLine(var1x, "Text1");
          var1x = this.updateLine(var1x, "Text2");
          var1x = this.updateLine(var1x, "Text3");
-         return this.updateLine(var1x, "Text4");
+         var1x = this.updateLine(var1x, "Text4");
+         return var1x;
       });
    }
 }

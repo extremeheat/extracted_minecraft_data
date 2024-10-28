@@ -43,22 +43,23 @@ public class MerchantMenu extends AbstractContainerMenu {
       this.addSlot(new Slot(this.tradeContainer, 1, 162, 37));
       this.addSlot(new MerchantResultSlot(var2.player, var3, this.tradeContainer, 2, 220, 37));
 
-      for(int var4 = 0; var4 < 3; ++var4) {
+      int var4;
+      for(var4 = 0; var4 < 3; ++var4) {
          for(int var5 = 0; var5 < 9; ++var5) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 108 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
-         this.addSlot(new Slot(var2, var6, 108 + var6 * 18, 142));
+      for(var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var2, var4, 108 + var4 * 18, 142));
       }
+
    }
 
    public void setShowProgressBar(boolean var1) {
       this.showProgressBar = var1;
    }
 
-   @Override
    public void slotsChanged(Container var1) {
       this.tradeContainer.updateSellItem();
       super.slotsChanged(var1);
@@ -68,7 +69,6 @@ public class MerchantMenu extends AbstractContainerMenu {
       this.tradeContainer.setSelectionHint(var1);
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.trader.getTradingPlayer() == var1;
    }
@@ -101,15 +101,13 @@ public class MerchantMenu extends AbstractContainerMenu {
       return this.canRestock;
    }
 
-   @Override
    public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
       return false;
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -153,12 +151,12 @@ public class MerchantMenu extends AbstractContainerMenu {
          Entity var1 = (Entity)this.trader;
          var1.level().playLocalSound(var1.getX(), var1.getY(), var1.getZ(), this.trader.getNotifyTradeSound(), SoundSource.NEUTRAL, 1.0F, 1.0F, false);
       }
+
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
-      this.trader.setTradingPlayer(null);
+      this.trader.setTradingPlayer((Player)null);
       if (!this.trader.isClientSide()) {
          if (!var1.isAlive() || var1 instanceof ServerPlayer && ((ServerPlayer)var1).hasDisconnected()) {
             ItemStack var2 = this.tradeContainer.removeItemNoUpdate(0);
@@ -174,6 +172,7 @@ public class MerchantMenu extends AbstractContainerMenu {
             var1.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(0));
             var1.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(1));
          }
+
       }
    }
 
@@ -198,16 +197,19 @@ public class MerchantMenu extends AbstractContainerMenu {
          }
 
          if (this.tradeContainer.getItem(0).isEmpty() && this.tradeContainer.getItem(1).isEmpty()) {
-            MerchantOffer var4 = this.getOffers().get(var1);
+            MerchantOffer var4 = (MerchantOffer)this.getOffers().get(var1);
             this.moveFromInventoryToPaymentSlot(0, var4.getItemCostA());
-            var4.getItemCostB().ifPresent(var1x -> this.moveFromInventoryToPaymentSlot(1, var1x));
+            var4.getItemCostB().ifPresent((var1x) -> {
+               this.moveFromInventoryToPaymentSlot(1, var1x);
+            });
          }
+
       }
    }
 
    private void moveFromInventoryToPaymentSlot(int var1, ItemCost var2) {
       for(int var3 = 3; var3 < 39; ++var3) {
-         ItemStack var4 = this.slots.get(var3).getItem();
+         ItemStack var4 = ((Slot)this.slots.get(var3)).getItem();
          if (!var4.isEmpty() && var2.test(var4)) {
             ItemStack var5 = this.tradeContainer.getItem(var1);
             int var6 = var5.isEmpty() ? 0 : var5.getCount();
@@ -222,6 +224,7 @@ public class MerchantMenu extends AbstractContainerMenu {
             }
          }
       }
+
    }
 
    public void setOffers(MerchantOffers var1) {

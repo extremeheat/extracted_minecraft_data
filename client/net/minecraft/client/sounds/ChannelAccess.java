@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 public class ChannelAccess {
-   private final Set<ChannelAccess.ChannelHandle> channels = Sets.newIdentityHashSet();
+   private final Set<ChannelHandle> channels = Sets.newIdentityHashSet();
    final Library library;
    final Executor executor;
 
@@ -23,23 +23,28 @@ public class ChannelAccess {
       this.executor = var2;
    }
 
-   public CompletableFuture<ChannelAccess.ChannelHandle> createHandle(Library.Pool var1) {
+   public CompletableFuture<ChannelHandle> createHandle(Library.Pool var1) {
       CompletableFuture var2 = new CompletableFuture();
       this.executor.execute(() -> {
          Channel var3 = this.library.acquireChannel(var1);
          if (var3 != null) {
-            ChannelAccess.ChannelHandle var4 = new ChannelAccess.ChannelHandle(var3);
+            ChannelHandle var4 = new ChannelHandle(var3);
             this.channels.add(var4);
             var2.complete(var4);
          } else {
-            var2.complete(null);
+            var2.complete((Object)null);
          }
+
       });
       return var2;
    }
 
    public void executeOnChannels(Consumer<Stream<Channel>> var1) {
-      this.executor.execute(() -> var1.accept(this.channels.stream().map(var0 -> var0.channel).filter(Objects::nonNull)));
+      this.executor.execute(() -> {
+         var1.accept(this.channels.stream().map((var0) -> {
+            return var0.channel;
+         }).filter(Objects::nonNull));
+      });
    }
 
    public void scheduleTick() {
@@ -47,18 +52,19 @@ public class ChannelAccess {
          Iterator var1 = this.channels.iterator();
 
          while(var1.hasNext()) {
-            ChannelAccess.ChannelHandle var2 = (ChannelAccess.ChannelHandle)var1.next();
+            ChannelHandle var2 = (ChannelHandle)var1.next();
             var2.channel.updateStream();
             if (var2.channel.stopped()) {
                var2.release();
                var1.remove();
             }
          }
+
       });
    }
 
    public void clear() {
-      this.channels.forEach(ChannelAccess.ChannelHandle::release);
+      this.channels.forEach(ChannelHandle::release);
       this.channels.clear();
    }
 
@@ -81,6 +87,7 @@ public class ChannelAccess {
             if (this.channel != null) {
                var1.accept(this.channel);
             }
+
          });
       }
 

@@ -13,7 +13,6 @@ public class UpdateOneTwentyOneDamageTypeTagsProvider extends TagsProvider<Damag
       super(var1, Registries.DAMAGE_TYPE, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
       this.tag(DamageTypeTags.BREEZE_IMMUNE_TO).add(DamageTypes.ARROW, DamageTypes.TRIDENT);
       this.tag(DamageTypeTags.IS_PROJECTILE).add(DamageTypes.WIND_CHARGE);

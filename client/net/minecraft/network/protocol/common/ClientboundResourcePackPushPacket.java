@@ -11,26 +11,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundResourcePackPushPacket(UUID c, String d, String e, boolean f, Optional<Component> g) implements Packet<ClientCommonPacketListener> {
-   private final UUID id;
-   private final String url;
-   private final String hash;
-   private final boolean required;
-   private final Optional<Component> prompt;
+public record ClientboundResourcePackPushPacket(UUID id, String url, String hash, boolean required, Optional<Component> prompt) implements Packet<ClientCommonPacketListener> {
    public static final int MAX_HASH_LENGTH = 40;
-   public static final StreamCodec<ByteBuf, ClientboundResourcePackPushPacket> STREAM_CODEC = StreamCodec.composite(
-      UUIDUtil.STREAM_CODEC,
-      ClientboundResourcePackPushPacket::id,
-      ByteBufCodecs.STRING_UTF8,
-      ClientboundResourcePackPushPacket::url,
-      ByteBufCodecs.stringUtf8(40),
-      ClientboundResourcePackPushPacket::hash,
-      ByteBufCodecs.BOOL,
-      ClientboundResourcePackPushPacket::required,
-      ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.apply(ByteBufCodecs::optional),
-      ClientboundResourcePackPushPacket::prompt,
-      ClientboundResourcePackPushPacket::new
-   );
+   public static final StreamCodec<ByteBuf, ClientboundResourcePackPushPacket> STREAM_CODEC;
 
    public ClientboundResourcePackPushPacket(UUID var1, String var2, String var3, boolean var4, Optional<Component> var5) {
       super();
@@ -45,12 +28,35 @@ public record ClientboundResourcePackPushPacket(UUID c, String d, String e, bool
       }
    }
 
-   @Override
    public PacketType<ClientboundResourcePackPushPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_RESOURCE_PACK_PUSH;
    }
 
    public void handle(ClientCommonPacketListener var1) {
       var1.handleResourcePackPush(this);
+   }
+
+   public UUID id() {
+      return this.id;
+   }
+
+   public String url() {
+      return this.url;
+   }
+
+   public String hash() {
+      return this.hash;
+   }
+
+   public boolean required() {
+      return this.required;
+   }
+
+   public Optional<Component> prompt() {
+      return this.prompt;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC, ClientboundResourcePackPushPacket::id, ByteBufCodecs.STRING_UTF8, ClientboundResourcePackPushPacket::url, ByteBufCodecs.stringUtf8(40), ClientboundResourcePackPushPacket::hash, ByteBufCodecs.BOOL, ClientboundResourcePackPushPacket::required, ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.apply(ByteBufCodecs::optional), ClientboundResourcePackPushPacket::prompt, ClientboundResourcePackPushPacket::new);
    }
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,16 +18,10 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import org.slf4j.Logger;
 
-public record PiecesContainer(List<StructurePiece> a) {
-   private final List<StructurePiece> pieces;
+public record PiecesContainer(List<StructurePiece> pieces) {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final ResourceLocation JIGSAW_RENAME = new ResourceLocation("jigsaw");
-   private static final Map<ResourceLocation, ResourceLocation> RENAMES = ImmutableMap.builder()
-      .put(new ResourceLocation("nvi"), JIGSAW_RENAME)
-      .put(new ResourceLocation("pcp"), JIGSAW_RENAME)
-      .put(new ResourceLocation("bastionremnant"), JIGSAW_RENAME)
-      .put(new ResourceLocation("runtime"), JIGSAW_RENAME)
-      .build();
+   private static final Map<ResourceLocation, ResourceLocation> RENAMES;
 
    public PiecesContainer(List<StructurePiece> var1) {
       super();
@@ -38,19 +33,26 @@ public record PiecesContainer(List<StructurePiece> a) {
    }
 
    public boolean isInsidePiece(BlockPos var1) {
-      for(StructurePiece var3 : this.pieces) {
-         if (var3.getBoundingBox().isInside(var1)) {
-            return true;
-         }
-      }
+      Iterator var2 = this.pieces.iterator();
 
-      return false;
+      StructurePiece var3;
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+
+         var3 = (StructurePiece)var2.next();
+      } while(!var3.getBoundingBox().isInside(var1));
+
+      return true;
    }
 
    public Tag save(StructurePieceSerializationContext var1) {
       ListTag var2 = new ListTag();
+      Iterator var3 = this.pieces.iterator();
 
-      for(StructurePiece var4 : this.pieces) {
+      while(var3.hasNext()) {
+         StructurePiece var4 = (StructurePiece)var3.next();
          var2.add(var4.createTag(var1));
       }
 
@@ -64,8 +66,8 @@ public record PiecesContainer(List<StructurePiece> a) {
          CompoundTag var4 = var0.getCompound(var3);
          String var5 = var4.getString("id").toLowerCase(Locale.ROOT);
          ResourceLocation var6 = new ResourceLocation(var5);
-         ResourceLocation var7 = RENAMES.getOrDefault(var6, var6);
-         StructurePieceType var8 = BuiltInRegistries.STRUCTURE_PIECE.get(var7);
+         ResourceLocation var7 = (ResourceLocation)RENAMES.getOrDefault(var6, var6);
+         StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.get(var7);
          if (var8 == null) {
             LOGGER.error("Unknown structure piece id: {}", var7);
          } else {
@@ -83,5 +85,13 @@ public record PiecesContainer(List<StructurePiece> a) {
 
    public BoundingBox calculateBoundingBox() {
       return StructurePiece.createBoundingBox(this.pieces.stream());
+   }
+
+   public List<StructurePiece> pieces() {
+      return this.pieces;
+   }
+
+   static {
+      RENAMES = ImmutableMap.builder().put(new ResourceLocation("nvi"), JIGSAW_RENAME).put(new ResourceLocation("pcp"), JIGSAW_RENAME).put(new ResourceLocation("bastionremnant"), JIGSAW_RENAME).put(new ResourceLocation("runtime"), JIGSAW_RENAME).build();
    }
 }

@@ -33,38 +33,36 @@ public class Library {
    private boolean supportsDisconnections;
    @Nullable
    private String defaultDeviceName;
-   private static final Library.ChannelPool EMPTY = new Library.ChannelPool() {
+   private static final ChannelPool EMPTY = new ChannelPool() {
       @Nullable
-      @Override
       public Channel acquire() {
          return null;
       }
 
-      @Override
       public boolean release(Channel var1) {
          return false;
       }
 
-      @Override
       public void cleanup() {
       }
 
-      @Override
       public int getMaxCount() {
          return 0;
       }
 
-      @Override
       public int getUsedCount() {
          return 0;
       }
    };
-   private Library.ChannelPool staticChannels = EMPTY;
-   private Library.ChannelPool streamingChannels = EMPTY;
-   private final Listener listener = new Listener();
+   private ChannelPool staticChannels;
+   private ChannelPool streamingChannels;
+   private final Listener listener;
 
    public Library() {
       super();
+      this.staticChannels = EMPTY;
+      this.streamingChannels = EMPTY;
+      this.listener = new Listener();
       this.defaultDeviceName = getDefaultDeviceName();
    }
 
@@ -106,8 +104,8 @@ public class Library {
             int var10 = this.getChannelCount();
             int var11 = Mth.clamp((int)Mth.sqrt((float)var10), 2, 8);
             int var6 = Mth.clamp(var10 - var11, 8, 255);
-            this.staticChannels = new Library.CountingChannelPool(var6);
-            this.streamingChannels = new Library.CountingChannelPool(var11);
+            this.staticChannels = new CountingChannelPool(var6);
+            this.streamingChannels = new CountingChannelPool(var11);
             ALCapabilities var7 = AL.createCapabilities(var3);
             OpenAlUtil.checkALError("Initialization");
             if (!var7.AL_EXT_source_distance_model) {
@@ -152,6 +150,7 @@ public class Library {
             var3.close();
          }
       }
+
    }
 
    private int getChannelCount() {
@@ -255,7 +254,7 @@ public class Library {
       }
 
       if (var1.isEmpty()) {
-         var1 = tryOpenDevice(null);
+         var1 = tryOpenDevice((String)null);
       }
 
       if (var1.isEmpty()) {
@@ -277,6 +276,7 @@ public class Library {
       if (this.currentDevice != 0L) {
          ALC10.alcCloseDevice(this.currentDevice);
       }
+
    }
 
    public Listener getListener() {
@@ -284,7 +284,7 @@ public class Library {
    }
 
    @Nullable
-   public Channel acquireChannel(Library.Pool var1) {
+   public Channel acquireChannel(Pool var1) {
       return (var1 == Library.Pool.STREAMING ? this.streamingChannels : this.staticChannels).acquire();
    }
 
@@ -295,14 +295,7 @@ public class Library {
    }
 
    public String getDebugString() {
-      return String.format(
-         Locale.ROOT,
-         "Sounds: %d/%d + %d/%d",
-         this.staticChannels.getUsedCount(),
-         this.staticChannels.getMaxCount(),
-         this.streamingChannels.getUsedCount(),
-         this.streamingChannels.getMaxCount()
-      );
+      return String.format(Locale.ROOT, "Sounds: %d/%d + %d/%d", this.staticChannels.getUsedCount(), this.staticChannels.getMaxCount(), this.streamingChannels.getUsedCount(), this.streamingChannels.getMaxCount());
    }
 
    public List<String> getAvailableSoundDevices() {
@@ -314,7 +307,7 @@ public class Library {
       return this.supportsDisconnections && ALC11.alcGetInteger(this.currentDevice, 787) == 0;
    }
 
-   interface ChannelPool {
+   private interface ChannelPool {
       @Nullable
       Channel acquire();
 
@@ -327,7 +320,7 @@ public class Library {
       int getUsedCount();
    }
 
-   static class CountingChannelPool implements Library.ChannelPool {
+   private static class CountingChannelPool implements ChannelPool {
       private final int limit;
       private final Set<Channel> activeChannels = Sets.newIdentityHashSet();
 
@@ -337,7 +330,6 @@ public class Library {
       }
 
       @Nullable
-      @Override
       public Channel acquire() {
          if (this.activeChannels.size() >= this.limit) {
             if (SharedConstants.IS_RUNNING_IN_IDE) {
@@ -355,7 +347,6 @@ public class Library {
          }
       }
 
-      @Override
       public boolean release(Channel var1) {
          if (!this.activeChannels.remove(var1)) {
             return false;
@@ -365,18 +356,15 @@ public class Library {
          }
       }
 
-      @Override
       public void cleanup() {
          this.activeChannels.forEach(Channel::destroy);
          this.activeChannels.clear();
       }
 
-      @Override
       public int getMaxCount() {
          return this.limit;
       }
 
-      @Override
       public int getUsedCount() {
          return this.activeChannels.size();
       }
@@ -387,6 +375,11 @@ public class Library {
       STREAMING;
 
       private Pool() {
+      }
+
+      // $FF: synthetic method
+      private static Pool[] $values() {
+         return new Pool[]{STATIC, STREAMING};
       }
    }
 }

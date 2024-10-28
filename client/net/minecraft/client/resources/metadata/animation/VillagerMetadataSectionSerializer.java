@@ -13,8 +13,12 @@ public class VillagerMetadataSectionSerializer implements MetadataSectionSeriali
       return new VillagerMetaDataSection(VillagerMetaDataSection.Hat.getByName(GsonHelper.getAsString(var1, "hat", "none")));
    }
 
-   @Override
    public String getMetadataSectionName() {
       return "villager";
+   }
+
+   // $FF: synthetic method
+   public Object fromJson(JsonObject var1) {
+      return this.fromJson(var1);
    }
 }

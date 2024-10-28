@@ -41,31 +41,79 @@ public enum DisplaySlot implements StringRepresentable {
       return this.id;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    @Nullable
    public static DisplaySlot teamColorToSlot(ChatFormatting var0) {
-      return switch(var0) {
-         case BLACK -> TEAM_BLACK;
-         case DARK_BLUE -> TEAM_DARK_BLUE;
-         case DARK_GREEN -> TEAM_DARK_GREEN;
-         case DARK_AQUA -> TEAM_DARK_AQUA;
-         case DARK_RED -> TEAM_DARK_RED;
-         case DARK_PURPLE -> TEAM_DARK_PURPLE;
-         case GOLD -> TEAM_GOLD;
-         case GRAY -> TEAM_GRAY;
-         case DARK_GRAY -> TEAM_DARK_GRAY;
-         case BLUE -> TEAM_BLUE;
-         case GREEN -> TEAM_GREEN;
-         case AQUA -> TEAM_AQUA;
-         case RED -> TEAM_RED;
-         case LIGHT_PURPLE -> TEAM_LIGHT_PURPLE;
-         case YELLOW -> TEAM_YELLOW;
-         case WHITE -> TEAM_WHITE;
-         case BOLD, ITALIC, UNDERLINE, RESET, OBFUSCATED, STRIKETHROUGH -> null;
-      };
+      DisplaySlot var10000;
+      switch (var0) {
+         case BLACK:
+            var10000 = TEAM_BLACK;
+            break;
+         case DARK_BLUE:
+            var10000 = TEAM_DARK_BLUE;
+            break;
+         case DARK_GREEN:
+            var10000 = TEAM_DARK_GREEN;
+            break;
+         case DARK_AQUA:
+            var10000 = TEAM_DARK_AQUA;
+            break;
+         case DARK_RED:
+            var10000 = TEAM_DARK_RED;
+            break;
+         case DARK_PURPLE:
+            var10000 = TEAM_DARK_PURPLE;
+            break;
+         case GOLD:
+            var10000 = TEAM_GOLD;
+            break;
+         case GRAY:
+            var10000 = TEAM_GRAY;
+            break;
+         case DARK_GRAY:
+            var10000 = TEAM_DARK_GRAY;
+            break;
+         case BLUE:
+            var10000 = TEAM_BLUE;
+            break;
+         case GREEN:
+            var10000 = TEAM_GREEN;
+            break;
+         case AQUA:
+            var10000 = TEAM_AQUA;
+            break;
+         case RED:
+            var10000 = TEAM_RED;
+            break;
+         case LIGHT_PURPLE:
+            var10000 = TEAM_LIGHT_PURPLE;
+            break;
+         case YELLOW:
+            var10000 = TEAM_YELLOW;
+            break;
+         case WHITE:
+            var10000 = TEAM_WHITE;
+            break;
+         case BOLD:
+         case ITALIC:
+         case UNDERLINE:
+         case RESET:
+         case OBFUSCATED:
+         case STRIKETHROUGH:
+            var10000 = null;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   // $FF: synthetic method
+   private static DisplaySlot[] $values() {
+      return new DisplaySlot[]{LIST, SIDEBAR, BELOW_NAME, TEAM_BLACK, TEAM_DARK_BLUE, TEAM_DARK_GREEN, TEAM_DARK_AQUA, TEAM_DARK_RED, TEAM_DARK_PURPLE, TEAM_GOLD, TEAM_GRAY, TEAM_DARK_GRAY, TEAM_BLUE, TEAM_GREEN, TEAM_AQUA, TEAM_RED, TEAM_LIGHT_PURPLE, TEAM_YELLOW, TEAM_WHITE};
    }
 }

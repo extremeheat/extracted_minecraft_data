@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -31,14 +32,13 @@ public class SpellParticle extends TextureSheetParticle {
       if (this.isCloseToScopingPlayer()) {
          this.setAlpha(0.0F);
       }
+
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.setSpriteFromAge(this.sprites);
@@ -47,15 +47,13 @@ public class SpellParticle extends TextureSheetParticle {
       } else {
          this.setAlpha(Mth.lerp(0.05F, this.alpha, 1.0F));
       }
+
    }
 
    private boolean isCloseToScopingPlayer() {
       Minecraft var1 = Minecraft.getInstance();
       LocalPlayer var2 = var1.player;
-      return var2 != null
-         && var2.getEyePosition().distanceToSqr(this.x, this.y, this.z) <= 9.0
-         && var1.options.getCameraType().isFirstPerson()
-         && var2.isScoping();
+      return var2 != null && var2.getEyePosition().distanceToSqr(this.x, this.y, this.z) <= 9.0 && var1.options.getCameraType().isFirstPerson() && var2.isScoping();
    }
 
    public static class InstantProvider implements ParticleProvider<SimpleParticleType> {
@@ -69,34 +67,10 @@ public class SpellParticle extends TextureSheetParticle {
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
       }
-   }
 
-   public static class MobEffectProvider implements ParticleProvider<ColorParticleOption> {
-      private final SpriteSet sprite;
-
-      public MobEffectProvider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var15.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
-         var15.setAlpha(var1.getAlpha());
-         return var15;
-      }
-   }
-
-   public static class Provider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public Provider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -113,6 +87,50 @@ public class SpellParticle extends TextureSheetParticle {
          float var16 = var2.random.nextFloat() * 0.5F + 0.35F;
          var15.setColor(1.0F * var16, 0.0F * var16, 1.0F * var16);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class MobEffectProvider implements ParticleProvider<ColorParticleOption> {
+      private final SpriteSet sprite;
+
+      public MobEffectProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+         ((Particle)var15).setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
+         ((Particle)var15).setAlpha(var1.getAlpha());
+         return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((ColorParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class Provider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public Provider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

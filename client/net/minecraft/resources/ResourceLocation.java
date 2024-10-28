@@ -24,23 +24,23 @@ import net.minecraft.util.GsonHelper;
 import org.apache.commons.lang3.StringUtils;
 
 public class ResourceLocation implements Comparable<ResourceLocation> {
-   public static final Codec<ResourceLocation> CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
-   public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ResourceLocation::new, ResourceLocation::toString);
-   public static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
+   public static final Codec<ResourceLocation> CODEC;
+   public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC;
+   public static final SimpleCommandExceptionType ERROR_INVALID;
    public static final char NAMESPACE_SEPARATOR = ':';
    public static final String DEFAULT_NAMESPACE = "minecraft";
    public static final String REALMS_NAMESPACE = "realms";
    private final String namespace;
    private final String path;
 
-   protected ResourceLocation(String var1, String var2, @Nullable ResourceLocation.Dummy var3) {
+   protected ResourceLocation(String var1, String var2, @Nullable Dummy var3) {
       super();
       this.namespace = var1;
       this.path = var2;
    }
 
    public ResourceLocation(String var1, String var2) {
-      this(assertValidNamespace(var1, var2), assertValidPath(var1, var2), null);
+      this(assertValidNamespace(var1, var2), assertValidPath(var1, var2), (Dummy)null);
    }
 
    private ResourceLocation(String[] var1) {
@@ -90,7 +90,9 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       try {
          return DataResult.success(new ResourceLocation(var0));
       } catch (ResourceLocationException var2) {
-         return DataResult.error(() -> "Not a valid resource location: " + var0 + " " + var2.getMessage());
+         return DataResult.error(() -> {
+            return "Not a valid resource location: " + var0 + " " + var2.getMessage();
+         });
       }
    }
 
@@ -103,11 +105,11 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    }
 
    public ResourceLocation withPath(String var1) {
-      return new ResourceLocation(this.namespace, assertValidPath(this.namespace, var1), null);
+      return new ResourceLocation(this.namespace, assertValidPath(this.namespace, var1), (Dummy)null);
    }
 
    public ResourceLocation withPath(UnaryOperator<String> var1) {
-      return this.withPath(var1.apply(this.path));
+      return this.withPath((String)var1.apply(this.path));
    }
 
    public ResourceLocation withPrefix(String var1) {
@@ -118,12 +120,10 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       return this.withPath(this.path + var1);
    }
 
-   @Override
    public String toString() {
       return this.namespace + ":" + this.path;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -135,7 +135,6 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       }
    }
 
-   @Override
    public int hashCode() {
       return 31 * this.namespace.hashCode() + this.path.hashCode();
    }
@@ -259,6 +258,17 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       }
    }
 
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((ResourceLocation)var1);
+   }
+
+   static {
+      CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
+      STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ResourceLocation::new, ResourceLocation::toString);
+      ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
+   }
+
    protected interface Dummy {
    }
 
@@ -273,6 +283,16 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
 
       public JsonElement serialize(ResourceLocation var1, Type var2, JsonSerializationContext var3) {
          return new JsonPrimitive(var1.toString());
+      }
+
+      // $FF: synthetic method
+      public JsonElement serialize(Object var1, Type var2, JsonSerializationContext var3) {
+         return this.serialize((ResourceLocation)var1, var2, var3);
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

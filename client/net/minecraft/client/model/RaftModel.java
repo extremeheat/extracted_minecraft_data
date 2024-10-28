@@ -1,7 +1,6 @@
 package net.minecraft.client.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -26,36 +25,20 @@ public class RaftModel extends ListModel<Boat> {
       this.parts = this.createPartsBuilder(var1).build();
    }
 
-   protected Builder<ModelPart> createPartsBuilder(ModelPart var1) {
-      Builder var2 = new Builder();
+   protected ImmutableList.Builder<ModelPart> createPartsBuilder(ModelPart var1) {
+      ImmutableList.Builder var2 = new ImmutableList.Builder();
       var2.add(new ModelPart[]{var1.getChild("bottom"), this.leftPaddle, this.rightPaddle});
       return var2;
    }
 
    public static void createChildren(PartDefinition var0) {
-      var0.addOrReplaceChild(
-         "bottom",
-         CubeListBuilder.create()
-            .texOffs(0, 0)
-            .addBox(-14.0F, -11.0F, -4.0F, 28.0F, 20.0F, 4.0F)
-            .texOffs(0, 0)
-            .addBox(-14.0F, -9.0F, -8.0F, 28.0F, 16.0F, 4.0F),
-         PartPose.offsetAndRotation(0.0F, -2.1F, 1.0F, 1.5708F, 0.0F, 0.0F)
-      );
+      var0.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 0).addBox(-14.0F, -11.0F, -4.0F, 28.0F, 20.0F, 4.0F).texOffs(0, 0).addBox(-14.0F, -9.0F, -8.0F, 28.0F, 16.0F, 4.0F), PartPose.offsetAndRotation(0.0F, -2.1F, 1.0F, 1.5708F, 0.0F, 0.0F));
       boolean var1 = true;
       boolean var2 = true;
       boolean var3 = true;
       float var4 = -5.0F;
-      var0.addOrReplaceChild(
-         "left_paddle",
-         CubeListBuilder.create().texOffs(0, 24).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(-1.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F),
-         PartPose.offsetAndRotation(3.0F, -4.0F, 9.0F, 0.0F, 0.0F, 0.19634955F)
-      );
-      var0.addOrReplaceChild(
-         "right_paddle",
-         CubeListBuilder.create().texOffs(40, 24).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(0.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F),
-         PartPose.offsetAndRotation(3.0F, -4.0F, -9.0F, 0.0F, 3.1415927F, 0.19634955F)
-      );
+      var0.addOrReplaceChild("left_paddle", CubeListBuilder.create().texOffs(0, 24).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(-1.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F), PartPose.offsetAndRotation(3.0F, -4.0F, 9.0F, 0.0F, 0.0F, 0.19634955F));
+      var0.addOrReplaceChild("right_paddle", CubeListBuilder.create().texOffs(40, 24).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(0.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F), PartPose.offsetAndRotation(3.0F, -4.0F, -9.0F, 0.0F, 3.1415927F, 0.19634955F));
    }
 
    public static LayerDefinition createBodyModel() {
@@ -81,5 +64,11 @@ public class RaftModel extends ListModel<Boat> {
       if (var1 == 1) {
          var2.yRot = 3.1415927F - var2.yRot;
       }
+
+   }
+
+   // $FF: synthetic method
+   public Iterable parts() {
+      return this.parts();
    }
 }

@@ -26,7 +26,6 @@ public class PanicGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (!this.shouldPanic()) {
          return false;
@@ -65,18 +64,15 @@ public class PanicGoal extends Goal {
       return this.isRunning;
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().moveTo(this.posX, this.posY, this.posZ, this.speedModifier);
       this.isRunning = true;
    }
 
-   @Override
    public void stop() {
       this.isRunning = false;
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.mob.getNavigation().isDone();
    }
@@ -84,8 +80,8 @@ public class PanicGoal extends Goal {
    @Nullable
    protected BlockPos lookForWater(BlockGetter var1, Entity var2, int var3) {
       BlockPos var4 = var2.blockPosition();
-      return !var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty()
-         ? null
-         : BlockPos.findClosestMatch(var2.blockPosition(), var3, 1, var1x -> var1.getFluidState(var1x).is(FluidTags.WATER)).orElse(null);
+      return !var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(var2.blockPosition(), var3, 1, (var1x) -> {
+         return var1.getFluidState(var1x).is(FluidTags.WATER);
+      }).orElse((Object)null);
    }
 }

@@ -13,53 +13,45 @@ public class ZeroBitStorage implements BitStorage {
       this.size = var1;
    }
 
-   @Override
    public int getAndSet(int var1, int var2) {
       Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
       Validate.inclusiveBetween(0L, 0L, (long)var2);
       return 0;
    }
 
-   @Override
    public void set(int var1, int var2) {
       Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
       Validate.inclusiveBetween(0L, 0L, (long)var2);
    }
 
-   @Override
    public int get(int var1) {
       Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
       return 0;
    }
 
-   @Override
    public long[] getRaw() {
       return RAW;
    }
 
-   @Override
    public int getSize() {
       return this.size;
    }
 
-   @Override
    public int getBits() {
       return 0;
    }
 
-   @Override
    public void getAll(IntConsumer var1) {
       for(int var2 = 0; var2 < this.size; ++var2) {
          var1.accept(0);
       }
+
    }
 
-   @Override
    public void unpack(int[] var1) {
       Arrays.fill(var1, 0, this.size, 0);
    }
 
-   @Override
    public BitStorage copy() {
       return this;
    }

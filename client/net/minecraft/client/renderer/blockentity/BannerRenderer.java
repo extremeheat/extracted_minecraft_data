@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BannerBlock;
@@ -65,15 +66,16 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       } else {
          var9 = var1.getLevel().getGameTime();
          BlockState var11 = var1.getBlockState();
+         float var12;
          if (var11.getBlock() instanceof BannerBlock) {
             var3.translate(0.5F, 0.5F, 0.5F);
-            float var12 = -RotationSegment.convertToDegrees(var11.getValue(BannerBlock.ROTATION));
+            var12 = -RotationSegment.convertToDegrees((Integer)var11.getValue(BannerBlock.ROTATION));
             var3.mulPose(Axis.YP.rotationDegrees(var12));
             this.pole.visible = true;
          } else {
             var3.translate(0.5F, -0.16666667F, 0.5F);
-            float var15 = -var11.getValue(WallBannerBlock.FACING).toYRot();
-            var3.mulPose(Axis.YP.rotationDegrees(var15));
+            var12 = -((Direction)var11.getValue(WallBannerBlock.FACING)).toYRot();
+            var3.mulPose(Axis.YP.rotationDegrees(var12));
             var3.translate(0.0F, -0.3125F, -0.4375F);
             this.pole.visible = false;
          }
@@ -84,8 +86,8 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       VertexConsumer var14 = ModelBakery.BANNER_BASE.buffer(var4, RenderType::entitySolid);
       this.pole.render(var3, var14, var5, var6);
       this.bar.render(var3, var14, var5, var6);
-      BlockPos var16 = var1.getBlockPos();
-      float var13 = ((float)Math.floorMod((long)(var16.getX() * 7 + var16.getY() * 9 + var16.getZ() * 13) + var9, 100L) + var2) / 100.0F;
+      BlockPos var15 = var1.getBlockPos();
+      float var13 = ((float)Math.floorMod((long)(var15.getX() * 7 + var15.getY() * 9 + var15.getZ() * 13) + var9, 100L) + var2) / 100.0F;
       this.flag.xRot = (-0.0125F + 0.01F * Mth.cos(6.2831855F * var13)) * 3.1415927F;
       this.flag.y = -32.0F;
       renderPatterns(var3, var4, var5, var6, this.flag, ModelBakery.BANNER_BASE, true, var1.getBaseColor(), var1.getPatterns());
@@ -93,24 +95,11 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       var3.popPose();
    }
 
-   public static void renderPatterns(
-      PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, boolean var6, DyeColor var7, BannerPatternLayers var8
-   ) {
+   public static void renderPatterns(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, boolean var6, DyeColor var7, BannerPatternLayers var8) {
       renderPatterns(var0, var1, var2, var3, var4, var5, var6, var7, var8, false);
    }
 
-   public static void renderPatterns(
-      PoseStack var0,
-      MultiBufferSource var1,
-      int var2,
-      int var3,
-      ModelPart var4,
-      Material var5,
-      boolean var6,
-      DyeColor var7,
-      BannerPatternLayers var8,
-      boolean var9
-   ) {
+   public static void renderPatterns(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, boolean var6, DyeColor var7, BannerPatternLayers var8, boolean var9) {
       var4.render(var0, var5.buffer(var1, RenderType::entitySolid, var9), var2, var3);
       renderPatternLayer(var0, var1, var2, var3, var4, var6 ? Sheets.BANNER_BASE : Sheets.SHIELD_BASE, var7);
 
@@ -119,6 +108,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
          Material var12 = var6 ? Sheets.getBannerMaterial(var11.pattern()) : Sheets.getShieldMaterial(var11.pattern());
          renderPatternLayer(var0, var1, var2, var3, var4, var12, var11.color());
       }
+
    }
 
    private static void renderPatternLayer(PoseStack var0, MultiBufferSource var1, int var2, int var3, ModelPart var4, Material var5, DyeColor var6) {

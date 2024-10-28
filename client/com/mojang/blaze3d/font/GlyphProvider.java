@@ -7,7 +7,6 @@ import net.minecraft.client.gui.font.FontOption;
 public interface GlyphProvider extends AutoCloseable {
    float BASELINE = 7.0F;
 
-   @Override
    default void close() {
    }
 
@@ -18,19 +17,23 @@ public interface GlyphProvider extends AutoCloseable {
 
    IntSet getSupportedGlyphs();
 
-   public static record Conditional(GlyphProvider a, FontOption.Filter b) implements AutoCloseable {
-      private final GlyphProvider provider;
-      private final FontOption.Filter filter;
-
+   public static record Conditional(GlyphProvider provider, FontOption.Filter filter) implements AutoCloseable {
       public Conditional(GlyphProvider var1, FontOption.Filter var2) {
          super();
          this.provider = var1;
          this.filter = var2;
       }
 
-      @Override
       public void close() {
          this.provider.close();
+      }
+
+      public GlyphProvider provider() {
+         return this.provider;
+      }
+
+      public FontOption.Filter filter() {
+         return this.filter;
       }
    }
 }

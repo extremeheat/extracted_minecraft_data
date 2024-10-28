@@ -3,7 +3,6 @@ package net.minecraft.server.commands.data;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Locale;
 import java.util.function.Function;
 import net.minecraft.commands.CommandSourceStack;
@@ -19,25 +18,20 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.CommandStorage;
 
 public class StorageDataAccessor implements DataAccessor {
-   static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> SharedSuggestionProvider.suggestResource(
-         getGlobalTags(var0).keys(), var1
-      );
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = var0 -> new DataCommands.DataProvider() {
-         @Override
+   static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> {
+      return SharedSuggestionProvider.suggestResource(getGlobalTags(var0).keys(), var1);
+   };
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> {
+      return new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) {
             return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(var1), ResourceLocationArgument.getId(var1, var0));
          }
 
-         @Override
-         public ArgumentBuilder<CommandSourceStack, ?> wrap(
-            ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2
-         ) {
-            return var1.then(
-               Commands.literal("storage")
-                  .then((ArgumentBuilder)var2.apply(Commands.argument(var0, ResourceLocationArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE)))
-            );
+         public ArgumentBuilder<CommandSourceStack, ?> wrap(ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2) {
+            return var1.then(Commands.literal("storage").then((ArgumentBuilder)var2.apply(Commands.argument(var0, ResourceLocationArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
          }
       };
+   };
    private final CommandStorage storage;
    private final ResourceLocation id;
 
@@ -51,30 +45,23 @@ public class StorageDataAccessor implements DataAccessor {
       this.id = var2;
    }
 
-   @Override
    public void setData(CompoundTag var1) {
       this.storage.set(this.id, var1);
    }
 
-   @Override
    public CompoundTag getData() {
       return this.storage.get(this.id);
    }
 
-   @Override
    public Component getModifiedSuccess() {
       return Component.translatable("commands.data.storage.modified", Component.translationArg(this.id));
    }
 
-   @Override
    public Component getPrintSuccess(Tag var1) {
       return Component.translatable("commands.data.storage.query", Component.translationArg(this.id), NbtUtils.toPrettyComponent(var1));
    }
 
-   @Override
    public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {
-      return Component.translatable(
-         "commands.data.storage.get", var1.asString(), Component.translationArg(this.id), String.format(Locale.ROOT, "%.2f", var2), var4
-      );
+      return Component.translatable("commands.data.storage.get", var1.asString(), Component.translationArg(this.id), String.format(Locale.ROOT, "%.2f", var2), var4);
    }
 }

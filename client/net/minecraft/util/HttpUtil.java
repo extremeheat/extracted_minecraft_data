@@ -15,12 +15,14 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.OptionalLong;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
@@ -34,9 +36,7 @@ public class HttpUtil {
       super();
    }
 
-   public static Path downloadFile(
-      Path var0, URL var1, Map<String, String> var2, HashFunction var3, @Nullable HashCode var4, int var5, Proxy var6, HttpUtil.DownloadProgressListener var7
-   ) {
+   public static Path downloadFile(Path var0, URL var1, Map<String, String> var2, HashFunction var3, @Nullable HashCode var4, int var5, Proxy var6, DownloadProgressListener var7) {
       HttpURLConnection var8 = null;
       InputStream var9 = null;
       var7.requestStart();
@@ -60,52 +60,57 @@ public class HttpUtil {
             Files.deleteIfExists(var10);
          } catch (IOException var34) {
             var7.requestFinished(false);
-            throw new UncheckedIOException("Failed to remove existing file " + var10, var34);
+            throw new UncheckedIOException("Failed to remove existing file " + String.valueOf(var10), var34);
          }
       } else {
          var10 = null;
       }
 
-      Path var15;
+      Path var17;
       try {
          var8 = (HttpURLConnection)var1.openConnection(var6);
          var8.setInstanceFollowRedirects(true);
+         Objects.requireNonNull(var8);
          var2.forEach(var8::setRequestProperty);
          var9 = var8.getInputStream();
          long var11 = var8.getContentLengthLong();
          OptionalLong var13 = var11 != -1L ? OptionalLong.of(var11) : OptionalLong.empty();
          FileUtil.createDirectoriesSafe(var0);
          var7.downloadStart(var13);
+         String var10002;
          if (var13.isPresent() && var13.getAsLong() > (long)var5) {
-            throw new IOException("Filesize is bigger than maximum allowed (file is " + var13 + ", limit is " + var5 + ")");
+            var10002 = String.valueOf(var13);
+            throw new IOException("Filesize is bigger than maximum allowed (file is " + var10002 + ", limit is " + var5 + ")");
          }
 
-         if (var10 == null) {
-            Path var38 = Files.createTempFile(var0, "download", ".tmp");
-
-            try {
-               HashCode var39 = downloadAndHash(var3, var5, var7, var9, var38);
-               Path var16 = cachedFilePath(var0, var39);
-               if (!checkExistingFile(var16, var3, var39)) {
-                  Files.move(var38, var16, StandardCopyOption.REPLACE_EXISTING);
-               } else {
-                  updateModificationTime(var16);
-               }
-
-               var7.requestFinished(true);
-               return var16;
-            } finally {
-               Files.deleteIfExists(var38);
+         if (var10 != null) {
+            HashCode var38 = downloadAndHash(var3, var5, var7, var9, var10);
+            if (!var38.equals(var4)) {
+               var10002 = String.valueOf(var38);
+               throw new IOException("Hash of downloaded file (" + var10002 + ") did not match requested (" + String.valueOf(var4) + ")");
             }
+
+            var7.requestFinished(true);
+            Path var39 = var10;
+            return var39;
          }
 
-         HashCode var14 = downloadAndHash(var3, var5, var7, var9, var10);
-         if (!var14.equals(var4)) {
-            throw new IOException("Hash of downloaded file (" + var14 + ") did not match requested (" + var4 + ")");
-         }
+         Path var14 = Files.createTempFile(var0, "download", ".tmp");
 
-         var7.requestFinished(true);
-         var15 = var10;
+         try {
+            HashCode var15 = downloadAndHash(var3, var5, var7, var9, var14);
+            Path var16 = cachedFilePath(var0, var15);
+            if (!checkExistingFile(var16, var3, var15)) {
+               Files.move(var14, var16, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+               updateModificationTime(var16);
+            }
+
+            var7.requestFinished(true);
+            var17 = var16;
+         } finally {
+            Files.deleteIfExists(var14);
+         }
       } catch (Throwable var36) {
          if (var8 != null) {
             InputStream var12 = var8.getErrorStream();
@@ -119,12 +124,12 @@ public class HttpUtil {
          }
 
          var7.requestFinished(false);
-         throw new IllegalStateException("Failed to download file " + var1, var36);
+         throw new IllegalStateException("Failed to download file " + String.valueOf(var1), var36);
       } finally {
          IOUtils.closeQuietly(var9);
       }
 
-      return var15;
+      return var17;
    }
 
    private static void updateModificationTime(Path var0) {
@@ -133,23 +138,54 @@ public class HttpUtil {
       } catch (IOException var2) {
          LOGGER.warn("Failed to update modification time of {}", var0, var2);
       }
+
    }
 
    private static HashCode hashFile(Path var0, HashFunction var1) throws IOException {
       Hasher var2 = var1.newHasher();
+      OutputStream var3 = Funnels.asOutputStream(var2);
 
-      try (
-         OutputStream var3 = Funnels.asOutputStream(var2);
+      try {
          InputStream var4 = Files.newInputStream(var0);
-      ) {
-         var4.transferTo(var3);
+
+         try {
+            var4.transferTo(var3);
+         } catch (Throwable var9) {
+            if (var4 != null) {
+               try {
+                  var4.close();
+               } catch (Throwable var8) {
+                  var9.addSuppressed(var8);
+               }
+            }
+
+            throw var9;
+         }
+
+         if (var4 != null) {
+            var4.close();
+         }
+      } catch (Throwable var10) {
+         if (var3 != null) {
+            try {
+               var3.close();
+            } catch (Throwable var7) {
+               var10.addSuppressed(var7);
+            }
+         }
+
+         throw var10;
+      }
+
+      if (var3 != null) {
+         var3.close();
       }
 
       return var2.hash();
    }
 
    private static boolean checkExistingFile(Path var0, HashFunction var1, HashCode var2) throws IOException {
-      if (Files.exists(var0)) {
+      if (Files.exists(var0, new LinkOption[0])) {
          HashCode var3 = hashFile(var0, var1);
          if (var3.equals(var2)) {
             return true;
@@ -165,9 +201,11 @@ public class HttpUtil {
       return var0.resolve(var1.toString());
    }
 
-   private static HashCode downloadAndHash(HashFunction var0, int var1, HttpUtil.DownloadProgressListener var2, InputStream var3, Path var4) throws IOException {
+   private static HashCode downloadAndHash(HashFunction var0, int var1, DownloadProgressListener var2, InputStream var3, Path var4) throws IOException {
+      OutputStream var5 = Files.newOutputStream(var4, StandardOpenOption.CREATE);
+
       HashCode var11;
-      try (OutputStream var5 = Files.newOutputStream(var4, StandardOpenOption.CREATE)) {
+      try {
          Hasher var6 = var0.newHasher();
          byte[] var7 = new byte[8196];
          long var9 = 0L;
@@ -190,6 +228,20 @@ public class HttpUtil {
          }
 
          var11 = var6.hash();
+      } catch (Throwable var13) {
+         if (var5 != null) {
+            try {
+               var5.close();
+            } catch (Throwable var12) {
+               var13.addSuppressed(var12);
+            }
+         }
+
+         throw var13;
+      }
+
+      if (var5 != null) {
+         var5.close();
       }
 
       return var11;
@@ -197,11 +249,22 @@ public class HttpUtil {
 
    public static int getAvailablePort() {
       try {
+         ServerSocket var0 = new ServerSocket(0);
+
          int var1;
-         try (ServerSocket var0 = new ServerSocket(0)) {
+         try {
             var1 = var0.getLocalPort();
+         } catch (Throwable var4) {
+            try {
+               var0.close();
+            } catch (Throwable var3) {
+               var4.addSuppressed(var3);
+            }
+
+            throw var4;
          }
 
+         var0.close();
          return var1;
       } catch (IOException var5) {
          return 25564;
@@ -211,11 +274,22 @@ public class HttpUtil {
    public static boolean isPortAvailable(int var0) {
       if (var0 >= 0 && var0 <= 65535) {
          try {
+            ServerSocket var1 = new ServerSocket(var0);
+
             boolean var2;
-            try (ServerSocket var1 = new ServerSocket(var0)) {
+            try {
                var2 = var1.getLocalPort() == var0;
+            } catch (Throwable var5) {
+               try {
+                  var1.close();
+               } catch (Throwable var4) {
+                  var5.addSuppressed(var4);
+               }
+
+               throw var5;
             }
 
+            var1.close();
             return var2;
          } catch (IOException var6) {
             return false;

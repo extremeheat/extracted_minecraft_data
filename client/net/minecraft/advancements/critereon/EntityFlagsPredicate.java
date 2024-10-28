@@ -2,28 +2,14 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
-public record EntityFlagsPredicate(Optional<Boolean> b, Optional<Boolean> c, Optional<Boolean> d, Optional<Boolean> e, Optional<Boolean> f) {
-   private final Optional<Boolean> isOnFire;
-   private final Optional<Boolean> isCrouching;
-   private final Optional<Boolean> isSprinting;
-   private final Optional<Boolean> isSwimming;
-   private final Optional<Boolean> isBaby;
-   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "is_on_fire").forGetter(EntityFlagsPredicate::isOnFire),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "is_sneaking").forGetter(EntityFlagsPredicate::isCrouching),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "is_sprinting").forGetter(EntityFlagsPredicate::isSprinting),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "is_swimming").forGetter(EntityFlagsPredicate::isSwimming),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "is_baby").forGetter(EntityFlagsPredicate::isBaby)
-            )
-            .apply(var0, EntityFlagsPredicate::new)
-   );
+public record EntityFlagsPredicate(Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isBaby) {
+   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby)).apply(var0, EntityFlagsPredicate::new);
+   });
 
    public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5) {
       super();
@@ -35,21 +21,44 @@ public record EntityFlagsPredicate(Optional<Boolean> b, Optional<Boolean> c, Opt
    }
 
    public boolean matches(Entity var1) {
-      if (this.isOnFire.isPresent() && var1.isOnFire() != this.isOnFire.get()) {
+      if (this.isOnFire.isPresent() && var1.isOnFire() != (Boolean)this.isOnFire.get()) {
          return false;
-      } else if (this.isCrouching.isPresent() && var1.isCrouching() != this.isCrouching.get()) {
+      } else if (this.isCrouching.isPresent() && var1.isCrouching() != (Boolean)this.isCrouching.get()) {
          return false;
-      } else if (this.isSprinting.isPresent() && var1.isSprinting() != this.isSprinting.get()) {
+      } else if (this.isSprinting.isPresent() && var1.isSprinting() != (Boolean)this.isSprinting.get()) {
          return false;
-      } else if (this.isSwimming.isPresent() && var1.isSwimming() != this.isSwimming.get()) {
+      } else if (this.isSwimming.isPresent() && var1.isSwimming() != (Boolean)this.isSwimming.get()) {
          return false;
       } else {
-         if (this.isBaby.isPresent() && var1 instanceof LivingEntity var2 && var2.isBaby() != this.isBaby.get()) {
-            return false;
+         if (this.isBaby.isPresent() && var1 instanceof LivingEntity) {
+            LivingEntity var2 = (LivingEntity)var1;
+            if (var2.isBaby() != (Boolean)this.isBaby.get()) {
+               return false;
+            }
          }
 
          return true;
       }
+   }
+
+   public Optional<Boolean> isOnFire() {
+      return this.isOnFire;
+   }
+
+   public Optional<Boolean> isCrouching() {
+      return this.isCrouching;
+   }
+
+   public Optional<Boolean> isSprinting() {
+      return this.isSprinting;
+   }
+
+   public Optional<Boolean> isSwimming() {
+      return this.isSwimming;
+   }
+
+   public Optional<Boolean> isBaby() {
+      return this.isBaby;
    }
 
    public static class Builder {
@@ -63,31 +72,31 @@ public record EntityFlagsPredicate(Optional<Boolean> b, Optional<Boolean> c, Opt
          super();
       }
 
-      public static EntityFlagsPredicate.Builder flags() {
-         return new EntityFlagsPredicate.Builder();
+      public static Builder flags() {
+         return new Builder();
       }
 
-      public EntityFlagsPredicate.Builder setOnFire(Boolean var1) {
+      public Builder setOnFire(Boolean var1) {
          this.isOnFire = Optional.of(var1);
          return this;
       }
 
-      public EntityFlagsPredicate.Builder setCrouching(Boolean var1) {
+      public Builder setCrouching(Boolean var1) {
          this.isCrouching = Optional.of(var1);
          return this;
       }
 
-      public EntityFlagsPredicate.Builder setSprinting(Boolean var1) {
+      public Builder setSprinting(Boolean var1) {
          this.isSprinting = Optional.of(var1);
          return this;
       }
 
-      public EntityFlagsPredicate.Builder setSwimming(Boolean var1) {
+      public Builder setSwimming(Boolean var1) {
          this.isSwimming = Optional.of(var1);
          return this;
       }
 
-      public EntityFlagsPredicate.Builder setIsBaby(Boolean var1) {
+      public Builder setIsBaby(Boolean var1) {
          this.isBaby = Optional.of(var1);
          return this;
       }

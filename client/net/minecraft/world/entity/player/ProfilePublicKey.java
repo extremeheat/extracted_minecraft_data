@@ -2,7 +2,6 @@ package net.minecraft.world.entity.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.PublicKey;
@@ -17,21 +16,20 @@ import net.minecraft.util.Crypt;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureValidator;
 
-public record ProfilePublicKey(ProfilePublicKey.Data d) {
-   private final ProfilePublicKey.Data data;
+public record ProfilePublicKey(Data data) {
    public static final Component EXPIRED_PROFILE_PUBLIC_KEY = Component.translatable("multiplayer.disconnect.expired_public_key");
    private static final Component INVALID_SIGNATURE = Component.translatable("multiplayer.disconnect.invalid_public_key_signature.new");
    public static final Duration EXPIRY_GRACE_PERIOD = Duration.ofHours(8L);
-   public static final Codec<ProfilePublicKey> TRUSTED_CODEC = ProfilePublicKey.Data.CODEC.xmap(ProfilePublicKey::new, ProfilePublicKey::data);
+   public static final Codec<ProfilePublicKey> TRUSTED_CODEC;
 
-   public ProfilePublicKey(ProfilePublicKey.Data var1) {
+   public ProfilePublicKey(Data var1) {
       super();
       this.data = var1;
    }
 
-   public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, ProfilePublicKey.Data var2) throws ProfilePublicKey.ValidationException {
+   public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, Data var2) throws ValidationException {
       if (!var2.validateSignature(var0, var1)) {
-         throw new ProfilePublicKey.ValidationException(INVALID_SIGNATURE);
+         throw new ValidationException(INVALID_SIGNATURE);
       } else {
          return new ProfilePublicKey(var2);
       }
@@ -41,19 +39,20 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
       return SignatureValidator.from(this.data.key, "SHA256withRSA");
    }
 
-   public static record Data(Instant b, PublicKey c, byte[] d) {
-      private final Instant expiresAt;
+   public Data data() {
+      return this.data;
+   }
+
+   static {
+      TRUSTED_CODEC = ProfilePublicKey.Data.CODEC.xmap(ProfilePublicKey::new, ProfilePublicKey::data);
+   }
+
+   public static record Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
       final PublicKey key;
-      private final byte[] keySignature;
       private static final int MAX_KEY_SIGNATURE_SIZE = 4096;
-      public static final Codec<ProfilePublicKey.Data> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(ProfilePublicKey.Data::expiresAt),
-                  Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(ProfilePublicKey.Data::key),
-                  ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(ProfilePublicKey.Data::keySignature)
-               )
-               .apply(var0, ProfilePublicKey.Data::new)
-      );
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(var0, Data::new);
+      });
 
       public Data(FriendlyByteBuf var1) {
          this(var1.readInstant(), var1.readPublicKey(), var1.readByteArray(4096));
@@ -93,12 +92,23 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
       }
 
       public boolean equals(Object var1) {
-         if (!(var1 instanceof ProfilePublicKey.Data)) {
+         if (!(var1 instanceof Data var2)) {
             return false;
          } else {
-            ProfilePublicKey.Data var2 = (ProfilePublicKey.Data)var1;
             return this.expiresAt.equals(var2.expiresAt) && this.key.equals(var2.key) && Arrays.equals(this.keySignature, var2.keySignature);
          }
+      }
+
+      public Instant expiresAt() {
+         return this.expiresAt;
+      }
+
+      public PublicKey key() {
+         return this.key;
+      }
+
+      public byte[] keySignature() {
+         return this.keySignature;
       }
    }
 

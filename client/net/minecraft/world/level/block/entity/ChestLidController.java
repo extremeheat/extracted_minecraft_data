@@ -19,6 +19,7 @@ public class ChestLidController {
       } else if (this.shouldBeOpen && this.openness < 1.0F) {
          this.openness = Math.min(this.openness + 0.1F, 1.0F);
       }
+
    }
 
    public float getOpenness(float var1) {

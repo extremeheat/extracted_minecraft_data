@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundEntityTagQueryPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundEntityTagQueryPacket> STREAM_CODEC = Packet.codec(
-      ServerboundEntityTagQueryPacket::write, ServerboundEntityTagQueryPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundEntityTagQueryPacket> STREAM_CODEC = Packet.codec(ServerboundEntityTagQueryPacket::write, ServerboundEntityTagQueryPacket::new);
    private final int transactionId;
    private final int entityId;
 
@@ -29,7 +27,6 @@ public class ServerboundEntityTagQueryPacket implements Packet<ServerGamePacketL
       var1.writeVarInt(this.entityId);
    }
 
-   @Override
    public PacketType<ServerboundEntityTagQueryPacket> type() {
       return GamePacketTypes.SERVERBOUND_ENTITY_TAG_QUERY;
    }

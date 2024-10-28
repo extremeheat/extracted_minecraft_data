@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.Util;
@@ -33,22 +32,18 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class FireBlock extends BaseFireBlock {
    public static final MapCodec<FireBlock> CODEC = simpleCodec(FireBlock::new);
    public static final int MAX_AGE = 15;
-   public static final IntegerProperty AGE = BlockStateProperties.AGE_15;
-   public static final BooleanProperty NORTH = PipeBlock.NORTH;
-   public static final BooleanProperty EAST = PipeBlock.EAST;
-   public static final BooleanProperty SOUTH = PipeBlock.SOUTH;
-   public static final BooleanProperty WEST = PipeBlock.WEST;
-   public static final BooleanProperty UP = PipeBlock.UP;
-   private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION = PipeBlock.PROPERTY_BY_DIRECTION
-      .entrySet()
-      .stream()
-      .filter(var0 -> var0.getKey() != Direction.DOWN)
-      .collect(Util.toMap());
-   private static final VoxelShape UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
-   private static final VoxelShape WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
-   private static final VoxelShape EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-   private static final VoxelShape NORTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
-   private static final VoxelShape SOUTH_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
+   public static final IntegerProperty AGE;
+   public static final BooleanProperty NORTH;
+   public static final BooleanProperty EAST;
+   public static final BooleanProperty SOUTH;
+   public static final BooleanProperty WEST;
+   public static final BooleanProperty UP;
+   private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
+   private static final VoxelShape UP_AABB;
+   private static final VoxelShape WEST_AABB;
+   private static final VoxelShape EAST_AABB;
+   private static final VoxelShape NORTH_AABB;
+   private static final VoxelShape SOUTH_AABB;
    private final Map<BlockState, VoxelShape> shapesCache;
    private static final int IGNITE_INSTANT = 60;
    private static final int IGNITE_EASY = 30;
@@ -61,68 +56,51 @@ public class FireBlock extends BaseFireBlock {
    private final Object2IntMap<Block> igniteOdds = new Object2IntOpenHashMap();
    private final Object2IntMap<Block> burnOdds = new Object2IntOpenHashMap();
 
-   @Override
    public MapCodec<FireBlock> codec() {
       return CODEC;
    }
 
    public FireBlock(BlockBehaviour.Properties var1) {
       super(var1, 1.0F);
-      this.registerDefaultState(
-         this.stateDefinition
-            .any()
-            .setValue(AGE, Integer.valueOf(0))
-            .setValue(NORTH, Boolean.valueOf(false))
-            .setValue(EAST, Boolean.valueOf(false))
-            .setValue(SOUTH, Boolean.valueOf(false))
-            .setValue(WEST, Boolean.valueOf(false))
-            .setValue(UP, Boolean.valueOf(false))
-      );
-      this.shapesCache = ImmutableMap.copyOf(
-         this.stateDefinition
-            .getPossibleStates()
-            .stream()
-            .filter(var0 -> var0.getValue(AGE) == 0)
-            .collect(Collectors.toMap(Function.identity(), FireBlock::calculateShape))
-      );
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false));
+      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().filter((var0) -> {
+         return (Integer)var0.getValue(AGE) == 0;
+      }).collect(Collectors.toMap(Function.identity(), FireBlock::calculateShape)));
    }
 
    private static VoxelShape calculateShape(BlockState var0) {
       VoxelShape var1 = Shapes.empty();
-      if (var0.getValue(UP)) {
+      if ((Boolean)var0.getValue(UP)) {
          var1 = UP_AABB;
       }
 
-      if (var0.getValue(NORTH)) {
+      if ((Boolean)var0.getValue(NORTH)) {
          var1 = Shapes.or(var1, NORTH_AABB);
       }
 
-      if (var0.getValue(SOUTH)) {
+      if ((Boolean)var0.getValue(SOUTH)) {
          var1 = Shapes.or(var1, SOUTH_AABB);
       }
 
-      if (var0.getValue(EAST)) {
+      if ((Boolean)var0.getValue(EAST)) {
          var1 = Shapes.or(var1, EAST_AABB);
       }
 
-      if (var0.getValue(WEST)) {
+      if ((Boolean)var0.getValue(WEST)) {
          var1 = Shapes.or(var1, WEST_AABB);
       }
 
       return var1.isEmpty() ? DOWN_AABB : var1;
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return this.canSurvive(var1, var4, var5) ? this.getStateWithAge(var4, var5, var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
+      return this.canSurvive(var1, var4, var5) ? this.getStateWithAge(var4, var5, (Integer)var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.shapesCache.get(var1.setValue(AGE, Integer.valueOf(0)));
+      return (VoxelShape)this.shapesCache.get(var1.setValue(AGE, 0));
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       return this.getStateForPlacement(var1.getLevel(), var1.getClickedPos());
    }
@@ -132,11 +110,14 @@ public class FireBlock extends BaseFireBlock {
       BlockState var4 = var1.getBlockState(var3);
       if (!this.canBurn(var4) && !var4.isFaceSturdy(var1, var3, Direction.UP)) {
          BlockState var5 = this.defaultBlockState();
+         Direction[] var6 = Direction.values();
+         int var7 = var6.length;
 
-         for(Direction var9 : Direction.values()) {
-            BooleanProperty var10 = PROPERTY_BY_DIRECTION.get(var9);
+         for(int var8 = 0; var8 < var7; ++var8) {
+            Direction var9 = var6[var8];
+            BooleanProperty var10 = (BooleanProperty)PROPERTY_BY_DIRECTION.get(var9);
             if (var10 != null) {
-               var5 = var5.setValue(var10, Boolean.valueOf(this.canBurn(var1.getBlockState(var2.relative(var9)))));
+               var5 = (BlockState)var5.setValue(var10, this.canBurn(var1.getBlockState(var2.relative(var9))));
             }
          }
 
@@ -146,13 +127,11 @@ public class FireBlock extends BaseFireBlock {
       }
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP) || this.isValidFireLocation(var2, var3);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
@@ -162,20 +141,20 @@ public class FireBlock extends BaseFireBlock {
 
          BlockState var5 = var2.getBlockState(var3.below());
          boolean var6 = var5.is(var2.dimensionType().infiniburn());
-         int var7 = var1.getValue(AGE);
+         int var7 = (Integer)var1.getValue(AGE);
          if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
             var2.removeBlock(var3, false);
          } else {
             int var8 = Math.min(15, var7 + var4.nextInt(3) / 2);
             if (var7 != var8) {
-               var1 = var1.setValue(AGE, Integer.valueOf(var8));
+               var1 = (BlockState)var1.setValue(AGE, var8);
                var2.setBlock(var3, var1, 4);
             }
 
             if (!var6) {
                if (!this.isValidFireLocation(var2, var3)) {
-                  BlockPos var20 = var3.below();
-                  if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
+                  BlockPos var19 = var3.below();
+                  if (!var2.getBlockState(var19).isFaceSturdy(var2, var19, Direction.UP) || var7 > 3) {
                      var2.removeBlock(var3, false);
                   }
 
@@ -224,26 +203,21 @@ public class FireBlock extends BaseFireBlock {
                   }
                }
             }
+
          }
       }
    }
 
    protected boolean isNearRain(Level var1, BlockPos var2) {
-      return var1.isRainingAt(var2)
-         || var1.isRainingAt(var2.west())
-         || var1.isRainingAt(var2.east())
-         || var1.isRainingAt(var2.north())
-         || var1.isRainingAt(var2.south());
+      return var1.isRainingAt(var2) || var1.isRainingAt(var2.west()) || var1.isRainingAt(var2.east()) || var1.isRainingAt(var2.north()) || var1.isRainingAt(var2.south());
    }
 
    private int getBurnOdds(BlockState var1) {
-      return var1.hasProperty(BlockStateProperties.WATERLOGGED) && var1.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.burnOdds.getInt(var1.getBlock());
+      return var1.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var1.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.burnOdds.getInt(var1.getBlock());
    }
 
    private int getIgniteOdds(BlockState var1) {
-      return var1.hasProperty(BlockStateProperties.WATERLOGGED) && var1.getValue(BlockStateProperties.WATERLOGGED)
-         ? 0
-         : this.igniteOdds.getInt(var1.getBlock());
+      return var1.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var1.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.igniteOdds.getInt(var1.getBlock());
    }
 
    private void checkBurnOut(Level var1, BlockPos var2, int var3, RandomSource var4, int var5) {
@@ -262,15 +236,20 @@ public class FireBlock extends BaseFireBlock {
             TntBlock.explode(var1, var2);
          }
       }
+
    }
 
    private BlockState getStateWithAge(LevelAccessor var1, BlockPos var2, int var3) {
       BlockState var4 = getState(var1, var2);
-      return var4.is(Blocks.FIRE) ? var4.setValue(AGE, Integer.valueOf(var3)) : var4;
+      return var4.is(Blocks.FIRE) ? (BlockState)var4.setValue(AGE, var3) : var4;
    }
 
    private boolean isValidFireLocation(BlockGetter var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
+      Direction[] var3 = Direction.values();
+      int var4 = var3.length;
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         Direction var6 = var3[var5];
          if (this.canBurn(var1.getBlockState(var2.relative(var6)))) {
             return true;
          }
@@ -284,8 +263,11 @@ public class FireBlock extends BaseFireBlock {
          return 0;
       } else {
          int var3 = 0;
+         Direction[] var4 = Direction.values();
+         int var5 = var4.length;
 
-         for(Direction var7 : Direction.values()) {
+         for(int var6 = 0; var6 < var5; ++var6) {
+            Direction var7 = var4[var6];
             BlockState var8 = var1.getBlockState(var2.relative(var7));
             var3 = Math.max(this.getIgniteOdds(var8), var3);
          }
@@ -294,12 +276,10 @@ public class FireBlock extends BaseFireBlock {
       }
    }
 
-   @Override
    protected boolean canBurn(BlockState var1) {
       return this.getIgniteOdds(var1) > 0;
    }
 
-   @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       super.onPlace(var1, var2, var3, var4, var5);
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
@@ -309,7 +289,6 @@ public class FireBlock extends BaseFireBlock {
       return 30 + var0.nextInt(10);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(AGE, NORTH, EAST, SOUTH, WEST, UP);
    }
@@ -495,5 +474,22 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.SMALL_DRIPLEAF, 60, 100);
       var0.setFlammable(Blocks.HANGING_ROOTS, 30, 60);
       var0.setFlammable(Blocks.GLOW_LICHEN, 15, 100);
+   }
+
+   static {
+      AGE = BlockStateProperties.AGE_15;
+      NORTH = PipeBlock.NORTH;
+      EAST = PipeBlock.EAST;
+      SOUTH = PipeBlock.SOUTH;
+      WEST = PipeBlock.WEST;
+      UP = PipeBlock.UP;
+      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> {
+         return var0.getKey() != Direction.DOWN;
+      }).collect(Util.toMap());
+      UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
+      WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
+      EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+      NORTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
+      SOUTH_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
    }
 }

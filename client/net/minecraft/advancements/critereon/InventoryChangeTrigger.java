@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +12,16 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChangeTrigger.TriggerInstance> {
+public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public InventoryChangeTrigger() {
       super();
    }
 
-   @Override
-   public Codec<InventoryChangeTrigger.TriggerInstance> codec() {
+   public Codec<TriggerInstance> codec() {
       return InventoryChangeTrigger.TriggerInstance.CODEC;
    }
 
@@ -49,47 +46,38 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
    }
 
    private void trigger(ServerPlayer var1, Inventory var2, ItemStack var3, int var4, int var5, int var6) {
-      this.trigger(var1, var5x -> var5x.matches(var2, var3, var4, var5, var6));
+      this.trigger(var1, (var5x) -> {
+         return var5x.matches(var2, var3, var4, var5, var6);
+      });
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, InventoryChangeTrigger.TriggerInstance.Slots c, List<ItemPredicate> d)
-      implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final InventoryChangeTrigger.TriggerInstance.Slots slots;
-      private final List<ItemPredicate> items;
-      public static final Codec<InventoryChangeTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(InventoryChangeTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(InventoryChangeTrigger.TriggerInstance.Slots.CODEC, "slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY)
-                     .forGetter(InventoryChangeTrigger.TriggerInstance::slots),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC.listOf(), "items", List.of()).forGetter(InventoryChangeTrigger.TriggerInstance::items)
-               )
-               .apply(var0, InventoryChangeTrigger.TriggerInstance::new)
-      );
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, Slots slots, List<ItemPredicate> items) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), InventoryChangeTrigger.TriggerInstance.Slots.CODEC.optionalFieldOf("slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY).forGetter(TriggerInstance::slots), ItemPredicate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(TriggerInstance::items)).apply(var0, TriggerInstance::new);
+      });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, InventoryChangeTrigger.TriggerInstance.Slots var2, List<ItemPredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Slots var2, List<ItemPredicate> var3) {
          super();
          this.player = var1;
          this.slots = var2;
          this.items = var3;
       }
 
-      public static Criterion<InventoryChangeTrigger.TriggerInstance> hasItems(ItemPredicate.Builder... var0) {
-         return hasItems(Stream.of(var0).map(ItemPredicate.Builder::build).toArray(var0x -> new ItemPredicate[var0x]));
+      public static Criterion<TriggerInstance> hasItems(ItemPredicate.Builder... var0) {
+         return hasItems((ItemPredicate[])Stream.of(var0).map(ItemPredicate.Builder::build).toArray((var0x) -> {
+            return new ItemPredicate[var0x];
+         }));
       }
 
-      public static Criterion<InventoryChangeTrigger.TriggerInstance> hasItems(ItemPredicate... var0) {
-         return CriteriaTriggers.INVENTORY_CHANGED
-            .createCriterion(new InventoryChangeTrigger.TriggerInstance(Optional.empty(), InventoryChangeTrigger.TriggerInstance.Slots.ANY, List.of(var0)));
+      public static Criterion<TriggerInstance> hasItems(ItemPredicate... var0) {
+         return CriteriaTriggers.INVENTORY_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), InventoryChangeTrigger.TriggerInstance.Slots.ANY, List.of(var0)));
       }
 
-      public static Criterion<InventoryChangeTrigger.TriggerInstance> hasItems(ItemLike... var0) {
+      public static Criterion<TriggerInstance> hasItems(ItemLike... var0) {
          ItemPredicate[] var1 = new ItemPredicate[var0.length];
 
          for(int var2 = 0; var2 < var0.length; ++var2) {
-            var1[var2] = new ItemPredicate(
-               Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentPredicate.EMPTY, Map.of()
-            );
+            var1[var2] = new ItemPredicate(Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentPredicate.EMPTY, Map.of());
          }
 
          return hasItems(var1);
@@ -111,7 +99,9 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
 
                ItemStack var9 = var1.getItem(var8);
                if (!var9.isEmpty()) {
-                  var6.removeIf(var1x -> var1x.matches(var9));
+                  var6.removeIf((var1x) -> {
+                     return var1x.matches(var9);
+                  });
                }
             }
 
@@ -121,24 +111,23 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
          }
       }
 
-      public static record Slots(MinMaxBounds.Ints c, MinMaxBounds.Ints d, MinMaxBounds.Ints e) {
-         private final MinMaxBounds.Ints occupied;
-         private final MinMaxBounds.Ints full;
-         private final MinMaxBounds.Ints empty;
-         public static final Codec<InventoryChangeTrigger.TriggerInstance.Slots> CODEC = RecordCodecBuilder.create(
-            var0 -> var0.group(
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "occupied", MinMaxBounds.Ints.ANY)
-                        .forGetter(InventoryChangeTrigger.TriggerInstance.Slots::occupied),
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "full", MinMaxBounds.Ints.ANY)
-                        .forGetter(InventoryChangeTrigger.TriggerInstance.Slots::full),
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "empty", MinMaxBounds.Ints.ANY)
-                        .forGetter(InventoryChangeTrigger.TriggerInstance.Slots::empty)
-                  )
-                  .apply(var0, InventoryChangeTrigger.TriggerInstance.Slots::new)
-         );
-         public static final InventoryChangeTrigger.TriggerInstance.Slots ANY = new InventoryChangeTrigger.TriggerInstance.Slots(
-            MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY
-         );
+      public Optional<ContextAwarePredicate> player() {
+         return this.player;
+      }
+
+      public Slots slots() {
+         return this.slots;
+      }
+
+      public List<ItemPredicate> items() {
+         return this.items;
+      }
+
+      public static record Slots(MinMaxBounds.Ints occupied, MinMaxBounds.Ints full, MinMaxBounds.Ints empty) {
+         public static final Codec<Slots> CODEC = RecordCodecBuilder.create((var0) -> {
+            return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("occupied", MinMaxBounds.Ints.ANY).forGetter(Slots::occupied), MinMaxBounds.Ints.CODEC.optionalFieldOf("full", MinMaxBounds.Ints.ANY).forGetter(Slots::full), MinMaxBounds.Ints.CODEC.optionalFieldOf("empty", MinMaxBounds.Ints.ANY).forGetter(Slots::empty)).apply(var0, Slots::new);
+         });
+         public static final Slots ANY;
 
          public Slots(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, MinMaxBounds.Ints var3) {
             super();
@@ -155,6 +144,22 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
             } else {
                return this.occupied.matches(var3);
             }
+         }
+
+         public MinMaxBounds.Ints occupied() {
+            return this.occupied;
+         }
+
+         public MinMaxBounds.Ints full() {
+            return this.full;
+         }
+
+         public MinMaxBounds.Ints empty() {
+            return this.empty;
+         }
+
+         static {
+            ANY = new Slots(MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY);
          }
       }
    }

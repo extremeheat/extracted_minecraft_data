@@ -13,29 +13,24 @@ public abstract class AbstractGolem extends PathfinderMob {
    }
 
    @Nullable
-   @Override
    protected SoundEvent getAmbientSound() {
       return null;
    }
 
    @Nullable
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return null;
    }
 
    @Nullable
-   @Override
    protected SoundEvent getDeathSound() {
       return null;
    }
 
-   @Override
    public int getAmbientSoundInterval() {
       return 120;
    }
 
-   @Override
    public boolean removeWhenFarAway(double var1) {
       return false;
    }

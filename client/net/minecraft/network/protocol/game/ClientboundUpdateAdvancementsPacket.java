@@ -15,17 +15,13 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC = Packet.codec(
-      ClientboundUpdateAdvancementsPacket::write, ClientboundUpdateAdvancementsPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC = Packet.codec(ClientboundUpdateAdvancementsPacket::write, ClientboundUpdateAdvancementsPacket::new);
    private final boolean reset;
    private final List<AdvancementHolder> added;
    private final Set<ResourceLocation> removed;
    private final Map<ResourceLocation, AdvancementProgress> progress;
 
-   public ClientboundUpdateAdvancementsPacket(
-      boolean var1, Collection<AdvancementHolder> var2, Set<ResourceLocation> var3, Map<ResourceLocation, AdvancementProgress> var4
-   ) {
+   public ClientboundUpdateAdvancementsPacket(boolean var1, Collection<AdvancementHolder> var2, Set<ResourceLocation> var3, Map<ResourceLocation, AdvancementProgress> var4) {
       super();
       this.reset = var1;
       this.added = List.copyOf(var2);
@@ -36,8 +32,8 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
    private ClientboundUpdateAdvancementsPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.reset = var1.readBoolean();
-      this.added = AdvancementHolder.LIST_STREAM_CODEC.decode(var1);
-      this.removed = var1.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readResourceLocation);
+      this.added = (List)AdvancementHolder.LIST_STREAM_CODEC.decode(var1);
+      this.removed = (Set)var1.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readResourceLocation);
       this.progress = var1.readMap(FriendlyByteBuf::readResourceLocation, AdvancementProgress::fromNetwork);
    }
 
@@ -45,10 +41,11 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       var1.writeBoolean(this.reset);
       AdvancementHolder.LIST_STREAM_CODEC.encode(var1, this.added);
       var1.writeCollection(this.removed, FriendlyByteBuf::writeResourceLocation);
-      var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> var1x.serializeToNetwork(var0));
+      var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> {
+         var1x.serializeToNetwork(var0);
+      });
    }
 
-   @Override
    public PacketType<ClientboundUpdateAdvancementsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_UPDATE_ADVANCEMENTS;
    }

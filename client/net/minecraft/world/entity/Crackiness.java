@@ -16,7 +16,7 @@ public class Crackiness {
       this.fractionHigh = var3;
    }
 
-   public Crackiness.Level byFraction(float var1) {
+   public Level byFraction(float var1) {
       if (var1 < this.fractionHigh) {
          return Crackiness.Level.HIGH;
       } else if (var1 < this.fractionMedium) {
@@ -26,11 +26,11 @@ public class Crackiness {
       }
    }
 
-   public Crackiness.Level byDamage(ItemStack var1) {
+   public Level byDamage(ItemStack var1) {
       return !var1.isDamageableItem() ? Crackiness.Level.NONE : this.byDamage(var1.getDamageValue(), var1.getMaxDamage());
    }
 
-   public Crackiness.Level byDamage(int var1, int var2) {
+   public Level byDamage(int var1, int var2) {
       return this.byFraction((float)(var2 - var1) / (float)var2);
    }
 
@@ -41,6 +41,11 @@ public class Crackiness {
       HIGH;
 
       private Level() {
+      }
+
+      // $FF: synthetic method
+      private static Level[] $values() {
+         return new Level[]{NONE, LOW, MEDIUM, HIGH};
       }
    }
 }

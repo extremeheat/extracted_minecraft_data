@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class PrimedTnt extends Entity implements TraceableEntity {
-   private static final EntityDataAccessor<Integer> DATA_FUSE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
+   private static final EntityDataAccessor<Integer> DATA_FUSE_ID;
+   private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
    private static final int DEFAULT_FUSE_TIME = 80;
    private static final String TAG_BLOCK_STATE = "block_state";
    public static final String TAG_FUSE = "fuse";
@@ -43,28 +43,23 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.owner = var8;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_FUSE_ID, 80);
       var1.define(DATA_BLOCK_STATE_ID, Blocks.TNT.defaultBlockState());
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.NONE;
    }
 
-   @Override
    public boolean isPickable() {
       return !this.isRemoved();
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.04;
    }
 
-   @Override
    public void tick() {
       this.applyGravity();
       this.move(MoverType.SELF, this.getDeltaMovement());
@@ -86,6 +81,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
             this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
          }
       }
+
    }
 
    private void explode() {
@@ -93,18 +89,17 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       this.level().explode(this, this.getX(), this.getY(0.0625), this.getZ(), 4.0F, Level.ExplosionInteraction.TNT);
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putShort("fuse", (short)this.getFuse());
       var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.setFuse(var1.getShort("fuse"));
       if (var1.contains("block_state", 10)) {
          this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
       }
+
    }
 
    @Nullable
@@ -112,14 +107,12 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       return this.owner;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof PrimedTnt var2) {
          this.owner = var2.owner;
       }
+
    }
 
    public void setFuse(int var1) {
@@ -127,7 +120,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    public int getFuse() {
-      return this.entityData.get(DATA_FUSE_ID);
+      return (Integer)this.entityData.get(DATA_FUSE_ID);
    }
 
    public void setBlockState(BlockState var1) {
@@ -135,6 +128,17 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    public BlockState getBlockState() {
-      return this.entityData.get(DATA_BLOCK_STATE_ID);
+      return (BlockState)this.entityData.get(DATA_BLOCK_STATE_ID);
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public Entity getOwner() {
+      return this.getOwner();
+   }
+
+   static {
+      DATA_FUSE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.INT);
+      DATA_BLOCK_STATE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
    }
 }

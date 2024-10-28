@@ -24,7 +24,7 @@ public interface BlockGetter extends LevelHeightAccessor {
 
    default <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2) {
       BlockEntity var3 = this.getBlockEntity(var1);
-      return var3 != null && var3.getType() == var2 ? Optional.of((T)var3) : Optional.empty();
+      return var3 != null && var3.getType() == var2 ? Optional.of(var3) : Optional.empty();
    }
 
    BlockState getBlockState(BlockPos var1);
@@ -44,26 +44,18 @@ public interface BlockGetter extends LevelHeightAccessor {
    }
 
    default BlockHitResult isBlockInLine(ClipBlockStateContext var1) {
-      return traverseBlocks(
-         var1.getFrom(),
-         var1.getTo(),
-         var1,
-         (var1x, var2) -> {
-            BlockState var3 = this.getBlockState(var2);
-            Vec3 var4 = var1x.getFrom().subtract(var1x.getTo());
-            return var1x.isTargetBlock().test(var3)
-               ? new BlockHitResult(var1x.getTo(), Direction.getNearest(var4.x, var4.y, var4.z), BlockPos.containing(var1x.getTo()), false)
-               : null;
-         },
-         var0 -> {
-            Vec3 var1xx = var0.getFrom().subtract(var0.getTo());
-            return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1xx.x, var1xx.y, var1xx.z), BlockPos.containing(var0.getTo()));
-         }
-      );
+      return (BlockHitResult)traverseBlocks(var1.getFrom(), var1.getTo(), var1, (var1x, var2) -> {
+         BlockState var3 = this.getBlockState(var2);
+         Vec3 var4 = var1x.getFrom().subtract(var1x.getTo());
+         return var1x.isTargetBlock().test(var3) ? new BlockHitResult(var1x.getTo(), Direction.getNearest(var4.x, var4.y, var4.z), BlockPos.containing(var1x.getTo()), false) : null;
+      }, (var0) -> {
+         Vec3 var1 = var0.getFrom().subtract(var0.getTo());
+         return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1.x, var1.y, var1.z), BlockPos.containing(var0.getTo()));
+      });
    }
 
    default BlockHitResult clip(ClipContext var1) {
-      return traverseBlocks(var1.getFrom(), var1.getTo(), var1, (var1x, var2) -> {
+      return (BlockHitResult)traverseBlocks(var1.getFrom(), var1.getTo(), var1, (var1x, var2) -> {
          BlockState var3 = this.getBlockState(var2);
          FluidState var4 = this.getFluidState(var2);
          Vec3 var5 = var1x.getFrom();
@@ -75,9 +67,9 @@ public interface BlockGetter extends LevelHeightAccessor {
          double var11 = var8 == null ? 1.7976931348623157E308 : var1x.getFrom().distanceToSqr(var8.getLocation());
          double var13 = var10 == null ? 1.7976931348623157E308 : var1x.getFrom().distanceToSqr(var10.getLocation());
          return var11 <= var13 ? var8 : var10;
-      }, var0 -> {
-         Vec3 var1xx = var0.getFrom().subtract(var0.getTo());
-         return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1xx.x, var1xx.y, var1xx.z), BlockPos.containing(var0.getTo()));
+      }, (var0) -> {
+         Vec3 var1 = var0.getFrom().subtract(var0.getTo());
+         return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1.x, var1.y, var1.z), BlockPos.containing(var0.getTo()));
       });
    }
 
@@ -112,7 +104,7 @@ public interface BlockGetter extends LevelHeightAccessor {
 
    static <T, C> T traverseBlocks(Vec3 var0, Vec3 var1, C var2, BiFunction<C, BlockPos, T> var3, Function<C, T> var4) {
       if (var0.equals(var1)) {
-         return (T)var4.apply(var2);
+         return var4.apply(var2);
       } else {
          double var5 = Mth.lerp(-1.0E-7, var1.x, var0.x);
          double var7 = Mth.lerp(-1.0E-7, var1.y, var0.y);
@@ -126,7 +118,7 @@ public interface BlockGetter extends LevelHeightAccessor {
          BlockPos.MutableBlockPos var20 = new BlockPos.MutableBlockPos(var17, var18, var19);
          Object var21 = var3.apply(var2, var20);
          if (var21 != null) {
-            return (T)var21;
+            return var21;
          } else {
             double var22 = var5 - var11;
             double var24 = var7 - var13;
@@ -141,7 +133,12 @@ public interface BlockGetter extends LevelHeightAccessor {
             double var39 = var33 * (var29 > 0 ? 1.0 - Mth.frac(var13) : Mth.frac(var13));
             double var41 = var35 * (var30 > 0 ? 1.0 - Mth.frac(var15) : Mth.frac(var15));
 
-            while(var37 <= 1.0 || var39 <= 1.0 || var41 <= 1.0) {
+            Object var43;
+            do {
+               if (!(var37 <= 1.0) && !(var39 <= 1.0) && !(var41 <= 1.0)) {
+                  return var4.apply(var2);
+               }
+
                if (var37 < var39) {
                   if (var37 < var41) {
                      var17 += var28;
@@ -158,16 +155,11 @@ public interface BlockGetter extends LevelHeightAccessor {
                   var41 += var35;
                }
 
-               Object var43 = var3.apply(var2, var20.set(var17, var18, var19));
-               if (var43 != null) {
-                  return (T)var43;
-               }
-            }
+               var43 = var3.apply(var2, var20.set(var17, var18, var19));
+            } while(var43 == null);
 
-            return (T)var4.apply(var2);
+            return var43;
          }
       }
    }
-
-   boolean isPotato();
 }

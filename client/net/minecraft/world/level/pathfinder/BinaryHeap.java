@@ -69,6 +69,7 @@ public class BinaryHeap {
       } else {
          this.downHeap(var1.heapIdx);
       }
+
    }
 
    public int size() {
@@ -145,6 +146,6 @@ public class BinaryHeap {
    }
 
    public Node[] getHeap() {
-      return Arrays.copyOf(this.heap, this.size);
+      return (Node[])Arrays.copyOf(this.heap, this.size);
    }
 }

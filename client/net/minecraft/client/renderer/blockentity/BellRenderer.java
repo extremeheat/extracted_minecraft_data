@@ -19,7 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 
 public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
-   public static final Material BELL_RESOURCE_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/bell/bell_body"));
+   public static final Material BELL_RESOURCE_LOCATION;
    private static final String BELL_BODY = "bell_body";
    private final ModelPart bellBody;
 
@@ -32,12 +32,8 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild(
-         "bell_body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -6.0F, -3.0F, 6.0F, 7.0F, 6.0F), PartPose.offset(8.0F, 12.0F, 8.0F)
-      );
-      var2.addOrReplaceChild(
-         "bell_base", CubeListBuilder.create().texOffs(0, 13).addBox(4.0F, 4.0F, 4.0F, 8.0F, 2.0F, 8.0F), PartPose.offset(-8.0F, -12.0F, -8.0F)
-      );
+      PartDefinition var2 = var1.addOrReplaceChild("bell_body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -6.0F, -3.0F, 6.0F, 7.0F, 6.0F), PartPose.offset(8.0F, 12.0F, 8.0F));
+      var2.addOrReplaceChild("bell_base", CubeListBuilder.create().texOffs(0, 13).addBox(4.0F, 4.0F, 4.0F, 8.0F, 2.0F, 8.0F), PartPose.offset(-8.0F, -12.0F, -8.0F));
       return LayerDefinition.create(var0, 32, 32);
    }
 
@@ -62,5 +58,9 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
       this.bellBody.zRot = var9;
       VertexConsumer var11 = BELL_RESOURCE_LOCATION.buffer(var4, RenderType::entitySolid);
       this.bellBody.render(var3, var11, var5, var6);
+   }
+
+   static {
+      BELL_RESOURCE_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/bell/bell_body"));
    }
 }

@@ -9,6 +9,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -18,24 +19,15 @@ import java.util.stream.Stream;
 
 public class SavedDataFeaturePoolElementFix extends DataFix {
    private static final Pattern INDEX_PATTERN = Pattern.compile("\\[(\\d+)\\]");
-   private static final Set<String> PIECE_TYPE = Sets.newHashSet(
-      new String[]{"minecraft:jigsaw", "minecraft:nvi", "minecraft:pcp", "minecraft:bastionremnant", "minecraft:runtime"}
-   );
-   private static final Set<String> FEATURES = Sets.newHashSet(
-      new String[]{"minecraft:tree", "minecraft:flower", "minecraft:block_pile", "minecraft:random_patch"}
-   );
+   private static final Set<String> PIECE_TYPE = Sets.newHashSet(new String[]{"minecraft:jigsaw", "minecraft:nvi", "minecraft:pcp", "minecraft:bastionremnant", "minecraft:runtime"});
+   private static final Set<String> FEATURES = Sets.newHashSet(new String[]{"minecraft:tree", "minecraft:flower", "minecraft:block_pile", "minecraft:random_patch"});
 
    public SavedDataFeaturePoolElementFix(Schema var1) {
       super(var1, false);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.writeFixAndRead(
-         "SavedDataFeaturePoolElementFix",
-         this.getInputSchema().getType(References.STRUCTURE_FEATURE),
-         this.getOutputSchema().getType(References.STRUCTURE_FEATURE),
-         SavedDataFeaturePoolElementFix::fixTag
-      );
+      return this.writeFixAndRead("SavedDataFeaturePoolElementFix", this.getInputSchema().getType(References.STRUCTURE_FEATURE), this.getOutputSchema().getType(References.STRUCTURE_FEATURE), SavedDataFeaturePoolElementFix::fixTag);
    }
 
    private static <T> Dynamic<T> fixTag(Dynamic<T> var0) {
@@ -43,23 +35,23 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
    }
 
    private static <T> Dynamic<T> updateChildren(Dynamic<T> var0) {
-      return (Dynamic<T>)var0.asStreamOpt().map(SavedDataFeaturePoolElementFix::updateChildren).map(var0::createList).result().orElse((T)var0);
+      DataResult var10000 = var0.asStreamOpt().map(SavedDataFeaturePoolElementFix::updateChildren);
+      Objects.requireNonNull(var0);
+      return (Dynamic)var10000.map(var0::createList).result().orElse(var0);
    }
 
    private static Stream<? extends Dynamic<?>> updateChildren(Stream<? extends Dynamic<?>> var0) {
-      return var0.map(
-         var0x -> {
-            String var1 = var0x.get("id").asString("");
-            if (!PIECE_TYPE.contains(var1)) {
-               return var0x;
-            } else {
-               OptionalDynamic var2 = var0x.get("pool_element");
-               return !var2.get("element_type").asString("").equals("minecraft:feature_pool_element")
-                  ? var0x
-                  : var0x.update("pool_element", var0xx -> var0xx.update("feature", SavedDataFeaturePoolElementFix::fixFeature));
-            }
+      return var0.map((var0x) -> {
+         String var1 = var0x.get("id").asString("");
+         if (!PIECE_TYPE.contains(var1)) {
+            return var0x;
+         } else {
+            OptionalDynamic var2 = var0x.get("pool_element");
+            return !var2.get("element_type").asString("").equals("minecraft:feature_pool_element") ? var0x : var0x.update("pool_element", (var0) -> {
+               return var0.update("feature", SavedDataFeaturePoolElementFix::fixFeature);
+            });
          }
-      );
+      });
    }
 
    private static <T> OptionalDynamic<T> get(Dynamic<T> var0, String... var1) {
@@ -77,7 +69,9 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
                if (var6 >= 0 && var6 < var7.size()) {
                   var2 = new OptionalDynamic(var0.getOps(), DataResult.success((Dynamic)var7.get(var6)));
                } else {
-                  var2 = new OptionalDynamic(var0.getOps(), DataResult.error(() -> "Missing id:" + var6));
+                  var2 = new OptionalDynamic(var0.getOps(), DataResult.error(() -> {
+                     return "Missing id:" + var6;
+                  }));
                }
             } else {
                var2 = var2.get(var4);
@@ -90,15 +84,7 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
 
    @VisibleForTesting
    protected static Dynamic<?> fixFeature(Dynamic<?> var0) {
-      Optional var1 = getReplacement(
-         get(var0, "type").asString(""),
-         get(var0, "name").asString(""),
-         get(var0, "config", "state_provider", "type").asString(""),
-         get(var0, "config", "state_provider", "state", "Name").asString(""),
-         get(var0, "config", "state_provider", "entries", "[0]", "data", "Name").asString(""),
-         get(var0, "config", "foliage_placer", "type").asString(""),
-         get(var0, "config", "leaves_provider", "state", "Name").asString("")
-      );
+      Optional var1 = getReplacement(get(var0, "type").asString(""), get(var0, "name").asString(""), get(var0, "config", "state_provider", "type").asString(""), get(var0, "config", "state_provider", "state", "Name").asString(""), get(var0, "config", "state_provider", "entries", "[0]", "data", "Name").asString(""), get(var0, "config", "foliage_placer", "type").asString(""), get(var0, "config", "leaves_provider", "state", "Name").asString(""));
       return var1.isPresent() ? var0.createString((String)var1.get()) : var0;
    }
 

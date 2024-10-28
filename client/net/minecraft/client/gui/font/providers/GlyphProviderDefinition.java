@@ -5,49 +5,50 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.io.IOException;
 import net.minecraft.client.gui.font.FontOption;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 
 public interface GlyphProviderDefinition {
-   MapCodec<GlyphProviderDefinition> MAP_CODEC = GlyphProviderType.CODEC.dispatchMap(GlyphProviderDefinition::type, var0 -> var0.mapCodec().codec());
+   MapCodec<GlyphProviderDefinition> MAP_CODEC = GlyphProviderType.CODEC.dispatchMap(GlyphProviderDefinition::type, GlyphProviderType::mapCodec);
 
    GlyphProviderType type();
 
-   Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack();
+   Either<Loader, Reference> unpack();
 
-   public static record Conditional(GlyphProviderDefinition b, FontOption.Filter c) {
-      private final GlyphProviderDefinition definition;
-      private final FontOption.Filter filter;
-      public static final Codec<GlyphProviderDefinition.Conditional> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  GlyphProviderDefinition.MAP_CODEC.forGetter(GlyphProviderDefinition.Conditional::definition),
-                  ExtraCodecs.strictOptionalField(FontOption.Filter.CODEC, "filter", FontOption.Filter.ALWAYS_PASS)
-                     .forGetter(GlyphProviderDefinition.Conditional::filter)
-               )
-               .apply(var0, GlyphProviderDefinition.Conditional::new)
-      );
+   public static record Conditional(GlyphProviderDefinition definition, FontOption.Filter filter) {
+      public static final Codec<Conditional> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(GlyphProviderDefinition.MAP_CODEC.forGetter(Conditional::definition), FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(Conditional::filter)).apply(var0, Conditional::new);
+      });
 
       public Conditional(GlyphProviderDefinition var1, FontOption.Filter var2) {
          super();
          this.definition = var1;
          this.filter = var2;
       }
+
+      public GlyphProviderDefinition definition() {
+         return this.definition;
+      }
+
+      public FontOption.Filter filter() {
+         return this.filter;
+      }
    }
 
-   public interface Loader {
-      GlyphProvider load(ResourceManager var1) throws IOException;
-   }
-
-   public static record Reference(ResourceLocation a) {
-      private final ResourceLocation id;
-
+   public static record Reference(ResourceLocation id) {
       public Reference(ResourceLocation var1) {
          super();
          this.id = var1;
       }
+
+      public ResourceLocation id() {
+         return this.id;
+      }
+   }
+
+   public interface Loader {
+      GlyphProvider load(ResourceManager var1) throws IOException;
    }
 }

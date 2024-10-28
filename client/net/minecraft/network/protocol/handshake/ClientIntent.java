@@ -13,19 +13,31 @@ public enum ClientIntent {
    }
 
    public static ClientIntent byId(int var0) {
-      return switch(var0) {
-         case 1 -> STATUS;
-         case 2 -> LOGIN;
-         case 3 -> TRANSFER;
+      ClientIntent var10000;
+      switch (var0) {
+         case 1 -> var10000 = STATUS;
+         case 2 -> var10000 = LOGIN;
+         case 3 -> var10000 = TRANSFER;
          default -> throw new IllegalArgumentException("Unknown connection intent: " + var0);
-      };
+      }
+
+      return var10000;
    }
 
    public int id() {
-      return switch(this) {
-         case STATUS -> 1;
-         case LOGIN -> 2;
-         case TRANSFER -> 3;
-      };
+      byte var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = 1;
+         case 1 -> var10000 = 2;
+         case 2 -> var10000 = 3;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   // $FF: synthetic method
+   private static ClientIntent[] $values() {
+      return new ClientIntent[]{STATUS, LOGIN, TRANSFER};
    }
 }

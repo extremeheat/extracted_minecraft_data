@@ -2,9 +2,12 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -48,36 +51,45 @@ public class PoolElementStructurePiece extends StructurePiece {
       this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
       this.groundLevelDelta = var2.getInt("ground_level_delta");
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.element = (StructurePoolElement)StructurePoolElement.CODEC
-         .parse(var3, var2.getCompound("pool_element"))
-         .resultOrPartial(LOGGER::error)
-         .orElseThrow(() -> new IllegalStateException("Invalid pool element found"));
+      DataResult var10001 = StructurePoolElement.CODEC.parse(var3, var2.getCompound("pool_element"));
+      Logger var10002 = LOGGER;
+      Objects.requireNonNull(var10002);
+      this.element = (StructurePoolElement)var10001.resultOrPartial(var10002::error).orElseThrow(() -> {
+         return new IllegalStateException("Invalid pool element found");
+      });
       this.rotation = Rotation.valueOf(var2.getString("rotation"));
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
       ListTag var4 = var2.getList("junctions", 10);
       this.junctions.clear();
-      var4.forEach(var2x -> this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x))));
+      var4.forEach((var2x) -> {
+         this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x)));
+      });
    }
 
-   @Override
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
       var2.putInt("PosX", this.position.getX());
       var2.putInt("PosY", this.position.getY());
       var2.putInt("PosZ", this.position.getZ());
       var2.putInt("ground_level_delta", this.groundLevelDelta);
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      StructurePoolElement.CODEC.encodeStart(var3, this.element).resultOrPartial(LOGGER::error).ifPresent(var1x -> var2.put("pool_element", var1x));
+      DataResult var10000 = StructurePoolElement.CODEC.encodeStart(var3, this.element);
+      Logger var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         var2.put("pool_element", var1x);
+      });
       var2.putString("rotation", this.rotation.name());
       ListTag var4 = new ListTag();
+      Iterator var5 = this.junctions.iterator();
 
-      for(JigsawJunction var6 : this.junctions) {
+      while(var5.hasNext()) {
+         JigsawJunction var6 = (JigsawJunction)var5.next();
          var4.add((Tag)var6.serialize(var3).getValue());
       }
 
       var2.put("junctions", var4);
    }
 
-   @Override
    public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
       this.place(var1, var2, var3, var4, var5, var7, false);
    }
@@ -86,18 +98,15 @@ public class PoolElementStructurePiece extends StructurePiece {
       this.element.place(this.structureTemplateManager, var1, var2, var3, this.position, var6, this.rotation, var5, var4, var7);
    }
 
-   @Override
    public void move(int var1, int var2, int var3) {
       super.move(var1, var2, var3);
       this.position = this.position.offset(var1, var2, var3);
    }
 
-   @Override
    public Rotation getRotation() {
       return this.rotation;
    }
 
-   @Override
    public String toString() {
       return String.format(Locale.ROOT, "<%s | %s | %s | %s>", this.getClass().getSimpleName(), this.position, this.rotation, this.element);
    }

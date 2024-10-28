@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 
 public class SectionBufferBuilderPool {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final int MAX_BUILDERS_32_BIT = 4;
    private final Queue<SectionBufferBuilderPack> freeBuffers;
    private volatile int freeBufferCount;
 
@@ -43,7 +42,7 @@ public class SectionBufferBuilderPool {
 
    @Nullable
    public SectionBufferBuilderPack acquire() {
-      SectionBufferBuilderPack var1 = this.freeBuffers.poll();
+      SectionBufferBuilderPack var1 = (SectionBufferBuilderPack)this.freeBuffers.poll();
       if (var1 != null) {
          this.freeBufferCount = this.freeBuffers.size();
          return var1;

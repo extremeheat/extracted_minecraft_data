@@ -7,4 +7,9 @@ public enum Whence {
 
    private Whence() {
    }
+
+   // $FF: synthetic method
+   private static Whence[] $values() {
+      return new Whence[]{ABSOLUTE, RELATIVE, END};
+   }
 }

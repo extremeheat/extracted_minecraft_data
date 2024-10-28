@@ -31,21 +31,37 @@ public interface SpriteResourceLoader {
          }
 
          NativeImage var4;
-         try (InputStream var5 = var2.open()) {
-            var4 = NativeImage.read(var5);
+         try {
+            InputStream var5 = var2.open();
+
+            try {
+               var4 = NativeImage.read(var5);
+            } catch (Throwable var10) {
+               if (var5 != null) {
+                  try {
+                     var5.close();
+                  } catch (Throwable var8) {
+                     var10.addSuppressed(var8);
+                  }
+               }
+
+               throw var10;
+            }
+
+            if (var5 != null) {
+               var5.close();
+            }
          } catch (IOException var11) {
             LOGGER.error("Using missing texture, unable to load {}", var1, var11);
             return null;
          }
 
-         AnimationMetadataSection var12 = var3.getSection(AnimationMetadataSection.SERIALIZER).orElse(AnimationMetadataSection.EMPTY);
+         AnimationMetadataSection var12 = (AnimationMetadataSection)var3.getSection(AnimationMetadataSection.SERIALIZER).orElse(AnimationMetadataSection.EMPTY);
          FrameSize var6 = var12.calculateFrameSize(var4.getWidth(), var4.getHeight());
          if (Mth.isMultipleOf(var4.getWidth(), var6.width()) && Mth.isMultipleOf(var4.getHeight(), var6.height())) {
             return new SpriteContents(var1, var6, var4, var3);
          } else {
-            LOGGER.error(
-               "Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var4.getWidth(), var4.getHeight(), var6.width(), var6.height()}
-            );
+            LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var4.getWidth(), var4.getHeight(), var6.width(), var6.height()});
             var4.close();
             return null;
          }

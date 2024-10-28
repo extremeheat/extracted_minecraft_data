@@ -7,14 +7,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.NbtPathArgument;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
@@ -26,16 +24,10 @@ import org.slf4j.Logger;
 
 public class NbtContents implements ComponentContents {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<NbtContents> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(
-               Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath),
-               Codec.BOOL.optionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting),
-               ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(NbtContents::getSeparator),
-               DataSource.CODEC.forGetter(NbtContents::getDataSource)
-            )
-            .apply(var0, NbtContents::new)
-   );
-   public static final ComponentContents.Type<NbtContents> TYPE = new ComponentContents.Type<>(CODEC, "nbt");
+   public static final MapCodec<NbtContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSource.CODEC.forGetter(NbtContents::getDataSource)).apply(var0, NbtContents::new);
+   });
+   public static final ComponentContents.Type<NbtContents> TYPE;
    private final boolean interpreting;
    private final Optional<Component> separator;
    private final String nbtPathPattern;
@@ -59,7 +51,7 @@ public class NbtContents implements ComponentContents {
    @Nullable
    private static NbtPathArgument.NbtPath compileNbtPath(String var0) {
       try {
-         return new NbtPathArgument().parse(new StringReader(var0));
+         return (new NbtPathArgument()).parse(new StringReader(var0));
       } catch (CommandSyntaxException var2) {
          return null;
       }
@@ -81,71 +73,78 @@ public class NbtContents implements ComponentContents {
       return this.dataSource;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof NbtContents var2
-            && this.dataSource.equals(var2.dataSource)
-            && this.separator.equals(var2.separator)
-            && this.interpreting == var2.interpreting
-            && this.nbtPathPattern.equals(var2.nbtPathPattern)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof NbtContents) {
+            NbtContents var2 = (NbtContents)var1;
+            if (this.dataSource.equals(var2.dataSource) && this.separator.equals(var2.separator) && this.interpreting == var2.interpreting && this.nbtPathPattern.equals(var2.nbtPathPattern)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.interpreting ? 1 : 0;
       var1 = 31 * var1 + this.separator.hashCode();
       var1 = 31 * var1 + this.nbtPathPattern.hashCode();
-      return 31 * var1 + this.dataSource.hashCode();
+      var1 = 31 * var1 + this.dataSource.hashCode();
+      return var1;
    }
 
-   @Override
    public String toString() {
-      return "nbt{" + this.dataSource + ", interpreting=" + this.interpreting + ", separator=" + this.separator + "}";
+      String var10000 = String.valueOf(this.dataSource);
+      return "nbt{" + var10000 + ", interpreting=" + this.interpreting + ", separator=" + String.valueOf(this.separator) + "}";
    }
 
-   @Override
    public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       if (var1 != null && this.compiledNbtPath != null) {
-         Stream var4 = this.dataSource.getData(var1).flatMap(var1x -> {
+         Stream var4 = this.dataSource.getData(var1).flatMap((var1x) -> {
             try {
                return this.compiledNbtPath.get(var1x).stream();
-            } catch (CommandSyntaxException var3xx) {
+            } catch (CommandSyntaxException var3) {
                return Stream.empty();
             }
          }).map(Tag::getAsString);
          if (this.interpreting) {
-            Component var5 = (Component)DataFixUtils.orElse(
-               ComponentUtils.updateForEntity(var1, this.separator, var2, var3), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR
-            );
-            return var4.flatMap(var3x -> {
+            Component var5 = (Component)DataFixUtils.orElse(ComponentUtils.updateForEntity(var1, this.separator, var2, var3), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR);
+            return (MutableComponent)var4.flatMap((var3x) -> {
                try {
-                  MutableComponent var4xx = Component.Serializer.fromJson(var3x, var1.registryAccess());
-                  return Stream.of(ComponentUtils.updateForEntity(var1, var4xx, var2, var3));
-               } catch (Exception var5xx) {
-                  LOGGER.warn("Failed to parse component: {}", var3x, var5xx);
+                  MutableComponent var4 = Component.Serializer.fromJson((String)var3x, var1.registryAccess());
+                  return Stream.of(ComponentUtils.updateForEntity(var1, (Component)var4, var2, var3));
+               } catch (Exception var5) {
+                  LOGGER.warn("Failed to parse component: {}", var3x, var5);
                   return Stream.of();
                }
-            }).reduce((var1x, var2x) -> var1x.append(var5).append(var2x)).orElseGet(Component::empty);
+            }).reduce((var1x, var2x) -> {
+               return var1x.append(var5).append((Component)var2x);
+            }).orElseGet(Component::empty);
          } else {
-            return ComponentUtils.updateForEntity(var1, this.separator, var2, var3)
-               .map(var1x -> var4.map(Component::literal).reduce((var1xx, var2x) -> var1xx.append(var1x).append(var2x)).orElseGet(Component::empty))
-               .orElseGet(() -> Component.literal(var4.collect(Collectors.joining(", "))));
+            return (MutableComponent)ComponentUtils.updateForEntity(var1, this.separator, var2, var3).map((var1x) -> {
+               return (MutableComponent)var4.map(Component::literal).reduce((var1, var2) -> {
+                  return var1.append((Component)var1x).append((Component)var2);
+               }).orElseGet(Component::empty);
+            }).orElseGet(() -> {
+               return Component.literal((String)var4.collect(Collectors.joining(", ")));
+            });
          }
       } else {
          return Component.empty();
       }
    }
 
-   @Override
    public ComponentContents.Type<?> type() {
       return TYPE;
+   }
+
+   static {
+      TYPE = new ComponentContents.Type(CODEC, "nbt");
    }
 }

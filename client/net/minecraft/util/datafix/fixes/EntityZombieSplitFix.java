@@ -10,12 +10,11 @@ public class EntityZombieSplitFix extends SimpleEntityRenameFix {
       super("EntityZombieSplitFix", var1, var2);
    }
 
-   @Override
    protected Pair<String, Dynamic<?>> getNewNameAndTag(String var1, Dynamic<?> var2) {
       if (Objects.equals("Zombie", var1)) {
          String var3 = "Zombie";
          int var4 = var2.get("ZombieType").asInt(0);
-         switch(var4) {
+         switch (var4) {
             case 0:
             default:
                break;

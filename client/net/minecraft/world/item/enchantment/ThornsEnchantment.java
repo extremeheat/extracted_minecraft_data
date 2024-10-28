@@ -1,6 +1,6 @@
 package net.minecraft.world.item.enchantment;
 
-import java.util.Map.Entry;
+import java.util.Map;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -14,10 +14,9 @@ public class ThornsEnchantment extends Enchantment {
       super(var1);
    }
 
-   @Override
    public void doPostHurt(LivingEntity var1, Entity var2, int var3) {
       RandomSource var4 = var1.getRandom();
-      Entry var5 = EnchantmentHelper.getRandomItemWith(Enchantments.THORNS, var1);
+      Map.Entry var5 = EnchantmentHelper.getRandomItemWith(Enchantments.THORNS, var1);
       if (shouldHit(var3, var4)) {
          if (var2 != null) {
             var2.hurt(var1.damageSources().thorns(var1), (float)getDamage(var3, var4));
@@ -27,6 +26,7 @@ public class ThornsEnchantment extends Enchantment {
             ((ItemStack)var5.getValue()).hurtAndBreak(2, var1, (EquipmentSlot)var5.getKey());
          }
       }
+
    }
 
    public static boolean shouldHit(int var0, RandomSource var1) {

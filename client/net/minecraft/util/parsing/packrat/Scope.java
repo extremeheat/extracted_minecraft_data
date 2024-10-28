@@ -18,7 +18,7 @@ public final class Scope {
 
    @Nullable
    public <T> T get(Atom<T> var1) {
-      return (T)this.values.get(var1);
+      return this.values.get(var1);
    }
 
    public <T> T getOrThrow(Atom<T> var1) {
@@ -26,16 +26,20 @@ public final class Scope {
    }
 
    public <T> T getOrDefault(Atom<T> var1, T var2) {
-      return Objects.requireNonNullElse(this.get(var1), (T)var2);
+      return Objects.requireNonNullElse(this.get(var1), var2);
    }
 
    @Nullable
    @SafeVarargs
    public final <T> T getAny(Atom<T>... var1) {
-      for(Atom var5 : var1) {
+      Atom[] var2 = var1;
+      int var3 = var1.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         Atom var5 = var2[var4];
          Object var6 = this.get(var5);
          if (var6 != null) {
-            return (T)var6;
+            return var6;
          }
       }
 
@@ -47,7 +51,6 @@ public final class Scope {
       return Objects.requireNonNull(this.getAny(var1));
    }
 
-   @Override
    public String toString() {
       return this.values.toString();
    }
@@ -56,16 +59,17 @@ public final class Scope {
       this.values.putAll(var1.values);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
+      } else if (var1 instanceof Scope) {
+         Scope var2 = (Scope)var1;
+         return this.values.equals(var2.values);
       } else {
-         return var1 instanceof Scope var2 ? this.values.equals(var2.values) : false;
+         return false;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.values.hashCode();
    }

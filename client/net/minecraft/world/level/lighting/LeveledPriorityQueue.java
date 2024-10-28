@@ -18,6 +18,7 @@ public class LeveledPriorityQueue {
                if (var1 > var2) {
                   super.rehash(var1);
                }
+
             }
          };
       }
@@ -45,6 +46,7 @@ public class LeveledPriorityQueue {
       if (var5.isEmpty() && this.firstQueuedLevel == var3) {
          this.checkFirstQueuedLevel(var4);
       }
+
    }
 
    public void enqueue(long var1, int var3) {
@@ -52,6 +54,7 @@ public class LeveledPriorityQueue {
       if (this.firstQueuedLevel > var3) {
          this.firstQueuedLevel = var3;
       }
+
    }
 
    private void checkFirstQueuedLevel(int var1) {
@@ -64,5 +67,6 @@ public class LeveledPriorityQueue {
             break;
          }
       }
+
    }
 }

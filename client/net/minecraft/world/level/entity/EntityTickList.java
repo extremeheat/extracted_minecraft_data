@@ -3,7 +3,6 @@ package net.minecraft.world.level.entity;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -25,7 +24,7 @@ public class EntityTickList {
          ObjectIterator var1 = Int2ObjectMaps.fastIterable(this.active).iterator();
 
          while(var1.hasNext()) {
-            Entry var2 = (Entry)var1.next();
+            Int2ObjectMap.Entry var2 = (Int2ObjectMap.Entry)var1.next();
             this.passive.put(var2.getIntKey(), (Entity)var2.getValue());
          }
 
@@ -33,6 +32,7 @@ public class EntityTickList {
          this.active = this.passive;
          this.passive = var3;
       }
+
    }
 
    public void add(Entity var1) {
@@ -65,6 +65,7 @@ public class EntityTickList {
          } finally {
             this.iterated = null;
          }
+
       }
    }
 }

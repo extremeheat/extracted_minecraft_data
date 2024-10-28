@@ -28,46 +28,43 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class TntBlock extends Block {
    public static final MapCodec<TntBlock> CODEC = simpleCodec(TntBlock::new);
-   public static final BooleanProperty UNSTABLE = BlockStateProperties.UNSTABLE;
+   public static final BooleanProperty UNSTABLE;
 
-   @Override
    public MapCodec<TntBlock> codec() {
       return CODEC;
    }
 
    public TntBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.defaultBlockState().setValue(UNSTABLE, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)this.defaultBlockState().setValue(UNSTABLE, false));
    }
 
-   @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
          if (var2.hasNeighborSignal(var3)) {
             explode(var2, var3);
             var2.removeBlock(var3, false);
          }
+
       }
    }
 
-   @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2.hasNeighborSignal(var3)) {
          explode(var2, var3);
          var2.removeBlock(var3, false);
       }
+
    }
 
-   @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide() && !var4.isCreative() && var3.getValue(UNSTABLE)) {
+      if (!var1.isClientSide() && !var4.isCreative() && (Boolean)var3.getValue(UNSTABLE)) {
          explode(var1, var2);
       }
 
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   @Override
    public void wasExploded(Level var1, BlockPos var2, Explosion var3) {
       if (!var1.isClientSide) {
          PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
@@ -78,19 +75,18 @@ public class TntBlock extends Block {
    }
 
    public static void explode(Level var0, BlockPos var1) {
-      explode(var0, var1, null);
+      explode(var0, var1, (LivingEntity)null);
    }
 
    private static void explode(Level var0, BlockPos var1, @Nullable LivingEntity var2) {
       if (!var0.isClientSide) {
          PrimedTnt var3 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
          var0.addFreshEntity(var3);
-         var0.playSound(null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
          var0.gameEvent(var2, GameEvent.PRIME_FUSE, var1);
       }
    }
 
-   @Override
    protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (!var1.is(Items.FLINT_AND_STEEL) && !var1.is(Items.FIRE_CHARGE)) {
          return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
@@ -111,7 +107,6 @@ public class TntBlock extends Block {
       }
    }
 
-   @Override
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       if (!var1.isClientSide) {
          BlockPos var5 = var3.getBlockPos();
@@ -121,15 +116,18 @@ public class TntBlock extends Block {
             var1.removeBlock(var5, false);
          }
       }
+
    }
 
-   @Override
    public boolean dropFromExplosion(Explosion var1) {
       return false;
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(UNSTABLE);
+   }
+
+   static {
+      UNSTABLE = BlockStateProperties.UNSTABLE;
    }
 }

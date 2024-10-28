@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 
 public class ReloadableServerRegistries {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Gson GSON = new GsonBuilder().create();
+   private static final Gson GSON = (new GsonBuilder()).create();
    private static final RegistrationInfo DEFAULT_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
 
    public ReloadableServerRegistries() {
@@ -47,28 +47,28 @@ public class ReloadableServerRegistries {
 
    public static CompletableFuture<LayeredRegistryAccess<RegistryLayer>> reload(LayeredRegistryAccess<RegistryLayer> var0, ResourceManager var1, Executor var2) {
       RegistryAccess.Frozen var3 = var0.getAccessForLoading(RegistryLayer.RELOADABLE);
-      RegistryOps var4 = new ReloadableServerRegistries.EmptyTagLookupWrapper(var3).createSerializationContext(JsonOps.INSTANCE);
-      List var5 = LootDataType.values().map(var3x -> scheduleElementParse(var3x, var4, var1, var2)).toList();
+      RegistryOps var4 = (new EmptyTagLookupWrapper(var3)).createSerializationContext(JsonOps.INSTANCE);
+      List var5 = LootDataType.values().map((var3x) -> {
+         return scheduleElementParse(var3x, var4, var1, var2);
+      }).toList();
       CompletableFuture var6 = Util.sequence(var5);
-      return var6.thenApplyAsync(var1x -> apply(var0, var1x), var2);
+      return var6.thenApplyAsync((var1x) -> {
+         return apply(var0, var1x);
+      }, var2);
    }
 
-   private static <T> CompletableFuture<WritableRegistry<?>> scheduleElementParse(
-      LootDataType<T> var0, RegistryOps<JsonElement> var1, ResourceManager var2, Executor var3
-   ) {
-      return CompletableFuture.supplyAsync(
-         () -> {
-            MappedRegistry var3xx = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
-            HashMap var4 = new HashMap();
-            SimpleJsonResourceReloadListener.scanDirectory(var2, var0.directory(), GSON, var4);
-            var4.forEach(
-               (var3xx, var4x) -> var0.deserialize(var3xx, var1, var4x)
-                     .ifPresent(var3xxx -> var3x.register(ResourceKey.create(var0.registryKey(), var3xx), var3xxx, DEFAULT_REGISTRATION_INFO))
-            );
-            return var3xx;
-         },
-         var3
-      );
+   private static <T> CompletableFuture<WritableRegistry<?>> scheduleElementParse(LootDataType<T> var0, RegistryOps<JsonElement> var1, ResourceManager var2, Executor var3) {
+      return CompletableFuture.supplyAsync(() -> {
+         MappedRegistry var3 = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
+         HashMap var4 = new HashMap();
+         SimpleJsonResourceReloadListener.scanDirectory(var2, var0.directory(), GSON, var4);
+         var4.forEach((var3x, var4x) -> {
+            var0.deserialize(var3x, var1, var4x).ifPresent((var3xx) -> {
+               var3.register(ResourceKey.create(var0.registryKey(), var3x), var3xx, DEFAULT_REGISTRATION_INFO);
+            });
+         });
+         return var3;
+      }, var3);
    }
 
    private static LayeredRegistryAccess<RegistryLayer> apply(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {
@@ -76,20 +76,26 @@ public class ReloadableServerRegistries {
       ProblemReporter.Collector var3 = new ProblemReporter.Collector();
       RegistryAccess.Frozen var4 = var2.compositeAccess();
       ValidationContext var5 = new ValidationContext(var3, LootContextParamSets.ALL_PARAMS, var4.asGetterLookup());
-      LootDataType.values().forEach(var2x -> validateRegistry(var5, var2x, var4));
-      var3.get().forEach((var0x, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x));
+      LootDataType.values().forEach((var2x) -> {
+         validateRegistry(var5, var2x, var4);
+      });
+      var3.get().forEach((var0x, var1x) -> {
+         LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x);
+      });
       return var2;
    }
 
    private static LayeredRegistryAccess<RegistryLayer> createUpdatedRegistries(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {
       RegistryAccess.ImmutableRegistryAccess var2 = new RegistryAccess.ImmutableRegistryAccess(var1);
-      ((WritableRegistry)var2.<LootTable>registryOrThrow(Registries.LOOT_TABLE)).register(BuiltInLootTables.EMPTY, LootTable.EMPTY, DEFAULT_REGISTRATION_INFO);
-      return var0.replaceFrom(RegistryLayer.RELOADABLE, var2.freeze());
+      ((WritableRegistry)var2.registryOrThrow(Registries.LOOT_TABLE)).register(BuiltInLootTables.EMPTY, LootTable.EMPTY, DEFAULT_REGISTRATION_INFO);
+      return var0.replaceFrom(RegistryLayer.RELOADABLE, (RegistryAccess.Frozen[])(var2.freeze()));
    }
 
    private static <T> void validateRegistry(ValidationContext var0, LootDataType<T> var1, RegistryAccess var2) {
       Registry var3 = var2.registryOrThrow(var1.registryKey());
-      var3.holders().forEach(var2x -> var1.runValidation(var0, var2x.key(), var2x.value()));
+      var3.holders().forEach((var2x) -> {
+         var1.runValidation(var0, var2x.key(), var2x.value());
+      });
    }
 
    static class EmptyTagLookupWrapper implements HolderLookup.Provider {
@@ -100,12 +106,10 @@ public class ReloadableServerRegistries {
          this.registryAccess = var1;
       }
 
-      @Override
       public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
          return this.registryAccess.listRegistries();
       }
 
-      @Override
       public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
          return this.registryAccess.registry(var1).map(Registry::asTagAddingLookup);
       }
@@ -128,11 +132,17 @@ public class ReloadableServerRegistries {
       }
 
       public Collection<ResourceLocation> getKeys(ResourceKey<? extends Registry<?>> var1) {
-         return this.registries.registry(var1).stream().flatMap(var0 -> var0.holders().map(var0x -> var0x.key().location())).toList();
+         return this.registries.registry(var1).stream().flatMap((var0) -> {
+            return var0.holders().map((var0x) -> {
+               return var0x.key().location();
+            });
+         }).toList();
       }
 
       public LootTable getLootTable(ResourceKey<LootTable> var1) {
-         return this.registries.lookup(Registries.LOOT_TABLE).flatMap(var1x -> var1x.get(var1)).map(net.minecraft.core.Holder::value).orElse(LootTable.EMPTY);
+         return (LootTable)this.registries.lookup(Registries.LOOT_TABLE).flatMap((var1x) -> {
+            return var1x.get(var1);
+         }).map(net.minecraft.core.Holder::value).orElse(LootTable.EMPTY);
       }
    }
 }

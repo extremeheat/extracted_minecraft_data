@@ -15,23 +15,19 @@ public interface ExecutionControl<T> {
 
    static <T extends ExecutionCommandSource<T>> ExecutionControl<T> create(final ExecutionContext<T> var0, final Frame var1) {
       return new ExecutionControl<T>() {
-         @Override
          public void queueNext(EntryAction<T> var1x) {
-            var0.queueNext(new CommandQueueEntry<>(var1, var1x));
+            var0.queueNext(new CommandQueueEntry(var1, var1x));
          }
 
-         @Override
          public void tracer(@Nullable TraceCallbacks var1x) {
             var0.tracer(var1x);
          }
 
          @Nullable
-         @Override
          public TraceCallbacks tracer() {
             return var0.tracer();
          }
 
-         @Override
          public Frame currentFrame() {
             return var1;
          }

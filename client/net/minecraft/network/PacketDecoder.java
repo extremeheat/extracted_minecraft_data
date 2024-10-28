@@ -23,22 +23,12 @@ public class PacketDecoder<T extends PacketListener> extends ByteToMessageDecode
    protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
       int var4 = var2.readableBytes();
       if (var4 != 0) {
-         Packet var5 = this.protocolInfo.codec().decode(var2);
+         Packet var5 = (Packet)this.protocolInfo.codec().decode(var2);
          PacketType var6 = var5.type();
          JvmProfiler.INSTANCE.onPacketReceived(this.protocolInfo.id(), var6, var1.channel().remoteAddress(), var4);
          if (var2.readableBytes() > 0) {
-            throw new IOException(
-               "Packet "
-                  + this.protocolInfo.id().id()
-                  + "/"
-                  + var6
-                  + " ("
-                  + var5.getClass().getSimpleName()
-                  + ") was larger than I expected, found "
-                  + var2.readableBytes()
-                  + " bytes extra whilst reading packet "
-                  + var6
-            );
+            String var10002 = this.protocolInfo.id().id();
+            throw new IOException("Packet " + var10002 + "/" + String.valueOf(var6) + " (" + var5.getClass().getSimpleName() + ") was larger than I expected, found " + var2.readableBytes() + " bytes extra whilst reading packet " + String.valueOf(var6));
          } else {
             var3.add(var5);
             if (LOGGER.isDebugEnabled()) {

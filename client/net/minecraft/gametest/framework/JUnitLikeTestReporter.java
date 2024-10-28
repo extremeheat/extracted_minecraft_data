@@ -42,23 +42,21 @@ public class JUnitLikeTestReporter implements TestReporter {
       return var3;
    }
 
-   @Override
    public void onTestFailed(GameTestInfo var1) {
       String var2 = var1.getTestName();
       String var3 = var1.getError().getMessage();
       Element var4 = this.document.createElement(var1.isRequired() ? "failure" : "skipped");
-      var4.setAttribute("message", "(" + var1.getStructureBlockPos().toShortString() + ") " + var3);
+      String var10002 = var1.getStructureBlockPos().toShortString();
+      var4.setAttribute("message", "(" + var10002 + ") " + var3);
       Element var5 = this.createTestCase(var1, var2);
       var5.appendChild(var4);
    }
 
-   @Override
    public void onTestSuccess(GameTestInfo var1) {
       String var2 = var1.getTestName();
       this.createTestCase(var1, var2);
    }
 
-   @Override
    public void finish() {
       this.stopwatch.stop();
       this.testSuite.setAttribute("time", String.valueOf((double)this.stopwatch.elapsed(TimeUnit.MILLISECONDS) / 1000.0));

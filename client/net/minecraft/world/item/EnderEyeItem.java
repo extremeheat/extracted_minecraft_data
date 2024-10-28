@@ -11,6 +11,7 @@ import net.minecraft.tags.StructureTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.item.context.UseOnContext;
@@ -30,47 +31,44 @@ public class EnderEyeItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      if (!var4.is(Blocks.END_PORTAL_FRAME) || var4.getValue(EndPortalFrameBlock.HAS_EYE)) {
-         return InteractionResult.PASS;
-      } else if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         BlockState var5 = var4.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(true));
-         Block.pushEntitiesUp(var4, var5, var2, var3);
-         var2.setBlock(var3, var5, 2);
-         var2.updateNeighbourForOutputSignal(var3, Blocks.END_PORTAL_FRAME);
-         var1.getItemInHand().shrink(1);
-         var2.levelEvent(1503, var3, 0);
-         BlockPattern.BlockPatternMatch var6 = EndPortalFrameBlock.getOrCreatePortalShape().find(var2, var3);
-         if (var6 != null) {
-            BlockPos var7 = var6.getFrontTopLeft().offset(-3, 0, -3);
+      if (var4.is(Blocks.END_PORTAL_FRAME) && !(Boolean)var4.getValue(EndPortalFrameBlock.HAS_EYE)) {
+         if (var2.isClientSide) {
+            return InteractionResult.SUCCESS;
+         } else {
+            BlockState var5 = (BlockState)var4.setValue(EndPortalFrameBlock.HAS_EYE, true);
+            Block.pushEntitiesUp(var4, var5, var2, var3);
+            var2.setBlock(var3, var5, 2);
+            var2.updateNeighbourForOutputSignal(var3, Blocks.END_PORTAL_FRAME);
+            var1.getItemInHand().shrink(1);
+            var2.levelEvent(1503, var3, 0);
+            BlockPattern.BlockPatternMatch var6 = EndPortalFrameBlock.getOrCreatePortalShape().find(var2, var3);
+            if (var6 != null) {
+               BlockPos var7 = var6.getFrontTopLeft().offset(-3, 0, -3);
 
-            for(int var8 = 0; var8 < 3; ++var8) {
-               for(int var9 = 0; var9 < 3; ++var9) {
-                  var2.setBlock(var7.offset(var8, 0, var9), Blocks.END_PORTAL.defaultBlockState(), 2);
+               for(int var8 = 0; var8 < 3; ++var8) {
+                  for(int var9 = 0; var9 < 3; ++var9) {
+                     var2.setBlock(var7.offset(var8, 0, var9), Blocks.END_PORTAL.defaultBlockState(), 2);
+                  }
                }
+
+               var2.globalLevelEvent(1038, var7.offset(1, 0, 1), 0);
             }
 
-            var2.globalLevelEvent(1038, var7.offset(1, 0, 1), 0);
+            return InteractionResult.CONSUME;
          }
-
-         return InteractionResult.CONSUME;
+      } else {
+         return InteractionResult.PASS;
       }
    }
 
-   @Override
    public int getUseDuration(ItemStack var1) {
       return 0;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.NONE);
@@ -78,29 +76,21 @@ public class EnderEyeItem extends Item {
          return InteractionResultHolder.pass(var4);
       } else {
          var2.startUsingItem(var3);
-         if (var1 instanceof ServerLevel var6) {
+         if (var1 instanceof ServerLevel) {
+            ServerLevel var6 = (ServerLevel)var1;
             BlockPos var7 = var6.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, var2.blockPosition(), 100, false);
             if (var7 != null) {
                EyeOfEnder var8 = new EyeOfEnder(var1, var2.getX(), var2.getY(0.5), var2.getZ());
                var8.setItem(var4);
                var8.signalTo(var7);
-               var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of(var2));
+               var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of((Entity)var2));
                var1.addFreshEntity(var8);
                if (var2 instanceof ServerPlayer) {
                   CriteriaTriggers.USED_ENDER_EYE.trigger((ServerPlayer)var2, var7);
                }
 
-               var1.playSound(
-                  null,
-                  var2.getX(),
-                  var2.getY(),
-                  var2.getZ(),
-                  SoundEvents.ENDER_EYE_LAUNCH,
-                  SoundSource.NEUTRAL,
-                  0.5F,
-                  0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
-               );
-               var1.levelEvent(null, 1003, var2.blockPosition(), 0);
+               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+               var1.levelEvent((Player)null, 1003, var2.blockPosition(), 0);
                var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
                var2.swing(var3, true);

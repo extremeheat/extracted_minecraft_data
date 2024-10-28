@@ -28,8 +28,12 @@ public enum GossipType implements StringRepresentable {
       this.decayPerTransfer = var7;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
+   }
+
+   // $FF: synthetic method
+   private static GossipType[] $values() {
+      return new GossipType[]{MAJOR_NEGATIVE, MINOR_NEGATIVE, MINOR_POSITIVE, MAJOR_POSITIVE, TRADING};
    }
 }

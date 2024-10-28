@@ -9,7 +9,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.BlendMode;
@@ -24,7 +23,9 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.apache.commons.io.IOUtils;
-import org.joml.Matrix4f;
 import org.slf4j.Logger;
 
 public class ShaderInstance implements Shader, AutoCloseable {
@@ -99,57 +99,76 @@ public class ShaderInstance implements Shader, AutoCloseable {
       this.vertexFormat = var3;
       ResourceLocation var4 = new ResourceLocation("shaders/core/" + var2 + ".json");
 
-      try (BufferedReader var6 = var1.openAsReader(var4)) {
-         JsonObject var5 = GsonHelper.parse(var6);
-         String var21 = GsonHelper.getAsString(var5, "vertex");
-         String var8 = GsonHelper.getAsString(var5, "fragment");
-         JsonArray var9 = GsonHelper.getAsJsonArray(var5, "samplers", null);
-         if (var9 != null) {
-            int var10 = 0;
+      try {
+         BufferedReader var6 = var1.openAsReader(var4);
 
-            for(JsonElement var12 : var9) {
-               try {
-                  this.parseSamplerNode(var12);
-               } catch (Exception var18) {
-                  ChainedJsonException var14 = ChainedJsonException.forException(var18);
-                  var14.prependJsonKey("samplers[" + var10 + "]");
-                  throw var14;
+         try {
+            JsonObject var5 = GsonHelper.parse((Reader)var6);
+            String var21 = GsonHelper.getAsString(var5, "vertex");
+            String var8 = GsonHelper.getAsString(var5, "fragment");
+            JsonArray var9 = GsonHelper.getAsJsonArray(var5, "samplers", (JsonArray)null);
+            if (var9 != null) {
+               int var10 = 0;
+
+               for(Iterator var11 = var9.iterator(); var11.hasNext(); ++var10) {
+                  JsonElement var12 = (JsonElement)var11.next();
+
+                  try {
+                     this.parseSamplerNode(var12);
+                  } catch (Exception var18) {
+                     ChainedJsonException var14 = ChainedJsonException.forException(var18);
+                     var14.prependJsonKey("samplers[" + var10 + "]");
+                     throw var14;
+                  }
                }
-
-               ++var10;
             }
-         }
 
-         JsonArray var22 = GsonHelper.getAsJsonArray(var5, "uniforms", null);
-         if (var22 != null) {
-            int var23 = 0;
+            JsonArray var22 = GsonHelper.getAsJsonArray(var5, "uniforms", (JsonArray)null);
+            int var23;
+            if (var22 != null) {
+               var23 = 0;
 
-            for(JsonElement var13 : var22) {
-               try {
-                  this.parseUniformNode(var13);
-               } catch (Exception var17) {
-                  ChainedJsonException var15 = ChainedJsonException.forException(var17);
-                  var15.prependJsonKey("uniforms[" + var23 + "]");
-                  throw var15;
+               for(Iterator var24 = var22.iterator(); var24.hasNext(); ++var23) {
+                  JsonElement var13 = (JsonElement)var24.next();
+
+                  try {
+                     this.parseUniformNode(var13);
+                  } catch (Exception var17) {
+                     ChainedJsonException var15 = ChainedJsonException.forException(var17);
+                     var15.prependJsonKey("uniforms[" + var23 + "]");
+                     throw var15;
+                  }
                }
-
-               ++var23;
             }
+
+            this.blend = parseBlendNode(GsonHelper.getAsJsonObject(var5, "blend", (JsonObject)null));
+            this.vertexProgram = getOrCreate(var1, Program.Type.VERTEX, var21);
+            this.fragmentProgram = getOrCreate(var1, Program.Type.FRAGMENT, var8);
+            this.programId = ProgramManager.createProgram();
+            var23 = 0;
+
+            for(UnmodifiableIterator var25 = var3.getElementAttributeNames().iterator(); var25.hasNext(); ++var23) {
+               String var26 = (String)var25.next();
+               Uniform.glBindAttribLocation(this.programId, var23, var26);
+            }
+
+            ProgramManager.linkShader(this);
+            this.updateLocations();
+         } catch (Throwable var19) {
+            if (var6 != null) {
+               try {
+                  ((Reader)var6).close();
+               } catch (Throwable var16) {
+                  var19.addSuppressed(var16);
+               }
+            }
+
+            throw var19;
          }
 
-         this.blend = parseBlendNode(GsonHelper.getAsJsonObject(var5, "blend", null));
-         this.vertexProgram = getOrCreate(var1, Program.Type.VERTEX, var21);
-         this.fragmentProgram = getOrCreate(var1, Program.Type.FRAGMENT, var8);
-         this.programId = ProgramManager.createProgram();
-         int var24 = 0;
-
-         for(UnmodifiableIterator var26 = var3.getElementAttributeNames().iterator(); var26.hasNext(); ++var24) {
-            String var27 = (String)var26.next();
-            Uniform.glBindAttribLocation(this.programId, var24, var27);
+         if (var6 != null) {
+            ((Reader)var6).close();
          }
-
-         ProgramManager.linkShader(this);
-         this.updateLocations();
       } catch (Exception var20) {
          ChainedJsonException var7 = ChainedJsonException.forException(var20);
          var7.setFilenameAndFlush(var4.getPath());
@@ -175,29 +194,46 @@ public class ShaderInstance implements Shader, AutoCloseable {
    }
 
    private static Program getOrCreate(final ResourceProvider var0, Program.Type var1, String var2) throws IOException {
-      Program var4 = var1.getPrograms().get(var2);
+      Program var4 = (Program)var1.getPrograms().get(var2);
       Program var3;
       if (var4 == null) {
          String var5 = "shaders/core/" + var2 + var1.getExtension();
          Resource var6 = var0.getResourceOrThrow(new ResourceLocation(var5));
+         InputStream var7 = var6.open();
 
-         try (InputStream var7 = var6.open()) {
+         try {
             final String var8 = FileUtil.getFullResourcePath(var5);
             var3 = Program.compileShader(var1, var2, var7, var6.sourcePackId(), new GlslPreprocessor() {
                private final Set<String> importedPaths = Sets.newHashSet();
 
-               @Override
                public String applyImport(boolean var1, String var2) {
-                  var2 = FileUtil.normalizeResourcePath((var1 ? var8 : "shaders/include/") + var2);
+                  String var10000 = var1 ? var8 : "shaders/include/";
+                  var2 = FileUtil.normalizeResourcePath(var10000 + var2);
                   if (!this.importedPaths.add(var2)) {
                      return null;
                   } else {
                      ResourceLocation var3 = new ResourceLocation(var2);
 
                      try {
+                        BufferedReader var4 = var0.openAsReader(var3);
+
                         String var5;
-                        try (BufferedReader var4 = var0.openAsReader(var3)) {
+                        try {
                            var5 = IOUtils.toString(var4);
+                        } catch (Throwable var8x) {
+                           if (var4 != null) {
+                              try {
+                                 ((Reader)var4).close();
+                              } catch (Throwable var7) {
+                                 var8x.addSuppressed(var7);
+                              }
+                           }
+
+                           throw var8x;
+                        }
+
+                        if (var4 != null) {
+                           ((Reader)var4).close();
                         }
 
                         return var5;
@@ -208,6 +244,20 @@ public class ShaderInstance implements Shader, AutoCloseable {
                   }
                }
             });
+         } catch (Throwable var11) {
+            if (var7 != null) {
+               try {
+                  var7.close();
+               } catch (Throwable var10) {
+                  var11.addSuppressed(var10);
+               }
+            }
+
+            throw var11;
+         }
+
+         if (var7 != null) {
+            var7.close();
          }
       } else {
          var3 = var4;
@@ -274,9 +324,11 @@ public class ShaderInstance implements Shader, AutoCloseable {
       }
    }
 
-   @Override
    public void close() {
-      for(Uniform var2 : this.uniforms) {
+      Iterator var1 = this.uniforms.iterator();
+
+      while(var1.hasNext()) {
+         Uniform var2 = (Uniform)var1.next();
          var2.close();
       }
 
@@ -292,7 +344,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
 
       for(int var2 = 0; var2 < this.samplerLocations.size(); ++var2) {
          if (this.samplerMap.get(this.samplerNames.get(var2)) != null) {
-            GlStateManager._activeTexture(33984 + var2);
+            GlStateManager._activeTexture('\u84c0' + var2);
             GlStateManager._bindTexture(0);
          }
       }
@@ -313,11 +365,11 @@ public class ShaderInstance implements Shader, AutoCloseable {
       int var1 = GlStateManager._getActiveTexture();
 
       for(int var2 = 0; var2 < this.samplerLocations.size(); ++var2) {
-         String var3 = this.samplerNames.get(var2);
+         String var3 = (String)this.samplerNames.get(var2);
          if (this.samplerMap.get(var3) != null) {
             int var4 = Uniform.glGetUniformLocation(this.programId, var3);
             Uniform.uploadInteger(var4, var2);
-            RenderSystem.activeTexture(33984 + var2);
+            RenderSystem.activeTexture('\u84c0' + var2);
             Object var5 = this.samplerMap.get(var3);
             int var6 = -1;
             if (var5 instanceof RenderTarget) {
@@ -335,13 +387,15 @@ public class ShaderInstance implements Shader, AutoCloseable {
       }
 
       GlStateManager._activeTexture(var1);
+      Iterator var7 = this.uniforms.iterator();
 
-      for(Uniform var8 : this.uniforms) {
+      while(var7.hasNext()) {
+         Uniform var8 = (Uniform)var7.next();
          var8.upload();
       }
+
    }
 
-   @Override
    public void markDirty() {
       this.dirty = true;
    }
@@ -349,7 +403,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
    @Nullable
    public Uniform getUniform(String var1) {
       RenderSystem.assertOnRenderThread();
-      return this.uniformMap.get(var1);
+      return (Uniform)this.uniformMap.get(var1);
    }
 
    public AbstractUniform safeGetUniform(String var1) {
@@ -362,8 +416,9 @@ public class ShaderInstance implements Shader, AutoCloseable {
       RenderSystem.assertOnRenderThread();
       IntArrayList var1 = new IntArrayList();
 
-      for(int var2 = 0; var2 < this.samplerNames.size(); ++var2) {
-         String var3 = this.samplerNames.get(var2);
+      int var2;
+      for(var2 = 0; var2 < this.samplerNames.size(); ++var2) {
+         String var3 = (String)this.samplerNames.get(var2);
          int var4 = Uniform.glGetUniformLocation(this.programId, var3);
          if (var4 == -1) {
             LOGGER.warn("Shader {} could not find sampler named {} in the specified shader program.", this.name, var3);
@@ -374,29 +429,33 @@ public class ShaderInstance implements Shader, AutoCloseable {
          }
       }
 
-      for(int var6 = var1.size() - 1; var6 >= 0; --var6) {
-         int var8 = var1.getInt(var6);
-         this.samplerNames.remove(var8);
+      for(var2 = var1.size() - 1; var2 >= 0; --var2) {
+         int var7 = var1.getInt(var2);
+         this.samplerNames.remove(var7);
       }
 
-      for(Uniform var9 : this.uniforms) {
-         String var10 = var9.getName();
-         int var5 = Uniform.glGetUniformLocation(this.programId, var10);
+      Iterator var6 = this.uniforms.iterator();
+
+      while(var6.hasNext()) {
+         Uniform var8 = (Uniform)var6.next();
+         String var9 = var8.getName();
+         int var5 = Uniform.glGetUniformLocation(this.programId, var9);
          if (var5 == -1) {
-            LOGGER.warn("Shader {} could not find uniform named {} in the specified shader program.", this.name, var10);
+            LOGGER.warn("Shader {} could not find uniform named {} in the specified shader program.", this.name, var9);
          } else {
             this.uniformLocations.add(var5);
-            var9.setLocation(var5);
-            this.uniformMap.put(var10, var9);
+            var8.setLocation(var5);
+            this.uniformMap.put(var9, var8);
          }
       }
+
    }
 
    private void parseSamplerNode(JsonElement var1) {
       JsonObject var2 = GsonHelper.convertToJsonObject(var1, "sampler");
       String var3 = GsonHelper.getAsString(var2, "name");
       if (!GsonHelper.isStringValue(var2, "file")) {
-         this.samplerMap.put(var3, null);
+         this.samplerMap.put(var3, (Object)null);
          this.samplerNames.add(var3);
       } else {
          this.samplerNames.add(var3);
@@ -420,7 +479,9 @@ public class ShaderInstance implements Shader, AutoCloseable {
       } else {
          int var8 = 0;
 
-         for(JsonElement var10 : var7) {
+         for(Iterator var9 = var7.iterator(); var9.hasNext(); ++var8) {
+            JsonElement var10 = (JsonElement)var9.next();
+
             try {
                var6[var8] = GsonHelper.convertToFloat(var10, "value");
             } catch (Exception var13) {
@@ -428,8 +489,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
                var12.prependJsonKey("values[" + var8 + "]");
                throw var12;
             }
-
-            ++var8;
          }
 
          if (var5 > 1 && var7.size() == 1) {
@@ -453,17 +512,14 @@ public class ShaderInstance implements Shader, AutoCloseable {
       }
    }
 
-   @Override
    public Program getVertexProgram() {
       return this.vertexProgram;
    }
 
-   @Override
    public Program getFragmentProgram() {
       return this.fragmentProgram;
    }
 
-   @Override
    public void attachToProgram() {
       this.fragmentProgram.attachToShader(this);
       this.vertexProgram.attachToShader(this);
@@ -477,65 +533,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
       return this.name;
    }
 
-   @Override
    public int getId() {
       return this.programId;
-   }
-
-   public void setDefaultUniforms(VertexFormat.Mode var1, Matrix4f var2, Matrix4f var3, Window var4) {
-      for(int var5 = 0; var5 < 12; ++var5) {
-         int var6 = RenderSystem.getShaderTexture(var5);
-         this.setSampler("Sampler" + var5, var6);
-      }
-
-      if (this.MODEL_VIEW_MATRIX != null) {
-         this.MODEL_VIEW_MATRIX.set(var2);
-      }
-
-      if (this.PROJECTION_MATRIX != null) {
-         this.PROJECTION_MATRIX.set(var3);
-      }
-
-      if (this.COLOR_MODULATOR != null) {
-         this.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-      }
-
-      if (this.GLINT_ALPHA != null) {
-         this.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
-      }
-
-      if (this.FOG_START != null) {
-         this.FOG_START.set(RenderSystem.getShaderFogStart());
-      }
-
-      if (this.FOG_END != null) {
-         this.FOG_END.set(RenderSystem.getShaderFogEnd());
-      }
-
-      if (this.FOG_COLOR != null) {
-         this.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-      }
-
-      if (this.FOG_SHAPE != null) {
-         this.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-      }
-
-      if (this.TEXTURE_MATRIX != null) {
-         this.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-      }
-
-      if (this.GAME_TIME != null) {
-         this.GAME_TIME.set(RenderSystem.getShaderGameTime());
-      }
-
-      if (this.SCREEN_SIZE != null) {
-         this.SCREEN_SIZE.set((float)var4.getWidth(), (float)var4.getHeight());
-      }
-
-      if (this.LINE_WIDTH != null && (var1 == VertexFormat.Mode.LINES || var1 == VertexFormat.Mode.LINE_STRIP)) {
-         this.LINE_WIDTH.set(RenderSystem.getShaderLineWidth());
-      }
-
-      RenderSystem.setupShaderLights(this);
    }
 }

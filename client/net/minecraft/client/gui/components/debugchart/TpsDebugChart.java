@@ -23,13 +23,11 @@ public class TpsDebugChart extends AbstractDebugChart {
       this.msptSupplier = var3;
    }
 
-   @Override
    protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
-      float var5 = (float)TimeUtil.MILLISECONDS_PER_SECOND / this.msptSupplier.get();
+      float var5 = (float)TimeUtil.MILLISECONDS_PER_SECOND / (Float)this.msptSupplier.get();
       this.drawStringWithShade(var1, String.format("%.1f TPS", var5), var2 + 1, var4 - 60 + 1);
    }
 
-   @Override
    protected void drawAdditionalDimensions(GuiGraphics var1, int var2, int var3, int var4) {
       long var5 = this.sampleStorage.get(var4, TpsDebugDimensions.TICK_SERVER_METHOD.ordinal());
       int var7 = this.getSampleHeight((double)var5);
@@ -42,24 +40,20 @@ public class TpsDebugChart extends AbstractDebugChart {
       var1.fill(RenderType.guiOverlay(), var3, var2 - var13 - var10 - var7, var3 + 1, var2 - var10 - var7, -10547572);
    }
 
-   @Override
    protected long getValueForAggregation(int var1) {
       return this.sampleStorage.get(var1) - this.sampleStorage.get(var1, TpsDebugDimensions.IDLE.ordinal());
    }
 
-   @Override
    protected String toDisplayString(double var1) {
       return String.format(Locale.ROOT, "%d ms", (int)Math.round(toMilliseconds(var1)));
    }
 
-   @Override
    protected int getSampleHeight(double var1) {
-      return (int)Math.round(toMilliseconds(var1) * 60.0 / (double)this.msptSupplier.get().floatValue());
+      return (int)Math.round(toMilliseconds(var1) * 60.0 / (double)(Float)this.msptSupplier.get());
    }
 
-   @Override
    protected int getSampleColor(long var1) {
-      float var3 = this.msptSupplier.get();
+      float var3 = (Float)this.msptSupplier.get();
       return this.getSampleColor(toMilliseconds((double)var1), (double)var3, -16711936, (double)var3 * 1.125, -256, (double)var3 * 1.25, -65536);
    }
 

@@ -13,14 +13,8 @@ public class WorldPresetTagsProvider extends TagsProvider<WorldPreset> {
       super(var1, Registries.WORLD_PRESET, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
-      this.tag(WorldPresetTags.NORMAL)
-         .add(WorldPresets.NORMAL)
-         .add(WorldPresets.FLAT)
-         .add(WorldPresets.LARGE_BIOMES)
-         .add(WorldPresets.AMPLIFIED)
-         .add(WorldPresets.SINGLE_BIOME_SURFACE);
+      this.tag(WorldPresetTags.NORMAL).add(WorldPresets.NORMAL).add(WorldPresets.FLAT).add(WorldPresets.LARGE_BIOMES).add(WorldPresets.AMPLIFIED).add(WorldPresets.SINGLE_BIOME_SURFACE);
       this.tag(WorldPresetTags.EXTENDED).addTag(WorldPresetTags.NORMAL).add(WorldPresets.DEBUG);
    }
 }

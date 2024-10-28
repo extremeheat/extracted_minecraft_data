@@ -4,12 +4,7 @@ import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.world.level.storage.WorldData;
 
-public record WorldStem(CloseableResourceManager a, ReloadableServerResources b, LayeredRegistryAccess<RegistryLayer> c, WorldData d) implements AutoCloseable {
-   private final CloseableResourceManager resourceManager;
-   private final ReloadableServerResources dataPackResources;
-   private final LayeredRegistryAccess<RegistryLayer> registries;
-   private final WorldData worldData;
-
+public record WorldStem(CloseableResourceManager resourceManager, ReloadableServerResources dataPackResources, LayeredRegistryAccess<RegistryLayer> registries, WorldData worldData) implements AutoCloseable {
    public WorldStem(CloseableResourceManager var1, ReloadableServerResources var2, LayeredRegistryAccess<RegistryLayer> var3, WorldData var4) {
       super();
       this.resourceManager = var1;
@@ -18,8 +13,23 @@ public record WorldStem(CloseableResourceManager a, ReloadableServerResources b,
       this.worldData = var4;
    }
 
-   @Override
    public void close() {
       this.resourceManager.close();
+   }
+
+   public CloseableResourceManager resourceManager() {
+      return this.resourceManager;
+   }
+
+   public ReloadableServerResources dataPackResources() {
+      return this.dataPackResources;
+   }
+
+   public LayeredRegistryAccess<RegistryLayer> registries() {
+      return this.registries;
+   }
+
+   public WorldData worldData() {
+      return this.worldData;
    }
 }

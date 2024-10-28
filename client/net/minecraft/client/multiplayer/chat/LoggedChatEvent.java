@@ -1,33 +1,42 @@
 package net.minecraft.client.multiplayer.chat;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.function.Supplier;
 import net.minecraft.util.StringRepresentable;
 
 public interface LoggedChatEvent {
-   Codec<LoggedChatEvent> CODEC = StringRepresentable.fromEnum(LoggedChatEvent.Type::values).dispatch(LoggedChatEvent::type, LoggedChatEvent.Type::codec);
+   Codec<LoggedChatEvent> CODEC = StringRepresentable.fromEnum(Type::values).dispatch(LoggedChatEvent::type, Type::codec);
 
-   LoggedChatEvent.Type type();
+   Type type();
 
    public static enum Type implements StringRepresentable {
-      PLAYER("player", () -> LoggedChatMessage.Player.CODEC),
-      SYSTEM("system", () -> LoggedChatMessage.System.CODEC);
+      PLAYER("player", () -> {
+         return LoggedChatMessage.Player.CODEC;
+      }),
+      SYSTEM("system", () -> {
+         return LoggedChatMessage.System.CODEC;
+      });
 
       private final String serializedName;
-      private final Supplier<Codec<? extends LoggedChatEvent>> codec;
+      private final Supplier<MapCodec<? extends LoggedChatEvent>> codec;
 
-      private Type(String var3, Supplier<Codec<? extends LoggedChatEvent>> var4) {
+      private Type(String var3, Supplier var4) {
          this.serializedName = var3;
          this.codec = var4;
       }
 
-      private Codec<? extends LoggedChatEvent> codec() {
-         return (Codec<? extends LoggedChatEvent>)this.codec.get();
+      private MapCodec<? extends LoggedChatEvent> codec() {
+         return (MapCodec)this.codec.get();
       }
 
-      @Override
       public String getSerializedName() {
          return this.serializedName;
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{PLAYER, SYSTEM};
       }
    }
 }

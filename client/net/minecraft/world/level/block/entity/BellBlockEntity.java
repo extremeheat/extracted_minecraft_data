@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +14,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -39,7 +41,6 @@ public class BellBlockEntity extends BlockEntity {
       super(BlockEntityType.BELL, var1, var2);
    }
 
-   @Override
    public boolean triggerEvent(int var1, int var2) {
       if (var1 == 1) {
          this.updateEntities();
@@ -53,7 +54,7 @@ public class BellBlockEntity extends BlockEntity {
       }
    }
 
-   private static void tick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3, BellBlockEntity.ResonationEndAction var4) {
+   private static void tick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3, ResonationEndAction var4) {
       if (var3.shaking) {
          ++var3.ticks;
       }
@@ -65,7 +66,7 @@ public class BellBlockEntity extends BlockEntity {
 
       if (var3.ticks >= 5 && var3.resonationTicks == 0 && areRaidersNearby(var1, var3.nearbyEntities)) {
          var3.resonating = true;
-         var0.playSound(null, var1, SoundEvents.BELL_RESONATE, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, (BlockPos)var1, SoundEvents.BELL_RESONATE, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       if (var3.resonating) {
@@ -76,6 +77,7 @@ public class BellBlockEntity extends BlockEntity {
             var3.resonating = false;
          }
       }
+
    }
 
    public static void clientTick(Level var0, BlockPos var1, BlockState var2, BellBlockEntity var3) {
@@ -102,57 +104,64 @@ public class BellBlockEntity extends BlockEntity {
       BlockPos var1 = this.getBlockPos();
       if (this.level.getGameTime() > this.lastRingTimestamp + 60L || this.nearbyEntities == null) {
          this.lastRingTimestamp = this.level.getGameTime();
-         AABB var2 = new AABB(var1).inflate(48.0);
+         AABB var2 = (new AABB(var1)).inflate(48.0);
          this.nearbyEntities = this.level.getEntitiesOfClass(LivingEntity.class, var2);
       }
 
       if (!this.level.isClientSide) {
-         for(LivingEntity var3 : this.nearbyEntities) {
+         Iterator var4 = this.nearbyEntities.iterator();
+
+         while(var4.hasNext()) {
+            LivingEntity var3 = (LivingEntity)var4.next();
             if (var3.isAlive() && !var3.isRemoved() && var1.closerToCenterThan(var3.position(), 32.0)) {
-               var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, this.level.getGameTime());
+               var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, (Object)this.level.getGameTime());
             }
          }
       }
+
    }
 
    private static boolean areRaidersNearby(BlockPos var0, List<LivingEntity> var1) {
-      for(LivingEntity var3 : var1) {
-         if (var3.isAlive() && !var3.isRemoved() && var0.closerToCenterThan(var3.position(), 32.0) && var3.getType().is(EntityTypeTags.RAIDERS)) {
-            return true;
-         }
-      }
+      Iterator var2 = var1.iterator();
 
-      return false;
+      LivingEntity var3;
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+
+         var3 = (LivingEntity)var2.next();
+      } while(!var3.isAlive() || var3.isRemoved() || !var0.closerToCenterThan(var3.position(), 32.0) || !var3.getType().is(EntityTypeTags.RAIDERS));
+
+      return true;
    }
 
    private static void makeRaidersGlow(Level var0, BlockPos var1, List<LivingEntity> var2) {
-      var2.stream().filter(var1x -> isRaiderWithinRange(var1, var1x)).forEach(BellBlockEntity::glow);
+      var2.stream().filter((var1x) -> {
+         return isRaiderWithinRange(var1, var1x);
+      }).forEach(BellBlockEntity::glow);
    }
 
    private static void showBellParticles(Level var0, BlockPos var1, List<LivingEntity> var2) {
       MutableInt var3 = new MutableInt(16700985);
-      int var4 = (int)var2.stream().filter(var1x -> var1.closerToCenterThan(var1x.position(), 48.0)).count();
-      var2.stream()
-         .filter(var1x -> isRaiderWithinRange(var1, var1x))
-         .forEach(
-            var4x -> {
-               float var5 = 1.0F;
-               double var6 = Math.sqrt(
-                  (var4x.getX() - (double)var1.getX()) * (var4x.getX() - (double)var1.getX())
-                     + (var4x.getZ() - (double)var1.getZ()) * (var4x.getZ() - (double)var1.getZ())
-               );
-               double var8 = (double)((float)var1.getX() + 0.5F) + 1.0 / var6 * (var4x.getX() - (double)var1.getX());
-               double var10 = (double)((float)var1.getZ() + 0.5F) + 1.0 / var6 * (var4x.getZ() - (double)var1.getZ());
-               int var12 = Mth.clamp((var4 - 21) / -2, 3, 15);
-      
-               for(int var13 = 0; var13 < var12; ++var13) {
-                  int var14 = var3.addAndGet(5);
-                  var0.addParticle(
-                     ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var14), var8, (double)((float)var1.getY() + 0.5F), var10, 0.0, 0.0, 0.0
-                  );
-               }
-            }
-         );
+      int var4 = (int)var2.stream().filter((var1x) -> {
+         return var1.closerToCenterThan(var1x.position(), 48.0);
+      }).count();
+      var2.stream().filter((var1x) -> {
+         return isRaiderWithinRange(var1, var1x);
+      }).forEach((var4x) -> {
+         float var5 = 1.0F;
+         double var6 = Math.sqrt((var4x.getX() - (double)var1.getX()) * (var4x.getX() - (double)var1.getX()) + (var4x.getZ() - (double)var1.getZ()) * (var4x.getZ() - (double)var1.getZ()));
+         double var8 = (double)((float)var1.getX() + 0.5F) + 1.0 / var6 * (var4x.getX() - (double)var1.getX());
+         double var10 = (double)((float)var1.getZ() + 0.5F) + 1.0 / var6 * (var4x.getZ() - (double)var1.getZ());
+         int var12 = Mth.clamp((var4 - 21) / -2, 3, 15);
+
+         for(int var13 = 0; var13 < var12; ++var13) {
+            int var14 = var3.addAndGet(5);
+            var0.addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var14), var8, (double)((float)var1.getY() + 0.5F), var10, 0.0, 0.0, 0.0);
+         }
+
+      });
    }
 
    private static boolean isRaiderWithinRange(BlockPos var0, LivingEntity var1) {

@@ -36,7 +36,6 @@ public class EvokerFangsModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       float var7 = var2 * 2.0F;
       if (var7 > 1.0F) {
@@ -52,7 +51,6 @@ public class EvokerFangsModel<T extends Entity> extends HierarchicalModel<T> {
       this.base.y = this.upperJaw.y;
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

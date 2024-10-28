@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -29,13 +31,9 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class FireworkRocketEntity extends Projectile implements ItemSupplier {
-   private static final EntityDataAccessor<ItemStack> DATA_ID_FIREWORKS_ITEM = SynchedEntityData.defineId(
-      FireworkRocketEntity.class, EntityDataSerializers.ITEM_STACK
-   );
-   private static final EntityDataAccessor<OptionalInt> DATA_ATTACHED_TO_TARGET = SynchedEntityData.defineId(
-      FireworkRocketEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT
-   );
-   private static final EntityDataAccessor<Boolean> DATA_SHOT_AT_ANGLE = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<ItemStack> DATA_ID_FIREWORKS_ITEM;
+   private static final EntityDataAccessor<OptionalInt> DATA_ATTACHED_TO_TARGET;
+   private static final EntityDataAccessor<Boolean> DATA_SHOT_AT_ANGLE;
    private int life;
    private int lifetime;
    @Nullable
@@ -51,7 +49,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       this.setPos(var2, var4, var6);
       this.entityData.set(DATA_ID_FIREWORKS_ITEM, var8.copy());
       int var9 = 1;
-      Fireworks var10 = var8.get(DataComponents.FIREWORKS);
+      Fireworks var10 = (Fireworks)var8.get(DataComponents.FIREWORKS);
       if (var10 != null) {
          var9 += var10.flightDuration();
       }
@@ -81,51 +79,41 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       this.setOwner(var3);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_ID_FIREWORKS_ITEM, getDefaultItem());
       var1.define(DATA_ATTACHED_TO_TARGET, OptionalInt.empty());
       var1.define(DATA_SHOT_AT_ANGLE, false);
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       return var1 < 4096.0 && !this.isAttachedToEntity();
    }
 
-   @Override
    public boolean shouldRender(double var1, double var3, double var5) {
       return super.shouldRender(var1, var3, var5) && !this.isAttachedToEntity();
    }
 
-   @Override
    public void tick() {
       super.tick();
+      Vec3 var1;
       if (this.isAttachedToEntity()) {
          if (this.attachedToEntity == null) {
-            this.entityData.get(DATA_ATTACHED_TO_TARGET).ifPresent(var1x -> {
-               Entity var2xx = this.level().getEntity(var1x);
-               if (var2xx instanceof LivingEntity) {
-                  this.attachedToEntity = (LivingEntity)var2xx;
+            ((OptionalInt)this.entityData.get(DATA_ATTACHED_TO_TARGET)).ifPresent((var1x) -> {
+               Entity var2 = this.level().getEntity(var1x);
+               if (var2 instanceof LivingEntity) {
+                  this.attachedToEntity = (LivingEntity)var2;
                }
+
             });
          }
 
          if (this.attachedToEntity != null) {
-            Vec3 var1;
             if (this.attachedToEntity.isFallFlying()) {
                Vec3 var2 = this.attachedToEntity.getLookAngle();
                double var3 = 1.5;
                double var5 = 0.1;
                Vec3 var7 = this.attachedToEntity.getDeltaMovement();
-               this.attachedToEntity
-                  .setDeltaMovement(
-                     var7.add(
-                        var2.x * 0.1 + (var2.x * 1.5 - var7.x) * 0.5,
-                        var2.y * 0.1 + (var2.y * 1.5 - var7.y) * 0.5,
-                        var2.z * 0.1 + (var2.z * 1.5 - var7.z) * 0.5
-                     )
-                  );
+               this.attachedToEntity.setDeltaMovement(var7.add(var2.x * 0.1 + (var2.x * 1.5 - var7.x) * 0.5, var2.y * 0.1 + (var2.y * 1.5 - var7.y) * 0.5, var2.z * 0.1 + (var2.z * 1.5 - var7.z) * 0.5));
                var1 = this.attachedToEntity.getHandHoldingItemAngle(Items.FIREWORK_ROCKET);
             } else {
                var1 = Vec3.ZERO;
@@ -140,39 +128,31 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
             this.setDeltaMovement(this.getDeltaMovement().multiply(var8, 1.0, var8).add(0.0, 0.04, 0.0));
          }
 
-         Vec3 var9 = this.getDeltaMovement();
-         this.move(MoverType.SELF, var9);
-         this.setDeltaMovement(var9);
+         var1 = this.getDeltaMovement();
+         this.move(MoverType.SELF, var1);
+         this.setDeltaMovement(var1);
       }
 
-      HitResult var10 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+      HitResult var9 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       if (!this.noPhysics) {
-         this.onHit(var10);
+         this.hitOrDeflect(var9);
          this.hasImpulse = true;
       }
 
       this.updateRotation();
       if (this.life == 0 && !this.isSilent()) {
-         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
+         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
       }
 
       ++this.life;
       if (this.level().isClientSide && this.life % 2 < 2) {
-         this.level()
-            .addParticle(
-               ParticleTypes.FIREWORK,
-               this.getX(),
-               this.getY(),
-               this.getZ(),
-               this.random.nextGaussian() * 0.05,
-               -this.getDeltaMovement().y * 0.5,
-               this.random.nextGaussian() * 0.05
-            );
+         this.level().addParticle(ParticleTypes.FIREWORK, this.getX(), this.getY(), this.getZ(), this.random.nextGaussian() * 0.05, -this.getDeltaMovement().y * 0.5, this.random.nextGaussian() * 0.05);
       }
 
       if (!this.level().isClientSide && this.life > this.lifetime) {
          this.explode();
       }
+
    }
 
    private void explode() {
@@ -182,7 +162,6 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       this.discard();
    }
 
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       if (!this.level().isClientSide) {
@@ -190,7 +169,6 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       }
    }
 
-   @Override
    protected void onHitBlock(BlockHitResult var1) {
       BlockPos var2 = new BlockPos(var1.getBlockPos());
       this.level().getBlockState(var2).entityInside(this.level(), var2, this);
@@ -219,38 +197,48 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
          double var3 = 5.0;
          Vec3 var5 = this.position();
+         List var6 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0));
+         Iterator var7 = var6.iterator();
 
-         for(LivingEntity var8 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
-            if (var8 != this.attachedToEntity && !(this.distanceToSqr(var8) > 25.0)) {
-               boolean var9 = false;
-
-               for(int var10 = 0; var10 < 2; ++var10) {
-                  Vec3 var11 = new Vec3(var8.getX(), var8.getY(0.5 * (double)var10), var8.getZ());
-                  BlockHitResult var12 = this.level().clip(new ClipContext(var5, var11, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-                  if (var12.getType() == HitResult.Type.MISS) {
-                     var9 = true;
-                     break;
+         while(true) {
+            LivingEntity var8;
+            do {
+               do {
+                  if (!var7.hasNext()) {
+                     return;
                   }
-               }
 
-               if (var9) {
-                  float var13 = var1 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var8)) / 5.0);
-                  var8.hurt(this.damageSources().fireworks(this, this.getOwner()), var13);
+                  var8 = (LivingEntity)var7.next();
+               } while(var8 == this.attachedToEntity);
+            } while(this.distanceToSqr(var8) > 25.0);
+
+            boolean var9 = false;
+
+            for(int var10 = 0; var10 < 2; ++var10) {
+               Vec3 var11 = new Vec3(var8.getX(), var8.getY(0.5 * (double)var10), var8.getZ());
+               BlockHitResult var12 = this.level().clip(new ClipContext(var5, var11, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+               if (((HitResult)var12).getType() == HitResult.Type.MISS) {
+                  var9 = true;
+                  break;
                }
+            }
+
+            if (var9) {
+               float var13 = var1 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var8)) / 5.0);
+               var8.hurt(this.damageSources().fireworks(this, this.getOwner()), var13);
             }
          }
       }
    }
 
    private boolean isAttachedToEntity() {
-      return this.entityData.get(DATA_ATTACHED_TO_TARGET).isPresent();
+      return ((OptionalInt)this.entityData.get(DATA_ATTACHED_TO_TARGET)).isPresent();
    }
 
    public boolean isShotAtAngle() {
-      return this.entityData.get(DATA_SHOT_AT_ANGLE);
+      return (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE);
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 17 && this.level().isClientSide) {
          Vec3 var2 = this.getDeltaMovement();
@@ -260,26 +248,20 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       super.handleEntityEvent(var1);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Life", this.life);
       var1.putInt("LifeTime", this.lifetime);
       var1.put("FireworksItem", this.getItem().save(this.registryAccess()));
-      var1.putBoolean("ShotAtAngle", this.entityData.get(DATA_SHOT_AT_ANGLE));
+      var1.putBoolean("ShotAtAngle", (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE));
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.life = var1.getInt("Life");
       this.lifetime = var1.getInt("LifeTime");
       if (var1.contains("FireworksItem", 10)) {
-         this.entityData
-            .set(
-               DATA_ID_FIREWORKS_ITEM,
-               ItemStack.parse(this.registryAccess(), var1.getCompound("FireworksItem")).orElseGet(FireworkRocketEntity::getDefaultItem)
-            );
+         this.entityData.set(DATA_ID_FIREWORKS_ITEM, (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("FireworksItem")).orElseGet(FireworkRocketEntity::getDefaultItem));
       } else {
          this.entityData.set(DATA_ID_FIREWORKS_ITEM, getDefaultItem());
       }
@@ -287,25 +269,30 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       if (var1.contains("ShotAtAngle")) {
          this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBoolean("ShotAtAngle"));
       }
+
    }
 
    private List<FireworkExplosion> getExplosions() {
-      ItemStack var1 = this.entityData.get(DATA_ID_FIREWORKS_ITEM);
-      Fireworks var2 = var1.get(DataComponents.FIREWORKS);
+      ItemStack var1 = (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+      Fireworks var2 = (Fireworks)var1.get(DataComponents.FIREWORKS);
       return var2 != null ? var2.explosions() : List.of();
    }
 
-   @Override
    public ItemStack getItem() {
-      return this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+      return (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
    }
 
-   @Override
    public boolean isAttackable() {
       return false;
    }
 
    private static ItemStack getDefaultItem() {
       return new ItemStack(Items.FIREWORK_ROCKET);
+   }
+
+   static {
+      DATA_ID_FIREWORKS_ITEM = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ATTACHED_TO_TARGET = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
+      DATA_SHOT_AT_ANGLE = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.BOOLEAN);
    }
 }

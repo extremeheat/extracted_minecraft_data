@@ -2,13 +2,12 @@ package net.minecraft.server.level;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -32,76 +31,73 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
 
    public ChunkTaskPriorityQueueSorter(List<ProcessorHandle<?>> var1, Executor var2, int var3) {
       super();
-      this.queues = var1.stream().collect(Collectors.toMap(Function.identity(), var1x -> new ChunkTaskPriorityQueue(var1x.name() + "_queue", var3)));
+      this.queues = (Map)var1.stream().collect(Collectors.toMap(Function.identity(), (var1x) -> {
+         return new ChunkTaskPriorityQueue(var1x.name() + "_queue", var3);
+      }));
       this.sleeping = Sets.newHashSet(var1);
-      this.mailbox = new ProcessorMailbox<>(new StrictQueue.FixedPriorityQueue(4), var2, "sorter");
+      this.mailbox = new ProcessorMailbox(new StrictQueue.FixedPriorityQueue(4), var2, "sorter");
    }
 
    public boolean hasWork() {
       return this.mailbox.hasWork() || this.queues.values().stream().anyMatch(ChunkTaskPriorityQueue::hasWork);
    }
 
-   public static <T> ChunkTaskPriorityQueueSorter.Message<T> message(Function<ProcessorHandle<Unit>, T> var0, long var1, IntSupplier var3) {
-      return new ChunkTaskPriorityQueueSorter.Message<>(var0, var1, var3);
+   public static <T> Message<T> message(Function<ProcessorHandle<Unit>, T> var0, long var1, IntSupplier var3) {
+      return new Message(var0, var1, var3);
    }
 
-   public static ChunkTaskPriorityQueueSorter.Message<Runnable> message(Runnable var0, long var1, IntSupplier var3) {
-      return new ChunkTaskPriorityQueueSorter.Message<>(var1x -> () -> {
+   public static Message<Runnable> message(Runnable var0, long var1, IntSupplier var3) {
+      return new Message((var1x) -> {
+         return () -> {
             var0.run();
             var1x.tell(Unit.INSTANCE);
-         }, var1, var3);
+         };
+      }, var1, var3);
    }
 
-   public static ChunkTaskPriorityQueueSorter.Message<Runnable> message(ChunkHolder var0, Runnable var1) {
-      return message(var1, var0.getPos().toLong(), var0::getQueueLevel);
+   public static Message<Runnable> message(ChunkHolder var0, Runnable var1) {
+      long var10001 = var0.getPos().toLong();
+      Objects.requireNonNull(var0);
+      return message(var1, var10001, var0::getQueueLevel);
    }
 
-   public static <T> ChunkTaskPriorityQueueSorter.Message<T> message(ChunkHolder var0, Function<ProcessorHandle<Unit>, T> var1) {
-      return message(var1, var0.getPos().toLong(), var0::getQueueLevel);
+   public static <T> Message<T> message(ChunkHolder var0, Function<ProcessorHandle<Unit>, T> var1) {
+      long var10001 = var0.getPos().toLong();
+      Objects.requireNonNull(var0);
+      return message(var1, var10001, var0::getQueueLevel);
    }
 
-   public static ChunkTaskPriorityQueueSorter.Release release(Runnable var0, long var1, boolean var3) {
-      return new ChunkTaskPriorityQueueSorter.Release(var0, var1, var3);
+   public static Release release(Runnable var0, long var1, boolean var3) {
+      return new Release(var0, var1, var3);
    }
 
-   public <T> ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<T>> getProcessor(ProcessorHandle<T> var1, boolean var2) {
-      return this.mailbox
-         .<ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<T>>>ask(
-            var3 -> new StrictQueue.IntRunnable(
-                  0,
-                  () -> {
-                     this.getQueue(var1);
-                     var3.tell(
-                        ProcessorHandle.of(
-                           "chunk priority sorter around " + var1.name(), var3xx -> this.submit(var1, var3xx.task, var3xx.pos, var3xx.level, var2)
-                        )
-                     );
-                  }
-               )
-         )
-         .join();
+   public <T> ProcessorHandle<Message<T>> getProcessor(ProcessorHandle<T> var1, boolean var2) {
+      return (ProcessorHandle)this.mailbox.ask((var3) -> {
+         return new StrictQueue.IntRunnable(0, () -> {
+            this.getQueue(var1);
+            var3.tell(ProcessorHandle.of("chunk priority sorter around " + var1.name(), (var3x) -> {
+               this.submit(var1, var3x.task, var3x.pos, var3x.level, var2);
+            }));
+         });
+      }).join();
    }
 
-   public ProcessorHandle<ChunkTaskPriorityQueueSorter.Release> getReleaseProcessor(ProcessorHandle<Runnable> var1) {
-      return this.mailbox
-         .<ProcessorHandle<ChunkTaskPriorityQueueSorter.Release>>ask(
-            var2 -> new StrictQueue.IntRunnable(
-                  0,
-                  () -> var2.tell(
-                        ProcessorHandle.of(
-                           "chunk priority sorter around " + var1.name(), var2xx -> this.release(var1, var2xx.pos, var2xx.task, var2xx.clearQueue)
-                        )
-                     )
-               )
-         )
-         .join();
+   public ProcessorHandle<Release> getReleaseProcessor(ProcessorHandle<Runnable> var1) {
+      return (ProcessorHandle)this.mailbox.ask((var2) -> {
+         return new StrictQueue.IntRunnable(0, () -> {
+            var2.tell(ProcessorHandle.of("chunk priority sorter around " + var1.name(), (var2x) -> {
+               this.release(var1, var2x.pos, var2x.task, var2x.clearQueue);
+            }));
+         });
+      }).join();
    }
 
-   @Override
    public void onLevelChange(ChunkPos var1, IntSupplier var2, int var3, IntConsumer var4) {
       this.mailbox.tell(new StrictQueue.IntRunnable(0, () -> {
          int var5 = var2.getAsInt();
-         this.queues.values().forEach(var3xx -> var3xx.resortChunkTasks(var5, var1, var3));
+         this.queues.values().forEach((var3x) -> {
+            var3x.resortChunkTasks(var5, var1, var3);
+         });
          var4.accept(var3);
       }));
    }
@@ -130,6 +126,7 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
          if (this.sleeping.remove(var1)) {
             this.pollTask(var7, var1);
          }
+
       }));
    }
 
@@ -139,18 +136,26 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
          if (var3 == null) {
             this.sleeping.add(var2);
          } else {
-            CompletableFuture.allOf(var3.map(var1xx -> (CompletableFuture)var1xx.map(var2::ask, var0x -> {
-                  var0x.run();
+            CompletableFuture.allOf((CompletableFuture[])var3.map((var1x) -> {
+               Objects.requireNonNull(var2);
+               return (CompletableFuture)var1x.map(var2::ask, (var0) -> {
+                  var0.run();
                   return CompletableFuture.completedFuture(Unit.INSTANCE);
-               })).toArray(var0 -> new CompletableFuture[var0])).thenAccept(var3x -> this.pollTask(var1, var2));
+               });
+            }).toArray((var0) -> {
+               return new CompletableFuture[var0];
+            })).thenAccept((var3x) -> {
+               this.pollTask(var1, var2);
+            });
          }
+
       }));
    }
 
    private <T> ChunkTaskPriorityQueue<Function<ProcessorHandle<Unit>, T>> getQueue(ProcessorHandle<T> var1) {
-      ChunkTaskPriorityQueue var2 = this.queues.get(var1);
+      ChunkTaskPriorityQueue var2 = (ChunkTaskPriorityQueue)this.queues.get(var1);
       if (var2 == null) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("No queue for: " + var1));
+         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("No queue for: " + String.valueOf(var1)));
       } else {
          return var2;
       }
@@ -158,21 +163,15 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
 
    @VisibleForTesting
    public String getDebugStatus() {
-      return (String)this.queues
-            .entrySet()
-            .stream()
-            .map(
-               var0 -> var0.getKey().name()
-                     + "=["
-                     + (String)var0.getValue().getAcquired().stream().map(var0x -> var0x + ":" + new ChunkPos(var0x)).collect(Collectors.joining(","))
-                     + "]"
-            )
-            .collect(Collectors.joining(","))
-         + ", s="
-         + this.sleeping.size();
+      String var10000 = (String)this.queues.entrySet().stream().map((var0) -> {
+         String var10000 = ((ProcessorHandle)var0.getKey()).name();
+         return var10000 + "=[" + (String)((ChunkTaskPriorityQueue)var0.getValue()).getAcquired().stream().map((var0x) -> {
+            return "" + var0x + ":" + String.valueOf(new ChunkPos(var0x));
+         }).collect(Collectors.joining(",")) + "]";
+      }).collect(Collectors.joining(","));
+      return var10000 + ", s=" + this.sleeping.size();
    }
 
-   @Override
    public void close() {
       this.queues.keySet().forEach(ProcessorHandle::close);
    }

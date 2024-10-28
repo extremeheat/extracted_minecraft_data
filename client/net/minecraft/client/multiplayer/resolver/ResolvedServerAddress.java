@@ -13,22 +13,18 @@ public interface ResolvedServerAddress {
 
    static ResolvedServerAddress from(final InetSocketAddress var0) {
       return new ResolvedServerAddress() {
-         @Override
          public String getHostName() {
             return var0.getAddress().getHostName();
          }
 
-         @Override
          public String getHostIp() {
             return var0.getAddress().getHostAddress();
          }
 
-         @Override
          public int getPort() {
             return var0.getPort();
          }
 
-         @Override
          public InetSocketAddress asInetSocketAddress() {
             return var0;
          }

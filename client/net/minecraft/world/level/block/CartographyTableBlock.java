@@ -8,7 +8,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.CartographyTableMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -21,7 +20,6 @@ public class CartographyTableBlock extends Block {
    public static final MapCodec<CartographyTableBlock> CODEC = simpleCodec(CartographyTableBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.cartography_table");
 
-   @Override
    public MapCodec<CartographyTableBlock> codec() {
       return CODEC;
    }
@@ -30,7 +28,6 @@ public class CartographyTableBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -42,8 +39,9 @@ public class CartographyTableBlock extends Block {
    }
 
    @Nullable
-   @Override
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new CartographyTableMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> {
+         return new CartographyTableMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
+      }, CONTAINER_TITLE);
    }
 }

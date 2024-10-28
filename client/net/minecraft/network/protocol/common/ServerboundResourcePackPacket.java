@@ -6,18 +6,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundResourcePackPacket(UUID b, ServerboundResourcePackPacket.Action c) implements Packet<ServerCommonPacketListener> {
-   private final UUID id;
-   private final ServerboundResourcePackPacket.Action action;
-   public static final StreamCodec<FriendlyByteBuf, ServerboundResourcePackPacket> STREAM_CODEC = Packet.codec(
-      ServerboundResourcePackPacket::write, ServerboundResourcePackPacket::new
-   );
+public record ServerboundResourcePackPacket(UUID id, Action action) implements Packet<ServerCommonPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundResourcePackPacket> STREAM_CODEC = Packet.codec(ServerboundResourcePackPacket::write, ServerboundResourcePackPacket::new);
 
    private ServerboundResourcePackPacket(FriendlyByteBuf var1) {
-      this(var1.readUUID(), var1.readEnum(ServerboundResourcePackPacket.Action.class));
+      this(var1.readUUID(), (Action)var1.readEnum(Action.class));
    }
 
-   public ServerboundResourcePackPacket(UUID var1, ServerboundResourcePackPacket.Action var2) {
+   public ServerboundResourcePackPacket(UUID var1, Action var2) {
       super();
       this.id = var1;
       this.action = var2;
@@ -28,13 +24,20 @@ public record ServerboundResourcePackPacket(UUID b, ServerboundResourcePackPacke
       var1.writeEnum(this.action);
    }
 
-   @Override
    public PacketType<ServerboundResourcePackPacket> type() {
       return CommonPacketTypes.SERVERBOUND_RESOURCE_PACK;
    }
 
    public void handle(ServerCommonPacketListener var1) {
       var1.handleResourcePackResponse(this);
+   }
+
+   public UUID id() {
+      return this.id;
+   }
+
+   public Action action() {
+      return this.action;
    }
 
    public static enum Action {
@@ -52,6 +55,11 @@ public record ServerboundResourcePackPacket(UUID b, ServerboundResourcePackPacke
 
       public boolean isTerminal() {
          return this != ACCEPTED && this != DOWNLOADED;
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{SUCCESSFULLY_LOADED, DECLINED, FAILED_DOWNLOAD, ACCEPTED, DOWNLOADED, INVALID_URL, FAILED_RELOAD, DISCARDED};
       }
    }
 }

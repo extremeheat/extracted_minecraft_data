@@ -21,20 +21,24 @@ public interface ComponentContents {
       return MutableComponent.create(this);
    }
 
-   ComponentContents.Type<?> type();
+   Type<?> type();
 
-   public static record Type<T extends ComponentContents>(MapCodec<T> a, String b) implements StringRepresentable {
-      private final MapCodec<T> codec;
-      private final String id;
-
+   public static record Type<T extends ComponentContents>(MapCodec<T> codec, String id) implements StringRepresentable {
       public Type(MapCodec<T> var1, String var2) {
          super();
          this.codec = var1;
          this.id = var2;
       }
 
-      @Override
       public String getSerializedName() {
+         return this.id;
+      }
+
+      public MapCodec<T> codec() {
+         return this.codec;
+      }
+
+      public String id() {
          return this.id;
       }
    }

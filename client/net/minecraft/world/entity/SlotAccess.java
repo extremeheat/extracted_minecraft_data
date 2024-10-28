@@ -6,12 +6,10 @@ import net.minecraft.world.item.ItemStack;
 
 public interface SlotAccess {
    SlotAccess NULL = new SlotAccess() {
-      @Override
       public ItemStack get() {
          return ItemStack.EMPTY;
       }
 
-      @Override
       public boolean set(ItemStack var1) {
          return false;
       }
@@ -19,12 +17,10 @@ public interface SlotAccess {
 
    static SlotAccess forContainer(final Container var0, final int var1, final Predicate<ItemStack> var2) {
       return new SlotAccess() {
-         @Override
          public ItemStack get() {
             return var0.getItem(var1);
          }
 
-         @Override
          public boolean set(ItemStack var1x) {
             if (!var2.test(var1x)) {
                return false;
@@ -37,17 +33,17 @@ public interface SlotAccess {
    }
 
    static SlotAccess forContainer(Container var0, int var1) {
-      return forContainer(var0, var1, var0x -> true);
+      return forContainer(var0, var1, (var0x) -> {
+         return true;
+      });
    }
 
    static SlotAccess forEquipmentSlot(final LivingEntity var0, final EquipmentSlot var1, final Predicate<ItemStack> var2) {
       return new SlotAccess() {
-         @Override
          public ItemStack get() {
             return var0.getItemBySlot(var1);
          }
 
-         @Override
          public boolean set(ItemStack var1x) {
             if (!var2.test(var1x)) {
                return false;
@@ -60,7 +56,9 @@ public interface SlotAccess {
    }
 
    static SlotAccess forEquipmentSlot(LivingEntity var0, EquipmentSlot var1) {
-      return forEquipmentSlot(var0, var1, var0x -> true);
+      return forEquipmentSlot(var0, var1, (var0x) -> {
+         return true;
+      });
    }
 
    ItemStack get();

@@ -12,7 +12,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
       super();
       this.type = var1;
       this.ticketLevel = var2;
-      this.key = (T)var3;
+      this.key = var3;
    }
 
    public int compareTo(Ticket<?> var1) {
@@ -25,7 +25,6 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
       }
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -37,14 +36,13 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.type, this.ticketLevel, this.key);
+      return Objects.hash(new Object[]{this.type, this.ticketLevel, this.key});
    }
 
-   @Override
    public String toString() {
-      return "Ticket[" + this.type + " " + this.ticketLevel + " (" + this.key + ")] at " + this.createdTick;
+      String var10000 = String.valueOf(this.type);
+      return "Ticket[" + var10000 + " " + this.ticketLevel + " (" + String.valueOf(this.key) + ")] at " + this.createdTick;
    }
 
    public TicketType<T> getType() {
@@ -62,5 +60,10 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
    protected boolean timedOut(long var1) {
       long var3 = this.type.timeout();
       return var3 != 0L && var1 - this.createdTick > var3;
+   }
+
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((Ticket)var1);
    }
 }

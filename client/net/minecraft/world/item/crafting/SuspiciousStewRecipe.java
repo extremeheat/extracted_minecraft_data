@@ -28,7 +28,7 @@ public class SuspiciousStewRecipe extends CustomRecipe {
                var5 = true;
             } else if (var8.is(Blocks.RED_MUSHROOM.asItem()) && !var4) {
                var4 = true;
-            } else if ((var8.is(ItemTags.SMALL_FLOWERS) || var8.is(Items.POISONOUS_POTATO)) && !var3) {
+            } else if (var8.is(ItemTags.SMALL_FLOWERS) && !var3) {
                var3 = true;
             } else {
                if (!var8.is(Items.BOWL) || var6) {
@@ -60,12 +60,10 @@ public class SuspiciousStewRecipe extends CustomRecipe {
       return var3;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 >= 2 && var2 >= 2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.SUSPICIOUS_STEW;
    }

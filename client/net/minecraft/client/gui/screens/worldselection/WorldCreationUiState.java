@@ -3,6 +3,8 @@ package net.minecraft.client.gui.screens.worldselection;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -10,9 +12,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -22,17 +22,16 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 public class WorldCreationUiState {
    private static final Component DEFAULT_WORLD_NAME = Component.translatable("selectWorld.newWorld");
-   private final List<Consumer<WorldCreationUiState>> listeners = new ArrayList<>();
-   private String name = DEFAULT_WORLD_NAME.getString();
-   private WorldCreationUiState.SelectedGameMode gameMode = WorldCreationUiState.SelectedGameMode.SURVIVAL;
-   private Difficulty difficulty = Difficulty.NORMAL;
+   private final List<Consumer<WorldCreationUiState>> listeners = new ArrayList();
+   private String name;
+   private SelectedGameMode gameMode;
+   private Difficulty difficulty;
    @Nullable
    private Boolean allowCommands;
    private String seed;
@@ -41,20 +40,26 @@ public class WorldCreationUiState {
    private final Path savesFolder;
    private String targetFolder;
    private WorldCreationContext settings;
-   private WorldCreationUiState.WorldTypeEntry worldType;
-   private final List<WorldCreationUiState.WorldTypeEntry> normalPresetList = new ArrayList();
-   private final List<WorldCreationUiState.WorldTypeEntry> altPresetList = new ArrayList();
-   private GameRules gameRules = new GameRules();
+   private WorldTypeEntry worldType;
+   private final List<WorldTypeEntry> normalPresetList;
+   private final List<WorldTypeEntry> altPresetList;
+   private GameRules gameRules;
 
    public WorldCreationUiState(Path var1, WorldCreationContext var2, Optional<ResourceKey<WorldPreset>> var3, OptionalLong var4) {
       super();
+      this.name = DEFAULT_WORLD_NAME.getString();
+      this.gameMode = WorldCreationUiState.SelectedGameMode.SURVIVAL;
+      this.difficulty = Difficulty.NORMAL;
+      this.normalPresetList = new ArrayList();
+      this.altPresetList = new ArrayList();
+      this.gameRules = new GameRules();
       this.savesFolder = var1;
       this.settings = var2;
-      this.worldType = new WorldCreationUiState.WorldTypeEntry(findPreset(var2, var3).orElse(null));
+      this.worldType = new WorldTypeEntry((Holder)findPreset(var2, var3).orElse((Object)null));
       this.updatePresetLists();
       this.seed = var4.isPresent() ? Long.toString(var4.getAsLong()) : "";
       this.generateStructures = var2.options().generateStructures();
-      this.bonusChest = true;
+      this.bonusChest = var2.options().generateBonusChest();
       this.targetFolder = this.findResultFolder(this.name);
    }
 
@@ -65,17 +70,25 @@ public class WorldCreationUiState {
    public void onChanged() {
       boolean var1 = this.isBonusChest();
       if (var1 != this.settings.options().generateBonusChest()) {
-         this.settings = this.settings.withOptions(var1x -> var1x.withBonusChest(var1));
+         this.settings = this.settings.withOptions((var1x) -> {
+            return var1x.withBonusChest(var1);
+         });
       }
 
       boolean var2 = this.isGenerateStructures();
       if (var2 != this.settings.options().generateStructures()) {
-         this.settings = this.settings.withOptions(var1x -> var1x.withStructures(var2));
+         this.settings = this.settings.withOptions((var1x) -> {
+            return var1x.withStructures(var2);
+         });
       }
 
-      for(Consumer var4 : this.listeners) {
+      Iterator var3 = this.listeners.iterator();
+
+      while(var3.hasNext()) {
+         Consumer var4 = (Consumer)var3.next();
          var4.accept(this);
       }
+
    }
 
    public void setName(String var1) {
@@ -106,12 +119,12 @@ public class WorldCreationUiState {
       return this.targetFolder;
    }
 
-   public void setGameMode(WorldCreationUiState.SelectedGameMode var1) {
+   public void setGameMode(SelectedGameMode var1) {
       this.gameMode = var1;
       this.onChanged();
    }
 
-   public WorldCreationUiState.SelectedGameMode getGameMode() {
+   public SelectedGameMode getGameMode() {
       return this.isDebug() ? WorldCreationUiState.SelectedGameMode.DEBUG : this.gameMode;
    }
 
@@ -147,7 +160,9 @@ public class WorldCreationUiState {
 
    public void setSeed(String var1) {
       this.seed = var1;
-      this.settings = this.settings.withOptions(var1x -> var1x.withSeed(WorldOptions.parseSeed(this.getSeed())));
+      this.settings = this.settings.withOptions((var1x) -> {
+         return var1x.withSeed(WorldOptions.parseSeed(this.getSeed()));
+      });
       this.onChanged();
    }
 
@@ -191,14 +206,7 @@ public class WorldCreationUiState {
    protected boolean tryUpdateDataConfiguration(WorldDataConfiguration var1) {
       WorldDataConfiguration var2 = this.settings.dataConfiguration();
       if (var2.dataPacks().getEnabled().equals(var1.dataPacks().getEnabled()) && var2.enabledFeatures().equals(var1.enabledFeatures())) {
-         this.settings = new WorldCreationContext(
-            this.settings.options(),
-            this.settings.datapackDimensions(),
-            this.settings.selectedDimensions(),
-            this.settings.worldgenRegistries(),
-            this.settings.dataPackResources(),
-            var1
-         );
+         this.settings = new WorldCreationContext(this.settings.options(), this.settings.datapackDimensions(), this.settings.selectedDimensions(), this.settings.worldgenRegistries(), this.settings.dataPackResources(), var1);
          return true;
       } else {
          return false;
@@ -209,53 +217,62 @@ public class WorldCreationUiState {
       return this.settings.selectedDimensions().isDebug();
    }
 
-   public void setWorldType(WorldCreationUiState.WorldTypeEntry var1) {
+   public void setWorldType(WorldTypeEntry var1) {
       this.worldType = var1;
       Holder var2 = var1.preset();
       if (var2 != null) {
-         this.updateDimensions((var1x, var2x) -> ((WorldPreset)var2.value()).createWorldDimensions());
+         this.updateDimensions((var1x, var2x) -> {
+            return ((WorldPreset)var2.value()).createWorldDimensions();
+         });
       }
+
    }
 
-   public WorldCreationUiState.WorldTypeEntry getWorldType() {
+   public WorldTypeEntry getWorldType() {
       return this.worldType;
    }
 
    @Nullable
    public PresetEditor getPresetEditor() {
       Holder var1 = this.getWorldType().preset();
-      return var1 != null ? PresetEditor.EDITORS.get(var1.unwrapKey()) : null;
+      return var1 != null ? (PresetEditor)PresetEditor.EDITORS.get(var1.unwrapKey()) : null;
    }
 
-   public List<WorldCreationUiState.WorldTypeEntry> getNormalPresetList() {
+   public List<WorldTypeEntry> getNormalPresetList() {
       return this.normalPresetList;
    }
 
-   public List<WorldCreationUiState.WorldTypeEntry> getAltPresetList() {
+   public List<WorldTypeEntry> getAltPresetList() {
       return this.altPresetList;
    }
 
    private void updatePresetLists() {
       Registry var1 = this.getSettings().worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET);
       this.normalPresetList.clear();
-      this.normalPresetList
-         .addAll(getNonEmptyList(var1, WorldPresetTags.NORMAL).orElseGet(() -> var1.holders().map(WorldCreationUiState.WorldTypeEntry::new).toList()));
+      this.normalPresetList.addAll((Collection)getNonEmptyList(var1, WorldPresetTags.NORMAL).orElseGet(() -> {
+         return var1.holders().map(WorldTypeEntry::new).toList();
+      }));
       this.altPresetList.clear();
-      this.altPresetList.addAll(getNonEmptyList(var1, WorldPresetTags.EXTENDED).orElse(this.normalPresetList));
+      this.altPresetList.addAll((Collection)getNonEmptyList(var1, WorldPresetTags.EXTENDED).orElse(this.normalPresetList));
       Holder var2 = this.worldType.preset();
       if (var2 != null) {
-         this.worldType = (WorldCreationUiState.WorldTypeEntry)findPreset(this.getSettings(), var2.unwrapKey())
-            .map(WorldCreationUiState.WorldTypeEntry::new)
-            .orElse((WorldCreationUiState.WorldTypeEntry)this.normalPresetList.get(0));
+         this.worldType = (WorldTypeEntry)findPreset(this.getSettings(), var2.unwrapKey()).map(WorldTypeEntry::new).orElse((WorldTypeEntry)this.normalPresetList.get(0));
       }
+
    }
 
    private static Optional<Holder<WorldPreset>> findPreset(WorldCreationContext var0, Optional<ResourceKey<WorldPreset>> var1) {
-      return var1.flatMap(var1x -> var0.worldgenLoadContext().<WorldPreset>registryOrThrow(Registries.WORLD_PRESET).getHolder(var1x));
+      return var1.flatMap((var1x) -> {
+         return var0.worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET).getHolder(var1x);
+      });
    }
 
-   private static Optional<List<WorldCreationUiState.WorldTypeEntry>> getNonEmptyList(Registry<WorldPreset> var0, TagKey<WorldPreset> var1) {
-      return var0.getTag(var1).map(var0x -> var0x.stream().map(WorldCreationUiState.WorldTypeEntry::new).toList()).filter(var0x -> !var0x.isEmpty());
+   private static Optional<List<WorldTypeEntry>> getNonEmptyList(Registry<WorldPreset> var0, TagKey<WorldPreset> var1) {
+      return var0.getTag(var1).map((var0x) -> {
+         return var0x.stream().map(WorldTypeEntry::new).toList();
+      }).filter((var0x) -> {
+         return !var0x.isEmpty();
+      });
    }
 
    public void setGameRules(GameRules var1) {
@@ -286,11 +303,14 @@ public class WorldCreationUiState {
       public Component getInfo() {
          return this.info;
       }
+
+      // $FF: synthetic method
+      private static SelectedGameMode[] $values() {
+         return new SelectedGameMode[]{SURVIVAL, HARDCORE, CREATIVE, DEBUG};
+      }
    }
 
-   public static record WorldTypeEntry(@Nullable Holder<WorldPreset> a) {
-      @Nullable
-      private final Holder<WorldPreset> preset;
+   public static record WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
       private static final Component CUSTOM_WORLD_DESCRIPTION = Component.translatable("generator.custom");
 
       public WorldTypeEntry(@Nullable Holder<WorldPreset> var1) {
@@ -299,14 +319,20 @@ public class WorldCreationUiState {
       }
 
       public Component describePreset() {
-         return Optional.ofNullable(this.preset)
-            .flatMap(Holder::unwrapKey)
-            .map(var0 -> Component.translatable(var0.location().toLanguageKey("generator")))
-            .orElse(CUSTOM_WORLD_DESCRIPTION);
+         return (Component)Optional.ofNullable(this.preset).flatMap(Holder::unwrapKey).map((var0) -> {
+            return Component.translatable(var0.location().toLanguageKey("generator"));
+         }).orElse(CUSTOM_WORLD_DESCRIPTION);
       }
 
       public boolean isAmplified() {
-         return Optional.ofNullable(this.preset).flatMap(Holder::unwrapKey).filter(var0 -> var0.equals(WorldPresets.AMPLIFIED)).isPresent();
+         return Optional.ofNullable(this.preset).flatMap(Holder::unwrapKey).filter((var0) -> {
+            return var0.equals(WorldPresets.AMPLIFIED);
+         }).isPresent();
+      }
+
+      @Nullable
+      public Holder<WorldPreset> preset() {
+         return this.preset;
       }
    }
 }

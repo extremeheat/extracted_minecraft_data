@@ -9,9 +9,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientboundContainerSetContentPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket> STREAM_CODEC = Packet.codec(
-      ClientboundContainerSetContentPacket::write, ClientboundContainerSetContentPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket> STREAM_CODEC = Packet.codec(ClientboundContainerSetContentPacket::write, ClientboundContainerSetContentPacket::new);
    private final int containerId;
    private final int stateId;
    private final List<ItemStack> items;
@@ -34,8 +32,8 @@ public class ClientboundContainerSetContentPacket implements Packet<ClientGamePa
       super();
       this.containerId = var1.readUnsignedByte();
       this.stateId = var1.readVarInt();
-      this.items = ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(var1);
-      this.carriedItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
+      this.items = (List)ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(var1);
+      this.carriedItem = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -45,7 +43,6 @@ public class ClientboundContainerSetContentPacket implements Packet<ClientGamePa
       ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.carriedItem);
    }
 
-   @Override
    public PacketType<ClientboundContainerSetContentPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_CONTENT;
    }

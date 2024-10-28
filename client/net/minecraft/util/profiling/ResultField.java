@@ -25,4 +25,9 @@ public final class ResultField implements Comparable<ResultField> {
    public int getColor() {
       return (this.name.hashCode() & 11184810) + 4473924;
    }
+
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((ResultField)var1);
+   }
 }

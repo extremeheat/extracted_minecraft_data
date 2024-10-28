@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class IceBlock extends HalfTransparentBlock {
    public static final MapCodec<IceBlock> CODEC = simpleCodec(IceBlock::new);
 
-   @Override
    public MapCodec<? extends IceBlock> codec() {
       return CODEC;
    }
@@ -31,7 +30,6 @@ public class IceBlock extends HalfTransparentBlock {
       return Blocks.WATER.defaultBlockState();
    }
 
-   @Override
    public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
       super.playerDestroy(var1, var2, var3, var4, var5, var6);
       if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, var6) == 0) {
@@ -45,13 +43,14 @@ public class IceBlock extends HalfTransparentBlock {
             var1.setBlockAndUpdate(var3, meltsInto());
          }
       }
+
    }
 
-   @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.getBrightness(LightLayer.BLOCK, var3) > 11 - var1.getLightBlock(var2, var3)) {
          this.melt(var1, var2, var3);
       }
+
    }
 
    protected void melt(BlockState var1, Level var2, BlockPos var3) {

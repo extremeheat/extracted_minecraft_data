@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.Sets;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ public class LootContext {
    private final LootParams params;
    private final RandomSource random;
    private final HolderGetter.Provider lootDataResolver;
-   private final Set<LootContext.VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
+   private final Set<VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
 
    LootContext(LootParams var1, RandomSource var2, HolderGetter.Provider var3) {
       super();
@@ -48,15 +49,15 @@ public class LootContext {
       return this.params.getParamOrNull(var1);
    }
 
-   public boolean hasVisitedElement(LootContext.VisitedEntry<?> var1) {
+   public boolean hasVisitedElement(VisitedEntry<?> var1) {
       return this.visitedElements.contains(var1);
    }
 
-   public boolean pushVisitedElement(LootContext.VisitedEntry<?> var1) {
+   public boolean pushVisitedElement(VisitedEntry<?> var1) {
       return this.visitedElements.add(var1);
    }
 
-   public void popVisitedElement(LootContext.VisitedEntry<?> var1) {
+   public void popVisitedElement(VisitedEntry<?> var1) {
       this.visitedElements.remove(var1);
    }
 
@@ -76,16 +77,70 @@ public class LootContext {
       return this.params.getLevel();
    }
 
-   public static LootContext.VisitedEntry<LootTable> createVisitedEntry(LootTable var0) {
-      return new LootContext.VisitedEntry<>(LootDataType.TABLE, var0);
+   public static VisitedEntry<LootTable> createVisitedEntry(LootTable var0) {
+      return new VisitedEntry(LootDataType.TABLE, var0);
    }
 
-   public static LootContext.VisitedEntry<LootItemCondition> createVisitedEntry(LootItemCondition var0) {
-      return new LootContext.VisitedEntry<>(LootDataType.PREDICATE, var0);
+   public static VisitedEntry<LootItemCondition> createVisitedEntry(LootItemCondition var0) {
+      return new VisitedEntry(LootDataType.PREDICATE, var0);
    }
 
-   public static LootContext.VisitedEntry<LootItemFunction> createVisitedEntry(LootItemFunction var0) {
-      return new LootContext.VisitedEntry<>(LootDataType.MODIFIER, var0);
+   public static VisitedEntry<LootItemFunction> createVisitedEntry(LootItemFunction var0) {
+      return new VisitedEntry(LootDataType.MODIFIER, var0);
+   }
+
+   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
+      public VisitedEntry(LootDataType<T> var1, T var2) {
+         super();
+         this.type = var1;
+         this.value = var2;
+      }
+
+      public LootDataType<T> type() {
+         return this.type;
+      }
+
+      public T value() {
+         return this.value;
+      }
+   }
+
+   public static enum EntityTarget implements StringRepresentable {
+      THIS("this", LootContextParams.THIS_ENTITY),
+      KILLER("killer", LootContextParams.KILLER_ENTITY),
+      DIRECT_KILLER("direct_killer", LootContextParams.DIRECT_KILLER_ENTITY),
+      KILLER_PLAYER("killer_player", LootContextParams.LAST_DAMAGE_PLAYER);
+
+      public static final StringRepresentable.EnumCodec<EntityTarget> CODEC = StringRepresentable.fromEnum(EntityTarget::values);
+      private final String name;
+      private final LootContextParam<? extends Entity> param;
+
+      private EntityTarget(String var3, LootContextParam var4) {
+         this.name = var3;
+         this.param = var4;
+      }
+
+      public LootContextParam<? extends Entity> getParam() {
+         return this.param;
+      }
+
+      public static EntityTarget getByName(String var0) {
+         EntityTarget var1 = (EntityTarget)CODEC.byName(var0);
+         if (var1 != null) {
+            return var1;
+         } else {
+            throw new IllegalArgumentException("Invalid entity target " + var0);
+         }
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static EntityTarget[] $values() {
+         return new EntityTarget[]{THIS, KILLER, DIRECT_KILLER, KILLER_PLAYER};
+      }
    }
 
    public static class Builder {
@@ -98,7 +153,7 @@ public class LootContext {
          this.params = var1;
       }
 
-      public LootContext.Builder withOptionalRandomSeed(long var1) {
+      public Builder withOptionalRandomSeed(long var1) {
          if (var1 != 0L) {
             this.random = RandomSource.create(var1);
          }
@@ -113,53 +168,13 @@ public class LootContext {
       public LootContext create(Optional<ResourceLocation> var1) {
          ServerLevel var2 = this.getLevel();
          MinecraftServer var3 = var2.getServer();
-         RandomSource var4 = Optional.ofNullable(this.random).or(() -> var1.map(var2::getRandomSequence)).orElseGet(var2::getRandom);
+         Optional var10000 = Optional.ofNullable(this.random).or(() -> {
+            Objects.requireNonNull(var2);
+            return var1.map(var2::getRandomSequence);
+         });
+         Objects.requireNonNull(var2);
+         RandomSource var4 = (RandomSource)var10000.orElseGet(var2::getRandom);
          return new LootContext(this.params, var4, var3.reloadableRegistries().lookup());
-      }
-   }
-
-   public static enum EntityTarget implements StringRepresentable {
-      THIS("this", LootContextParams.THIS_ENTITY),
-      KILLER("killer", LootContextParams.KILLER_ENTITY),
-      DIRECT_KILLER("direct_killer", LootContextParams.DIRECT_KILLER_ENTITY),
-      KILLER_PLAYER("killer_player", LootContextParams.LAST_DAMAGE_PLAYER);
-
-      public static final StringRepresentable.EnumCodec<LootContext.EntityTarget> CODEC = StringRepresentable.fromEnum(LootContext.EntityTarget::values);
-      private final String name;
-      private final LootContextParam<? extends Entity> param;
-
-      private EntityTarget(String var3, LootContextParam<? extends Entity> var4) {
-         this.name = var3;
-         this.param = var4;
-      }
-
-      public LootContextParam<? extends Entity> getParam() {
-         return this.param;
-      }
-
-      public static LootContext.EntityTarget getByName(String var0) {
-         LootContext.EntityTarget var1 = CODEC.byName(var0);
-         if (var1 != null) {
-            return var1;
-         } else {
-            throw new IllegalArgumentException("Invalid entity target " + var0);
-         }
-      }
-
-      @Override
-      public String getSerializedName() {
-         return this.name;
-      }
-   }
-
-   public static record VisitedEntry<T>(LootDataType<T> a, T b) {
-      private final LootDataType<T> type;
-      private final T value;
-
-      public VisitedEntry(LootDataType<T> var1, T var2) {
-         super();
-         this.type = var1;
-         this.value = (T)var2;
       }
    }
 }

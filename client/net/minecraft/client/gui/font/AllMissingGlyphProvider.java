@@ -13,12 +13,10 @@ public class AllMissingGlyphProvider implements GlyphProvider {
    }
 
    @Nullable
-   @Override
    public GlyphInfo getGlyph(int var1) {
       return SpecialGlyphs.MISSING;
    }
 
-   @Override
    public IntSet getSupportedGlyphs() {
       return IntSets.EMPTY_SET;
    }

@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.DataFixUtils;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -17,8 +18,8 @@ import net.minecraft.world.entity.Entity;
 
 public class ComponentUtils {
    public static final String DEFAULT_SEPARATOR_TEXT = ", ";
-   public static final Component DEFAULT_SEPARATOR = Component.literal(", ").withStyle(ChatFormatting.GRAY);
-   public static final Component DEFAULT_NO_STYLE_SEPARATOR = Component.literal(", ");
+   public static final Component DEFAULT_SEPARATOR;
+   public static final Component DEFAULT_NO_STYLE_SEPARATOR;
 
    public ComponentUtils() {
       super();
@@ -46,9 +47,11 @@ public class ComponentUtils {
          return var1.copy();
       } else {
          MutableComponent var4 = var1.getContents().resolve(var0, var2, var3 + 1);
+         Iterator var5 = var1.getSiblings().iterator();
 
-         for(Component var6 : var1.getSiblings()) {
-            var4.append(updateForEntity(var0, var6, var2, var3 + 1));
+         while(var5.hasNext()) {
+            Component var6 = (Component)var5.next();
+            var4.append((Component)updateForEntity(var0, var6, var2, var3 + 1));
          }
 
          return var4.withStyle(resolveStyle(var0, var1.getStyle(), var2, var3));
@@ -58,7 +61,7 @@ public class ComponentUtils {
    private static Style resolveStyle(@Nullable CommandSourceStack var0, Style var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       HoverEvent var4 = var1.getHoverEvent();
       if (var4 != null) {
-         Component var5 = var4.getValue(HoverEvent.Action.SHOW_TEXT);
+         Component var5 = (Component)var4.getValue(HoverEvent.Action.SHOW_TEXT);
          if (var5 != null) {
             HoverEvent var6 = new HoverEvent(HoverEvent.Action.SHOW_TEXT, updateForEntity(var0, var5, var2, var3 + 1));
             return var1.withHoverEvent(var6);
@@ -69,7 +72,9 @@ public class ComponentUtils {
    }
 
    public static Component formatList(Collection<String> var0) {
-      return formatAndSortList(var0, var0x -> Component.literal(var0x).withStyle(ChatFormatting.GREEN));
+      return formatAndSortList(var0, (var0x) -> {
+         return Component.literal(var0x).withStyle(ChatFormatting.GREEN);
+      });
    }
 
    public static <T extends Comparable<T>> Component formatAndSortList(Collection<T> var0, Function<T, Component> var1) {
@@ -80,7 +85,7 @@ public class ComponentUtils {
       } else {
          ArrayList var2 = Lists.newArrayList(var0);
          var2.sort(Comparable::compareTo);
-         return formatList(var2, var1);
+         return formatList(var2, (Function)var1);
       }
    }
 
@@ -105,13 +110,13 @@ public class ComponentUtils {
          MutableComponent var3 = Component.empty();
          boolean var4 = true;
 
-         for(Object var6 : var0) {
+         for(Iterator var5 = var0.iterator(); var5.hasNext(); var4 = false) {
+            Object var6 = var5.next();
             if (!var4) {
                var3.append(var1);
             }
 
             var3.append((Component)var2.apply(var6));
-            var4 = false;
          }
 
          return var3;
@@ -123,15 +128,18 @@ public class ComponentUtils {
    }
 
    public static Component fromMessage(Message var0) {
-      return (Component)(var0 instanceof Component ? (Component)var0 : Component.literal(var0.getString()));
+      if (var0 instanceof Component var1) {
+         return var1;
+      } else {
+         return Component.literal(var0.getString());
+      }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static boolean isTranslationResolvable(@Nullable Component var0) {
       if (var0 != null) {
          ComponentContents var2 = var0.getContents();
-         if (var2 instanceof TranslatableContents var1) {
+         if (var2 instanceof TranslatableContents) {
+            TranslatableContents var1 = (TranslatableContents)var2;
             String var4 = var1.getKey();
             String var3 = var1.getFallback();
             return var3 != null || Language.getInstance().has(var4);
@@ -142,14 +150,13 @@ public class ComponentUtils {
    }
 
    public static MutableComponent copyOnClickText(String var0) {
-      return wrapInSquareBrackets(
-         Component.literal(var0)
-            .withStyle(
-               var1 -> var1.withColor(ChatFormatting.GREEN)
-                     .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var0))
-                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))
-                     .withInsertion(var0)
-            )
-      );
+      return wrapInSquareBrackets(Component.literal(var0).withStyle((var1) -> {
+         return var1.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var0)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click"))).withInsertion(var0);
+      }));
+   }
+
+   static {
+      DEFAULT_SEPARATOR = Component.literal(", ").withStyle(ChatFormatting.GRAY);
+      DEFAULT_NO_STYLE_SEPARATOR = Component.literal(", ");
    }
 }

@@ -16,7 +16,6 @@ public class SeagrassFeature extends Feature<ProbabilityFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<ProbabilityFeatureConfiguration> var1) {
       boolean var2 = false;
       RandomSource var3 = var1.random();
@@ -32,7 +31,7 @@ public class SeagrassFeature extends Feature<ProbabilityFeatureConfiguration> {
          BlockState var12 = var11 ? Blocks.TALL_SEAGRASS.defaultBlockState() : Blocks.SEAGRASS.defaultBlockState();
          if (var12.canSurvive(var4, var10)) {
             if (var11) {
-               BlockState var13 = var12.setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.UPPER);
+               BlockState var13 = (BlockState)var12.setValue(TallSeagrassBlock.HALF, DoubleBlockHalf.UPPER);
                BlockPos var14 = var10.above();
                if (var4.getBlockState(var14).is(Blocks.WATER)) {
                   var4.setBlock(var10, var12, 2);

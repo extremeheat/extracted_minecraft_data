@@ -8,12 +8,10 @@ public class CampfireCookingRecipe extends AbstractCookingRecipe {
       super(RecipeType.CAMPFIRE_COOKING, var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    public ItemStack getToastSymbol() {
       return new ItemStack(Blocks.CAMPFIRE);
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.CAMPFIRE_COOKING_RECIPE;
    }

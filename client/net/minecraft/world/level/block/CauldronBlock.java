@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -16,7 +17,6 @@ public class CauldronBlock extends AbstractCauldronBlock {
    private static final float RAIN_FILL_CHANCE = 0.05F;
    private static final float POWDER_SNOW_FILL_CHANCE = 0.1F;
 
-   @Override
    public MapCodec<CauldronBlock> codec() {
       return CODEC;
    }
@@ -25,7 +25,6 @@ public class CauldronBlock extends AbstractCauldronBlock {
       super(var1, CauldronInteraction.EMPTY);
    }
 
-   @Override
    public boolean isFull(BlockState var1) {
       return false;
    }
@@ -40,36 +39,36 @@ public class CauldronBlock extends AbstractCauldronBlock {
       }
    }
 
-   @Override
    public void handlePrecipitation(BlockState var1, Level var2, BlockPos var3, Biome.Precipitation var4) {
       if (shouldHandlePrecipitation(var2, var4)) {
          if (var4 == Biome.Precipitation.RAIN) {
             var2.setBlockAndUpdate(var3, Blocks.WATER_CAULDRON.defaultBlockState());
-            var2.gameEvent(null, GameEvent.BLOCK_CHANGE, var3);
+            var2.gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, var3);
          } else if (var4 == Biome.Precipitation.SNOW) {
             var2.setBlockAndUpdate(var3, Blocks.POWDER_SNOW_CAULDRON.defaultBlockState());
-            var2.gameEvent(null, GameEvent.BLOCK_CHANGE, var3);
+            var2.gameEvent((Entity)null, GameEvent.BLOCK_CHANGE, var3);
          }
+
       }
    }
 
-   @Override
    protected boolean canReceiveStalactiteDrip(Fluid var1) {
       return true;
    }
 
-   @Override
    protected void receiveStalactiteDrip(BlockState var1, Level var2, BlockPos var3, Fluid var4) {
+      BlockState var5;
       if (var4 == Fluids.WATER) {
-         BlockState var5 = Blocks.WATER_CAULDRON.defaultBlockState();
+         var5 = Blocks.WATER_CAULDRON.defaultBlockState();
          var2.setBlockAndUpdate(var3, var5);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5));
          var2.levelEvent(1047, var3, 0);
       } else if (var4 == Fluids.LAVA) {
-         BlockState var6 = Blocks.LAVA_CAULDRON.defaultBlockState();
-         var2.setBlockAndUpdate(var3, var6);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var6));
+         var5 = Blocks.LAVA_CAULDRON.defaultBlockState();
+         var2.setBlockAndUpdate(var3, var5);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5));
          var2.levelEvent(1046, var3, 0);
       }
+
    }
 }

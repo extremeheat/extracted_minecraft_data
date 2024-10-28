@@ -10,12 +10,10 @@ public class ForceUnmount extends Behavior<LivingEntity> {
       super(ImmutableMap.of());
    }
 
-   @Override
    protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
       return var2.isPassenger();
    }
 
-   @Override
    protected void start(ServerLevel var1, LivingEntity var2, long var3) {
       var2.unRide();
    }

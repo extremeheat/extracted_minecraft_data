@@ -1,8 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -19,17 +17,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -40,7 +34,6 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.player.Player;
@@ -48,13 +41,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class Guardian extends Monster {
    protected static final int ATTACK_TIME = 80;
-   private static final EntityDataAccessor<Boolean> DATA_ID_MOVING = SynchedEntityData.defineId(Guardian.class, EntityDataSerializers.BOOLEAN);
-   private static final EntityDataAccessor<Integer> DATA_ID_ATTACK_TARGET = SynchedEntityData.defineId(Guardian.class, EntityDataSerializers.INT);
+   private static final EntityDataAccessor<Boolean> DATA_ID_MOVING;
+   private static final EntityDataAccessor<Integer> DATA_ID_ATTACK_TARGET;
    private float clientSideTailAnimation;
    private float clientSideTailAnimationO;
    private float clientSideTailAnimationSpeed;
@@ -66,140 +58,38 @@ public class Guardian extends Monster {
    private boolean clientSideTouchedGround;
    @Nullable
    protected RandomStrollGoal randomStrollGoal;
-   final boolean isToxic;
-   private int tickOutOfWater;
-   private int jumpTimer;
 
-   public Guardian(EntityType<? extends Guardian> var1, Level var2, boolean var3) {
+   public Guardian(EntityType<? extends Guardian> var1, Level var2) {
       super(var1, var2);
-      this.isToxic = var3;
-      if (var3) {
-         this.xpReward = 5;
-      } else {
-         this.xpReward = 10;
-      }
-
+      this.xpReward = 10;
       this.setPathfindingMalus(PathType.WATER, 0.0F);
-      this.moveControl = new Guardian.GuardianMoveControl(this);
-      this.lookControl = new Guardian.GuardianLookControl();
+      this.moveControl = new GuardianMoveControl(this);
       this.clientSideTailAnimation = this.random.nextFloat();
       this.clientSideTailAnimationO = this.clientSideTailAnimation;
    }
 
-   public static Guardian createNormal(EntityType<? extends Guardian> var0, Level var1) {
-      return new Guardian(var0, var1, false);
-   }
-
-   public static Guardian createToxic(EntityType<? extends Guardian> var0, Level var1) {
-      return new Guardian(var0, var1, true);
-   }
-
-   public boolean isToxic() {
-      return this.isToxic;
-   }
-
-   @Override
    protected void registerGoals() {
       MoveTowardsRestrictionGoal var1 = new MoveTowardsRestrictionGoal(this, 1.0);
-      this.randomStrollGoal = new RandomStrollGoal(this, 1.0, 80) {
-         @Override
-         public boolean canUse() {
-            return Guardian.this.isToxic && Guardian.this.isPassenger() ? false : super.canUse();
-         }
-      };
-      this.goalSelector.addGoal(4, new Guardian.GuardianAttackGoal(this));
+      this.randomStrollGoal = new RandomStrollGoal(this, 1.0, 80);
+      this.goalSelector.addGoal(4, new GuardianAttackGoal(this));
       this.goalSelector.addGoal(5, var1);
       this.goalSelector.addGoal(7, this.randomStrollGoal);
-      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F) {
-         @Override
-         public boolean canUse() {
-            return Guardian.this.isToxic && Guardian.this.isPassenger() ? false : super.canUse();
-         }
-      });
-      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Guardian.class, 12.0F, 0.01F) {
-         @Override
-         public boolean canUse() {
-            return Guardian.this.isToxic && Guardian.this.isPassenger() ? false : super.canUse();
-         }
-      });
-      this.goalSelector.addGoal(9, new RandomLookAroundGoal(this) {
-         @Override
-         public boolean canUse() {
-            return Guardian.this.isToxic && Guardian.this.isPassenger() ? false : super.canUse();
-         }
-      });
-      this.goalSelector
-         .addGoal(
-            10,
-            new Goal() {
-               private final TargetingConditions RIDE_TARGET = TargetingConditions.forNonCombat()
-                  .range(3.0)
-                  .selector(var1x -> !var1x.isVehicle() && !var1x.isPassenger() && Guardian.this.isBuddy(var1x));
-      
-               @Override
-               public boolean canUse() {
-                  return Guardian.this.isToxic
-                     && Guardian.this.random.nextInt(100) == 0
-                     && (!Guardian.this.isVehicle() || !(Guardian.this instanceof ElderGuardian));
-               }
-      
-               @Override
-               public void start() {
-                  if (Guardian.this.getVehicle() == null) {
-                     AABB var1 = Guardian.this.getBoundingBox().inflate(2.0, 2.0, 2.0);
-                     Guardian var2 = Guardian.this.level()
-                        .getNearestEntity(
-                           Guardian.class, this.RIDE_TARGET, Guardian.this, Guardian.this.getX(), Guardian.this.getY(), Guardian.this.getZ(), var1
-                        );
-                     if (var2 != null) {
-                        Guardian.this.startRiding(var2);
-                     }
-                  } else if (Guardian.this.random.nextInt(10) == 0) {
-                     Guardian.this.stopRiding();
-                  }
-               }
-            }
-         );
+      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
+      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Guardian.class, 12.0F, 0.01F));
+      this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
       this.randomStrollGoal.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       var1.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false, new Guardian.GuardianAttackSelector(this)));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, LivingEntity.class, 10, true, false, new GuardianAttackSelector(this)));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes()
-         .add(Attributes.ATTACK_DAMAGE, 6.0)
-         .add(Attributes.MOVEMENT_SPEED, 0.5)
-         .add(Attributes.FOLLOW_RANGE, 16.0)
-         .add(Attributes.MAX_HEALTH, 30.0);
+      return Monster.createMonsterAttributes().add(Attributes.ATTACK_DAMAGE, 6.0).add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FOLLOW_RANGE, 16.0).add(Attributes.MAX_HEALTH, 30.0);
    }
 
-   @Nullable
-   @Override
-   public LivingEntity getControllingPassenger() {
-      LivingEntity var1 = super.getControllingPassenger();
-      return this.isBuddy(var1) ? null : var1;
-   }
-
-   @Override
-   protected void actuallyHurt(DamageSource var1, float var2) {
-      super.actuallyHurt(var1, var2);
-      if (this.isToxic) {
-         List var3 = this.getPassengers();
-         var3.forEach(Entity::stopRiding);
-         Entity var4 = this.getVehicle();
-         if (var4 != null) {
-            this.stopRiding();
-            var3.forEach(var1x -> var1x.startRiding(var4, true));
-         }
-      }
-   }
-
-   @Override
    protected PathNavigation createNavigation(Level var1) {
       return new WaterBoundPathNavigation(this, var1);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_ID_MOVING, false);
@@ -207,7 +97,7 @@ public class Guardian extends Monster {
    }
 
    public boolean isMoving() {
-      return this.entityData.get(DATA_ID_MOVING);
+      return (Boolean)this.entityData.get(DATA_ID_MOVING);
    }
 
    void setMoving(boolean var1) {
@@ -223,7 +113,7 @@ public class Guardian extends Monster {
    }
 
    public boolean hasActiveAttackTarget() {
-      return this.entityData.get(DATA_ID_ATTACK_TARGET) != 0;
+      return (Integer)this.entityData.get(DATA_ID_ATTACK_TARGET) != 0;
    }
 
    @Nullable
@@ -234,7 +124,7 @@ public class Guardian extends Monster {
          if (this.clientSideCachedAttackTarget != null) {
             return this.clientSideCachedAttackTarget;
          } else {
-            Entity var1 = this.level().getEntity(this.entityData.get(DATA_ID_ATTACK_TARGET));
+            Entity var1 = this.level().getEntity((Integer)this.entityData.get(DATA_ID_ATTACK_TARGET));
             if (var1 instanceof LivingEntity) {
                this.clientSideCachedAttackTarget = (LivingEntity)var1;
                return this.clientSideCachedAttackTarget;
@@ -247,90 +137,47 @@ public class Guardian extends Monster {
       }
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       super.onSyncedDataUpdated(var1);
       if (DATA_ID_ATTACK_TARGET.equals(var1)) {
          this.clientSideAttackTime = 0;
          this.clientSideCachedAttackTarget = null;
       }
+
    }
 
-   @Override
    public int getAmbientSoundInterval() {
       return 160;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
-      if (this.isToxic) {
-         return this.isInWaterOrBubble() ? SoundEvents.TOXIFIN_AMBIENT : SoundEvents.TOXIFIN_AMBIENT_LAND;
-      } else {
-         return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_AMBIENT : SoundEvents.GUARDIAN_AMBIENT_LAND;
-      }
+      return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_AMBIENT : SoundEvents.GUARDIAN_AMBIENT_LAND;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
-      if (this.isToxic) {
-         return this.isInWaterOrBubble() ? SoundEvents.TOXIFIN_HURT : SoundEvents.TOXIFIN_HURT_LAND;
-      } else {
-         return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_HURT : SoundEvents.GUARDIAN_HURT_LAND;
-      }
+      return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_HURT : SoundEvents.GUARDIAN_HURT_LAND;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
-      if (this.isToxic) {
-         return this.isInWaterOrBubble() ? SoundEvents.TOXIFIN_DEATH : SoundEvents.TOXIFIN_DEATH_LAND;
-      } else {
-         return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_DEATH : SoundEvents.GUARDIAN_DEATH_LAND;
-      }
+      return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_DEATH : SoundEvents.GUARDIAN_DEATH_LAND;
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
    }
 
-   @Override
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
       return var2.getFluidState(var1).is(FluidTags.WATER) ? 10.0F + var2.getPathfindingCostFromLightLevels(var1) : super.getWalkTargetValue(var1, var2);
    }
 
-   @Override
-   public boolean checkSpawnRules(LevelAccessor var1, MobSpawnType var2) {
-      return this.isToxic ? true : super.checkSpawnRules(var1, var2);
-   }
-
-   @Override
-   protected void applyPoisonFromWaterContact() {
-      if (!this.isToxic) {
-         super.applyPoisonFromWaterContact();
-      }
-   }
-
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void aiStep() {
-      if (!this.isInWaterOrBubble()) {
-         ++this.tickOutOfWater;
-      } else {
-         this.tickOutOfWater = 0;
-      }
-
       if (this.isAlive()) {
          if (this.level().isClientSide) {
             this.clientSideTailAnimationO = this.clientSideTailAnimation;
+            Vec3 var1;
             if (!this.isInWater()) {
-               Vec3 var1 = this.getDeltaMovement();
-               if (this.isToxic) {
-                  this.clientSideTailAnimationSpeed = (float)var1.length() / 0.5F + 0.1F;
-               } else {
-                  this.clientSideTailAnimationSpeed = 2.0F;
-               }
-
+               this.clientSideTailAnimationSpeed = 2.0F;
+               var1 = this.getDeltaMovement();
                if (var1.y > 0.0 && this.clientSideTouchedGround && !this.isSilent()) {
                   this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getFlopSound(), this.getSoundSource(), 1.0F, 1.0F, false);
                }
@@ -349,38 +196,18 @@ public class Guardian extends Monster {
             this.clientSideTailAnimation += this.clientSideTailAnimationSpeed;
             this.clientSideSpikesAnimationO = this.clientSideSpikesAnimation;
             if (!this.isInWaterOrBubble()) {
-               if (this.isToxic) {
-                  this.clientSideSpikesAnimation = 0.5F - (float)Math.cos((double)this.tickOutOfWater * 0.05 * 3.141592653589793 / 2.0) / 2.0F;
-               } else {
-                  this.clientSideSpikesAnimation = this.random.nextFloat();
-               }
+               this.clientSideSpikesAnimation = this.random.nextFloat();
             } else if (this.isMoving()) {
                this.clientSideSpikesAnimation += (0.0F - this.clientSideSpikesAnimation) * 0.25F;
             } else {
                this.clientSideSpikesAnimation += (1.0F - this.clientSideSpikesAnimation) * 0.06F;
             }
 
-            if (this.isPassenger()) {
-               Entity var2 = this.getVehicle();
-               if (var2 instanceof Guardian var14 && var14.getType() == this.getType()) {
-                  this.clientSideSpikesAnimation = var14.clientSideSpikesAnimation;
-               }
-            }
-
             if (this.isMoving() && this.isInWater()) {
-               Vec3 var15 = this.getViewVector(0.0F);
+               var1 = this.getViewVector(0.0F);
 
-               for(int var18 = 0; var18 < 2; ++var18) {
-                  this.level()
-                     .addParticle(
-                        ParticleTypes.BUBBLE,
-                        this.getRandomX(0.5) - var15.x * 1.5,
-                        this.getRandomY() - var15.y * 1.5,
-                        this.getRandomZ(0.5) - var15.z * 1.5,
-                        0.0,
-                        0.0,
-                        0.0
-                     );
+               for(int var2 = 0; var2 < 2; ++var2) {
+                  this.level().addParticle(ParticleTypes.BUBBLE, this.getRandomX(0.5) - var1.x * 1.5, this.getRandomY() - var1.y * 1.5, this.getRandomZ(0.5) - var1.z * 1.5, 0.0, 0.0, 0.0);
                }
             }
 
@@ -389,14 +216,14 @@ public class Guardian extends Monster {
                   ++this.clientSideAttackTime;
                }
 
-               LivingEntity var16 = this.getActiveAttackTarget();
-               if (var16 != null) {
-                  this.getLookControl().setLookAt(var16, 90.0F, 90.0F);
+               LivingEntity var14 = this.getActiveAttackTarget();
+               if (var14 != null) {
+                  this.getLookControl().setLookAt(var14, 90.0F, 90.0F);
                   this.getLookControl().tick();
-                  double var19 = (double)this.getAttackAnimationScale(0.0F);
-                  double var4 = var16.getX() - this.getX();
-                  double var6 = var16.getY(0.5) - this.getEyeY();
-                  double var8 = var16.getZ() - this.getZ();
+                  double var15 = (double)this.getAttackAnimationScale(0.0F);
+                  double var4 = var14.getX() - this.getX();
+                  double var6 = var14.getY(0.5) - this.getEyeY();
+                  double var8 = var14.getZ() - this.getZ();
                   double var10 = Math.sqrt(var4 * var4 + var6 * var6 + var8 * var8);
                   var4 /= var10;
                   var6 /= var10;
@@ -404,28 +231,17 @@ public class Guardian extends Monster {
                   double var12 = this.random.nextDouble();
 
                   while(var12 < var10) {
-                     var12 += 1.8 - var19 + this.random.nextDouble() * (1.7 - var19);
-                     this.level()
-                        .addParticle(ParticleTypes.BUBBLE, this.getX() + var4 * var12, this.getEyeY() + var6 * var12, this.getZ() + var8 * var12, 0.0, 0.0, 0.0);
+                     var12 += 1.8 - var15 + this.random.nextDouble() * (1.7 - var15);
+                     this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + var4 * var12, this.getEyeY() + var6 * var12, this.getZ() + var8 * var12, 0.0, 0.0, 0.0);
                   }
                }
             }
          }
 
-         if (!this.level().isClientSide && this.hasActiveAttackTarget()) {
-            LivingEntity var17 = this.getActiveAttackTarget();
-            if (var17 != null && this.isToxic && var17.getEffect(MobEffects.POISON) == null) {
-               var17.addEffect(new MobEffectInstance(MobEffects.POISON, 40, 0), this);
-            }
-         }
-
          if (this.isInWaterOrBubble()) {
             this.setAirSupply(300);
-         } else if (this.canJump()) {
-            this.setDeltaMovement(
-               this.getDeltaMovement()
-                  .add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F))
-            );
+         } else if (this.onGround()) {
+            this.setDeltaMovement(this.getDeltaMovement().add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F)));
             this.setYRot(this.random.nextFloat() * 360.0F);
             this.setOnGround(false);
             this.hasImpulse = true;
@@ -439,32 +255,8 @@ public class Guardian extends Monster {
       super.aiStep();
    }
 
-   boolean isBuddy(@Nullable Entity var1) {
-      if (this.isToxic && var1 instanceof Guardian var2 && var2.getType() == this.getType()) {
-         return true;
-      }
-
-      return false;
-   }
-
-   private boolean canJump() {
-      if (!this.onGround()) {
-         return false;
-      } else if (!this.isToxic) {
-         return true;
-      } else {
-         --this.jumpTimer;
-         if (this.jumpTimer < 0) {
-            this.jumpTimer = this.random.nextInt(40) + 20;
-            return true;
-         } else {
-            return false;
-         }
-      }
-   }
-
    protected SoundEvent getFlopSound() {
-      return this.isToxic ? SoundEvents.TOXIFIN_FLOP : SoundEvents.GUARDIAN_FLOP;
+      return SoundEvents.GUARDIAN_FLOP;
    }
 
    public float getTailAnimation(float var1) {
@@ -483,33 +275,23 @@ public class Guardian extends Monster {
       return (float)this.clientSideAttackTime;
    }
 
-   @Override
    public boolean checkSpawnObstruction(LevelReader var1) {
       return var1.isUnobstructed(this);
    }
 
    public static boolean checkGuardianSpawnRules(EntityType<? extends Guardian> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      return (var4.nextInt(20) == 0 || !var1.canSeeSkyFromBelowWater(var3))
-         && var1.getDifficulty() != Difficulty.PEACEFUL
-         && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER))
-         && var1.getFluidState(var3.below()).is(FluidTags.WATER);
+      return (var4.nextInt(20) == 0 || !var1.canSeeSkyFromBelowWater(var3)) && var1.getDifficulty() != Difficulty.PEACEFUL && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER)) && var1.getFluidState(var3.below()).is(FluidTags.WATER);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.level().isClientSide) {
          return false;
       } else {
          if (!this.isMoving() && !var1.is(DamageTypeTags.AVOIDS_GUARDIAN_THORNS) && !var1.is(DamageTypes.THORNS)) {
             Entity var4 = var1.getDirectEntity();
-            if (var4 instanceof LivingEntity var3) {
-               if (this.isToxic) {
-                  var3.addEffect(new MobEffectInstance(MobEffects.WITHER, 40, 0), this);
-               } else {
-                  var3.hurt(this.damageSources().thorns(this), 2.0F);
-               }
+            if (var4 instanceof LivingEntity) {
+               LivingEntity var3 = (LivingEntity)var4;
+               var3.hurt(this.damageSources().thorns(this), 2.0F);
             }
          }
 
@@ -521,12 +303,10 @@ public class Guardian extends Monster {
       }
    }
 
-   @Override
    public int getMaxHeadXRot() {
       return 180;
    }
 
-   @Override
    public void travel(Vec3 var1) {
       if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(0.1F, var1);
@@ -538,163 +318,12 @@ public class Guardian extends Monster {
       } else {
          super.travel(var1);
       }
+
    }
 
-   @Override
-   protected BodyRotationControl createBodyControl() {
-      return new BodyRotationControl(this) {
-         // $VF: Could not properly define all variable types!
-         // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-         @Override
-         public void clientTick() {
-            if (Guardian.this.isToxic && Guardian.this.isPassenger()) {
-               Entity var2 = Guardian.this.getVehicle();
-               if (var2 instanceof LivingEntity var1 && var1.getType() == Guardian.this.getType()) {
-                  Guardian.this.yBodyRot = var1.yBodyRot;
-               }
-            }
-
-            super.clientTick();
-         }
-      };
-   }
-
-   @Override
-   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      Vec3 var4 = super.getPassengerAttachmentPoint(var1, var2, var3);
-      if (var1.getType() == this.getType()) {
-         var4 = var4.add(0.0, this.guardianStackRidingOffset(), 0.0);
-      }
-
-      return var4;
-   }
-
-   protected double guardianStackRidingOffset() {
-      return -0.112;
-   }
-
-   static class GuardianAttackGoal extends Goal {
-      private final Guardian guardian;
-      private int attackTime;
-      private final boolean elder;
-
-      public GuardianAttackGoal(Guardian var1) {
-         super();
-         this.guardian = var1;
-         this.elder = var1 instanceof ElderGuardian;
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      }
-
-      @Override
-      public boolean canUse() {
-         LivingEntity var1 = this.guardian.getTarget();
-         return var1 != null && var1.isAlive();
-      }
-
-      @Override
-      public boolean canContinueToUse() {
-         return super.canContinueToUse() && (this.elder || this.guardian.getTarget() != null && this.guardian.distanceToSqr(this.guardian.getTarget()) > 9.0);
-      }
-
-      @Override
-      public void start() {
-         this.attackTime = -10;
-         this.guardian.getNavigation().stop();
-         LivingEntity var1 = this.guardian.getTarget();
-         if (var1 != null) {
-            this.guardian.getLookControl().setLookAt(var1, 90.0F, 90.0F);
-         }
-
-         this.guardian.hasImpulse = true;
-      }
-
-      @Override
-      public void stop() {
-         this.guardian.setActiveAttackTarget(0);
-         this.guardian.setTarget(null);
-         this.guardian.randomStrollGoal.trigger();
-      }
-
-      @Override
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      @Override
-      public void tick() {
-         LivingEntity var1 = this.guardian.getTarget();
-         if (var1 != null) {
-            this.guardian.getNavigation().stop();
-            this.guardian.getLookControl().setLookAt(var1, 90.0F, 90.0F);
-            if (!this.guardian.hasLineOfSight(var1)) {
-               this.guardian.setTarget(null);
-            } else {
-               ++this.attackTime;
-               if (this.attackTime == 0) {
-                  this.guardian.setActiveAttackTarget(var1.getId());
-                  if (!this.guardian.isSilent()) {
-                     this.guardian.level().broadcastEntityEvent(this.guardian, (byte)21);
-                  }
-               } else if (this.attackTime >= this.guardian.getAttackDuration()) {
-                  float var2 = 1.0F;
-                  if (this.guardian.level().getDifficulty() == Difficulty.HARD) {
-                     var2 += 2.0F;
-                  }
-
-                  if (this.elder) {
-                     var2 += 2.0F;
-                  }
-
-                  if (this.guardian.isToxic()) {
-                     var1.addEffect(new MobEffectInstance(MobEffects.WITHER, 40 + (int)var2 * 10, 0), this.guardian);
-                  } else {
-                     var1.hurt(this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), var2);
-                     var1.hurt(this.guardian.damageSources().mobAttack(this.guardian), (float)this.guardian.getAttributeValue(Attributes.ATTACK_DAMAGE));
-                  }
-
-                  this.guardian.setTarget(null);
-               }
-
-               super.tick();
-            }
-         }
-      }
-   }
-
-   static class GuardianAttackSelector implements Predicate<LivingEntity> {
-      private final Guardian guardian;
-
-      public GuardianAttackSelector(Guardian var1) {
-         super();
-         this.guardian = var1;
-      }
-
-      public boolean test(@Nullable LivingEntity var1) {
-         return (var1 instanceof Player || var1 instanceof Squid || var1 instanceof Axolotl) && var1.distanceToSqr(this.guardian) > 9.0;
-      }
-   }
-
-   class GuardianLookControl extends LookControl {
-      GuardianLookControl() {
-         super(Guardian.this);
-      }
-
-      @Override
-      protected Optional<Float> getXRotD() {
-         return !Guardian.this.isToxic || !Guardian.this.isPassenger() && !Guardian.this.isVehicle() ? super.getXRotD() : Optional.empty();
-      }
-
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
-      public void tick() {
-         Entity var2 = Guardian.this.getVehicle();
-         if (var2 instanceof Guardian var1 && var1.getType() == Guardian.this.getType()) {
-            Guardian.this.yHeadRot = var1.yHeadRot;
-         }
-
-         super.tick();
-      }
+   static {
+      DATA_ID_MOVING = SynchedEntityData.defineId(Guardian.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_ATTACK_TARGET = SynchedEntityData.defineId(Guardian.class, EntityDataSerializers.INT);
    }
 
    static class GuardianMoveControl extends MoveControl {
@@ -705,7 +334,6 @@ public class Guardian extends Monster {
          this.guardian = var1;
       }
 
-      @Override
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO && !this.guardian.getNavigation().isDone()) {
             Vec3 var1 = new Vec3(this.wantedX - this.guardian.getX(), this.wantedY - this.guardian.getY(), this.wantedZ - this.guardian.getZ());
@@ -723,10 +351,7 @@ public class Guardian extends Monster {
             double var15 = Math.cos((double)(this.guardian.getYRot() * 0.017453292F));
             double var17 = Math.sin((double)(this.guardian.getYRot() * 0.017453292F));
             double var19 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.75) * 0.05;
-            this.guardian
-               .setDeltaMovement(
-                  this.guardian.getDeltaMovement().add(var13 * var15, var19 * (var17 + var15) * 0.25 + (double)var12 * var6 * 0.1, var13 * var17)
-               );
+            this.guardian.setDeltaMovement(this.guardian.getDeltaMovement().add(var13 * var15, var19 * (var17 + var15) * 0.25 + (double)var12 * var6 * 0.1, var13 * var17));
             LookControl var21 = this.guardian.getLookControl();
             double var22 = this.guardian.getX() + var4 * 2.0;
             double var24 = this.guardian.getEyeY() + var6 / var2;
@@ -746,6 +371,101 @@ public class Guardian extends Monster {
             this.guardian.setSpeed(0.0F);
             this.guardian.setMoving(false);
          }
+      }
+   }
+
+   static class GuardianAttackGoal extends Goal {
+      private final Guardian guardian;
+      private int attackTime;
+      private final boolean elder;
+
+      public GuardianAttackGoal(Guardian var1) {
+         super();
+         this.guardian = var1;
+         this.elder = var1 instanceof ElderGuardian;
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+      }
+
+      public boolean canUse() {
+         LivingEntity var1 = this.guardian.getTarget();
+         return var1 != null && var1.isAlive();
+      }
+
+      public boolean canContinueToUse() {
+         return super.canContinueToUse() && (this.elder || this.guardian.getTarget() != null && this.guardian.distanceToSqr(this.guardian.getTarget()) > 9.0);
+      }
+
+      public void start() {
+         this.attackTime = -10;
+         this.guardian.getNavigation().stop();
+         LivingEntity var1 = this.guardian.getTarget();
+         if (var1 != null) {
+            this.guardian.getLookControl().setLookAt(var1, 90.0F, 90.0F);
+         }
+
+         this.guardian.hasImpulse = true;
+      }
+
+      public void stop() {
+         this.guardian.setActiveAttackTarget(0);
+         this.guardian.setTarget((LivingEntity)null);
+         this.guardian.randomStrollGoal.trigger();
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         LivingEntity var1 = this.guardian.getTarget();
+         if (var1 != null) {
+            this.guardian.getNavigation().stop();
+            this.guardian.getLookControl().setLookAt(var1, 90.0F, 90.0F);
+            if (!this.guardian.hasLineOfSight(var1)) {
+               this.guardian.setTarget((LivingEntity)null);
+            } else {
+               ++this.attackTime;
+               if (this.attackTime == 0) {
+                  this.guardian.setActiveAttackTarget(var1.getId());
+                  if (!this.guardian.isSilent()) {
+                     this.guardian.level().broadcastEntityEvent(this.guardian, (byte)21);
+                  }
+               } else if (this.attackTime >= this.guardian.getAttackDuration()) {
+                  float var2 = 1.0F;
+                  if (this.guardian.level().getDifficulty() == Difficulty.HARD) {
+                     var2 += 2.0F;
+                  }
+
+                  if (this.elder) {
+                     var2 += 2.0F;
+                  }
+
+                  var1.hurt(this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), var2);
+                  var1.hurt(this.guardian.damageSources().mobAttack(this.guardian), (float)this.guardian.getAttributeValue(Attributes.ATTACK_DAMAGE));
+                  this.guardian.setTarget((LivingEntity)null);
+               }
+
+               super.tick();
+            }
+         }
+      }
+   }
+
+   static class GuardianAttackSelector implements Predicate<LivingEntity> {
+      private final Guardian guardian;
+
+      public GuardianAttackSelector(Guardian var1) {
+         super();
+         this.guardian = var1;
+      }
+
+      public boolean test(@Nullable LivingEntity var1) {
+         return (var1 instanceof Player || var1 instanceof Squid || var1 instanceof Axolotl) && var1.distanceToSqr(this.guardian) > 9.0;
+      }
+
+      // $FF: synthetic method
+      public boolean test(@Nullable Object var1) {
+         return this.test((LivingEntity)var1);
       }
    }
 }

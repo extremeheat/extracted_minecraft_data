@@ -7,9 +7,9 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -42,25 +42,27 @@ public class RealmsInviteScreen extends RealmsScreen {
       this.serverData = var3;
    }
 
-   @Override
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical().spacing(8));
+      LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
       this.profileName = new EditBox(this.minecraft.font, 200, 20, Component.translatable("mco.configure.world.invite.profile.name"));
       var1.addChild(CommonLayouts.labeledElement(this.font, this.profileName, NAME_LABEL));
-      this.inviteButton = var1.addChild(Button.builder(TITLE, var1x -> this.onInvite()).width(200).build());
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).width(200).build());
-      this.layout.visitWidgets(var1x -> {
+      this.inviteButton = (Button)var1.addChild(Button.builder(TITLE, (var1x) -> {
+         this.onInvite();
+      }).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
+         this.onClose();
+      }).width(200).build());
+      this.layout.visitWidgets((var1x) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
    }
 
-   @Override
    protected void setInitialFocus() {
       this.setInitialFocus(this.profileName);
    }
@@ -74,14 +76,14 @@ public class RealmsInviteScreen extends RealmsScreen {
          this.inviteButton.active = false;
          this.profileName.setEditable(false);
          this.showMessage(INVITING_PLAYER_TEXT);
-         CompletableFuture.<RealmsServer>supplyAsync(() -> {
+         CompletableFuture.supplyAsync(() -> {
             try {
                return RealmsClient.create().invite(var1, var3);
             } catch (Exception var4) {
                LOGGER.error("Couldn't invite user");
                return null;
             }
-         }, Util.ioPool()).thenAcceptAsync(var1x -> {
+         }, Util.ioPool()).thenAcceptAsync((var1x) -> {
             if (var1x != null) {
                this.serverData.players = var1x.players;
                this.minecraft.setScreen(new RealmsPlayerScreen(this.configureScreen, this.serverData));
@@ -100,16 +102,15 @@ public class RealmsInviteScreen extends RealmsScreen {
       this.minecraft.getNarrator().sayNow(var1);
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if (this.message != null) {
-         var1.drawCenteredString(this.font, this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
+         var1.drawCenteredString(this.font, (Component)this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
       }
+
    }
 }

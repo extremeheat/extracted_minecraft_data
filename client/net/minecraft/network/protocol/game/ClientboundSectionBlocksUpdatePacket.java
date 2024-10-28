@@ -14,9 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
 public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSectionBlocksUpdatePacket> STREAM_CODEC = Packet.codec(
-      ClientboundSectionBlocksUpdatePacket::write, ClientboundSectionBlocksUpdatePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSectionBlocksUpdatePacket> STREAM_CODEC = Packet.codec(ClientboundSectionBlocksUpdatePacket::write, ClientboundSectionBlocksUpdatePacket::new);
    private static final int POS_IN_SECTION_BITS = 12;
    private final SectionPos sectionPos;
    private final short[] positions;
@@ -31,10 +29,11 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       int var5 = 0;
 
       for(ShortIterator var6 = var2.iterator(); var6.hasNext(); ++var5) {
-         short var7 = var6.next();
+         short var7 = (Short)var6.next();
          this.positions[var5] = var7;
          this.states[var5] = var3.getBlockState(SectionPos.sectionRelativeX(var7), SectionPos.sectionRelativeY(var7), SectionPos.sectionRelativeZ(var7));
       }
+
    }
 
    private ClientboundSectionBlocksUpdatePacket(FriendlyByteBuf var1) {
@@ -47,8 +46,9 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       for(int var3 = 0; var3 < var2; ++var3) {
          long var4 = var1.readVarLong();
          this.positions[var3] = (short)((int)(var4 & 4095L));
-         this.states[var3] = Block.BLOCK_STATE_REGISTRY.byId((int)(var4 >>> 12));
+         this.states[var3] = (BlockState)Block.BLOCK_STATE_REGISTRY.byId((int)(var4 >>> 12));
       }
+
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -58,9 +58,9 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       for(int var2 = 0; var2 < this.positions.length; ++var2) {
          var1.writeVarLong((long)Block.getId(this.states[var2]) << 12 | (long)this.positions[var2]);
       }
+
    }
 
-   @Override
    public PacketType<ClientboundSectionBlocksUpdatePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SECTION_BLOCKS_UPDATE;
    }
@@ -77,5 +77,6 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
          var2.set(this.sectionPos.relativeToBlockX(var4), this.sectionPos.relativeToBlockY(var4), this.sectionPos.relativeToBlockZ(var4));
          var1.accept(var2, this.states[var3]);
       }
+
    }
 }

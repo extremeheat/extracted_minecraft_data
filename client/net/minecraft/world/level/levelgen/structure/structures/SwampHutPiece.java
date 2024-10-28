@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.level.ChunkPos;
@@ -36,14 +37,12 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
       this.spawnedCat = var1.getBoolean("Cat");
    }
 
-   @Override
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
       super.addAdditionalSaveData(var1, var2);
       var2.putBoolean("Witch", this.spawnedWitch);
       var2.putBoolean("Cat", this.spawnedCat);
    }
 
-   @Override
    public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
       if (this.updateAverageGroundHeight(var1, var5, 0)) {
          this.generateBox(var1, var5, 1, 1, 1, 5, 1, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
@@ -67,18 +66,18 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, Blocks.CAULDRON.defaultBlockState(), 4, 2, 6, var5);
          this.placeBlock(var1, Blocks.OAK_FENCE.defaultBlockState(), 1, 2, 1, var5);
          this.placeBlock(var1, Blocks.OAK_FENCE.defaultBlockState(), 5, 2, 1, var5);
-         BlockState var8 = Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
-         BlockState var9 = Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST);
-         BlockState var10 = Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
-         BlockState var11 = Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+         BlockState var8 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+         BlockState var9 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST);
+         BlockState var10 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
+         BlockState var11 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
          this.generateBox(var1, var5, 0, 4, 1, 6, 4, 1, var8, var8, false);
          this.generateBox(var1, var5, 0, 4, 2, 0, 4, 7, var9, var9, false);
          this.generateBox(var1, var5, 6, 4, 2, 6, 4, 7, var10, var10, false);
          this.generateBox(var1, var5, 0, 4, 8, 6, 4, 8, var11, var11, false);
-         this.placeBlock(var1, var8.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 0, 4, 1, var5);
-         this.placeBlock(var1, var8.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 6, 4, 1, var5);
-         this.placeBlock(var1, var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 0, 4, 8, var5);
-         this.placeBlock(var1, var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 6, 4, 8, var5);
+         this.placeBlock(var1, (BlockState)var8.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 0, 4, 1, var5);
+         this.placeBlock(var1, (BlockState)var8.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 6, 4, 1, var5);
+         this.placeBlock(var1, (BlockState)var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 0, 4, 8, var5);
+         this.placeBlock(var1, (BlockState)var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 6, 4, 8, var5);
 
          for(int var12 = 2; var12 <= 7; var12 += 5) {
             for(int var13 = 1; var13 <= 5; var13 += 4) {
@@ -90,11 +89,11 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             BlockPos.MutableBlockPos var14 = this.getWorldPos(2, 2, 5);
             if (var5.isInside(var14)) {
                this.spawnedWitch = true;
-               Witch var15 = EntityType.WITCH.create(var1.getLevel());
+               Witch var15 = (Witch)EntityType.WITCH.create(var1.getLevel());
                if (var15 != null) {
                   var15.setPersistenceRequired();
-                  var15.moveTo((double)var14.getX() + 0.5, (double)var14.getY(), (double)var14.getZ() + 0.5, 0.0F, 0.0F);
-                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), MobSpawnType.STRUCTURE, null);
+                  var15.moveTo((double)((BlockPos)var14).getX() + 0.5, (double)((BlockPos)var14).getY(), (double)((BlockPos)var14).getZ() + 0.5, 0.0F, 0.0F);
+                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), MobSpawnType.STRUCTURE, (SpawnGroupData)null);
                   var1.addFreshEntityWithPassengers(var15);
                }
             }
@@ -109,14 +108,15 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          BlockPos.MutableBlockPos var3 = this.getWorldPos(2, 2, 5);
          if (var2.isInside(var3)) {
             this.spawnedCat = true;
-            Cat var4 = EntityType.CAT.create(var1.getLevel());
+            Cat var4 = (Cat)EntityType.CAT.create(var1.getLevel());
             if (var4 != null) {
                var4.setPersistenceRequired();
-               var4.moveTo((double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5, 0.0F, 0.0F);
-               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), MobSpawnType.STRUCTURE, null);
+               var4.moveTo((double)((BlockPos)var3).getX() + 0.5, (double)((BlockPos)var3).getY(), (double)((BlockPos)var3).getZ() + 0.5, 0.0F, 0.0F);
+               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), MobSpawnType.STRUCTURE, (SpawnGroupData)null);
                var1.addFreshEntityWithPassengers(var4);
             }
          }
       }
+
    }
 }

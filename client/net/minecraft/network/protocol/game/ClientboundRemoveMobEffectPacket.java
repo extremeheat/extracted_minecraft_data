@@ -12,16 +12,8 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
-public record ClientboundRemoveMobEffectPacket(int b, Holder<MobEffect> c) implements Packet<ClientGamePacketListener> {
-   private final int entityId;
-   private final Holder<MobEffect> effect;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.VAR_INT,
-      var0 -> var0.entityId,
-      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT),
-      ClientboundRemoveMobEffectPacket::effect,
-      ClientboundRemoveMobEffectPacket::new
-   );
+public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC;
 
    public ClientboundRemoveMobEffectPacket(int var1, Holder<MobEffect> var2) {
       super();
@@ -29,7 +21,6 @@ public record ClientboundRemoveMobEffectPacket(int b, Holder<MobEffect> c) imple
       this.effect = var2;
    }
 
-   @Override
    public PacketType<ClientboundRemoveMobEffectPacket> type() {
       return GamePacketTypes.CLIENTBOUND_REMOVE_MOB_EFFECT;
    }
@@ -41,5 +32,19 @@ public record ClientboundRemoveMobEffectPacket(int b, Holder<MobEffect> c) imple
    @Nullable
    public Entity getEntity(Level var1) {
       return var1.getEntity(this.entityId);
+   }
+
+   public int entityId() {
+      return this.entityId;
+   }
+
+   public Holder<MobEffect> effect() {
+      return this.effect;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, (var0) -> {
+         return var0.entityId;
+      }, ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT), ClientboundRemoveMobEffectPacket::effect, ClientboundRemoveMobEffectPacket::new);
    }
 }

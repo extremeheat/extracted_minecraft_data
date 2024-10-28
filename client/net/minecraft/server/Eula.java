@@ -22,11 +22,27 @@ public class Eula {
 
    private boolean readFile() {
       try {
+         InputStream var1 = Files.newInputStream(this.file);
+
          boolean var3;
-         try (InputStream var1 = Files.newInputStream(this.file)) {
+         try {
             Properties var2 = new Properties();
             var2.load(var1);
             var3 = Boolean.parseBoolean(var2.getProperty("eula", "false"));
+         } catch (Throwable var5) {
+            if (var1 != null) {
+               try {
+                  var1.close();
+               } catch (Throwable var4) {
+                  var5.addSuppressed(var4);
+               }
+            }
+
+            throw var5;
+         }
+
+         if (var1 != null) {
+            var1.close();
          }
 
          return var3;
@@ -43,13 +59,32 @@ public class Eula {
 
    private void saveDefaults() {
       if (!SharedConstants.IS_RUNNING_IN_IDE) {
-         try (OutputStream var1 = Files.newOutputStream(this.file)) {
-            Properties var2 = new Properties();
-            var2.setProperty("eula", "false");
-            var2.store(var1, "By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).");
+         try {
+            OutputStream var1 = Files.newOutputStream(this.file);
+
+            try {
+               Properties var2 = new Properties();
+               var2.setProperty("eula", "false");
+               var2.store(var1, "By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).");
+            } catch (Throwable var5) {
+               if (var1 != null) {
+                  try {
+                     var1.close();
+                  } catch (Throwable var4) {
+                     var5.addSuppressed(var4);
+                  }
+               }
+
+               throw var5;
+            }
+
+            if (var1 != null) {
+               var1.close();
+            }
          } catch (Exception var6) {
             LOGGER.warn("Failed to save {}", this.file, var6);
          }
+
       }
    }
 }

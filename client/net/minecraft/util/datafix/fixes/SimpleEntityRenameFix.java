@@ -11,9 +11,8 @@ public abstract class SimpleEntityRenameFix extends EntityRenameFix {
       super(var1, var2, var3);
    }
 
-   @Override
    protected Pair<String, Typed<?>> fix(String var1, Typed<?> var2) {
-      Pair var3 = this.getNewNameAndTag(var1, (Dynamic<?>)var2.getOrCreate(DSL.remainderFinder()));
+      Pair var3 = this.getNewNameAndTag(var1, (Dynamic)var2.getOrCreate(DSL.remainderFinder()));
       return Pair.of((String)var3.getFirst(), var2.set(DSL.remainderFinder(), (Dynamic)var3.getSecond()));
    }
 

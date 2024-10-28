@@ -58,13 +58,13 @@ public class TrimPatterns {
    }
 
    public static Optional<Holder.Reference<TrimPattern>> getFromTemplate(HolderLookup.Provider var0, ItemStack var1) {
-      return var0.lookupOrThrow(Registries.TRIM_PATTERN).listElements().filter(var1x -> var1.is(((TrimPattern)var1x.value()).templateItem())).findFirst();
+      return var0.lookupOrThrow(Registries.TRIM_PATTERN).listElements().filter((var1x) -> {
+         return var1.is(((TrimPattern)var1x.value()).templateItem());
+      }).findFirst();
    }
 
    public static void register(BootstrapContext<TrimPattern> var0, Item var1, ResourceKey<TrimPattern> var2) {
-      TrimPattern var3 = new TrimPattern(
-         var2.location(), BuiltInRegistries.ITEM.wrapAsHolder(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var2.location())), false
-      );
+      TrimPattern var3 = new TrimPattern(var2.location(), BuiltInRegistries.ITEM.wrapAsHolder(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var2.location())), false);
       var0.register(var2, var3);
    }
 

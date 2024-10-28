@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class PortalParticle extends TextureSheetParticle {
@@ -27,18 +28,15 @@ public class PortalParticle extends TextureSheetParticle {
       this.lifetime = (int)(Math.random() * 10.0) + 40;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public void move(double var1, double var3, double var5) {
       this.setBoundingBox(this.getBoundingBox().move(var1, var3, var5));
       this.setLocationFromBoundingbox();
    }
 
-   @Override
    public float getQuadSize(float var1) {
       float var2 = ((float)this.age + var1) / (float)this.lifetime;
       var2 = 1.0F - var2;
@@ -47,14 +45,13 @@ public class PortalParticle extends TextureSheetParticle {
       return this.quadSize * var2;
    }
 
-   @Override
    public int getLightColor(float var1) {
       int var2 = super.getLightColor(var1);
       float var3 = (float)this.age / (float)this.lifetime;
       var3 *= var3;
       var3 *= var3;
-      int var4 = var2 & 0xFF;
-      int var5 = var2 >> 16 & 0xFF;
+      int var4 = var2 & 255;
+      int var5 = var2 >> 16 & 255;
       var5 += (int)(var3 * 15.0F * 16.0F);
       if (var5 > 240) {
          var5 = 240;
@@ -63,7 +60,6 @@ public class PortalParticle extends TextureSheetParticle {
       return var4 | var5 << 16;
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -72,34 +68,32 @@ public class PortalParticle extends TextureSheetParticle {
          this.remove();
       } else {
          float var1 = (float)this.age / (float)this.lifetime;
-         float var3 = -var1 + var1 * var1 * 2.0F;
-         float var4 = 1.0F - var3;
-         this.x = this.xStart + this.xd * (double)var4;
-         this.y = this.yStart + this.yd * (double)var4 + (double)(1.0F - var1);
-         this.z = this.zStart + this.zd * (double)var4;
+         float var2 = var1;
+         var1 = -var1 + var1 * var1 * 2.0F;
+         var1 = 1.0F - var1;
+         this.x = this.xStart + this.xd * (double)var1;
+         this.y = this.yStart + this.yd * (double)var1 + (double)(1.0F - var2);
+         this.z = this.zStart + this.zd * (double)var1;
       }
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
-      private final float rCol;
-      private final float gCol;
-      private final float bCol;
 
-      public Provider(SpriteSet var1, float var2, float var3, float var4) {
+      public Provider(SpriteSet var1) {
          super();
          this.sprite = var1;
-         this.rCol = var2;
-         this.gCol = var3;
-         this.bCol = var4;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          PortalParticle var15 = new PortalParticle(var2, var3, var5, var7, var9, var11, var13);
-         float var16 = var2.random.nextFloat() * 0.6F + 0.4F;
-         var15.setColor(this.rCol * var16, this.gCol * var16, this.bCol * var16);
          var15.pickSprite(this.sprite);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

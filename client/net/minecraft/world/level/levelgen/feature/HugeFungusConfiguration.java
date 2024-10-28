@@ -2,23 +2,26 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 public class HugeFungusConfiguration implements FeatureConfiguration {
-   public static final Codec<HugeFungusConfiguration> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               BlockState.CODEC.fieldOf("valid_base_block").forGetter(var0x -> var0x.validBaseState),
-               BlockState.CODEC.fieldOf("stem_state").forGetter(var0x -> var0x.stemState),
-               BlockState.CODEC.fieldOf("hat_state").forGetter(var0x -> var0x.hatState),
-               BlockState.CODEC.fieldOf("decor_state").forGetter(var0x -> var0x.decorState),
-               BlockPredicate.CODEC.fieldOf("replaceable_blocks").forGetter(var0x -> var0x.replaceableBlocks),
-               Codec.BOOL.fieldOf("planted").orElse(false).forGetter(var0x -> var0x.planted)
-            )
-            .apply(var0, HugeFungusConfiguration::new)
-   );
+   public static final Codec<HugeFungusConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(BlockState.CODEC.fieldOf("valid_base_block").forGetter((var0x) -> {
+         return var0x.validBaseState;
+      }), BlockState.CODEC.fieldOf("stem_state").forGetter((var0x) -> {
+         return var0x.stemState;
+      }), BlockState.CODEC.fieldOf("hat_state").forGetter((var0x) -> {
+         return var0x.hatState;
+      }), BlockState.CODEC.fieldOf("decor_state").forGetter((var0x) -> {
+         return var0x.decorState;
+      }), BlockPredicate.CODEC.fieldOf("replaceable_blocks").forGetter((var0x) -> {
+         return var0x.replaceableBlocks;
+      }), Codec.BOOL.fieldOf("planted").orElse(false).forGetter((var0x) -> {
+         return var0x.planted;
+      })).apply(var0, HugeFungusConfiguration::new);
+   });
    public final BlockState validBaseState;
    public final BlockState stemState;
    public final BlockState hatState;

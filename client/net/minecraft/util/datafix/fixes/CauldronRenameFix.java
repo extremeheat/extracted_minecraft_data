@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
@@ -24,8 +23,8 @@ public class CauldronRenameFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(
-         "cauldron_rename_fix", this.getInputSchema().getType(References.BLOCK_STATE), var0 -> var0.update(DSL.remainderFinder(), CauldronRenameFix::fix)
-      );
+      return this.fixTypeEverywhereTyped("cauldron_rename_fix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> {
+         return var0.update(DSL.remainderFinder(), CauldronRenameFix::fix);
+      });
    }
 }

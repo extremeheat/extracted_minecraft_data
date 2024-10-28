@@ -25,6 +25,7 @@ public class GameTestTicker {
          this.runner.stop();
          this.runner = null;
       }
+
    }
 
    public void setRunner(GameTestRunner var1) {
@@ -37,7 +38,9 @@ public class GameTestTicker {
 
    public void tick() {
       if (this.runner != null) {
-         this.testInfos.forEach(var1 -> var1.tick(this.runner));
+         this.testInfos.forEach((var1) -> {
+            var1.tick(this.runner);
+         });
          this.testInfos.removeIf(GameTestInfo::isDone);
       }
    }

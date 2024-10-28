@@ -17,27 +17,16 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
       super(var1);
    }
 
-   @Override
    public void doClientTick() {
       if (this.time++ % 10 == 0) {
          float var1 = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
          float var2 = (this.dragon.getRandom().nextFloat() - 0.5F) * 4.0F;
          float var3 = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
-         this.dragon
-            .level()
-            .addParticle(
-               ParticleTypes.EXPLOSION_EMITTER,
-               this.dragon.getX() + (double)var1,
-               this.dragon.getY() + 2.0 + (double)var2,
-               this.dragon.getZ() + (double)var3,
-               0.0,
-               0.0,
-               0.0
-            );
+         this.dragon.level().addParticle(ParticleTypes.EXPLOSION_EMITTER, this.dragon.getX() + (double)var1, this.dragon.getY() + 2.0 + (double)var2, this.dragon.getZ() + (double)var3, 0.0, 0.0, 0.0);
       }
+
    }
 
-   @Override
    public void doServerTick() {
       ++this.time;
       if (this.targetLocation == null) {
@@ -51,26 +40,23 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
       } else {
          this.dragon.setHealth(0.0F);
       }
+
    }
 
-   @Override
    public void begin() {
       this.targetLocation = null;
       this.time = 0;
    }
 
-   @Override
    public float getFlySpeed() {
       return 3.0F;
    }
 
    @Nullable
-   @Override
    public Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 
-   @Override
    public EnderDragonPhase<DragonDeathPhase> getPhase() {
       return EnderDragonPhase.DYING;
    }

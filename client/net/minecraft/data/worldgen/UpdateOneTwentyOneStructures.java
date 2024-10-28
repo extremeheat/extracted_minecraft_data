@@ -1,7 +1,7 @@
 package net.minecraft.data.worldgen;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import net.minecraft.core.HolderGetter;
@@ -26,30 +26,10 @@ public class UpdateOneTwentyOneStructures {
    public static void bootstrap(BootstrapContext<Structure> var0) {
       HolderGetter var1 = var0.lookup(Registries.BIOME);
       HolderGetter var2 = var0.lookup(Registries.TEMPLATE_POOL);
-      var0.register(
-         BuiltinStructures.TRIAL_CHAMBERS,
-         new JigsawStructure(
-            Structures.structure(
-               var1.getOrThrow(BiomeTags.HAS_TRIAL_CHAMBERS),
-               List.of(),
-               Arrays.stream(MobCategory.values())
-                  .collect(
-                     Collectors.toMap(
-                        var0x -> var0x, var0x -> new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedRandomList.create())
-                     )
-                  ),
-               GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
-               TerrainAdjustment.BURY
-            ),
-            var2.getOrThrow(TrialChambersStructurePools.START),
-            Optional.empty(),
-            20,
-            UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)),
-            false,
-            Optional.empty(),
-            116,
-            TrialChambersStructurePools.ALIAS_BINDINGS
-         )
-      );
+      var0.register(BuiltinStructures.TRIAL_CHAMBERS, new JigsawStructure(Structures.structure(var1.getOrThrow(BiomeTags.HAS_TRIAL_CHAMBERS), (Map)Arrays.stream(MobCategory.values()).collect(Collectors.toMap((var0x) -> {
+         return var0x;
+      }, (var0x) -> {
+         return new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedRandomList.create());
+      })), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.BURY), var2.getOrThrow(TrialChambersStructurePools.START), Optional.empty(), 20, UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)), false, Optional.empty(), 116, TrialChambersStructurePools.ALIAS_BINDINGS));
    }
 }

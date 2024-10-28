@@ -12,7 +12,7 @@ import net.minecraft.world.entity.projectile.DragonFireball;
 
 public class DragonFireballRenderer extends EntityRenderer<DragonFireball> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/enderdragon/dragon_fireball.png");
-   private static final RenderType RENDER_TYPE = RenderType.entityCutoutNoCull(TEXTURE_LOCATION);
+   private static final RenderType RENDER_TYPE;
 
    public DragonFireballRenderer(EntityRendererProvider.Context var1) {
       super(var1);
@@ -38,16 +38,14 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball> {
    }
 
    private static void vertex(VertexConsumer var0, PoseStack.Pose var1, int var2, float var3, int var4, int var5, int var6) {
-      var0.vertex(var1, var3 - 0.5F, (float)var4 - 0.25F, 0.0F)
-         .color(255, 255, 255, 255)
-         .uv((float)var5, (float)var6)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var2)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var0.vertex(var1, var3 - 0.5F, (float)var4 - 0.25F, 0.0F).color(255, 255, 255, 255).uv((float)var5, (float)var6).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var2).normal(var1, 0.0F, 1.0F, 0.0F).endVertex();
    }
 
    public ResourceLocation getTextureLocation(DragonFireball var1) {
       return TEXTURE_LOCATION;
+   }
+
+   static {
+      RENDER_TYPE = RenderType.entityCutoutNoCull(TEXTURE_LOCATION);
    }
 }

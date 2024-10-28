@@ -8,8 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-public record FallLocation(String i) {
-   private final String id;
+public record FallLocation(String id) {
    public static final FallLocation GENERIC = new FallLocation("generic");
    public static final FallLocation LADDER = new FallLocation("ladder");
    public static final FallLocation VINES = new FallLocation("vines");
@@ -25,16 +24,20 @@ public record FallLocation(String i) {
    }
 
    public static FallLocation blockToFallLocation(BlockState var0) {
-      if (var0.is(Blocks.LADDER) || var0.is(BlockTags.TRAPDOORS)) {
-         return LADDER;
-      } else if (var0.is(Blocks.VINE)) {
-         return VINES;
-      } else if (var0.is(Blocks.WEEPING_VINES) || var0.is(Blocks.WEEPING_VINES_PLANT)) {
-         return WEEPING_VINES;
-      } else if (var0.is(Blocks.TWISTING_VINES) || var0.is(Blocks.TWISTING_VINES_PLANT)) {
-         return TWISTING_VINES;
+      if (!var0.is(Blocks.LADDER) && !var0.is(BlockTags.TRAPDOORS)) {
+         if (var0.is(Blocks.VINE)) {
+            return VINES;
+         } else if (!var0.is(Blocks.WEEPING_VINES) && !var0.is(Blocks.WEEPING_VINES_PLANT)) {
+            if (!var0.is(Blocks.TWISTING_VINES) && !var0.is(Blocks.TWISTING_VINES_PLANT)) {
+               return var0.is(Blocks.SCAFFOLDING) ? SCAFFOLDING : OTHER_CLIMBABLE;
+            } else {
+               return TWISTING_VINES;
+            }
+         } else {
+            return WEEPING_VINES;
+         }
       } else {
-         return var0.is(Blocks.SCAFFOLDING) ? SCAFFOLDING : OTHER_CLIMBABLE;
+         return LADDER;
       }
    }
 
@@ -51,5 +54,9 @@ public record FallLocation(String i) {
 
    public String languageKey() {
       return "death.fell.accident." + this.id;
+   }
+
+   public String id() {
+      return this.id;
    }
 }

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -51,63 +52,79 @@ public final class NaturalSpawner {
    public static final int SPAWN_DISTANCE_CHUNK = 8;
    public static final int SPAWN_DISTANCE_BLOCK = 128;
    static final int MAGIC_NUMBER = (int)Math.pow(17.0, 2.0);
-   private static final MobCategory[] SPAWNING_CATEGORIES = Stream.of(MobCategory.values())
-      .filter(var0 -> var0 != MobCategory.MISC)
-      .toArray(var0 -> new MobCategory[var0]);
+   private static final MobCategory[] SPAWNING_CATEGORIES = (MobCategory[])Stream.of(MobCategory.values()).filter((var0) -> {
+      return var0 != MobCategory.MISC;
+   }).toArray((var0) -> {
+      return new MobCategory[var0];
+   });
 
    private NaturalSpawner() {
       super();
    }
 
-   public static NaturalSpawner.SpawnState createState(int var0, Iterable<Entity> var1, NaturalSpawner.ChunkGetter var2, LocalMobCapCalculator var3) {
+   public static SpawnState createState(int var0, Iterable<Entity> var1, ChunkGetter var2, LocalMobCapCalculator var3) {
       PotentialCalculator var4 = new PotentialCalculator();
       Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
+      Iterator var6 = var1.iterator();
 
-      for(Entity var7 : var1) {
-         if (var7 instanceof Mob var8 && (var8.isPersistenceRequired() || var8.requiresCustomPersistence())) {
-            continue;
-         }
+      while(true) {
+         Entity var7;
+         Mob var8;
+         do {
+            if (!var6.hasNext()) {
+               return new SpawnState(var0, var5, var4, var3);
+            }
+
+            var7 = (Entity)var6.next();
+            if (!(var7 instanceof Mob)) {
+               break;
+            }
+
+            var8 = (Mob)var7;
+         } while(var8.isPersistenceRequired() || var8.requiresCustomPersistence());
 
          MobCategory var10 = var7.getType().getCategory();
          if (var10 != MobCategory.MISC) {
             BlockPos var9 = var7.blockPosition();
-            var2.query(ChunkPos.asLong(var9), var6 -> {
-               MobSpawnSettings.MobSpawnCost var7xx = getRoughBiome(var9, var6).getMobSettings().getMobSpawnCost(var7.getType());
-               if (var7xx != null) {
-                  var4.addCharge(var7.blockPosition(), var7xx.charge());
+            var2.query(ChunkPos.asLong(var9), (var6x) -> {
+               MobSpawnSettings.MobSpawnCost var7x = getRoughBiome(var9, var6x).getMobSettings().getMobSpawnCost(var7.getType());
+               if (var7x != null) {
+                  var4.addCharge(var7.blockPosition(), var7x.charge());
                }
 
                if (var7 instanceof Mob) {
-                  var3.addMob(var6.getPos(), var10);
+                  var3.addMob(var6x.getPos(), var10);
                }
 
                var5.addTo(var10, 1);
             });
          }
       }
-
-      return new NaturalSpawner.SpawnState(var0, var5, var4, var3);
    }
 
    static Biome getRoughBiome(BlockPos var0, ChunkAccess var1) {
-      return var1.getNoiseBiome(QuartPos.fromBlock(var0.getX()), QuartPos.fromBlock(var0.getY()), QuartPos.fromBlock(var0.getZ())).value();
+      return (Biome)var1.getNoiseBiome(QuartPos.fromBlock(var0.getX()), QuartPos.fromBlock(var0.getY()), QuartPos.fromBlock(var0.getZ())).value();
    }
 
-   public static void spawnForChunk(ServerLevel var0, LevelChunk var1, NaturalSpawner.SpawnState var2, boolean var3, boolean var4, boolean var5) {
+   public static void spawnForChunk(ServerLevel var0, LevelChunk var1, SpawnState var2, boolean var3, boolean var4, boolean var5) {
       var0.getProfiler().push("spawner");
+      MobCategory[] var6 = SPAWNING_CATEGORIES;
+      int var7 = var6.length;
 
-      for(MobCategory var9 : SPAWNING_CATEGORIES) {
+      for(int var8 = 0; var8 < var7; ++var8) {
+         MobCategory var9 = var6[var8];
          if ((var3 || !var9.isFriendly()) && (var4 || var9.isFriendly()) && (var5 || !var9.isPersistent()) && var2.canSpawnForCategory(var9, var1.getPos())) {
-            spawnCategoryForChunk(var9, var0, var1, var2::canSpawn, var2::afterSpawn);
+            Objects.requireNonNull(var2);
+            SpawnPredicate var10003 = var2::canSpawn;
+            Objects.requireNonNull(var2);
+            spawnCategoryForChunk(var9, var0, var1, var10003, var2::afterSpawn);
          }
       }
 
       var0.getProfiler().pop();
    }
 
-   public static void spawnCategoryForChunk(
-      MobCategory var0, ServerLevel var1, LevelChunk var2, NaturalSpawner.SpawnPredicate var3, NaturalSpawner.AfterSpawnCallback var4
-   ) {
+   public static void spawnCategoryForChunk(MobCategory var0, ServerLevel var1, LevelChunk var2, SpawnPredicate var3, AfterSpawnCallback var4) {
       BlockPos var5 = getRandomPosWithin(var1, var2);
       if (var5.getY() >= var1.getMinBuildHeight() + 1) {
          spawnCategoryForPosition(var0, var1, var2, var5, var3, var4);
@@ -116,13 +133,13 @@ public final class NaturalSpawner {
 
    @VisibleForDebug
    public static void spawnCategoryForPosition(MobCategory var0, ServerLevel var1, BlockPos var2) {
-      spawnCategoryForPosition(var0, var1, var1.getChunk(var2), var2, (var0x, var1x, var2x) -> true, (var0x, var1x) -> {
+      spawnCategoryForPosition(var0, var1, var1.getChunk(var2), var2, (var0x, var1x, var2x) -> {
+         return true;
+      }, (var0x, var1x) -> {
       });
    }
 
-   public static void spawnCategoryForPosition(
-      MobCategory var0, ServerLevel var1, ChunkAccess var2, BlockPos var3, NaturalSpawner.SpawnPredicate var4, NaturalSpawner.AfterSpawnCallback var5
-   ) {
+   public static void spawnCategoryForPosition(MobCategory var0, ServerLevel var1, ChunkAccess var2, BlockPos var3, SpawnPredicate var4, AfterSpawnCallback var5) {
       StructureManager var6 = var1.structureManager();
       ChunkGenerator var7 = var1.getChunkSource().getGenerator();
       int var8 = var3.getY();
@@ -186,6 +203,7 @@ public final class NaturalSpawner {
                }
             }
          }
+
       }
    }
 
@@ -195,32 +213,26 @@ public final class NaturalSpawner {
       } else if (var0.getSharedSpawnPos().closerToCenterThan(new Vec3((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5), 24.0)) {
          return false;
       } else {
-         return Objects.equals(new ChunkPos(var2), var1.getPos()) || var0.isNaturalSpawningAllowed(var2);
+         return Objects.equals(new ChunkPos(var2), var1.getPos()) || var0.isNaturalSpawningAllowed((BlockPos)var2);
       }
    }
 
-   private static boolean isValidSpawnPostitionForType(
-      ServerLevel var0,
-      MobCategory var1,
-      StructureManager var2,
-      ChunkGenerator var3,
-      MobSpawnSettings.SpawnerData var4,
-      BlockPos.MutableBlockPos var5,
-      double var6
-   ) {
+   private static boolean isValidSpawnPostitionForType(ServerLevel var0, MobCategory var1, StructureManager var2, ChunkGenerator var3, MobSpawnSettings.SpawnerData var4, BlockPos.MutableBlockPos var5, double var6) {
       EntityType var8 = var4.type;
       if (var8.getCategory() == MobCategory.MISC) {
          return false;
       } else if (!var8.canSpawnFarFromPlayer() && var6 > (double)(var8.getCategory().getDespawnDistance() * var8.getCategory().getDespawnDistance())) {
          return false;
-      } else if (!var8.canSummon() || !canSpawnMobAt(var0, var2, var3, var1, var4, var5)) {
-         return false;
-      } else if (!SpawnPlacements.isSpawnPositionOk(var8, var0, var5)) {
-         return false;
-      } else if (!SpawnPlacements.checkSpawnRules(var8, var0, MobSpawnType.NATURAL, var5, var0.random)) {
-         return false;
+      } else if (var8.canSummon() && canSpawnMobAt(var0, var2, var3, var1, var4, var5)) {
+         if (!SpawnPlacements.isSpawnPositionOk(var8, var0, var5)) {
+            return false;
+         } else if (!SpawnPlacements.checkSpawnRules(var8, var0, MobSpawnType.NATURAL, var5, var0.random)) {
+            return false;
+         } else {
+            return var0.noCollision(var8.getSpawnAABB((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5));
+         }
       } else {
-         return var0.noCollision(var8.getAABB((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5));
+         return false;
       }
    }
 
@@ -228,8 +240,8 @@ public final class NaturalSpawner {
    private static Mob getMobForSpawn(ServerLevel var0, EntityType<?> var1) {
       try {
          Entity var3 = var1.create(var0);
-         if (var3 instanceof Mob) {
-            return (Mob)var3;
+         if (var3 instanceof Mob var2) {
+            return var2;
          }
 
          LOGGER.warn("Can't spawn entity of type: {}", BuiltInRegistries.ENTITY_TYPE.getKey(var1));
@@ -241,40 +253,29 @@ public final class NaturalSpawner {
    }
 
    private static boolean isValidPositionForMob(ServerLevel var0, Mob var1, double var2) {
-      if (var2 > (double)(var1.getType().getCategory().getDespawnDistance() * var1.getType().getCategory().getDespawnDistance())
-         && var1.removeWhenFarAway(var2)) {
+      if (var2 > (double)(var1.getType().getCategory().getDespawnDistance() * var1.getType().getCategory().getDespawnDistance()) && var1.removeWhenFarAway(var2)) {
          return false;
       } else {
          return var1.checkSpawnRules(var0, MobSpawnType.NATURAL) && var1.checkSpawnObstruction(var0);
       }
    }
 
-   private static Optional<MobSpawnSettings.SpawnerData> getRandomSpawnMobAt(
-      ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, RandomSource var4, BlockPos var5
-   ) {
+   private static Optional<MobSpawnSettings.SpawnerData> getRandomSpawnMobAt(ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, RandomSource var4, BlockPos var5) {
       Holder var6 = var0.getBiome(var5);
-      return var3 == MobCategory.WATER_AMBIENT && var6.is(BiomeTags.REDUCED_WATER_AMBIENT_SPAWNS) && var4.nextFloat() < 0.98F
-         ? Optional.empty()
-         : mobsAt(var0, var1, var2, var3, var5, var6).getRandom(var4);
+      return var3 == MobCategory.WATER_AMBIENT && var6.is(BiomeTags.REDUCED_WATER_AMBIENT_SPAWNS) && var4.nextFloat() < 0.98F ? Optional.empty() : mobsAt(var0, var1, var2, var3, var5, var6).getRandom(var4);
    }
 
-   private static boolean canSpawnMobAt(
-      ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, MobSpawnSettings.SpawnerData var4, BlockPos var5
-   ) {
-      return mobsAt(var0, var1, var2, var3, var5, null).unwrap().contains(var4);
+   private static boolean canSpawnMobAt(ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, MobSpawnSettings.SpawnerData var4, BlockPos var5) {
+      return mobsAt(var0, var1, var2, var3, var5, (Holder)null).unwrap().contains(var4);
    }
 
-   private static WeightedRandomList<MobSpawnSettings.SpawnerData> mobsAt(
-      ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, BlockPos var4, @Nullable Holder<Biome> var5
-   ) {
-      return isInNetherFortressBounds(var4, var0, var3, var1)
-         ? NetherFortressStructure.FORTRESS_ENEMIES
-         : var2.getMobsAt(var5 != null ? var5 : var0.getBiome(var4), var1, var3, var4);
+   private static WeightedRandomList<MobSpawnSettings.SpawnerData> mobsAt(ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, BlockPos var4, @Nullable Holder<Biome> var5) {
+      return isInNetherFortressBounds(var4, var0, var3, var1) ? NetherFortressStructure.FORTRESS_ENEMIES : var2.getMobsAt(var5 != null ? var5 : var0.getBiome(var4), var1, var3, var4);
    }
 
    public static boolean isInNetherFortressBounds(BlockPos var0, ServerLevel var1, MobCategory var2, StructureManager var3) {
       if (var2 == MobCategory.MONSTER && var1.getBlockState(var0.below()).is(Blocks.NETHER_BRICKS)) {
-         Structure var4 = var3.registryAccess().registryOrThrow(Registries.STRUCTURE).get(BuiltinStructures.FORTRESS);
+         Structure var4 = (Structure)var3.registryAccess().registryOrThrow(Registries.STRUCTURE).get(BuiltinStructures.FORTRESS);
          return var4 == null ? false : var3.getStructureAt(var0, var4).isValid();
       } else {
          return false;
@@ -311,65 +312,64 @@ public final class NaturalSpawner {
          int var6 = var2.getMinBlockX();
          int var7 = var2.getMinBlockZ();
 
-         while(var3.nextFloat() < var4.getCreatureProbability()) {
-            Optional var8 = var5.getRandom(var3);
-            if (!var8.isEmpty()) {
-               MobSpawnSettings.SpawnerData var9 = (MobSpawnSettings.SpawnerData)var8.get();
-               int var10 = var9.minCount + var3.nextInt(1 + var9.maxCount - var9.minCount);
-               SpawnGroupData var11 = null;
-               int var12 = var6 + var3.nextInt(16);
-               int var13 = var7 + var3.nextInt(16);
-               int var14 = var12;
-               int var15 = var13;
+         while(true) {
+            Optional var8;
+            do {
+               if (!(var3.nextFloat() < var4.getCreatureProbability())) {
+                  return;
+               }
 
-               for(int var16 = 0; var16 < var10; ++var16) {
-                  boolean var17 = false;
+               var8 = var5.getRandom(var3);
+            } while(var8.isEmpty());
 
-                  for(int var18 = 0; !var17 && var18 < 4; ++var18) {
-                     BlockPos var19 = getTopNonCollidingPos(var0, var9.type, var12, var13);
-                     if (var9.type.canSummon() && SpawnPlacements.isSpawnPositionOk(var9.type, var0, var19)) {
-                        float var20 = var9.type.getWidth();
-                        double var21 = Mth.clamp((double)var12, (double)var6 + (double)var20, (double)var6 + 16.0 - (double)var20);
-                        double var23 = Mth.clamp((double)var13, (double)var7 + (double)var20, (double)var7 + 16.0 - (double)var20);
-                        if (!var0.noCollision(var9.type.getAABB(var21, (double)var19.getY(), var23))
-                           || !SpawnPlacements.checkSpawnRules(
-                              var9.type, var0, MobSpawnType.CHUNK_GENERATION, BlockPos.containing(var21, (double)var19.getY(), var23), var0.getRandom()
-                           )) {
-                           continue;
-                        }
+            MobSpawnSettings.SpawnerData var9 = (MobSpawnSettings.SpawnerData)var8.get();
+            int var10 = var9.minCount + var3.nextInt(1 + var9.maxCount - var9.minCount);
+            SpawnGroupData var11 = null;
+            int var12 = var6 + var3.nextInt(16);
+            int var13 = var7 + var3.nextInt(16);
+            int var14 = var12;
+            int var15 = var13;
 
-                        Entity var25;
-                        try {
-                           var25 = var9.type.create(var0.getLevel());
-                        } catch (Exception var27) {
-                           LOGGER.warn("Failed to create mob", var27);
-                           continue;
-                        }
+            for(int var16 = 0; var16 < var10; ++var16) {
+               boolean var17 = false;
 
-                        if (var25 == null) {
-                           continue;
-                        }
+               for(int var18 = 0; !var17 && var18 < 4; ++var18) {
+                  BlockPos var19 = getTopNonCollidingPos(var0, var9.type, var12, var13);
+                  if (var9.type.canSummon() && SpawnPlacements.isSpawnPositionOk(var9.type, var0, var19)) {
+                     float var20 = var9.type.getWidth();
+                     double var21 = Mth.clamp((double)var12, (double)var6 + (double)var20, (double)var6 + 16.0 - (double)var20);
+                     double var23 = Mth.clamp((double)var13, (double)var7 + (double)var20, (double)var7 + 16.0 - (double)var20);
+                     if (!var0.noCollision(var9.type.getSpawnAABB(var21, (double)var19.getY(), var23)) || !SpawnPlacements.checkSpawnRules(var9.type, var0, MobSpawnType.CHUNK_GENERATION, BlockPos.containing(var21, (double)var19.getY(), var23), var0.getRandom())) {
+                        continue;
+                     }
 
-                        var25.moveTo(var21, (double)var19.getY(), var23, var3.nextFloat() * 360.0F, 0.0F);
-                        if (var25 instanceof Mob var26
-                           && ((Mob)var26).checkSpawnRules(var0, MobSpawnType.CHUNK_GENERATION)
-                           && ((Mob)var26).checkSpawnObstruction(var0)) {
-                           var11 = ((Mob)var26).finalizeSpawn(
-                              var0, var0.getCurrentDifficultyAt(((Mob)var26).blockPosition()), MobSpawnType.CHUNK_GENERATION, var11
-                           );
-                           var0.addFreshEntityWithPassengers((Entity)var26);
+                     Entity var25;
+                     try {
+                        var25 = var9.type.create(var0.getLevel());
+                     } catch (Exception var27) {
+                        LOGGER.warn("Failed to create mob", var27);
+                        continue;
+                     }
+
+                     if (var25 == null) {
+                        continue;
+                     }
+
+                     var25.moveTo(var21, (double)var19.getY(), var23, var3.nextFloat() * 360.0F, 0.0F);
+                     if (var25 instanceof Mob) {
+                        Mob var26 = (Mob)var25;
+                        if (var26.checkSpawnRules(var0, MobSpawnType.CHUNK_GENERATION) && var26.checkSpawnObstruction(var0)) {
+                           var11 = var26.finalizeSpawn(var0, var0.getCurrentDifficultyAt(var26.blockPosition()), MobSpawnType.CHUNK_GENERATION, var11);
+                           var0.addFreshEntityWithPassengers(var26);
                            var17 = true;
                         }
                      }
+                  }
 
-                     var12 += var3.nextInt(5) - var3.nextInt(5);
+                  var12 += var3.nextInt(5) - var3.nextInt(5);
 
-                     for(var13 += var3.nextInt(5) - var3.nextInt(5);
-                        var12 < var6 || var12 >= var6 + 16 || var13 < var7 || var13 >= var7 + 16;
-                        var13 = var15 + var3.nextInt(5) - var3.nextInt(5)
-                     ) {
-                        var12 = var14 + var3.nextInt(5) - var3.nextInt(5);
-                     }
+                  for(var13 += var3.nextInt(5) - var3.nextInt(5); var12 < var6 || var12 >= var6 + 16 || var13 < var7 || var13 >= var7 + 16; var13 = var15 + var3.nextInt(5) - var3.nextInt(5)) {
+                     var12 = var14 + var3.nextInt(5) - var3.nextInt(5);
                   }
                }
             }
@@ -394,18 +394,8 @@ public final class NaturalSpawner {
    }
 
    @FunctionalInterface
-   public interface AfterSpawnCallback {
-      void run(Mob var1, ChunkAccess var2);
-   }
-
-   @FunctionalInterface
    public interface ChunkGetter {
       void query(long var1, Consumer<LevelChunk> var3);
-   }
-
-   @FunctionalInterface
-   public interface SpawnPredicate {
-      boolean test(EntityType<?> var1, BlockPos var2, ChunkAccess var3);
    }
 
    public static class SpawnState {
@@ -481,5 +471,15 @@ public final class NaturalSpawner {
             return this.localMobCapCalculator.canSpawn(var1, var2);
          }
       }
+   }
+
+   @FunctionalInterface
+   public interface SpawnPredicate {
+      boolean test(EntityType<?> var1, BlockPos var2, ChunkAccess var3);
+   }
+
+   @FunctionalInterface
+   public interface AfterSpawnCallback {
+      void run(Mob var1, ChunkAccess var2);
    }
 }

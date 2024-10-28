@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -33,13 +34,11 @@ public abstract class PatrollingMonster extends Monster {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
-      this.goalSelector.addGoal(4, new PatrollingMonster.LongDistancePatrolGoal<>(this, 0.7, 0.595));
+      this.goalSelector.addGoal(4, new LongDistancePatrolGoal(this, 0.7, 0.595));
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.patrolTarget != null) {
@@ -50,10 +49,11 @@ public abstract class PatrollingMonster extends Monster {
       var1.putBoolean("Patrolling", this.patrolling);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      NbtUtils.readBlockPos(var1, "patrol_target").ifPresent(var1x -> this.patrolTarget = var1x);
+      NbtUtils.readBlockPos(var1, "patrol_target").ifPresent((var1x) -> {
+         this.patrolTarget = var1x;
+      });
       this.patrolLeader = var1.getBoolean("PatrolLeader");
       this.patrolling = var1.getBoolean("Patrolling");
    }
@@ -63,13 +63,8 @@ public abstract class PatrollingMonster extends Monster {
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
-      if (var3 != MobSpawnType.PATROL
-         && var3 != MobSpawnType.EVENT
-         && var3 != MobSpawnType.STRUCTURE
-         && var1.getRandom().nextFloat() < 0.06F
-         && this.canBeLeader()) {
+      if (var3 != MobSpawnType.PATROL && var3 != MobSpawnType.EVENT && var3 != MobSpawnType.STRUCTURE && var1.getRandom().nextFloat() < 0.06F && this.canBeLeader()) {
          this.patrolLeader = true;
       }
 
@@ -85,13 +80,10 @@ public abstract class PatrollingMonster extends Monster {
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   public static boolean checkPatrollingMonsterSpawnRules(
-      EntityType<? extends PatrollingMonster> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
-   ) {
+   public static boolean checkPatrollingMonsterSpawnRules(EntityType<? extends PatrollingMonster> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       return var1.getBrightness(LightLayer.BLOCK, var3) > 8 ? false : checkAnyLightMonsterSpawnRules(var0, var1, var2, var3, var4);
    }
 
-   @Override
    public boolean removeWhenFarAway(double var1) {
       return !this.patrolling || var1 > 16384.0;
    }
@@ -151,21 +143,17 @@ public abstract class PatrollingMonster extends Monster {
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
-      @Override
       public boolean canUse() {
          boolean var1 = this.mob.level().getGameTime() < this.cooldownUntil;
          return this.mob.isPatrolling() && this.mob.getTarget() == null && !this.mob.hasControllingPassenger() && this.mob.hasPatrolTarget() && !var1;
       }
 
-      @Override
       public void start() {
       }
 
-      @Override
       public void stop() {
       }
 
-      @Override
       public void tick() {
          boolean var1 = this.mob.isPatrolLeader();
          PathNavigation var2 = this.mob.getNavigation();
@@ -187,25 +175,27 @@ public abstract class PatrollingMonster extends Monster {
                   this.moveRandomly();
                   this.cooldownUntil = this.mob.level().getGameTime() + 200L;
                } else if (var1) {
-                  for(PatrollingMonster var10 : var3) {
+                  Iterator var9 = var3.iterator();
+
+                  while(var9.hasNext()) {
+                     PatrollingMonster var10 = (PatrollingMonster)var9.next();
                      var10.setPatrolTarget(var8);
                   }
                }
             }
          }
+
       }
 
       private List<PatrollingMonster> findPatrolCompanions() {
-         return this.mob
-            .level()
-            .getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0), var1 -> var1.canJoinPatrol() && !var1.is(this.mob));
+         return this.mob.level().getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0), (var1) -> {
+            return var1.canJoinPatrol() && !var1.is(this.mob);
+         });
       }
 
       private boolean moveRandomly() {
          RandomSource var1 = this.mob.getRandom();
-         BlockPos var2 = this.mob
-            .level()
-            .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
+         BlockPos var2 = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
          return this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), this.speedModifier);
       }
    }

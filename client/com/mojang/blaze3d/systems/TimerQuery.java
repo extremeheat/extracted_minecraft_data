@@ -27,15 +27,28 @@ public class TimerQuery {
       }
    }
 
-   public TimerQuery.FrameProfile endProfile() {
+   public FrameProfile endProfile() {
       RenderSystem.assertOnRenderThread();
       if (this.nextQueryName == 0) {
          throw new IllegalStateException("endProfile called before beginProfile");
       } else {
          GL32C.glEndQuery(35007);
-         TimerQuery.FrameProfile var1 = new TimerQuery.FrameProfile(this.nextQueryName);
+         FrameProfile var1 = new FrameProfile(this.nextQueryName);
          this.nextQueryName = 0;
          return var1;
+      }
+   }
+
+   static class TimerQueryLazyLoader {
+      static final Optional<TimerQuery> INSTANCE = Optional.ofNullable(instantiate());
+
+      private TimerQueryLazyLoader() {
+         super();
+      }
+
+      @Nullable
+      private static TimerQuery instantiate() {
+         return !GL.getCapabilities().GL_ARB_timer_query ? null : new TimerQuery();
       }
    }
 
@@ -79,19 +92,6 @@ public class TimerQuery {
          }
 
          return this.result;
-      }
-   }
-
-   static class TimerQueryLazyLoader {
-      static final Optional<TimerQuery> INSTANCE = Optional.ofNullable(instantiate());
-
-      private TimerQueryLazyLoader() {
-         super();
-      }
-
-      @Nullable
-      private static TimerQuery instantiate() {
-         return !GL.getCapabilities().GL_ARB_timer_query ? null : new TimerQuery();
       }
    }
 }

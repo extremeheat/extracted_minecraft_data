@@ -15,33 +15,28 @@ public enum EmptyBlockGetter implements BlockGetter {
    }
 
    @Nullable
-   @Override
    public BlockEntity getBlockEntity(BlockPos var1) {
       return null;
    }
 
-   @Override
    public BlockState getBlockState(BlockPos var1) {
       return Blocks.AIR.defaultBlockState();
    }
 
-   @Override
    public FluidState getFluidState(BlockPos var1) {
       return Fluids.EMPTY.defaultFluidState();
    }
 
-   @Override
    public int getMinBuildHeight() {
       return 0;
    }
 
-   @Override
    public int getHeight() {
       return 0;
    }
 
-   @Override
-   public boolean isPotato() {
-      return false;
+   // $FF: synthetic method
+   private static EmptyBlockGetter[] $values() {
+      return new EmptyBlockGetter[]{INSTANCE};
    }
 }

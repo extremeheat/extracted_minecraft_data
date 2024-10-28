@@ -13,15 +13,9 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class MapExtendingRecipe extends ShapedRecipe {
    public MapExtendingRecipe(CraftingBookCategory var1) {
-      super(
-         "",
-         var1,
-         ShapedRecipePattern.of(Map.of('#', Ingredient.of(Items.PAPER), 'x', Ingredient.of(Items.FILLED_MAP)), "###", "#x#", "###"),
-         new ItemStack(Items.MAP)
-      );
+      super("", var1, ShapedRecipePattern.of(Map.of('#', Ingredient.of(Items.PAPER), 'x', Ingredient.of(Items.FILLED_MAP)), "###", "#x#", "###"), new ItemStack(Items.MAP));
    }
 
-   @Override
    public boolean matches(CraftingContainer var1, Level var2) {
       if (!super.matches(var1, var2)) {
          return false;
@@ -42,7 +36,6 @@ public class MapExtendingRecipe extends ShapedRecipe {
       }
    }
 
-   @Override
    public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = findFilledMap(var1).copyWithCount(1);
       var3.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
@@ -60,12 +53,10 @@ public class MapExtendingRecipe extends ShapedRecipe {
       return ItemStack.EMPTY;
    }
 
-   @Override
    public boolean isSpecial() {
       return true;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.MAP_EXTENDING;
    }

@@ -32,8 +32,9 @@ public class PistonStructureResolver {
          this.startPos = var2.relative(var3);
       } else {
          this.pushDirection = var3.getOpposite();
-         this.startPos = var2.relative(var3, 2);
+         this.startPos = var2.relative((Direction)var3, 2);
       }
+
    }
 
    public boolean resolve() {
@@ -51,7 +52,7 @@ public class PistonStructureResolver {
          return false;
       } else {
          for(int var2 = 0; var2 < this.toPush.size(); ++var2) {
-            BlockPos var3 = this.toPush.get(var2);
+            BlockPos var3 = (BlockPos)this.toPush.get(var2);
             if (isSticky(this.level.getBlockState(var3)) && !this.addBranchingBlocks(var3)) {
                return false;
             }
@@ -94,35 +95,34 @@ public class PistonStructureResolver {
                BlockPos var5 = var1.relative(this.pushDirection.getOpposite(), var4);
                BlockState var6 = var3;
                var3 = this.level.getBlockState(var5);
-               if (var3.isAir()
-                  || !canStickToEachOther(var6, var3)
-                  || !PistonBaseBlock.isPushable(var3, this.level, var5, this.pushDirection, false, this.pushDirection.getOpposite())
-                  || var5.equals(this.pistonPos)) {
+               if (var3.isAir() || !canStickToEachOther(var6, var3) || !PistonBaseBlock.isPushable(var3, this.level, var5, this.pushDirection, false, this.pushDirection.getOpposite()) || var5.equals(this.pistonPos)) {
                   break;
                }
 
-               if (++var4 + this.toPush.size() > 12) {
+               ++var4;
+               if (var4 + this.toPush.size() > 12) {
                   return false;
                }
             }
 
-            int var12 = 0;
+            int var11 = 0;
 
-            for(int var13 = var4 - 1; var13 >= 0; --var13) {
-               this.toPush.add(var1.relative(this.pushDirection.getOpposite(), var13));
-               ++var12;
+            int var12;
+            for(var12 = var4 - 1; var12 >= 0; --var12) {
+               this.toPush.add(var1.relative(this.pushDirection.getOpposite(), var12));
+               ++var11;
             }
 
-            int var14 = 1;
+            var12 = 1;
 
             while(true) {
-               BlockPos var7 = var1.relative(this.pushDirection, var14);
+               BlockPos var7 = var1.relative(this.pushDirection, var12);
                int var8 = this.toPush.indexOf(var7);
                if (var8 > -1) {
-                  this.reorderListAtCollision(var12, var8);
+                  this.reorderListAtCollision(var11, var8);
 
-                  for(int var9 = 0; var9 <= var8 + var12; ++var9) {
-                     BlockPos var10 = this.toPush.get(var9);
+                  for(int var9 = 0; var9 <= var8 + var11; ++var9) {
+                     BlockPos var10 = (BlockPos)this.toPush.get(var9);
                      if (isSticky(this.level.getBlockState(var10)) && !this.addBranchingBlocks(var10)) {
                         return false;
                      }
@@ -150,8 +150,8 @@ public class PistonStructureResolver {
                }
 
                this.toPush.add(var7);
+               ++var11;
                ++var12;
-               ++var14;
             }
          }
       }
@@ -172,8 +172,11 @@ public class PistonStructureResolver {
 
    private boolean addBranchingBlocks(BlockPos var1) {
       BlockState var2 = this.level.getBlockState(var1);
+      Direction[] var3 = Direction.values();
+      int var4 = var3.length;
 
-      for(Direction var6 : Direction.values()) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         Direction var6 = var3[var5];
          if (var6.getAxis() != this.pushDirection.getAxis()) {
             BlockPos var7 = var1.relative(var6);
             BlockState var8 = this.level.getBlockState(var7);

@@ -16,7 +16,8 @@ public class ProtocolCodecBuilder<B extends ByteBuf, L extends PacketListener> {
 
    public <T extends Packet<? super L>> ProtocolCodecBuilder<B, L> add(PacketType<T> var1, StreamCodec<? super B, T> var2) {
       if (var1.flow() != this.flow) {
-         throw new IllegalArgumentException("Invalid packet flow for packet " + var1 + ", expected " + this.flow.name());
+         String var10002 = String.valueOf(var1);
+         throw new IllegalArgumentException("Invalid packet flow for packet " + var10002 + ", expected " + this.flow.name());
       } else {
          this.dispatchBuilder.add(var1, var2);
          return this;

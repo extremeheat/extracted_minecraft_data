@@ -6,7 +6,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.DataFixerBuilder;
 import com.mojang.datafixers.Typed;
-import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.schemas.Schema;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Map;
@@ -28,6 +27,7 @@ import net.minecraft.util.datafix.fixes.AdvancementsFix;
 import net.minecraft.util.datafix.fixes.AdvancementsRenameFix;
 import net.minecraft.util.datafix.fixes.AreaEffectCloudPotionFix;
 import net.minecraft.util.datafix.fixes.AttributesRename;
+import net.minecraft.util.datafix.fixes.BannerEntityCustomNameToOverrideComponentFix;
 import net.minecraft.util.datafix.fixes.BannerPatternFormatFix;
 import net.minecraft.util.datafix.fixes.BedItemColorFix;
 import net.minecraft.util.datafix.fixes.BeehiveFieldRenameFix;
@@ -130,6 +130,7 @@ import net.minecraft.util.datafix.fixes.ItemRenameFix;
 import net.minecraft.util.datafix.fixes.ItemShulkerBoxColorFix;
 import net.minecraft.util.datafix.fixes.ItemSpawnEggFix;
 import net.minecraft.util.datafix.fixes.ItemStackComponentizationFix;
+import net.minecraft.util.datafix.fixes.ItemStackCustomNameToOverrideComponentFix;
 import net.minecraft.util.datafix.fixes.ItemStackEnchantmentNamesFix;
 import net.minecraft.util.datafix.fixes.ItemStackMapIdFix;
 import net.minecraft.util.datafix.fixes.ItemStackSpawnEggFix;
@@ -198,6 +199,7 @@ import net.minecraft.util.datafix.fixes.StructuresBecomeConfiguredFix;
 import net.minecraft.util.datafix.fixes.TeamDisplayNameFix;
 import net.minecraft.util.datafix.fixes.TippedArrowPotionToItemFix;
 import net.minecraft.util.datafix.fixes.TrappedChestBlockEntityFix;
+import net.minecraft.util.datafix.fixes.TrialSpawnerConfigFix;
 import net.minecraft.util.datafix.fixes.VariantRenameFix;
 import net.minecraft.util.datafix.fixes.VillagerDataFix;
 import net.minecraft.util.datafix.fixes.VillagerFollowRangeFix;
@@ -286,7 +288,7 @@ import net.minecraft.util.datafix.schemas.V3816;
 import net.minecraft.util.datafix.schemas.V3818;
 import net.minecraft.util.datafix.schemas.V3818_3;
 import net.minecraft.util.datafix.schemas.V3818_4;
-import net.minecraft.util.datafix.schemas.V3819;
+import net.minecraft.util.datafix.schemas.V3825;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -300,7 +302,7 @@ import net.minecraft.util.datafix.schemas.V99;
 public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME = Schema::new;
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
-   private static final DataFixer dataFixer = createFixerUpper(SharedConstants.DATA_FIX_TYPES_TO_OPTIMIZE);
+   private static final DataFixer dataFixer;
    public static final int BLENDING_VERSION = 3441;
 
    private DataFixers() {
@@ -311,15 +313,13 @@ public class DataFixers {
       return dataFixer;
    }
 
-   private static synchronized DataFixer createFixerUpper(Set<TypeReference> var0) {
+   private static synchronized DataFixer createFixerUpper(Set<DSL.TypeReference> var0) {
       DataFixerBuilder var1 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
       addFixers(var1);
       if (var0.isEmpty()) {
          return var1.buildUnoptimized();
       } else {
-         ExecutorService var2 = Executors.newSingleThreadExecutor(
-            new ThreadFactoryBuilder().setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build()
-         );
+         ExecutorService var2 = Executors.newSingleThreadExecutor((new ThreadFactoryBuilder()).setNameFormat("Datafixer Bootstrap").setDaemon(true).setPriority(1).build());
          return var1.buildOptimized(var0, var2);
       }
    }
@@ -360,13 +360,9 @@ public class DataFixers {
       Schema var16 = var0.addSchema(501, V501::new);
       var0.addFixer(new AddNewChoices(var16, "Add 1.10 entities fix", References.ENTITY));
       Schema var17 = var0.addSchema(502, SAME);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var17,
-            "cooked_fished item renamer",
-            var0x -> Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:cooked_fished") ? "minecraft:cooked_fish" : var0x
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var17, "cooked_fished item renamer", (var0x) -> {
+         return Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:cooked_fished") ? "minecraft:cooked_fish" : var0x;
+      }));
       var0.addFixer(new EntityZombieVillagerTypeFix(var17, false));
       Schema var18 = var0.addSchema(505, SAME);
       var0.addFixer(new OptionsForceVBOFix(var18, false));
@@ -421,37 +417,7 @@ public class DataFixers {
       var0.addFixer(new BlockNameFlatteningFix(var41, true));
       var0.addFixer(new ItemStackTheFlatteningFix(var41, false));
       Schema var42 = var0.addSchema(1451, 5, V1451_5::new);
-      var0.addFixer(
-         new ItemRemoveBlockEntityTagFix(
-            var42,
-            false,
-            Set.of(
-               "minecraft:note_block",
-               "minecraft:flower_pot",
-               "minecraft:dandelion",
-               "minecraft:poppy",
-               "minecraft:blue_orchid",
-               "minecraft:allium",
-               "minecraft:azure_bluet",
-               "minecraft:red_tulip",
-               "minecraft:orange_tulip",
-               "minecraft:white_tulip",
-               "minecraft:pink_tulip",
-               "minecraft:oxeye_daisy",
-               "minecraft:cactus",
-               "minecraft:brown_mushroom",
-               "minecraft:red_mushroom",
-               "minecraft:oak_sapling",
-               "minecraft:spruce_sapling",
-               "minecraft:birch_sapling",
-               "minecraft:jungle_sapling",
-               "minecraft:acacia_sapling",
-               "minecraft:dark_oak_sapling",
-               "minecraft:dead_bush",
-               "minecraft:fern"
-            )
-         )
-      );
+      var0.addFixer(new ItemRemoveBlockEntityTagFix(var42, false, Set.of("minecraft:note_block", "minecraft:flower_pot", "minecraft:dandelion", "minecraft:poppy", "minecraft:blue_orchid", "minecraft:allium", "minecraft:azure_bluet", "minecraft:red_tulip", "minecraft:orange_tulip", "minecraft:white_tulip", "minecraft:pink_tulip", "minecraft:oxeye_daisy", "minecraft:cactus", "minecraft:brown_mushroom", "minecraft:red_mushroom", "minecraft:oak_sapling", "minecraft:spruce_sapling", "minecraft:birch_sapling", "minecraft:jungle_sapling", "minecraft:acacia_sapling", "minecraft:dark_oak_sapling", "minecraft:dead_bush", "minecraft:fern")));
       var0.addFixer(new AddNewChoices(var42, "RemoveNoteBlockFlowerPotFix", References.BLOCK_ENTITY));
       var0.addFixer(new ItemStackSpawnEggFix(var42, false, "minecraft:spawn_egg"));
       var0.addFixer(new EntityWolfColorFix(var42, false));
@@ -477,26 +443,14 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var49, "Add 1.13 entities fix", References.ENTITY));
       Schema var50 = var0.addSchema(1474, SAME_NAMESPACED);
       var0.addFixer(new ColorlessShulkerEntityFix(var50, false));
-      var0.addFixer(
-         BlockRenameFix.create(
-            var50,
-            "Colorless shulker block fixer",
-            var0x -> Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x
-         )
-      );
-      var0.addFixer(
-         ItemRenameFix.create(
-            var50,
-            "Colorless shulker item fixer",
-            var0x -> Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x
-         )
-      );
+      var0.addFixer(BlockRenameFix.create(var50, "Colorless shulker block fixer", (var0x) -> {
+         return Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x;
+      }));
+      var0.addFixer(ItemRenameFix.create(var50, "Colorless shulker item fixer", (var0x) -> {
+         return Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x;
+      }));
       Schema var51 = var0.addSchema(1475, SAME_NAMESPACED);
-      var0.addFixer(
-         BlockRenameFix.create(
-            var51, "Flowing fixer", createRenamer(ImmutableMap.of("minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava"))
-         )
-      );
+      var0.addFixer(BlockRenameFix.create(var51, "Flowing fixer", createRenamer(ImmutableMap.of("minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava"))));
       Schema var52 = var0.addSchema(1480, SAME_NAMESPACED);
       var0.addFixer(BlockRenameFix.create(var52, "Rename coral blocks", createRenamer(RenamedCoralFix.RENAMED_IDS)));
       var0.addFixer(ItemRenameFix.create(var52, "Rename coral items", createRenamer(RenamedCoralFix.RENAMED_IDS)));
@@ -506,68 +460,24 @@ public class DataFixers {
       var0.addFixer(new EntityPufferfishRenameFix(var54, true));
       var0.addFixer(ItemRenameFix.create(var54, "Rename pufferfish egg item", createRenamer(EntityPufferfishRenameFix.RENAMED_IDS)));
       Schema var55 = var0.addSchema(1484, SAME_NAMESPACED);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var55,
-            "Rename seagrass items",
-            createRenamer(ImmutableMap.of("minecraft:sea_grass", "minecraft:seagrass", "minecraft:tall_sea_grass", "minecraft:tall_seagrass"))
-         )
-      );
-      var0.addFixer(
-         BlockRenameFix.create(
-            var55,
-            "Rename seagrass blocks",
-            createRenamer(ImmutableMap.of("minecraft:sea_grass", "minecraft:seagrass", "minecraft:tall_sea_grass", "minecraft:tall_seagrass"))
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var55, "Rename seagrass items", createRenamer(ImmutableMap.of("minecraft:sea_grass", "minecraft:seagrass", "minecraft:tall_sea_grass", "minecraft:tall_seagrass"))));
+      var0.addFixer(BlockRenameFix.create(var55, "Rename seagrass blocks", createRenamer(ImmutableMap.of("minecraft:sea_grass", "minecraft:seagrass", "minecraft:tall_sea_grass", "minecraft:tall_seagrass"))));
       var0.addFixer(new HeightmapRenamingFix(var55, false));
       Schema var56 = var0.addSchema(1486, V1486::new);
       var0.addFixer(new EntityCodSalmonFix(var56, true));
       var0.addFixer(ItemRenameFix.create(var56, "Rename cod/salmon egg items", createRenamer(EntityCodSalmonFix.RENAMED_EGG_IDS)));
       Schema var57 = var0.addSchema(1487, SAME_NAMESPACED);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var57,
-            "Rename prismarine_brick(s)_* blocks",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:prismarine_bricks_slab",
-                  "minecraft:prismarine_brick_slab",
-                  "minecraft:prismarine_bricks_stairs",
-                  "minecraft:prismarine_brick_stairs"
-               )
-            )
-         )
-      );
-      var0.addFixer(
-         BlockRenameFix.create(
-            var57,
-            "Rename prismarine_brick(s)_* items",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:prismarine_bricks_slab",
-                  "minecraft:prismarine_brick_slab",
-                  "minecraft:prismarine_bricks_stairs",
-                  "minecraft:prismarine_brick_stairs"
-               )
-            )
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var57, "Rename prismarine_brick(s)_* blocks", createRenamer(ImmutableMap.of("minecraft:prismarine_bricks_slab", "minecraft:prismarine_brick_slab", "minecraft:prismarine_bricks_stairs", "minecraft:prismarine_brick_stairs"))));
+      var0.addFixer(BlockRenameFix.create(var57, "Rename prismarine_brick(s)_* items", createRenamer(ImmutableMap.of("minecraft:prismarine_bricks_slab", "minecraft:prismarine_brick_slab", "minecraft:prismarine_bricks_stairs", "minecraft:prismarine_brick_stairs"))));
       Schema var58 = var0.addSchema(1488, SAME_NAMESPACED);
-      var0.addFixer(
-         BlockRenameFix.create(
-            var58, "Rename kelp/kelptop", createRenamer(ImmutableMap.of("minecraft:kelp_top", "minecraft:kelp", "minecraft:kelp", "minecraft:kelp_plant"))
-         )
-      );
+      var0.addFixer(BlockRenameFix.create(var58, "Rename kelp/kelptop", createRenamer(ImmutableMap.of("minecraft:kelp_top", "minecraft:kelp", "minecraft:kelp", "minecraft:kelp_plant"))));
       var0.addFixer(ItemRenameFix.create(var58, "Rename kelptop", createRenamer("minecraft:kelp_top", "minecraft:kelp")));
       var0.addFixer(new NamedEntityFix(var58, false, "Command block block entity custom name fix", References.BLOCK_ENTITY, "minecraft:command_block") {
-         @Override
          protected Typed<?> fix(Typed<?> var1) {
             return var1.update(DSL.remainderFinder(), EntityCustomNameToComponentFix::fixTagCustomName);
          }
       });
       var0.addFixer(new NamedEntityFix(var58, false, "Command block minecart custom name fix", References.ENTITY, "minecraft:commandblock_minecart") {
-         @Override
          protected Typed<?> fix(Typed<?> var1) {
             return var1.update(DSL.remainderFinder(), EntityCustomNameToComponentFix::fixTagCustomName);
          }
@@ -575,22 +485,7 @@ public class DataFixers {
       var0.addFixer(new IglooMetadataRemovalFix(var58, false));
       Schema var59 = var0.addSchema(1490, SAME_NAMESPACED);
       var0.addFixer(BlockRenameFix.create(var59, "Rename melon_block", createRenamer("minecraft:melon_block", "minecraft:melon")));
-      var0.addFixer(
-         ItemRenameFix.create(
-            var59,
-            "Rename melon_block/melon/speckled_melon",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:melon_block",
-                  "minecraft:melon",
-                  "minecraft:melon",
-                  "minecraft:melon_slice",
-                  "minecraft:speckled_melon",
-                  "minecraft:glistering_melon_slice"
-               )
-            )
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var59, "Rename melon_block/melon/speckled_melon", createRenamer(ImmutableMap.of("minecraft:melon_block", "minecraft:melon", "minecraft:melon", "minecraft:melon_slice", "minecraft:speckled_melon", "minecraft:glistering_melon_slice"))));
       Schema var60 = var0.addSchema(1492, SAME_NAMESPACED);
       var0.addFixer(new ChunkStructuresTemplateRenameFix(var60, false));
       Schema var61 = var0.addSchema(1494, SAME_NAMESPACED);
@@ -610,13 +505,7 @@ public class DataFixers {
       var0.addFixer(ItemRenameFix.create(var67, "Item renamening fix", createRenamer(EntityTheRenameningFix.RENAMED_ITEMS)));
       var0.addFixer(new NamespacedTypeRenameFix(var67, "Recipes renamening fix", References.RECIPE, createRenamer(RecipesRenameningFix.RECIPES)));
       var0.addFixer(new EntityTheRenameningFix(var67, true));
-      var0.addFixer(
-         new StatsRenameFix(
-            var67,
-            "SwimStatsRenameFix",
-            ImmutableMap.of("minecraft:swim_one_cm", "minecraft:walk_on_water_one_cm", "minecraft:dive_one_cm", "minecraft:walk_under_water_one_cm")
-         )
-      );
+      var0.addFixer(new StatsRenameFix(var67, "SwimStatsRenameFix", ImmutableMap.of("minecraft:swim_one_cm", "minecraft:walk_on_water_one_cm", "minecraft:dive_one_cm", "minecraft:walk_under_water_one_cm")));
       Schema var68 = var0.addSchema(1514, SAME_NAMESPACED);
       var0.addFixer(new ObjectiveDisplayNameFix(var68, false));
       var0.addFixer(new TeamDisplayNameFix(var68, false));
@@ -631,29 +520,8 @@ public class DataFixers {
       Schema var72 = var0.addSchema(1801, V1801::new);
       var0.addFixer(new AddNewChoices(var72, "Added Illager Beast", References.ENTITY));
       Schema var73 = var0.addSchema(1802, SAME_NAMESPACED);
-      var0.addFixer(
-         BlockRenameFix.create(
-            var73,
-            "Rename sign blocks & stone slabs",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:stone_slab",
-                  "minecraft:smooth_stone_slab",
-                  "minecraft:sign",
-                  "minecraft:oak_sign",
-                  "minecraft:wall_sign",
-                  "minecraft:oak_wall_sign"
-               )
-            )
-         )
-      );
-      var0.addFixer(
-         ItemRenameFix.create(
-            var73,
-            "Rename sign item & stone slabs",
-            createRenamer(ImmutableMap.of("minecraft:stone_slab", "minecraft:smooth_stone_slab", "minecraft:sign", "minecraft:oak_sign"))
-         )
-      );
+      var0.addFixer(BlockRenameFix.create(var73, "Rename sign blocks & stone slabs", createRenamer(ImmutableMap.of("minecraft:stone_slab", "minecraft:smooth_stone_slab", "minecraft:sign", "minecraft:oak_sign", "minecraft:wall_sign", "minecraft:oak_wall_sign"))));
+      var0.addFixer(ItemRenameFix.create(var73, "Rename sign item & stone slabs", createRenamer(ImmutableMap.of("minecraft:stone_slab", "minecraft:smooth_stone_slab", "minecraft:sign", "minecraft:oak_sign"))));
       Schema var74 = var0.addSchema(1803, SAME_NAMESPACED);
       var0.addFixer(new ItemLoreFix(var74, false));
       Schema var75 = var0.addSchema(1904, V1904::new);
@@ -704,14 +572,8 @@ public class DataFixers {
       Schema var95 = var0.addSchema(2100, V2100::new);
       var0.addFixer(new AddNewChoices(var95, "Added Bee and Bee Stinger", References.ENTITY));
       var0.addFixer(new AddNewChoices(var95, "Add beehive", References.BLOCK_ENTITY));
-      var0.addFixer(
-         new NamespacedTypeRenameFix(var95, "Rename sugar recipe", References.RECIPE, createRenamer("minecraft:sugar", "minecraft:sugar_from_sugar_cane"))
-      );
-      var0.addFixer(
-         new AdvancementsRenameFix(
-            var95, false, "Rename sugar recipe advancement", createRenamer("minecraft:recipes/misc/sugar", "minecraft:recipes/misc/sugar_from_sugar_cane")
-         )
-      );
+      var0.addFixer(new NamespacedTypeRenameFix(var95, "Rename sugar recipe", References.RECIPE, createRenamer("minecraft:sugar", "minecraft:sugar_from_sugar_cane")));
+      var0.addFixer(new AdvancementsRenameFix(var95, false, "Rename sugar recipe advancement", createRenamer("minecraft:recipes/misc/sugar", "minecraft:recipes/misc/sugar_from_sugar_cane")));
       Schema var96 = var0.addSchema(2202, SAME_NAMESPACED);
       var0.addFixer(new ChunkBiomeFix(var96, false));
       Schema var97 = var0.addSchema(2209, SAME_NAMESPACED);
@@ -729,29 +591,13 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var102, "Added Hoglin", References.ENTITY));
       Schema var103 = var0.addSchema(2503, SAME_NAMESPACED);
       var0.addFixer(new WallPropertyFix(var103, false));
-      var0.addFixer(
-         new AdvancementsRenameFix(
-            var103, false, "Composter category change", createRenamer("minecraft:recipes/misc/composter", "minecraft:recipes/decorations/composter")
-         )
-      );
+      var0.addFixer(new AdvancementsRenameFix(var103, false, "Composter category change", createRenamer("minecraft:recipes/misc/composter", "minecraft:recipes/decorations/composter")));
       Schema var104 = var0.addSchema(2505, V2505::new);
       var0.addFixer(new AddNewChoices(var104, "Added Piglin", References.ENTITY));
       var0.addFixer(new MemoryExpiryDataFix(var104, "minecraft:villager"));
       Schema var105 = var0.addSchema(2508, SAME_NAMESPACED);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var105,
-            "Renamed fungi items to fungus",
-            createRenamer(ImmutableMap.of("minecraft:warped_fungi", "minecraft:warped_fungus", "minecraft:crimson_fungi", "minecraft:crimson_fungus"))
-         )
-      );
-      var0.addFixer(
-         BlockRenameFix.create(
-            var105,
-            "Renamed fungi blocks to fungus",
-            createRenamer(ImmutableMap.of("minecraft:warped_fungi", "minecraft:warped_fungus", "minecraft:crimson_fungi", "minecraft:crimson_fungus"))
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var105, "Renamed fungi items to fungus", createRenamer(ImmutableMap.of("minecraft:warped_fungi", "minecraft:warped_fungus", "minecraft:crimson_fungi", "minecraft:crimson_fungus"))));
+      var0.addFixer(BlockRenameFix.create(var105, "Renamed fungi blocks to fungus", createRenamer(ImmutableMap.of("minecraft:warped_fungi", "minecraft:warped_fungus", "minecraft:crimson_fungi", "minecraft:crimson_fungus"))));
       Schema var106 = var0.addSchema(2509, V2509::new);
       var0.addFixer(new EntityZombifiedPiglinRenameFix(var106));
       var0.addFixer(ItemRenameFix.create(var106, "Rename zombie pigman egg item", createRenamer(EntityZombifiedPiglinRenameFix.RENAMED_IDS)));
@@ -775,60 +621,12 @@ public class DataFixers {
       Schema var112 = var0.addSchema(2522, V2522::new);
       var0.addFixer(new AddNewChoices(var112, "Added Zoglin", References.ENTITY));
       Schema var113 = var0.addSchema(2523, SAME_NAMESPACED);
-      var0.addFixer(
-         new AttributesRename(
-            var113,
-            "Attribute renames",
-            createRenamerNoNamespace(
-               ImmutableMap.builder()
-                  .put("generic.maxHealth", "minecraft:generic.max_health")
-                  .put("Max Health", "minecraft:generic.max_health")
-                  .put("zombie.spawnReinforcements", "minecraft:zombie.spawn_reinforcements")
-                  .put("Spawn Reinforcements Chance", "minecraft:zombie.spawn_reinforcements")
-                  .put("horse.jumpStrength", "minecraft:horse.jump_strength")
-                  .put("Jump Strength", "minecraft:horse.jump_strength")
-                  .put("generic.followRange", "minecraft:generic.follow_range")
-                  .put("Follow Range", "minecraft:generic.follow_range")
-                  .put("generic.knockbackResistance", "minecraft:generic.knockback_resistance")
-                  .put("Knockback Resistance", "minecraft:generic.knockback_resistance")
-                  .put("generic.movementSpeed", "minecraft:generic.movement_speed")
-                  .put("Movement Speed", "minecraft:generic.movement_speed")
-                  .put("generic.flyingSpeed", "minecraft:generic.flying_speed")
-                  .put("Flying Speed", "minecraft:generic.flying_speed")
-                  .put("generic.attackDamage", "minecraft:generic.attack_damage")
-                  .put("generic.attackKnockback", "minecraft:generic.attack_knockback")
-                  .put("generic.attackSpeed", "minecraft:generic.attack_speed")
-                  .put("generic.armorToughness", "minecraft:generic.armor_toughness")
-                  .build()
-            )
-         )
-      );
+      var0.addFixer(new AttributesRename(var113, "Attribute renames", createRenamerNoNamespace(ImmutableMap.builder().put("generic.maxHealth", "minecraft:generic.max_health").put("Max Health", "minecraft:generic.max_health").put("zombie.spawnReinforcements", "minecraft:zombie.spawn_reinforcements").put("Spawn Reinforcements Chance", "minecraft:zombie.spawn_reinforcements").put("horse.jumpStrength", "minecraft:horse.jump_strength").put("Jump Strength", "minecraft:horse.jump_strength").put("generic.followRange", "minecraft:generic.follow_range").put("Follow Range", "minecraft:generic.follow_range").put("generic.knockbackResistance", "minecraft:generic.knockback_resistance").put("Knockback Resistance", "minecraft:generic.knockback_resistance").put("generic.movementSpeed", "minecraft:generic.movement_speed").put("Movement Speed", "minecraft:generic.movement_speed").put("generic.flyingSpeed", "minecraft:generic.flying_speed").put("Flying Speed", "minecraft:generic.flying_speed").put("generic.attackDamage", "minecraft:generic.attack_damage").put("generic.attackKnockback", "minecraft:generic.attack_knockback").put("generic.attackSpeed", "minecraft:generic.attack_speed").put("generic.armorToughness", "minecraft:generic.armor_toughness").build())));
       Schema var114 = var0.addSchema(2527, SAME_NAMESPACED);
       var0.addFixer(new BitStorageAlignFix(var114));
       Schema var115 = var0.addSchema(2528, SAME_NAMESPACED);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var115,
-            "Rename soul fire torch and soul fire lantern",
-            createRenamer(ImmutableMap.of("minecraft:soul_fire_torch", "minecraft:soul_torch", "minecraft:soul_fire_lantern", "minecraft:soul_lantern"))
-         )
-      );
-      var0.addFixer(
-         BlockRenameFix.create(
-            var115,
-            "Rename soul fire torch and soul fire lantern",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:soul_fire_torch",
-                  "minecraft:soul_torch",
-                  "minecraft:soul_fire_wall_torch",
-                  "minecraft:soul_wall_torch",
-                  "minecraft:soul_fire_lantern",
-                  "minecraft:soul_lantern"
-               )
-            )
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var115, "Rename soul fire torch and soul fire lantern", createRenamer(ImmutableMap.of("minecraft:soul_fire_torch", "minecraft:soul_torch", "minecraft:soul_fire_lantern", "minecraft:soul_lantern"))));
+      var0.addFixer(BlockRenameFix.create(var115, "Rename soul fire torch and soul fire lantern", createRenamer(ImmutableMap.of("minecraft:soul_fire_torch", "minecraft:soul_torch", "minecraft:soul_fire_wall_torch", "minecraft:soul_wall_torch", "minecraft:soul_fire_lantern", "minecraft:soul_lantern"))));
       Schema var116 = var0.addSchema(2529, SAME_NAMESPACED);
       var0.addFixer(new StriderGravityFix(var116, false));
       Schema var117 = var0.addSchema(2531, SAME_NAMESPACED);
@@ -867,71 +665,21 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var132, "Added Glow Squid", References.ENTITY));
       var0.addFixer(new AddNewChoices(var132, "Added Glow Item Frame", References.ENTITY));
       Schema var133 = var0.addSchema(2690, SAME_NAMESPACED);
-      ImmutableMap var134 = ImmutableMap.builder()
-         .put("minecraft:weathered_copper_block", "minecraft:oxidized_copper_block")
-         .put("minecraft:semi_weathered_copper_block", "minecraft:weathered_copper_block")
-         .put("minecraft:lightly_weathered_copper_block", "minecraft:exposed_copper_block")
-         .put("minecraft:weathered_cut_copper", "minecraft:oxidized_cut_copper")
-         .put("minecraft:semi_weathered_cut_copper", "minecraft:weathered_cut_copper")
-         .put("minecraft:lightly_weathered_cut_copper", "minecraft:exposed_cut_copper")
-         .put("minecraft:weathered_cut_copper_stairs", "minecraft:oxidized_cut_copper_stairs")
-         .put("minecraft:semi_weathered_cut_copper_stairs", "minecraft:weathered_cut_copper_stairs")
-         .put("minecraft:lightly_weathered_cut_copper_stairs", "minecraft:exposed_cut_copper_stairs")
-         .put("minecraft:weathered_cut_copper_slab", "minecraft:oxidized_cut_copper_slab")
-         .put("minecraft:semi_weathered_cut_copper_slab", "minecraft:weathered_cut_copper_slab")
-         .put("minecraft:lightly_weathered_cut_copper_slab", "minecraft:exposed_cut_copper_slab")
-         .put("minecraft:waxed_semi_weathered_copper", "minecraft:waxed_weathered_copper")
-         .put("minecraft:waxed_lightly_weathered_copper", "minecraft:waxed_exposed_copper")
-         .put("minecraft:waxed_semi_weathered_cut_copper", "minecraft:waxed_weathered_cut_copper")
-         .put("minecraft:waxed_lightly_weathered_cut_copper", "minecraft:waxed_exposed_cut_copper")
-         .put("minecraft:waxed_semi_weathered_cut_copper_stairs", "minecraft:waxed_weathered_cut_copper_stairs")
-         .put("minecraft:waxed_lightly_weathered_cut_copper_stairs", "minecraft:waxed_exposed_cut_copper_stairs")
-         .put("minecraft:waxed_semi_weathered_cut_copper_slab", "minecraft:waxed_weathered_cut_copper_slab")
-         .put("minecraft:waxed_lightly_weathered_cut_copper_slab", "minecraft:waxed_exposed_cut_copper_slab")
-         .build();
+      ImmutableMap var134 = ImmutableMap.builder().put("minecraft:weathered_copper_block", "minecraft:oxidized_copper_block").put("minecraft:semi_weathered_copper_block", "minecraft:weathered_copper_block").put("minecraft:lightly_weathered_copper_block", "minecraft:exposed_copper_block").put("minecraft:weathered_cut_copper", "minecraft:oxidized_cut_copper").put("minecraft:semi_weathered_cut_copper", "minecraft:weathered_cut_copper").put("minecraft:lightly_weathered_cut_copper", "minecraft:exposed_cut_copper").put("minecraft:weathered_cut_copper_stairs", "minecraft:oxidized_cut_copper_stairs").put("minecraft:semi_weathered_cut_copper_stairs", "minecraft:weathered_cut_copper_stairs").put("minecraft:lightly_weathered_cut_copper_stairs", "minecraft:exposed_cut_copper_stairs").put("minecraft:weathered_cut_copper_slab", "minecraft:oxidized_cut_copper_slab").put("minecraft:semi_weathered_cut_copper_slab", "minecraft:weathered_cut_copper_slab").put("minecraft:lightly_weathered_cut_copper_slab", "minecraft:exposed_cut_copper_slab").put("minecraft:waxed_semi_weathered_copper", "minecraft:waxed_weathered_copper").put("minecraft:waxed_lightly_weathered_copper", "minecraft:waxed_exposed_copper").put("minecraft:waxed_semi_weathered_cut_copper", "minecraft:waxed_weathered_cut_copper").put("minecraft:waxed_lightly_weathered_cut_copper", "minecraft:waxed_exposed_cut_copper").put("minecraft:waxed_semi_weathered_cut_copper_stairs", "minecraft:waxed_weathered_cut_copper_stairs").put("minecraft:waxed_lightly_weathered_cut_copper_stairs", "minecraft:waxed_exposed_cut_copper_stairs").put("minecraft:waxed_semi_weathered_cut_copper_slab", "minecraft:waxed_weathered_cut_copper_slab").put("minecraft:waxed_lightly_weathered_cut_copper_slab", "minecraft:waxed_exposed_cut_copper_slab").build();
       var0.addFixer(ItemRenameFix.create(var133, "Renamed copper block items to new oxidized terms", createRenamer(var134)));
       var0.addFixer(BlockRenameFix.create(var133, "Renamed copper blocks to new oxidized terms", createRenamer(var134)));
       Schema var135 = var0.addSchema(2691, SAME_NAMESPACED);
-      ImmutableMap var136 = ImmutableMap.builder()
-         .put("minecraft:waxed_copper", "minecraft:waxed_copper_block")
-         .put("minecraft:oxidized_copper_block", "minecraft:oxidized_copper")
-         .put("minecraft:weathered_copper_block", "minecraft:weathered_copper")
-         .put("minecraft:exposed_copper_block", "minecraft:exposed_copper")
-         .build();
+      ImmutableMap var136 = ImmutableMap.builder().put("minecraft:waxed_copper", "minecraft:waxed_copper_block").put("minecraft:oxidized_copper_block", "minecraft:oxidized_copper").put("minecraft:weathered_copper_block", "minecraft:weathered_copper").put("minecraft:exposed_copper_block", "minecraft:exposed_copper").build();
       var0.addFixer(ItemRenameFix.create(var135, "Rename copper item suffixes", createRenamer(var136)));
       var0.addFixer(BlockRenameFix.create(var135, "Rename copper blocks suffixes", createRenamer(var136)));
       Schema var137 = var0.addSchema(2693, SAME_NAMESPACED);
       var0.addFixer(new AddFlagIfNotPresentFix(var137, References.WORLD_GEN_SETTINGS, "has_increased_height_already", false));
       Schema var138 = var0.addSchema(2696, SAME_NAMESPACED);
-      ImmutableMap var139 = ImmutableMap.builder()
-         .put("minecraft:grimstone", "minecraft:deepslate")
-         .put("minecraft:grimstone_slab", "minecraft:cobbled_deepslate_slab")
-         .put("minecraft:grimstone_stairs", "minecraft:cobbled_deepslate_stairs")
-         .put("minecraft:grimstone_wall", "minecraft:cobbled_deepslate_wall")
-         .put("minecraft:polished_grimstone", "minecraft:polished_deepslate")
-         .put("minecraft:polished_grimstone_slab", "minecraft:polished_deepslate_slab")
-         .put("minecraft:polished_grimstone_stairs", "minecraft:polished_deepslate_stairs")
-         .put("minecraft:polished_grimstone_wall", "minecraft:polished_deepslate_wall")
-         .put("minecraft:grimstone_tiles", "minecraft:deepslate_tiles")
-         .put("minecraft:grimstone_tile_slab", "minecraft:deepslate_tile_slab")
-         .put("minecraft:grimstone_tile_stairs", "minecraft:deepslate_tile_stairs")
-         .put("minecraft:grimstone_tile_wall", "minecraft:deepslate_tile_wall")
-         .put("minecraft:grimstone_bricks", "minecraft:deepslate_bricks")
-         .put("minecraft:grimstone_brick_slab", "minecraft:deepslate_brick_slab")
-         .put("minecraft:grimstone_brick_stairs", "minecraft:deepslate_brick_stairs")
-         .put("minecraft:grimstone_brick_wall", "minecraft:deepslate_brick_wall")
-         .put("minecraft:chiseled_grimstone", "minecraft:chiseled_deepslate")
-         .build();
+      ImmutableMap var139 = ImmutableMap.builder().put("minecraft:grimstone", "minecraft:deepslate").put("minecraft:grimstone_slab", "minecraft:cobbled_deepslate_slab").put("minecraft:grimstone_stairs", "minecraft:cobbled_deepslate_stairs").put("minecraft:grimstone_wall", "minecraft:cobbled_deepslate_wall").put("minecraft:polished_grimstone", "minecraft:polished_deepslate").put("minecraft:polished_grimstone_slab", "minecraft:polished_deepslate_slab").put("minecraft:polished_grimstone_stairs", "minecraft:polished_deepslate_stairs").put("minecraft:polished_grimstone_wall", "minecraft:polished_deepslate_wall").put("minecraft:grimstone_tiles", "minecraft:deepslate_tiles").put("minecraft:grimstone_tile_slab", "minecraft:deepslate_tile_slab").put("minecraft:grimstone_tile_stairs", "minecraft:deepslate_tile_stairs").put("minecraft:grimstone_tile_wall", "minecraft:deepslate_tile_wall").put("minecraft:grimstone_bricks", "minecraft:deepslate_bricks").put("minecraft:grimstone_brick_slab", "minecraft:deepslate_brick_slab").put("minecraft:grimstone_brick_stairs", "minecraft:deepslate_brick_stairs").put("minecraft:grimstone_brick_wall", "minecraft:deepslate_brick_wall").put("minecraft:chiseled_grimstone", "minecraft:chiseled_deepslate").build();
       var0.addFixer(ItemRenameFix.create(var138, "Renamed grimstone block items to deepslate", createRenamer(var139)));
       var0.addFixer(BlockRenameFix.create(var138, "Renamed grimstone blocks to deepslate", createRenamer(var139)));
       Schema var140 = var0.addSchema(2700, SAME_NAMESPACED);
-      var0.addFixer(
-         BlockRenameFix.create(
-            var140,
-            "Renamed cave vines blocks",
-            createRenamer(ImmutableMap.of("minecraft:cave_vines_head", "minecraft:cave_vines", "minecraft:cave_vines_body", "minecraft:cave_vines_plant"))
-         )
-      );
+      var0.addFixer(BlockRenameFix.create(var140, "Renamed cave vines blocks", createRenamer(ImmutableMap.of("minecraft:cave_vines_head", "minecraft:cave_vines", "minecraft:cave_vines_body", "minecraft:cave_vines_plant"))));
       Schema var141 = var0.addSchema(2701, SAME_NAMESPACED);
       var0.addFixer(new SavedDataFeaturePoolElementFix(var141));
       Schema var142 = var0.addSchema(2702, SAME_NAMESPACED);
@@ -942,22 +690,10 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var144, "Added Marker", References.ENTITY));
       var0.addFixer(new AddFlagIfNotPresentFix(var144, References.WORLD_GEN_SETTINGS, "has_increased_height_already", true));
       Schema var145 = var0.addSchema(2710, SAME_NAMESPACED);
-      var0.addFixer(
-         new StatsRenameFix(var145, "Renamed play_one_minute stat to play_time", ImmutableMap.of("minecraft:play_one_minute", "minecraft:play_time"))
-      );
+      var0.addFixer(new StatsRenameFix(var145, "Renamed play_one_minute stat to play_time", ImmutableMap.of("minecraft:play_one_minute", "minecraft:play_time")));
       Schema var146 = var0.addSchema(2717, SAME_NAMESPACED);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var146, "Rename azalea_leaves_flowers", createRenamer(ImmutableMap.of("minecraft:azalea_leaves_flowers", "minecraft:flowering_azalea_leaves"))
-         )
-      );
-      var0.addFixer(
-         BlockRenameFix.create(
-            var146,
-            "Rename azalea_leaves_flowers items",
-            createRenamer(ImmutableMap.of("minecraft:azalea_leaves_flowers", "minecraft:flowering_azalea_leaves"))
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var146, "Rename azalea_leaves_flowers", createRenamer(ImmutableMap.of("minecraft:azalea_leaves_flowers", "minecraft:flowering_azalea_leaves"))));
+      var0.addFixer(BlockRenameFix.create(var146, "Rename azalea_leaves_flowers items", createRenamer(ImmutableMap.of("minecraft:azalea_leaves_flowers", "minecraft:flowering_azalea_leaves"))));
       Schema var147 = var0.addSchema(2825, SAME_NAMESPACED);
       var0.addFixer(new AddFlagIfNotPresentFix(var147, References.WORLD_GEN_SETTINGS, "has_increased_height_already", false));
       Schema var148 = var0.addSchema(2831, V2831::new);
@@ -975,27 +711,9 @@ public class DataFixers {
       var0.addFixer(new ChunkRenamesFix(var153));
       Schema var154 = var0.addSchema(2843, SAME_NAMESPACED);
       var0.addFixer(new OverreachingTickFix(var154));
-      var0.addFixer(
-         new NamespacedTypeRenameFix(var154, "Remove Deep Warm Ocean", References.BIOME, createRenamer("minecraft:deep_warm_ocean", "minecraft:warm_ocean"))
-      );
+      var0.addFixer(new NamespacedTypeRenameFix(var154, "Remove Deep Warm Ocean", References.BIOME, createRenamer("minecraft:deep_warm_ocean", "minecraft:warm_ocean")));
       Schema var155 = var0.addSchema(2846, SAME_NAMESPACED);
-      var0.addFixer(
-         new AdvancementsRenameFix(
-            var155,
-            false,
-            "Rename some C&C part 2 advancements",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:husbandry/play_jukebox_in_meadows",
-                  "minecraft:adventure/play_jukebox_in_meadows",
-                  "minecraft:adventure/caves_and_cliff",
-                  "minecraft:adventure/fall_from_world_height",
-                  "minecraft:adventure/ride_strider_in_overworld_lava",
-                  "minecraft:nether/ride_strider_in_overworld_lava"
-               )
-            )
-         )
-      );
+      var0.addFixer(new AdvancementsRenameFix(var155, false, "Rename some C&C part 2 advancements", createRenamer(ImmutableMap.of("minecraft:husbandry/play_jukebox_in_meadows", "minecraft:adventure/play_jukebox_in_meadows", "minecraft:adventure/caves_and_cliff", "minecraft:adventure/fall_from_world_height", "minecraft:adventure/ride_strider_in_overworld_lava", "minecraft:nether/ride_strider_in_overworld_lava"))));
       Schema var156 = var0.addSchema(2852, SAME_NAMESPACED);
       var0.addFixer(new WorldGenSettingsDisallowOldCustomWorldsFix(var156));
       Schema var157 = var0.addSchema(2967, SAME_NAMESPACED);
@@ -1017,79 +735,38 @@ public class DataFixers {
       Schema var164 = var0.addSchema(3083, V3083::new);
       var0.addFixer(new AddNewChoices(var164, "Added Allay", References.ENTITY));
       Schema var165 = var0.addSchema(3084, SAME_NAMESPACED);
-      var0.addFixer(
-         new NamespacedTypeRenameFix(
-            var165,
-            "game_event_renames_3084",
-            References.GAME_EVENT_NAME,
-            createRenamer(
-               ImmutableMap.builder()
-                  .put("minecraft:block_press", "minecraft:block_activate")
-                  .put("minecraft:block_switch", "minecraft:block_activate")
-                  .put("minecraft:block_unpress", "minecraft:block_deactivate")
-                  .put("minecraft:block_unswitch", "minecraft:block_deactivate")
-                  .put("minecraft:drinking_finish", "minecraft:drink")
-                  .put("minecraft:elytra_free_fall", "minecraft:elytra_glide")
-                  .put("minecraft:entity_damaged", "minecraft:entity_damage")
-                  .put("minecraft:entity_dying", "minecraft:entity_die")
-                  .put("minecraft:entity_killed", "minecraft:entity_die")
-                  .put("minecraft:mob_interact", "minecraft:entity_interact")
-                  .put("minecraft:ravager_roar", "minecraft:entity_roar")
-                  .put("minecraft:ring_bell", "minecraft:block_change")
-                  .put("minecraft:shulker_close", "minecraft:container_close")
-                  .put("minecraft:shulker_open", "minecraft:container_open")
-                  .put("minecraft:wolf_shaking", "minecraft:entity_shake")
-                  .build()
-            )
-         )
-      );
+      var0.addFixer(new NamespacedTypeRenameFix(var165, "game_event_renames_3084", References.GAME_EVENT_NAME, createRenamer(ImmutableMap.builder().put("minecraft:block_press", "minecraft:block_activate").put("minecraft:block_switch", "minecraft:block_activate").put("minecraft:block_unpress", "minecraft:block_deactivate").put("minecraft:block_unswitch", "minecraft:block_deactivate").put("minecraft:drinking_finish", "minecraft:drink").put("minecraft:elytra_free_fall", "minecraft:elytra_glide").put("minecraft:entity_damaged", "minecraft:entity_damage").put("minecraft:entity_dying", "minecraft:entity_die").put("minecraft:entity_killed", "minecraft:entity_die").put("minecraft:mob_interact", "minecraft:entity_interact").put("minecraft:ravager_roar", "minecraft:entity_roar").put("minecraft:ring_bell", "minecraft:block_change").put("minecraft:shulker_close", "minecraft:container_close").put("minecraft:shulker_open", "minecraft:container_open").put("minecraft:wolf_shaking", "minecraft:entity_shake").build())));
       Schema var166 = var0.addSchema(3086, SAME_NAMESPACED);
-      var0.addFixer(
-         new EntityVariantFix(
-            var166, "Change cat variant type", References.ENTITY, "minecraft:cat", "CatType", Util.make(new Int2ObjectOpenHashMap(), var0x -> {
-               var0x.defaultReturnValue("minecraft:tabby");
-               var0x.put(0, "minecraft:tabby");
-               var0x.put(1, "minecraft:black");
-               var0x.put(2, "minecraft:red");
-               var0x.put(3, "minecraft:siamese");
-               var0x.put(4, "minecraft:british");
-               var0x.put(5, "minecraft:calico");
-               var0x.put(6, "minecraft:persian");
-               var0x.put(7, "minecraft:ragdoll");
-               var0x.put(8, "minecraft:white");
-               var0x.put(9, "minecraft:jellie");
-               var0x.put(10, "minecraft:all_black");
-            })::get
-         )
-      );
-      ImmutableMap var167 = ImmutableMap.builder()
-         .put("textures/entity/cat/tabby.png", "minecraft:tabby")
-         .put("textures/entity/cat/black.png", "minecraft:black")
-         .put("textures/entity/cat/red.png", "minecraft:red")
-         .put("textures/entity/cat/siamese.png", "minecraft:siamese")
-         .put("textures/entity/cat/british_shorthair.png", "minecraft:british")
-         .put("textures/entity/cat/calico.png", "minecraft:calico")
-         .put("textures/entity/cat/persian.png", "minecraft:persian")
-         .put("textures/entity/cat/ragdoll.png", "minecraft:ragdoll")
-         .put("textures/entity/cat/white.png", "minecraft:white")
-         .put("textures/entity/cat/jellie.png", "minecraft:jellie")
-         .put("textures/entity/cat/all_black.png", "minecraft:all_black")
-         .build();
-      var0.addFixer(
-         new CriteriaRenameFix(
-            var166, "Migrate cat variant advancement", "minecraft:husbandry/complete_catalogue", var1x -> (String)var167.getOrDefault(var1x, var1x)
-         )
-      );
+      DSL.TypeReference var10005 = References.ENTITY;
+      Int2ObjectOpenHashMap var10008 = (Int2ObjectOpenHashMap)Util.make(new Int2ObjectOpenHashMap(), (var0x) -> {
+         var0x.defaultReturnValue("minecraft:tabby");
+         var0x.put(0, "minecraft:tabby");
+         var0x.put(1, "minecraft:black");
+         var0x.put(2, "minecraft:red");
+         var0x.put(3, "minecraft:siamese");
+         var0x.put(4, "minecraft:british");
+         var0x.put(5, "minecraft:calico");
+         var0x.put(6, "minecraft:persian");
+         var0x.put(7, "minecraft:ragdoll");
+         var0x.put(8, "minecraft:white");
+         var0x.put(9, "minecraft:jellie");
+         var0x.put(10, "minecraft:all_black");
+      });
+      Objects.requireNonNull(var10008);
+      var0.addFixer(new EntityVariantFix(var166, "Change cat variant type", var10005, "minecraft:cat", "CatType", var10008::get));
+      ImmutableMap var167 = ImmutableMap.builder().put("textures/entity/cat/tabby.png", "minecraft:tabby").put("textures/entity/cat/black.png", "minecraft:black").put("textures/entity/cat/red.png", "minecraft:red").put("textures/entity/cat/siamese.png", "minecraft:siamese").put("textures/entity/cat/british_shorthair.png", "minecraft:british").put("textures/entity/cat/calico.png", "minecraft:calico").put("textures/entity/cat/persian.png", "minecraft:persian").put("textures/entity/cat/ragdoll.png", "minecraft:ragdoll").put("textures/entity/cat/white.png", "minecraft:white").put("textures/entity/cat/jellie.png", "minecraft:jellie").put("textures/entity/cat/all_black.png", "minecraft:all_black").build();
+      var0.addFixer(new CriteriaRenameFix(var166, "Migrate cat variant advancement", "minecraft:husbandry/complete_catalogue", (var1x) -> {
+         return (String)var167.getOrDefault(var1x, var1x);
+      }));
       Schema var168 = var0.addSchema(3087, SAME_NAMESPACED);
-      var0.addFixer(
-         new EntityVariantFix(
-            var168, "Change frog variant type", References.ENTITY, "minecraft:frog", "Variant", Util.make(new Int2ObjectOpenHashMap(), var0x -> {
-               var0x.put(0, "minecraft:temperate");
-               var0x.put(1, "minecraft:warm");
-               var0x.put(2, "minecraft:cold");
-            })::get
-         )
-      );
+      var10005 = References.ENTITY;
+      var10008 = (Int2ObjectOpenHashMap)Util.make(new Int2ObjectOpenHashMap(), (var0x) -> {
+         var0x.put(0, "minecraft:temperate");
+         var0x.put(1, "minecraft:warm");
+         var0x.put(2, "minecraft:cold");
+      });
+      Objects.requireNonNull(var10008);
+      var0.addFixer(new EntityVariantFix(var168, "Change frog variant type", var10005, "minecraft:frog", "Variant", var10008::get));
       Schema var169 = var0.addSchema(3090, SAME_NAMESPACED);
       var0.addFixer(new EntityPaintingFieldsRenameFix(var169));
       Schema var170 = var0.addSchema(3093, SAME_NAMESPACED);
@@ -1101,15 +778,12 @@ public class DataFixers {
       var0.addFixer(new FilteredSignsFix(var172));
       Map var173 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var172, "Rename british shorthair", References.ENTITY, "minecraft:cat", var173));
-      var0.addFixer(
-         new CriteriaRenameFix(
-            var172,
-            "Migrate cat variant advancement for british shorthair",
-            "minecraft:husbandry/complete_catalogue",
-            var1x -> var173.getOrDefault(var1x, var1x)
-         )
-      );
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", Set.of("minecraft:unemployed", "minecraft:nitwit")::contains));
+      var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
+         return (String)var173.getOrDefault(var1x, var1x);
+      }));
+      Set var227 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var227);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var227::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1137,88 +811,26 @@ public class DataFixers {
       Schema var186 = var0.addSchema(3328, V3328::new);
       var0.addFixer(new AddNewChoices(var186, "Added interaction", References.ENTITY));
       Schema var187 = var0.addSchema(3438, V3438::new);
-      var0.addFixer(
-         BlockEntityRenameFix.create(
-            var187, "Rename Suspicious Sand to Brushable Block", createRenamer("minecraft:suspicious_sand", "minecraft:brushable_block")
-         )
-      );
+      var0.addFixer(BlockEntityRenameFix.create(var187, "Rename Suspicious Sand to Brushable Block", createRenamer("minecraft:suspicious_sand", "minecraft:brushable_block")));
       var0.addFixer(new EntityBrushableBlockFieldsRenameFix(var187));
-      var0.addFixer(
-         ItemRenameFix.create(
-            var187,
-            "Pottery shard renaming",
-            createRenamer(
-               ImmutableMap.of(
-                  "minecraft:pottery_shard_archer",
-                  "minecraft:archer_pottery_shard",
-                  "minecraft:pottery_shard_prize",
-                  "minecraft:prize_pottery_shard",
-                  "minecraft:pottery_shard_arms_up",
-                  "minecraft:arms_up_pottery_shard",
-                  "minecraft:pottery_shard_skull",
-                  "minecraft:skull_pottery_shard"
-               )
-            )
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var187, "Pottery shard renaming", createRenamer(ImmutableMap.of("minecraft:pottery_shard_archer", "minecraft:archer_pottery_shard", "minecraft:pottery_shard_prize", "minecraft:prize_pottery_shard", "minecraft:pottery_shard_arms_up", "minecraft:arms_up_pottery_shard", "minecraft:pottery_shard_skull", "minecraft:skull_pottery_shard"))));
       var0.addFixer(new AddNewChoices(var187, "Added calibrated sculk sensor", References.BLOCK_ENTITY));
       Schema var188 = var0.addSchema(3439, SAME_NAMESPACED);
       var0.addFixer(new BlockEntitySignDoubleSidedEditableTextFix(var188, "Updated sign text format for Signs", "minecraft:sign"));
       var0.addFixer(new BlockEntitySignDoubleSidedEditableTextFix(var188, "Updated sign text format for Hanging Signs", "minecraft:hanging_sign"));
       Schema var189 = var0.addSchema(3440, SAME_NAMESPACED);
-      var0.addFixer(
-         new NamespacedTypeRenameFix(
-            var189,
-            "Replace experimental 1.20 overworld",
-            References.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST,
-            createRenamer("minecraft:overworld_update_1_20", "minecraft:overworld")
-         )
-      );
+      var0.addFixer(new NamespacedTypeRenameFix(var189, "Replace experimental 1.20 overworld", References.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, createRenamer("minecraft:overworld_update_1_20", "minecraft:overworld")));
       var0.addFixer(new FeatureFlagRemoveFix(var189, "Remove 1.20 feature toggle", Set.of("minecraft:update_1_20")));
       Schema var190 = var0.addSchema(3441, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataFix(var190));
       Schema var191 = var0.addSchema(3447, SAME_NAMESPACED);
-      var0.addFixer(
-         ItemRenameFix.create(
-            var191,
-            "Pottery shard item renaming to Pottery sherd",
-            createRenamer(
-               Stream.of(
-                     "minecraft:angler_pottery_shard",
-                     "minecraft:archer_pottery_shard",
-                     "minecraft:arms_up_pottery_shard",
-                     "minecraft:blade_pottery_shard",
-                     "minecraft:brewer_pottery_shard",
-                     "minecraft:burn_pottery_shard",
-                     "minecraft:danger_pottery_shard",
-                     "minecraft:explorer_pottery_shard",
-                     "minecraft:friend_pottery_shard",
-                     "minecraft:heart_pottery_shard",
-                     "minecraft:heartbreak_pottery_shard",
-                     "minecraft:howl_pottery_shard",
-                     "minecraft:miner_pottery_shard",
-                     "minecraft:mourner_pottery_shard",
-                     "minecraft:plenty_pottery_shard",
-                     "minecraft:prize_pottery_shard",
-                     "minecraft:sheaf_pottery_shard",
-                     "minecraft:shelter_pottery_shard",
-                     "minecraft:skull_pottery_shard",
-                     "minecraft:snort_pottery_shard"
-                  )
-                  .collect(Collectors.toMap(Function.identity(), var0x -> var0x.replace("_pottery_shard", "_pottery_sherd")))
-            )
-         )
-      );
+      var0.addFixer(ItemRenameFix.create(var191, "Pottery shard item renaming to Pottery sherd", createRenamer((Map)Stream.of("minecraft:angler_pottery_shard", "minecraft:archer_pottery_shard", "minecraft:arms_up_pottery_shard", "minecraft:blade_pottery_shard", "minecraft:brewer_pottery_shard", "minecraft:burn_pottery_shard", "minecraft:danger_pottery_shard", "minecraft:explorer_pottery_shard", "minecraft:friend_pottery_shard", "minecraft:heart_pottery_shard", "minecraft:heartbreak_pottery_shard", "minecraft:howl_pottery_shard", "minecraft:miner_pottery_shard", "minecraft:mourner_pottery_shard", "minecraft:plenty_pottery_shard", "minecraft:prize_pottery_shard", "minecraft:sheaf_pottery_shard", "minecraft:shelter_pottery_shard", "minecraft:skull_pottery_shard", "minecraft:snort_pottery_shard").collect(Collectors.toMap(Function.identity(), (var0x) -> {
+         return var0x.replace("_pottery_shard", "_pottery_sherd");
+      })))));
       Schema var192 = var0.addSchema(3448, V3448::new);
       var0.addFixer(new DecoratedPotFieldRenameFix(var192));
       Schema var193 = var0.addSchema(3450, SAME_NAMESPACED);
-      var0.addFixer(
-         new RemapChunkStatusFix(
-            var193,
-            "Remove liquid_carvers and heightmap chunk statuses",
-            createRenamer(Map.of("minecraft:liquid_carvers", "minecraft:carvers", "minecraft:heightmaps", "minecraft:spawn"))
-         )
-      );
+      var0.addFixer(new RemapChunkStatusFix(var193, "Remove liquid_carvers and heightmap chunk statuses", createRenamer(Map.of("minecraft:liquid_carvers", "minecraft:carvers", "minecraft:heightmaps", "minecraft:spawn"))));
       Schema var194 = var0.addSchema(3451, SAME_NAMESPACED);
       var0.addFixer(new ChunkDeleteLightFix(var194));
       Schema var195 = var0.addSchema(3459, SAME_NAMESPACED);
@@ -1267,9 +879,7 @@ public class DataFixers {
       Schema var216 = var0.addSchema(3813, SAME_NAMESPACED);
       var0.addFixer(new BlockPosFormatAndRenamesFix(var216));
       Schema var217 = var0.addSchema(3814, SAME_NAMESPACED);
-      var0.addFixer(
-         new AttributesRename(var217, "Rename jump strength attribute", createRenamer("minecraft:horse.jump_strength", "minecraft:generic.jump_strength"))
-      );
+      var0.addFixer(new AttributesRename(var217, "Rename jump strength attribute", createRenamer("minecraft:horse.jump_strength", "minecraft:generic.jump_strength")));
       Schema var218 = var0.addSchema(3816, V3816::new);
       var0.addFixer(new AddNewChoices(var218, "Added Bogged", References.ENTITY));
       Schema var219 = var0.addSchema(3818, V3818::new);
@@ -1285,23 +895,35 @@ public class DataFixers {
       var0.addFixer(new ItemStackComponentizationFix(var223));
       Schema var224 = var0.addSchema(3818, 5, SAME_NAMESPACED);
       var0.addFixer(new AreaEffectCloudPotionFix(var224));
-      Schema var225 = var0.addSchema(3819, V3819::new);
-      var0.addFixer(new AddNewChoices(var225, "Added April Fools Block Entity", References.BLOCK_ENTITY));
-      var0.addFixer(new AddNewChoices(var225, "Added April Fools Entity", References.ENTITY));
-      Schema var226 = var0.addSchema(3820, SAME_NAMESPACED);
-      var0.addFixer(new PlayerHeadBlockProfileFix(var226));
-      var0.addFixer(new LodestoneCompassComponentFix(var226));
+      Schema var225 = var0.addSchema(3820, SAME_NAMESPACED);
+      var0.addFixer(new PlayerHeadBlockProfileFix(var225));
+      var0.addFixer(new LodestoneCompassComponentFix(var225));
+      Schema var226 = var0.addSchema(3825, V3825::new);
+      var0.addFixer(new ItemStackCustomNameToOverrideComponentFix(var226));
+      var0.addFixer(new BannerEntityCustomNameToOverrideComponentFix(var226));
+      var0.addFixer(new TrialSpawnerConfigFix(var226));
+      var0.addFixer(new AddNewChoices(var226, "Added Ominous Item Spawner", References.ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {
-      return var1 -> var0.getOrDefault(var1, var1);
+      return (var1) -> {
+         return (String)var0.getOrDefault(var1, var1);
+      };
    }
 
    private static UnaryOperator<String> createRenamer(Map<String, String> var0) {
-      return var1 -> var0.getOrDefault(NamespacedSchema.ensureNamespaced(var1), var1);
+      return (var1) -> {
+         return (String)var0.getOrDefault(NamespacedSchema.ensureNamespaced(var1), var1);
+      };
    }
 
    private static UnaryOperator<String> createRenamer(String var0, String var1) {
-      return var2 -> Objects.equals(NamespacedSchema.ensureNamespaced(var2), var0) ? var1 : var2;
+      return (var2) -> {
+         return Objects.equals(NamespacedSchema.ensureNamespaced(var2), var0) ? var1 : var2;
+      };
+   }
+
+   static {
+      dataFixer = createFixerUpper(SharedConstants.DATA_FIX_TYPES_TO_OPTIMIZE);
    }
 }

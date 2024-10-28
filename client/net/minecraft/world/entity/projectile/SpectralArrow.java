@@ -25,36 +25,33 @@ public class SpectralArrow extends AbstractArrow {
       super(EntityType.SPECTRAL_ARROW, var2, var4, var6, var1, var8);
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.level().isClientSide && !this.inGround) {
          this.level().addParticle(ParticleTypes.INSTANT_EFFECT, this.getX(), this.getY(), this.getZ(), 0.0, 0.0, 0.0);
       }
+
    }
 
-   @Override
    protected void doPostHurtEffects(LivingEntity var1) {
       super.doPostHurtEffects(var1);
       MobEffectInstance var2 = new MobEffectInstance(MobEffects.GLOWING, this.duration, 0);
       var1.addEffect(var2, this.getEffectSource());
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("Duration")) {
          this.duration = var1.getInt("Duration");
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Duration", this.duration);
    }
 
-   @Override
    protected ItemStack getDefaultPickupItem() {
       return new ItemStack(Items.SPECTRAL_ARROW);
    }

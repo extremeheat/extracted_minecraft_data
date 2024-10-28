@@ -33,7 +33,6 @@ public enum MobCategory implements StringRepresentable {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
@@ -56,5 +55,10 @@ public enum MobCategory implements StringRepresentable {
 
    public int getNoDespawnDistance() {
       return 32;
+   }
+
+   // $FF: synthetic method
+   private static MobCategory[] $values() {
+      return new MobCategory[]{MONSTER, CREATURE, AMBIENT, AXOLOTLS, UNDERGROUND_WATER_CREATURE, WATER_CREATURE, WATER_AMBIENT, MISC};
    }
 }

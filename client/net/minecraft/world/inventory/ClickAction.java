@@ -6,4 +6,9 @@ public enum ClickAction {
 
    private ClickAction() {
    }
+
+   // $FF: synthetic method
+   private static ClickAction[] $values() {
+      return new ClickAction[]{PRIMARY, SECONDARY};
+   }
 }

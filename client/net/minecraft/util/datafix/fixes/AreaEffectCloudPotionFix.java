@@ -11,7 +11,6 @@ public class AreaEffectCloudPotionFix extends NamedEntityFix {
       super(var1, false, "AreaEffectCloudPotionFix", References.ENTITY, "minecraft:area_effect_cloud");
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fix);
    }

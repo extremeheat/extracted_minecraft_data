@@ -1,26 +1,24 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class StrongholdStructure extends Structure {
-   public static final Codec<StrongholdStructure> CODEC = simpleCodec(StrongholdStructure::new);
+   public static final MapCodec<StrongholdStructure> CODEC = simpleCodec(StrongholdStructure::new);
 
    public StrongholdStructure(Structure.StructureSettings var1) {
       super(var1);
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return Optional.of(
-         new Structure.GenerationStub(var1.chunkPos().getWorldPosition(), (Consumer<StructurePiecesBuilder>)(var1x -> generatePieces(var1x, var1)))
-      );
+      return Optional.of(new Structure.GenerationStub(var1.chunkPos().getWorldPosition(), (var1x) -> {
+         generatePieces(var1x, var1);
+      }));
    }
 
    private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {
@@ -44,9 +42,9 @@ public class StrongholdStructure extends Structure {
 
          var0.moveBelowSeaLevel(var1.chunkGenerator().getSeaLevel(), var1.chunkGenerator().getMinY(), var1.random(), 10);
       } while(var0.isEmpty() || var3.portalRoomPiece == null);
+
    }
 
-   @Override
    public StructureType<?> type() {
       return StructureType.STRONGHOLD;
    }

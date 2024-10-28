@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundLockDifficultyPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundLockDifficultyPacket> STREAM_CODEC = Packet.codec(
-      ServerboundLockDifficultyPacket::write, ServerboundLockDifficultyPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundLockDifficultyPacket> STREAM_CODEC = Packet.codec(ServerboundLockDifficultyPacket::write, ServerboundLockDifficultyPacket::new);
    private final boolean locked;
 
    public ServerboundLockDifficultyPacket(boolean var1) {
@@ -25,7 +23,6 @@ public class ServerboundLockDifficultyPacket implements Packet<ServerGamePacketL
       var1.writeBoolean(this.locked);
    }
 
-   @Override
    public PacketType<ServerboundLockDifficultyPacket> type() {
       return GamePacketTypes.SERVERBOUND_LOCK_DIFFICULTY;
    }

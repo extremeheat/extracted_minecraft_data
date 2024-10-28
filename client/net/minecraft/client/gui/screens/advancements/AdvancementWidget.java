@@ -2,15 +2,18 @@ package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -19,7 +22,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.Items;
 
 public class AdvancementWidget {
    private static final ResourceLocation TITLE_BOX_SPRITE = new ResourceLocation("advancements/title_box");
@@ -64,29 +66,32 @@ public class AdvancementWidget {
       int var6 = String.valueOf(var5).length();
       int var7 = var5 > 1 ? var2.font.width("  ") + var2.font.width("0") * var6 * 2 + var2.font.width("/") : 0;
       int var8 = 29 + var2.font.width(this.title) + var7;
-      this.description = Language.getInstance()
-         .getVisualOrder(
-            this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var8)
-         );
+      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var8));
 
-      for(FormattedCharSequence var10 : this.description) {
-         var8 = Math.max(var8, var2.font.width(var10));
+      FormattedCharSequence var10;
+      for(Iterator var9 = this.description.iterator(); var9.hasNext(); var8 = Math.max(var8, var2.font.width(var10))) {
+         var10 = (FormattedCharSequence)var9.next();
       }
 
       this.width = var8 + 3 + 5;
    }
 
    private static float getMaxWidth(StringSplitter var0, List<FormattedText> var1) {
-      return (float)var1.stream().mapToDouble(var0::stringWidth).max().orElse(0.0);
+      Stream var10000 = var1.stream();
+      Objects.requireNonNull(var0);
+      return (float)var10000.mapToDouble(var0::stringWidth).max().orElse(0.0);
    }
 
    private List<FormattedText> findOptimalLines(Component var1, int var2) {
       StringSplitter var3 = this.minecraft.font.getSplitter();
       List var4 = null;
       float var5 = 3.4028235E38F;
+      int[] var6 = TEST_SPLIT_OFFSETS;
+      int var7 = var6.length;
 
-      for(int var9 : TEST_SPLIT_OFFSETS) {
-         List var10 = var3.splitLines(var1, var2 - var9, Style.EMPTY);
+      for(int var8 = 0; var8 < var7; ++var8) {
+         int var9 = var6[var8];
+         List var10 = var3.splitLines((FormattedText)var1, var2 - var9, Style.EMPTY);
          float var11 = Math.abs(getMaxWidth(var3, var10) - (float)var2);
          if (var11 <= 10.0F) {
             return var10;
@@ -107,7 +112,11 @@ public class AdvancementWidget {
          var1 = var1.parent();
       } while(var1 != null && var1.advancement().display().isEmpty());
 
-      return var1 != null && !var1.advancement().display().isEmpty() ? this.tab.getWidget(var1.holder()) : null;
+      if (var1 != null && !var1.advancement().display().isEmpty()) {
+         return this.tab.getWidget(var1.holder());
+      } else {
+         return null;
+      }
    }
 
    public void drawConnectivity(GuiGraphics var1, int var2, int var3, boolean var4) {
@@ -134,9 +143,13 @@ public class AdvancementWidget {
          }
       }
 
-      for(AdvancementWidget var12 : this.children) {
+      Iterator var11 = this.children.iterator();
+
+      while(var11.hasNext()) {
+         AdvancementWidget var12 = (AdvancementWidget)var11.next();
          var12.drawConnectivity(var1, var2, var3, var4);
       }
+
    }
 
    public void draw(GuiGraphics var1, int var2, int var3) {
@@ -153,9 +166,13 @@ public class AdvancementWidget {
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
-      for(AdvancementWidget var7 : this.children) {
+      Iterator var6 = this.children.iterator();
+
+      while(var6.hasNext()) {
+         AdvancementWidget var7 = (AdvancementWidget)var6.next();
          var7.draw(var1, var2, var3);
       }
+
    }
 
    public int getWidth() {
@@ -173,8 +190,11 @@ public class AdvancementWidget {
    public void drawHover(GuiGraphics var1, int var2, int var3, float var4, int var5, int var6) {
       boolean var7 = var5 + var2 + this.x + this.width + 26 >= this.tab.getScreen().width;
       Component var8 = this.progress == null ? null : this.progress.getProgressText();
-      int var9 = var8 == null ? 0 : this.minecraft.font.width(var8);
-      boolean var10 = 113 - var3 - this.y - 26 <= 6 + this.description.size() * 9;
+      int var9 = var8 == null ? 0 : this.minecraft.font.width((FormattedText)var8);
+      int var10000 = 113 - var3 - this.y - 26;
+      int var10002 = this.description.size();
+      Objects.requireNonNull(this.minecraft.font);
+      boolean var10 = var10000 <= 6 + var10002 * 9;
       float var11 = this.progress == null ? 0.0F : this.progress.getPercent();
       int var15 = Mth.floor(var11 * (float)this.width);
       AdvancementWidgetType var12;
@@ -211,7 +231,9 @@ public class AdvancementWidget {
          var18 = var2 + this.x;
       }
 
-      int var19 = 32 + this.description.size() * 9;
+      int var10001 = this.description.size();
+      Objects.requireNonNull(this.minecraft.font);
+      int var19 = 32 + var10001 * 9;
       if (!this.description.isEmpty()) {
          if (var10) {
             var1.blitSprite(TITLE_BOX_SPRITE, var18, var17 + 26 - var19, this.width, var19);
@@ -224,35 +246,43 @@ public class AdvancementWidget {
       var1.blitSprite(var13.boxSprite(), 200, 26, 200 - var16, 0, var18 + var15, var17, var16, 26);
       var1.blitSprite(var14.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       if (var7) {
-         var1.drawString(this.minecraft.font, this.title, var18 + 5, var3 + this.y + 9, -1);
+         var1.drawString(this.minecraft.font, (FormattedCharSequence)this.title, var18 + 5, var3 + this.y + 9, -1);
          if (var8 != null) {
-            var1.drawString(this.minecraft.font, var8, var2 + this.x - var9, var3 + this.y + 9, -1);
+            var1.drawString(this.minecraft.font, (Component)var8, var2 + this.x - var9, var3 + this.y + 9, -1);
          }
       } else {
-         var1.drawString(this.minecraft.font, this.title, var2 + this.x + 32, var3 + this.y + 9, -1);
+         var1.drawString(this.minecraft.font, (FormattedCharSequence)this.title, var2 + this.x + 32, var3 + this.y + 9, -1);
          if (var8 != null) {
-            var1.drawString(this.minecraft.font, var8, var2 + this.x + this.width - var9 - 5, var3 + this.y + 9, -1);
+            var1.drawString(this.minecraft.font, (Component)var8, var2 + this.x + this.width - var9 - 5, var3 + this.y + 9, -1);
          }
       }
 
+      int var10003;
+      int var20;
+      int var10004;
+      Font var21;
+      FormattedCharSequence var22;
       if (var10) {
-         for(int var20 = 0; var20 < this.description.size(); ++var20) {
-            var1.drawString(this.minecraft.font, this.description.get(var20), var18 + 5, var17 + 26 - var19 + 7 + var20 * 9, -5592406, false);
+         for(var20 = 0; var20 < this.description.size(); ++var20) {
+            var21 = this.minecraft.font;
+            var22 = (FormattedCharSequence)this.description.get(var20);
+            var10003 = var18 + 5;
+            var10004 = var17 + 26 - var19 + 7;
+            Objects.requireNonNull(this.minecraft.font);
+            var1.drawString(var21, var22, var10003, var10004 + var20 * 9, -5592406, false);
          }
       } else {
-         for(int var21 = 0; var21 < this.description.size(); ++var21) {
-            var1.drawString(this.minecraft.font, this.description.get(var21), var18 + 5, var3 + this.y + 9 + 17 + var21 * 9, -5592406, false);
+         for(var20 = 0; var20 < this.description.size(); ++var20) {
+            var21 = this.minecraft.font;
+            var22 = (FormattedCharSequence)this.description.get(var20);
+            var10003 = var18 + 5;
+            var10004 = var3 + this.y + 9 + 17;
+            Objects.requireNonNull(this.minecraft.font);
+            var1.drawString(var21, var22, var10003, var10004 + var20 * 9, -5592406, false);
          }
-      }
-
-      if (this.display.getIcon().is(Items.POISONOUS_POTATO_PLANT)) {
-         this.display.getIcon().set(DataComponents.HOVERED, true);
       }
 
       var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
-      if (this.display.getIcon().is(Items.POISONOUS_POTATO_PLANT)) {
-         this.display.getIcon().set(DataComponents.HOVERED, false);
-      }
    }
 
    public boolean isMouseOver(int var1, int var2, int var3, int var4) {
@@ -274,6 +304,7 @@ public class AdvancementWidget {
             this.parent.addChild(this);
          }
       }
+
    }
 
    public int getY() {

@@ -12,7 +12,6 @@ public class BaseCoralFanBlock extends BaseCoralPlantTypeBlock {
    public static final MapCodec<BaseCoralFanBlock> CODEC = simpleCodec(BaseCoralFanBlock::new);
    private static final VoxelShape AABB = Block.box(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
 
-   @Override
    public MapCodec<? extends BaseCoralFanBlock> codec() {
       return CODEC;
    }
@@ -21,7 +20,6 @@ public class BaseCoralFanBlock extends BaseCoralPlantTypeBlock {
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABB;
    }

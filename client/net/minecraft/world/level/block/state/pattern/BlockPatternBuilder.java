@@ -5,9 +5,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +21,9 @@ public class BlockPatternBuilder {
 
    private BlockPatternBuilder() {
       super();
-      this.lookup.put(' ', var0 -> true);
+      this.lookup.put(' ', (var0) -> {
+         return true;
+      });
    }
 
    public BlockPatternBuilder aisle(String... var1) {
@@ -34,16 +36,23 @@ public class BlockPatternBuilder {
          if (var1.length != this.height) {
             throw new IllegalArgumentException("Expected aisle with height of " + this.height + ", but was given one with a height of " + var1.length + ")");
          } else {
-            for(String var5 : var1) {
+            String[] var2 = var1;
+            int var3 = var1.length;
+
+            for(int var4 = 0; var4 < var3; ++var4) {
+               String var5 = var2[var4];
                if (var5.length() != this.width) {
-                  throw new IllegalArgumentException(
-                     "Not all rows in the given aisle are the correct width (expected " + this.width + ", found one with " + var5.length() + ")"
-                  );
+                  int var10002 = this.width;
+                  throw new IllegalArgumentException("Not all rows in the given aisle are the correct width (expected " + var10002 + ", found one with " + var5.length() + ")");
                }
 
-               for(char var9 : var5.toCharArray()) {
+               char[] var6 = var5.toCharArray();
+               int var7 = var6.length;
+
+               for(int var8 = 0; var8 < var7; ++var8) {
+                  char var9 = var6[var8];
                   if (!this.lookup.containsKey(var9)) {
-                     this.lookup.put(var9, null);
+                     this.lookup.put(var9, (Object)null);
                   }
                }
             }
@@ -71,12 +80,12 @@ public class BlockPatternBuilder {
 
    private Predicate<BlockInWorld>[][][] createPattern() {
       this.ensureAllCharactersMatched();
-      Predicate[][][] var1 = (Predicate[][][])Array.newInstance(Predicate.class, this.pattern.size(), this.height, this.width);
+      Predicate[][][] var1 = (Predicate[][][])Array.newInstance(Predicate.class, new int[]{this.pattern.size(), this.height, this.width});
 
       for(int var2 = 0; var2 < this.pattern.size(); ++var2) {
          for(int var3 = 0; var3 < this.height; ++var3) {
             for(int var4 = 0; var4 < this.width; ++var4) {
-               var1[var2][var3][var4] = this.lookup.get(this.pattern.get(var2)[var3].charAt(var4));
+               var1[var2][var3][var4] = (Predicate)this.lookup.get(((String[])this.pattern.get(var2))[var3].charAt(var4));
             }
          }
       }
@@ -86,8 +95,10 @@ public class BlockPatternBuilder {
 
    private void ensureAllCharactersMatched() {
       ArrayList var1 = Lists.newArrayList();
+      Iterator var2 = this.lookup.entrySet().iterator();
 
-      for(Entry var3 : this.lookup.entrySet()) {
+      while(var2.hasNext()) {
+         Map.Entry var3 = (Map.Entry)var2.next();
          if (var3.getValue() == null) {
             var1.add((Character)var3.getKey());
          }

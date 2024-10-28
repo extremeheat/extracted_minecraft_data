@@ -20,9 +20,9 @@ public class CreativeModeTab {
    boolean canScroll = true;
    boolean showTitle = true;
    boolean alignedRight = false;
-   private final CreativeModeTab.Row row;
+   private final Row row;
    private final int column;
-   private final CreativeModeTab.Type type;
+   private final Type type;
    @Nullable
    private ItemStack iconItemStack;
    private Collection<ItemStack> displayItems = ItemStackLinkedSet.createTypeAndComponentsSet();
@@ -30,11 +30,9 @@ public class CreativeModeTab {
    @Nullable
    private Consumer<List<ItemStack>> searchTreeBuilder;
    private final Supplier<ItemStack> iconGenerator;
-   private final CreativeModeTab.DisplayItemsGenerator displayItemsGenerator;
+   private final DisplayItemsGenerator displayItemsGenerator;
 
-   CreativeModeTab(
-      CreativeModeTab.Row var1, int var2, CreativeModeTab.Type var3, Component var4, Supplier<ItemStack> var5, CreativeModeTab.DisplayItemsGenerator var6
-   ) {
+   CreativeModeTab(Row var1, int var2, Type var3, Component var4, Supplier<ItemStack> var5, DisplayItemsGenerator var6) {
       super();
       this.row = var1;
       this.column = var2;
@@ -44,8 +42,8 @@ public class CreativeModeTab {
       this.type = var3;
    }
 
-   public static CreativeModeTab.Builder builder(CreativeModeTab.Row var0, int var1) {
-      return new CreativeModeTab.Builder(var0, var1);
+   public static Builder builder(Row var0, int var1) {
+      return new Builder(var0, var1);
    }
 
    public Component getDisplayName() {
@@ -54,7 +52,7 @@ public class CreativeModeTab {
 
    public ItemStack getIconItem() {
       if (this.iconItemStack == null) {
-         this.iconItemStack = this.iconGenerator.get();
+         this.iconItemStack = (ItemStack)this.iconGenerator.get();
       }
 
       return this.iconItemStack;
@@ -76,7 +74,7 @@ public class CreativeModeTab {
       return this.column;
    }
 
-   public CreativeModeTab.Row row() {
+   public Row row() {
       return this.row;
    }
 
@@ -92,15 +90,15 @@ public class CreativeModeTab {
       return this.alignedRight;
    }
 
-   public CreativeModeTab.Type getType() {
+   public Type getType() {
       return this.type;
    }
 
-   public void buildContents(CreativeModeTab.ItemDisplayParameters var1) {
-      CreativeModeTab.ItemDisplayBuilder var2 = new CreativeModeTab.ItemDisplayBuilder(this, var1.enabledFeatures);
-      ResourceKey var3 = BuiltInRegistries.CREATIVE_MODE_TAB
-         .getResourceKey(this)
-         .orElseThrow(() -> new IllegalStateException("Unregistered creative tab: " + this));
+   public void buildContents(ItemDisplayParameters var1) {
+      ItemDisplayBuilder var2 = new ItemDisplayBuilder(this, var1.enabledFeatures);
+      ResourceKey var10000 = (ResourceKey)BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(this).orElseThrow(() -> {
+         return new IllegalStateException("Unregistered creative tab: " + String.valueOf(this));
+      });
       this.displayItemsGenerator.accept(var1, var2);
       this.displayItems = var2.tabContents;
       this.displayItemsSearchTab = var2.searchTabContents;
@@ -127,64 +125,106 @@ public class CreativeModeTab {
       if (this.searchTreeBuilder != null) {
          this.searchTreeBuilder.accept(Lists.newArrayList(this.displayItemsSearchTab));
       }
+
+   }
+
+   public static enum Row {
+      TOP,
+      BOTTOM;
+
+      private Row() {
+      }
+
+      // $FF: synthetic method
+      private static Row[] $values() {
+         return new Row[]{TOP, BOTTOM};
+      }
+   }
+
+   @FunctionalInterface
+   public interface DisplayItemsGenerator {
+      void accept(ItemDisplayParameters var1, Output var2);
+   }
+
+   public static enum Type {
+      CATEGORY,
+      INVENTORY,
+      HOTBAR,
+      SEARCH;
+
+      private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{CATEGORY, INVENTORY, HOTBAR, SEARCH};
+      }
    }
 
    public static class Builder {
-      private static final CreativeModeTab.DisplayItemsGenerator EMPTY_GENERATOR = (var0, var1) -> {
+      private static final DisplayItemsGenerator EMPTY_GENERATOR = (var0, var1) -> {
       };
-      private final CreativeModeTab.Row row;
+      private final Row row;
       private final int column;
       private Component displayName = Component.empty();
-      private Supplier<ItemStack> iconGenerator = () -> ItemStack.EMPTY;
-      private CreativeModeTab.DisplayItemsGenerator displayItemsGenerator = EMPTY_GENERATOR;
-      private boolean canScroll = true;
-      private boolean showTitle = true;
-      private boolean alignedRight = false;
-      private CreativeModeTab.Type type = CreativeModeTab.Type.CATEGORY;
-      private String backgroundSuffix = "items.png";
+      private Supplier<ItemStack> iconGenerator = () -> {
+         return ItemStack.EMPTY;
+      };
+      private DisplayItemsGenerator displayItemsGenerator;
+      private boolean canScroll;
+      private boolean showTitle;
+      private boolean alignedRight;
+      private Type type;
+      private String backgroundSuffix;
 
-      public Builder(CreativeModeTab.Row var1, int var2) {
+      public Builder(Row var1, int var2) {
          super();
+         this.displayItemsGenerator = EMPTY_GENERATOR;
+         this.canScroll = true;
+         this.showTitle = true;
+         this.alignedRight = false;
+         this.type = CreativeModeTab.Type.CATEGORY;
+         this.backgroundSuffix = "items.png";
          this.row = var1;
          this.column = var2;
       }
 
-      public CreativeModeTab.Builder title(Component var1) {
+      public Builder title(Component var1) {
          this.displayName = var1;
          return this;
       }
 
-      public CreativeModeTab.Builder icon(Supplier<ItemStack> var1) {
+      public Builder icon(Supplier<ItemStack> var1) {
          this.iconGenerator = var1;
          return this;
       }
 
-      public CreativeModeTab.Builder displayItems(CreativeModeTab.DisplayItemsGenerator var1) {
+      public Builder displayItems(DisplayItemsGenerator var1) {
          this.displayItemsGenerator = var1;
          return this;
       }
 
-      public CreativeModeTab.Builder alignedRight() {
+      public Builder alignedRight() {
          this.alignedRight = true;
          return this;
       }
 
-      public CreativeModeTab.Builder hideTitle() {
+      public Builder hideTitle() {
          this.showTitle = false;
          return this;
       }
 
-      public CreativeModeTab.Builder noScrollBar() {
+      public Builder noScrollBar() {
          this.canScroll = false;
          return this;
       }
 
-      protected CreativeModeTab.Builder type(CreativeModeTab.Type var1) {
+      protected Builder type(Type var1) {
          this.type = var1;
          return this;
       }
 
-      public CreativeModeTab.Builder backgroundSuffix(String var1) {
+      public Builder backgroundSuffix(String var1) {
          this.backgroundSuffix = var1;
          return this;
       }
@@ -203,12 +243,7 @@ public class CreativeModeTab {
       }
    }
 
-   @FunctionalInterface
-   public interface DisplayItemsGenerator {
-      void accept(CreativeModeTab.ItemDisplayParameters var1, CreativeModeTab.Output var2);
-   }
-
-   static class ItemDisplayBuilder implements CreativeModeTab.Output {
+   private static class ItemDisplayBuilder implements Output {
       public final Collection<ItemStack> tabContents = ItemStackLinkedSet.createTypeAndComponentsSet();
       public final Set<ItemStack> searchTabContents = ItemStackLinkedSet.createTypeAndComponentsSet();
       private final CreativeModeTab tab;
@@ -220,42 +255,36 @@ public class CreativeModeTab {
          this.featureFlagSet = var2;
       }
 
-      @Override
-      public void accept(ItemStack var1, CreativeModeTab.TabVisibility var2) {
+      public void accept(ItemStack var1, TabVisibility var2) {
          if (var1.getCount() != 1) {
             throw new IllegalArgumentException("Stack size must be exactly 1");
          } else {
             boolean var3 = this.tabContents.contains(var1) && var2 != CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY;
             if (var3) {
-               throw new IllegalStateException(
-                  "Accidentally adding the same item stack twice "
-                     + var1.getDisplayName().getString()
-                     + " to a Creative Mode Tab: "
-                     + this.tab.getDisplayName().getString()
-               );
+               String var10002 = var1.getDisplayName().getString();
+               throw new IllegalStateException("Accidentally adding the same item stack twice " + var10002 + " to a Creative Mode Tab: " + this.tab.getDisplayName().getString());
             } else {
                if (var1.getItem().isEnabled(this.featureFlagSet)) {
-                  switch(var2) {
-                     case PARENT_AND_SEARCH_TABS:
+                  switch (var2.ordinal()) {
+                     case 0:
                         this.tabContents.add(var1);
                         this.searchTabContents.add(var1);
                         break;
-                     case PARENT_TAB_ONLY:
+                     case 1:
                         this.tabContents.add(var1);
                         break;
-                     case SEARCH_TAB_ONLY:
+                     case 2:
                         this.searchTabContents.add(var1);
                   }
                }
+
             }
          }
       }
    }
 
-   public static record ItemDisplayParameters(FeatureFlagSet a, boolean b, HolderLookup.Provider c) {
+   public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
       final FeatureFlagSet enabledFeatures;
-      private final boolean hasPermissions;
-      private final HolderLookup.Provider holders;
 
       public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
          super();
@@ -267,16 +296,28 @@ public class CreativeModeTab {
       public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
          return !this.enabledFeatures.equals(var1) || this.hasPermissions != var2 || this.holders != var3;
       }
+
+      public FeatureFlagSet enabledFeatures() {
+         return this.enabledFeatures;
+      }
+
+      public boolean hasPermissions() {
+         return this.hasPermissions;
+      }
+
+      public HolderLookup.Provider holders() {
+         return this.holders;
+      }
    }
 
    public interface Output {
-      void accept(ItemStack var1, CreativeModeTab.TabVisibility var2);
+      void accept(ItemStack var1, TabVisibility var2);
 
       default void accept(ItemStack var1) {
          this.accept(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
       }
 
-      default void accept(ItemLike var1, CreativeModeTab.TabVisibility var2) {
+      default void accept(ItemLike var1, TabVisibility var2) {
          this.accept(new ItemStack(var1), var2);
       }
 
@@ -284,20 +325,14 @@ public class CreativeModeTab {
          this.accept(new ItemStack(var1), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
       }
 
-      default void acceptAll(Collection<ItemStack> var1, CreativeModeTab.TabVisibility var2) {
-         var1.forEach(var2x -> this.accept(var2x, var2));
+      default void acceptAll(Collection<ItemStack> var1, TabVisibility var2) {
+         var1.forEach((var2x) -> {
+            this.accept(var2x, var2);
+         });
       }
 
       default void acceptAll(Collection<ItemStack> var1) {
          this.acceptAll(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-      }
-   }
-
-   public static enum Row {
-      TOP,
-      BOTTOM;
-
-      private Row() {
       }
    }
 
@@ -308,15 +343,10 @@ public class CreativeModeTab {
 
       private TabVisibility() {
       }
-   }
 
-   public static enum Type {
-      CATEGORY,
-      INVENTORY,
-      HOTBAR,
-      SEARCH;
-
-      private Type() {
+      // $FF: synthetic method
+      private static TabVisibility[] $values() {
+         return new TabVisibility[]{PARENT_AND_SEARCH_TABS, PARENT_TAB_ONLY, SEARCH_TAB_ONLY};
       }
    }
 }

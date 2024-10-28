@@ -34,7 +34,6 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
       this.attackIntervalMin = var1;
    }
 
-   @Override
    public boolean canUse() {
       return this.mob.getTarget() == null ? false : this.isHoldingBow();
    }
@@ -43,18 +42,15 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
       return this.mob.isHolding(Items.BOW);
    }
 
-   @Override
    public boolean canContinueToUse() {
       return (this.canUse() || !this.mob.getNavigation().isDone()) && this.isHoldingBow();
    }
 
-   @Override
    public void start() {
       super.start();
       this.mob.setAggressive(true);
    }
 
-   @Override
    public void stop() {
       super.stop();
       this.mob.setAggressive(false);
@@ -63,14 +59,10 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
       this.mob.stopUsingItem();
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void tick() {
       LivingEntity var1 = this.mob.getTarget();
       if (var1 != null) {
@@ -91,7 +83,7 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
             this.mob.getNavigation().stop();
             ++this.strafingTime;
          } else {
-            this.mob.getNavigation().moveTo(var1, this.speedModifier);
+            this.mob.getNavigation().moveTo((Entity)var1, this.speedModifier);
             this.strafingTime = -1;
          }
 
@@ -116,7 +108,8 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
 
             this.mob.getMoveControl().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
             Entity var7 = this.mob.getControlledVehicle();
-            if (var7 instanceof Mob var6) {
+            if (var7 instanceof Mob) {
+               Mob var6 = (Mob)var7;
                var6.lookAt(var1, 30.0F, 30.0F);
             }
 
@@ -132,13 +125,14 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
                int var8 = this.mob.getTicksUsingItem();
                if (var8 >= 20) {
                   this.mob.stopUsingItem();
-                  this.mob.performRangedAttack(var1, BowItem.getPowerForTime(var8));
+                  ((RangedAttackMob)this.mob).performRangedAttack(var1, BowItem.getPowerForTime(var8));
                   this.attackTime = this.attackIntervalMin;
                }
             }
          } else if (--this.attackTime <= 0 && this.seeTime >= -60) {
             this.mob.startUsingItem(ProjectileUtil.getWeaponHoldingHand(this.mob, Items.BOW));
          }
+
       }
    }
 }

@@ -16,9 +16,7 @@ public class Deadmau5EarsLayer extends RenderLayer<AbstractClientPlayer, PlayerM
       super(var1);
    }
 
-   public void render(
-      PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4, float var5, float var6, float var7, float var8, float var9, float var10
-   ) {
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if ("deadmau5".equals(var4.getName().getString()) && !var4.isInvisible()) {
          VertexConsumer var11 = var2.getBuffer(RenderType.entitySolid(var4.getSkin().texture()));
          int var12 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
@@ -35,9 +33,10 @@ public class Deadmau5EarsLayer extends RenderLayer<AbstractClientPlayer, PlayerM
             var1.mulPose(Axis.YP.rotationDegrees(-var14));
             float var16 = 1.3333334F;
             var1.scale(1.3333334F, 1.3333334F, 1.3333334F);
-            this.getParentModel().renderEars(var1, var11, var3, var12);
+            ((PlayerModel)this.getParentModel()).renderEars(var1, var11, var3, var12);
             var1.popPose();
          }
+
       }
    }
 }

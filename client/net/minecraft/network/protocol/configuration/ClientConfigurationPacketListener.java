@@ -4,7 +4,6 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 
 public interface ClientConfigurationPacketListener extends ClientCommonPacketListener {
-   @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.CONFIGURATION;
    }
@@ -16,4 +15,6 @@ public interface ClientConfigurationPacketListener extends ClientCommonPacketLis
    void handleEnabledFeatures(ClientboundUpdateEnabledFeaturesPacket var1);
 
    void handleSelectKnownPacks(ClientboundSelectKnownPacks var1);
+
+   void handleResetChat(ClientboundResetChatPacket var1);
 }

@@ -43,38 +43,38 @@ public class EntitySelectorParser {
    private static final char SELECTOR_CURRENT_ENTITY = 's';
    private static final char SELECTOR_ALL_ENTITIES = 'e';
    public static final SimpleCommandExceptionType ERROR_INVALID_NAME_OR_UUID = new SimpleCommandExceptionType(Component.translatable("argument.entity.invalid"));
-   public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.entity.selector.unknown", var0)
-   );
-   public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(
-      Component.translatable("argument.entity.selector.not_allowed")
-   );
-   public static final SimpleCommandExceptionType ERROR_MISSING_SELECTOR_TYPE = new SimpleCommandExceptionType(
-      Component.translatable("argument.entity.selector.missing")
-   );
-   public static final SimpleCommandExceptionType ERROR_EXPECTED_END_OF_OPTIONS = new SimpleCommandExceptionType(
-      Component.translatable("argument.entity.options.unterminated")
-   );
-   public static final DynamicCommandExceptionType ERROR_EXPECTED_OPTION_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.entity.options.valueless", var0)
-   );
-   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_NEAREST = (var0, var1) -> var1.sort(
-         (var1x, var2) -> Doubles.compare(var1x.distanceToSqr(var0), var2.distanceToSqr(var0))
-      );
-   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_FURTHEST = (var0, var1) -> var1.sort(
-         (var1x, var2) -> Doubles.compare(var2.distanceToSqr(var0), var1x.distanceToSqr(var0))
-      );
-   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_RANDOM = (var0, var1) -> Collections.shuffle(var1);
-   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> var0.buildFuture(
-         
-      );
+   public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.entity.selector.unknown", var0);
+   });
+   public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.not_allowed"));
+   public static final SimpleCommandExceptionType ERROR_MISSING_SELECTOR_TYPE = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.missing"));
+   public static final SimpleCommandExceptionType ERROR_EXPECTED_END_OF_OPTIONS = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.unterminated"));
+   public static final DynamicCommandExceptionType ERROR_EXPECTED_OPTION_VALUE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.entity.options.valueless", var0);
+   });
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_NEAREST = (var0, var1) -> {
+      var1.sort((var1x, var2) -> {
+         return Doubles.compare(var1x.distanceToSqr(var0), var2.distanceToSqr(var0));
+      });
+   };
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_FURTHEST = (var0, var1) -> {
+      var1.sort((var1x, var2) -> {
+         return Doubles.compare(var2.distanceToSqr(var0), var1x.distanceToSqr(var0));
+      });
+   };
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_RANDOM = (var0, var1) -> {
+      Collections.shuffle(var1);
+   };
+   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> {
+      return var0.buildFuture();
+   };
    private final StringReader reader;
    private final boolean allowSelectors;
    private int maxResults;
    private boolean includesEntities;
    private boolean worldLimited;
-   private MinMaxBounds.Doubles distance = MinMaxBounds.Doubles.ANY;
-   private MinMaxBounds.Ints level = MinMaxBounds.Ints.ANY;
+   private MinMaxBounds.Doubles distance;
+   private MinMaxBounds.Ints level;
    @Nullable
    private Double x;
    @Nullable
@@ -87,17 +87,17 @@ public class EntitySelectorParser {
    private Double deltaY;
    @Nullable
    private Double deltaZ;
-   private WrappedMinMaxBounds rotX = WrappedMinMaxBounds.ANY;
-   private WrappedMinMaxBounds rotY = WrappedMinMaxBounds.ANY;
-   private Predicate<Entity> predicate = var0 -> true;
-   private BiConsumer<Vec3, List<? extends Entity>> order = EntitySelector.ORDER_ARBITRARY;
+   private WrappedMinMaxBounds rotX;
+   private WrappedMinMaxBounds rotY;
+   private Predicate<Entity> predicate;
+   private BiConsumer<Vec3, List<? extends Entity>> order;
    private boolean currentEntity;
    @Nullable
    private String playerName;
    private int startPosition;
    @Nullable
    private UUID entityUUID;
-   private BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> suggestions = SUGGEST_NOTHING;
+   private BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> suggestions;
    private boolean hasNameEquals;
    private boolean hasNameNotEquals;
    private boolean isLimited;
@@ -119,6 +119,15 @@ public class EntitySelectorParser {
 
    public EntitySelectorParser(StringReader var1, boolean var2) {
       super();
+      this.distance = MinMaxBounds.Doubles.ANY;
+      this.level = MinMaxBounds.Ints.ANY;
+      this.rotX = WrappedMinMaxBounds.ANY;
+      this.rotY = WrappedMinMaxBounds.ANY;
+      this.predicate = (var0) -> {
+         return true;
+      };
+      this.order = EntitySelector.ORDER_ARBITRARY;
+      this.suggestions = SUGGEST_NOTHING;
       this.reader = var1;
       this.allowSelectors = var2;
    }
@@ -127,7 +136,7 @@ public class EntitySelectorParser {
       AABB var1;
       if (this.deltaX == null && this.deltaY == null && this.deltaZ == null) {
          if (this.distance.max().isPresent()) {
-            double var2 = this.distance.max().get();
+            double var2 = (Double)this.distance.max().get();
             var1 = new AABB(-var2, -var2, -var2, var2 + 1.0, var2 + 1.0, var2 + 1.0);
          } else {
             var1 = null;
@@ -138,26 +147,16 @@ public class EntitySelectorParser {
 
       Function var4;
       if (this.x == null && this.y == null && this.z == null) {
-         var4 = var0 -> var0;
+         var4 = (var0) -> {
+            return var0;
+         };
       } else {
-         var4 = var1x -> new Vec3(this.x == null ? var1x.x : this.x, this.y == null ? var1x.y : this.y, this.z == null ? var1x.z : this.z);
+         var4 = (var1x) -> {
+            return new Vec3(this.x == null ? var1x.x : this.x, this.y == null ? var1x.y : this.y, this.z == null ? var1x.z : this.z);
+         };
       }
 
-      return new EntitySelector(
-         this.maxResults,
-         this.includesEntities,
-         this.worldLimited,
-         this.predicate,
-         this.distance,
-         var4,
-         var1,
-         this.order,
-         this.currentEntity,
-         this.playerName,
-         this.entityUUID,
-         this.type,
-         this.usesSelectors
-      );
+      return new EntitySelector(this.maxResults, this.includesEntities, this.worldLimited, this.predicate, this.distance, var4, var1, this.order, this.currentEntity, this.playerName, this.entityUUID, this.type, this.usesSelectors);
    }
 
    private AABB createAabb(double var1, double var3, double var5) {
@@ -183,14 +182,17 @@ public class EntitySelectorParser {
       }
 
       if (!this.level.isAny()) {
-         this.predicate = this.predicate.and(var1 -> !(var1 instanceof ServerPlayer) ? false : this.level.matches(((ServerPlayer)var1).experienceLevel));
+         this.predicate = this.predicate.and((var1) -> {
+            return !(var1 instanceof ServerPlayer) ? false : this.level.matches(((ServerPlayer)var1).experienceLevel);
+         });
       }
+
    }
 
    private Predicate<Entity> createRotationPredicate(WrappedMinMaxBounds var1, ToDoubleFunction<Entity> var2) {
       double var3 = (double)Mth.wrapDegrees(var1.min() == null ? 0.0F : var1.min());
       double var5 = (double)Mth.wrapDegrees(var1.max() == null ? 359.0F : var1.max());
-      return var5x -> {
+      return (var5x) -> {
          double var6 = Mth.wrapDegrees(var2.applyAsDouble(var5x));
          if (var3 > var5) {
             return var6 >= var3 || var6 <= var5;
@@ -230,7 +232,7 @@ public class EntitySelectorParser {
          } else {
             if (var2 != 'e') {
                this.reader.setCursor(var1);
-               throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + var2);
+               throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + String.valueOf(var2));
             }
 
             this.maxResults = 2147483647;
@@ -245,6 +247,7 @@ public class EntitySelectorParser {
             this.suggestions = this::suggestOptionsKeyOrClose;
             this.parseOptions();
          }
+
       }
    }
 
@@ -282,28 +285,31 @@ public class EntitySelectorParser {
          String var2 = this.reader.readString();
          EntitySelectorOptions.Modifier var3 = EntitySelectorOptions.get(this, var2, var1);
          this.reader.skipWhitespace();
-         if (!this.reader.canRead() || this.reader.peek() != '=') {
-            this.reader.setCursor(var1);
-            throw ERROR_EXPECTED_OPTION_VALUE.createWithContext(this.reader, var2);
-         }
-
-         this.reader.skip();
-         this.reader.skipWhitespace();
-         this.suggestions = SUGGEST_NOTHING;
-         var3.handle(this);
-         this.reader.skipWhitespace();
-         this.suggestions = this::suggestOptionsNextOrClose;
-         if (this.reader.canRead()) {
-            if (this.reader.peek() != ',') {
-               if (this.reader.peek() != ']') {
-                  throw ERROR_EXPECTED_END_OF_OPTIONS.createWithContext(this.reader);
-               }
-               break;
+         if (this.reader.canRead() && this.reader.peek() == '=') {
+            this.reader.skip();
+            this.reader.skipWhitespace();
+            this.suggestions = SUGGEST_NOTHING;
+            var3.handle(this);
+            this.reader.skipWhitespace();
+            this.suggestions = this::suggestOptionsNextOrClose;
+            if (!this.reader.canRead()) {
+               continue;
             }
 
-            this.reader.skip();
-            this.suggestions = this::suggestOptionsKey;
+            if (this.reader.peek() == ',') {
+               this.reader.skip();
+               this.suggestions = this::suggestOptionsKey;
+               continue;
+            }
+
+            if (this.reader.peek() != ']') {
+               throw ERROR_EXPECTED_END_OF_OPTIONS.createWithContext(this.reader);
+            }
+            break;
          }
+
+         this.reader.setCursor(var1);
+         throw ERROR_EXPECTED_OPTION_VALUE.createWithContext(this.reader, var2);
       }
 
       if (this.reader.canRead()) {
@@ -534,7 +540,7 @@ public class EntitySelectorParser {
    }
 
    public CompletableFuture<Suggestions> fillSuggestions(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {
-      return this.suggestions.apply(var1.createOffset(this.reader.getCursor()), var2);
+      return (CompletableFuture)this.suggestions.apply(var1.createOffset(this.reader.getCursor()), var2);
    }
 
    public boolean hasNameEquals() {

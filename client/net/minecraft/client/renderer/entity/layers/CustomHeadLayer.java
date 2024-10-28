@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -48,8 +49,6 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
       this.itemInHandRenderer = var6;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       ItemStack var11 = var4.getItemBySlot(EquipmentSlot.HEAD);
       if (!var11.isEmpty()) {
@@ -57,40 +56,51 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
          var1.pushPose();
          var1.scale(this.scaleX, this.scaleY, this.scaleZ);
          boolean var13 = var4 instanceof Villager || var4 instanceof ZombieVillager;
+         float var15;
          if (var4.isBaby() && !(var4 instanceof Villager)) {
             float var14 = 2.0F;
-            float var15 = 1.4F;
+            var15 = 1.4F;
             var1.translate(0.0F, 0.03125F, 0.0F);
             var1.scale(0.7F, 0.7F, 0.7F);
             var1.translate(0.0F, 1.0F, 0.0F);
          }
 
-         this.getParentModel().getHead().translateAndRotate(var1);
+         ((HeadedModel)this.getParentModel()).getHead().translateAndRotate(var1);
          if (var12 instanceof BlockItem && ((BlockItem)var12).getBlock() instanceof AbstractSkullBlock) {
-            float var24 = 1.1875F;
+            var15 = 1.1875F;
             var1.scale(1.1875F, -1.1875F, -1.1875F);
             if (var13) {
                var1.translate(0.0F, 0.0625F, 0.0F);
             }
 
-            ResolvableProfile var16 = var11.get(DataComponents.PROFILE);
+            ResolvableProfile var16 = (ResolvableProfile)var11.get(DataComponents.PROFILE);
             var1.translate(-0.5, 0.0, -0.5);
             SkullBlock.Type var17 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
-            SkullModelBase var18 = this.skullModels.get(var17);
+            SkullModelBase var18 = (SkullModelBase)this.skullModels.get(var17);
             RenderType var19 = SkullBlockRenderer.getRenderType(var17, var16);
             Entity var22 = var4.getVehicle();
             WalkAnimationState var20;
-            if (var22 instanceof LivingEntity var21) {
+            if (var22 instanceof LivingEntity) {
+               LivingEntity var21 = (LivingEntity)var22;
                var20 = var21.walkAnimation;
             } else {
                var20 = var4.walkAnimation;
             }
 
-            float var25 = var20.position(var7);
-            SkullBlockRenderer.renderSkull(null, 180.0F, var25, var1, var2, var3, var18, var19);
-         } else if (!(var12 instanceof ArmorItem var23) || var23.getEquipmentSlot() != EquipmentSlot.HEAD) {
-            translateToHead(var1, var13);
-            this.itemInHandRenderer.renderItem(var4, var11, ItemDisplayContext.HEAD, false, var1, var2, var3);
+            float var23 = var20.position(var7);
+            SkullBlockRenderer.renderSkull((Direction)null, 180.0F, var23, var1, var2, var3, var18, var19);
+         } else {
+            label54: {
+               if (var12 instanceof ArmorItem) {
+                  ArmorItem var24 = (ArmorItem)var12;
+                  if (var24.getEquipmentSlot() == EquipmentSlot.HEAD) {
+                     break label54;
+                  }
+               }
+
+               translateToHead(var1, var13);
+               this.itemInHandRenderer.renderItem(var4, var11, ItemDisplayContext.HEAD, false, var1, var2, var3);
+            }
          }
 
          var1.popPose();
@@ -105,5 +115,6 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
       if (var1) {
          var0.translate(0.0F, 0.1875F, 0.0F);
       }
+
    }
 }

@@ -55,6 +55,7 @@ public class MapFrame {
    }
 
    public static String frameId(BlockPos var0) {
-      return "frame-" + var0.getX() + "," + var0.getY() + "," + var0.getZ();
+      int var10000 = var0.getX();
+      return "frame-" + var10000 + "," + var0.getY() + "," + var0.getZ();
    }
 }

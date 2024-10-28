@@ -3,20 +3,18 @@ package net.minecraft.world.item;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
-import java.util.function.Consumer;
+import java.util.Map;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Contract;
 
-public enum DyeColor implements StringRepresentable, TooltipProvider {
+public enum DyeColor implements StringRepresentable {
    WHITE(0, "white", 16383998, MapColor.SNOW, 15790320, 16777215),
    ORANGE(1, "orange", 16351261, MapColor.COLOR_ORANGE, 15435844, 16738335),
    MAGENTA(2, "magenta", 13061821, MapColor.COLOR_MAGENTA, 12801229, 16711935),
@@ -35,9 +33,11 @@ public enum DyeColor implements StringRepresentable, TooltipProvider {
    BLACK(15, "black", 1908001, MapColor.COLOR_BLACK, 1973019, 0);
 
    private static final IntFunction<DyeColor> BY_ID = ByIdMap.continuous(DyeColor::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap(
-      Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.fireworkColor, var0 -> var0))
-   );
+   private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap((Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
+      return var0.fireworkColor;
+   }, (var0) -> {
+      return var0;
+   })));
    public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.fromEnum(DyeColor::values);
    public static final StreamCodec<ByteBuf, DyeColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DyeColor::getId);
    private final int id;
@@ -52,9 +52,9 @@ public enum DyeColor implements StringRepresentable, TooltipProvider {
       this.name = var4;
       this.mapColor = var6;
       this.textColor = var8;
-      int var9 = (var5 & 0xFF0000) >> 16;
-      int var10 = (var5 & 0xFF00) >> 8;
-      int var11 = (var5 & 0xFF) >> 0;
+      int var9 = (var5 & 16711680) >> 16;
+      int var10 = (var5 & '\uff00') >> 8;
+      int var11 = (var5 & 255) >> 0;
       this.textureDiffuseColors = new float[]{(float)var9 / 255.0F, (float)var10 / 255.0F, (float)var11 / 255.0F};
       this.fireworkColor = var7;
    }
@@ -84,13 +84,13 @@ public enum DyeColor implements StringRepresentable, TooltipProvider {
    }
 
    public static DyeColor byId(int var0) {
-      return BY_ID.apply(var0);
+      return (DyeColor)BY_ID.apply(var0);
    }
 
    @Nullable
    @Contract("_,!null->!null;_,null->_")
    public static DyeColor byName(String var0, @Nullable DyeColor var1) {
-      DyeColor var2 = CODEC.byName(var0);
+      DyeColor var2 = (DyeColor)CODEC.byName(var0);
       return var2 != null ? var2 : var1;
    }
 
@@ -99,20 +99,16 @@ public enum DyeColor implements StringRepresentable, TooltipProvider {
       return (DyeColor)BY_FIREWORK_COLOR.get(var0);
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
-   @Override
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
-      String var3 = this.name.substring(0, 1).toUpperCase();
-      String var4 = var3 + this.name.substring(1);
-      var1.accept(Component.translatable("baseColor.tooltip", var4).withColor(this.textColor));
+   // $FF: synthetic method
+   private static DyeColor[] $values() {
+      return new DyeColor[]{WHITE, ORANGE, MAGENTA, LIGHT_BLUE, YELLOW, LIME, PINK, GRAY, LIGHT_GRAY, CYAN, PURPLE, BLUE, BROWN, GREEN, RED, BLACK};
    }
 }

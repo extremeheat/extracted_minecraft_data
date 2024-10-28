@@ -2,14 +2,11 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -26,7 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class HangingEntityItem extends Item {
-   private static final Component TOOLTIP_RANDOM_VARIANT = Component.translatable("painting.random").withStyle(ChatFormatting.GRAY);
+   private static final Component TOOLTIP_RANDOM_VARIANT;
    private final EntityType<? extends HangingEntity> type;
 
    public HangingEntityItem(EntityType<? extends HangingEntity> var1, Item.Properties var2) {
@@ -34,7 +31,6 @@ public class HangingEntityItem extends Item {
       this.type = var1;
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Direction var3 = var1.getClickedFace();
@@ -63,7 +59,7 @@ public class HangingEntityItem extends Item {
             var8 = new GlowItemFrame(var7, var4, var3);
          }
 
-         CustomData var10 = var6.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+         CustomData var10 = (CustomData)var6.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
          if (!var10.isEmpty()) {
             EntityType.updateCustomEntityTag(var7, var5, (Entity)var8, var10);
          }
@@ -87,33 +83,28 @@ public class HangingEntityItem extends Item {
       return !var2.getAxis().isVertical() && var1.mayUseItemAt(var4, var2, var3);
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       if (this.type == EntityType.PAINTING) {
-         CustomData var5 = var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+         CustomData var5 = (CustomData)var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
          if (!var5.isEmpty()) {
-            var5.read(Painting.VARIANT_MAP_CODEC)
-               .result()
-               .ifPresentOrElse(
-                  var1x -> {
-                     var1x.unwrapKey().ifPresent(var1xx -> {
-                        var3.add(Component.translatable(var1xx.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW));
-                        var3.add(Component.translatable(var1xx.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY));
-                     });
-                     var3.add(
-                        Component.translatable(
-                           "painting.dimensions",
-                           Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getWidth(), 16),
-                           Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getHeight(), 16)
-                        )
-                     );
-                  },
-                  () -> var3.add(TOOLTIP_RANDOM_VARIANT)
-               );
+            var5.read(Painting.VARIANT_MAP_CODEC).result().ifPresentOrElse((var1x) -> {
+               var1x.unwrapKey().ifPresent((var1) -> {
+                  var3.add(Component.translatable(var1.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW));
+                  var3.add(Component.translatable(var1.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY));
+               });
+               var3.add(Component.translatable("painting.dimensions", Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getWidth(), 16), Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getHeight(), 16)));
+            }, () -> {
+               var3.add(TOOLTIP_RANDOM_VARIANT);
+            });
          } else if (var4.isCreative()) {
             var3.add(TOOLTIP_RANDOM_VARIANT);
          }
       }
+
+   }
+
+   static {
+      TOOLTIP_RANDOM_VARIANT = Component.translatable("painting.random").withStyle(ChatFormatting.GRAY);
    }
 }

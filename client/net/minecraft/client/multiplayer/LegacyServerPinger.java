@@ -13,9 +13,9 @@ import net.minecraft.util.Mth;
 public class LegacyServerPinger extends SimpleChannelInboundHandler<ByteBuf> {
    private static final Splitter SPLITTER = Splitter.on('\u0000').limit(6);
    private final ServerAddress address;
-   private final LegacyServerPinger.Output output;
+   private final Output output;
 
-   public LegacyServerPinger(ServerAddress var1, LegacyServerPinger.Output var2) {
+   public LegacyServerPinger(ServerAddress var1, Output var2) {
       super();
       this.address = var1;
       this.output = var2;
@@ -65,6 +65,11 @@ public class LegacyServerPinger extends SimpleChannelInboundHandler<ByteBuf> {
 
    public void exceptionCaught(ChannelHandlerContext var1, Throwable var2) {
       var1.close();
+   }
+
+   // $FF: synthetic method
+   protected void channelRead0(ChannelHandlerContext var1, Object var2) throws Exception {
+      this.channelRead0(var1, (ByteBuf)var2);
    }
 
    @FunctionalInterface

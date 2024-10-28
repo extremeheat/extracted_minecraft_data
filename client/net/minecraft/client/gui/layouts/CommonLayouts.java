@@ -13,7 +13,7 @@ public class CommonLayouts {
    }
 
    public static Layout labeledElement(Font var0, LayoutElement var1, Component var2) {
-      return labeledElement(var0, var1, var2, var0x -> {
+      return labeledElement(var0, var1, var2, (var0x) -> {
       });
    }
 

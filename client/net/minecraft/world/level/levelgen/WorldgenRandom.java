@@ -16,24 +16,24 @@ public class WorldgenRandom extends LegacyRandomSource {
       return this.count;
    }
 
-   @Override
    public RandomSource fork() {
       return this.randomSource.fork();
    }
 
-   @Override
    public PositionalRandomFactory forkPositional() {
       return this.randomSource.forkPositional();
    }
 
-   @Override
    public int next(int var1) {
       ++this.count;
       RandomSource var3 = this.randomSource;
-      return var3 instanceof LegacyRandomSource var2 ? var2.next(var1) : (int)(this.randomSource.nextLong() >>> 64 - var1);
+      if (var3 instanceof LegacyRandomSource var2) {
+         return var2.next(var1);
+      } else {
+         return (int)(this.randomSource.nextLong() >>> 64 - var1);
+      }
    }
 
-   @Override
    public synchronized void setSeed(long var1) {
       if (this.randomSource != null) {
          this.randomSource.setSeed(var1);
@@ -77,12 +77,17 @@ public class WorldgenRandom extends LegacyRandomSource {
 
       private final LongFunction<RandomSource> constructor;
 
-      private Algorithm(LongFunction<RandomSource> var3) {
+      private Algorithm(LongFunction var3) {
          this.constructor = var3;
       }
 
       public RandomSource newInstance(long var1) {
-         return this.constructor.apply(var1);
+         return (RandomSource)this.constructor.apply(var1);
+      }
+
+      // $FF: synthetic method
+      private static Algorithm[] $values() {
+         return new Algorithm[]{LEGACY, XOROSHIRO};
       }
    }
 }

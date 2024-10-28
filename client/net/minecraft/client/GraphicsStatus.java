@@ -18,26 +18,32 @@ public enum GraphicsStatus implements OptionEnum {
       this.key = var4;
    }
 
-   @Override
    public int getId() {
       return this.id;
    }
 
-   @Override
    public String getKey() {
       return this.key;
    }
 
-   @Override
    public String toString() {
-      return switch(this) {
-         case FAST -> "fast";
-         case FANCY -> "fancy";
-         case FABULOUS -> "fabulous";
-      };
+      String var10000;
+      switch (this.ordinal()) {
+         case 0 -> var10000 = "fast";
+         case 1 -> var10000 = "fancy";
+         case 2 -> var10000 = "fabulous";
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public static GraphicsStatus byId(int var0) {
-      return BY_ID.apply(var0);
+      return (GraphicsStatus)BY_ID.apply(var0);
+   }
+
+   // $FF: synthetic method
+   private static GraphicsStatus[] $values() {
+      return new GraphicsStatus[]{FAST, FANCY, FABULOUS};
    }
 }

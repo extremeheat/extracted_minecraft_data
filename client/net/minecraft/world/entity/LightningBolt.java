@@ -1,6 +1,7 @@
 package net.minecraft.world.entity;
 
 import com.google.common.collect.Sets;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -52,7 +54,6 @@ public class LightningBolt extends Entity {
       this.visualOnly = var1;
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.WEATHER;
    }
@@ -72,35 +73,15 @@ public class LightningBolt extends Entity {
       if (var2.is(Blocks.LIGHTNING_ROD)) {
          ((LightningRodBlock)var2.getBlock()).onLightningStrike(var2, this.level(), var1);
       }
+
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.life == 2) {
          if (this.level().isClientSide()) {
-            this.level()
-               .playLocalSound(
-                  this.getX(),
-                  this.getY(),
-                  this.getZ(),
-                  SoundEvents.LIGHTNING_BOLT_THUNDER,
-                  SoundSource.WEATHER,
-                  10000.0F,
-                  0.8F + this.random.nextFloat() * 0.2F,
-                  false
-               );
-            this.level()
-               .playLocalSound(
-                  this.getX(),
-                  this.getY(),
-                  this.getZ(),
-                  SoundEvents.LIGHTNING_BOLT_IMPACT,
-                  SoundSource.WEATHER,
-                  2.0F,
-                  0.5F + this.random.nextFloat() * 0.2F,
-                  false
-               );
+            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER, 10000.0F, 0.8F + this.random.nextFloat() * 0.2F, false);
+            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.WEATHER, 2.0F, 0.5F + this.random.nextFloat() * 0.2F, false);
          } else {
             Difficulty var1 = this.level().getDifficulty();
             if (var1 == Difficulty.NORMAL || var1 == Difficulty.HARD) {
@@ -114,17 +95,20 @@ public class LightningBolt extends Entity {
       }
 
       --this.life;
+      Iterator var2;
+      List var4;
       if (this.life < 0) {
          if (this.flashes == 0) {
             if (this.level() instanceof ServerLevel) {
-               List var4 = this.level()
-                  .getEntities(
-                     this,
-                     new AABB(this.getX() - 15.0, this.getY() - 15.0, this.getZ() - 15.0, this.getX() + 15.0, this.getY() + 6.0 + 15.0, this.getZ() + 15.0),
-                     var1x -> var1x.isAlive() && !this.hitEntities.contains(var1x)
-                  );
+               var4 = this.level().getEntities((Entity)this, new AABB(this.getX() - 15.0, this.getY() - 15.0, this.getZ() - 15.0, this.getX() + 15.0, this.getY() + 6.0 + 15.0, this.getZ() + 15.0), (var1x) -> {
+                  return var1x.isAlive() && !this.hitEntities.contains(var1x);
+               });
+               var2 = ((ServerLevel)this.level()).getPlayers((var1x) -> {
+                  return var1x.distanceTo(this) < 256.0F;
+               }).iterator();
 
-               for(ServerPlayer var3 : ((ServerLevel)this.level()).getPlayers(var1x -> var1x.distanceTo(this) < 256.0F)) {
+               while(var2.hasNext()) {
+                  ServerPlayer var3 = (ServerPlayer)var2.next();
                   CriteriaTriggers.LIGHTNING_STRIKE.trigger(var3, this, var4);
                }
             }
@@ -142,23 +126,21 @@ public class LightningBolt extends Entity {
          if (!(this.level() instanceof ServerLevel)) {
             this.level().setSkyFlashTime(2);
          } else if (!this.visualOnly) {
-            List var5 = this.level()
-               .getEntities(
-                  this,
-                  new AABB(this.getX() - 3.0, this.getY() - 3.0, this.getZ() - 3.0, this.getX() + 3.0, this.getY() + 6.0 + 3.0, this.getZ() + 3.0),
-                  Entity::isAlive
-               );
+            var4 = this.level().getEntities((Entity)this, new AABB(this.getX() - 3.0, this.getY() - 3.0, this.getZ() - 3.0, this.getX() + 3.0, this.getY() + 6.0 + 3.0, this.getZ() + 3.0), Entity::isAlive);
+            var2 = var4.iterator();
 
-            for(Entity var7 : var5) {
-               var7.thunderHit((ServerLevel)this.level(), this);
+            while(var2.hasNext()) {
+               Entity var5 = (Entity)var2.next();
+               var5.thunderHit((ServerLevel)this.level(), this);
             }
 
-            this.hitEntities.addAll(var5);
+            this.hitEntities.addAll(var4);
             if (this.cause != null) {
-               CriteriaTriggers.CHANNELED_LIGHTNING.trigger(this.cause, var5);
+               CriteriaTriggers.CHANNELED_LIGHTNING.trigger(this.cause, var4);
             }
          }
       }
+
    }
 
    private BlockPos getStrikePosition() {
@@ -183,6 +165,7 @@ public class LightningBolt extends Entity {
                ++this.blocksSetOnFire;
             }
          }
+
       }
    }
 
@@ -191,7 +174,7 @@ public class LightningBolt extends Entity {
       BlockPos var3;
       BlockState var4;
       if (var2.is(Blocks.LIGHTNING_ROD)) {
-         var3 = var1.relative(var2.getValue(LightningRodBlock.FACING).getOpposite());
+         var3 = var1.relative(((Direction)var2.getValue(LightningRodBlock.FACING)).getOpposite());
          var4 = var0.getBlockState(var3);
       } else {
          var3 = var1;
@@ -207,6 +190,7 @@ public class LightningBolt extends Entity {
             int var8 = var0.random.nextInt(8) + 1;
             randomWalkCleaningCopper(var0, var3, var5, var8);
          }
+
       }
    }
 
@@ -221,36 +205,41 @@ public class LightningBolt extends Entity {
 
          var2.set((Vec3i)var5.get());
       }
+
    }
 
    private static Optional<BlockPos> randomStepCleaningCopper(Level var0, BlockPos var1) {
-      for(BlockPos var3 : BlockPos.randomInCube(var0.random, 10, var1, 1)) {
-         BlockState var4 = var0.getBlockState(var3);
-         if (var4.getBlock() instanceof WeatheringCopper) {
-            WeatheringCopper.getPrevious(var4).ifPresent(var2 -> var0.setBlockAndUpdate(var3, var2));
-            var0.levelEvent(3002, var3, -1);
-            return Optional.of(var3);
-         }
-      }
+      Iterator var2 = BlockPos.randomInCube(var0.random, 10, var1, 1).iterator();
 
-      return Optional.empty();
+      BlockPos var3;
+      BlockState var4;
+      do {
+         if (!var2.hasNext()) {
+            return Optional.empty();
+         }
+
+         var3 = (BlockPos)var2.next();
+         var4 = var0.getBlockState(var3);
+      } while(!(var4.getBlock() instanceof WeatheringCopper));
+
+      WeatheringCopper.getPrevious(var4).ifPresent((var2x) -> {
+         var0.setBlockAndUpdate(var3, var2x);
+      });
+      var0.levelEvent(3002, var3, -1);
+      return Optional.of(var3);
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       double var3 = 64.0 * getViewScale();
       return var1 < var3 * var3;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
    }
 

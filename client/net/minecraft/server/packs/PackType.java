@@ -13,4 +13,9 @@ public enum PackType {
    public String getDirectory() {
       return this.directory;
    }
+
+   // $FF: synthetic method
+   private static PackType[] $values() {
+      return new PackType[]{CLIENT_RESOURCES, SERVER_DATA};
+   }
 }

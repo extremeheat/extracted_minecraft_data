@@ -2,9 +2,9 @@ package com.mojang.realmsclient.gui.screens;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -27,26 +27,26 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
       this.lastScreen = var1;
    }
 
-   @Override
    public void init() {
       this.layout.spacing(15).defaultCellSetting().alignHorizontallyCenter();
-      this.textWidget = new MultiLineTextWidget(MESSAGE, this.font).setCentered(true);
+      this.textWidget = (new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true);
       this.layout.addChild(this.textWidget);
-      LinearLayout var1 = this.layout.addChild(LinearLayout.horizontal().spacing(8));
+      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
       MutableComponent var2 = Component.translatable("mco.account.privacy.info.button");
       var1.addChild(Button.builder(var2, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/MinecraftGDPR")).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
-      this.layout.visitWidgets(var1x -> {
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
+         this.onClose();
+      }).build());
+      this.layout.visitWidgets((var1x) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   @Override
    protected void repositionElements() {
       if (this.textWidget != null) {
          this.textWidget.setMaxWidth(this.width - 15);
@@ -56,7 +56,6 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   @Override
    public Component getNarrationMessage() {
       return MESSAGE;
    }

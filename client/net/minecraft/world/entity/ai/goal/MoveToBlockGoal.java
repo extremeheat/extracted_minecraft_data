@@ -14,7 +14,7 @@ public abstract class MoveToBlockGoal extends Goal {
    protected int nextStartTick;
    protected int tryTicks;
    private int maxStayTicks;
-   protected BlockPos blockPos = BlockPos.ZERO;
+   protected BlockPos blockPos;
    private boolean reachedTarget;
    private final int searchRange;
    private final int verticalSearchRange;
@@ -26,6 +26,7 @@ public abstract class MoveToBlockGoal extends Goal {
 
    public MoveToBlockGoal(PathfinderMob var1, double var2, int var4, int var5) {
       super();
+      this.blockPos = BlockPos.ZERO;
       this.mob = var1;
       this.speedModifier = var2;
       this.searchRange = var4;
@@ -34,7 +35,6 @@ public abstract class MoveToBlockGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP));
    }
 
-   @Override
    public boolean canUse() {
       if (this.nextStartTick > 0) {
          --this.nextStartTick;
@@ -49,12 +49,10 @@ public abstract class MoveToBlockGoal extends Goal {
       return reducedTickDelay(200 + var1.getRandom().nextInt(200));
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.tryTicks >= -this.maxStayTicks && this.tryTicks <= 1200 && this.isValidTarget(this.mob.level(), this.blockPos);
    }
 
-   @Override
    public void start() {
       this.moveMobToBlock();
       this.tryTicks = 0;
@@ -62,9 +60,7 @@ public abstract class MoveToBlockGoal extends Goal {
    }
 
    protected void moveMobToBlock() {
-      this.mob
-         .getNavigation()
-         .moveTo((double)this.blockPos.getX() + 0.5, (double)(this.blockPos.getY() + 1), (double)this.blockPos.getZ() + 0.5, this.speedModifier);
+      this.mob.getNavigation().moveTo((double)this.blockPos.getX() + 0.5, (double)(this.blockPos.getY() + 1), (double)this.blockPos.getZ() + 0.5, this.speedModifier);
    }
 
    public double acceptedDistance() {
@@ -75,12 +71,10 @@ public abstract class MoveToBlockGoal extends Goal {
       return this.blockPos.above();
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   @Override
    public void tick() {
       BlockPos var1 = this.getMoveToTarget();
       if (!var1.closerToCenterThan(this.mob.position(), this.acceptedDistance())) {
@@ -93,6 +87,7 @@ public abstract class MoveToBlockGoal extends Goal {
          this.reachedTarget = true;
          --this.tryTicks;
       }
+
    }
 
    public boolean shouldRecalculatePath() {

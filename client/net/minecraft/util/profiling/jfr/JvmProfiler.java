@@ -15,9 +15,7 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import org.slf4j.Logger;
 
 public interface JvmProfiler {
-   JvmProfiler INSTANCE = (JvmProfiler)(Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent()
-      ? JfrProfiler.getInstance()
-      : new JvmProfiler.NoOpProfiler());
+   JvmProfiler INSTANCE = Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent() ? JfrProfiler.getInstance() : new NoOpProfiler();
 
    boolean start(Environment var1);
 
@@ -52,54 +50,43 @@ public interface JvmProfiler {
          super();
       }
 
-      @Override
       public boolean start(Environment var1) {
          LOGGER.warn("Attempted to start Flight Recorder, but it's not supported on this JVM");
          return false;
       }
 
-      @Override
       public Path stop() {
          throw new IllegalStateException("Attempted to stop Flight Recorder, but it's not supported on this JVM");
       }
 
-      @Override
       public boolean isRunning() {
          return false;
       }
 
-      @Override
       public boolean isAvailable() {
          return false;
       }
 
-      @Override
       public void onPacketReceived(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4) {
       }
 
-      @Override
       public void onPacketSent(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4) {
       }
 
-      @Override
       public void onRegionFileRead(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
       }
 
-      @Override
       public void onRegionFileWrite(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
       }
 
-      @Override
       public void onServerTick(float var1) {
       }
 
-      @Override
       public ProfiledDuration onWorldLoadedStarted() {
          return noOpCommit;
       }
 
       @Nullable
-      @Override
       public ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
          return null;
       }

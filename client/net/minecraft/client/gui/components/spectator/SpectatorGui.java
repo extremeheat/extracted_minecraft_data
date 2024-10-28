@@ -10,6 +10,7 @@ import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
@@ -35,6 +36,7 @@ public class SpectatorGui implements SpectatorMenuListener {
       } else {
          this.menu = new SpectatorMenu(this);
       }
+
    }
 
    private float getHotbarAlpha() {
@@ -88,9 +90,10 @@ public class SpectatorGui implements SpectatorMenuListener {
          var1.pose().popPose();
          if (var7 > 3 && var6.isEnabled()) {
             Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
-            var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width(var9), (int)var4 + 6 + 3, 16777215 + (var7 << 24));
+            var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var9), (int)var4 + 6 + 3, 16777215 + (var7 << 24));
          }
       }
+
    }
 
    public void renderTooltip(GuiGraphics var1) {
@@ -99,14 +102,14 @@ public class SpectatorGui implements SpectatorMenuListener {
          SpectatorMenuItem var3 = this.menu.getSelectedItem();
          Component var4 = var3 == SpectatorMenu.EMPTY_SLOT ? this.menu.getSelectedCategory().getPrompt() : var3.getName();
          if (var4 != null) {
-            int var5 = (var1.guiWidth() - this.minecraft.font.width(var4)) / 2;
+            int var5 = (var1.guiWidth() - this.minecraft.font.width((FormattedText)var4)) / 2;
             int var6 = var1.guiHeight() - 35;
             var1.drawString(this.minecraft.font, var4, var5, var6, 16777215 + (var2 << 24));
          }
       }
+
    }
 
-   @Override
    public void onSpectatorMenuClosed(SpectatorMenu var1) {
       this.menu = null;
       this.lastSelectionTime = 0L;
@@ -117,16 +120,15 @@ public class SpectatorGui implements SpectatorMenuListener {
    }
 
    public void onMouseScrolled(int var1) {
-      int var2 = this.menu.getSelectedSlot() + var1;
-
-      while(var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled())) {
-         var2 += var1;
+      int var2;
+      for(var2 = this.menu.getSelectedSlot() + var1; var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled()); var2 += var1) {
       }
 
       if (var2 >= 0 && var2 <= 8) {
          this.menu.selectSlot(var2);
          this.lastSelectionTime = Util.getMillis();
       }
+
    }
 
    public void onMouseMiddleClick() {
@@ -139,5 +141,6 @@ public class SpectatorGui implements SpectatorMenuListener {
       } else {
          this.menu = new SpectatorMenu(this);
       }
+
    }
 }

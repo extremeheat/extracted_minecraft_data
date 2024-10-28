@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -13,7 +12,8 @@ public class ResetRaidStatus {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create(var0 -> var0.point((var0x, var1, var2) -> {
+      return BehaviorBuilder.create((var0) -> {
+         return var0.point((var0x, var1, var2) -> {
             if (var0x.random.nextInt(20) != 0) {
                return false;
             } else {
@@ -26,6 +26,7 @@ public class ResetRaidStatus {
 
                return true;
             }
-         }));
+         });
+      });
    }
 }

@@ -2,7 +2,10 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -11,7 +14,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -40,7 +42,7 @@ import org.slf4j.Logger;
 
 public abstract class StructurePiece {
    private static final Logger LOGGER = LogUtils.getLogger();
-   protected static final BlockState CAVE_AIR = Blocks.CAVE_AIR.defaultBlockState();
+   protected static final BlockState CAVE_AIR;
    protected BoundingBox boundingBox;
    @Nullable
    private Direction orientation;
@@ -48,19 +50,7 @@ public abstract class StructurePiece {
    private Rotation rotation;
    protected int genDepth;
    private final StructurePieceType type;
-   private static final Set<Block> SHAPE_CHECK_BLOCKS = ImmutableSet.builder()
-      .add(Blocks.NETHER_BRICK_FENCE)
-      .add(Blocks.TORCH)
-      .add(Blocks.WALL_TORCH)
-      .add(Blocks.OAK_FENCE)
-      .add(Blocks.SPRUCE_FENCE)
-      .add(Blocks.DARK_OAK_FENCE)
-      .add(Blocks.ACACIA_FENCE)
-      .add(Blocks.BIRCH_FENCE)
-      .add(Blocks.JUNGLE_FENCE)
-      .add(Blocks.LADDER)
-      .add(Blocks.IRON_BARS)
-      .build();
+   private static final Set<Block> SHAPE_CHECK_BLOCKS;
 
    protected StructurePiece(StructurePieceType var1, int var2, BoundingBox var3) {
       super();
@@ -70,22 +60,19 @@ public abstract class StructurePiece {
    }
 
    public StructurePiece(StructurePieceType var1, CompoundTag var2) {
-      this(
-         var1,
-         var2.getInt("GD"),
-         (BoundingBox)BoundingBox.CODEC
-            .parse(NbtOps.INSTANCE, var2.get("BB"))
-            .resultOrPartial(LOGGER::error)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid boundingbox"))
-      );
+      int var10002 = var2.getInt("GD");
+      DataResult var10003 = BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB"));
+      Logger var10004 = LOGGER;
+      Objects.requireNonNull(var10004);
+      this(var1, var10002, (BoundingBox)var10003.resultOrPartial(var10004::error).orElseThrow(() -> {
+         return new IllegalArgumentException("Invalid boundingbox");
+      }));
       int var3 = var2.getInt("O");
       this.setOrientation(var3 == -1 ? null : Direction.from2DDataValue(var3));
    }
 
    protected static BoundingBox makeBoundingBox(int var0, int var1, int var2, Direction var3, int var4, int var5, int var6) {
-      return var3.getAxis() == Direction.Axis.Z
-         ? new BoundingBox(var0, var1, var2, var0 + var4 - 1, var1 + var5 - 1, var2 + var6 - 1)
-         : new BoundingBox(var0, var1, var2, var0 + var6 - 1, var1 + var5 - 1, var2 + var4 - 1);
+      return var3.getAxis() == Direction.Axis.Z ? new BoundingBox(var0, var1, var2, var0 + var4 - 1, var1 + var5 - 1, var2 + var6 - 1) : new BoundingBox(var0, var1, var2, var0 + var6 - 1, var1 + var5 - 1, var2 + var4 - 1);
    }
 
    protected static Direction getRandomHorizontalDirection(RandomSource var0) {
@@ -95,7 +82,12 @@ public abstract class StructurePiece {
    public final CompoundTag createTag(StructurePieceSerializationContext var1) {
       CompoundTag var2 = new CompoundTag();
       var2.putString("id", BuiltInRegistries.STRUCTURE_PIECE.getKey(this.getType()).toString());
-      BoundingBox.CODEC.encodeStart(NbtOps.INSTANCE, this.boundingBox).resultOrPartial(LOGGER::error).ifPresent(var1x -> var2.put("BB", var1x));
+      DataResult var10000 = BoundingBox.CODEC.encodeStart(NbtOps.INSTANCE, this.boundingBox);
+      Logger var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         var2.put("BB", var1x);
+      });
       Direction var3 = this.getOrientation();
       var2.putInt("O", var3 == null ? -1 : var3.get2DDataValue());
       var2.putInt("GD", this.genDepth);
@@ -108,9 +100,7 @@ public abstract class StructurePiece {
    public void addChildren(StructurePiece var1, StructurePieceAccessor var2, RandomSource var3) {
    }
 
-   public abstract void postProcess(
-      WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-   );
+   public abstract void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7);
 
    public BoundingBox getBoundingBox() {
       return this.boundingBox;
@@ -143,7 +133,7 @@ public abstract class StructurePiece {
       if (var3 == null) {
          return var1;
       } else {
-         switch(var3) {
+         switch (var3) {
             case NORTH:
             case SOUTH:
                return this.boundingBox.minX() + var1;
@@ -166,7 +156,7 @@ public abstract class StructurePiece {
       if (var3 == null) {
          return var2;
       } else {
-         switch(var3) {
+         switch (var3) {
             case NORTH:
                return this.boundingBox.maxZ() - var2;
             case SOUTH:
@@ -201,6 +191,7 @@ public abstract class StructurePiece {
             if (SHAPE_CHECK_BLOCKS.contains(var2.getBlock())) {
                var1.getChunk(var7).markPosForPostprocessing(var7);
             }
+
          }
       }
    }
@@ -219,7 +210,7 @@ public abstract class StructurePiece {
       if (!var5.isInside(var6)) {
          return false;
       } else {
-         return var6.getY() < var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, var6.getX(), var6.getZ());
+         return ((BlockPos)var6).getY() < var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, ((BlockPos)var6).getX(), ((BlockPos)var6).getZ());
       }
    }
 
@@ -231,11 +222,10 @@ public abstract class StructurePiece {
             }
          }
       }
+
    }
 
-   protected void generateBox(
-      WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, BlockState var10, boolean var11
-   ) {
+   protected void generateBox(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, BlockState var10, boolean var11) {
       for(int var12 = var4; var12 <= var7; ++var12) {
          for(int var13 = var3; var13 <= var6; ++var13) {
             for(int var14 = var5; var14 <= var8; ++var14) {
@@ -249,25 +239,14 @@ public abstract class StructurePiece {
             }
          }
       }
+
    }
 
    protected void generateBox(WorldGenLevel var1, BoundingBox var2, BoundingBox var3, BlockState var4, BlockState var5, boolean var6) {
       this.generateBox(var1, var2, var3.minX(), var3.minY(), var3.minZ(), var3.maxX(), var3.maxY(), var3.maxZ(), var4, var5, var6);
    }
 
-   protected void generateBox(
-      WorldGenLevel var1,
-      BoundingBox var2,
-      int var3,
-      int var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      boolean var9,
-      RandomSource var10,
-      StructurePiece.BlockSelector var11
-   ) {
+   protected void generateBox(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, RandomSource var10, BlockSelector var11) {
       for(int var12 = var4; var12 <= var7; ++var12) {
          for(int var13 = var3; var13 <= var6; ++var13) {
             for(int var14 = var5; var14 <= var8; ++var14) {
@@ -278,34 +257,18 @@ public abstract class StructurePiece {
             }
          }
       }
+
    }
 
-   protected void generateBox(WorldGenLevel var1, BoundingBox var2, BoundingBox var3, boolean var4, RandomSource var5, StructurePiece.BlockSelector var6) {
+   protected void generateBox(WorldGenLevel var1, BoundingBox var2, BoundingBox var3, boolean var4, RandomSource var5, BlockSelector var6) {
       this.generateBox(var1, var2, var3.minX(), var3.minY(), var3.minZ(), var3.maxX(), var3.maxY(), var3.maxZ(), var4, var5, var6);
    }
 
-   protected void generateMaybeBox(
-      WorldGenLevel var1,
-      BoundingBox var2,
-      RandomSource var3,
-      float var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      int var9,
-      int var10,
-      BlockState var11,
-      BlockState var12,
-      boolean var13,
-      boolean var14
-   ) {
+   protected void generateMaybeBox(WorldGenLevel var1, BoundingBox var2, RandomSource var3, float var4, int var5, int var6, int var7, int var8, int var9, int var10, BlockState var11, BlockState var12, boolean var13, boolean var14) {
       for(int var15 = var6; var15 <= var9; ++var15) {
          for(int var16 = var5; var16 <= var8; ++var16) {
             for(int var17 = var7; var17 <= var10; ++var17) {
-               if (!(var3.nextFloat() > var4)
-                  && (!var13 || !this.getBlock(var1, var16, var15, var17, var2).isAir())
-                  && (!var14 || this.isInterior(var1, var16, var15, var17, var2))) {
+               if (!(var3.nextFloat() > var4) && (!var13 || !this.getBlock(var1, var16, var15, var17, var2).isAir()) && (!var14 || this.isInterior(var1, var16, var15, var17, var2))) {
                   if (var15 != var6 && var15 != var9 && var16 != var5 && var16 != var8 && var17 != var7 && var17 != var10) {
                      this.placeBlock(var1, var12, var16, var15, var17, var2);
                   } else {
@@ -315,17 +278,17 @@ public abstract class StructurePiece {
             }
          }
       }
+
    }
 
    protected void maybeGenerateBlock(WorldGenLevel var1, BoundingBox var2, RandomSource var3, float var4, int var5, int var6, int var7, BlockState var8) {
       if (var3.nextFloat() < var4) {
          this.placeBlock(var1, var8, var5, var6, var7, var2);
       }
+
    }
 
-   protected void generateUpperHalfSphere(
-      WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, boolean var10
-   ) {
+   protected void generateUpperHalfSphere(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, boolean var10) {
       float var11 = (float)(var6 - var3 + 1);
       float var12 = (float)(var7 - var4 + 1);
       float var13 = (float)(var8 - var5 + 1);
@@ -349,6 +312,7 @@ public abstract class StructurePiece {
             }
          }
       }
+
    }
 
    protected void fillColumnDown(WorldGenLevel var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
@@ -358,6 +322,7 @@ public abstract class StructurePiece {
             var1.setBlock(var7, var2, 2);
             var7.move(Direction.DOWN);
          }
+
       }
    }
 
@@ -366,13 +331,15 @@ public abstract class StructurePiece {
    }
 
    protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceKey<LootTable> var7) {
-      return this.createChest(var1, var2, var3, this.getWorldPos(var4, var5, var6), var7, null);
+      return this.createChest(var1, var2, var3, this.getWorldPos(var4, var5, var6), var7, (BlockState)null);
    }
 
    public static BlockState reorient(BlockGetter var0, BlockPos var1, BlockState var2) {
       Direction var3 = null;
+      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+      while(var4.hasNext()) {
+         Direction var5 = (Direction)var4.next();
          BlockPos var6 = var1.relative(var5);
          BlockState var7 = var0.getBlockState(var6);
          if (var7.is(Blocks.CHEST)) {
@@ -390,9 +357,9 @@ public abstract class StructurePiece {
       }
 
       if (var3 != null) {
-         return var2.setValue(HorizontalDirectionalBlock.FACING, var3.getOpposite());
+         return (BlockState)var2.setValue(HorizontalDirectionalBlock.FACING, var3.getOpposite());
       } else {
-         Direction var8 = var2.getValue(HorizontalDirectionalBlock.FACING);
+         Direction var8 = (Direction)var2.getValue(HorizontalDirectionalBlock.FACING);
          BlockPos var9 = var1.relative(var8);
          if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
             var8 = var8.getOpposite();
@@ -406,16 +373,14 @@ public abstract class StructurePiece {
 
          if (var0.getBlockState(var9).isSolidRender(var0, var9)) {
             var8 = var8.getOpposite();
-            var9 = var1.relative(var8);
+            var1.relative(var8);
          }
 
-         return var2.setValue(HorizontalDirectionalBlock.FACING, var8);
+         return (BlockState)var2.setValue(HorizontalDirectionalBlock.FACING, var8);
       }
    }
 
-   protected boolean createChest(
-      ServerLevelAccessor var1, BoundingBox var2, RandomSource var3, BlockPos var4, ResourceKey<LootTable> var5, @Nullable BlockState var6
-   ) {
+   protected boolean createChest(ServerLevelAccessor var1, BoundingBox var2, RandomSource var3, BlockPos var4, ResourceKey<LootTable> var5, @Nullable BlockState var6) {
       if (var2.isInside(var4) && !var1.getBlockState(var4).is(Blocks.CHEST)) {
          if (var6 == null) {
             var6 = reorient(var1, var4, Blocks.CHEST.defaultBlockState());
@@ -433,12 +398,10 @@ public abstract class StructurePiece {
       }
    }
 
-   protected boolean createDispenser(
-      WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, Direction var7, ResourceKey<LootTable> var8
-   ) {
+   protected boolean createDispenser(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, Direction var7, ResourceKey<LootTable> var8) {
       BlockPos.MutableBlockPos var9 = this.getWorldPos(var4, var5, var6);
       if (var2.isInside(var9) && !var1.getBlockState(var9).is(Blocks.DISPENSER)) {
-         this.placeBlock(var1, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, var7), var4, var5, var6, var2);
+         this.placeBlock(var1, (BlockState)Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, var7), var4, var5, var6, var2);
          BlockEntity var10 = var1.getBlockEntity(var9);
          if (var10 instanceof DispenserBlockEntity) {
             ((DispenserBlockEntity)var10).setLootTable(var8, var3.nextLong());
@@ -455,19 +418,27 @@ public abstract class StructurePiece {
    }
 
    public static BoundingBox createBoundingBox(Stream<StructurePiece> var0) {
-      return BoundingBox.encapsulatingBoxes(var0.map(StructurePiece::getBoundingBox)::iterator)
-         .orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox without pieces"));
+      Stream var10000 = var0.map(StructurePiece::getBoundingBox);
+      Objects.requireNonNull(var10000);
+      return (BoundingBox)BoundingBox.encapsulatingBoxes(var10000::iterator).orElseThrow(() -> {
+         return new IllegalStateException("Unable to calculate boundingbox without pieces");
+      });
    }
 
    @Nullable
    public static StructurePiece findCollisionPiece(List<StructurePiece> var0, BoundingBox var1) {
-      for(StructurePiece var3 : var0) {
-         if (var3.getBoundingBox().intersects(var1)) {
-            return var3;
-         }
-      }
+      Iterator var2 = var0.iterator();
 
-      return null;
+      StructurePiece var3;
+      do {
+         if (!var2.hasNext()) {
+            return null;
+         }
+
+         var3 = (StructurePiece)var2.next();
+      } while(!var3.getBoundingBox().intersects(var1));
+
+      return var3;
    }
 
    @Nullable
@@ -481,7 +452,7 @@ public abstract class StructurePiece {
          this.rotation = Rotation.NONE;
          this.mirror = Mirror.NONE;
       } else {
-         switch(var1) {
+         switch (var1) {
             case SOUTH:
                this.mirror = Mirror.LEFT_RIGHT;
                this.rotation = Rotation.NONE;
@@ -499,6 +470,7 @@ public abstract class StructurePiece {
                this.rotation = Rotation.NONE;
          }
       }
+
    }
 
    public Rotation getRotation() {
@@ -513,11 +485,17 @@ public abstract class StructurePiece {
       return this.type;
    }
 
+   static {
+      CAVE_AIR = Blocks.CAVE_AIR.defaultBlockState();
+      SHAPE_CHECK_BLOCKS = ImmutableSet.builder().add(Blocks.NETHER_BRICK_FENCE).add(Blocks.TORCH).add(Blocks.WALL_TORCH).add(Blocks.OAK_FENCE).add(Blocks.SPRUCE_FENCE).add(Blocks.DARK_OAK_FENCE).add(Blocks.ACACIA_FENCE).add(Blocks.BIRCH_FENCE).add(Blocks.JUNGLE_FENCE).add(Blocks.LADDER).add(Blocks.IRON_BARS).build();
+   }
+
    public abstract static class BlockSelector {
-      protected BlockState next = Blocks.AIR.defaultBlockState();
+      protected BlockState next;
 
       public BlockSelector() {
          super();
+         this.next = Blocks.AIR.defaultBlockState();
       }
 
       public abstract void next(RandomSource var1, int var2, int var3, int var4, boolean var5);

@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -87,7 +88,7 @@ public class AdvancementTab {
       var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
       var1.pose().pushPose();
       var1.pose().translate((float)var2, (float)var3, 0.0F);
-      ResourceLocation var4 = this.display.getBackground().orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+      ResourceLocation var4 = (ResourceLocation)this.display.getBackground().orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
       int var5 = Mth.floor(this.scrollX);
       int var6 = Mth.floor(this.scrollY);
       int var7 = var5 % 16;
@@ -114,7 +115,10 @@ public class AdvancementTab {
       int var7 = Mth.floor(this.scrollX);
       int var8 = Mth.floor(this.scrollY);
       if (var2 > 0 && var2 < 234 && var3 > 0 && var3 < 113) {
-         for(AdvancementWidget var10 : this.widgets.values()) {
+         Iterator var9 = this.widgets.values().iterator();
+
+         while(var9.hasNext()) {
+            AdvancementWidget var10 = (AdvancementWidget)var9.next();
             if (var10.isMouseOver(var7, var8, var2, var3)) {
                var6 = true;
                var10.drawHover(var1, var7, var8, this.fade, var4, var5);
@@ -129,6 +133,7 @@ public class AdvancementTab {
       } else {
          this.fade = Mth.clamp(this.fade - 0.04F, 0.0F, 1.0F);
       }
+
    }
 
    public boolean isMouseOver(int var1, int var2, double var3, double var5) {
@@ -141,7 +146,11 @@ public class AdvancementTab {
       if (var4.isEmpty()) {
          return null;
       } else {
-         for(AdvancementTabType var8 : AdvancementTabType.values()) {
+         AdvancementTabType[] var5 = AdvancementTabType.values();
+         int var6 = var5.length;
+
+         for(int var7 = 0; var7 < var6; ++var7) {
+            AdvancementTabType var8 = var5[var7];
             if (var2 < var8.getMax()) {
                return new AdvancementTab(var0, var1, var8, var2, var3, (DisplayInfo)var4.get());
             }
@@ -161,6 +170,7 @@ public class AdvancementTab {
       if (this.maxY - this.minY > 113) {
          this.scrollY = Mth.clamp(this.scrollY + var3, (double)(-(this.maxY - 113)), 0.0);
       }
+
    }
 
    public void addAdvancement(AdvancementNode var1) {
@@ -181,15 +191,18 @@ public class AdvancementTab {
       this.maxX = Math.max(this.maxX, var4);
       this.minY = Math.min(this.minY, var5);
       this.maxY = Math.max(this.maxY, var6);
+      Iterator var7 = this.widgets.values().iterator();
 
-      for(AdvancementWidget var8 : this.widgets.values()) {
+      while(var7.hasNext()) {
+         AdvancementWidget var8 = (AdvancementWidget)var7.next();
          var8.attachToParent();
       }
+
    }
 
    @Nullable
    public AdvancementWidget getWidget(AdvancementHolder var1) {
-      return this.widgets.get(var1);
+      return (AdvancementWidget)this.widgets.get(var1);
    }
 
    public AdvancementsScreen getScreen() {

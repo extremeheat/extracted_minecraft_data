@@ -29,49 +29,35 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BrewingStandBlock extends BaseEntityBlock {
    public static final MapCodec<BrewingStandBlock> CODEC = simpleCodec(BrewingStandBlock::new);
-   public static final BooleanProperty[] HAS_BOTTLE = new BooleanProperty[]{
-      BlockStateProperties.HAS_BOTTLE_0, BlockStateProperties.HAS_BOTTLE_1, BlockStateProperties.HAS_BOTTLE_2
-   };
-   protected static final VoxelShape SHAPE = Shapes.or(Block.box(1.0, 0.0, 1.0, 15.0, 2.0, 15.0), Block.box(7.0, 0.0, 7.0, 9.0, 14.0, 9.0));
+   public static final BooleanProperty[] HAS_BOTTLE;
+   protected static final VoxelShape SHAPE;
 
-   @Override
    public MapCodec<BrewingStandBlock> codec() {
       return CODEC;
    }
 
    public BrewingStandBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(
-         this.stateDefinition
-            .any()
-            .setValue(HAS_BOTTLE[0], Boolean.valueOf(false))
-            .setValue(HAS_BOTTLE[1], Boolean.valueOf(false))
-            .setValue(HAS_BOTTLE[2], Boolean.valueOf(false))
-      );
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HAS_BOTTLE[0], false)).setValue(HAS_BOTTLE[1], false)).setValue(HAS_BOTTLE[2], false));
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BrewingStandBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.BREWING_STAND, BrewingStandBlockEntity::serverTick);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -86,7 +72,6 @@ public class BrewingStandBlock extends BaseEntityBlock {
       }
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       double var5 = (double)var3.getX() + 0.4 + (double)var4.nextFloat() * 0.2;
       double var7 = (double)var3.getY() + 0.7 + (double)var4.nextFloat() * 0.3;
@@ -94,29 +79,29 @@ public class BrewingStandBlock extends BaseEntityBlock {
       var2.addParticle(ParticleTypes.SMOKE, var5, var7, var9, 0.0, 0.0, 0.0);
    }
 
-   @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       Containers.dropContentsOnDestroy(var1, var4, var2, var3);
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
-   @Override
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(HAS_BOTTLE[0], HAS_BOTTLE[1], HAS_BOTTLE[2]);
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
+   }
+
+   static {
+      HAS_BOTTLE = new BooleanProperty[]{BlockStateProperties.HAS_BOTTLE_0, BlockStateProperties.HAS_BOTTLE_1, BlockStateProperties.HAS_BOTTLE_2};
+      SHAPE = Shapes.or(Block.box(1.0, 0.0, 1.0, 15.0, 2.0, 15.0), Block.box(7.0, 0.0, 7.0, 9.0, 14.0, 9.0));
    }
 }

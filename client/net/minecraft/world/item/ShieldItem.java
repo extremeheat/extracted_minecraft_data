@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
@@ -21,40 +20,38 @@ public class ShieldItem extends Item implements Equipable {
       DispenserBlock.registerBehavior(this, ArmorItem.DISPENSE_ITEM_BEHAVIOR);
    }
 
-   @Override
    public String getDescriptionId(ItemStack var1) {
-      DyeColor var2 = var1.get(DataComponents.BASE_COLOR);
-      return var2 != null ? this.getDescriptionId() + "." + var2.getName() : super.getDescriptionId(var1);
+      DyeColor var2 = (DyeColor)var1.get(DataComponents.BASE_COLOR);
+      if (var2 != null) {
+         String var10000 = this.getDescriptionId();
+         return var10000 + "." + var2.getName();
+      } else {
+         return super.getDescriptionId(var1);
+      }
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       BannerItem.appendHoverTextFromBannerBlockEntityTag(var1, var3);
    }
 
-   @Override
    public UseAnim getUseAnimation(ItemStack var1) {
       return UseAnim.BLOCK;
    }
 
-   @Override
    public int getUseDuration(ItemStack var1) {
       return 72000;
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       var2.startUsingItem(var3);
       return InteractionResultHolder.consume(var4);
    }
 
-   @Override
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
       return var2.is(ItemTags.PLANKS) || super.isValidRepairItem(var1, var2);
    }
 
-   @Override
    public EquipmentSlot getEquipmentSlot() {
       return EquipmentSlot.OFFHAND;
    }

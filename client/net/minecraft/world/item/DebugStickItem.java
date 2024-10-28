@@ -25,7 +25,6 @@ public class DebugStickItem extends Item {
       super(var1);
    }
 
-   @Override
    public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
       if (!var2.isClientSide) {
          this.handleInteraction(var4, var1, var2, var3, false, var4.getItemInHand(InteractionHand.MAIN_HAND));
@@ -34,7 +33,6 @@ public class DebugStickItem extends Item {
       return false;
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Player var2 = var1.getPlayer();
       Level var3 = var1.getLevel();
@@ -59,11 +57,11 @@ public class DebugStickItem extends Item {
             message(var1, Component.translatable(this.getDescriptionId() + ".empty", var7.getRegisteredName()));
             return false;
          } else {
-            DebugStickState var10 = var6.get(DataComponents.DEBUG_STICK_STATE);
+            DebugStickState var10 = (DebugStickState)var6.get(DataComponents.DEBUG_STICK_STATE);
             if (var10 == null) {
                return false;
             } else {
-               Property var11 = var10.properties().get(var7);
+               Property var11 = (Property)var10.properties().get(var7);
                if (var5) {
                   if (var11 == null) {
                      var11 = (Property)var9.iterator().next();
@@ -73,7 +71,7 @@ public class DebugStickItem extends Item {
                   var3.setBlock(var4, var12, 18);
                   message(var1, Component.translatable(this.getDescriptionId() + ".update", var11.getName(), getNameHelper(var12, var11)));
                } else {
-                  var11 = getRelative(var9, var11, var1.isSecondaryUseActive());
+                  var11 = (Property)getRelative(var9, var11, var1.isSecondaryUseActive());
                   var6.set(DataComponents.DEBUG_STICK_STATE, var10.withProperty(var7, var11));
                   message(var1, Component.translatable(this.getDescriptionId() + ".select", var11.getName(), getNameHelper(var2, var11)));
                }
@@ -85,11 +83,11 @@ public class DebugStickItem extends Item {
    }
 
    private static <T extends Comparable<T>> BlockState cycleState(BlockState var0, Property<T> var1, boolean var2) {
-      return var0.setValue(var1, getRelative(var1.getPossibleValues(), var0.getValue(var1), var2));
+      return (BlockState)var0.setValue(var1, (Comparable)getRelative(var1.getPossibleValues(), var0.getValue(var1), var2));
    }
 
    private static <T> T getRelative(Iterable<T> var0, @Nullable T var1, boolean var2) {
-      return (T)(var2 ? Util.findPreviousInIterable(var0, (T)var1) : Util.findNextInIterable(var0, (T)var1));
+      return var2 ? Util.findPreviousInIterable(var0, var1) : Util.findNextInIterable(var0, var1);
    }
 
    private static void message(Player var0, Component var1) {

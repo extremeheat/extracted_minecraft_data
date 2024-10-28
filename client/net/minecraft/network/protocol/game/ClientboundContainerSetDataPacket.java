@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundContainerSetDataPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundContainerSetDataPacket> STREAM_CODEC = Packet.codec(
-      ClientboundContainerSetDataPacket::write, ClientboundContainerSetDataPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundContainerSetDataPacket> STREAM_CODEC = Packet.codec(ClientboundContainerSetDataPacket::write, ClientboundContainerSetDataPacket::new);
    private final int containerId;
    private final int id;
    private final int value;
@@ -33,7 +31,6 @@ public class ClientboundContainerSetDataPacket implements Packet<ClientGamePacke
       var1.writeShort(this.value);
    }
 
-   @Override
    public PacketType<ClientboundContainerSetDataPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_DATA;
    }

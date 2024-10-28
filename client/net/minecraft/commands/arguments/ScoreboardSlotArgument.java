@@ -17,9 +17,9 @@ import net.minecraft.world.scores.DisplaySlot;
 
 public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
    private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.scoreboardDisplaySlot.invalid", var0)
-   );
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.scoreboardDisplaySlot.invalid", var0);
+   });
 
    private ScoreboardSlotArgument() {
       super();
@@ -35,7 +35,7 @@ public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
 
    public DisplaySlot parse(StringReader var1) throws CommandSyntaxException {
       String var2 = var1.readUnquotedString();
-      DisplaySlot var3 = DisplaySlot.CODEC.byName(var2);
+      DisplaySlot var3 = (DisplaySlot)DisplaySlot.CODEC.byName(var2);
       if (var3 == null) {
          throw ERROR_INVALID_VALUE.createWithContext(var1, var2);
       } else {
@@ -49,5 +49,10 @@ public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

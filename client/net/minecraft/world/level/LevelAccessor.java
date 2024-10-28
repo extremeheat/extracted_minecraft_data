@@ -28,7 +28,6 @@ import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 
 public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
-   @Override
    default long dayTime() {
       return this.getLevelData().getDayTime();
    }
@@ -38,11 +37,11 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    LevelTickAccess<Block> getBlockTicks();
 
    private <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
-      return new ScheduledTick<>((T)var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
+      return new ScheduledTick(var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
    }
 
    private <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
-      return new ScheduledTick<>((T)var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
+      return new ScheduledTick(var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
    }
 
    default void scheduleTick(BlockPos var1, Block var2, int var3, TickPriority var4) {
@@ -76,7 +75,6 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
 
    ChunkSource getChunkSource();
 
-   @Override
    default boolean hasChunk(int var1, int var2) {
       return this.getChunkSource().hasChunk(var1, var2);
    }
@@ -101,17 +99,17 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4);
 
    default void levelEvent(int var1, BlockPos var2, int var3) {
-      this.levelEvent(null, var1, var2, var3);
+      this.levelEvent((Player)null, var1, var2, var3);
    }
 
    void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3);
 
    default void gameEvent(@Nullable Entity var1, Holder<GameEvent> var2, Vec3 var3) {
-      this.gameEvent(var2, var3, new GameEvent.Context(var1, null));
+      this.gameEvent(var2, var3, new GameEvent.Context(var1, (BlockState)null));
    }
 
    default void gameEvent(@Nullable Entity var1, Holder<GameEvent> var2, BlockPos var3) {
-      this.gameEvent(var2, var3, new GameEvent.Context(var1, null));
+      this.gameEvent(var2, var3, new GameEvent.Context(var1, (BlockState)null));
    }
 
    default void gameEvent(Holder<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
@@ -119,6 +117,6 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    }
 
    default void gameEvent(ResourceKey<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
-      this.gameEvent(this.registryAccess().registryOrThrow(Registries.GAME_EVENT).getHolderOrThrow(var1), var2, var3);
+      this.gameEvent((Holder)this.registryAccess().registryOrThrow(Registries.GAME_EVENT).getHolderOrThrow(var1), (BlockPos)var2, (GameEvent.Context)var3);
    }
 }

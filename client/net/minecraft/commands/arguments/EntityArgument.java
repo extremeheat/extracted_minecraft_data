@@ -28,14 +28,10 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "@e", "@e[type=foo]", "dd12be42-52a9-4a91-a8a1-11c01849e498");
    public static final SimpleCommandExceptionType ERROR_NOT_SINGLE_ENTITY = new SimpleCommandExceptionType(Component.translatable("argument.entity.toomany"));
    public static final SimpleCommandExceptionType ERROR_NOT_SINGLE_PLAYER = new SimpleCommandExceptionType(Component.translatable("argument.player.toomany"));
-   public static final SimpleCommandExceptionType ERROR_ONLY_PLAYERS_ALLOWED = new SimpleCommandExceptionType(
-      Component.translatable("argument.player.entities")
-   );
+   public static final SimpleCommandExceptionType ERROR_ONLY_PLAYERS_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.player.entities"));
    public static final SimpleCommandExceptionType NO_ENTITIES_FOUND = new SimpleCommandExceptionType(Component.translatable("argument.entity.notfound.entity"));
    public static final SimpleCommandExceptionType NO_PLAYERS_FOUND = new SimpleCommandExceptionType(Component.translatable("argument.entity.notfound.player"));
-   public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(
-      Component.translatable("argument.entity.selector.not_allowed")
-   );
+   public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.not_allowed"));
    final boolean single;
    final boolean playersOnly;
 
@@ -120,17 +116,17 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
       if (var4 instanceof SharedSuggestionProvider var3) {
          StringReader var8 = new StringReader(var2.getInput());
          var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, ((SharedSuggestionProvider)var3).hasPermission(2));
+         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.hasPermission(2));
 
          try {
             var5.parse();
          } catch (CommandSyntaxException var7) {
          }
 
-         return var5.fillSuggestions(var2, var2x -> {
-            Collection var3xx = var3.getOnlinePlayerNames();
-            Object var4xx = this.playersOnly ? var3xx : Iterables.concat(var3xx, var3.getSelectedEntities());
-            SharedSuggestionProvider.suggest((Iterable<String>)var4xx, var2x);
+         return var5.fillSuggestions(var2, (var2x) -> {
+            Collection var3x = var3.getOnlinePlayerNames();
+            Object var4 = this.playersOnly ? var3x : Iterables.concat(var3x, var3.getSelectedEntities());
+            SharedSuggestionProvider.suggest((Iterable)var4, var2x);
          });
       } else {
          return Suggestions.empty();
@@ -141,7 +137,12 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
       return EXAMPLES;
    }
 
-   public static class Info implements ArgumentTypeInfo<EntityArgument, EntityArgument.Info.Template> {
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
+
+   public static class Info implements ArgumentTypeInfo<EntityArgument, Template> {
       private static final byte FLAG_SINGLE = 1;
       private static final byte FLAG_PLAYERS_ONLY = 2;
 
@@ -149,7 +150,7 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          super();
       }
 
-      public void serializeToNetwork(EntityArgument.Info.Template var1, FriendlyByteBuf var2) {
+      public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
          int var3 = 0;
          if (var1.single) {
             var3 |= 1;
@@ -162,18 +163,23 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          var2.writeByte(var3);
       }
 
-      public EntityArgument.Info.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+      public Template deserializeFromNetwork(FriendlyByteBuf var1) {
          byte var2 = var1.readByte();
-         return new EntityArgument.Info.Template((var2 & 1) != 0, (var2 & 2) != 0);
+         return new Template((var2 & 1) != 0, (var2 & 2) != 0);
       }
 
-      public void serializeToJson(EntityArgument.Info.Template var1, JsonObject var2) {
+      public void serializeToJson(Template var1, JsonObject var2) {
          var2.addProperty("amount", var1.single ? "single" : "multiple");
          var2.addProperty("type", var1.playersOnly ? "players" : "entities");
       }
 
-      public EntityArgument.Info.Template unpack(EntityArgument var1) {
-         return new EntityArgument.Info.Template(var1.single, var1.playersOnly);
+      public Template unpack(EntityArgument var1) {
+         return new Template(var1.single, var1.playersOnly);
+      }
+
+      // $FF: synthetic method
+      public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+         return this.deserializeFromNetwork(var1);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<EntityArgument> {
@@ -190,9 +196,13 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
             return new EntityArgument(this.single, this.playersOnly);
          }
 
-         @Override
          public ArgumentTypeInfo<EntityArgument, ?> type() {
             return Info.this;
+         }
+
+         // $FF: synthetic method
+         public ArgumentType instantiate(CommandBuildContext var1) {
+            return this.instantiate(var1);
          }
       }
    }

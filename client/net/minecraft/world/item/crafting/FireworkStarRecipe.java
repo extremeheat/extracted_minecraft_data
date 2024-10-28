@@ -3,7 +3,6 @@ package net.minecraft.world.item.crafting;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
@@ -17,33 +16,11 @@ import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.level.Level;
 
 public class FireworkStarRecipe extends CustomRecipe {
-   private static final Ingredient SHAPE_INGREDIENT = Ingredient.of(
-      Items.FIRE_CHARGE,
-      Items.FEATHER,
-      Items.GOLD_NUGGET,
-      Items.SKELETON_SKULL,
-      Items.WITHER_SKELETON_SKULL,
-      Items.CREEPER_HEAD,
-      Items.PLAYER_HEAD,
-      Items.DRAGON_HEAD,
-      Items.ZOMBIE_HEAD,
-      Items.PIGLIN_HEAD
-   );
-   private static final Ingredient TRAIL_INGREDIENT = Ingredient.of(Items.DIAMOND);
-   private static final Ingredient TWINKLE_INGREDIENT = Ingredient.of(Items.GLOWSTONE_DUST);
-   private static final Map<Item, FireworkExplosion.Shape> SHAPE_BY_ITEM = Util.make(Maps.newHashMap(), var0 -> {
-      var0.put(Items.FIRE_CHARGE, FireworkExplosion.Shape.LARGE_BALL);
-      var0.put(Items.FEATHER, FireworkExplosion.Shape.BURST);
-      var0.put(Items.GOLD_NUGGET, FireworkExplosion.Shape.STAR);
-      var0.put(Items.SKELETON_SKULL, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.WITHER_SKELETON_SKULL, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.CREEPER_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.PLAYER_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.DRAGON_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.ZOMBIE_HEAD, FireworkExplosion.Shape.CREEPER);
-      var0.put(Items.PIGLIN_HEAD, FireworkExplosion.Shape.CREEPER);
-   });
-   private static final Ingredient GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
+   private static final Ingredient SHAPE_INGREDIENT;
+   private static final Ingredient TRAIL_INGREDIENT;
+   private static final Ingredient TWINKLE_INGREDIENT;
+   private static final Map<Item, FireworkExplosion.Shape> SHAPE_BY_ITEM;
+   private static final Ingredient GUNPOWDER_INGREDIENT;
 
    public FireworkStarRecipe(CraftingBookCategory var1) {
       super(var1);
@@ -106,7 +83,7 @@ public class FireworkStarRecipe extends CustomRecipe {
          ItemStack var8 = var1.getItem(var7);
          if (!var8.isEmpty()) {
             if (SHAPE_INGREDIENT.test(var8)) {
-               var3 = SHAPE_BY_ITEM.get(var8.getItem());
+               var3 = (FireworkExplosion.Shape)SHAPE_BY_ITEM.get(var8.getItem());
             } else if (TWINKLE_INGREDIENT.test(var8)) {
                var4 = true;
             } else if (TRAIL_INGREDIENT.test(var8)) {
@@ -122,18 +99,34 @@ public class FireworkStarRecipe extends CustomRecipe {
       return var9;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return new ItemStack(Items.FIREWORK_STAR);
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.FIREWORK_STAR;
+   }
+
+   static {
+      SHAPE_INGREDIENT = Ingredient.of(Items.FIRE_CHARGE, Items.FEATHER, Items.GOLD_NUGGET, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.CREEPER_HEAD, Items.PLAYER_HEAD, Items.DRAGON_HEAD, Items.ZOMBIE_HEAD, Items.PIGLIN_HEAD);
+      TRAIL_INGREDIENT = Ingredient.of(Items.DIAMOND);
+      TWINKLE_INGREDIENT = Ingredient.of(Items.GLOWSTONE_DUST);
+      SHAPE_BY_ITEM = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+         var0.put(Items.FIRE_CHARGE, FireworkExplosion.Shape.LARGE_BALL);
+         var0.put(Items.FEATHER, FireworkExplosion.Shape.BURST);
+         var0.put(Items.GOLD_NUGGET, FireworkExplosion.Shape.STAR);
+         var0.put(Items.SKELETON_SKULL, FireworkExplosion.Shape.CREEPER);
+         var0.put(Items.WITHER_SKELETON_SKULL, FireworkExplosion.Shape.CREEPER);
+         var0.put(Items.CREEPER_HEAD, FireworkExplosion.Shape.CREEPER);
+         var0.put(Items.PLAYER_HEAD, FireworkExplosion.Shape.CREEPER);
+         var0.put(Items.DRAGON_HEAD, FireworkExplosion.Shape.CREEPER);
+         var0.put(Items.ZOMBIE_HEAD, FireworkExplosion.Shape.CREEPER);
+         var0.put(Items.PIGLIN_HEAD, FireworkExplosion.Shape.CREEPER);
+      });
+      GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
    }
 }

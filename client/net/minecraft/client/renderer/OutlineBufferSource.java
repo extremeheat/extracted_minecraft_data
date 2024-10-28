@@ -19,19 +19,17 @@ public class OutlineBufferSource implements MultiBufferSource {
       this.bufferSource = var1;
    }
 
-   @Override
    public VertexConsumer getBuffer(RenderType var1) {
+      VertexConsumer var2;
       if (var1.isOutline()) {
-         VertexConsumer var6 = this.outlineBufferSource.getBuffer(var1);
-         return new OutlineBufferSource.EntityOutlineGenerator(var6, this.teamR, this.teamG, this.teamB, this.teamA);
+         var2 = this.outlineBufferSource.getBuffer(var1);
+         return new EntityOutlineGenerator(var2, this.teamR, this.teamG, this.teamB, this.teamA);
       } else {
-         VertexConsumer var2 = this.bufferSource.getBuffer(var1);
+         var2 = this.bufferSource.getBuffer(var1);
          Optional var3 = var1.outline();
          if (var3.isPresent()) {
             VertexConsumer var4 = this.outlineBufferSource.getBuffer((RenderType)var3.get());
-            OutlineBufferSource.EntityOutlineGenerator var5 = new OutlineBufferSource.EntityOutlineGenerator(
-               var4, this.teamR, this.teamG, this.teamB, this.teamA
-            );
+            EntityOutlineGenerator var5 = new EntityOutlineGenerator(var4, this.teamR, this.teamG, this.teamB, this.teamA);
             return VertexMultiConsumer.create(var5, var2);
          } else {
             return var2;
@@ -64,15 +62,12 @@ public class OutlineBufferSource implements MultiBufferSource {
          super.defaultColor(var2, var3, var4, var5);
       }
 
-      @Override
       public void defaultColor(int var1, int var2, int var3, int var4) {
       }
 
-      @Override
       public void unsetDefaultColor() {
       }
 
-      @Override
       public VertexConsumer vertex(double var1, double var3, double var5) {
          this.x = var1;
          this.y = var3;
@@ -80,58 +75,32 @@ public class OutlineBufferSource implements MultiBufferSource {
          return this;
       }
 
-      @Override
       public VertexConsumer color(int var1, int var2, int var3, int var4) {
          return this;
       }
 
-      @Override
       public VertexConsumer uv(float var1, float var2) {
          this.u = var1;
          this.v = var2;
          return this;
       }
 
-      @Override
       public VertexConsumer overlayCoords(int var1, int var2) {
          return this;
       }
 
-      @Override
       public VertexConsumer uv2(int var1, int var2) {
          return this;
       }
 
-      @Override
       public VertexConsumer normal(float var1, float var2, float var3) {
          return this;
       }
 
-      @Override
-      public void vertex(
-         float var1,
-         float var2,
-         float var3,
-         float var4,
-         float var5,
-         float var6,
-         float var7,
-         float var8,
-         float var9,
-         int var10,
-         int var11,
-         float var12,
-         float var13,
-         float var14
-      ) {
-         this.delegate
-            .vertex((double)var1, (double)var2, (double)var3)
-            .color(this.defaultR, this.defaultG, this.defaultB, this.defaultA)
-            .uv(var8, var9)
-            .endVertex();
+      public void vertex(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, int var10, int var11, float var12, float var13, float var14) {
+         this.delegate.vertex((double)var1, (double)var2, (double)var3).color(this.defaultR, this.defaultG, this.defaultB, this.defaultA).uv(var8, var9).endVertex();
       }
 
-      @Override
       public void endVertex() {
          this.delegate.vertex(this.x, this.y, this.z).color(this.defaultR, this.defaultG, this.defaultB, this.defaultA).uv(this.u, this.v).endVertex();
       }

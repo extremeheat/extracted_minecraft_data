@@ -11,7 +11,7 @@ public interface DataComponentHolder {
    }
 
    default <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
-      return this.getComponents().getOrDefault(var1, (T)var2);
+      return this.getComponents().getOrDefault(var1, var2);
    }
 
    default boolean has(DataComponentType<?> var1) {

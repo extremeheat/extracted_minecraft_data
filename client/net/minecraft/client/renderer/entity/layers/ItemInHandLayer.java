@@ -38,12 +38,10 @@ public class ItemInHandLayer<T extends LivingEntity, M extends EntityModel<T> & 
       }
    }
 
-   protected void renderArmWithItem(
-      LivingEntity var1, ItemStack var2, ItemDisplayContext var3, HumanoidArm var4, PoseStack var5, MultiBufferSource var6, int var7
-   ) {
+   protected void renderArmWithItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, HumanoidArm var4, PoseStack var5, MultiBufferSource var6, int var7) {
       if (!var2.isEmpty()) {
          var5.pushPose();
-         this.getParentModel().translateToHand(var4, var5);
+         ((ArmedModel)this.getParentModel()).translateToHand(var4, var5);
          var5.mulPose(Axis.XP.rotationDegrees(-90.0F));
          var5.mulPose(Axis.YP.rotationDegrees(180.0F));
          boolean var8 = var4 == HumanoidArm.LEFT;

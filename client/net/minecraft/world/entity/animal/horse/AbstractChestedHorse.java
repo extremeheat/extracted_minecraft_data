@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
+import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -24,24 +26,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
 public abstract class AbstractChestedHorse extends AbstractHorse {
-   private static final EntityDataAccessor<Boolean> DATA_ID_CHEST = SynchedEntityData.defineId(AbstractChestedHorse.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> DATA_ID_CHEST;
    public static final int INV_CHEST_COUNT = 15;
    private final EntityDimensions babyDimensions;
 
    protected AbstractChestedHorse(EntityType<? extends AbstractChestedHorse> var1, Level var2) {
       super(var1, var2);
       this.canGallop = false;
-      this.babyDimensions = var1.getDimensions()
-         .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, var1.getHeight() - 0.15625F, 0.0F))
-         .scale(0.5F);
+      this.babyDimensions = var1.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, var1.getHeight() - 0.15625F, 0.0F)).scale(0.5F);
    }
 
-   @Override
    protected void randomizeAttributes(RandomSource var1) {
-      this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)generateMaxHealth(var1::nextInt));
+      AttributeInstance var10000 = this.getAttribute(Attributes.MAX_HEALTH);
+      Objects.requireNonNull(var1);
+      var10000.setBaseValue((double)generateMaxHealth(var1::nextInt));
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_ID_CHEST, false);
@@ -52,24 +52,21 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    }
 
    public boolean hasChest() {
-      return this.entityData.get(DATA_ID_CHEST);
+      return (Boolean)this.entityData.get(DATA_ID_CHEST);
    }
 
    public void setChest(boolean var1) {
       this.entityData.set(DATA_ID_CHEST, var1);
    }
 
-   @Override
    protected int getInventorySize() {
       return this.hasChest() ? 16 : super.getInventorySize();
    }
 
-   @Override
    public EntityDimensions getDefaultDimensions(Pose var1) {
       return this.isBaby() ? this.babyDimensions : super.getDefaultDimensions(var1);
    }
 
-   @Override
    protected void dropEquipment() {
       super.dropEquipment();
       if (this.hasChest()) {
@@ -79,9 +76,9 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
          this.setChest(false);
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("ChestedHorse", this.hasChest());
@@ -99,9 +96,9 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
          var1.put("Items", var2);
       }
+
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setChest(var1.getBoolean("ChestedHorse"));
@@ -113,7 +110,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
             CompoundTag var4 = var2.getCompound(var3);
             int var5 = var4.getByte("Slot") & 255;
             if (var5 < this.inventory.getContainerSize() - 1) {
-               this.inventory.setItem(var5 + 1, ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
+               this.inventory.setItem(var5 + 1, (ItemStack)ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
             }
          }
       }
@@ -121,15 +118,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       this.syncSaddleToClients();
    }
 
-   @Override
    public SlotAccess getSlot(int var1) {
       return var1 == 499 ? new SlotAccess() {
-         @Override
          public ItemStack get() {
             return AbstractChestedHorse.this.hasChest() ? new ItemStack(Items.CHEST) : ItemStack.EMPTY;
          }
 
-         @Override
          public boolean set(ItemStack var1) {
             if (var1.isEmpty()) {
                if (AbstractChestedHorse.this.hasChest()) {
@@ -152,7 +146,6 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       } : super.getSlot(var1);
    }
 
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       boolean var3 = !this.isBaby() && this.isTamed() && var1.isSecondaryUseActive();
       if (!this.isVehicle() && !var3) {
@@ -192,5 +185,9 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
    public int getInventoryColumns() {
       return 5;
+   }
+
+   static {
+      DATA_ID_CHEST = SynchedEntityData.defineId(AbstractChestedHorse.class, EntityDataSerializers.BOOLEAN);
    }
 }

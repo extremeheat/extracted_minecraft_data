@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.packs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -36,16 +37,20 @@ public class PackSelectionModel {
       this.output = var4;
    }
 
-   public Stream<PackSelectionModel.Entry> getUnselected() {
-      return this.unselected.stream().map(var1 -> new PackSelectionModel.UnselectedPackEntry(var1));
+   public Stream<Entry> getUnselected() {
+      return this.unselected.stream().map((var1) -> {
+         return new UnselectedPackEntry(var1);
+      });
    }
 
-   public Stream<PackSelectionModel.Entry> getSelected() {
-      return this.selected.stream().map(var1 -> new PackSelectionModel.SelectedPackEntry(var1));
+   public Stream<Entry> getSelected() {
+      return this.selected.stream().map((var1) -> {
+         return new SelectedPackEntry(var1);
+      });
    }
 
    void updateRepoSelectedList() {
-      this.repository.setSelected(Lists.reverse(this.selected).stream().map(Pack::getId).collect(ImmutableList.toImmutableList()));
+      this.repository.setSelected((Collection)Lists.reverse(this.selected).stream().map(Pack::getId).collect(ImmutableList.toImmutableList()));
    }
 
    public void commit() {
@@ -59,6 +64,145 @@ public class PackSelectionModel {
       this.unselected.clear();
       this.unselected.addAll(this.repository.getAvailablePacks());
       this.unselected.removeAll(this.selected);
+   }
+
+   class SelectedPackEntry extends EntryBase {
+      public SelectedPackEntry(Pack var2) {
+         super(var2);
+      }
+
+      protected List<Pack> getSelfList() {
+         return PackSelectionModel.this.selected;
+      }
+
+      protected List<Pack> getOtherList() {
+         return PackSelectionModel.this.unselected;
+      }
+
+      public boolean isSelected() {
+         return true;
+      }
+
+      public void select() {
+      }
+
+      public void unselect() {
+         this.toggleSelection();
+      }
+   }
+
+   class UnselectedPackEntry extends EntryBase {
+      public UnselectedPackEntry(Pack var2) {
+         super(var2);
+      }
+
+      protected List<Pack> getSelfList() {
+         return PackSelectionModel.this.unselected;
+      }
+
+      protected List<Pack> getOtherList() {
+         return PackSelectionModel.this.selected;
+      }
+
+      public boolean isSelected() {
+         return false;
+      }
+
+      public void select() {
+         this.toggleSelection();
+      }
+
+      public void unselect() {
+      }
+   }
+
+   private abstract class EntryBase implements Entry {
+      private final Pack pack;
+
+      public EntryBase(Pack var2) {
+         super();
+         this.pack = var2;
+      }
+
+      protected abstract List<Pack> getSelfList();
+
+      protected abstract List<Pack> getOtherList();
+
+      public ResourceLocation getIconTexture() {
+         return (ResourceLocation)PackSelectionModel.this.iconGetter.apply(this.pack);
+      }
+
+      public PackCompatibility getCompatibility() {
+         return this.pack.getCompatibility();
+      }
+
+      public String getId() {
+         return this.pack.getId();
+      }
+
+      public Component getTitle() {
+         return this.pack.getTitle();
+      }
+
+      public Component getDescription() {
+         return this.pack.getDescription();
+      }
+
+      public PackSource getPackSource() {
+         return this.pack.getPackSource();
+      }
+
+      public boolean isFixedPosition() {
+         return this.pack.isFixedPosition();
+      }
+
+      public boolean isRequired() {
+         return this.pack.isRequired();
+      }
+
+      protected void toggleSelection() {
+         this.getSelfList().remove(this.pack);
+         this.pack.getDefaultPosition().insert(this.getOtherList(), this.pack, Pack::selectionConfig, true);
+         PackSelectionModel.this.onListChanged.run();
+         PackSelectionModel.this.updateRepoSelectedList();
+         this.updateHighContrastOptionInstance();
+      }
+
+      private void updateHighContrastOptionInstance() {
+         if (this.pack.getId().equals("high_contrast")) {
+            OptionInstance var1 = Minecraft.getInstance().options.highContrast();
+            var1.set(!(Boolean)var1.get());
+         }
+
+      }
+
+      protected void move(int var1) {
+         List var2 = this.getSelfList();
+         int var3 = var2.indexOf(this.pack);
+         var2.remove(var3);
+         var2.add(var3 + var1, this.pack);
+         PackSelectionModel.this.onListChanged.run();
+      }
+
+      public boolean canMoveUp() {
+         List var1 = this.getSelfList();
+         int var2 = var1.indexOf(this.pack);
+         return var2 > 0 && !((Pack)var1.get(var2 - 1)).isFixedPosition();
+      }
+
+      public void moveUp() {
+         this.move(-1);
+      }
+
+      public boolean canMoveDown() {
+         List var1 = this.getSelfList();
+         int var2 = var1.indexOf(this.pack);
+         return var2 >= 0 && var2 < var1.size() - 1 && !((Pack)var1.get(var2 + 1)).isFixedPosition();
+      }
+
+      public void moveDown() {
+         this.move(1);
+      }
    }
 
    public interface Entry {
@@ -103,165 +247,5 @@ public class PackSelectionModel {
       boolean canMoveUp();
 
       boolean canMoveDown();
-   }
-
-   abstract class EntryBase implements PackSelectionModel.Entry {
-      private final Pack pack;
-
-      public EntryBase(Pack var2) {
-         super();
-         this.pack = var2;
-      }
-
-      protected abstract List<Pack> getSelfList();
-
-      protected abstract List<Pack> getOtherList();
-
-      @Override
-      public ResourceLocation getIconTexture() {
-         return PackSelectionModel.this.iconGetter.apply(this.pack);
-      }
-
-      @Override
-      public PackCompatibility getCompatibility() {
-         return this.pack.getCompatibility();
-      }
-
-      @Override
-      public String getId() {
-         return this.pack.getId();
-      }
-
-      @Override
-      public Component getTitle() {
-         return this.pack.getTitle();
-      }
-
-      @Override
-      public Component getDescription() {
-         return this.pack.getDescription();
-      }
-
-      @Override
-      public PackSource getPackSource() {
-         return this.pack.getPackSource();
-      }
-
-      @Override
-      public boolean isFixedPosition() {
-         return this.pack.isFixedPosition();
-      }
-
-      @Override
-      public boolean isRequired() {
-         return this.pack.isRequired();
-      }
-
-      protected void toggleSelection() {
-         this.getSelfList().remove(this.pack);
-         this.pack.getDefaultPosition().insert(this.getOtherList(), this.pack, Pack::selectionConfig, true);
-         PackSelectionModel.this.onListChanged.run();
-         PackSelectionModel.this.updateRepoSelectedList();
-         this.updateHighContrastOptionInstance();
-      }
-
-      private void updateHighContrastOptionInstance() {
-         if (this.pack.getId().equals("high_contrast")) {
-            OptionInstance var1 = Minecraft.getInstance().options.highContrast();
-            var1.set(!var1.get());
-         }
-      }
-
-      protected void move(int var1) {
-         List var2 = this.getSelfList();
-         int var3 = var2.indexOf(this.pack);
-         var2.remove(var3);
-         var2.add(var3 + var1, this.pack);
-         PackSelectionModel.this.onListChanged.run();
-      }
-
-      @Override
-      public boolean canMoveUp() {
-         List var1 = this.getSelfList();
-         int var2 = var1.indexOf(this.pack);
-         return var2 > 0 && !((Pack)var1.get(var2 - 1)).isFixedPosition();
-      }
-
-      @Override
-      public void moveUp() {
-         this.move(-1);
-      }
-
-      @Override
-      public boolean canMoveDown() {
-         List var1 = this.getSelfList();
-         int var2 = var1.indexOf(this.pack);
-         return var2 >= 0 && var2 < var1.size() - 1 && !((Pack)var1.get(var2 + 1)).isFixedPosition();
-      }
-
-      @Override
-      public void moveDown() {
-         this.move(1);
-      }
-   }
-
-   class SelectedPackEntry extends PackSelectionModel.EntryBase {
-      public SelectedPackEntry(Pack var2) {
-         super(var2);
-      }
-
-      @Override
-      protected List<Pack> getSelfList() {
-         return PackSelectionModel.this.selected;
-      }
-
-      @Override
-      protected List<Pack> getOtherList() {
-         return PackSelectionModel.this.unselected;
-      }
-
-      @Override
-      public boolean isSelected() {
-         return true;
-      }
-
-      @Override
-      public void select() {
-      }
-
-      @Override
-      public void unselect() {
-         this.toggleSelection();
-      }
-   }
-
-   class UnselectedPackEntry extends PackSelectionModel.EntryBase {
-      public UnselectedPackEntry(Pack var2) {
-         super(var2);
-      }
-
-      @Override
-      protected List<Pack> getSelfList() {
-         return PackSelectionModel.this.unselected;
-      }
-
-      @Override
-      protected List<Pack> getOtherList() {
-         return PackSelectionModel.this.selected;
-      }
-
-      @Override
-      public boolean isSelected() {
-         return false;
-      }
-
-      @Override
-      public void select() {
-         this.toggleSelection();
-      }
-
-      @Override
-      public void unselect() {
-      }
    }
 }

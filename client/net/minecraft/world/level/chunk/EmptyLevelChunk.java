@@ -21,61 +21,49 @@ public class EmptyLevelChunk extends LevelChunk {
       this.biome = var3;
    }
 
-   @Override
    public BlockState getBlockState(BlockPos var1) {
       return Blocks.VOID_AIR.defaultBlockState();
    }
 
    @Nullable
-   @Override
    public BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3) {
       return null;
    }
 
-   @Override
    public FluidState getFluidState(BlockPos var1) {
       return Fluids.EMPTY.defaultFluidState();
    }
 
-   @Override
    public int getLightEmission(BlockPos var1) {
       return 0;
    }
 
    @Nullable
-   @Override
    public BlockEntity getBlockEntity(BlockPos var1, LevelChunk.EntityCreationType var2) {
       return null;
    }
 
-   @Override
    public void addAndRegisterBlockEntity(BlockEntity var1) {
    }
 
-   @Override
    public void setBlockEntity(BlockEntity var1) {
    }
 
-   @Override
    public void removeBlockEntity(BlockPos var1) {
    }
 
-   @Override
    public boolean isEmpty() {
       return true;
    }
 
-   @Override
    public boolean isYSpaceEmpty(int var1, int var2) {
       return true;
    }
 
-   @Override
    public FullChunkStatus getFullStatus() {
       return FullChunkStatus.FULL;
    }
 
-   @Override
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
       return this.biome;
    }

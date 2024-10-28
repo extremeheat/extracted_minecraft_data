@@ -9,9 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 
 public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSetJigsawBlockPacket> STREAM_CODEC = Packet.codec(
-      ServerboundSetJigsawBlockPacket::write, ServerboundSetJigsawBlockPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetJigsawBlockPacket> STREAM_CODEC = Packet.codec(ServerboundSetJigsawBlockPacket::write, ServerboundSetJigsawBlockPacket::new);
    private final BlockPos pos;
    private final ResourceLocation name;
    private final ResourceLocation target;
@@ -21,9 +19,7 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
    private final int selectionPriority;
    private final int placementPriority;
 
-   public ServerboundSetJigsawBlockPacket(
-      BlockPos var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, String var5, JigsawBlockEntity.JointType var6, int var7, int var8
-   ) {
+   public ServerboundSetJigsawBlockPacket(BlockPos var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, String var5, JigsawBlockEntity.JointType var6, int var7, int var8) {
       super();
       this.pos = var1;
       this.name = var2;
@@ -42,7 +38,7 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.target = var1.readResourceLocation();
       this.pool = var1.readResourceLocation();
       this.finalState = var1.readUtf();
-      this.joint = JigsawBlockEntity.JointType.byName(var1.readUtf()).orElse(JigsawBlockEntity.JointType.ALIGNED);
+      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.byName(var1.readUtf()).orElse(JigsawBlockEntity.JointType.ALIGNED);
       this.selectionPriority = var1.readVarInt();
       this.placementPriority = var1.readVarInt();
    }
@@ -58,7 +54,6 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       var1.writeVarInt(this.placementPriority);
    }
 
-   @Override
    public PacketType<ServerboundSetJigsawBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_JIGSAW_BLOCK;
    }

@@ -17,7 +17,6 @@ public class OptionsSubScreen extends Screen {
       this.options = var2;
    }
 
-   @Override
    protected void init() {
       this.addTitle();
       this.addFooter();
@@ -30,20 +29,19 @@ public class OptionsSubScreen extends Screen {
    }
 
    protected void addFooter() {
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, var1 -> this.onClose()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
+         this.onClose();
+      }).width(200).build());
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
    }
 
-   @Override
    public void removed() {
       this.minecraft.options.save();
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }

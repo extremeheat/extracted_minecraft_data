@@ -13,12 +13,10 @@ public class SitWhenOrderedToGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.mob.isOrderedToSit();
    }
 
-   @Override
    public boolean canUse() {
       if (!this.mob.isTame()) {
          return false;
@@ -36,13 +34,11 @@ public class SitWhenOrderedToGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().stop();
       this.mob.setInSittingPose(true);
    }
 
-   @Override
    public void stop() {
       this.mob.setInSittingPose(false);
    }

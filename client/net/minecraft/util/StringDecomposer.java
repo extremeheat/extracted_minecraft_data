@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Style;
 
 public class StringDecomposer {
    private static final char REPLACEMENT_CHAR = '\ufffd';
-   private static final Optional<Object> STOP_ITERATION = Optional.of(Unit.INSTANCE);
+   private static final Optional<Object> STOP_ITERATION;
 
    public StringDecomposer() {
       super();
@@ -63,7 +63,8 @@ public class StringDecomposer {
 
             char var6 = var0.charAt(var4 - 1);
             if (Character.isHighSurrogate(var6)) {
-               if (!var2.accept(--var4, var1, Character.toCodePoint(var6, var5))) {
+               --var4;
+               if (!var2.accept(var4, var1, Character.toCodePoint(var6, var5))) {
                   return false;
                }
             } else if (!var2.accept(var4, var1, 65533)) {
@@ -91,12 +92,13 @@ public class StringDecomposer {
 
       for(int var7 = var1; var7 < var5; ++var7) {
          char var8 = var0.charAt(var7);
+         char var9;
          if (var8 == 167) {
             if (var7 + 1 >= var5) {
                break;
             }
 
-            char var9 = var0.charAt(var7 + 1);
+            var9 = var0.charAt(var7 + 1);
             ChatFormatting var10 = ChatFormatting.getByCode(var9);
             if (var10 != null) {
                var6 = var10 == ChatFormatting.RESET ? var3 : var6.applyLegacyFormat(var10);
@@ -111,9 +113,9 @@ public class StringDecomposer {
                break;
             }
 
-            char var11 = var0.charAt(var7 + 1);
-            if (Character.isLowSurrogate(var11)) {
-               if (!var4.accept(var7, var6, Character.toCodePoint(var8, var11))) {
+            var9 = var0.charAt(var7 + 1);
+            if (Character.isLowSurrogate(var9)) {
+               if (!var4.accept(var7, var6, Character.toCodePoint(var8, var9))) {
                   return false;
                }
 
@@ -130,7 +132,9 @@ public class StringDecomposer {
    }
 
    public static boolean iterateFormatted(FormattedText var0, Style var1, FormattedCharSink var2) {
-      return var0.visit((var1x, var2x) -> iterateFormatted(var2x, 0, var1x, var2) ? Optional.empty() : STOP_ITERATION, var1).isEmpty();
+      return var0.visit((var1x, var2x) -> {
+         return iterateFormatted(var2x, 0, var1x, var2) ? Optional.empty() : STOP_ITERATION;
+      }, var1).isEmpty();
    }
 
    public static String filterBrokenSurrogates(String var0) {
@@ -149,5 +153,9 @@ public class StringDecomposer {
          return true;
       });
       return var1.toString();
+   }
+
+   static {
+      STOP_ITERATION = Optional.of(Unit.INSTANCE);
    }
 }

@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -38,7 +39,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class SpawnEggItem extends Item {
    private static final Map<EntityType<? extends Mob>, SpawnEggItem> BY_ID = Maps.newIdentityHashMap();
-   private static final MapCodec<EntityType<?>> ENTITY_TYPE_FIELD_CODEC = BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("id");
+   private static final MapCodec<EntityType<?>> ENTITY_TYPE_FIELD_CODEC;
    private final int backgroundColor;
    private final int highlightColor;
    private final EntityType<?> defaultType;
@@ -51,9 +52,6 @@ public class SpawnEggItem extends Item {
       BY_ID.put(var1, this);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       if (!(var2 instanceof ServerLevel)) {
@@ -64,9 +62,11 @@ public class SpawnEggItem extends Item {
          Direction var5 = var1.getClickedFace();
          BlockState var6 = var2.getBlockState(var4);
          BlockEntity var8 = var2.getBlockEntity(var4);
-         if (var8 instanceof Spawner var9) {
-            EntityType var11 = this.getType(var3);
-            var9.setEntityId(var11, var2.getRandom());
+         EntityType var10;
+         if (var8 instanceof Spawner) {
+            Spawner var9 = (Spawner)var8;
+            var10 = this.getType(var3);
+            var9.setEntityId(var10, var2.getRandom());
             var2.sendBlockUpdated(var4, var6, var6, 3);
             var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
             var3.shrink(1);
@@ -79,9 +79,8 @@ public class SpawnEggItem extends Item {
                var7 = var4.relative(var5);
             }
 
-            EntityType var10 = this.getType(var3);
-            if (var10.spawn((ServerLevel)var2, var3, var1.getPlayer(), var7, MobSpawnType.SPAWN_EGG, true, !Objects.equals(var4, var7) && var5 == Direction.UP)
-               != null) {
+            var10 = this.getType(var3);
+            if (var10.spawn((ServerLevel)var2, var3, var1.getPlayer(), var7, MobSpawnType.SPAWN_EGG, true, !Objects.equals(var4, var7) && var5 == Direction.UP) != null) {
                var3.shrink(1);
                var2.gameEvent(var1.getPlayer(), GameEvent.ENTITY_PLACE, var4);
             }
@@ -91,7 +90,6 @@ public class SpawnEggItem extends Item {
       }
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);
@@ -130,7 +128,7 @@ public class SpawnEggItem extends Item {
 
    @Nullable
    public static SpawnEggItem byId(@Nullable EntityType<?> var0) {
-      return BY_ID.get(var0);
+      return (SpawnEggItem)BY_ID.get(var0);
    }
 
    public static Iterable<SpawnEggItem> eggs() {
@@ -138,11 +136,10 @@ public class SpawnEggItem extends Item {
    }
 
    public EntityType<?> getType(ItemStack var1) {
-      CustomData var2 = var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-      return !var2.isEmpty() ? var2.read(ENTITY_TYPE_FIELD_CODEC).result().orElse(this.defaultType) : this.defaultType;
+      CustomData var2 = (CustomData)var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+      return !var2.isEmpty() ? (EntityType)var2.read(ENTITY_TYPE_FIELD_CODEC).result().orElse(this.defaultType) : this.defaultType;
    }
 
-   @Override
    public FeatureFlagSet requiredFeatures() {
       return this.defaultType.requiredFeatures();
    }
@@ -167,11 +164,15 @@ public class SpawnEggItem extends Item {
             } else {
                ((Mob)var7).moveTo(var5.x(), var5.y(), var5.z(), 0.0F, 0.0F);
                var4.addFreshEntityWithPassengers((Entity)var7);
-               ((Mob)var7).setCustomName(var6.get(DataComponents.CUSTOM_NAME));
+               ((Mob)var7).setCustomName((Component)var6.get(DataComponents.CUSTOM_NAME));
                var6.consume(1, var1);
-               return Optional.of((Mob)var7);
+               return Optional.of(var7);
             }
          }
       }
+   }
+
+   static {
+      ENTITY_TYPE_FIELD_CODEC = BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("id");
    }
 }

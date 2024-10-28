@@ -28,8 +28,8 @@ public class BiomeParametersDumpReport implements DataProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Path topPath;
    private final CompletableFuture<HolderLookup.Provider> registries;
-   private static final MapCodec<ResourceKey<Biome>> ENTRY_CODEC = ResourceKey.codec(Registries.BIOME).fieldOf("biome");
-   private static final Codec<Climate.ParameterList<ResourceKey<Biome>>> CODEC = Climate.ParameterList.codec(ENTRY_CODEC).fieldOf("biomes").codec();
+   private static final MapCodec<ResourceKey<Biome>> ENTRY_CODEC;
+   private static final Codec<Climate.ParameterList<ResourceKey<Biome>>> CODEC;
 
    public BiomeParametersDumpReport(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super();
@@ -37,27 +37,36 @@ public class BiomeParametersDumpReport implements DataProvider {
       this.registries = var2;
    }
 
-   @Override
    public CompletableFuture<?> run(CachedOutput var1) {
-      return this.registries.thenCompose(var2 -> {
+      return this.registries.thenCompose((var2) -> {
          RegistryOps var3 = var2.createSerializationContext(JsonOps.INSTANCE);
          ArrayList var4 = new ArrayList();
-         MultiNoiseBiomeSourceParameterList.knownPresets().forEach((var4x, var5) -> var4.add(dumpValue(this.createPath(var4x.id()), var1, var3, CODEC, var5)));
-         return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));
+         MultiNoiseBiomeSourceParameterList.knownPresets().forEach((var4x, var5) -> {
+            var4.add(dumpValue(this.createPath(var4x.id()), var1, var3, CODEC, var5));
+         });
+         return CompletableFuture.allOf((CompletableFuture[])var4.toArray((var0) -> {
+            return new CompletableFuture[var0];
+         }));
       });
    }
 
    private static <E> CompletableFuture<?> dumpValue(Path var0, CachedOutput var1, DynamicOps<JsonElement> var2, Encoder<E> var3, E var4) {
-      Optional var5 = var3.encodeStart(var2, var4).resultOrPartial(var1x -> LOGGER.error("Couldn't serialize element {}: {}", var0, var1x));
-      return var5.isPresent() ? DataProvider.saveStable(var1, (JsonElement)var5.get(), var0) : CompletableFuture.completedFuture(null);
+      Optional var5 = var3.encodeStart(var2, var4).resultOrPartial((var1x) -> {
+         LOGGER.error("Couldn't serialize element {}: {}", var0, var1x);
+      });
+      return var5.isPresent() ? DataProvider.saveStable(var1, (JsonElement)var5.get(), var0) : CompletableFuture.completedFuture((Object)null);
    }
 
    private Path createPath(ResourceLocation var1) {
       return this.topPath.resolve(var1.getNamespace()).resolve(var1.getPath() + ".json");
    }
 
-   @Override
    public final String getName() {
       return "Biome Parameters";
+   }
+
+   static {
+      ENTRY_CODEC = ResourceKey.codec(Registries.BIOME).fieldOf("biome");
+      CODEC = Climate.ParameterList.codec(ENTRY_CODEC).fieldOf("biomes").codec();
    }
 }

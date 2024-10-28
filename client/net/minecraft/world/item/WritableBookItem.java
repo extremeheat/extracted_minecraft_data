@@ -11,7 +11,6 @@ public class WritableBookItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       var2.openItemGui(var4, var3);

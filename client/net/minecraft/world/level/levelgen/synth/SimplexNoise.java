@@ -4,27 +4,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class SimplexNoise {
-   protected static final int[][] GRADIENT = new int[][]{
-      {1, 1, 0},
-      {-1, 1, 0},
-      {1, -1, 0},
-      {-1, -1, 0},
-      {1, 0, 1},
-      {-1, 0, 1},
-      {1, 0, -1},
-      {-1, 0, -1},
-      {0, 1, 1},
-      {0, -1, 1},
-      {0, 1, -1},
-      {0, -1, -1},
-      {1, 1, 0},
-      {0, -1, 1},
-      {-1, 1, 0},
-      {0, -1, -1}
-   };
+   protected static final int[][] GRADIENT = new int[][]{{1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0}, {1, 0, 1}, {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1}, {0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1}, {1, 1, 0}, {0, -1, 1}, {-1, 1, 0}, {0, -1, -1}};
    private static final double SQRT_3 = Math.sqrt(3.0);
-   private static final double F2 = 0.5 * (SQRT_3 - 1.0);
-   private static final double G2 = (3.0 - SQRT_3) / 6.0;
+   private static final double F2;
+   private static final double G2;
    private final int[] p = new int[512];
    public final double xo;
    public final double yo;
@@ -35,22 +18,22 @@ public class SimplexNoise {
       this.xo = var1.nextDouble() * 256.0;
       this.yo = var1.nextDouble() * 256.0;
       this.zo = var1.nextDouble() * 256.0;
-      int var2 = 0;
 
-      while(var2 < 256) {
-         this.p[var2] = var2++;
+      int var2;
+      for(var2 = 0; var2 < 256; this.p[var2] = var2++) {
       }
 
-      for(int var5 = 0; var5 < 256; ++var5) {
-         int var3 = var1.nextInt(256 - var5);
-         int var4 = this.p[var5];
-         this.p[var5] = this.p[var3 + var5];
-         this.p[var3 + var5] = var4;
+      for(var2 = 0; var2 < 256; ++var2) {
+         int var3 = var1.nextInt(256 - var2);
+         int var4 = this.p[var2];
+         this.p[var2] = this.p[var3 + var2];
+         this.p[var3 + var2] = var4;
       }
+
    }
 
    private int p(int var1) {
-      return this.p[var1 & 0xFF];
+      return this.p[var1 & 255];
    }
 
    protected static double dot(int[] var0, double var1, double var3, double var5) {
@@ -93,8 +76,8 @@ public class SimplexNoise {
       double var23 = var17 - (double)var20 + G2;
       double var25 = var15 - 1.0 + 2.0 * G2;
       double var27 = var17 - 1.0 + 2.0 * G2;
-      int var29 = var7 & 0xFF;
-      int var30 = var8 & 0xFF;
+      int var29 = var7 & 255;
+      int var30 = var8 & 255;
       int var31 = this.p(var29 + this.p(var30)) % 12;
       int var32 = this.p(var29 + var19 + this.p(var30 + var20)) % 12;
       int var33 = this.p(var29 + 1 + this.p(var30 + 1)) % 12;
@@ -179,9 +162,9 @@ public class SimplexNoise {
       double var48 = var24 - 1.0 + 0.5;
       double var50 = var26 - 1.0 + 0.5;
       double var52 = var28 - 1.0 + 0.5;
-      int var54 = var11 & 0xFF;
-      int var55 = var12 & 0xFF;
-      int var56 = var13 & 0xFF;
+      int var54 = var11 & 255;
+      int var55 = var12 & 255;
+      int var56 = var13 & 255;
       int var57 = this.p(var54 + this.p(var55 + this.p(var56))) % 12;
       int var58 = this.p(var54 + var30 + this.p(var55 + var31 + this.p(var56 + var32))) % 12;
       int var59 = this.p(var54 + var33 + this.p(var55 + var34 + this.p(var56 + var35))) % 12;
@@ -191,5 +174,10 @@ public class SimplexNoise {
       double var65 = this.getCornerNoise3D(var59, var42, var44, var46, 0.6);
       double var67 = this.getCornerNoise3D(var60, var48, var50, var52, 0.6);
       return 32.0 * (var61 + var63 + var65 + var67);
+   }
+
+   static {
+      F2 = 0.5 * (SQRT_3 - 1.0);
+      G2 = (3.0 - SQRT_3) / 6.0;
    }
 }

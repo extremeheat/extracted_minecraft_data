@@ -10,7 +10,6 @@ public class EntitySkeletonSplitFix extends SimpleEntityRenameFix {
       super("EntitySkeletonSplitFix", var1, var2);
    }
 
-   @Override
    protected Pair<String, Dynamic<?>> getNewNameAndTag(String var1, Dynamic<?> var2) {
       if (Objects.equals(var1, "Skeleton")) {
          int var3 = var2.get("SkeletonType").asInt(0);

@@ -21,9 +21,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartCommandBlock extends AbstractMinecart {
-   static final EntityDataAccessor<String> DATA_ID_COMMAND_NAME = SynchedEntityData.defineId(MinecartCommandBlock.class, EntityDataSerializers.STRING);
-   static final EntityDataAccessor<Component> DATA_ID_LAST_OUTPUT = SynchedEntityData.defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);
-   private final BaseCommandBlock commandBlock = new MinecartCommandBlock.MinecartCommandBase();
+   static final EntityDataAccessor<String> DATA_ID_COMMAND_NAME;
+   static final EntityDataAccessor<Component> DATA_ID_LAST_OUTPUT;
+   private final BaseCommandBlock commandBlock = new MinecartCommandBase();
    private static final int ACTIVATION_DELAY = 4;
    private int lastActivated;
 
@@ -35,19 +35,16 @@ public class MinecartCommandBlock extends AbstractMinecart {
       super(EntityType.COMMAND_BLOCK_MINECART, var1, var2, var4, var6);
    }
 
-   @Override
    protected Item getDropItem() {
       return Items.MINECART;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_ID_COMMAND_NAME, "");
       var1.define(DATA_ID_LAST_OUTPUT, CommonComponents.EMPTY);
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.commandBlock.load(var1, this.registryAccess());
@@ -55,18 +52,15 @@ public class MinecartCommandBlock extends AbstractMinecart {
       this.getEntityData().set(DATA_ID_LAST_OUTPUT, this.getCommandBlock().getLastOutput());
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       this.commandBlock.save(var1, this.registryAccess());
    }
 
-   @Override
    public AbstractMinecart.Type getMinecartType() {
       return AbstractMinecart.Type.COMMAND_BLOCK;
    }
 
-   @Override
    public BlockState getDefaultDisplayBlockState() {
       return Blocks.COMMAND_BLOCK.defaultBlockState();
    }
@@ -75,35 +69,38 @@ public class MinecartCommandBlock extends AbstractMinecart {
       return this.commandBlock;
    }
 
-   @Override
    public void activateMinecart(int var1, int var2, int var3, boolean var4) {
       if (var4 && this.tickCount - this.lastActivated >= 4) {
          this.getCommandBlock().performCommand(this.level());
          this.lastActivated = this.tickCount;
       }
+
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       return this.commandBlock.usedBy(var1);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       super.onSyncedDataUpdated(var1);
       if (DATA_ID_LAST_OUTPUT.equals(var1)) {
          try {
-            this.commandBlock.setLastOutput(this.getEntityData().get(DATA_ID_LAST_OUTPUT));
+            this.commandBlock.setLastOutput((Component)this.getEntityData().get(DATA_ID_LAST_OUTPUT));
          } catch (Throwable var3) {
          }
       } else if (DATA_ID_COMMAND_NAME.equals(var1)) {
-         this.commandBlock.setCommand(this.getEntityData().get(DATA_ID_COMMAND_NAME));
+         this.commandBlock.setCommand((String)this.getEntityData().get(DATA_ID_COMMAND_NAME));
       }
+
    }
 
-   @Override
    public boolean onlyOpCanSetNbt() {
       return true;
+   }
+
+   static {
+      DATA_ID_COMMAND_NAME = SynchedEntityData.defineId(MinecartCommandBlock.class, EntityDataSerializers.STRING);
+      DATA_ID_LAST_OUTPUT = SynchedEntityData.defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);
    }
 
    public class MinecartCommandBase extends BaseCommandBlock {
@@ -111,18 +108,15 @@ public class MinecartCommandBlock extends AbstractMinecart {
          super();
       }
 
-      @Override
       public ServerLevel getLevel() {
          return (ServerLevel)MinecartCommandBlock.this.level();
       }
 
-      @Override
       public void onUpdated() {
          MinecartCommandBlock.this.getEntityData().set(MinecartCommandBlock.DATA_ID_COMMAND_NAME, this.getCommand());
          MinecartCommandBlock.this.getEntityData().set(MinecartCommandBlock.DATA_ID_LAST_OUTPUT, this.getLastOutput());
       }
 
-      @Override
       public Vec3 getPosition() {
          return MinecartCommandBlock.this.position();
       }
@@ -131,22 +125,10 @@ public class MinecartCommandBlock extends AbstractMinecart {
          return MinecartCommandBlock.this;
       }
 
-      @Override
       public CommandSourceStack createCommandSourceStack() {
-         return new CommandSourceStack(
-            this,
-            MinecartCommandBlock.this.position(),
-            MinecartCommandBlock.this.getRotationVector(),
-            this.getLevel(),
-            2,
-            this.getName().getString(),
-            MinecartCommandBlock.this.getDisplayName(),
-            this.getLevel().getServer(),
-            MinecartCommandBlock.this
-         );
+         return new CommandSourceStack(this, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), this.getLevel(), 2, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), this.getLevel().getServer(), MinecartCommandBlock.this);
       }
 
-      @Override
       public boolean isValid() {
          return !MinecartCommandBlock.this.isRemoved();
       }

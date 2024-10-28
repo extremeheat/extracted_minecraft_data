@@ -13,13 +13,16 @@ public enum SculkSensorPhase implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static SculkSensorPhase[] $values() {
+      return new SculkSensorPhase[]{INACTIVE, ACTIVE, COOLDOWN};
    }
 }

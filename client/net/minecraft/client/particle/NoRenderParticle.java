@@ -13,11 +13,9 @@ public class NoRenderParticle extends Particle {
       super(var1, var2, var4, var6, var8, var10, var12);
    }
 
-   @Override
    public final void render(VertexConsumer var1, Camera var2, float var3) {
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.NO_RENDER;
    }

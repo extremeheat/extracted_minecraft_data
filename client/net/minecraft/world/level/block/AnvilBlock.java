@@ -12,7 +12,6 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -31,36 +30,33 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AnvilBlock extends FallingBlock {
    public static final MapCodec<AnvilBlock> CODEC = simpleCodec(AnvilBlock::new);
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-   private static final VoxelShape BASE = Block.box(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
-   private static final VoxelShape X_LEG1 = Block.box(3.0, 4.0, 4.0, 13.0, 5.0, 12.0);
-   private static final VoxelShape X_LEG2 = Block.box(4.0, 5.0, 6.0, 12.0, 10.0, 10.0);
-   private static final VoxelShape X_TOP = Block.box(0.0, 10.0, 3.0, 16.0, 16.0, 13.0);
-   private static final VoxelShape Z_LEG1 = Block.box(4.0, 4.0, 3.0, 12.0, 5.0, 13.0);
-   private static final VoxelShape Z_LEG2 = Block.box(6.0, 5.0, 4.0, 10.0, 10.0, 12.0);
-   private static final VoxelShape Z_TOP = Block.box(3.0, 10.0, 0.0, 13.0, 16.0, 16.0);
-   private static final VoxelShape X_AXIS_AABB = Shapes.or(BASE, X_LEG1, X_LEG2, X_TOP);
-   private static final VoxelShape Z_AXIS_AABB = Shapes.or(BASE, Z_LEG1, Z_LEG2, Z_TOP);
-   private static final Component CONTAINER_TITLE = Component.translatable("container.repair");
+   public static final DirectionProperty FACING;
+   private static final VoxelShape BASE;
+   private static final VoxelShape X_LEG1;
+   private static final VoxelShape X_LEG2;
+   private static final VoxelShape X_TOP;
+   private static final VoxelShape Z_LEG1;
+   private static final VoxelShape Z_LEG2;
+   private static final VoxelShape Z_TOP;
+   private static final VoxelShape X_AXIS_AABB;
+   private static final VoxelShape Z_AXIS_AABB;
+   private static final Component CONTAINER_TITLE;
    private static final float FALL_DAMAGE_PER_DISTANCE = 2.0F;
    private static final int FALL_DAMAGE_MAX = 40;
 
-   @Override
    public MapCodec<AnvilBlock> codec() {
       return CODEC;
    }
 
    public AnvilBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getClockWise());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getClockWise());
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -72,37 +68,35 @@ public class AnvilBlock extends FallingBlock {
    }
 
    @Nullable
-   @Override
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new AnvilMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> {
+         return new AnvilMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
+      }, CONTAINER_TITLE);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Direction var5 = var1.getValue(FACING);
+      Direction var5 = (Direction)var1.getValue(FACING);
       return var5.getAxis() == Direction.Axis.X ? X_AXIS_AABB : Z_AXIS_AABB;
    }
 
-   @Override
    protected void falling(FallingBlockEntity var1) {
       var1.setHurtsEntities(2.0F, 40);
    }
 
-   @Override
    public void onLand(Level var1, BlockPos var2, BlockState var3, BlockState var4, FallingBlockEntity var5) {
       if (!var5.isSilent()) {
          var1.levelEvent(1031, var2, 0);
       }
+
    }
 
-   @Override
    public void onBrokenAfterFall(Level var1, BlockPos var2, FallingBlockEntity var3) {
       if (!var3.isSilent()) {
          var1.levelEvent(1029, var2, 0);
       }
+
    }
 
-   @Override
    public DamageSource getFallDamageSource(Entity var1) {
       return var1.damageSources().anvil(var1);
    }
@@ -110,29 +104,39 @@ public class AnvilBlock extends FallingBlock {
    @Nullable
    public static BlockState damage(BlockState var0) {
       if (var0.is(Blocks.ANVIL)) {
-         return Blocks.CHIPPED_ANVIL.defaultBlockState().setValue(FACING, var0.getValue(FACING));
+         return (BlockState)Blocks.CHIPPED_ANVIL.defaultBlockState().setValue(FACING, (Direction)var0.getValue(FACING));
       } else {
-         return var0.is(Blocks.CHIPPED_ANVIL) ? Blocks.DAMAGED_ANVIL.defaultBlockState().setValue(FACING, var0.getValue(FACING)) : null;
+         return var0.is(Blocks.CHIPPED_ANVIL) ? (BlockState)Blocks.DAMAGED_ANVIL.defaultBlockState().setValue(FACING, (Direction)var0.getValue(FACING)) : null;
       }
    }
 
-   @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING);
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
-   @Override
    public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.getMapColor(var2, var3).col;
+   }
+
+   static {
+      FACING = HorizontalDirectionalBlock.FACING;
+      BASE = Block.box(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
+      X_LEG1 = Block.box(3.0, 4.0, 4.0, 13.0, 5.0, 12.0);
+      X_LEG2 = Block.box(4.0, 5.0, 6.0, 12.0, 10.0, 10.0);
+      X_TOP = Block.box(0.0, 10.0, 3.0, 16.0, 16.0, 13.0);
+      Z_LEG1 = Block.box(4.0, 4.0, 3.0, 12.0, 5.0, 13.0);
+      Z_LEG2 = Block.box(6.0, 5.0, 4.0, 10.0, 10.0, 12.0);
+      Z_TOP = Block.box(3.0, 10.0, 0.0, 13.0, 16.0, 16.0);
+      X_AXIS_AABB = Shapes.or(BASE, X_LEG1, X_LEG2, X_TOP);
+      Z_AXIS_AABB = Shapes.or(BASE, Z_LEG1, Z_LEG2, Z_TOP);
+      CONTAINER_TITLE = Component.translatable("container.repair");
    }
 }

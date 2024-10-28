@@ -38,7 +38,7 @@ public class QueryThreadGs4 extends GenericThread {
    private final byte[] buffer = new byte[1460];
    private String hostIp;
    private String serverIp;
-   private final Map<SocketAddress, QueryThreadGs4.RequestChallenge> validChallenges;
+   private final Map<SocketAddress, RequestChallenge> validChallenges;
    private final NetworkDataOutputStream rulesResponse;
    private long lastRulesResponse;
    private final ServerInterface serverInterface;
@@ -94,7 +94,7 @@ public class QueryThreadGs4 extends GenericThread {
       LOGGER.debug("Packet len {} [{}]", var3, var4);
       if (3 <= var3 && -2 == var2[0] && -3 == var2[1]) {
          LOGGER.debug("Packet '{}' [{}]", PktUtils.toHexString(var2[2]), var4);
-         switch(var2[2]) {
+         switch (var2[2]) {
             case 0:
                if (!this.validChallenge(var1)) {
                   LOGGER.debug("Invalid challenge [{}]", var4);
@@ -160,11 +160,11 @@ public class QueryThreadGs4 extends GenericThread {
          this.rulesResponse.writeString("map");
          this.rulesResponse.writeString(this.worldName);
          this.rulesResponse.writeString("numplayers");
-         this.rulesResponse.writeString(this.serverInterface.getPlayerCount() + "");
+         this.rulesResponse.writeString("" + this.serverInterface.getPlayerCount());
          this.rulesResponse.writeString("maxplayers");
-         this.rulesResponse.writeString(this.maxPlayers + "");
+         this.rulesResponse.writeString("" + this.maxPlayers);
          this.rulesResponse.writeString("hostport");
-         this.rulesResponse.writeString(this.serverPort + "");
+         this.rulesResponse.writeString("" + this.serverPort);
          this.rulesResponse.writeString("hostip");
          this.rulesResponse.writeString(this.hostIp);
          this.rulesResponse.write(0);
@@ -172,8 +172,11 @@ public class QueryThreadGs4 extends GenericThread {
          this.rulesResponse.writeString("player_");
          this.rulesResponse.write(0);
          String[] var4 = this.serverInterface.getPlayerNames();
+         String[] var5 = var4;
+         int var6 = var4.length;
 
-         for(String var8 : var4) {
+         for(int var7 = 0; var7 < var6; ++var7) {
+            String var8 = var5[var7];
             this.rulesResponse.writeString(var8);
          }
 
@@ -183,7 +186,7 @@ public class QueryThreadGs4 extends GenericThread {
    }
 
    private byte[] getIdentBytes(SocketAddress var1) {
-      return this.validChallenges.get(var1).getIdentBytes();
+      return ((RequestChallenge)this.validChallenges.get(var1)).getIdentBytes();
    }
 
    private Boolean validChallenge(DatagramPacket var1) {
@@ -192,12 +195,12 @@ public class QueryThreadGs4 extends GenericThread {
          return false;
       } else {
          byte[] var3 = var1.getData();
-         return this.validChallenges.get(var2).getChallenge() == PktUtils.intFromNetworkByteArray(var3, 7, var1.getLength());
+         return ((RequestChallenge)this.validChallenges.get(var2)).getChallenge() == PktUtils.intFromNetworkByteArray(var3, 7, var1.getLength());
       }
    }
 
    private void sendChallenge(DatagramPacket var1) throws IOException {
-      QueryThreadGs4.RequestChallenge var2 = new QueryThreadGs4.RequestChallenge(var1);
+      RequestChallenge var2 = new RequestChallenge(var1);
       this.validChallenges.put(var1.getSocketAddress(), var2);
       this.sendTo(var2.getChallengeBytes(), var1);
    }
@@ -207,12 +210,13 @@ public class QueryThreadGs4 extends GenericThread {
          long var1 = Util.getMillis();
          if (var1 >= this.lastChallengeCheck + 30000L) {
             this.lastChallengeCheck = var1;
-            this.validChallenges.values().removeIf(var2 -> var2.before(var1));
+            this.validChallenges.values().removeIf((var2) -> {
+               return var2.before(var1);
+            });
          }
       }
    }
 
-   @Override
    public void run() {
       LOGGER.info("Query running on {}:{}", this.serverIp, this.port);
       this.lastChallengeCheck = Util.getMillis();
@@ -235,9 +239,9 @@ public class QueryThreadGs4 extends GenericThread {
          LOGGER.debug("closeSocket: {}:{}", this.serverIp, this.port);
          this.socket.close();
       }
+
    }
 
-   @Override
    public boolean start() {
       if (this.running) {
          return true;
@@ -253,6 +257,7 @@ public class QueryThreadGs4 extends GenericThread {
             LOGGER.error("Failed to recover from exception, shutting down!");
             this.running = false;
          }
+
       }
    }
 
@@ -267,8 +272,8 @@ public class QueryThreadGs4 extends GenericThread {
       }
    }
 
-   static class RequestChallenge {
-      private final long time = new Date().getTime();
+   private static class RequestChallenge {
+      private final long time = (new Date()).getTime();
       private final int challenge;
       private final byte[] identBytes;
       private final byte[] challengeBytes;

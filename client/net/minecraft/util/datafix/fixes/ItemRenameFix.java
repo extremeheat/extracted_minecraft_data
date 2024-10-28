@@ -5,8 +5,6 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DynamicOps;
 import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -24,7 +22,11 @@ public abstract class ItemRenameFix extends DataFix {
       if (!Objects.equals(this.getInputSchema().getType(References.ITEM_NAME), var1)) {
          throw new IllegalStateException("item name type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere(this.name, var1, var1x -> var1xx -> var1xx.mapSecond(this::fixItem));
+         return this.fixTypeEverywhere(this.name, var1, (var1x) -> {
+            return (var1) -> {
+               return var1.mapSecond(this::fixItem);
+            };
+         });
       }
    }
 
@@ -32,7 +34,6 @@ public abstract class ItemRenameFix extends DataFix {
 
    public static DataFix create(Schema var0, String var1, final Function<String, String> var2) {
       return new ItemRenameFix(var0, var1) {
-         @Override
          protected String fixItem(String var1) {
             return (String)var2.apply(var1);
          }

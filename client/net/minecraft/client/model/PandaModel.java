@@ -21,24 +21,8 @@ public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild(
-         "head",
-         CubeListBuilder.create()
-            .texOffs(0, 6)
-            .addBox(-6.5F, -5.0F, -4.0F, 13.0F, 10.0F, 9.0F)
-            .texOffs(45, 16)
-            .addBox("nose", -3.5F, 0.0F, -6.0F, 7.0F, 5.0F, 2.0F)
-            .texOffs(52, 25)
-            .addBox("left_ear", 3.5F, -8.0F, -1.0F, 5.0F, 4.0F, 1.0F)
-            .texOffs(52, 25)
-            .addBox("right_ear", -8.5F, -8.0F, -1.0F, 5.0F, 4.0F, 1.0F),
-         PartPose.offset(0.0F, 11.5F, -17.0F)
-      );
-      var1.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create().texOffs(0, 25).addBox(-9.5F, -13.0F, -6.5F, 19.0F, 26.0F, 13.0F),
-         PartPose.offsetAndRotation(0.0F, 10.0F, 0.0F, 1.5707964F, 0.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 6).addBox(-6.5F, -5.0F, -4.0F, 13.0F, 10.0F, 9.0F).texOffs(45, 16).addBox("nose", -3.5F, 0.0F, -6.0F, 7.0F, 5.0F, 2.0F).texOffs(52, 25).addBox("left_ear", 3.5F, -8.0F, -1.0F, 5.0F, 4.0F, 1.0F).texOffs(52, 25).addBox("right_ear", -8.5F, -8.0F, -1.0F, 5.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 11.5F, -17.0F));
+      var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 25).addBox(-9.5F, -13.0F, -6.5F, 19.0F, 26.0F, 13.0F), PartPose.offsetAndRotation(0.0F, 10.0F, 0.0F, 1.5707964F, 0.0F, 0.0F));
       boolean var2 = true;
       boolean var3 = true;
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(40, 0).addBox(-3.0F, 0.0F, -3.0F, 6.0F, 9.0F, 6.0F);
@@ -50,14 +34,14 @@ public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
    }
 
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      super.prepareMobModel((T)var1, var2, var3, var4);
+      super.prepareMobModel(var1, var2, var3, var4);
       this.sitAmount = var1.getSitAmount(var4);
       this.lieOnBackAmount = var1.getLieOnBackAmount(var4);
       this.rollAmount = var1.isBaby() ? 0.0F : var1.getRollAmount(var4);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
+      super.setupAnim(var1, var2, var3, var4, var5, var6);
       boolean var7 = var1.getUnhappyCounter() > 0;
       boolean var8 = var1.isSneezing();
       int var9 = var1.getSneezeCounter();
@@ -121,5 +105,6 @@ public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
          this.rightFrontLeg.xRot = 0.5F * Mth.sin(var4 * 0.5F);
          this.leftFrontLeg.xRot = -0.5F * Mth.sin(var4 * 0.5F);
       }
+
    }
 }

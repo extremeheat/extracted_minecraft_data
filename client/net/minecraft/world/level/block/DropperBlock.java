@@ -24,7 +24,6 @@ public class DropperBlock extends DispenserBlock {
    public static final MapCodec<DropperBlock> CODEC = simpleCodec(DropperBlock::new);
    private static final DispenseItemBehavior DISPENSE_BEHAVIOUR = new DefaultDispenseItemBehavior();
 
-   @Override
    public MapCodec<DropperBlock> codec() {
       return CODEC;
    }
@@ -33,19 +32,16 @@ public class DropperBlock extends DispenserBlock {
       super(var1);
    }
 
-   @Override
    protected DispenseItemBehavior getDispenseMethod(ItemStack var1) {
       return DISPENSE_BEHAVIOUR;
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new DropperBlockEntity(var1, var2);
    }
 
-   @Override
    protected void dispenseFrom(ServerLevel var1, BlockState var2, BlockPos var3) {
-      DispenserBlockEntity var4 = var1.getBlockEntity(var3, BlockEntityType.DROPPER).orElse(null);
+      DispenserBlockEntity var4 = (DispenserBlockEntity)var1.getBlockEntity(var3, BlockEntityType.DROPPER).orElse((Object)null);
       if (var4 == null) {
          LOGGER.warn("Ignoring dispensing attempt for Dropper without matching block entity at {}", var3);
       } else {
@@ -56,7 +52,7 @@ public class DropperBlock extends DispenserBlock {
          } else {
             ItemStack var7 = var4.getItem(var6);
             if (!var7.isEmpty()) {
-               Direction var8 = var1.getBlockState(var3).getValue(FACING);
+               Direction var8 = (Direction)var1.getBlockState(var3).getValue(FACING);
                Container var9 = HopperBlockEntity.getContainerAt(var1, var3.relative(var8));
                ItemStack var10;
                if (var9 == null) {

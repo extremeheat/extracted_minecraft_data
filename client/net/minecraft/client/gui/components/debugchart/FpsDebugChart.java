@@ -18,28 +18,25 @@ public class FpsDebugChart extends AbstractDebugChart {
       super(var1, var2);
    }
 
-   @Override
    protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
       this.drawStringWithShade(var1, "30 FPS", var2 + 1, var4 - 60 + 1);
       this.drawStringWithShade(var1, "60 FPS", var2 + 1, var4 - 30 + 1);
       var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4 - 30, -1);
-      int var5 = Minecraft.getInstance().options.framerateLimit().get();
+      int var5 = (Integer)Minecraft.getInstance().options.framerateLimit().get();
       if (var5 > 0 && var5 <= 250) {
          var1.hLine(RenderType.guiOverlay(), var2, var2 + var3 - 1, var4 - this.getSampleHeight(1.0E9 / (double)var5) - 1, -16711681);
       }
+
    }
 
-   @Override
    protected String toDisplayString(double var1) {
       return String.format(Locale.ROOT, "%d ms", (int)Math.round(toMilliseconds(var1)));
    }
 
-   @Override
    protected int getSampleHeight(double var1) {
       return (int)Math.round(toMilliseconds(var1) * 60.0 / 33.333333333333336);
    }
 
-   @Override
    protected int getSampleColor(long var1) {
       return this.getSampleColor(toMilliseconds((double)var1), 0.0, -16711936, 28.0, -256, 56.0, -65536);
    }

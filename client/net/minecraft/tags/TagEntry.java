@@ -3,7 +3,6 @@ package net.minecraft.tags;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -12,18 +11,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
 public class TagEntry {
-   private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag),
-               Codec.BOOL.optionalFieldOf("required", true).forGetter(var0x -> var0x.required)
-            )
-            .apply(var0, TagEntry::new)
-   );
-   public static final Codec<TagEntry> CODEC = Codec.either(ExtraCodecs.TAG_OR_ELEMENT_ID, FULL_CODEC)
-      .xmap(
-         var0 -> (TagEntry)var0.map(var0x -> new TagEntry(var0x, true), var0x -> var0x),
-         var0 -> var0.required ? Either.left(var0.elementOrTag()) : Either.right(var0)
-      );
+   private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((var0x) -> {
+         return var0x.required;
+      })).apply(var0, TagEntry::new);
+   });
+   public static final Codec<TagEntry> CODEC;
    private final ResourceLocation id;
    private final boolean tag;
    private final boolean required;
@@ -62,7 +55,7 @@ public class TagEntry {
       return new TagEntry(var0, true, false);
    }
 
-   public <T> boolean build(TagEntry.Lookup<T> var1, Consumer<T> var2) {
+   public <T> boolean build(Lookup<T> var1, Consumer<T> var2) {
       if (this.tag) {
          Collection var3 = var1.tag(this.id);
          if (var3 == null) {
@@ -86,19 +79,20 @@ public class TagEntry {
       if (this.tag && this.required) {
          var1.accept(this.id);
       }
+
    }
 
    public void visitOptionalDependencies(Consumer<ResourceLocation> var1) {
       if (this.tag && !this.required) {
          var1.accept(this.id);
       }
+
    }
 
    public boolean verifyIfPresent(Predicate<ResourceLocation> var1, Predicate<ResourceLocation> var2) {
       return !this.required || (this.tag ? var2 : var1).test(this.id);
    }
 
-   @Override
    public String toString() {
       StringBuilder var1 = new StringBuilder();
       if (this.tag) {
@@ -111,6 +105,18 @@ public class TagEntry {
       }
 
       return var1.toString();
+   }
+
+   static {
+      CODEC = Codec.either(ExtraCodecs.TAG_OR_ELEMENT_ID, FULL_CODEC).xmap((var0) -> {
+         return (TagEntry)var0.map((var0x) -> {
+            return new TagEntry(var0x, true);
+         }, (var0x) -> {
+            return var0x;
+         });
+      }, (var0) -> {
+         return var0.required ? Either.left(var0.elementOrTag()) : Either.right(var0);
+      });
    }
 
    public interface Lookup<T> {

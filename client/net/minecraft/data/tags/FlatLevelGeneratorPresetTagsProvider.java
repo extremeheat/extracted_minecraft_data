@@ -13,17 +13,7 @@ public class FlatLevelGeneratorPresetTagsProvider extends TagsProvider<FlatLevel
       super(var1, Registries.FLAT_LEVEL_GENERATOR_PRESET, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
-      this.tag(FlatLevelGeneratorPresetTags.VISIBLE)
-         .add(FlatLevelGeneratorPresets.CLASSIC_FLAT)
-         .add(FlatLevelGeneratorPresets.TUNNELERS_DREAM)
-         .add(FlatLevelGeneratorPresets.WATER_WORLD)
-         .add(FlatLevelGeneratorPresets.OVERWORLD)
-         .add(FlatLevelGeneratorPresets.SNOWY_KINGDOM)
-         .add(FlatLevelGeneratorPresets.BOTTOMLESS_PIT)
-         .add(FlatLevelGeneratorPresets.DESERT)
-         .add(FlatLevelGeneratorPresets.REDSTONE_READY)
-         .add(FlatLevelGeneratorPresets.THE_VOID);
+      this.tag(FlatLevelGeneratorPresetTags.VISIBLE).add(FlatLevelGeneratorPresets.CLASSIC_FLAT).add(FlatLevelGeneratorPresets.TUNNELERS_DREAM).add(FlatLevelGeneratorPresets.WATER_WORLD).add(FlatLevelGeneratorPresets.OVERWORLD).add(FlatLevelGeneratorPresets.SNOWY_KINGDOM).add(FlatLevelGeneratorPresets.BOTTOMLESS_PIT).add(FlatLevelGeneratorPresets.DESERT).add(FlatLevelGeneratorPresets.REDSTONE_READY).add(FlatLevelGeneratorPresets.THE_VOID);
    }
 }

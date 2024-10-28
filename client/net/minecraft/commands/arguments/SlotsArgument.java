@@ -19,9 +19,9 @@ import net.minecraft.world.inventory.SlotRanges;
 
 public class SlotsArgument implements ArgumentType<SlotRange> {
    private static final Collection<String> EXAMPLES = List.of("container.*", "container.5", "weapon");
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_SLOT = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("slot.unknown", var0)
-   );
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_SLOT = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("slot.unknown", var0);
+   });
 
    public SlotsArgument() {
       super();
@@ -36,7 +36,9 @@ public class SlotsArgument implements ArgumentType<SlotRange> {
    }
 
    public SlotRange parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = ParserUtils.readWhile(var1, var0 -> var0 != ' ');
+      String var2 = ParserUtils.readWhile(var1, (var0) -> {
+         return var0 != ' ';
+      });
       SlotRange var3 = SlotRanges.nameToIds(var2);
       if (var3 == null) {
          throw ERROR_UNKNOWN_SLOT.createWithContext(var1, var2);
@@ -51,5 +53,10 @@ public class SlotsArgument implements ArgumentType<SlotRange> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

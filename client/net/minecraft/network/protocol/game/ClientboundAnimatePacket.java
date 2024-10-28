@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundAnimatePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundAnimatePacket> STREAM_CODEC = Packet.codec(
-      ClientboundAnimatePacket::write, ClientboundAnimatePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundAnimatePacket> STREAM_CODEC = Packet.codec(ClientboundAnimatePacket::write, ClientboundAnimatePacket::new);
    public static final int SWING_MAIN_HAND = 0;
    public static final int WAKE_UP = 2;
    public static final int SWING_OFF_HAND = 3;
@@ -35,7 +33,6 @@ public class ClientboundAnimatePacket implements Packet<ClientGamePacketListener
       var1.writeByte(this.action);
    }
 
-   @Override
    public PacketType<ClientboundAnimatePacket> type() {
       return GamePacketTypes.CLIENTBOUND_ANIMATE;
    }

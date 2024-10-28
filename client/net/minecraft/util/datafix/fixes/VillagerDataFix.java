@@ -12,28 +12,9 @@ public class VillagerDataFix extends NamedEntityFix {
       super(var1, false, "Villager profession data fix (" + var2 + ")", References.ENTITY, var2);
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       Dynamic var2 = (Dynamic)var1.get(DSL.remainderFinder());
-      return var1.set(
-         DSL.remainderFinder(),
-         var2.remove("Profession")
-            .remove("Career")
-            .remove("CareerLevel")
-            .set(
-               "VillagerData",
-               var2.createMap(
-                  ImmutableMap.of(
-                     var2.createString("type"),
-                     var2.createString("minecraft:plains"),
-                     var2.createString("profession"),
-                     var2.createString(upgradeData(var2.get("Profession").asInt(0), var2.get("Career").asInt(0))),
-                     var2.createString("level"),
-                     (Dynamic)DataFixUtils.orElse(var2.get("CareerLevel").result(), var2.createInt(1))
-                  )
-               )
-            )
-      );
+      return var1.set(DSL.remainderFinder(), var2.remove("Profession").remove("Career").remove("CareerLevel").set("VillagerData", var2.createMap(ImmutableMap.of(var2.createString("type"), var2.createString("minecraft:plains"), var2.createString("profession"), var2.createString(upgradeData(var2.get("Profession").asInt(0), var2.get("Career").asInt(0))), var2.createString("level"), (Dynamic)DataFixUtils.orElse(var2.get("CareerLevel").result(), var2.createInt(1))))));
    }
 
    private static String upgradeData(int var0, int var1) {

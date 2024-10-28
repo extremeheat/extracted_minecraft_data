@@ -9,7 +9,6 @@ public class LodestoneCompassComponentFix extends ItemStackComponentRemainderFix
       super(var1, "LodestoneCompassComponentFix", "minecraft:lodestone_target", "minecraft:lodestone_tracker");
    }
 
-   @Override
    protected <T> Dynamic<T> fixComponent(Dynamic<T> var1) {
       Optional var2 = var1.get("pos").result();
       Optional var3 = var1.get("dimension").result();

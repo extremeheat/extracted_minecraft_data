@@ -48,7 +48,6 @@ public class DirectoryLock implements AutoCloseable {
       this.lock = var2;
    }
 
-   @Override
    public void close() throws IOException {
       try {
          if (this.lock.isValid()) {
@@ -58,7 +57,9 @@ public class DirectoryLock implements AutoCloseable {
          if (this.lockFile.isOpen()) {
             this.lockFile.close();
          }
+
       }
+
    }
 
    public boolean isValid() {
@@ -69,12 +70,43 @@ public class DirectoryLock implements AutoCloseable {
       Path var1 = var0.resolve("session.lock");
 
       try {
+         FileChannel var2 = FileChannel.open(var1, StandardOpenOption.WRITE);
+
          boolean var4;
-         try (
-            FileChannel var2 = FileChannel.open(var1, StandardOpenOption.WRITE);
+         try {
             FileLock var3 = var2.tryLock();
-         ) {
-            var4 = var3 == null;
+
+            try {
+               var4 = var3 == null;
+            } catch (Throwable var8) {
+               if (var3 != null) {
+                  try {
+                     var3.close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
+               }
+
+               throw var8;
+            }
+
+            if (var3 != null) {
+               var3.close();
+            }
+         } catch (Throwable var9) {
+            if (var2 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var6) {
+                  var9.addSuppressed(var6);
+               }
+            }
+
+            throw var9;
+         }
+
+         if (var2 != null) {
+            var2.close();
          }
 
          return var4;
@@ -94,11 +126,12 @@ public class DirectoryLock implements AutoCloseable {
 
    public static class LockException extends IOException {
       private LockException(Path var1, String var2) {
-         super(var1.toAbsolutePath() + ": " + var2);
+         String var10001 = String.valueOf(var1.toAbsolutePath());
+         super(var10001 + ": " + var2);
       }
 
-      public static DirectoryLock.LockException alreadyLocked(Path var0) {
-         return new DirectoryLock.LockException(var0, "already locked (possibly by other Minecraft instance?)");
+      public static LockException alreadyLocked(Path var0) {
+         return new LockException(var0, "already locked (possibly by other Minecraft instance?)");
       }
    }
 }

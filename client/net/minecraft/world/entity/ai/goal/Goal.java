@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import net.minecraft.util.Mth;
 
 public abstract class Goal {
-   private final EnumSet<Goal.Flag> flags = EnumSet.noneOf(Goal.Flag.class);
+   private final EnumSet<Flag> flags = EnumSet.noneOf(Flag.class);
 
    public Goal() {
       super();
@@ -33,17 +33,16 @@ public abstract class Goal {
    public void tick() {
    }
 
-   public void setFlags(EnumSet<Goal.Flag> var1) {
+   public void setFlags(EnumSet<Flag> var1) {
       this.flags.clear();
       this.flags.addAll(var1);
    }
 
-   @Override
    public String toString() {
       return this.getClass().getSimpleName();
    }
 
-   public EnumSet<Goal.Flag> getFlags() {
+   public EnumSet<Flag> getFlags() {
       return this.flags;
    }
 
@@ -62,6 +61,11 @@ public abstract class Goal {
       TARGET;
 
       private Flag() {
+      }
+
+      // $FF: synthetic method
+      private static Flag[] $values() {
+         return new Flag[]{MOVE, LOOK, JUMP, TARGET};
       }
    }
 }

@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.RelativeMovement;
 
 public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerPositionPacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlayerPositionPacket::write, ClientboundPlayerPositionPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerPositionPacket> STREAM_CODEC = Packet.codec(ClientboundPlayerPositionPacket::write, ClientboundPlayerPositionPacket::new);
    private final double x;
    private final double y;
    private final double z;
@@ -51,7 +49,6 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       var1.writeVarInt(this.id);
    }
 
-   @Override
    public PacketType<ClientboundPlayerPositionPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_POSITION;
    }

@@ -1,10 +1,8 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +13,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -24,7 +23,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -32,8 +30,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
@@ -52,6 +48,8 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -64,7 +62,7 @@ public class Item implements FeatureElement, ItemLike {
    public static final int DEFAULT_MAX_STACK_SIZE = 64;
    public static final int ABSOLUTE_MAX_STACK_SIZE = 99;
    public static final int MAX_BAR_WIDTH = 13;
-   private final Holder.Reference<Item> builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
+   private final Holder.Reference<Item> builtInRegistryHolder;
    private final DataComponentMap components;
    @Nullable
    private final Item craftingRemainingItem;
@@ -77,27 +75,31 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static Item byId(int var0) {
-      return BuiltInRegistries.ITEM.byId(var0);
+      return (Item)BuiltInRegistries.ITEM.byId(var0);
    }
 
+   /** @deprecated */
    @Deprecated
    public static Item byBlock(Block var0) {
-      return BY_BLOCK.getOrDefault(var0, Items.AIR);
+      return (Item)BY_BLOCK.getOrDefault(var0, Items.AIR);
    }
 
-   public Item(Item.Properties var1) {
+   public Item(Properties var1) {
       super();
+      this.builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
       this.components = var1.buildAndValidateComponents();
       this.craftingRemainingItem = var1.craftingRemainingItem;
       this.requiredFeatures = var1.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String var2 = this.getClass().getSimpleName();
          if (!var2.endsWith("Item")) {
-            LOGGER.error("Item classes should end with Item and {} doesn't.", var2.trim().isEmpty() ? this.getClass().getName() : var2);
+            LOGGER.error("Item classes should end with Item and {} doesn't.", var2);
          }
       }
+
    }
 
+   /** @deprecated */
    @Deprecated
    public Holder.Reference<Item> builtInRegistryHolder() {
       return this.builtInRegistryHolder;
@@ -108,16 +110,13 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public int getDefaultMaxStackSize() {
-      return this.components.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
+      return (Integer)this.components.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
    }
 
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
    }
 
    public void onDestroyed(ItemEntity var1) {
-   }
-
-   public void onViewedInContainer(ItemStack var1, Level var2, BlockPos var3, Container var4) {
    }
 
    public void verifyComponentsAfterLoad(ItemStack var1) {
@@ -127,7 +126,6 @@ public class Item implements FeatureElement, ItemLike {
       return true;
    }
 
-   @Override
    public Item asItem() {
       return this;
    }
@@ -137,13 +135,13 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public float getDestroySpeed(ItemStack var1, BlockState var2) {
-      Tool var3 = var1.get(DataComponents.TOOL);
+      Tool var3 = (Tool)var1.get(DataComponents.TOOL);
       return var3 != null ? var3.getMiningSpeed(var2) : 1.0F;
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      FoodProperties var5 = var4.get(DataComponents.FOOD);
+      FoodProperties var5 = (FoodProperties)var4.get(DataComponents.FOOD);
       if (var5 != null) {
          if (var2.canEat(var5.canAlwaysEat())) {
             var2.startUsingItem(var3);
@@ -191,7 +189,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
-      Tool var6 = var1.get(DataComponents.TOOL);
+      Tool var6 = (Tool)var1.get(DataComponents.TOOL);
       if (var6 == null) {
          return false;
       } else {
@@ -204,7 +202,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public boolean isCorrectToolForDrops(ItemStack var1, BlockState var2) {
-      Tool var3 = var1.get(DataComponents.TOOL);
+      Tool var3 = (Tool)var1.get(DataComponents.TOOL);
       return var3 != null && var3.isCorrectForDrops(var2);
    }
 
@@ -216,14 +214,8 @@ public class Item implements FeatureElement, ItemLike {
       return Component.translatable(this.getDescriptionId());
    }
 
-   @Override
    public String toString() {
       return BuiltInRegistries.ITEM.getKey(this).getPath();
-   }
-
-   public Item withDescriptionId(String var1) {
-      this.descriptionId = var1;
-      return this;
    }
 
    protected String getOrCreateDescriptionId() {
@@ -270,14 +262,14 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public int getUseDuration(ItemStack var1) {
-      FoodProperties var2 = var1.get(DataComponents.FOOD);
+      FoodProperties var2 = (FoodProperties)var1.get(DataComponents.FOOD);
       return var2 != null ? var2.eatDurationTicks() : 0;
    }
 
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
    }
 
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, TooltipContext var2, List<Component> var3, TooltipFlag var4) {
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
@@ -289,8 +281,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public boolean isFoil(ItemStack var1) {
-      Boolean var2 = var1.get(DataComponents.EXPLICIT_FOIL);
-      return var2 != null && var2 ? true : var1.isEnchanted();
+      return var1.isEnchanted();
    }
 
    public boolean isEnchantable(ItemStack var1) {
@@ -311,9 +302,10 @@ public class Item implements FeatureElement, ItemLike {
       return false;
    }
 
+   /** @deprecated */
    @Deprecated
-   public Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return ImmutableMultimap.of();
+   public ItemAttributeModifiers getDefaultAttributeModifiers() {
+      return ItemAttributeModifiers.EMPTY;
    }
 
    public boolean useOnRelease(ItemStack var1) {
@@ -328,6 +320,10 @@ public class Item implements FeatureElement, ItemLike {
       return SoundEvents.GENERIC_DRINK;
    }
 
+   public SoundEvent getEatingSound() {
+      return SoundEvents.GENERIC_EAT;
+   }
+
    public SoundEvent getBreakingSound() {
       return SoundEvents.ITEM_BREAK;
    }
@@ -336,7 +332,6 @@ public class Item implements FeatureElement, ItemLike {
       return true;
    }
 
-   @Override
    public FeatureFlagSet requiredFeatures() {
       return this.requiredFeatures;
    }
@@ -347,61 +342,62 @@ public class Item implements FeatureElement, ItemLike {
       private DataComponentMap.Builder components;
       @Nullable
       Item craftingRemainingItem;
-      FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
+      FeatureFlagSet requiredFeatures;
 
       public Properties() {
          super();
+         this.requiredFeatures = FeatureFlags.VANILLA_SET;
       }
 
-      public Item.Properties food(FoodProperties var1) {
+      public Properties food(FoodProperties var1) {
          return this.component(DataComponents.FOOD, var1);
       }
 
-      public Item.Properties stacksTo(int var1) {
+      public Properties stacksTo(int var1) {
          return this.component(DataComponents.MAX_STACK_SIZE, var1);
       }
 
-      public Item.Properties durability(int var1) {
+      public Properties durability(int var1) {
          this.component(DataComponents.MAX_DAMAGE, var1);
          this.component(DataComponents.MAX_STACK_SIZE, 1);
          this.component(DataComponents.DAMAGE, 0);
          return this;
       }
 
-      public Item.Properties craftRemainder(Item var1) {
+      public Properties craftRemainder(Item var1) {
          this.craftingRemainingItem = var1;
          return this;
       }
 
-      public Item.Properties rarity(Rarity var1) {
+      public Properties rarity(Rarity var1) {
          return this.component(DataComponents.RARITY, var1);
       }
 
-      public Item.Properties fireResistant() {
+      public Properties fireResistant() {
          return this.component(DataComponents.FIRE_RESISTANT, Unit.INSTANCE);
       }
 
-      public Item.Properties requiredFeatures(FeatureFlag... var1) {
+      public Properties requiredFeatures(FeatureFlag... var1) {
          this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
          return this;
       }
 
-      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
+      public <T> Properties component(DataComponentType<T> var1, T var2) {
          if (this.components == null) {
             this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
          }
 
-         this.components.set(var1, (T)var2);
+         this.components.set(var1, var2);
          return this;
       }
 
-      public Item.Properties attributes(ItemAttributeModifiers var1) {
+      public Properties attributes(ItemAttributeModifiers var1) {
          return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
       }
 
       DataComponentMap buildAndValidateComponents() {
          DataComponentMap var1 = this.buildComponents();
-         if (var1.has(DataComponents.DAMAGE) && var1.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+         if (var1.has(DataComponents.DAMAGE) && (Integer)var1.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
             throw new IllegalStateException("Item cannot have both durability and be stackable");
          } else {
             return var1;
@@ -410,6 +406,65 @@ public class Item implements FeatureElement, ItemLike {
 
       private DataComponentMap buildComponents() {
          return this.components == null ? DataComponents.COMMON_ITEM_COMPONENTS : (DataComponentMap)COMPONENT_INTERNER.intern(this.components.build());
+      }
+   }
+
+   public interface TooltipContext {
+      TooltipContext EMPTY = new TooltipContext() {
+         @Nullable
+         public HolderLookup.Provider registries() {
+            return null;
+         }
+
+         public float tickRate() {
+            return 20.0F;
+         }
+
+         @Nullable
+         public MapItemSavedData mapData(MapId var1) {
+            return null;
+         }
+      };
+
+      @Nullable
+      HolderLookup.Provider registries();
+
+      float tickRate();
+
+      @Nullable
+      MapItemSavedData mapData(MapId var1);
+
+      static TooltipContext of(@Nullable final Level var0) {
+         return var0 == null ? EMPTY : new TooltipContext() {
+            public HolderLookup.Provider registries() {
+               return var0.registryAccess();
+            }
+
+            public float tickRate() {
+               return var0.tickRateManager().tickrate();
+            }
+
+            public MapItemSavedData mapData(MapId var1) {
+               return var0.getMapData(var1);
+            }
+         };
+      }
+
+      static TooltipContext of(final HolderLookup.Provider var0) {
+         return new TooltipContext() {
+            public HolderLookup.Provider registries() {
+               return var0;
+            }
+
+            public float tickRate() {
+               return 20.0F;
+            }
+
+            @Nullable
+            public MapItemSavedData mapData(MapId var1) {
+               return null;
+            }
+         };
       }
    }
 }

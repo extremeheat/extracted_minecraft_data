@@ -26,32 +26,30 @@ public class CompassItem extends Item {
       return var0.dimensionType().natural() ? GlobalPos.of(var0.dimension(), var0.getSharedSpawnPos()) : null;
    }
 
-   @Override
    public boolean isFoil(ItemStack var1) {
       return var1.has(DataComponents.LODESTONE_TRACKER) || super.isFoil(var1);
    }
 
-   @Override
    public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
       if (var2 instanceof ServerLevel var6) {
-         LodestoneTracker var7 = var1.get(DataComponents.LODESTONE_TRACKER);
+         LodestoneTracker var7 = (LodestoneTracker)var1.get(DataComponents.LODESTONE_TRACKER);
          if (var7 != null) {
-            LodestoneTracker var8 = var7.tick((ServerLevel)var6);
+            LodestoneTracker var8 = var7.tick(var6);
             if (var8 != var7) {
                var1.set(DataComponents.LODESTONE_TRACKER, var8);
             }
          }
       }
+
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
       if (!var3.getBlockState(var2).is(Blocks.LODESTONE)) {
          return super.useOn(var1);
       } else {
-         var3.playSound(null, var2, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
+         var3.playSound((Player)null, (BlockPos)var2, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
          Player var4 = var1.getPlayer();
          ItemStack var5 = var1.getItemInHand();
          boolean var6 = !var4.hasInfiniteMaterials() && var5.getCount() == 1;
@@ -71,7 +69,6 @@ public class CompassItem extends Item {
       }
    }
 
-   @Override
    public String getDescriptionId(ItemStack var1) {
       return var1.has(DataComponents.LODESTONE_TRACKER) ? "item.minecraft.lodestone_compass" : super.getDescriptionId(var1);
    }

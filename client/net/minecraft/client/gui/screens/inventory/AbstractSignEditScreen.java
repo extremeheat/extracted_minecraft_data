@@ -41,89 +41,79 @@ public abstract class AbstractSignEditScreen extends Screen {
       this.text = var1.getText(var2);
       this.isFrontText = var2;
       this.woodType = SignBlock.getWoodType(var1.getBlockState().getBlock());
-      this.messages = IntStream.range(0, 4).mapToObj(var2x -> this.text.getMessage(var2x, var3)).map(Component::getString).toArray(var0 -> new String[var0]);
+      this.messages = (String[])IntStream.range(0, 4).mapToObj((var2x) -> {
+         return this.text.getMessage(var2x, var3);
+      }).map(Component::getString).toArray((var0) -> {
+         return new String[var0];
+      });
    }
 
-   @Override
    protected void init() {
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1 -> this.onDone()).bounds(this.width / 2 - 100, this.height / 4 + 144, 200, 20).build()
-      );
-      this.signField = new TextFieldHelper(
-         () -> this.messages[this.line],
-         this::setMessage,
-         TextFieldHelper.createClipboardGetter(this.minecraft),
-         TextFieldHelper.createClipboardSetter(this.minecraft),
-         var1 -> this.minecraft.font.width(var1) <= this.sign.getMaxTextLineWidth()
-      );
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
+         this.onDone();
+      }).bounds(this.width / 2 - 100, this.height / 4 + 144, 200, 20).build());
+      this.signField = new TextFieldHelper(() -> {
+         return this.messages[this.line];
+      }, this::setMessage, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), (var1) -> {
+         return this.minecraft.font.width(var1) <= this.sign.getMaxTextLineWidth();
+      });
    }
 
-   @Override
    public void tick() {
       ++this.frame;
       if (!this.isValid()) {
          this.onDone();
       }
+
    }
 
    private boolean isValid() {
-      return this.minecraft != null
-         && this.minecraft.player != null
-         && !this.sign.isRemoved()
-         && !this.sign.playerIsTooFarAwayToEdit(this.minecraft.player.getUUID());
+      return this.minecraft != null && this.minecraft.player != null && !this.sign.isRemoved() && !this.sign.playerIsTooFarAwayToEdit(this.minecraft.player.getUUID());
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 265) {
          this.line = this.line - 1 & 3;
          this.signField.setCursorToEnd();
          return true;
-      } else if (var1 == 264 || var1 == 257 || var1 == 335) {
+      } else if (var1 != 264 && var1 != 257 && var1 != 335) {
+         return this.signField.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
+      } else {
          this.line = this.line + 1 & 3;
          this.signField.setCursorToEnd();
          return true;
-      } else {
-         return this.signField.keyPressed(var1) ? true : super.keyPressed(var1, var2, var3);
       }
    }
 
-   @Override
    public boolean charTyped(char var1, int var2) {
       this.signField.charTyped(var1);
       return true;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       Lighting.setupForFlatItems();
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 40, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 40, 16777215);
       this.renderSign(var1);
       Lighting.setupFor3DItems();
    }
 
-   @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
    }
 
-   @Override
    public void onClose() {
       this.onDone();
    }
 
-   @Override
    public void removed() {
       ClientPacketListener var1 = this.minecraft.getConnection();
       if (var1 != null) {
-         var1.send(
-            new ServerboundSignUpdatePacket(this.sign.getBlockPos(), this.isFrontText, this.messages[0], this.messages[1], this.messages[2], this.messages[3])
-         );
+         var1.send(new ServerboundSignUpdatePacket(this.sign.getBlockPos(), this.isFrontText, this.messages[0], this.messages[1], this.messages[2], this.messages[3]));
       }
+
    }
 
-   @Override
    public boolean isPauseScreen() {
       return false;
    }
@@ -158,18 +148,23 @@ public abstract class AbstractSignEditScreen extends Screen {
       int var7 = 4 * this.sign.getTextLineHeight() / 2;
       int var8 = this.line * this.sign.getTextLineHeight() - var7;
 
-      for(int var9 = 0; var9 < this.messages.length; ++var9) {
-         String var10 = this.messages[var9];
+      int var9;
+      String var10;
+      int var11;
+      int var12;
+      int var13;
+      for(var9 = 0; var9 < this.messages.length; ++var9) {
+         var10 = this.messages[var9];
          if (var10 != null) {
             if (this.font.isBidirectional()) {
                var10 = this.font.bidirectionalShaping(var10);
             }
 
-            int var11 = -this.font.width(var10) / 2;
+            var11 = -this.font.width(var10) / 2;
             var1.drawString(this.font, var10, var11, var9 * this.sign.getTextLineHeight() - var7, var3, false);
             if (var9 == this.line && var5 >= 0 && var4) {
-               int var12 = this.font.width(var10.substring(0, Math.max(Math.min(var5, var10.length()), 0)));
-               int var13 = var12 - this.font.width(var10) / 2;
+               var12 = this.font.width(var10.substring(0, Math.max(Math.min(var5, var10.length()), 0)));
+               var13 = var12 - this.font.width(var10) / 2;
                if (var5 >= var10.length()) {
                   var1.drawString(this.font, "_", var13, var8, var3, false);
                }
@@ -177,26 +172,27 @@ public abstract class AbstractSignEditScreen extends Screen {
          }
       }
 
-      for(int var19 = 0; var19 < this.messages.length; ++var19) {
-         String var20 = this.messages[var19];
-         if (var20 != null && var19 == this.line && var5 >= 0) {
-            int var21 = this.font.width(var20.substring(0, Math.max(Math.min(var5, var20.length()), 0)));
-            int var22 = var21 - this.font.width(var20) / 2;
-            if (var4 && var5 < var20.length()) {
-               var1.fill(var22, var8 - 1, var22 + 1, var8 + this.sign.getTextLineHeight(), 0xFF000000 | var3);
+      for(var9 = 0; var9 < this.messages.length; ++var9) {
+         var10 = this.messages[var9];
+         if (var10 != null && var9 == this.line && var5 >= 0) {
+            var11 = this.font.width(var10.substring(0, Math.max(Math.min(var5, var10.length()), 0)));
+            var12 = var11 - this.font.width(var10) / 2;
+            if (var4 && var5 < var10.length()) {
+               var1.fill(var12, var8 - 1, var12 + 1, var8 + this.sign.getTextLineHeight(), -16777216 | var3);
             }
 
             if (var6 != var5) {
-               int var23 = Math.min(var5, var6);
+               var13 = Math.min(var5, var6);
                int var14 = Math.max(var5, var6);
-               int var15 = this.font.width(var20.substring(0, var23)) - this.font.width(var20) / 2;
-               int var16 = this.font.width(var20.substring(0, var14)) - this.font.width(var20) / 2;
+               int var15 = this.font.width(var10.substring(0, var13)) - this.font.width(var10) / 2;
+               int var16 = this.font.width(var10.substring(0, var14)) - this.font.width(var10) / 2;
                int var17 = Math.min(var15, var16);
                int var18 = Math.max(var15, var16);
                var1.fill(RenderType.guiTextHighlight(), var17, var8, var18, var8 + this.sign.getTextLineHeight(), -16776961);
             }
          }
       }
+
    }
 
    private void setMessage(String var1) {
@@ -206,6 +202,6 @@ public abstract class AbstractSignEditScreen extends Screen {
    }
 
    private void onDone() {
-      this.minecraft.setScreen(null);
+      this.minecraft.setScreen((Screen)null);
    }
 }

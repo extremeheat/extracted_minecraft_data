@@ -21,6 +21,6 @@ public class GuardedSerializer {
 
    @Nullable
    public <T extends ReflectionBasedSerialization> T fromJson(String var1, Class<T> var2) {
-      return (T)this.gson.fromJson(var1, var2);
+      return (ReflectionBasedSerialization)this.gson.fromJson(var1, var2);
    }
 }

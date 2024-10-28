@@ -23,16 +23,15 @@ public class MobSensor<T extends LivingEntity> extends Sensor<T> {
       this.memoryTimeToLive = var5;
    }
 
-   @Override
    protected void doTick(ServerLevel var1, T var2) {
-      if (!this.readyTest.test((T)var2)) {
-         this.clearMemory((T)var2);
+      if (!this.readyTest.test(var2)) {
+         this.clearMemory(var2);
       } else {
-         this.checkForMobsNearby((T)var2);
+         this.checkForMobsNearby(var2);
       }
+
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return Set.of(MemoryModuleType.NEAREST_LIVING_ENTITIES);
    }
@@ -40,10 +39,13 @@ public class MobSensor<T extends LivingEntity> extends Sensor<T> {
    public void checkForMobsNearby(T var1) {
       Optional var2 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
       if (!var2.isEmpty()) {
-         boolean var3 = ((List)var2.get()).stream().anyMatch(var2x -> this.mobTest.test((T)var1, var2x));
+         boolean var3 = ((List)var2.get()).stream().anyMatch((var2x) -> {
+            return this.mobTest.test(var1, var2x);
+         });
          if (var3) {
-            this.mobDetected((T)var1);
+            this.mobDetected(var1);
          }
+
       }
    }
 

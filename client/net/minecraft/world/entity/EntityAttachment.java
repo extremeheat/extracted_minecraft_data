@@ -9,9 +9,9 @@ public enum EntityAttachment {
    NAME_TAG(EntityAttachment.Fallback.AT_HEIGHT),
    WARDEN_CHEST(EntityAttachment.Fallback.AT_CENTER);
 
-   private final EntityAttachment.Fallback fallback;
+   private final Fallback fallback;
 
-   private EntityAttachment(EntityAttachment.Fallback var3) {
+   private EntityAttachment(Fallback var3) {
       this.fallback = var3;
    }
 
@@ -19,11 +19,22 @@ public enum EntityAttachment {
       return this.fallback.create(var1, var2);
    }
 
+   // $FF: synthetic method
+   private static EntityAttachment[] $values() {
+      return new EntityAttachment[]{PASSENGER, VEHICLE, NAME_TAG, WARDEN_CHEST};
+   }
+
    public interface Fallback {
       List<Vec3> ZERO = List.of(Vec3.ZERO);
-      EntityAttachment.Fallback AT_FEET = (var0, var1) -> ZERO;
-      EntityAttachment.Fallback AT_HEIGHT = (var0, var1) -> List.of(new Vec3(0.0, (double)var1, 0.0));
-      EntityAttachment.Fallback AT_CENTER = (var0, var1) -> List.of(new Vec3(0.0, (double)var1 / 2.0, 0.0));
+      Fallback AT_FEET = (var0, var1) -> {
+         return ZERO;
+      };
+      Fallback AT_HEIGHT = (var0, var1) -> {
+         return List.of(new Vec3(0.0, (double)var1, 0.0));
+      };
+      Fallback AT_CENTER = (var0, var1) -> {
+         return List.of(new Vec3(0.0, (double)var1 / 2.0, 0.0));
+      };
 
       List<Vec3> create(float var1, float var2);
    }

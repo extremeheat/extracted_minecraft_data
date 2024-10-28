@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,12 +32,13 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.world.level.storage.LevelSummary;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -91,11 +94,14 @@ public class RealmsUploadScreen extends RealmsScreen {
       this.narrationRateLimiter = RateLimiter.create(0.10000000149011612);
    }
 
-   @Override
    public void init() {
-      this.backButton = this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onBack()).build());
+      this.backButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
+         this.onBack();
+      }).build());
       this.backButton.visible = false;
-      this.cancelButton = this.layout.addToFooter(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onCancel()).build());
+      this.cancelButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
+         this.onCancel();
+      }).build());
       if (!this.uploadStarted) {
          if (this.lastScreen.slot == -1) {
             this.uploadStarted = true;
@@ -114,17 +120,18 @@ public class RealmsUploadScreen extends RealmsScreen {
                      this.upload();
                   });
                }
+
             }));
-            this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, var1.toArray(new LongRunningTask[0])));
+            this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, (LongRunningTask[])var1.toArray(new LongRunningTask[0])));
          }
       }
 
-      this.layout.visitWidgets(var1x -> {
+      this.layout.visitWidgets((var1x) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
    }
@@ -138,7 +145,6 @@ public class RealmsUploadScreen extends RealmsScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
          if (this.showDots) {
@@ -153,20 +159,16 @@ public class RealmsUploadScreen extends RealmsScreen {
       }
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      if (!this.uploadFinished
-         && this.uploadStatus.bytesWritten != 0L
-         && this.uploadStatus.bytesWritten == this.uploadStatus.totalBytes
-         && this.cancelButton != null) {
+      if (!this.uploadFinished && this.uploadStatus.bytesWritten != 0L && this.uploadStatus.bytesWritten == this.uploadStatus.totalBytes && this.cancelButton != null) {
          this.status = VERIFYING_TEXT;
          this.cancelButton.active = false;
       }
 
-      var1.drawCenteredString(this.font, this.status, this.width / 2, 50, -1);
+      var1.drawCenteredString(this.font, (Component)this.status, this.width / 2, 50, -1);
       if (this.showDots) {
-         var1.drawString(this.font, DOTS[this.tickCount / 10 % DOTS.length], this.width / 2 + this.font.width(this.status) / 2 + 5, 50, -1, false);
+         var1.drawString(this.font, (String)DOTS[this.tickCount / 10 % DOTS.length], this.width / 2 + this.font.width((FormattedText)this.status) / 2 + 5, 50, -1, false);
       }
 
       if (this.uploadStatus.bytesWritten != 0L && !this.cancelled) {
@@ -180,6 +182,7 @@ public class RealmsUploadScreen extends RealmsScreen {
             var1.drawCenteredString(this.font, var5[var6], this.width / 2, 110 + 12 * var6, -65536);
          }
       }
+
    }
 
    private void drawProgressBar(GuiGraphics var1) {
@@ -189,7 +192,7 @@ public class RealmsUploadScreen extends RealmsScreen {
       int var5 = var4 + (int)Math.round(200.0 * var2);
       var1.fill(var4 - 1, 79, var5 + 1, 96, -1);
       var1.fill(var4, 80, var5, 95, -8355712);
-      var1.drawCenteredString(this.font, Component.translatable("mco.upload.percent", this.progress), this.width / 2, 84, -1);
+      var1.drawCenteredString(this.font, (Component)Component.translatable("mco.upload.percent", this.progress), this.width / 2, 84, -1);
    }
 
    private void drawUploadSpeed(GuiGraphics var1) {
@@ -209,6 +212,7 @@ public class RealmsUploadScreen extends RealmsScreen {
       } else {
          this.drawUploadSpeed0(var1, this.bytesPersSecond);
       }
+
    }
 
    private void drawUploadSpeed0(GuiGraphics var1, long var2) {
@@ -216,11 +220,11 @@ public class RealmsUploadScreen extends RealmsScreen {
       if (var2 > 0L && var4 != null) {
          int var5 = this.font.width(var4);
          String var6 = "(" + Unit.humanReadable(var2) + "/s)";
-         var1.drawString(this.font, var6, this.width / 2 + var5 / 2 + 15, 84, -1, false);
+         var1.drawString(this.font, (String)var6, this.width / 2 + var5 / 2 + 15, 84, -1, false);
       }
+
    }
 
-   @Override
    public void tick() {
       super.tick();
       ++this.tickCount;
@@ -228,6 +232,7 @@ public class RealmsUploadScreen extends RealmsScreen {
          Component var1 = this.createProgressNarrationMessage();
          this.minecraft.getNarrator().sayNow(var1);
       }
+
    }
 
    private Component createProgressNarrationMessage() {
@@ -242,152 +247,141 @@ public class RealmsUploadScreen extends RealmsScreen {
          var1.addAll(Arrays.asList(var2));
       }
 
-      return CommonComponents.joinLines(var1);
+      return CommonComponents.joinLines((Collection)var1);
    }
 
    private void upload() {
-      new Thread(
-            () -> {
-               File var1 = null;
-               RealmsClient var2 = RealmsClient.create();
-      
+      (new Thread(() -> {
+         File var1 = null;
+         RealmsClient var2 = RealmsClient.create();
+
+         try {
+            if (!UPLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
+               this.status = Component.translatable("mco.upload.close.failure");
+               return;
+            }
+
+            UploadInfo var3 = null;
+
+            for(int var4 = 0; var4 < 20; ++var4) {
                try {
-                  Object var3;
-                  try {
-                     if (!UPLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
-                        this.status = Component.translatable("mco.upload.close.failure");
-                     } else {
-                        var3 = null;
-      
-                        File var4;
-                        for(var4 = 0; var4 < 20; ++var4) {
-                           try {
-                              if (this.cancelled) {
-                                 this.uploadCancelled();
-                                 return;
-                              }
-      
-                              var3 = var2.requestUploadInfo(this.realmId, UploadTokenCache.get(this.realmId));
-                              if (var3 != null) {
-                                 break;
-                              }
-                           } catch (RetryCallException var18) {
-                              Thread.sleep((long)(var18.delaySeconds * 1000));
-                           }
-                        }
-      
-                        if (var3 == null) {
-                           this.status = Component.translatable("mco.upload.close.failure");
-                        } else {
-                           UploadTokenCache.put(this.realmId, ((UploadInfo)var3).getToken());
-                           if (!((UploadInfo)var3).isWorldClosed()) {
-                              this.status = Component.translatable("mco.upload.close.failure");
-                           } else if (this.cancelled) {
-                              this.uploadCancelled();
-                           } else {
-                              var4 = new File(this.minecraft.gameDirectory.getAbsolutePath(), "saves");
-                              var1 = this.tarGzipArchive(new File(var4, this.selectedLevel.getLevelId()));
-                              if (this.cancelled) {
-                                 this.uploadCancelled();
-                              } else if (this.verify(var1)) {
-                                 this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
-                                 FileUpload var23 = new FileUpload(
-                                    var1,
-                                    this.realmId,
-                                    this.slotId,
-                                    (UploadInfo)var3,
-                                    this.minecraft.getUser(),
-                                    SharedConstants.getCurrentVersion().getName(),
-                                    this.selectedLevel.levelVersion().minecraftVersionName(),
-                                    this.uploadStatus
-                                 );
-                                 var23.upload(var1x -> {
-                                    if (var1x.statusCode >= 200 && var1x.statusCode < 300) {
-                                       this.uploadFinished = true;
-                                       this.status = Component.translatable("mco.upload.done");
-                                       if (this.backButton != null) {
-                                          this.backButton.setMessage(CommonComponents.GUI_DONE);
-                                       }
-      
-                                       UploadTokenCache.invalidate(this.realmId);
-                                    } else if (var1x.statusCode == 400 && var1x.errorMessage != null) {
-                                       this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.errorMessage));
-                                    } else {
-                                       this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.statusCode));
-                                    }
-                                 });
-      
-                                 while(!var23.isFinished()) {
-                                    if (this.cancelled) {
-                                       var23.cancel();
-                                       this.uploadCancelled();
-                                       return;
-                                    }
-      
-                                    try {
-                                       Thread.sleep(500L);
-                                    } catch (InterruptedException var17) {
-                                       LOGGER.error("Failed to check Realms file upload status");
-                                    }
-                                 }
-                              } else {
-                                 long var5 = var1.length();
-                                 Unit var7 = Unit.getLargest(var5);
-                                 Unit var8 = Unit.getLargest(5368709120L);
-                                 if (Unit.humanReadable(var5, var7).equals(Unit.humanReadable(5368709120L, var8)) && var7 != Unit.B) {
-                                    Unit var9 = Unit.values()[var7.ordinal() - 1];
-                                    this.setErrorMessage(
-                                       Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()),
-                                       Component.translatable(
-                                          "mco.upload.size.failure.line2", Unit.humanReadable(var5, var9), Unit.humanReadable(5368709120L, var9)
-                                       )
-                                    );
-                                 } else {
-                                    this.setErrorMessage(
-                                       Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()),
-                                       Component.translatable(
-                                          "mco.upload.size.failure.line2", Unit.humanReadable(var5, var7), Unit.humanReadable(5368709120L, var8)
-                                       )
-                                    );
-                                 }
-                              }
-                           }
-                        }
-                     }
-                  } catch (IOException var19) {
-                     var3 = var19;
-                     this.setErrorMessage(Component.translatable("mco.upload.failed", var19.getMessage()));
-                  } catch (RealmsServiceException var20) {
-                     var3 = var20;
-                     this.setErrorMessage(Component.translatable("mco.upload.failed", var20.realmsError.errorMessage()));
-                  } catch (InterruptedException var21) {
-                     var3 = var21;
-                     LOGGER.error("Could not acquire upload lock");
-                  }
-               } finally {
-                  this.uploadFinished = true;
-                  if (UPLOAD_LOCK.isHeldByCurrentThread()) {
-                     UPLOAD_LOCK.unlock();
-                     this.showDots = false;
-                     if (this.backButton != null) {
-                        this.backButton.visible = true;
-                     }
-      
-                     if (this.cancelButton != null) {
-                        this.cancelButton.visible = false;
-                     }
-      
-                     if (var1 != null) {
-                        LOGGER.debug("Deleting file {}", var1.getAbsolutePath());
-                        var1.delete();
-                     }
-                  } else {
+                  if (this.cancelled) {
+                     this.uploadCancelled();
                      return;
                   }
+
+                  var3 = var2.requestUploadInfo(this.realmId, UploadTokenCache.get(this.realmId));
+                  if (var3 != null) {
+                     break;
+                  }
+               } catch (RetryCallException var18) {
+                  Thread.sleep((long)(var18.delaySeconds * 1000));
                }
             }
-         )
-         .start();
+
+            if (var3 == null) {
+               this.status = Component.translatable("mco.upload.close.failure");
+               return;
+            }
+
+            UploadTokenCache.put(this.realmId, var3.getToken());
+            if (!var3.isWorldClosed()) {
+               this.status = Component.translatable("mco.upload.close.failure");
+               return;
+            }
+
+            if (this.cancelled) {
+               this.uploadCancelled();
+               return;
+            }
+
+            File var23 = new File(this.minecraft.gameDirectory.getAbsolutePath(), "saves");
+            var1 = this.tarGzipArchive(new File(var23, this.selectedLevel.getLevelId()));
+            if (this.cancelled) {
+               this.uploadCancelled();
+               return;
+            }
+
+            if (this.verify(var1)) {
+               this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
+               FileUpload var24 = new FileUpload(var1, this.realmId, this.slotId, var3, this.minecraft.getUser(), SharedConstants.getCurrentVersion().getName(), this.selectedLevel.levelVersion().minecraftVersionName(), this.uploadStatus);
+               var24.upload((var1x) -> {
+                  if (var1x.statusCode >= 200 && var1x.statusCode < 300) {
+                     this.uploadFinished = true;
+                     this.status = Component.translatable("mco.upload.done");
+                     if (this.backButton != null) {
+                        this.backButton.setMessage(CommonComponents.GUI_DONE);
+                     }
+
+                     UploadTokenCache.invalidate(this.realmId);
+                  } else if (var1x.statusCode == 400 && var1x.errorMessage != null) {
+                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.errorMessage));
+                  } else {
+                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.statusCode));
+                  }
+
+               });
+
+               while(!var24.isFinished()) {
+                  if (this.cancelled) {
+                     var24.cancel();
+                     this.uploadCancelled();
+                     return;
+                  }
+
+                  try {
+                     Thread.sleep(500L);
+                  } catch (InterruptedException var17) {
+                     LOGGER.error("Failed to check Realms file upload status");
+                  }
+               }
+
+               return;
+            }
+
+            long var5 = var1.length();
+            Unit var7 = Unit.getLargest(var5);
+            Unit var8 = Unit.getLargest(5368709120L);
+            if (!Unit.humanReadable(var5, var7).equals(Unit.humanReadable(5368709120L, var8)) || var7 == Unit.B) {
+               this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var5, var7), Unit.humanReadable(5368709120L, var8)));
+               return;
+            }
+
+            Unit var9 = Unit.values()[var7.ordinal() - 1];
+            this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var5, var9), Unit.humanReadable(5368709120L, var9)));
+         } catch (IOException var19) {
+            this.setErrorMessage(Component.translatable("mco.upload.failed", var19.getMessage()));
+            return;
+         } catch (RealmsServiceException var20) {
+            this.setErrorMessage(Component.translatable("mco.upload.failed", var20.realmsError.errorMessage()));
+            return;
+         } catch (InterruptedException var21) {
+            LOGGER.error("Could not acquire upload lock");
+            return;
+         } finally {
+            this.uploadFinished = true;
+            if (UPLOAD_LOCK.isHeldByCurrentThread()) {
+               UPLOAD_LOCK.unlock();
+               this.showDots = false;
+               if (this.backButton != null) {
+                  this.backButton.visible = true;
+               }
+
+               if (this.cancelButton != null) {
+                  this.cancelButton.visible = false;
+               }
+
+               if (var1 != null) {
+                  LOGGER.debug("Deleting file {}", var1.getAbsolutePath());
+                  var1.delete();
+               }
+
+            }
+
+            return;
+         }
+
+      })).start();
    }
 
    private void setErrorMessage(Component... var1) {
@@ -418,6 +412,7 @@ public class RealmsUploadScreen extends RealmsScreen {
          if (var2 != null) {
             var2.close();
          }
+
       }
 
       return var4;
@@ -430,20 +425,36 @@ public class RealmsUploadScreen extends RealmsScreen {
          TarArchiveEntry var7 = new TarArchiveEntry(var5, var6);
          var1.putArchiveEntry(var7);
          if (var5.isFile()) {
-            try (FileInputStream var8 = new FileInputStream(var5)) {
-               var8.transferTo(var1);
+            FileInputStream var8 = new FileInputStream(var5);
+
+            try {
+               ((InputStream)var8).transferTo(var1);
+            } catch (Throwable var14) {
+               try {
+                  ((InputStream)var8).close();
+               } catch (Throwable var13) {
+                  var14.addSuppressed(var13);
+               }
+
+               throw var14;
             }
 
+            ((InputStream)var8).close();
             var1.closeArchiveEntry();
          } else {
             var1.closeArchiveEntry();
             File[] var15 = var5.listFiles();
             if (var15 != null) {
-               for(File var12 : var15) {
+               File[] var9 = var15;
+               int var10 = var15.length;
+
+               for(int var11 = 0; var11 < var10; ++var11) {
+                  File var12 = var9[var11];
                   this.addFileToTarGz(var1, var12.getAbsolutePath(), var6 + "/", false);
                }
             }
          }
+
       }
    }
 }

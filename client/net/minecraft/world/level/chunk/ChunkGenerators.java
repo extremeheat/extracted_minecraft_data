@@ -1,6 +1,6 @@
 package net.minecraft.world.level.chunk;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.FlatLevelSource;
@@ -11,9 +11,9 @@ public class ChunkGenerators {
       super();
    }
 
-   public static Codec<? extends ChunkGenerator> bootstrap(Registry<Codec<? extends ChunkGenerator>> var0) {
-      Registry.register(var0, "noise", NoiseBasedChunkGenerator.CODEC);
-      Registry.register(var0, "flat", FlatLevelSource.CODEC);
-      return Registry.register(var0, "debug", DebugLevelSource.CODEC);
+   public static MapCodec<? extends ChunkGenerator> bootstrap(Registry<MapCodec<? extends ChunkGenerator>> var0) {
+      Registry.register(var0, (String)"noise", NoiseBasedChunkGenerator.CODEC);
+      Registry.register(var0, (String)"flat", FlatLevelSource.CODEC);
+      return (MapCodec)Registry.register(var0, (String)"debug", DebugLevelSource.CODEC);
    }
 }

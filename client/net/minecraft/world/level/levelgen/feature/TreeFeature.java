@@ -40,11 +40,15 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    }
 
    private static boolean isVine(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, var0x -> var0x.is(Blocks.VINE));
+      return var0.isStateAtPosition(var1, (var0x) -> {
+         return var0x.is(Blocks.VINE);
+      });
    }
 
    public static boolean isAirOrLeaves(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, var0x -> var0x.isAir() || var0x.is(BlockTags.LEAVES));
+      return var0.isStateAtPosition(var1, (var0x) -> {
+         return var0x.isAir() || var0x.is(BlockTags.LEAVES);
+      });
    }
 
    private static void setBlockKnownShape(LevelWriter var0, BlockPos var1, BlockState var2) {
@@ -52,38 +56,34 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    }
 
    public static boolean validTreePos(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, var0x -> var0x.isAir() || var0x.is(BlockTags.REPLACEABLE_BY_TREES));
+      return var0.isStateAtPosition(var1, (var0x) -> {
+         return var0x.isAir() || var0x.is(BlockTags.REPLACEABLE_BY_TREES);
+      });
    }
 
-   private boolean doPlace(
-      WorldGenLevel var1,
-      RandomSource var2,
-      BlockPos var3,
-      BiConsumer<BlockPos, BlockState> var4,
-      BiConsumer<BlockPos, BlockState> var5,
-      FoliagePlacer.FoliageSetter var6,
-      TreeConfiguration var7
-   ) {
+   private boolean doPlace(WorldGenLevel var1, RandomSource var2, BlockPos var3, BiConsumer<BlockPos, BlockState> var4, BiConsumer<BlockPos, BlockState> var5, FoliagePlacer.FoliageSetter var6, TreeConfiguration var7) {
       int var8 = var7.trunkPlacer.getTreeHeight(var2);
       int var9 = var7.foliagePlacer.foliageHeight(var2, var8, var7);
       int var10 = var8 - var9;
       int var11 = var7.foliagePlacer.foliageRadius(var2, var10);
-      BlockPos var12 = var7.rootPlacer.<BlockPos>map(var2x -> var2x.getTrunkOrigin(var3, var2)).orElse(var3);
+      BlockPos var12 = (BlockPos)var7.rootPlacer.map((var2x) -> {
+         return var2x.getTrunkOrigin(var3, var2);
+      }).orElse(var3);
       int var13 = Math.min(var3.getY(), var12.getY());
       int var14 = Math.max(var3.getY(), var12.getY()) + var8 + 1;
       if (var13 >= var1.getMinBuildHeight() + 1 && var14 <= var1.getMaxBuildHeight()) {
          OptionalInt var15 = var7.minimumSize.minClippedHeight();
          int var16 = this.getMaxFreeTreeHeight(var1, var8, var12, var7);
-         if (var16 >= var8 || !var15.isEmpty() && var16 >= var15.getAsInt()) {
-            if (var7.rootPlacer.isPresent() && !var7.rootPlacer.get().placeRoots(var1, var4, var2, var3, var12, var7)) {
-               return false;
-            } else {
-               List var17 = var7.trunkPlacer.placeTrunk(var1, var5, var2, var16, var12, var7);
-               var17.forEach(var7x -> var7.foliagePlacer.createFoliage(var1, var6, var2, var7, var16, var7x, var9, var11));
-               return true;
-            }
-         } else {
+         if (var16 < var8 && (var15.isEmpty() || var16 < var15.getAsInt())) {
             return false;
+         } else if (var7.rootPlacer.isPresent() && !((RootPlacer)var7.rootPlacer.get()).placeRoots(var1, var4, var2, var3, var12, var7)) {
+            return false;
+         } else {
+            List var17 = var7.trunkPlacer.placeTrunk(var1, var5, var2, var16, var12, var7);
+            var17.forEach((var7x) -> {
+               var7.foliagePlacer.createFoliage(var1, var6, var2, var7, var16, var7x, var9, var11);
+            });
+            return true;
          }
       } else {
          return false;
@@ -109,12 +109,10 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       return var2;
    }
 
-   @Override
    protected void setBlock(LevelWriter var1, BlockPos var2, BlockState var3) {
       setBlockKnownShape(var1, var2, var3);
    }
 
-   @Override
    public final boolean place(FeaturePlaceContext<TreeConfiguration> var1) {
       final WorldGenLevel var2 = var1.level();
       RandomSource var3 = var1.random();
@@ -132,14 +130,12 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          var7.add(var2x.immutable());
          var2.setBlock(var2x, var3x, 19);
       };
-      FoliagePlacer.FoliageSetter var12 = new FoliagePlacer.FoliageSetter() {
-         @Override
+      FoliagePlacer.FoliageSetter var12 = new FoliagePlacer.FoliageSetter(this) {
          public void set(BlockPos var1, BlockState var2x) {
             var8.add(var1.immutable());
             var2.setBlock(var1, var2x, 19);
          }
 
-         @Override
          public boolean isSet(BlockPos var1) {
             return var8.contains(var1);
          }
@@ -152,12 +148,14 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       if (var14 && (!var7.isEmpty() || !var8.isEmpty())) {
          if (!var5.decorators.isEmpty()) {
             TreeDecorator.Context var15 = new TreeDecorator.Context(var2, var13, var3, var7, var8, var6);
-            var5.decorators.forEach(var1x -> var1x.place(var15));
+            var5.decorators.forEach((var1x) -> {
+               var1x.place(var15);
+            });
          }
 
-         return BoundingBox.encapsulatingPositions(Iterables.concat(var6, var7, var8, var9)).map(var4x -> {
-            DiscreteVoxelShape var5xx = updateLeaves(var2, var4x, var7, var9, var6);
-            StructureTemplate.updateShapeAtEdge(var2, 3, var5xx, var4x.minX(), var4x.minY(), var4x.minZ());
+         return (Boolean)BoundingBox.encapsulatingPositions(Iterables.concat(var6, var7, var8, var9)).map((var4x) -> {
+            DiscreteVoxelShape var5 = updateLeaves(var2, var4x, var7, var9, var6);
+            StructureTemplate.updateShapeAtEdge(var2, 3, var5, var4x.minX(), var4x.minY(), var4x.minZ());
             return true;
          }).orElse(false);
       } else {
@@ -174,9 +172,12 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          var7.add(Sets.newHashSet());
       }
 
-      for(BlockPos var9 : Lists.newArrayList(Sets.union(var3, var4))) {
+      Iterator var22 = Lists.newArrayList(Sets.union(var3, var4)).iterator();
+
+      while(var22.hasNext()) {
+         BlockPos var9 = (BlockPos)var22.next();
          if (var1.isInside(var9)) {
-            var5.fill(var9.getX() - var1.minX(), var9.getY() - var1.minY(), var9.getZ() - var1.minZ());
+            ((DiscreteVoxelShape)var5).fill(var9.getX() - var1.minX(), var9.getY() - var1.minY(), var9.getZ() - var1.minZ());
          }
       }
 
@@ -196,18 +197,21 @@ public class TreeFeature extends Feature<TreeConfiguration> {
             if (var1.isInside(var11)) {
                if (var24 != 0) {
                   BlockState var12 = var0.getBlockState(var11);
-                  setBlockKnownShape(var0, var11, var12.setValue(BlockStateProperties.DISTANCE, Integer.valueOf(var24)));
+                  setBlockKnownShape(var0, var11, (BlockState)var12.setValue(BlockStateProperties.DISTANCE, var24));
                }
 
-               var5.fill(var11.getX() - var1.minX(), var11.getY() - var1.minY(), var11.getZ() - var1.minZ());
+               ((DiscreteVoxelShape)var5).fill(var11.getX() - var1.minX(), var11.getY() - var1.minY(), var11.getZ() - var1.minZ());
+               Direction[] var25 = Direction.values();
+               int var13 = var25.length;
 
-               for(Direction var15 : Direction.values()) {
-                  var23.setWithOffset(var11, var15);
+               for(int var14 = 0; var14 < var13; ++var14) {
+                  Direction var15 = var25[var14];
+                  var23.setWithOffset(var11, (Direction)var15);
                   if (var1.isInside(var23)) {
                      int var16 = var23.getX() - var1.minX();
                      int var17 = var23.getY() - var1.minY();
                      int var18 = var23.getZ() - var1.minZ();
-                     if (!var5.isFull(var16, var17, var18)) {
+                     if (!((DiscreteVoxelShape)var5).isFull(var16, var17, var18)) {
                         BlockState var19 = var0.getBlockState(var23);
                         OptionalInt var20 = LeavesBlock.getOptionalDistanceAt(var19);
                         if (!var20.isEmpty()) {

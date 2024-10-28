@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -15,9 +16,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
@@ -32,7 +35,9 @@ import net.minecraft.world.phys.HitResult;
 public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplier {
    public static final double SPLASH_RANGE = 4.0;
    private static final double SPLASH_RANGE_SQ = 16.0;
-   public static final Predicate<LivingEntity> WATER_SENSITIVE_OR_ON_FIRE = var0 -> var0.isSensitiveToWater() || var0.isOnFire();
+   public static final Predicate<LivingEntity> WATER_SENSITIVE_OR_ON_FIRE = (var0) -> {
+      return var0.isSensitiveToWater() || var0.isOnFire();
+   };
 
    public ThrownPotion(EntityType<? extends ThrownPotion> var1, Level var2) {
       super(var1, var2);
@@ -46,17 +51,14 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       super(EntityType.POTION, var2, var4, var6, var1);
    }
 
-   @Override
    protected Item getDefaultItem() {
       return Items.SPLASH_POTION;
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.05;
    }
 
-   @Override
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
       if (!this.level().isClientSide) {
@@ -64,24 +66,26 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
          Direction var3 = var1.getDirection();
          BlockPos var4 = var1.getBlockPos();
          BlockPos var5 = var4.relative(var3);
-         PotionContents var6 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         PotionContents var6 = (PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
          if (var6.is(Potions.WATER)) {
             this.dowseFire(var5);
             this.dowseFire(var5.relative(var3.getOpposite()));
+            Iterator var7 = Direction.Plane.HORIZONTAL.iterator();
 
-            for(Direction var8 : Direction.Plane.HORIZONTAL) {
+            while(var7.hasNext()) {
+               Direction var8 = (Direction)var7.next();
                this.dowseFire(var5.relative(var8));
             }
          }
+
       }
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level().isClientSide) {
          ItemStack var2 = this.getItem();
-         PotionContents var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         PotionContents var3 = (PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
          if (var3.is(Potions.WATER)) {
             this.applyWater();
          } else if (var3.hasEffects()) {
@@ -92,7 +96,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
             }
          }
 
-         int var4 = var3.potion().isPresent() && var3.potion().get().value().hasInstantEffects() ? 2007 : 2002;
+         int var4 = var3.potion().isPresent() && ((Potion)((Holder)var3.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
          this.level().levelEvent(var4, this.blockPosition(), var3.getColor());
          this.discard();
       }
@@ -100,8 +104,11 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
 
    private void applyWater() {
       AABB var1 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
+      List var2 = this.level().getEntitiesOfClass(LivingEntity.class, var1, WATER_SENSITIVE_OR_ON_FIRE);
+      Iterator var3 = var2.iterator();
 
-      for(LivingEntity var4 : this.level().getEntitiesOfClass(LivingEntity.class, var1, WATER_SENSITIVE_OR_ON_FIRE)) {
+      while(var3.hasNext()) {
+         LivingEntity var4 = (LivingEntity)var3.next();
          double var5 = this.distanceToSqr(var4);
          if (var5 < 16.0) {
             if (var4.isSensitiveToWater()) {
@@ -114,9 +121,14 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
          }
       }
 
-      for(Axolotl var9 : this.level().getEntitiesOfClass(Axolotl.class, var1)) {
+      List var7 = this.level().getEntitiesOfClass(Axolotl.class, var1);
+      Iterator var8 = var7.iterator();
+
+      while(var8.hasNext()) {
+         Axolotl var9 = (Axolotl)var8.next();
          var9.rehydrate();
       }
+
    }
 
    private void applySplash(Iterable<MobEffectInstance> var1, @Nullable Entity var2) {
@@ -124,29 +136,44 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       List var4 = this.level().getEntitiesOfClass(LivingEntity.class, var3);
       if (!var4.isEmpty()) {
          Entity var5 = this.getEffectSource();
+         Iterator var6 = var4.iterator();
 
-         for(LivingEntity var7 : var4) {
-            if (var7.isAffectedByPotions()) {
-               double var8 = this.distanceToSqr(var7);
-               if (var8 < 16.0) {
-                  double var10;
-                  if (var7 == var2) {
-                     var10 = 1.0;
-                  } else {
-                     var10 = 1.0 - Math.sqrt(var8) / 4.0;
+         while(true) {
+            LivingEntity var7;
+            double var8;
+            do {
+               do {
+                  if (!var6.hasNext()) {
+                     return;
                   }
 
-                  for(MobEffectInstance var13 : var1) {
-                     Holder var14 = var13.getEffect();
-                     if (((MobEffect)var14.value()).isInstantenous()) {
-                        ((MobEffect)var14.value()).applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
-                     } else {
-                        int var15 = var13.mapDuration(var2x -> (int)(var10 * (double)var2x + 0.5));
-                        MobEffectInstance var16 = new MobEffectInstance(var14, var15, var13.getAmplifier(), var13.isAmbient(), var13.isVisible());
-                        if (!var16.endsWithin(20)) {
-                           var7.addEffect(var16, var5);
-                        }
-                     }
+                  var7 = (LivingEntity)var6.next();
+               } while(!var7.isAffectedByPotions());
+
+               var8 = this.distanceToSqr(var7);
+            } while(!(var8 < 16.0));
+
+            double var10;
+            if (var7 == var2) {
+               var10 = 1.0;
+            } else {
+               var10 = 1.0 - Math.sqrt(var8) / 4.0;
+            }
+
+            Iterator var12 = var1.iterator();
+
+            while(var12.hasNext()) {
+               MobEffectInstance var13 = (MobEffectInstance)var12.next();
+               Holder var14 = var13.getEffect();
+               if (((MobEffect)var14.value()).isInstantenous()) {
+                  ((MobEffect)var14.value()).applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
+               } else {
+                  int var15 = var13.mapDuration((var2x) -> {
+                     return (int)(var10 * (double)var2x + 0.5);
+                  });
+                  MobEffectInstance var16 = new MobEffectInstance(var14, var15, var13.getAmplifier(), var13.isAmbient(), var13.isVisible());
+                  if (!var16.endsWithin(20)) {
+                     var7.addEffect(var16, var5);
                   }
                }
             }
@@ -158,7 +185,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       AreaEffectCloud var2 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
       Entity var4 = this.getOwner();
       if (var4 instanceof LivingEntity var3) {
-         var2.setOwner((LivingEntity)var3);
+         var2.setOwner(var3);
       }
 
       var2.setRadius(3.0F);
@@ -178,11 +205,12 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       if (var2.is(BlockTags.FIRE)) {
          this.level().destroyBlock(var1, false, this);
       } else if (AbstractCandleBlock.isLit(var2)) {
-         AbstractCandleBlock.extinguish(null, var2, this.level(), var1);
+         AbstractCandleBlock.extinguish((Player)null, var2, this.level(), var1);
       } else if (CampfireBlock.isLitCampfire(var2)) {
-         this.level().levelEvent(null, 1009, var1, 0);
+         this.level().levelEvent((Player)null, 1009, var1, 0);
          CampfireBlock.dowse(this.getOwner(), this.level(), var1, var2);
-         this.level().setBlockAndUpdate(var1, var2.setValue(CampfireBlock.LIT, Boolean.valueOf(false)));
+         this.level().setBlockAndUpdate(var1, (BlockState)var2.setValue(CampfireBlock.LIT, false));
       }
+
    }
 }

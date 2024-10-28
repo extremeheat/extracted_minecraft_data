@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 
 public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandBlockPacket> STREAM_CODEC = Packet.codec(
-      ServerboundSetCommandBlockPacket::write, ServerboundSetCommandBlockPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandBlockPacket> STREAM_CODEC = Packet.codec(ServerboundSetCommandBlockPacket::write, ServerboundSetCommandBlockPacket::new);
    private static final int FLAG_TRACK_OUTPUT = 1;
    private static final int FLAG_CONDITIONAL = 2;
    private static final int FLAG_AUTOMATIC = 4;
@@ -35,7 +33,7 @@ public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacket
       super();
       this.pos = var1.readBlockPos();
       this.command = var1.readUtf();
-      this.mode = var1.readEnum(CommandBlockEntity.Mode.class);
+      this.mode = (CommandBlockEntity.Mode)var1.readEnum(CommandBlockEntity.Mode.class);
       byte var2 = var1.readByte();
       this.trackOutput = (var2 & 1) != 0;
       this.conditional = (var2 & 2) != 0;
@@ -62,7 +60,6 @@ public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacket
       var1.writeByte(var2);
    }
 
-   @Override
    public PacketType<ServerboundSetCommandBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_COMMAND_BLOCK;
    }

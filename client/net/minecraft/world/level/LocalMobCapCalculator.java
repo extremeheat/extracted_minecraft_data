@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.server.level.ChunkMap;
@@ -13,7 +14,7 @@ import net.minecraft.world.entity.MobCategory;
 
 public class LocalMobCapCalculator {
    private final Long2ObjectMap<List<ServerPlayer>> playersNearChunk = new Long2ObjectOpenHashMap();
-   private final Map<ServerPlayer, LocalMobCapCalculator.MobCounts> playerMobCounts = Maps.newHashMap();
+   private final Map<ServerPlayer, MobCounts> playerMobCounts = Maps.newHashMap();
    private final ChunkMap chunkMap;
 
    public LocalMobCapCalculator(ChunkMap var1) {
@@ -22,24 +23,37 @@ public class LocalMobCapCalculator {
    }
 
    private List<ServerPlayer> getPlayersNear(ChunkPos var1) {
-      return (List<ServerPlayer>)this.playersNearChunk.computeIfAbsent(var1.toLong(), var2 -> this.chunkMap.getPlayersCloseForSpawning(var1));
+      return (List)this.playersNearChunk.computeIfAbsent(var1.toLong(), (var2) -> {
+         return this.chunkMap.getPlayersCloseForSpawning(var1);
+      });
    }
 
    public void addMob(ChunkPos var1, MobCategory var2) {
-      for(ServerPlayer var4 : this.getPlayersNear(var1)) {
-         this.playerMobCounts.computeIfAbsent(var4, var0 -> new LocalMobCapCalculator.MobCounts()).add(var2);
+      Iterator var3 = this.getPlayersNear(var1).iterator();
+
+      while(var3.hasNext()) {
+         ServerPlayer var4 = (ServerPlayer)var3.next();
+         ((MobCounts)this.playerMobCounts.computeIfAbsent(var4, (var0) -> {
+            return new MobCounts();
+         })).add(var2);
       }
+
    }
 
    public boolean canSpawn(MobCategory var1, ChunkPos var2) {
-      for(ServerPlayer var4 : this.getPlayersNear(var2)) {
-         LocalMobCapCalculator.MobCounts var5 = this.playerMobCounts.get(var4);
-         if (var5 == null || var5.canSpawn(var1)) {
-            return true;
-         }
-      }
+      Iterator var3 = this.getPlayersNear(var2).iterator();
 
-      return false;
+      MobCounts var5;
+      do {
+         if (!var3.hasNext()) {
+            return false;
+         }
+
+         ServerPlayer var4 = (ServerPlayer)var3.next();
+         var5 = (MobCounts)this.playerMobCounts.get(var4);
+      } while(var5 != null && !var5.canSpawn(var1));
+
+      return true;
    }
 
    static class MobCounts {
@@ -50,7 +64,9 @@ public class LocalMobCapCalculator {
       }
 
       public void add(MobCategory var1) {
-         this.counts.computeInt(var1, (var0, var1x) -> var1x == null ? 1 : var1x + 1);
+         this.counts.computeInt(var1, (var0, var1x) -> {
+            return var1x == null ? 1 : var1x + 1;
+         });
       }
 
       public boolean canSpawn(MobCategory var1) {

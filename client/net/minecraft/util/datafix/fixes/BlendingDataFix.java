@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -16,9 +15,7 @@ import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class BlendingDataFix extends DataFix {
    private final String name;
-   private static final Set<String> STATUSES_TO_SKIP_BLENDING = Set.of(
-      "minecraft:empty", "minecraft:structure_starts", "minecraft:structure_references", "minecraft:biomes"
-   );
+   private static final Set<String> STATUSES_TO_SKIP_BLENDING = Set.of("minecraft:empty", "minecraft:structure_starts", "minecraft:structure_references", "minecraft:biomes");
 
    public BlendingDataFix(Schema var1) {
       super(var1, false);
@@ -27,7 +24,11 @@ public class BlendingDataFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.CHUNK);
-      return this.fixTypeEverywhereTyped(this.name, var1, var0 -> var0.update(DSL.remainderFinder(), var0x -> updateChunkTag(var0x, var0x.get("__context"))));
+      return this.fixTypeEverywhereTyped(this.name, var1, (var0) -> {
+         return var0.update(DSL.remainderFinder(), (var0x) -> {
+            return updateChunkTag(var0x, var0x.get("__context"));
+         });
+      });
    }
 
    private static Dynamic<?> updateChunkTag(Dynamic<?> var0, OptionalDynamic<?> var1) {
@@ -52,16 +53,6 @@ public class BlendingDataFix extends DataFix {
    }
 
    private static Dynamic<?> updateBlendingData(Dynamic<?> var0, int var1, int var2) {
-      return var0.set(
-         "blending_data",
-         var0.createMap(
-            Map.of(
-               var0.createString("min_section"),
-               var0.createInt(SectionPos.blockToSectionCoord(var2)),
-               var0.createString("max_section"),
-               var0.createInt(SectionPos.blockToSectionCoord(var2 + var1))
-            )
-         )
-      );
+      return var0.set("blending_data", var0.createMap(Map.of(var0.createString("min_section"), var0.createInt(SectionPos.blockToSectionCoord(var2)), var0.createString("max_section"), var0.createInt(SectionPos.blockToSectionCoord(var2 + var1)))));
    }
 }

@@ -2,7 +2,9 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -12,11 +14,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +26,7 @@ import net.minecraft.server.network.FilteredText;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -39,8 +42,8 @@ public class SignBlockEntity extends BlockEntity {
    private static final int TEXT_LINE_HEIGHT = 10;
    @Nullable
    private UUID playerWhoMayEdit;
-   private SignText frontText = this.createDefaultSignText();
-   private SignText backText = this.createDefaultSignText();
+   private SignText frontText;
+   private SignText backText;
    private boolean isWaxed;
 
    public SignBlockEntity(BlockPos var1, BlockState var2) {
@@ -49,14 +52,14 @@ public class SignBlockEntity extends BlockEntity {
 
    public SignBlockEntity(BlockEntityType var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
+      this.frontText = this.createDefaultSignText();
+      this.backText = this.createDefaultSignText();
    }
 
    protected SignText createDefaultSignText() {
       return new SignText();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean isFacingFrontText(Player var1) {
       Block var3 = this.getBlockState().getBlock();
       if (var3 instanceof SignBlock var2) {
@@ -91,31 +94,45 @@ public class SignBlockEntity extends BlockEntity {
       return 90;
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      SignText.DIRECT_CODEC.encodeStart(var3, this.frontText).resultOrPartial(LOGGER::error).ifPresent(var1x -> var1.put("front_text", var1x));
-      SignText.DIRECT_CODEC.encodeStart(var3, this.backText).resultOrPartial(LOGGER::error).ifPresent(var1x -> var1.put("back_text", var1x));
+      DataResult var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.frontText);
+      Logger var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         var1.put("front_text", var1x);
+      });
+      var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.backText);
+      var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         var1.put("back_text", var1x);
+      });
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      DataResult var10000;
+      Logger var10001;
       if (var1.contains("front_text")) {
-         SignText.DIRECT_CODEC
-            .parse(var3, var1.getCompound("front_text"))
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(var1x -> this.frontText = this.loadLines(var1x));
+         var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("front_text"));
+         var10001 = LOGGER;
+         Objects.requireNonNull(var10001);
+         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+            this.frontText = this.loadLines(var1x);
+         });
       }
 
       if (var1.contains("back_text")) {
-         SignText.DIRECT_CODEC
-            .parse(var3, var1.getCompound("back_text"))
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(var1x -> this.backText = this.loadLines(var1x));
+         var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("back_text"));
+         var10001 = LOGGER;
+         Objects.requireNonNull(var10001);
+         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+            this.backText = this.loadLines(var1x);
+         });
       }
 
       this.isWaxed = var1.getBoolean("is_waxed");
@@ -135,7 +152,7 @@ public class SignBlockEntity extends BlockEntity {
       Level var3 = this.level;
       if (var3 instanceof ServerLevel var2) {
          try {
-            return ComponentUtils.updateForEntity(createCommandSourceStack(null, (Level)var2, this.worldPosition), var1, null, 0);
+            return ComponentUtils.updateForEntity(createCommandSourceStack((Player)null, var2, this.worldPosition), (Component)var1, (Entity)null, 0);
          } catch (CommandSyntaxException var4) {
          }
       }
@@ -145,8 +162,10 @@ public class SignBlockEntity extends BlockEntity {
 
    public void updateSignText(Player var1, boolean var2, List<FilteredText> var3) {
       if (!this.isWaxed() && var1.getUUID().equals(this.getPlayerWhoMayEdit()) && this.level != null) {
-         this.updateText(var3x -> this.setMessages(var1, var3, var3x), var2);
-         this.setAllowedPlayerEditor(null);
+         this.updateText((var3x) -> {
+            return this.setMessages(var1, var3, var3x);
+         }, var2);
+         this.setAllowedPlayerEditor((UUID)null);
          this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
       } else {
          LOGGER.warn("Player {} just tried to change non-editable sign", var1.getName().getString());
@@ -155,7 +174,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean updateText(UnaryOperator<SignText> var1, boolean var2) {
       SignText var3 = this.getText(var2);
-      return this.setText(var1.apply(var3), var2);
+      return this.setText((SignText)var1.apply(var3), var2);
    }
 
    private SignText setMessages(Player var1, List<FilteredText> var2, SignText var3) {
@@ -202,8 +221,11 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean executeClickCommandsIfPresent(Player var1, Level var2, BlockPos var3, boolean var4) {
       boolean var5 = false;
+      Component[] var6 = this.getText(var4).getMessages(var1.isTextFilteringEnabled());
+      int var7 = var6.length;
 
-      for(Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
+      for(int var8 = 0; var8 < var7; ++var8) {
+         Component var9 = var6[var8];
          Style var10 = var9.getStyle();
          ClickEvent var11 = var10.getClickEvent();
          if (var11 != null && var11.getAction() == ClickEvent.Action.RUN_COMMAND) {
@@ -225,12 +247,10 @@ public class SignBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
-   @Override
    public boolean onlyOpCanSetNbt() {
       return true;
    }
@@ -265,7 +285,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean playerIsTooFarAwayToEdit(UUID var1) {
       Player var2 = this.level.getPlayerByUUID(var1);
-      return var2 == null || var2.distanceToSqr((double)this.getBlockPos().getX(), (double)this.getBlockPos().getY(), (double)this.getBlockPos().getZ()) > 64.0;
+      return var2 == null || !var2.canInteractWithBlock(this.getBlockPos(), 4.0);
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, SignBlockEntity var3) {
@@ -273,15 +293,22 @@ public class SignBlockEntity extends BlockEntity {
       if (var4 != null) {
          var3.clearInvalidPlayerWhoMayEdit(var3, var0, var4);
       }
+
    }
 
    private void clearInvalidPlayerWhoMayEdit(SignBlockEntity var1, Level var2, UUID var3) {
       if (var1.playerIsTooFarAwayToEdit(var3)) {
-         var1.setAllowedPlayerEditor(null);
+         var1.setAllowedPlayerEditor((UUID)null);
       }
+
    }
 
    public SoundEvent getSignInteractionFailedSoundEvent() {
       return SoundEvents.WAXED_SIGN_INTERACT_FAIL;
+   }
+
+   // $FF: synthetic method
+   public Packet getUpdatePacket() {
+      return this.getUpdatePacket();
    }
 }

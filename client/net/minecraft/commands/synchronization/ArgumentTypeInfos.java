@@ -72,11 +72,9 @@ public class ArgumentTypeInfos {
       super();
    }
 
-   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> ArgumentTypeInfo<A, T> register(
-      Registry<ArgumentTypeInfo<?, ?>> var0, String var1, Class<? extends A> var2, ArgumentTypeInfo<A, T> var3
-   ) {
+   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> ArgumentTypeInfo<A, T> register(Registry<ArgumentTypeInfo<?, ?>> var0, String var1, Class<? extends A> var2, ArgumentTypeInfo<A, T> var3) {
       BY_CLASS.put(var2, var3);
-      return Registry.register(var0, var1, var3);
+      return (ArgumentTypeInfo)Registry.register(var0, (String)var1, var3);
    }
 
    public static ArgumentTypeInfo<?, ?> bootstrap(Registry<ArgumentTypeInfo<?, ?>> var0) {
@@ -131,9 +129,7 @@ public class ArgumentTypeInfos {
       register(var0, "template_rotation", TemplateRotationArgument.class, SingletonArgumentInfo.contextFree(TemplateRotationArgument::templateRotation));
       register(var0, "heightmap", HeightmapTypeArgument.class, SingletonArgumentInfo.contextFree(HeightmapTypeArgument::heightmap));
       register(var0, "loot_table", ResourceOrIdArgument.LootTableArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootTable));
-      register(
-         var0, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate)
-      );
+      register(var0, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate));
       register(var0, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          register(var0, "test_argument", TestFunctionArgument.class, SingletonArgumentInfo.contextFree(TestFunctionArgument::testFunctionArgument));
@@ -152,7 +148,7 @@ public class ArgumentTypeInfos {
    }
 
    public static <A extends ArgumentType<?>> ArgumentTypeInfo<A, ?> byClass(A var0) {
-      ArgumentTypeInfo var1 = BY_CLASS.get(var0.getClass());
+      ArgumentTypeInfo var1 = (ArgumentTypeInfo)BY_CLASS.get(var0.getClass());
       if (var1 == null) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "Unrecognized argument type %s (%s)", var0, var0.getClass()));
       } else {
@@ -161,6 +157,6 @@ public class ArgumentTypeInfos {
    }
 
    public static <A extends ArgumentType<?>> ArgumentTypeInfo.Template<A> unpack(A var0) {
-      return byClass((A)var0).unpack((A)var0);
+      return byClass(var0).unpack(var0);
    }
 }

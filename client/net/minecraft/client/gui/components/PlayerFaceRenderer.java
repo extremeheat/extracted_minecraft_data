@@ -36,6 +36,7 @@ public class PlayerFaceRenderer {
       if (var5) {
          drawHat(var0, var1, var2, var3, var4, var6);
       }
+
    }
 
    private static void drawHat(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5) {

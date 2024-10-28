@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -52,11 +54,11 @@ public class Ocelot extends Animal {
    public static final double CROUCH_SPEED_MOD = 0.6;
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
-   private static final EntityDataAccessor<Boolean> DATA_TRUSTING = SynchedEntityData.defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> DATA_TRUSTING;
    @Nullable
-   private Ocelot.OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
+   private OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
    @Nullable
-   private Ocelot.OcelotTemptGoal temptGoal;
+   private OcelotTemptGoal temptGoal;
 
    public Ocelot(EntityType<? extends Ocelot> var1, Level var2) {
       super(var1, var2);
@@ -64,7 +66,7 @@ public class Ocelot extends Animal {
    }
 
    boolean isTrusting() {
-      return this.entityData.get(DATA_TRUSTING);
+      return (Boolean)this.entityData.get(DATA_TRUSTING);
    }
 
    private void setTrusting(boolean var1) {
@@ -72,27 +74,25 @@ public class Ocelot extends Animal {
       this.reassessTrustingGoals();
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("Trusting", this.isTrusting());
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setTrusting(var1.getBoolean("Trusting"));
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_TRUSTING, false);
    }
 
-   @Override
    protected void registerGoals() {
-      this.temptGoal = new Ocelot.OcelotTemptGoal(this, 0.6, var0 -> var0.is(ItemTags.OCELOT_FOOD), true);
+      this.temptGoal = new OcelotTemptGoal(this, 0.6, (var0) -> {
+         return var0.is(ItemTags.OCELOT_FOOD);
+      }, true);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(3, this.temptGoal);
       this.goalSelector.addGoal(7, new LeapAtTargetGoal(this, 0.3F));
@@ -100,11 +100,10 @@ public class Ocelot extends Animal {
       this.goalSelector.addGoal(9, new BreedGoal(this, 0.8));
       this.goalSelector.addGoal(10, new WaterAvoidingRandomStrollGoal(this, 0.8, 1.0000001E-5F));
       this.goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 10.0F));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Chicken.class, false));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Turtle.class, 10, false, false, Turtle.BABY_ON_LAND_SELECTOR));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Chicken.class, false));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Turtle.class, 10, false, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
-   @Override
    public void customServerAiStep() {
       if (this.getMoveControl().hasWanted()) {
          double var1 = this.getMoveControl().getSpeedModifier();
@@ -122,9 +121,9 @@ public class Ocelot extends Animal {
          this.setPose(Pose.STANDING);
          this.setSprinting(false);
       }
+
    }
 
-   @Override
    public boolean removeWhenFarAway(double var1) {
       return !this.isTrusting() && this.tickCount > 2400;
    }
@@ -134,22 +133,18 @@ public class Ocelot extends Animal {
    }
 
    @Nullable
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.OCELOT_AMBIENT;
    }
 
-   @Override
    public int getAmbientSoundInterval() {
       return 900;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.OCELOT_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.OCELOT_DEATH;
    }
@@ -158,12 +153,10 @@ public class Ocelot extends Animal {
       return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
    }
 
-   @Override
    public boolean doHurtTarget(Entity var1) {
       return var1.hurt(this.damageSources().mobAttack(this), this.getAttackDamage());
    }
 
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if ((this.temptGoal == null || this.temptGoal.isRunning()) && !this.isTrusting() && this.isFood(var3) && var1.distanceToSqr(this) < 9.0) {
@@ -185,7 +178,6 @@ public class Ocelot extends Animal {
       }
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 41) {
          this.spawnTrustingParticles(true);
@@ -194,6 +186,7 @@ public class Ocelot extends Animal {
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
    private void spawnTrustingParticles(boolean var1) {
@@ -208,25 +201,26 @@ public class Ocelot extends Animal {
          double var8 = this.random.nextGaussian() * 0.02;
          this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
       }
+
    }
 
    protected void reassessTrustingGoals() {
       if (this.ocelotAvoidPlayersGoal == null) {
-         this.ocelotAvoidPlayersGoal = new Ocelot.OcelotAvoidEntityGoal<>(this, Player.class, 16.0F, 0.8, 1.33);
+         this.ocelotAvoidPlayersGoal = new OcelotAvoidEntityGoal(this, Player.class, 16.0F, 0.8, 1.33);
       }
 
       this.goalSelector.removeGoal(this.ocelotAvoidPlayersGoal);
       if (!this.isTrusting()) {
          this.goalSelector.addGoal(4, this.ocelotAvoidPlayersGoal);
       }
+
    }
 
    @Nullable
    public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.OCELOT.create(var1);
+      return (Ocelot)EntityType.OCELOT.create(var1);
    }
 
-   @Override
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.OCELOT_FOOD);
    }
@@ -235,7 +229,6 @@ public class Ocelot extends Animal {
       return var4.nextInt(3) != 0;
    }
 
-   @Override
    public boolean checkSpawnObstruction(LevelReader var1) {
       if (var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox())) {
          BlockPos var2 = this.blockPosition();
@@ -244,7 +237,7 @@ public class Ocelot extends Animal {
          }
 
          BlockState var3 = var1.getBlockState(var2.below());
-         if (var3.is(BlockTags.ANIMALS_SPAWNABLE_ON) || var3.is(BlockTags.LEAVES)) {
+         if (var3.is(Blocks.GRASS_BLOCK) || var3.is(BlockTags.LEAVES)) {
             return true;
          }
       }
@@ -253,7 +246,6 @@ public class Ocelot extends Animal {
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
@@ -262,33 +254,22 @@ public class Ocelot extends Animal {
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
-   @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.5F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
    }
 
-   @Override
    public boolean isSteppingCarefully() {
       return this.isCrouching() || super.isSteppingCarefully();
    }
 
-   static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
-      private final Ocelot ocelot;
+   // $FF: synthetic method
+   @Nullable
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return this.getBreedOffspring(var1, var2);
+   }
 
-      public OcelotAvoidEntityGoal(Ocelot var1, Class<T> var2, float var3, double var4, double var6) {
-         super(var1, var2, var3, var4, var6, EntitySelector.NO_CREATIVE_OR_SPECTATOR::test);
-         this.ocelot = var1;
-      }
-
-      @Override
-      public boolean canUse() {
-         return !this.ocelot.isTrusting() && super.canUse();
-      }
-
-      @Override
-      public boolean canContinueToUse() {
-         return !this.ocelot.isTrusting() && super.canContinueToUse();
-      }
+   static {
+      DATA_TRUSTING = SynchedEntityData.defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class OcelotTemptGoal extends TemptGoal {
@@ -299,9 +280,27 @@ public class Ocelot extends Animal {
          this.ocelot = var1;
       }
 
-      @Override
       protected boolean canScare() {
          return super.canScare() && !this.ocelot.isTrusting();
+      }
+   }
+
+   static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
+      private final Ocelot ocelot;
+
+      public OcelotAvoidEntityGoal(Ocelot var1, Class<T> var2, float var3, double var4, double var6) {
+         Predicate var10006 = EntitySelector.NO_CREATIVE_OR_SPECTATOR;
+         Objects.requireNonNull(var10006);
+         super(var1, var2, var3, var4, var6, var10006::test);
+         this.ocelot = var1;
+      }
+
+      public boolean canUse() {
+         return !this.ocelot.isTrusting() && super.canUse();
+      }
+
+      public boolean canContinueToUse() {
+         return !this.ocelot.isTrusting() && super.canContinueToUse();
       }
    }
 }

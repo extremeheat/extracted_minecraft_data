@@ -35,20 +35,24 @@ public enum Difficulty implements StringRepresentable {
    }
 
    public static Difficulty byId(int var0) {
-      return BY_ID.apply(var0);
+      return (Difficulty)BY_ID.apply(var0);
    }
 
    @Nullable
    public static Difficulty byName(String var0) {
-      return CODEC.byName(var0);
+      return (Difficulty)CODEC.byName(var0);
    }
 
    public String getKey() {
       return this.key;
    }
 
-   @Override
    public String getSerializedName() {
       return this.key;
+   }
+
+   // $FF: synthetic method
+   private static Difficulty[] $values() {
+      return new Difficulty[]{PEACEFUL, EASY, NORMAL, HARD};
    }
 }

@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
-import com.mojang.datafixers.Products.P3;
+import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -16,12 +15,14 @@ public abstract class NoiseBasedStateProvider extends BlockStateProvider {
    protected final float scale;
    protected final NormalNoise noise;
 
-   protected static <P extends NoiseBasedStateProvider> P3<Mu<P>, Long, NormalNoise.NoiseParameters, Float> noiseCodec(Instance<P> var0) {
-      return var0.group(
-         Codec.LONG.fieldOf("seed").forGetter(var0x -> var0x.seed),
-         NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("noise").forGetter(var0x -> var0x.parameters),
-         ExtraCodecs.POSITIVE_FLOAT.fieldOf("scale").forGetter(var0x -> var0x.scale)
-      );
+   protected static <P extends NoiseBasedStateProvider> Products.P3<RecordCodecBuilder.Mu<P>, Long, NormalNoise.NoiseParameters, Float> noiseCodec(RecordCodecBuilder.Instance<P> var0) {
+      return var0.group(Codec.LONG.fieldOf("seed").forGetter((var0x) -> {
+         return var0x.seed;
+      }), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("noise").forGetter((var0x) -> {
+         return var0x.parameters;
+      }), ExtraCodecs.POSITIVE_FLOAT.fieldOf("scale").forGetter((var0x) -> {
+         return var0x.scale;
+      }));
    }
 
    protected NoiseBasedStateProvider(long var1, NormalNoise.NoiseParameters var3, float var4) {

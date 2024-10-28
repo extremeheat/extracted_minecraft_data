@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSetEntityLinkPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetEntityLinkPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetEntityLinkPacket::write, ClientboundSetEntityLinkPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetEntityLinkPacket> STREAM_CODEC = Packet.codec(ClientboundSetEntityLinkPacket::write, ClientboundSetEntityLinkPacket::new);
    private final int sourceId;
    private final int destId;
 
@@ -31,7 +29,6 @@ public class ClientboundSetEntityLinkPacket implements Packet<ClientGamePacketLi
       var1.writeInt(this.destId);
    }
 
-   @Override
    public PacketType<ClientboundSetEntityLinkPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_ENTITY_LINK;
    }

@@ -9,32 +9,32 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
 public class TexturedModel {
-   public static final TexturedModel.Provider CUBE = createDefault(TextureMapping::cube, ModelTemplates.CUBE_ALL);
-   public static final TexturedModel.Provider CUBE_INNER_FACES = createDefault(TextureMapping::cube, ModelTemplates.CUBE_ALL_INNER_FACES);
-   public static final TexturedModel.Provider CUBE_MIRRORED = createDefault(TextureMapping::cube, ModelTemplates.CUBE_MIRRORED_ALL);
-   public static final TexturedModel.Provider COLUMN = createDefault(TextureMapping::column, ModelTemplates.CUBE_COLUMN);
-   public static final TexturedModel.Provider COLUMN_HORIZONTAL = createDefault(TextureMapping::column, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
-   public static final TexturedModel.Provider CUBE_TOP_BOTTOM = createDefault(TextureMapping::cubeBottomTop, ModelTemplates.CUBE_BOTTOM_TOP);
-   public static final TexturedModel.Provider CUBE_TOP = createDefault(TextureMapping::cubeTop, ModelTemplates.CUBE_TOP);
-   public static final TexturedModel.Provider ORIENTABLE_ONLY_TOP = createDefault(TextureMapping::orientableCubeOnlyTop, ModelTemplates.CUBE_ORIENTABLE);
-   public static final TexturedModel.Provider ORIENTABLE = createDefault(TextureMapping::orientableCube, ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM);
-   public static final TexturedModel.Provider CARPET = createDefault(TextureMapping::wool, ModelTemplates.CARPET);
-   public static final TexturedModel.Provider FLOWERBED_1 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_1);
-   public static final TexturedModel.Provider FLOWERBED_2 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_2);
-   public static final TexturedModel.Provider FLOWERBED_3 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_3);
-   public static final TexturedModel.Provider FLOWERBED_4 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_4);
-   public static final TexturedModel.Provider GLAZED_TERRACOTTA = createDefault(TextureMapping::pattern, ModelTemplates.GLAZED_TERRACOTTA);
-   public static final TexturedModel.Provider CORAL_FAN = createDefault(TextureMapping::fan, ModelTemplates.CORAL_FAN);
-   public static final TexturedModel.Provider PARTICLE_ONLY = createDefault(TextureMapping::particle, ModelTemplates.PARTICLE_ONLY);
-   public static final TexturedModel.Provider ANVIL = createDefault(TextureMapping::top, ModelTemplates.ANVIL);
-   public static final TexturedModel.Provider LEAVES = createDefault(TextureMapping::cube, ModelTemplates.LEAVES);
-   public static final TexturedModel.Provider LANTERN = createDefault(TextureMapping::lantern, ModelTemplates.LANTERN);
-   public static final TexturedModel.Provider HANGING_LANTERN = createDefault(TextureMapping::lantern, ModelTemplates.HANGING_LANTERN);
-   public static final TexturedModel.Provider SEAGRASS = createDefault(TextureMapping::defaultTexture, ModelTemplates.SEAGRASS);
-   public static final TexturedModel.Provider COLUMN_ALT = createDefault(TextureMapping::logColumn, ModelTemplates.CUBE_COLUMN);
-   public static final TexturedModel.Provider COLUMN_HORIZONTAL_ALT = createDefault(TextureMapping::logColumn, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
-   public static final TexturedModel.Provider TOP_BOTTOM_WITH_WALL = createDefault(TextureMapping::cubeBottomTopWithWall, ModelTemplates.CUBE_BOTTOM_TOP);
-   public static final TexturedModel.Provider COLUMN_WITH_WALL = createDefault(TextureMapping::columnWithWall, ModelTemplates.CUBE_COLUMN);
+   public static final Provider CUBE;
+   public static final Provider CUBE_INNER_FACES;
+   public static final Provider CUBE_MIRRORED;
+   public static final Provider COLUMN;
+   public static final Provider COLUMN_HORIZONTAL;
+   public static final Provider CUBE_TOP_BOTTOM;
+   public static final Provider CUBE_TOP;
+   public static final Provider ORIENTABLE_ONLY_TOP;
+   public static final Provider ORIENTABLE;
+   public static final Provider CARPET;
+   public static final Provider FLOWERBED_1;
+   public static final Provider FLOWERBED_2;
+   public static final Provider FLOWERBED_3;
+   public static final Provider FLOWERBED_4;
+   public static final Provider GLAZED_TERRACOTTA;
+   public static final Provider CORAL_FAN;
+   public static final Provider PARTICLE_ONLY;
+   public static final Provider ANVIL;
+   public static final Provider LEAVES;
+   public static final Provider LANTERN;
+   public static final Provider HANGING_LANTERN;
+   public static final Provider SEAGRASS;
+   public static final Provider COLUMN_ALT;
+   public static final Provider COLUMN_HORIZONTAL_ALT;
+   public static final Provider TOP_BOTTOM_WITH_WALL;
+   public static final Provider COLUMN_WITH_WALL;
    private final TextureMapping mapping;
    private final ModelTemplate template;
 
@@ -65,12 +65,43 @@ public class TexturedModel {
       return this.template.createWithSuffix(var1, var2, this.mapping, var3);
    }
 
-   private static TexturedModel.Provider createDefault(Function<Block, TextureMapping> var0, ModelTemplate var1) {
-      return var2 -> new TexturedModel((TextureMapping)var0.apply(var2), var1);
+   private static Provider createDefault(Function<Block, TextureMapping> var0, ModelTemplate var1) {
+      return (var2) -> {
+         return new TexturedModel((TextureMapping)var0.apply(var2), var1);
+      };
    }
 
    public static TexturedModel createAllSame(ResourceLocation var0) {
       return new TexturedModel(TextureMapping.cube(var0), ModelTemplates.CUBE_ALL);
+   }
+
+   static {
+      CUBE = createDefault(TextureMapping::cube, ModelTemplates.CUBE_ALL);
+      CUBE_INNER_FACES = createDefault(TextureMapping::cube, ModelTemplates.CUBE_ALL_INNER_FACES);
+      CUBE_MIRRORED = createDefault(TextureMapping::cube, ModelTemplates.CUBE_MIRRORED_ALL);
+      COLUMN = createDefault(TextureMapping::column, ModelTemplates.CUBE_COLUMN);
+      COLUMN_HORIZONTAL = createDefault(TextureMapping::column, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
+      CUBE_TOP_BOTTOM = createDefault(TextureMapping::cubeBottomTop, ModelTemplates.CUBE_BOTTOM_TOP);
+      CUBE_TOP = createDefault(TextureMapping::cubeTop, ModelTemplates.CUBE_TOP);
+      ORIENTABLE_ONLY_TOP = createDefault(TextureMapping::orientableCubeOnlyTop, ModelTemplates.CUBE_ORIENTABLE);
+      ORIENTABLE = createDefault(TextureMapping::orientableCube, ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM);
+      CARPET = createDefault(TextureMapping::wool, ModelTemplates.CARPET);
+      FLOWERBED_1 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_1);
+      FLOWERBED_2 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_2);
+      FLOWERBED_3 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_3);
+      FLOWERBED_4 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_4);
+      GLAZED_TERRACOTTA = createDefault(TextureMapping::pattern, ModelTemplates.GLAZED_TERRACOTTA);
+      CORAL_FAN = createDefault(TextureMapping::fan, ModelTemplates.CORAL_FAN);
+      PARTICLE_ONLY = createDefault(TextureMapping::particle, ModelTemplates.PARTICLE_ONLY);
+      ANVIL = createDefault(TextureMapping::top, ModelTemplates.ANVIL);
+      LEAVES = createDefault(TextureMapping::cube, ModelTemplates.LEAVES);
+      LANTERN = createDefault(TextureMapping::lantern, ModelTemplates.LANTERN);
+      HANGING_LANTERN = createDefault(TextureMapping::lantern, ModelTemplates.HANGING_LANTERN);
+      SEAGRASS = createDefault(TextureMapping::defaultTexture, ModelTemplates.SEAGRASS);
+      COLUMN_ALT = createDefault(TextureMapping::logColumn, ModelTemplates.CUBE_COLUMN);
+      COLUMN_HORIZONTAL_ALT = createDefault(TextureMapping::logColumn, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
+      TOP_BOTTOM_WITH_WALL = createDefault(TextureMapping::cubeBottomTopWithWall, ModelTemplates.CUBE_BOTTOM_TOP);
+      COLUMN_WITH_WALL = createDefault(TextureMapping::columnWithWall, ModelTemplates.CUBE_COLUMN);
    }
 
    @FunctionalInterface
@@ -85,8 +116,10 @@ public class TexturedModel {
          return this.get(var1).createWithSuffix(var1, var2, var3);
       }
 
-      default TexturedModel.Provider updateTexture(Consumer<TextureMapping> var1) {
-         return var2 -> this.get(var2).updateTextures(var1);
+      default Provider updateTexture(Consumer<TextureMapping> var1) {
+         return (var2) -> {
+            return this.get(var2).updateTextures(var1);
+         };
       }
    }
 }

@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.Vec3;
 
 public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
-   private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
+   private final DefaultDispenseItemBehavior defaultDispenseItemBehavior;
    private final Boat.Type type;
    private final boolean isChestBoat;
 
@@ -23,13 +24,13 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
 
    public BoatDispenseItemBehavior(Boat.Type var1, boolean var2) {
       super();
+      this.defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
       this.type = var1;
       this.isChestBoat = var2;
    }
 
-   @Override
    public ItemStack execute(BlockSource var1, ItemStack var2) {
-      Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+      Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
       ServerLevel var4 = var1.level();
       Vec3 var5 = var1.center();
       double var6 = 0.5625 + (double)EntityType.BOAT.getWidth() / 2.0;
@@ -49,7 +50,7 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
       }
 
       Object var17 = this.isChestBoat ? new ChestBoat(var4, var8, var10 + var15, var12) : new Boat(var4, var8, var10 + var15, var12);
-      EntityType.createDefaultStackConfig(var4, var2, null).accept(var17);
+      EntityType.createDefaultStackConfig(var4, var2, (Player)null).accept(var17);
       ((Boat)var17).setVariant(this.type);
       ((Boat)var17).setYRot(var3.toYRot());
       var4.addFreshEntity((Entity)var17);
@@ -57,7 +58,6 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
       return var2;
    }
 
-   @Override
    protected void playSound(BlockSource var1) {
       var1.level().levelEvent(1000, var1.pos(), 0);
    }

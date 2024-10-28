@@ -27,23 +27,18 @@ public abstract class GrowingPlantBlock extends Block {
       this.scheduleFluidTicks = var4;
    }
 
-   @Override
    protected abstract MapCodec<? extends GrowingPlantBlock> codec();
 
    @Nullable
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(this.growthDirection));
-      return !var2.is(this.getHeadBlock()) && !var2.is(this.getBodyBlock())
-         ? this.getStateForPlacement(var1.getLevel())
-         : this.getBodyBlock().defaultBlockState();
+      return !var2.is(this.getHeadBlock()) && !var2.is(this.getBodyBlock()) ? this.getStateForPlacement((LevelAccessor)var1.getLevel()) : this.getBodyBlock().defaultBlockState();
    }
 
    public BlockState getStateForPlacement(LevelAccessor var1) {
       return this.defaultBlockState();
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.relative(this.growthDirection.getOpposite());
       BlockState var5 = var2.getBlockState(var4);
@@ -54,18 +49,17 @@ public abstract class GrowingPlantBlock extends Block {
       }
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
+
    }
 
    protected boolean canAttachTo(BlockState var1) {
       return true;
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shape;
    }

@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -29,12 +30,12 @@ public class DetectedVersion implements WorldVersion {
    private DetectedVersion() {
       super();
       this.id = UUID.randomUUID().toString().replaceAll("-", "");
-      this.name = "24w14potato";
+      this.name = "24w14a";
       this.stable = false;
-      this.worldVersion = new DataVersion(3824, "april2024");
+      this.worldVersion = new DataVersion(3827, "main");
       this.protocolVersion = SharedConstants.getProtocolVersion();
-      this.resourcePackVersion = 30;
-      this.dataPackVersion = 36;
+      this.resourcePackVersion = 31;
+      this.dataPackVersion = 38;
       this.buildTime = new Date();
    }
 
@@ -53,55 +54,86 @@ public class DetectedVersion implements WorldVersion {
 
    public static WorldVersion tryDetectVersion() {
       try {
-         DetectedVersion var2;
-         try (InputStream var0 = DetectedVersion.class.getResourceAsStream("/version.json")) {
-            if (var0 == null) {
-               LOGGER.warn("Missing version information!");
-               return BUILT_IN;
+         InputStream var0 = DetectedVersion.class.getResourceAsStream("/version.json");
+
+         WorldVersion var9;
+         label63: {
+            DetectedVersion var2;
+            try {
+               if (var0 == null) {
+                  LOGGER.warn("Missing version information!");
+                  var9 = BUILT_IN;
+                  break label63;
+               }
+
+               InputStreamReader var1 = new InputStreamReader(var0);
+
+               try {
+                  var2 = new DetectedVersion(GsonHelper.parse((Reader)var1));
+               } catch (Throwable var6) {
+                  try {
+                     var1.close();
+                  } catch (Throwable var5) {
+                     var6.addSuppressed(var5);
+                  }
+
+                  throw var6;
+               }
+
+               var1.close();
+            } catch (Throwable var7) {
+               if (var0 != null) {
+                  try {
+                     var0.close();
+                  } catch (Throwable var4) {
+                     var7.addSuppressed(var4);
+                  }
+               }
+
+               throw var7;
             }
 
-            try (InputStreamReader var1 = new InputStreamReader(var0)) {
-               var2 = new DetectedVersion(GsonHelper.parse(var1));
+            if (var0 != null) {
+               var0.close();
             }
+
+            return var2;
          }
 
-         return var2;
+         if (var0 != null) {
+            var0.close();
+         }
+
+         return var9;
       } catch (JsonParseException | IOException var8) {
          throw new IllegalStateException("Game version information is corrupt", var8);
       }
    }
 
-   @Override
    public String getId() {
       return this.id;
    }
 
-   @Override
    public String getName() {
       return this.name;
    }
 
-   @Override
    public DataVersion getDataVersion() {
       return this.worldVersion;
    }
 
-   @Override
    public int getProtocolVersion() {
       return this.protocolVersion;
    }
 
-   @Override
    public int getPackVersion(PackType var1) {
       return var1 == PackType.SERVER_DATA ? this.dataPackVersion : this.resourcePackVersion;
    }
 
-   @Override
    public Date getBuildTime() {
       return this.buildTime;
    }
 
-   @Override
    public boolean isStable() {
       return this.stable;
    }

@@ -4,11 +4,12 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.util.parsing.packrat.Atom;
 import net.minecraft.util.parsing.packrat.Dictionary;
@@ -17,10 +18,7 @@ import net.minecraft.util.parsing.packrat.ErrorEntry;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.SuggestionSupplier;
 
-public record Grammar<T>(Dictionary<StringReader> a, Atom<T> b) {
-   private final Dictionary<StringReader> rules;
-   private final Atom<T> top;
-
+public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
    public Grammar(Dictionary<StringReader> var1, Atom<T> var2) {
       super();
       this.rules = var1;
@@ -31,41 +29,45 @@ public record Grammar<T>(Dictionary<StringReader> a, Atom<T> b) {
       return var1.parseTopRule(this.top);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public T parseForCommands(StringReader var1) throws CommandSyntaxException {
       ErrorCollector.LongestOnly var2 = new ErrorCollector.LongestOnly();
       StringReaderParserState var3 = new StringReaderParserState(this.rules(), var2, var1);
       Optional var4 = this.parse(var3);
       if (var4.isPresent()) {
-         return (T)var4.get();
+         return var4.get();
       } else {
          List var5 = var2.entries().stream().mapMulti((var0, var1x) -> {
-            Object var3xx = var0.reason();
-            if (var3xx instanceof Exception var2xx) {
-               var1x.accept(var2xx);
+            Object var3 = var0.reason();
+            if (var3 instanceof Exception var2) {
+               var1x.accept(var2);
             }
+
          }).toList();
+         Iterator var6 = var5.iterator();
 
-         for(Exception var7 : var5) {
-            if (var7 instanceof CommandSyntaxException var8) {
-               throw var8;
+         Exception var7;
+         do {
+            if (!var6.hasNext()) {
+               if (var5.size() == 1) {
+                  Object var10 = var5.get(0);
+                  if (var10 instanceof RuntimeException) {
+                     RuntimeException var9 = (RuntimeException)var10;
+                     throw var9;
+                  }
+               }
+
+               Stream var10002 = var2.entries().stream().map(ErrorEntry::toString);
+               throw new IllegalStateException("Failed to parse: " + (String)var10002.collect(Collectors.joining(", ")));
             }
-         }
 
-         if (var5.size() == 1) {
-            Object var10 = var5.get(0);
-            if (var10 instanceof RuntimeException var9) {
-               throw var9;
-            }
-         }
+            var7 = (Exception)var6.next();
+         } while(!(var7 instanceof CommandSyntaxException));
 
-         throw new IllegalStateException("Failed to parse: " + (String)var2.entries().stream().map(ErrorEntry::toString).collect(Collectors.joining(", ")));
+         CommandSyntaxException var8 = (CommandSyntaxException)var7;
+         throw var8;
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public CompletableFuture<Suggestions> parseForSuggestions(SuggestionsBuilder var1) {
       StringReader var2 = new StringReader(var1.getInput());
       var2.setCursor(var1.getStart());
@@ -77,10 +79,13 @@ public record Grammar<T>(Dictionary<StringReader> a, Atom<T> b) {
          return var1.buildFuture();
       } else {
          SuggestionsBuilder var6 = var1.createOffset(var3.cursor());
+         Iterator var7 = var5.iterator();
 
-         for(ErrorEntry var8 : var5) {
+         while(var7.hasNext()) {
+            ErrorEntry var8 = (ErrorEntry)var7.next();
             SuggestionSupplier var10 = var8.suggestions();
-            if (var10 instanceof ResourceSuggestion var9) {
+            if (var10 instanceof ResourceSuggestion) {
+               ResourceSuggestion var9 = (ResourceSuggestion)var10;
                SharedSuggestionProvider.suggestResource(var9.possibleResources(), var6);
             } else {
                SharedSuggestionProvider.suggest(var8.suggestions().possibleValues(var4), var6);
@@ -89,5 +94,13 @@ public record Grammar<T>(Dictionary<StringReader> a, Atom<T> b) {
 
          return var6.buildFuture();
       }
+   }
+
+   public Dictionary<StringReader> rules() {
+      return this.rules;
+   }
+
+   public Atom<T> top() {
+      return this.top;
    }
 }

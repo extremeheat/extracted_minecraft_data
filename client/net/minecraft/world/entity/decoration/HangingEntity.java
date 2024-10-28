@@ -29,13 +29,16 @@ import org.slf4j.Logger;
 
 public abstract class HangingEntity extends Entity {
    private static final Logger LOGGER = LogUtils.getLogger();
-   protected static final Predicate<Entity> HANGING_ENTITY = var0 -> var0 instanceof HangingEntity;
+   protected static final Predicate<Entity> HANGING_ENTITY = (var0) -> {
+      return var0 instanceof HangingEntity;
+   };
    private int checkInterval;
    protected BlockPos pos;
-   protected Direction direction = Direction.SOUTH;
+   protected Direction direction;
 
    protected HangingEntity(EntityType<? extends HangingEntity> var1, Level var2) {
       super(var1, var2);
+      this.direction = Direction.SOUTH;
    }
 
    protected HangingEntity(EntityType<? extends HangingEntity> var1, Level var2, BlockPos var3) {
@@ -43,7 +46,6 @@ public abstract class HangingEntity extends Entity {
       this.pos = var3;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
@@ -91,7 +93,6 @@ public abstract class HangingEntity extends Entity {
       return var1 % 32 == 0 ? 0.5 : 0.0;
    }
 
-   @Override
    public void tick() {
       if (!this.level().isClientSide) {
          this.checkBelowWorld();
@@ -99,10 +100,11 @@ public abstract class HangingEntity extends Entity {
             this.checkInterval = 0;
             if (!this.isRemoved() && !this.survives()) {
                this.discard();
-               this.dropItem(null);
+               this.dropItem((Entity)null);
             }
          }
       }
+
    }
 
    public boolean survives() {
@@ -127,30 +129,26 @@ public abstract class HangingEntity extends Entity {
             }
          }
 
-         return this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
+         return this.level().getEntities((Entity)this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
       }
    }
 
-   @Override
    public boolean isPickable() {
       return true;
    }
 
-   @Override
    public boolean skipAttackInteraction(Entity var1) {
       if (var1 instanceof Player var2) {
-         return !this.level().mayInteract((Player)var2, this.pos) ? true : this.hurt(this.damageSources().playerAttack((Player)var2), 0.0F);
+         return !this.level().mayInteract(var2, this.pos) ? true : this.hurt(this.damageSources().playerAttack(var2), 0.0F);
       } else {
          return false;
       }
    }
 
-   @Override
    public Direction getDirection() {
       return this.direction;
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
@@ -165,23 +163,22 @@ public abstract class HangingEntity extends Entity {
       }
    }
 
-   @Override
    public void move(MoverType var1, Vec3 var2) {
       if (!this.level().isClientSide && !this.isRemoved() && var2.lengthSqr() > 0.0) {
          this.kill();
-         this.dropItem(null);
+         this.dropItem((Entity)null);
       }
+
    }
 
-   @Override
    public void push(double var1, double var3, double var5) {
       if (!this.level().isClientSide && !this.isRemoved() && var1 * var1 + var3 * var3 + var5 * var5 > 0.0) {
          this.kill();
-         this.dropItem(null);
+         this.dropItem((Entity)null);
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       BlockPos var2 = this.getPos();
       var1.putInt("TileX", var2.getX());
@@ -189,7 +186,6 @@ public abstract class HangingEntity extends Entity {
       var1.putInt("TileZ", var2.getZ());
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       BlockPos var2 = new BlockPos(var1.getInt("TileX"), var1.getInt("TileY"), var1.getInt("TileZ"));
       if (!var2.closerThan(this.blockPosition(), 16.0)) {
@@ -207,26 +203,17 @@ public abstract class HangingEntity extends Entity {
 
    public abstract void playPlacementSound();
 
-   @Override
    public ItemEntity spawnAtLocation(ItemStack var1, float var2) {
-      ItemEntity var3 = new ItemEntity(
-         this.level(),
-         this.getX() + (double)((float)this.direction.getStepX() * 0.15F),
-         this.getY() + (double)var2,
-         this.getZ() + (double)((float)this.direction.getStepZ() * 0.15F),
-         var1
-      );
+      ItemEntity var3 = new ItemEntity(this.level(), this.getX() + (double)((float)this.direction.getStepX() * 0.15F), this.getY() + (double)var2, this.getZ() + (double)((float)this.direction.getStepZ() * 0.15F), var1);
       var3.setDefaultPickUpDelay();
       this.level().addFreshEntity(var3);
       return var3;
    }
 
-   @Override
    protected boolean repositionEntityAfterLoad() {
       return false;
    }
 
-   @Override
    public void setPos(double var1, double var3, double var5) {
       this.pos = BlockPos.containing(var1, var3, var5);
       this.recalculateBoundingBox();
@@ -237,44 +224,39 @@ public abstract class HangingEntity extends Entity {
       return this.pos;
    }
 
-   @Override
    public float rotate(Rotation var1) {
       if (this.direction.getAxis() != Direction.Axis.Y) {
-         switch(var1) {
-            case CLOCKWISE_180:
-               this.direction = this.direction.getOpposite();
-               break;
-            case COUNTERCLOCKWISE_90:
-               this.direction = this.direction.getCounterClockWise();
-               break;
-            case CLOCKWISE_90:
-               this.direction = this.direction.getClockWise();
+         switch (var1) {
+            case CLOCKWISE_180 -> this.direction = this.direction.getOpposite();
+            case COUNTERCLOCKWISE_90 -> this.direction = this.direction.getCounterClockWise();
+            case CLOCKWISE_90 -> this.direction = this.direction.getClockWise();
          }
       }
 
       float var2 = Mth.wrapDegrees(this.getYRot());
-      switch(var1) {
-         case CLOCKWISE_180:
+      switch (var1) {
+         case CLOCKWISE_180 -> {
             return var2 + 180.0F;
-         case COUNTERCLOCKWISE_90:
+         }
+         case COUNTERCLOCKWISE_90 -> {
             return var2 + 90.0F;
-         case CLOCKWISE_90:
+         }
+         case CLOCKWISE_90 -> {
             return var2 + 270.0F;
-         default:
+         }
+         default -> {
             return var2;
+         }
       }
    }
 
-   @Override
    public float mirror(Mirror var1) {
       return this.rotate(var1.getRotation(this.direction));
    }
 
-   @Override
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
    }
 
-   @Override
    public void refreshDimensions() {
    }
 }

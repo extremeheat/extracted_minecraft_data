@@ -16,7 +16,6 @@ import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -32,10 +31,10 @@ import net.minecraft.world.level.block.FireBlock;
 import org.slf4j.Logger;
 
 public class Bootstrap {
-   public static final PrintStream STDOUT = System.out;
+   public static final PrintStream STDOUT;
    private static volatile boolean isBootstrapped;
-   private static final Logger LOGGER = LogUtils.getLogger();
-   public static final AtomicLong bootstrapDuration = new AtomicLong(-1L);
+   private static final Logger LOGGER;
+   public static final AtomicLong bootstrapDuration;
 
    public Bootstrap() {
       super();
@@ -68,22 +67,23 @@ public class Bootstrap {
 
    private static <T> void checkTranslations(Iterable<T> var0, Function<T, String> var1, Set<String> var2) {
       Language var3 = Language.getInstance();
-      var0.forEach(var3x -> {
+      var0.forEach((var3x) -> {
          String var4 = (String)var1.apply(var3x);
          if (!var3.has(var4)) {
             var2.add(var4);
          }
+
       });
    }
 
    private static void checkGameruleTranslations(final Set<String> var0) {
       final Language var1 = Language.getInstance();
       GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
-         @Override
          public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
             if (!var1.has(var1x.getDescriptionId())) {
                var0.add(var1x.getId());
             }
+
          }
       });
    }
@@ -96,7 +96,10 @@ public class Bootstrap {
       checkTranslations(BuiltInRegistries.ITEM, Item::getDescriptionId, var0);
       checkTranslations(BuiltInRegistries.ENCHANTMENT, Enchantment::getDescriptionId, var0);
       checkTranslations(BuiltInRegistries.BLOCK, Block::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.CUSTOM_STAT, var0x -> "stat." + var0x.toString().replace(':', '.'), var0);
+      checkTranslations(BuiltInRegistries.CUSTOM_STAT, (var0x) -> {
+         String var10000 = var0x.toString();
+         return "stat." + var10000.replace(':', '.');
+      }, var0);
       checkGameruleTranslations(var0);
       return var0;
    }
@@ -113,15 +116,19 @@ public class Bootstrap {
          return new IllegalArgumentException("Not bootstrapped (called from " + var1 + ")");
       } catch (Exception var3) {
          IllegalArgumentException var2 = new IllegalArgumentException("Not bootstrapped (failed to resolve location)");
-         var2.addSuppressed(var3);
+         ((RuntimeException)var2).addSuppressed(var3);
          return var2;
       }
    }
 
    public static void validate() {
-      checkBootstrapCalled(() -> "validate");
+      checkBootstrapCalled(() -> {
+         return "validate";
+      });
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         getMissingTranslations().forEach(var0 -> LOGGER.error("Missing translations: {}", var0));
+         getMissingTranslations().forEach((var0) -> {
+            LOGGER.error("Missing translations: {}", var0);
+         });
          Commands.validate();
       }
 
@@ -136,9 +143,16 @@ public class Bootstrap {
          System.setErr(new LoggedPrintStream("STDERR", System.err));
          System.setOut(new LoggedPrintStream("STDOUT", STDOUT));
       }
+
    }
 
    public static void realStdoutPrintln(String var0) {
       STDOUT.println(var0);
+   }
+
+   static {
+      STDOUT = System.out;
+      LOGGER = LogUtils.getLogger();
+      bootstrapDuration = new AtomicLong(-1L);
    }
 }

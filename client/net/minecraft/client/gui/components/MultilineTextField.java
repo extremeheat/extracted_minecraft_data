@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -15,14 +16,14 @@ public class MultilineTextField {
    public static final int NO_CHARACTER_LIMIT = 2147483647;
    private static final int LINE_SEEK_PIXEL_BIAS = 2;
    private final Font font;
-   private final List<MultilineTextField.StringView> displayLines = Lists.newArrayList();
+   private final List<StringView> displayLines = Lists.newArrayList();
    private String value;
    private int cursor;
    private int selectCursor;
    private boolean selecting;
    private int characterLimit = 2147483647;
    private final int width;
-   private Consumer<String> valueListener = var0 -> {
+   private Consumer<String> valueListener = (var0) -> {
    };
    private Runnable cursorListener = () -> {
    };
@@ -72,8 +73,8 @@ public class MultilineTextField {
    public void insertText(String var1) {
       if (!var1.isEmpty() || this.hasSelection()) {
          String var2 = this.truncateInsertionText(StringUtil.filterText(var1, true));
-         MultilineTextField.StringView var3 = this.getSelected();
-         this.value = new StringBuilder(this.value).replace(var3.beginIndex, var3.endIndex, var2).toString();
+         StringView var3 = this.getSelected();
+         this.value = (new StringBuilder(this.value)).replace(var3.beginIndex, var3.endIndex, var2).toString();
          this.cursor = var3.beginIndex + var2.length();
          this.selectCursor = this.cursor;
          this.onValueChange();
@@ -96,8 +97,8 @@ public class MultilineTextField {
       this.selecting = var1;
    }
 
-   public MultilineTextField.StringView getSelected() {
-      return new MultilineTextField.StringView(Math.min(this.selectCursor, this.cursor), Math.max(this.selectCursor, this.cursor));
+   public StringView getSelected() {
+      return new StringView(Math.min(this.selectCursor, this.cursor), Math.max(this.selectCursor, this.cursor));
    }
 
    public int getLineCount() {
@@ -106,7 +107,7 @@ public class MultilineTextField {
 
    public int getLineAtCursor() {
       for(int var1 = 0; var1 < this.displayLines.size(); ++var1) {
-         MultilineTextField.StringView var2 = (MultilineTextField.StringView)this.displayLines.get(var1);
+         StringView var2 = (StringView)this.displayLines.get(var1);
          if (this.cursor >= var2.beginIndex && this.cursor <= var2.endIndex) {
             return var1;
          }
@@ -115,20 +116,15 @@ public class MultilineTextField {
       return -1;
    }
 
-   public MultilineTextField.StringView getLineView(int var1) {
-      return (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var1, 0, this.displayLines.size() - 1));
+   public StringView getLineView(int var1) {
+      return (StringView)this.displayLines.get(Mth.clamp(var1, 0, this.displayLines.size() - 1));
    }
 
    public void seekCursor(Whence var1, int var2) {
-      switch(var1) {
-         case ABSOLUTE:
-            this.cursor = var2;
-            break;
-         case RELATIVE:
-            this.cursor += var2;
-            break;
-         case END:
-            this.cursor = this.value.length() + var2;
+      switch (var1) {
+         case ABSOLUTE -> this.cursor = var2;
+         case RELATIVE -> this.cursor += var2;
+         case END -> this.cursor = this.value.length() + var2;
       }
 
       this.cursor = Mth.clamp(this.cursor, 0, this.value.length());
@@ -136,12 +132,13 @@ public class MultilineTextField {
       if (!this.selecting) {
          this.selectCursor = this.cursor;
       }
+
    }
 
    public void seekCursorLine(int var1) {
       if (var1 != 0) {
          int var2 = this.font.width(this.value.substring(this.getCursorLineView().beginIndex, this.cursor)) + 2;
-         MultilineTextField.StringView var3 = this.getCursorLineView(var1);
+         StringView var3 = this.getCursorLineView(var1);
          int var4 = this.font.plainSubstrByWidth(this.value.substring(var3.beginIndex, var3.endIndex), var2).length();
          this.seekCursor(Whence.ABSOLUTE, var3.beginIndex + var4);
       }
@@ -149,8 +146,9 @@ public class MultilineTextField {
 
    public void seekCursorToPoint(double var1, double var3) {
       int var5 = Mth.floor(var1);
+      Objects.requireNonNull(this.font);
       int var6 = Mth.floor(var3 / 9.0);
-      MultilineTextField.StringView var7 = (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var6, 0, this.displayLines.size() - 1));
+      StringView var7 = (StringView)this.displayLines.get(Mth.clamp(var6, 0, this.displayLines.size() - 1));
       int var8 = this.font.plainSubstrByWidth(this.value.substring(var7.beginIndex, var7.endIndex), var5).length();
       this.seekCursor(Whence.ABSOLUTE, var7.beginIndex + var8);
    }
@@ -172,15 +170,16 @@ public class MultilineTextField {
          this.insertText("");
          return true;
       } else {
-         switch(var1) {
+         StringView var2;
+         switch (var1) {
             case 257:
             case 335:
                this.insertText("\n");
                return true;
             case 259:
                if (Screen.hasControlDown()) {
-                  MultilineTextField.StringView var5 = this.getPreviousWord();
-                  this.deleteText(var5.beginIndex - this.cursor);
+                  var2 = this.getPreviousWord();
+                  this.deleteText(var2.beginIndex - this.cursor);
                } else {
                   this.deleteText(-1);
                }
@@ -188,8 +187,8 @@ public class MultilineTextField {
                return true;
             case 261:
                if (Screen.hasControlDown()) {
-                  MultilineTextField.StringView var4 = this.getNextWord();
-                  this.deleteText(var4.beginIndex - this.cursor);
+                  var2 = this.getNextWord();
+                  this.deleteText(var2.beginIndex - this.cursor);
                } else {
                   this.deleteText(1);
                }
@@ -197,8 +196,8 @@ public class MultilineTextField {
                return true;
             case 262:
                if (Screen.hasControlDown()) {
-                  MultilineTextField.StringView var3 = this.getNextWord();
-                  this.seekCursor(Whence.ABSOLUTE, var3.beginIndex);
+                  var2 = this.getNextWord();
+                  this.seekCursor(Whence.ABSOLUTE, var2.beginIndex);
                } else {
                   this.seekCursor(Whence.RELATIVE, 1);
                }
@@ -206,7 +205,7 @@ public class MultilineTextField {
                return true;
             case 263:
                if (Screen.hasControlDown()) {
-                  MultilineTextField.StringView var2 = this.getPreviousWord();
+                  var2 = this.getPreviousWord();
                   this.seekCursor(Whence.ABSOLUTE, var2.beginIndex);
                } else {
                   this.seekCursor(Whence.RELATIVE, -1);
@@ -253,7 +252,7 @@ public class MultilineTextField {
       }
    }
 
-   public Iterable<MultilineTextField.StringView> iterateLines() {
+   public Iterable<StringView> iterateLines() {
       return this.displayLines;
    }
 
@@ -263,66 +262,61 @@ public class MultilineTextField {
 
    @VisibleForTesting
    public String getSelectedText() {
-      MultilineTextField.StringView var1 = this.getSelected();
+      StringView var1 = this.getSelected();
       return this.value.substring(var1.beginIndex, var1.endIndex);
    }
 
-   private MultilineTextField.StringView getCursorLineView() {
+   private StringView getCursorLineView() {
       return this.getCursorLineView(0);
    }
 
-   private MultilineTextField.StringView getCursorLineView(int var1) {
+   private StringView getCursorLineView(int var1) {
       int var2 = this.getLineAtCursor();
       if (var2 < 0) {
-         throw new IllegalStateException("Cursor is not within text (cursor = " + this.cursor + ", length = " + this.value.length() + ")");
+         int var10002 = this.cursor;
+         throw new IllegalStateException("Cursor is not within text (cursor = " + var10002 + ", length = " + this.value.length() + ")");
       } else {
-         return (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
+         return (StringView)this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
       }
    }
 
    @VisibleForTesting
-   public MultilineTextField.StringView getPreviousWord() {
+   public StringView getPreviousWord() {
       if (this.value.isEmpty()) {
          return MultilineTextField.StringView.EMPTY;
       } else {
-         int var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1);
-
-         while(var1 > 0 && Character.isWhitespace(this.value.charAt(var1 - 1))) {
-            --var1;
+         int var1;
+         for(var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1); var1 > 0 && Character.isWhitespace(this.value.charAt(var1 - 1)); --var1) {
          }
 
          while(var1 > 0 && !Character.isWhitespace(this.value.charAt(var1 - 1))) {
             --var1;
          }
 
-         return new MultilineTextField.StringView(var1, this.getWordEndPosition(var1));
+         return new StringView(var1, this.getWordEndPosition(var1));
       }
    }
 
    @VisibleForTesting
-   public MultilineTextField.StringView getNextWord() {
+   public StringView getNextWord() {
       if (this.value.isEmpty()) {
          return MultilineTextField.StringView.EMPTY;
       } else {
-         int var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1);
-
-         while(var1 < this.value.length() && !Character.isWhitespace(this.value.charAt(var1))) {
-            ++var1;
+         int var1;
+         for(var1 = Mth.clamp(this.cursor, 0, this.value.length() - 1); var1 < this.value.length() && !Character.isWhitespace(this.value.charAt(var1)); ++var1) {
          }
 
          while(var1 < this.value.length() && Character.isWhitespace(this.value.charAt(var1))) {
             ++var1;
          }
 
-         return new MultilineTextField.StringView(var1, this.getWordEndPosition(var1));
+         return new StringView(var1, this.getWordEndPosition(var1));
       }
    }
 
    private int getWordEndPosition(int var1) {
-      int var2 = var1;
-
-      while(var2 < this.value.length() && !Character.isWhitespace(this.value.charAt(var2))) {
-         ++var2;
+      int var2;
+      for(var2 = var1; var2 < this.value.length() && !Character.isWhitespace(this.value.charAt(var2)); ++var2) {
       }
 
       return var2;
@@ -339,12 +333,13 @@ public class MultilineTextField {
       if (this.value.isEmpty()) {
          this.displayLines.add(MultilineTextField.StringView.EMPTY);
       } else {
-         this.font
-            .getSplitter()
-            .splitLines(this.value, this.width, Style.EMPTY, false, (var1, var2, var3) -> this.displayLines.add(new MultilineTextField.StringView(var2, var3)));
+         this.font.getSplitter().splitLines(this.value, this.width, Style.EMPTY, false, (var1, var2, var3) -> {
+            this.displayLines.add(new StringView(var2, var3));
+         });
          if (this.value.charAt(this.value.length() - 1) == '\n') {
-            this.displayLines.add(new MultilineTextField.StringView(this.value.length(), this.value.length()));
+            this.displayLines.add(new StringView(this.value.length(), this.value.length()));
          }
+
       }
    }
 
@@ -361,15 +356,23 @@ public class MultilineTextField {
       }
    }
 
-   protected static record StringView(int a, int b) {
+   protected static record StringView(int beginIndex, int endIndex) {
       final int beginIndex;
       final int endIndex;
-      static final MultilineTextField.StringView EMPTY = new MultilineTextField.StringView(0, 0);
+      static final StringView EMPTY = new StringView(0, 0);
 
       protected StringView(int var1, int var2) {
          super();
          this.beginIndex = var1;
          this.endIndex = var2;
+      }
+
+      public int beginIndex() {
+         return this.beginIndex;
+      }
+
+      public int endIndex() {
+         return this.endIndex;
       }
    }
 }

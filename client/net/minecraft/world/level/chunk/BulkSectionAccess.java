@@ -28,7 +28,7 @@ public class BulkSectionAccess implements AutoCloseable {
       if (var2 >= 0 && var2 < this.level.getSectionsCount()) {
          long var3 = SectionPos.asLong(var1);
          if (this.lastSection == null || this.lastSectionKey != var3) {
-            this.lastSection = (LevelChunkSection)this.acquiredSections.computeIfAbsent(var3, var3x -> {
+            this.lastSection = (LevelChunkSection)this.acquiredSections.computeIfAbsent(var3, (var3x) -> {
                ChunkAccess var5 = this.level.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
                LevelChunkSection var6 = var5.getSection(var2);
                var6.acquire();
@@ -55,7 +55,6 @@ public class BulkSectionAccess implements AutoCloseable {
       }
    }
 
-   @Override
    public void close() {
       ObjectIterator var1 = this.acquiredSections.values().iterator();
 
@@ -63,5 +62,6 @@ public class BulkSectionAccess implements AutoCloseable {
          LevelChunkSection var2 = (LevelChunkSection)var1.next();
          var2.release();
       }
+
    }
 }

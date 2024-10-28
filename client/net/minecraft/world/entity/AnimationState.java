@@ -21,6 +21,7 @@ public class AnimationState {
       if (!this.isStarted()) {
          this.start(var1);
       }
+
    }
 
    public void animateWhen(boolean var1, int var2) {
@@ -29,6 +30,7 @@ public class AnimationState {
       } else {
          this.stop();
       }
+
    }
 
    public void stop() {
@@ -39,6 +41,7 @@ public class AnimationState {
       if (this.isStarted()) {
          var1.accept(this);
       }
+
    }
 
    public void updateTime(float var1, float var2) {

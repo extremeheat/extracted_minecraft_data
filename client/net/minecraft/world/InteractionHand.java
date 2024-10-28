@@ -6,4 +6,9 @@ public enum InteractionHand {
 
    private InteractionHand() {
    }
+
+   // $FF: synthetic method
+   private static InteractionHand[] $values() {
+      return new InteractionHand[]{MAIN_HAND, OFF_HAND};
+   }
 }

@@ -27,7 +27,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    private final int count;
    private final List<String> rows = Lists.newArrayList();
    private final Map<Character, Ingredient> key = Maps.newLinkedHashMap();
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
+   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
    @Nullable
    private String group;
    private boolean showNotification = true;
@@ -67,7 +67,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    }
 
    public ShapedRecipeBuilder pattern(String var1) {
-      if (!this.rows.isEmpty() && var1.length() != this.rows.get(0).length()) {
+      if (!this.rows.isEmpty() && var1.length() != ((String)this.rows.get(0)).length()) {
          throw new IllegalArgumentException("Pattern must be the same width on every line!");
       } else {
          this.rows.add(var1);
@@ -90,34 +90,35 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
       return this;
    }
 
-   @Override
    public Item getResult() {
       return this.result;
    }
 
-   @Override
    public void save(RecipeOutput var1, ResourceLocation var2) {
       ShapedRecipePattern var3 = this.ensureValid(var2);
-      Advancement.Builder var4 = var1.advancement()
-         .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
-         .rewards(AdvancementRewards.Builder.recipe(var2))
-         .requirements(AdvancementRequirements.Strategy.OR);
-      this.criteria.forEach(var4::addCriterion);
-      ShapedRecipe var5 = new ShapedRecipe(
-         Objects.requireNonNullElse(this.group, ""),
-         RecipeBuilder.determineBookCategory(this.category),
-         var3,
-         new ItemStack(this.result, this.count),
-         this.showNotification
-      );
+      Advancement.Builder var4 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
+      Map var10000 = this.criteria;
+      Objects.requireNonNull(var4);
+      var10000.forEach(var4::addCriterion);
+      ShapedRecipe var5 = new ShapedRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), var3, new ItemStack(this.result, this.count), this.showNotification);
       var1.accept(var2, var5, var4.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private ShapedRecipePattern ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1));
       } else {
          return ShapedRecipePattern.of(this.key, this.rows);
       }
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder group(@Nullable String var1) {
+      return this.group(var1);
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder unlockedBy(String var1, Criterion var2) {
+      return this.unlockedBy(var1, var2);
    }
 }

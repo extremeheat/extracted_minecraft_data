@@ -13,28 +13,12 @@ public class StructureTagsProvider extends TagsProvider<Structure> {
       super(var1, Registries.STRUCTURE, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
-      this.tag(StructureTags.VILLAGE)
-         .add(BuiltinStructures.VILLAGE_PLAINS)
-         .add(BuiltinStructures.VILLAGE_POTATO)
-         .add(BuiltinStructures.VILLAGE_DESERT)
-         .add(BuiltinStructures.VILLAGE_SAVANNA)
-         .add(BuiltinStructures.VILLAGE_SNOWY)
-         .add(BuiltinStructures.VILLAGE_TAIGA);
+      this.tag(StructureTags.VILLAGE).add(BuiltinStructures.VILLAGE_PLAINS).add(BuiltinStructures.VILLAGE_DESERT).add(BuiltinStructures.VILLAGE_SAVANNA).add(BuiltinStructures.VILLAGE_SNOWY).add(BuiltinStructures.VILLAGE_TAIGA);
       this.tag(StructureTags.MINESHAFT).add(BuiltinStructures.MINESHAFT).add(BuiltinStructures.MINESHAFT_MESA);
       this.tag(StructureTags.OCEAN_RUIN).add(BuiltinStructures.OCEAN_RUIN_COLD).add(BuiltinStructures.OCEAN_RUIN_WARM);
       this.tag(StructureTags.SHIPWRECK).add(BuiltinStructures.SHIPWRECK).add(BuiltinStructures.SHIPWRECK_BEACHED);
-      this.tag(StructureTags.RUINED_PORTAL)
-         .add(BuiltinStructures.RUINED_PORTAL_DESERT)
-         .add(BuiltinStructures.RUINED_PORTAL_JUNGLE)
-         .add(BuiltinStructures.RUINED_PORTAL_MOUNTAIN)
-         .add(BuiltinStructures.RUINED_PORTAL_NETHER)
-         .add(BuiltinStructures.RUINED_PORTAL_OCEAN)
-         .add(BuiltinStructures.RUINED_PORTAL_STANDARD)
-         .add(BuiltinStructures.RUINED_PORTAL_SWAMP);
-      this.tag(StructureTags.RUINED_PORTATOL).add(BuiltinStructures.RUINED_PORTATOL);
-      this.tag(StructureTags.COLOSSEUM).add(BuiltinStructures.COLOSSEUM);
+      this.tag(StructureTags.RUINED_PORTAL).add(BuiltinStructures.RUINED_PORTAL_DESERT).add(BuiltinStructures.RUINED_PORTAL_JUNGLE).add(BuiltinStructures.RUINED_PORTAL_MOUNTAIN).add(BuiltinStructures.RUINED_PORTAL_NETHER).add(BuiltinStructures.RUINED_PORTAL_OCEAN).add(BuiltinStructures.RUINED_PORTAL_STANDARD).add(BuiltinStructures.RUINED_PORTAL_SWAMP);
       this.tag(StructureTags.CATS_SPAWN_IN).add(BuiltinStructures.SWAMP_HUT);
       this.tag(StructureTags.CATS_SPAWN_AS_BLACK).add(BuiltinStructures.SWAMP_HUT);
       this.tag(StructureTags.EYE_OF_ENDER_LOCATED).add(BuiltinStructures.STRONGHOLD);

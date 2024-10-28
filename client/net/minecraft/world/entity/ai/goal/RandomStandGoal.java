@@ -13,7 +13,6 @@ public class RandomStandGoal extends Goal {
       this.resetStandInterval(var1);
    }
 
-   @Override
    public void start() {
       this.horse.standIfPossible();
       this.playStandSound();
@@ -24,14 +23,13 @@ public class RandomStandGoal extends Goal {
       if (var1 != null) {
          this.horse.playSound(var1);
       }
+
    }
 
-   @Override
    public boolean canContinueToUse() {
       return false;
    }
 
-   @Override
    public boolean canUse() {
       ++this.nextStand;
       if (this.nextStand > 0 && this.horse.getRandom().nextInt(1000) < this.nextStand) {
@@ -46,7 +44,6 @@ public class RandomStandGoal extends Goal {
       this.nextStand = -var1.getAmbientStandInterval();
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }

@@ -50,10 +50,13 @@ public class HttpTexture extends SimpleTexture {
       Minecraft.getInstance().execute(() -> {
          this.uploaded = true;
          if (!RenderSystem.isOnRenderThread()) {
-            RenderSystem.recordRenderCall(() -> this.upload(var1));
+            RenderSystem.recordRenderCall(() -> {
+               this.upload(var1);
+            });
          } else {
             this.upload(var1);
          }
+
       });
    }
 
@@ -62,25 +65,25 @@ public class HttpTexture extends SimpleTexture {
       var1.upload(0, 0, 0, true);
    }
 
-   @Override
    public void load(ResourceManager var1) throws IOException {
       Minecraft.getInstance().execute(() -> {
          if (!this.uploaded) {
             try {
                super.load(var1);
-            } catch (IOException var3xx) {
-               LOGGER.warn("Failed to load texture: {}", this.location, var3xx);
+            } catch (IOException var3) {
+               LOGGER.warn("Failed to load texture: {}", this.location, var3);
             }
 
             this.uploaded = true;
          }
+
       });
       if (this.future == null) {
          NativeImage var2;
          if (this.file != null && this.file.isFile()) {
             LOGGER.debug("Loading http texture from local cache ({})", this.file);
             FileInputStream var3 = new FileInputStream(this.file);
-            var2 = this.load(var3);
+            var2 = this.load((InputStream)var3);
          } else {
             var2 = null;
          }
@@ -89,28 +92,29 @@ public class HttpTexture extends SimpleTexture {
             this.loadCallback(var2);
          } else {
             this.future = CompletableFuture.runAsync(() -> {
-               HttpURLConnection var1xx = null;
+               HttpURLConnection var1 = null;
                LOGGER.debug("Downloading http texture from {} to {}", this.urlString, this.file);
 
                try {
-                  var1xx = (HttpURLConnection)new URL(this.urlString).openConnection(Minecraft.getInstance().getProxy());
-                  var1xx.setDoInput(true);
-                  var1xx.setDoOutput(false);
-                  var1xx.connect();
-                  if (var1xx.getResponseCode() / 100 == 2) {
-                     Object var2xx;
+                  var1 = (HttpURLConnection)(new URL(this.urlString)).openConnection(Minecraft.getInstance().getProxy());
+                  var1.setDoInput(true);
+                  var1.setDoOutput(false);
+                  var1.connect();
+                  if (var1.getResponseCode() / 100 == 2) {
+                     Object var2;
                      if (this.file != null) {
-                        FileUtils.copyInputStreamToFile(var1xx.getInputStream(), this.file);
-                        var2xx = new FileInputStream(this.file);
+                        FileUtils.copyInputStreamToFile(var1.getInputStream(), this.file);
+                        var2 = new FileInputStream(this.file);
                      } else {
-                        var2xx = var1xx.getInputStream();
+                        var2 = var1.getInputStream();
                      }
 
                      Minecraft.getInstance().execute(() -> {
-                        NativeImage var2xxx = this.load(var2x);
-                        if (var2xxx != null) {
-                           this.loadCallback(var2xxx);
+                        NativeImage var2x = this.load(var2);
+                        if (var2x != null) {
+                           this.loadCallback(var2x);
                         }
+
                      });
                      return;
                   }
@@ -118,10 +122,12 @@ public class HttpTexture extends SimpleTexture {
                   LOGGER.error("Couldn't download http texture", var6);
                   return;
                } finally {
-                  if (var1xx != null) {
-                     var1xx.disconnect();
+                  if (var1 != null) {
+                     var1.disconnect();
                   }
+
                }
+
             }, Util.backgroundExecutor());
          }
       }
@@ -185,27 +191,31 @@ public class HttpTexture extends SimpleTexture {
    }
 
    private static void doNotchTransparencyHack(NativeImage var0, int var1, int var2, int var3, int var4) {
-      for(int var5 = var1; var5 < var3; ++var5) {
-         for(int var6 = var2; var6 < var4; ++var6) {
+      int var5;
+      int var6;
+      for(var5 = var1; var5 < var3; ++var5) {
+         for(var6 = var2; var6 < var4; ++var6) {
             int var7 = var0.getPixelRGBA(var5, var6);
-            if ((var7 >> 24 & 0xFF) < 128) {
+            if ((var7 >> 24 & 255) < 128) {
                return;
             }
          }
       }
 
-      for(int var8 = var1; var8 < var3; ++var8) {
-         for(int var9 = var2; var9 < var4; ++var9) {
-            var0.setPixelRGBA(var8, var9, var0.getPixelRGBA(var8, var9) & 16777215);
+      for(var5 = var1; var5 < var3; ++var5) {
+         for(var6 = var2; var6 < var4; ++var6) {
+            var0.setPixelRGBA(var5, var6, var0.getPixelRGBA(var5, var6) & 16777215);
          }
       }
+
    }
 
    private static void setNoAlpha(NativeImage var0, int var1, int var2, int var3, int var4) {
       for(int var5 = var1; var5 < var3; ++var5) {
          for(int var6 = var2; var6 < var4; ++var6) {
-            var0.setPixelRGBA(var5, var6, var0.getPixelRGBA(var5, var6) | 0xFF000000);
+            var0.setPixelRGBA(var5, var6, var0.getPixelRGBA(var5, var6) | -16777216);
          }
       }
+
    }
 }

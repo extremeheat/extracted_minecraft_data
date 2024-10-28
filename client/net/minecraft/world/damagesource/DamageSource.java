@@ -21,7 +21,6 @@ public class DamageSource {
    @Nullable
    private final Vec3 damageSourcePosition;
 
-   @Override
    public String toString() {
       return "DamageSource (" + this.type().msgId() + ")";
    }
@@ -43,11 +42,11 @@ public class DamageSource {
    }
 
    public DamageSource(Holder<DamageType> var1, @Nullable Entity var2, @Nullable Entity var3) {
-      this(var1, var2, var3, null);
+      this(var1, var2, var3, (Vec3)null);
    }
 
    public DamageSource(Holder<DamageType> var1, Vec3 var2) {
-      this(var1, null, null, var2);
+      this(var1, (Entity)null, (Entity)null, var2);
    }
 
    public DamageSource(Holder<DamageType> var1, @Nullable Entity var2) {
@@ -55,7 +54,7 @@ public class DamageSource {
    }
 
    public DamageSource(Holder<DamageType> var1) {
-      this(var1, null, null, null);
+      this(var1, (Entity)null, (Entity)null, (Vec3)null);
    }
 
    @Nullable
@@ -77,10 +76,16 @@ public class DamageSource {
       } else {
          Component var3 = this.causingEntity == null ? this.directEntity.getDisplayName() : this.causingEntity.getDisplayName();
          Entity var6 = this.causingEntity;
-         ItemStack var4 = var6 instanceof LivingEntity var5 ? var5.getMainHandItem() : ItemStack.EMPTY;
-         return !var4.isEmpty() && var4.has(DataComponents.CUSTOM_NAME)
-            ? Component.translatable(var2 + ".item", var1.getDisplayName(), var3, var4.getDisplayName())
-            : Component.translatable(var2, var1.getDisplayName(), var3);
+         ItemStack var10000;
+         if (var6 instanceof LivingEntity) {
+            LivingEntity var5 = (LivingEntity)var6;
+            var10000 = var5.getMainHandItem();
+         } else {
+            var10000 = ItemStack.EMPTY;
+         }
+
+         ItemStack var4 = var10000;
+         return !var4.isEmpty() && var4.has(DataComponents.CUSTOM_NAME) ? Component.translatable(var2 + ".item", var1.getDisplayName(), var3, var4.getDisplayName()) : Component.translatable(var2, var1.getDisplayName(), var3);
       }
    }
 
@@ -89,20 +94,29 @@ public class DamageSource {
    }
 
    public boolean scalesWithDifficulty() {
-      return switch(this.type().scaling()) {
-         case NEVER -> false;
-         case WHEN_CAUSED_BY_LIVING_NON_PLAYER -> this.causingEntity instanceof LivingEntity && !(this.causingEntity instanceof Player);
-         case ALWAYS -> true;
-      };
+      boolean var10000;
+      switch (this.type().scaling()) {
+         case NEVER -> var10000 = false;
+         case WHEN_CAUSED_BY_LIVING_NON_PLAYER -> var10000 = this.causingEntity instanceof LivingEntity && !(this.causingEntity instanceof Player);
+         case ALWAYS -> var10000 = true;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public boolean isCreativePlayer() {
       Entity var2 = this.getEntity();
-      if (var2 instanceof Player var1 && var1.getAbilities().instabuild) {
-         return true;
+      boolean var10000;
+      if (var2 instanceof Player var1) {
+         if (var1.getAbilities().instabuild) {
+            var10000 = true;
+            return var10000;
+         }
       }
 
-      return false;
+      var10000 = false;
+      return var10000;
    }
 
    @Nullable

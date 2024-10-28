@@ -2,31 +2,31 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
+/** @deprecated */
 @Deprecated
-public class LakeFeature extends Feature<LakeFeature.Configuration> {
-   private static final BlockState AIR = Blocks.CAVE_AIR.defaultBlockState();
+public class LakeFeature extends Feature<Configuration> {
+   private static final BlockState AIR;
 
-   public LakeFeature(Codec<LakeFeature.Configuration> var1) {
+   public LakeFeature(Codec<Configuration> var1) {
       super(var1);
    }
 
-   @Override
-   public boolean place(FeaturePlaceContext<LakeFeature.Configuration> var1) {
+   public boolean place(FeaturePlaceContext<Configuration> var1) {
       BlockPos var2 = var1.origin();
       WorldGenLevel var3 = var1.level();
       RandomSource var4 = var1.random();
-      LakeFeature.Configuration var5 = (LakeFeature.Configuration)var1.config();
+      Configuration var5 = (Configuration)var1.config();
       if (var2.getY() <= var3.getMinBuildHeight() + 4) {
          return false;
       } else {
@@ -57,27 +57,23 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
             }
          }
 
-         BlockState var33 = var5.fluid().getState(var4, var2);
+         BlockState var32 = var5.fluid().getState(var4, var2);
 
-         for(int var34 = 0; var34 < 16; ++var34) {
-            for(int var10 = 0; var10 < 16; ++var10) {
-               for(int var40 = 0; var40 < 8; ++var40) {
-                  boolean var12 = !var6[(var34 * 16 + var10) * 8 + var40]
-                     && (
-                        var34 < 15 && var6[((var34 + 1) * 16 + var10) * 8 + var40]
-                           || var34 > 0 && var6[((var34 - 1) * 16 + var10) * 8 + var40]
-                           || var10 < 15 && var6[(var34 * 16 + var10 + 1) * 8 + var40]
-                           || var10 > 0 && var6[(var34 * 16 + (var10 - 1)) * 8 + var40]
-                           || var40 < 7 && var6[(var34 * 16 + var10) * 8 + var40 + 1]
-                           || var40 > 0 && var6[(var34 * 16 + var10) * 8 + (var40 - 1)]
-                     );
+         int var10;
+         boolean var12;
+         int var33;
+         int var35;
+         for(var33 = 0; var33 < 16; ++var33) {
+            for(var10 = 0; var10 < 16; ++var10) {
+               for(var35 = 0; var35 < 8; ++var35) {
+                  var12 = !var6[(var33 * 16 + var10) * 8 + var35] && (var33 < 15 && var6[((var33 + 1) * 16 + var10) * 8 + var35] || var33 > 0 && var6[((var33 - 1) * 16 + var10) * 8 + var35] || var10 < 15 && var6[(var33 * 16 + var10 + 1) * 8 + var35] || var10 > 0 && var6[(var33 * 16 + (var10 - 1)) * 8 + var35] || var35 < 7 && var6[(var33 * 16 + var10) * 8 + var35 + 1] || var35 > 0 && var6[(var33 * 16 + var10) * 8 + (var35 - 1)]);
                   if (var12) {
-                     BlockState var47 = var3.getBlockState(var2.offset(var34, var40, var10));
-                     if (var40 >= 4 && var47.liquid()) {
+                     BlockState var38 = var3.getBlockState(var2.offset(var33, var35, var10));
+                     if (var35 >= 4 && var38.liquid()) {
                         return false;
                      }
 
-                     if (var40 < 4 && !var47.isSolid() && var3.getBlockState(var2.offset(var34, var40, var10)) != var33) {
+                     if (var35 < 4 && !var38.isSolid() && var3.getBlockState(var2.offset(var33, var35, var10)) != var32) {
                         return false;
                      }
                   }
@@ -85,17 +81,18 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
             }
          }
 
-         for(int var35 = 0; var35 < 16; ++var35) {
-            for(int var37 = 0; var37 < 16; ++var37) {
-               for(int var41 = 0; var41 < 8; ++var41) {
-                  if (var6[(var35 * 16 + var37) * 8 + var41]) {
-                     BlockPos var44 = var2.offset(var35, var41, var37);
-                     if (this.canReplaceBlock(var3.getBlockState(var44))) {
-                        boolean var48 = var41 >= 4;
-                        var3.setBlock(var44, var48 ? AIR : var33, 2);
-                        if (var48) {
-                           var3.scheduleTick(var44, AIR.getBlock(), 0);
-                           this.markAboveForPostProcessing(var3, var44);
+         boolean var39;
+         for(var33 = 0; var33 < 16; ++var33) {
+            for(var10 = 0; var10 < 16; ++var10) {
+               for(var35 = 0; var35 < 8; ++var35) {
+                  if (var6[(var33 * 16 + var10) * 8 + var35]) {
+                     BlockPos var36 = var2.offset(var33, var35, var10);
+                     if (this.canReplaceBlock(var3.getBlockState(var36))) {
+                        var39 = var35 >= 4;
+                        var3.setBlock(var36, var39 ? AIR : var32, 2);
+                        if (var39) {
+                           var3.scheduleTick(var36, AIR.getBlock(), 0);
+                           this.markAboveForPostProcessing(var3, var36);
                         }
                      }
                   }
@@ -103,30 +100,18 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
             }
          }
 
-         BlockState var36 = var5.barrier().getState(var4, var2);
-         if (var36.is(Blocks.STONE) && var3.isPotato()) {
-            var36 = Blocks.TATERSTONE.defaultBlockState();
-         }
-
-         if (!var36.isAir()) {
-            for(int var38 = 0; var38 < 16; ++var38) {
-               for(int var42 = 0; var42 < 16; ++var42) {
-                  for(int var45 = 0; var45 < 8; ++var45) {
-                     boolean var49 = !var6[(var38 * 16 + var42) * 8 + var45]
-                        && (
-                           var38 < 15 && var6[((var38 + 1) * 16 + var42) * 8 + var45]
-                              || var38 > 0 && var6[((var38 - 1) * 16 + var42) * 8 + var45]
-                              || var42 < 15 && var6[(var38 * 16 + var42 + 1) * 8 + var45]
-                              || var42 > 0 && var6[(var38 * 16 + (var42 - 1)) * 8 + var45]
-                              || var45 < 7 && var6[(var38 * 16 + var42) * 8 + var45 + 1]
-                              || var45 > 0 && var6[(var38 * 16 + var42) * 8 + (var45 - 1)]
-                        );
-                     if (var49 && (var45 < 4 || var4.nextInt(2) != 0)) {
-                        BlockState var14 = var3.getBlockState(var2.offset(var38, var45, var42));
+         BlockState var34 = var5.barrier().getState(var4, var2);
+         if (!var34.isAir()) {
+            for(var10 = 0; var10 < 16; ++var10) {
+               for(var35 = 0; var35 < 16; ++var35) {
+                  for(int var37 = 0; var37 < 8; ++var37) {
+                     var39 = !var6[(var10 * 16 + var35) * 8 + var37] && (var10 < 15 && var6[((var10 + 1) * 16 + var35) * 8 + var37] || var10 > 0 && var6[((var10 - 1) * 16 + var35) * 8 + var37] || var35 < 15 && var6[(var10 * 16 + var35 + 1) * 8 + var37] || var35 > 0 && var6[(var10 * 16 + (var35 - 1)) * 8 + var37] || var37 < 7 && var6[(var10 * 16 + var35) * 8 + var37 + 1] || var37 > 0 && var6[(var10 * 16 + var35) * 8 + (var37 - 1)]);
+                     if (var39 && (var37 < 4 || var4.nextInt(2) != 0)) {
+                        BlockState var14 = var3.getBlockState(var2.offset(var10, var37, var35));
                         if (var14.isSolid() && !var14.is(BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE)) {
-                           BlockPos var51 = var2.offset(var38, var45, var42);
-                           var3.setBlock(var51, var36, 2);
-                           this.markAboveForPostProcessing(var3, var51);
+                           BlockPos var41 = var2.offset(var10, var37, var35);
+                           var3.setBlock(var41, var34, 2);
+                           this.markAboveForPostProcessing(var3, var41);
                         }
                      }
                   }
@@ -134,13 +119,13 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
             }
          }
 
-         if (var33.getFluidState().is(FluidTags.WATER)) {
-            for(int var39 = 0; var39 < 16; ++var39) {
-               for(int var43 = 0; var43 < 16; ++var43) {
-                  boolean var46 = true;
-                  BlockPos var50 = var2.offset(var39, 4, var43);
-                  if (var3.getBiome(var50).value().shouldFreeze(var3, var50, false) && this.canReplaceBlock(var3.getBlockState(var50))) {
-                     var3.setBlock(var50, Blocks.ICE.defaultBlockState(), 2);
+         if (var32.getFluidState().is(FluidTags.WATER)) {
+            for(var10 = 0; var10 < 16; ++var10) {
+               for(var35 = 0; var35 < 16; ++var35) {
+                  var12 = true;
+                  BlockPos var40 = var2.offset(var10, 4, var35);
+                  if (((Biome)var3.getBiome(var40).value()).shouldFreeze(var3, var40, false) && this.canReplaceBlock(var3.getBlockState(var40))) {
+                     var3.setBlock(var40, Blocks.ICE.defaultBlockState(), 2);
                   }
                }
             }
@@ -154,21 +139,27 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
       return !var1.is(BlockTags.FEATURES_CANNOT_REPLACE);
    }
 
-   public static record Configuration(BlockStateProvider b, BlockStateProvider c) implements FeatureConfiguration {
-      private final BlockStateProvider fluid;
-      private final BlockStateProvider barrier;
-      public static final Codec<LakeFeature.Configuration> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  BlockStateProvider.CODEC.fieldOf("fluid").forGetter(LakeFeature.Configuration::fluid),
-                  BlockStateProvider.CODEC.fieldOf("barrier").forGetter(LakeFeature.Configuration::barrier)
-               )
-               .apply(var0, LakeFeature.Configuration::new)
-      );
+   static {
+      AIR = Blocks.CAVE_AIR.defaultBlockState();
+   }
+
+   public static record Configuration(BlockStateProvider fluid, BlockStateProvider barrier) implements FeatureConfiguration {
+      public static final Codec<Configuration> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(Configuration::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(Configuration::barrier)).apply(var0, Configuration::new);
+      });
 
       public Configuration(BlockStateProvider var1, BlockStateProvider var2) {
          super();
          this.fluid = var1;
          this.barrier = var2;
+      }
+
+      public BlockStateProvider fluid() {
+         return this.fluid;
+      }
+
+      public BlockStateProvider barrier() {
+         return this.barrier;
       }
    }
 }

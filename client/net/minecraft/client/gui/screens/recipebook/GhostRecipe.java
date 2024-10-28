@@ -15,7 +15,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 public class GhostRecipe {
    @Nullable
    private RecipeHolder<?> recipe;
-   private final List<GhostRecipe.GhostIngredient> ingredients = Lists.newArrayList();
+   private final List<GhostIngredient> ingredients = Lists.newArrayList();
    float time;
 
    public GhostRecipe() {
@@ -29,11 +29,11 @@ public class GhostRecipe {
    }
 
    public void addIngredient(Ingredient var1, int var2, int var3) {
-      this.ingredients.add(new GhostRecipe.GhostIngredient(var1, var2, var3));
+      this.ingredients.add(new GhostIngredient(var1, var2, var3));
    }
 
-   public GhostRecipe.GhostIngredient get(int var1) {
-      return this.ingredients.get(var1);
+   public GhostIngredient get(int var1) {
+      return (GhostIngredient)this.ingredients.get(var1);
    }
 
    public int size() {
@@ -55,7 +55,7 @@ public class GhostRecipe {
       }
 
       for(int var7 = 0; var7 < this.ingredients.size(); ++var7) {
-         GhostRecipe.GhostIngredient var8 = this.ingredients.get(var7);
+         GhostIngredient var8 = (GhostIngredient)this.ingredients.get(var7);
          int var9 = var8.getX() + var3;
          int var10 = var8.getY() + var4;
          if (var7 == 0 && var5) {
@@ -71,6 +71,7 @@ public class GhostRecipe {
             var1.renderItemDecorations(var2.font, var11, var9, var10);
          }
       }
+
    }
 
    public class GhostIngredient {

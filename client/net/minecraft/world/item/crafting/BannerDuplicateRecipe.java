@@ -91,12 +91,10 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       return var2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.BANNER_DUPLICATE;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }

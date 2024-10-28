@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.decoration;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -35,7 +36,6 @@ public class LeashFenceKnotEntity extends HangingEntity {
       this.setPos((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
    }
 
-   @Override
    protected void recalculateBoundingBox() {
       this.setPosRaw((double)this.pos.getX() + 0.5, (double)this.pos.getY() + 0.375, (double)this.pos.getZ() + 0.5);
       double var1 = (double)this.getType().getWidth() / 2.0;
@@ -43,51 +43,42 @@ public class LeashFenceKnotEntity extends HangingEntity {
       this.setBoundingBox(new AABB(this.getX() - var1, this.getY(), this.getZ() - var1, this.getX() + var1, this.getY() + var3, this.getZ() + var1));
    }
 
-   @Override
    public void setDirection(Direction var1) {
    }
 
-   @Override
    public int getWidth() {
       return 9;
    }
 
-   @Override
    public int getHeight() {
       return 9;
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       return var1 < 1024.0;
    }
 
-   @Override
    public void dropItem(@Nullable Entity var1) {
       this.playSound(SoundEvents.LEASH_KNOT_BREAK, 1.0F, 1.0F);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       if (this.level().isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
          boolean var3 = false;
          double var4 = 7.0;
-         List var6 = this.level()
-            .getEntitiesOfClass(
-               Mob.class, new AABB(this.getX() - 7.0, this.getY() - 7.0, this.getZ() - 7.0, this.getX() + 7.0, this.getY() + 7.0, this.getZ() + 7.0)
-            );
+         List var6 = this.level().getEntitiesOfClass(Mob.class, new AABB(this.getX() - 7.0, this.getY() - 7.0, this.getZ() - 7.0, this.getX() + 7.0, this.getY() + 7.0, this.getZ() + 7.0));
+         Iterator var7 = var6.iterator();
 
-         for(Mob var8 : var6) {
+         while(var7.hasNext()) {
+            Mob var8 = (Mob)var7.next();
             if (var8.getLeashHolder() == var1) {
                var8.setLeashedTo(this, true);
                var3 = true;
@@ -98,7 +89,10 @@ public class LeashFenceKnotEntity extends HangingEntity {
          if (!var3) {
             this.discard();
             if (var1.getAbilities().instabuild) {
-               for(Mob var9 : var6) {
+               Iterator var11 = var6.iterator();
+
+               while(var11.hasNext()) {
+                  Mob var9 = (Mob)var11.next();
                   if (var9.isLeashed() && var9.getLeashHolder() == this) {
                      var9.dropLeash(true, false);
                      var10 = true;
@@ -115,7 +109,6 @@ public class LeashFenceKnotEntity extends HangingEntity {
       }
    }
 
-   @Override
    public boolean survives() {
       return this.level().getBlockState(this.pos).is(BlockTags.FENCES);
    }
@@ -124,37 +117,35 @@ public class LeashFenceKnotEntity extends HangingEntity {
       int var2 = var1.getX();
       int var3 = var1.getY();
       int var4 = var1.getZ();
+      List var5 = var0.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB((double)var2 - 1.0, (double)var3 - 1.0, (double)var4 - 1.0, (double)var2 + 1.0, (double)var3 + 1.0, (double)var4 + 1.0));
+      Iterator var6 = var5.iterator();
 
-      for(LeashFenceKnotEntity var7 : var0.getEntitiesOfClass(
-         LeashFenceKnotEntity.class,
-         new AABB((double)var2 - 1.0, (double)var3 - 1.0, (double)var4 - 1.0, (double)var2 + 1.0, (double)var3 + 1.0, (double)var4 + 1.0)
-      )) {
-         if (var7.getPos().equals(var1)) {
-            return var7;
+      LeashFenceKnotEntity var7;
+      do {
+         if (!var6.hasNext()) {
+            LeashFenceKnotEntity var8 = new LeashFenceKnotEntity(var0, var1);
+            var0.addFreshEntity(var8);
+            return var8;
          }
-      }
 
-      LeashFenceKnotEntity var8 = new LeashFenceKnotEntity(var0, var1);
-      var0.addFreshEntity(var8);
-      return var8;
+         var7 = (LeashFenceKnotEntity)var6.next();
+      } while(!var7.getPos().equals(var1));
+
+      return var7;
    }
 
-   @Override
    public void playPlacementSound() {
       this.playSound(SoundEvents.LEASH_KNOT_PLACE, 1.0F, 1.0F);
    }
 
-   @Override
    public Packet<ClientGamePacketListener> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this, 0, this.getPos());
    }
 
-   @Override
    public Vec3 getRopeHoldPosition(float var1) {
       return this.getPosition(var1).add(0.0, 0.2, 0.0);
    }
 
-   @Override
    public ItemStack getPickResult() {
       return new ItemStack(Items.LEAD);
    }

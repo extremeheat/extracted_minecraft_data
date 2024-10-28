@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.border.WorldBorder;
 
 public class ClientboundSetBorderWarningDelayPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderWarningDelayPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetBorderWarningDelayPacket::write, ClientboundSetBorderWarningDelayPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderWarningDelayPacket> STREAM_CODEC = Packet.codec(ClientboundSetBorderWarningDelayPacket::write, ClientboundSetBorderWarningDelayPacket::new);
    private final int warningDelay;
 
    public ClientboundSetBorderWarningDelayPacket(WorldBorder var1) {
@@ -26,7 +24,6 @@ public class ClientboundSetBorderWarningDelayPacket implements Packet<ClientGame
       var1.writeVarInt(this.warningDelay);
    }
 
-   @Override
    public PacketType<ClientboundSetBorderWarningDelayPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_BORDER_WARNING_DELAY;
    }

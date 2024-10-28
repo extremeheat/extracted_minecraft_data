@@ -3,7 +3,6 @@ package net.minecraft.util.datafix;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.util.datafix.fixes.NamedEntityFix;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -17,36 +16,28 @@ public class FixWolfHealth extends NamedEntityFix {
       super(var1, false, "FixWolfHealth", References.ENTITY, "minecraft:wolf");
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(
-         DSL.remainderFinder(),
-         var0 -> {
-            MutableBoolean var1xx = new MutableBoolean(false);
-            var0 = var0.update(
-               "Attributes",
-               var1xx -> var1xx.createList(
-                     var1xx.asStream()
-                        .map(
-                           var1xxx -> "minecraft:generic.max_health".equals(NamespacedSchema.ensureNamespaced(var1xxx.get("Name").asString("")))
-                                 ? var1xxx.update("Base", var1xxxx -> {
-                                    if (var1xxxx.asDouble(0.0) == 20.0) {
-                                       var1x.setTrue();
-                                       return var1xxxx.createDouble(40.0);
-                                    } else {
-                                       return var1xxxx;
-                                    }
-                                 })
-                                 : var1xxx
-                        )
-                  )
-            );
-            if (var1xx.isTrue()) {
-               var0 = var0.update("Health", var0x -> var0x.createFloat(var0x.asFloat(0.0F) * 2.0F));
-            }
-   
-            return var0;
+      return var1.update(DSL.remainderFinder(), (var0) -> {
+         MutableBoolean var1 = new MutableBoolean(false);
+         var0 = var0.update("Attributes", (var1x) -> {
+            return var1x.createList(var1x.asStream().map((var1xx) -> {
+               return "minecraft:generic.max_health".equals(NamespacedSchema.ensureNamespaced(var1xx.get("Name").asString(""))) ? var1xx.update("Base", (var1x) -> {
+                  if (var1x.asDouble(0.0) == 20.0) {
+                     var1.setTrue();
+                     return var1x.createDouble(40.0);
+                  } else {
+                     return var1x;
+                  }
+               }) : var1xx;
+            }));
+         });
+         if (var1.isTrue()) {
+            var0 = var0.update("Health", (var0x) -> {
+               return var0x.createFloat(var0x.asFloat(0.0F) * 2.0F);
+            });
          }
-      );
+
+         return var0;
+      });
    }
 }

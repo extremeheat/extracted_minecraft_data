@@ -66,7 +66,6 @@ public class MapColor {
    public static final MapColor DEEPSLATE = new MapColor(59, 6579300);
    public static final MapColor RAW_IRON = new MapColor(60, 14200723);
    public static final MapColor GLOW_LICHEN = new MapColor(61, 8365974);
-   public static final MapColor POTATO = new MapColor(62, 14865562);
    public final int col;
    public final int id;
 
@@ -81,15 +80,15 @@ public class MapColor {
       }
    }
 
-   public int calculateRGBColor(MapColor.Brightness var1) {
+   public int calculateRGBColor(Brightness var1) {
       if (this == NONE) {
          return 0;
       } else {
          int var2 = var1.modifier;
-         int var3 = (this.col >> 16 & 0xFF) * var2 / 255;
-         int var4 = (this.col >> 8 & 0xFF) * var2 / 255;
-         int var5 = (this.col & 0xFF) * var2 / 255;
-         return 0xFF000000 | var5 << 16 | var4 << 8 | var3;
+         int var3 = (this.col >> 16 & 255) * var2 / 255;
+         int var4 = (this.col >> 8 & 255) * var2 / 255;
+         int var5 = (this.col & 255) * var2 / 255;
+         return -16777216 | var5 << 16 | var4 << 8 | var3;
       }
    }
 
@@ -104,11 +103,11 @@ public class MapColor {
    }
 
    public static int getColorFromPackedId(int var0) {
-      int var1 = var0 & 0xFF;
+      int var1 = var0 & 255;
       return byIdUnsafe(var1 >> 2).calculateRGBColor(MapColor.Brightness.byIdUnsafe(var1 & 3));
    }
 
-   public byte getPackedId(MapColor.Brightness var1) {
+   public byte getPackedId(Brightness var1) {
       return (byte)(this.id << 2 | var1.id & 3);
    }
 
@@ -118,7 +117,7 @@ public class MapColor {
       HIGH(2, 255),
       LOWEST(3, 135);
 
-      private static final MapColor.Brightness[] VALUES = new MapColor.Brightness[]{LOW, NORMAL, HIGH, LOWEST};
+      private static final Brightness[] VALUES = new Brightness[]{LOW, NORMAL, HIGH, LOWEST};
       public final int id;
       public final int modifier;
 
@@ -127,13 +126,18 @@ public class MapColor {
          this.modifier = var4;
       }
 
-      public static MapColor.Brightness byId(int var0) {
+      public static Brightness byId(int var0) {
          Preconditions.checkPositionIndex(var0, VALUES.length, "brightness id");
          return byIdUnsafe(var0);
       }
 
-      static MapColor.Brightness byIdUnsafe(int var0) {
+      static Brightness byIdUnsafe(int var0) {
          return VALUES[var0];
+      }
+
+      // $FF: synthetic method
+      private static Brightness[] $values() {
+         return new Brightness[]{LOW, NORMAL, HIGH, LOWEST};
       }
    }
 }

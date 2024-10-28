@@ -25,15 +25,9 @@ public final class LevelSettings {
 
    public static LevelSettings parse(Dynamic<?> var0, WorldDataConfiguration var1) {
       GameType var2 = GameType.byId(var0.get("GameType").asInt(0));
-      return new LevelSettings(
-         var0.get("LevelName").asString(""),
-         var2,
-         var0.get("hardcore").asBoolean(false),
-         var0.get("Difficulty").asNumber().map(var0x -> Difficulty.byId(var0x.byteValue())).result().orElse(Difficulty.NORMAL),
-         var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE),
-         new GameRules(var0.get("GameRules")),
-         var1
-      );
+      return new LevelSettings(var0.get("LevelName").asString(""), var2, var0.get("hardcore").asBoolean(false), (Difficulty)var0.get("Difficulty").asNumber().map((var0x) -> {
+         return Difficulty.byId(var0x.byteValue());
+      }).result().orElse(Difficulty.NORMAL), var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE), new GameRules(var0.get("GameRules")), var1);
    }
 
    public String levelName() {

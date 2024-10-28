@@ -16,7 +16,7 @@ import java.security.SecureRandom;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
-import java.util.Base64.Encoder;
+import java.util.Objects;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -38,21 +38,9 @@ public class Crypt {
    public static final String RSA_PUBLIC_KEY_HEADER = "-----BEGIN RSA PUBLIC KEY-----";
    private static final String RSA_PUBLIC_KEY_FOOTER = "-----END RSA PUBLIC KEY-----";
    public static final String MIME_LINE_SEPARATOR = "\n";
-   public static final Encoder MIME_ENCODER = Base64.getMimeEncoder(76, "\n".getBytes(StandardCharsets.UTF_8));
-   public static final Codec<PublicKey> PUBLIC_KEY_CODEC = Codec.STRING.comapFlatMap(var0 -> {
-      try {
-         return DataResult.success(stringToRsaPublicKey(var0));
-      } catch (CryptException var2) {
-         return DataResult.error(var2::getMessage);
-      }
-   }, Crypt::rsaPublicKeyToString);
-   public static final Codec<PrivateKey> PRIVATE_KEY_CODEC = Codec.STRING.comapFlatMap(var0 -> {
-      try {
-         return DataResult.success(stringToPemRsaPrivateKey(var0));
-      } catch (CryptException var2) {
-         return DataResult.error(var2::getMessage);
-      }
-   }, Crypt::pemRsaPrivateKeyToString);
+   public static final Base64.Encoder MIME_ENCODER;
+   public static final Codec<PublicKey> PUBLIC_KEY_CODEC;
+   public static final Codec<PrivateKey> PRIVATE_KEY_CODEC;
 
    public Crypt() {
       super();
@@ -88,15 +76,18 @@ public class Crypt {
 
    private static byte[] digestData(byte[]... var0) throws Exception {
       MessageDigest var1 = MessageDigest.getInstance("SHA-1");
+      byte[][] var2 = var0;
+      int var3 = var0.length;
 
-      for(byte[] var5 : var0) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         byte[] var5 = var2[var4];
          var1.update(var5);
       }
 
       return var1.digest();
    }
 
-   private static <T extends Key> T rsaStringToKey(String var0, String var1, String var2, Crypt.ByteArrayToKeyFunction<T> var3) throws CryptException {
+   private static <T extends Key> T rsaStringToKey(String var0, String var1, String var2, ByteArrayToKeyFunction<T> var3) throws CryptException {
       int var4 = var0.indexOf(var1);
       if (var4 != -1) {
          var4 += var1.length();
@@ -105,25 +96,26 @@ public class Crypt {
       }
 
       try {
-         return (T)var3.apply(Base64.getMimeDecoder().decode(var0));
+         return var3.apply(Base64.getMimeDecoder().decode(var0));
       } catch (IllegalArgumentException var6) {
          throw new CryptException(var6);
       }
    }
 
    public static PrivateKey stringToPemRsaPrivateKey(String var0) throws CryptException {
-      return rsaStringToKey(var0, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----", Crypt::byteToPrivateKey);
+      return (PrivateKey)rsaStringToKey(var0, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----", Crypt::byteToPrivateKey);
    }
 
    public static PublicKey stringToRsaPublicKey(String var0) throws CryptException {
-      return rsaStringToKey(var0, "-----BEGIN RSA PUBLIC KEY-----", "-----END RSA PUBLIC KEY-----", Crypt::byteToPublicKey);
+      return (PublicKey)rsaStringToKey(var0, "-----BEGIN RSA PUBLIC KEY-----", "-----END RSA PUBLIC KEY-----", Crypt::byteToPublicKey);
    }
 
    public static String rsaPublicKeyToString(PublicKey var0) {
       if (!"RSA".equals(var0.getAlgorithm())) {
          throw new IllegalArgumentException("Public key must be RSA");
       } else {
-         return "-----BEGIN RSA PUBLIC KEY-----\n" + MIME_ENCODER.encodeToString(var0.getEncoded()) + "\n-----END RSA PUBLIC KEY-----\n";
+         Base64.Encoder var10000 = MIME_ENCODER;
+         return "-----BEGIN RSA PUBLIC KEY-----\n" + var10000.encodeToString(var0.getEncoded()) + "\n-----END RSA PUBLIC KEY-----\n";
       }
    }
 
@@ -131,7 +123,8 @@ public class Crypt {
       if (!"RSA".equals(var0.getAlgorithm())) {
          throw new IllegalArgumentException("Private key must be RSA");
       } else {
-         return "-----BEGIN RSA PRIVATE KEY-----\n" + MIME_ENCODER.encodeToString(var0.getEncoded()) + "\n-----END RSA PRIVATE KEY-----\n";
+         Base64.Encoder var10000 = MIME_ENCODER;
+         return "-----BEGIN RSA PRIVATE KEY-----\n" + var10000.encodeToString(var0.getEncoded()) + "\n-----END RSA PRIVATE KEY-----\n";
       }
    }
 
@@ -197,14 +190,32 @@ public class Crypt {
       }
    }
 
-   interface ByteArrayToKeyFunction<T extends Key> {
+   static {
+      MIME_ENCODER = Base64.getMimeEncoder(76, "\n".getBytes(StandardCharsets.UTF_8));
+      PUBLIC_KEY_CODEC = Codec.STRING.comapFlatMap((var0) -> {
+         try {
+            return DataResult.success(stringToRsaPublicKey(var0));
+         } catch (CryptException var2) {
+            Objects.requireNonNull(var2);
+            return DataResult.error(var2::getMessage);
+         }
+      }, Crypt::rsaPublicKeyToString);
+      PRIVATE_KEY_CODEC = Codec.STRING.comapFlatMap((var0) -> {
+         try {
+            return DataResult.success(stringToPemRsaPrivateKey(var0));
+         } catch (CryptException var2) {
+            Objects.requireNonNull(var2);
+            return DataResult.error(var2::getMessage);
+         }
+      }, Crypt::pemRsaPrivateKeyToString);
+   }
+
+   private interface ByteArrayToKeyFunction<T extends Key> {
       T apply(byte[] var1) throws CryptException;
    }
 
-   public static record SaltSignaturePair(long b, byte[] c) {
-      private final long salt;
-      private final byte[] signature;
-      public static final Crypt.SaltSignaturePair EMPTY = new Crypt.SaltSignaturePair(0L, ByteArrays.EMPTY_ARRAY);
+   public static record SaltSignaturePair(long salt, byte[] signature) {
+      public static final SaltSignaturePair EMPTY;
 
       public SaltSignaturePair(FriendlyByteBuf var1) {
          this(var1.readLong(), var1.readByteArray());
@@ -220,13 +231,25 @@ public class Crypt {
          return this.signature.length > 0;
       }
 
-      public static void write(FriendlyByteBuf var0, Crypt.SaltSignaturePair var1) {
+      public static void write(FriendlyByteBuf var0, SaltSignaturePair var1) {
          var0.writeLong(var1.salt);
          var0.writeByteArray(var1.signature);
       }
 
       public byte[] saltAsBytes() {
          return Longs.toByteArray(this.salt);
+      }
+
+      public long salt() {
+         return this.salt;
+      }
+
+      public byte[] signature() {
+         return this.signature;
+      }
+
+      static {
+         EMPTY = new SaltSignaturePair(0L, ByteArrays.EMPTY_ARRAY);
       }
    }
 

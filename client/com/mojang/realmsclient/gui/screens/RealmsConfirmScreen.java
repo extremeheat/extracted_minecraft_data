@@ -20,18 +20,18 @@ public class RealmsConfirmScreen extends RealmsScreen {
       this.title2 = var3;
    }
 
-   @Override
    public void init() {
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_YES, var1 -> this.callback.accept(true)).bounds(this.width / 2 - 105, row(9), 100, 20).build()
-      );
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_NO, var1 -> this.callback.accept(false)).bounds(this.width / 2 + 5, row(9), 100, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_YES, (var1) -> {
+         this.callback.accept(true);
+      }).bounds(this.width / 2 - 105, row(9), 100, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_NO, (var1) -> {
+         this.callback.accept(false);
+      }).bounds(this.width / 2 + 5, row(9), 100, 20).build());
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title1, this.width / 2, row(3), -1);
-      var1.drawCenteredString(this.font, this.title2, this.width / 2, row(5), -1);
+      var1.drawCenteredString(this.font, (Component)this.title1, this.width / 2, row(3), -1);
+      var1.drawCenteredString(this.font, (Component)this.title2, this.width / 2, row(5), -1);
    }
 }

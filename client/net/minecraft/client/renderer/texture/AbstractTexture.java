@@ -53,28 +53,32 @@ public abstract class AbstractTexture implements AutoCloseable {
                TextureUtil.releaseTextureId(this.id);
                this.id = -1;
             }
+
          });
       } else if (this.id != -1) {
          TextureUtil.releaseTextureId(this.id);
          this.id = -1;
       }
+
    }
 
    public abstract void load(ResourceManager var1) throws IOException;
 
    public void bind() {
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> GlStateManager._bindTexture(this.getId()));
+         RenderSystem.recordRenderCall(() -> {
+            GlStateManager._bindTexture(this.getId());
+         });
       } else {
          GlStateManager._bindTexture(this.getId());
       }
+
    }
 
    public void reset(TextureManager var1, ResourceManager var2, ResourceLocation var3, Executor var4) {
       var1.register(var3, this);
    }
 
-   @Override
    public void close() {
    }
 }

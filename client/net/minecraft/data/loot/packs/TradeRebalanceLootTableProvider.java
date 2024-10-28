@@ -14,8 +14,6 @@ public class TradeRebalanceLootTableProvider {
    }
 
    public static LootTableProvider create(PackOutput var0, CompletableFuture<HolderLookup.Provider> var1) {
-      return new LootTableProvider(
-         var0, Set.of(), List.of(new LootTableProvider.SubProviderEntry(TradeRebalanceChestLoot::new, LootContextParamSets.CHEST)), var1
-      );
+      return new LootTableProvider(var0, Set.of(), List.of(new LootTableProvider.SubProviderEntry(TradeRebalanceChestLoot::new, LootContextParamSets.CHEST)), var1);
    }
 }

@@ -7,12 +7,10 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortList;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class ChunkToProtochunkFix extends DataFix {
    private static final int NUM_SECTIONS = 16;
@@ -22,12 +20,9 @@ public class ChunkToProtochunkFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.writeFixAndRead(
-         "ChunkToProtoChunkFix",
-         this.getInputSchema().getType(References.CHUNK),
-         this.getOutputSchema().getType(References.CHUNK),
-         var0 -> var0.update("Level", ChunkToProtochunkFix::fixChunkData)
-      );
+      return this.writeFixAndRead("ChunkToProtoChunkFix", this.getInputSchema().getType(References.CHUNK), this.getOutputSchema().getType(References.CHUNK), (var0) -> {
+         return var0.update("Level", ChunkToProtochunkFix::fixChunkData);
+      });
    }
 
    private static <T> Dynamic<T> fixChunkData(Dynamic<T> var0) {
@@ -48,7 +43,8 @@ public class ChunkToProtochunkFix extends DataFix {
    }
 
    private static <T> Dynamic<T> repackBiomes(Dynamic<T> var0) {
-      return var0.update("Biomes", var1 -> (Dynamic)DataFixUtils.orElse(var1.asByteBufferOpt().result().map(var1x -> {
+      return var0.update("Biomes", (var1) -> {
+         return (Dynamic)DataFixUtils.orElse(var1.asByteBufferOpt().result().map((var1x) -> {
             int[] var2 = new int[256];
 
             for(int var3 = 0; var3 < var2.length; ++var3) {
@@ -58,33 +54,28 @@ public class ChunkToProtochunkFix extends DataFix {
             }
 
             return var0.createIntList(Arrays.stream(var2));
-         }), var1));
+         }), var1);
+      });
    }
 
    private static <T> Dynamic<T> repackTicks(Dynamic<T> var0) {
-      return (Dynamic<T>)DataFixUtils.orElse(
-         var0.get("TileTicks")
-            .asStreamOpt()
-            .result()
-            .map(
-               var1 -> {
-                  List var2 = IntStream.range(0, 16).mapToObj(var0xx -> new ShortArrayList()).collect(Collectors.toList());
-                  var1.forEach(var1x -> {
-                     int var2xx = var1x.get("x").asInt(0);
-                     int var3 = var1x.get("y").asInt(0);
-                     int var4 = var1x.get("z").asInt(0);
-                     short var5 = packOffsetCoordinates(var2xx, var3, var4);
-                     ((ShortList)var2.get(var3 >> 4)).add(var5);
-                  });
-                  return var0.remove("TileTicks")
-                     .set(
-                        "ToBeTicked",
-                        var0.createList(var2.stream().map(var1x -> var0.createList(var1x.intStream().mapToObj(var1xx -> var0.createShort((short)var1xx)))))
-                     );
-               }
-            ),
-         var0
-      );
+      return (Dynamic)DataFixUtils.orElse(var0.get("TileTicks").asStreamOpt().result().map((var1) -> {
+         List var2 = (List)IntStream.range(0, 16).mapToObj((var0x) -> {
+            return new ShortArrayList();
+         }).collect(Collectors.toList());
+         var1.forEach((var1x) -> {
+            int var2x = var1x.get("x").asInt(0);
+            int var3 = var1x.get("y").asInt(0);
+            int var4 = var1x.get("z").asInt(0);
+            short var5 = packOffsetCoordinates(var2x, var3, var4);
+            ((ShortList)var2.get(var3 >> 4)).add(var5);
+         });
+         return var0.remove("TileTicks").set("ToBeTicked", var0.createList(var2.stream().map((var1x) -> {
+            return var0.createList(var1x.intStream().mapToObj((var1) -> {
+               return var0.createShort((short)var1);
+            }));
+         })));
+      }), var0);
    }
 
    private static short packOffsetCoordinates(int var0, int var1, int var2) {

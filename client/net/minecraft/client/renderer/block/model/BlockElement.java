@@ -9,9 +9,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
@@ -39,14 +39,18 @@ public class BlockElement {
    }
 
    private void fillUvs() {
-      for(Entry var2 : this.faces.entrySet()) {
+      Iterator var1 = this.faces.entrySet().iterator();
+
+      while(var1.hasNext()) {
+         Map.Entry var2 = (Map.Entry)var1.next();
          float[] var3 = this.uvsByFace((Direction)var2.getKey());
          ((BlockElementFace)var2.getValue()).uv.setMissingUv(var3);
       }
+
    }
 
    private float[] uvsByFace(Direction var1) {
-      switch(var1) {
+      switch (var1) {
          case DOWN:
             return new float[]{this.from.x(), 16.0F - this.to.z(), this.to.x(), 16.0F - this.from.z()};
          case UP:
@@ -131,8 +135,10 @@ public class BlockElement {
       private Map<Direction, BlockElementFace> filterNullFromFaces(JsonDeserializationContext var1, JsonObject var2) {
          EnumMap var3 = Maps.newEnumMap(Direction.class);
          JsonObject var4 = GsonHelper.getAsJsonObject(var2, "faces");
+         Iterator var5 = var4.entrySet().iterator();
 
-         for(Entry var6 : var4.entrySet()) {
+         while(var5.hasNext()) {
+            Map.Entry var6 = (Map.Entry)var5.next();
             Direction var7 = this.getFacing((String)var6.getKey());
             var3.put(var7, (BlockElementFace)var1.deserialize((JsonElement)var6.getValue(), BlockElementFace.class));
          }
@@ -154,7 +160,7 @@ public class BlockElement {
          if (!(var2.x() < -16.0F) && !(var2.y() < -16.0F) && !(var2.z() < -16.0F) && !(var2.x() > 32.0F) && !(var2.y() > 32.0F) && !(var2.z() > 32.0F)) {
             return var2;
          } else {
-            throw new JsonParseException("'to' specifier exceeds the allowed boundaries: " + var2);
+            throw new JsonParseException("'to' specifier exceeds the allowed boundaries: " + String.valueOf(var2));
          }
       }
 
@@ -163,7 +169,7 @@ public class BlockElement {
          if (!(var2.x() < -16.0F) && !(var2.y() < -16.0F) && !(var2.z() < -16.0F) && !(var2.x() > 32.0F) && !(var2.y() > 32.0F) && !(var2.z() > 32.0F)) {
             return var2;
          } else {
-            throw new JsonParseException("'from' specifier exceeds the allowed boundaries: " + var2);
+            throw new JsonParseException("'from' specifier exceeds the allowed boundaries: " + String.valueOf(var2));
          }
       }
 
@@ -180,6 +186,11 @@ public class BlockElement {
 
             return new Vector3f(var4[0], var4[1], var4[2]);
          }
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

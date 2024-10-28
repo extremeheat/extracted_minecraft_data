@@ -1,12 +1,14 @@
 package net.minecraft.world.level.storage.loot.providers.score;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
-public record LootScoreProviderType(Codec<? extends ScoreboardNameProvider> a) {
-   private final Codec<? extends ScoreboardNameProvider> codec;
-
-   public LootScoreProviderType(Codec<? extends ScoreboardNameProvider> var1) {
+public record LootScoreProviderType(MapCodec<? extends ScoreboardNameProvider> codec) {
+   public LootScoreProviderType(MapCodec<? extends ScoreboardNameProvider> var1) {
       super();
       this.codec = var1;
+   }
+
+   public MapCodec<? extends ScoreboardNameProvider> codec() {
+      return this.codec;
    }
 }

@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.FriendlyByteBuf;
 
-public interface ArgumentTypeInfo<A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> {
+public interface ArgumentTypeInfo<A extends ArgumentType<?>, T extends Template<A>> {
    void serializeToNetwork(T var1, FriendlyByteBuf var2);
 
    T deserializeFromNetwork(FriendlyByteBuf var1);

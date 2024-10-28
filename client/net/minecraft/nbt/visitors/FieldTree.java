@@ -4,13 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.nbt.TagType;
 
-public record FieldTree(int a, Map<String, TagType<?>> b, Map<String, FieldTree> c) {
-   private final int depth;
-   private final Map<String, TagType<?>> selectedFields;
-   private final Map<String, FieldTree> fieldsToRecurse;
-
+public record FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<String, FieldTree> fieldsToRecurse) {
    private FieldTree(int var1) {
-      this(var1, new HashMap<>(), new HashMap<>());
+      this(var1, new HashMap(), new HashMap());
    }
 
    public FieldTree(int var1, Map<String, TagType<?>> var2, Map<String, FieldTree> var3) {
@@ -26,13 +22,28 @@ public record FieldTree(int a, Map<String, TagType<?>> b, Map<String, FieldTree>
 
    public void addEntry(FieldSelector var1) {
       if (this.depth <= var1.path().size()) {
-         ((FieldTree)this.fieldsToRecurse.computeIfAbsent(var1.path().get(this.depth - 1), var1x -> new FieldTree(this.depth + 1))).addEntry(var1);
+         ((FieldTree)this.fieldsToRecurse.computeIfAbsent((String)var1.path().get(this.depth - 1), (var1x) -> {
+            return new FieldTree(this.depth + 1);
+         })).addEntry(var1);
       } else {
          this.selectedFields.put(var1.name(), var1.type());
       }
+
    }
 
    public boolean isSelected(TagType<?> var1, String var2) {
       return var1.equals(this.selectedFields().get(var2));
+   }
+
+   public int depth() {
+      return this.depth;
+   }
+
+   public Map<String, TagType<?>> selectedFields() {
+      return this.selectedFields;
+   }
+
+   public Map<String, FieldTree> fieldsToRecurse() {
+      return this.fieldsToRecurse;
    }
 }

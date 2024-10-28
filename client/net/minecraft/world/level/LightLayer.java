@@ -6,4 +6,9 @@ public enum LightLayer {
 
    private LightLayer() {
    }
+
+   // $FF: synthetic method
+   private static LightLayer[] $values() {
+      return new LightLayer[]{SKY, BLOCK};
+   }
 }

@@ -11,31 +11,29 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
-public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.ChunkBiomeData> b) implements Packet<ClientGamePacketListener> {
-   private final List<ClientboundChunksBiomesPacket.ChunkBiomeData> chunkBiomeData;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundChunksBiomesPacket> STREAM_CODEC = Packet.codec(
-      ClientboundChunksBiomesPacket::write, ClientboundChunksBiomesPacket::new
-   );
+public record ClientboundChunksBiomesPacket(List<ChunkBiomeData> chunkBiomeData) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundChunksBiomesPacket> STREAM_CODEC = Packet.codec(ClientboundChunksBiomesPacket::write, ClientboundChunksBiomesPacket::new);
    private static final int TWO_MEGABYTES = 2097152;
 
    private ClientboundChunksBiomesPacket(FriendlyByteBuf var1) {
-      this(var1.readList(ClientboundChunksBiomesPacket.ChunkBiomeData::new));
+      this(var1.readList(ChunkBiomeData::new));
    }
 
-   public ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.ChunkBiomeData> var1) {
+   public ClientboundChunksBiomesPacket(List<ChunkBiomeData> var1) {
       super();
       this.chunkBiomeData = var1;
    }
 
    public static ClientboundChunksBiomesPacket forChunks(List<LevelChunk> var0) {
-      return new ClientboundChunksBiomesPacket(var0.stream().map(ClientboundChunksBiomesPacket.ChunkBiomeData::new).toList());
+      return new ClientboundChunksBiomesPacket(var0.stream().map(ChunkBiomeData::new).toList());
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.chunkBiomeData, (var0, var1x) -> var1x.write(var0));
+      var1.writeCollection(this.chunkBiomeData, (var0, var1x) -> {
+         var1x.write(var0);
+      });
    }
 
-   @Override
    public PacketType<ClientboundChunksBiomesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CHUNKS_BIOMES;
    }
@@ -44,10 +42,11 @@ public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.C
       var1.handleChunksBiomes(this);
    }
 
-   public static record ChunkBiomeData(ChunkPos a, byte[] b) {
-      private final ChunkPos pos;
-      private final byte[] buffer;
+   public List<ChunkBiomeData> chunkBiomeData() {
+      return this.chunkBiomeData;
+   }
 
+   public static record ChunkBiomeData(ChunkPos pos, byte[] buffer) {
       public ChunkBiomeData(LevelChunk var1) {
          this(var1.getPos(), new byte[calculateChunkSize(var1)]);
          extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1);
@@ -65,8 +64,11 @@ public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.C
 
       private static int calculateChunkSize(LevelChunk var0) {
          int var1 = 0;
+         LevelChunkSection[] var2 = var0.getSections();
+         int var3 = var2.length;
 
-         for(LevelChunkSection var5 : var0.getSections()) {
+         for(int var4 = 0; var4 < var3; ++var4) {
+            LevelChunkSection var5 = var2[var4];
             var1 += var5.getBiomes().getSerializedSize();
          }
 
@@ -84,14 +86,27 @@ public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.C
       }
 
       public static void extractChunkData(FriendlyByteBuf var0, LevelChunk var1) {
-         for(LevelChunkSection var5 : var1.getSections()) {
+         LevelChunkSection[] var2 = var1.getSections();
+         int var3 = var2.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            LevelChunkSection var5 = var2[var4];
             var5.getBiomes().write(var0);
          }
+
       }
 
       public void write(FriendlyByteBuf var1) {
          var1.writeChunkPos(this.pos);
          var1.writeByteArray(this.buffer);
+      }
+
+      public ChunkPos pos() {
+         return this.pos;
+      }
+
+      public byte[] buffer() {
+         return this.buffer;
       }
    }
 }

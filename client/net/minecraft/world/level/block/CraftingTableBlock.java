@@ -7,7 +7,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.CraftingMenu;
@@ -20,7 +19,6 @@ public class CraftingTableBlock extends Block {
    public static final MapCodec<CraftingTableBlock> CODEC = simpleCodec(CraftingTableBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.crafting");
 
-   @Override
    public MapCodec<? extends CraftingTableBlock> codec() {
       return CODEC;
    }
@@ -29,7 +27,6 @@ public class CraftingTableBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -40,8 +37,9 @@ public class CraftingTableBlock extends Block {
       }
    }
 
-   @Override
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new CraftingMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> {
+         return new CraftingMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
+      }, CONTAINER_TITLE);
    }
 }

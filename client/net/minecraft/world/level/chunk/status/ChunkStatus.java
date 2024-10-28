@@ -23,106 +23,33 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ChunkStatus {
    public static final int MAX_STRUCTURE_DISTANCE = 8;
-   private static final EnumSet<Heightmap.Types> PRE_FEATURES = EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG);
-   public static final EnumSet<Heightmap.Types> POST_FEATURES = EnumSet.of(
-      Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE, Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES
-   );
-   public static final ChunkStatus EMPTY = register(
-      "empty", null, -1, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateEmpty, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus STRUCTURE_STARTS = register(
-      "structure_starts", EMPTY, 0, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateStructureStarts, ChunkStatusTasks::loadStructureStarts
-   );
-   public static final ChunkStatus STRUCTURE_REFERENCES = register(
-      "structure_references",
-      STRUCTURE_STARTS,
-      8,
-      false,
-      PRE_FEATURES,
-      ChunkType.PROTOCHUNK,
-      ChunkStatusTasks::generateStructureReferences,
-      ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus BIOMES = register(
-      "biomes", STRUCTURE_REFERENCES, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateBiomes, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus NOISE = register(
-      "noise", BIOMES, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateNoise, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus SURFACE = register(
-      "surface", NOISE, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateSurface, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus CARVERS = register(
-      "carvers", SURFACE, 8, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateCarvers, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus FEATURES = register(
-      "features", CARVERS, 8, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateFeatures, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus INITIALIZE_LIGHT = register(
-      "initialize_light",
-      FEATURES,
-      0,
-      false,
-      POST_FEATURES,
-      ChunkType.PROTOCHUNK,
-      ChunkStatusTasks::generateInitializeLight,
-      ChunkStatusTasks::loadInitializeLight
-   );
-   public static final ChunkStatus LIGHT = register(
-      "light", INITIALIZE_LIGHT, 1, true, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateLight, ChunkStatusTasks::loadLight
-   );
-   public static final ChunkStatus SPAWN = register(
-      "spawn", LIGHT, 1, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateSpawn, ChunkStatusTasks::loadPassThrough
-   );
-   public static final ChunkStatus FULL = register(
-      "full", SPAWN, 0, false, POST_FEATURES, ChunkType.LEVELCHUNK, ChunkStatusTasks::generateFull, ChunkStatusTasks::loadFull
-   );
-   private static final List<ChunkStatus> STATUS_BY_RANGE = ImmutableList.of(
-      FULL,
-      INITIALIZE_LIGHT,
-      CARVERS,
-      BIOMES,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      STRUCTURE_STARTS,
-      new ChunkStatus[0]
-   );
-   private static final IntList RANGE_BY_STATUS = Util.make(new IntArrayList(getStatusList().size()), var0 -> {
-      int var1 = 0;
-
-      for(int var2 = getStatusList().size() - 1; var2 >= 0; --var2) {
-         while(var1 + 1 < STATUS_BY_RANGE.size() && var2 <= STATUS_BY_RANGE.get(var1 + 1).getIndex()) {
-            ++var1;
-         }
-
-         var0.add(0, var1);
-      }
-   });
+   private static final EnumSet<Heightmap.Types> PRE_FEATURES;
+   public static final EnumSet<Heightmap.Types> POST_FEATURES;
+   public static final ChunkStatus EMPTY;
+   public static final ChunkStatus STRUCTURE_STARTS;
+   public static final ChunkStatus STRUCTURE_REFERENCES;
+   public static final ChunkStatus BIOMES;
+   public static final ChunkStatus NOISE;
+   public static final ChunkStatus SURFACE;
+   public static final ChunkStatus CARVERS;
+   public static final ChunkStatus FEATURES;
+   public static final ChunkStatus INITIALIZE_LIGHT;
+   public static final ChunkStatus LIGHT;
+   public static final ChunkStatus SPAWN;
+   public static final ChunkStatus FULL;
+   private static final List<ChunkStatus> STATUS_BY_RANGE;
+   private static final IntList RANGE_BY_STATUS;
    private final int index;
    private final ChunkStatus parent;
-   private final ChunkStatus.GenerationTask generationTask;
-   private final ChunkStatus.LoadingTask loadingTask;
+   private final GenerationTask generationTask;
+   private final LoadingTask loadingTask;
    private final int range;
    private final boolean hasLoadDependencies;
    private final ChunkType chunkType;
    private final EnumSet<Heightmap.Types> heightmapsAfter;
 
-   private static ChunkStatus register(
-      String var0,
-      @Nullable ChunkStatus var1,
-      int var2,
-      boolean var3,
-      EnumSet<Heightmap.Types> var4,
-      ChunkType var5,
-      ChunkStatus.GenerationTask var6,
-      ChunkStatus.LoadingTask var7
-   ) {
-      return Registry.register(BuiltInRegistries.CHUNK_STATUS, var0, new ChunkStatus(var1, var2, var3, var4, var5, var6, var7));
+   private static ChunkStatus register(String var0, @Nullable ChunkStatus var1, int var2, boolean var3, EnumSet<Heightmap.Types> var4, ChunkType var5, GenerationTask var6, LoadingTask var7) {
+      return (ChunkStatus)Registry.register(BuiltInRegistries.CHUNK_STATUS, (String)var0, new ChunkStatus(var1, var2, var3, var4, var5, var6, var7));
    }
 
    public static List<ChunkStatus> getStatusList() {
@@ -142,7 +69,7 @@ public class ChunkStatus {
       if (var0 >= STATUS_BY_RANGE.size()) {
          return EMPTY;
       } else {
-         return var0 < 0 ? FULL : STATUS_BY_RANGE.get(var0);
+         return var0 < 0 ? FULL : (ChunkStatus)STATUS_BY_RANGE.get(var0);
       }
    }
 
@@ -154,15 +81,7 @@ public class ChunkStatus {
       return RANGE_BY_STATUS.getInt(var0.getIndex());
    }
 
-   ChunkStatus(
-      @Nullable ChunkStatus var1,
-      int var2,
-      boolean var3,
-      EnumSet<Heightmap.Types> var4,
-      ChunkType var5,
-      ChunkStatus.GenerationTask var6,
-      ChunkStatus.LoadingTask var7
-   ) {
+   ChunkStatus(@Nullable ChunkStatus var1, int var2, boolean var3, EnumSet<Heightmap.Types> var4, ChunkType var5, GenerationTask var6, LoadingTask var7) {
       super();
       this.parent = var1 == null ? this : var1;
       this.generationTask = var6;
@@ -185,9 +104,11 @@ public class ChunkStatus {
    public CompletableFuture<ChunkAccess> generate(WorldGenContext var1, Executor var2, ToFullChunk var3, List<ChunkAccess> var4) {
       ChunkAccess var5 = (ChunkAccess)var4.get(var4.size() / 2);
       ProfiledDuration var6 = JvmProfiler.INSTANCE.onChunkGenerate(var5.getPos(), var1.level().dimension(), this.toString());
-      return this.generationTask.doWork(var1, this, var2, var3, var4, var5).thenApply(var2x -> {
-         if (var2x instanceof ProtoChunk var3xx && !var3xx.getStatus().isOrAfter(this)) {
-            var3xx.setStatus(this);
+      return this.generationTask.doWork(var1, this, var2, var3, var4, var5).thenApply((var2x) -> {
+         if (var2x instanceof ProtoChunk var3) {
+            if (!var3.getStatus().isOrAfter(this)) {
+               var3.setStatus(this);
+            }
          }
 
          if (var6 != null) {
@@ -215,7 +136,7 @@ public class ChunkStatus {
    }
 
    public static ChunkStatus byName(String var0) {
-      return BuiltInRegistries.CHUNK_STATUS.get(ResourceLocation.tryParse(var0));
+      return (ChunkStatus)BuiltInRegistries.CHUNK_STATUS.get(ResourceLocation.tryParse(var0));
    }
 
    public EnumSet<Heightmap.Types> heightmapsAfter() {
@@ -226,9 +147,38 @@ public class ChunkStatus {
       return this.getIndex() >= var1.getIndex();
    }
 
-   @Override
    public String toString() {
       return BuiltInRegistries.CHUNK_STATUS.getKey(this).toString();
+   }
+
+   static {
+      PRE_FEATURES = EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG);
+      POST_FEATURES = EnumSet.of(Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE, Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES);
+      EMPTY = register("empty", (ChunkStatus)null, -1, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateEmpty, ChunkStatusTasks::loadPassThrough);
+      STRUCTURE_STARTS = register("structure_starts", EMPTY, 0, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateStructureStarts, ChunkStatusTasks::loadStructureStarts);
+      STRUCTURE_REFERENCES = register("structure_references", STRUCTURE_STARTS, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateStructureReferences, ChunkStatusTasks::loadPassThrough);
+      BIOMES = register("biomes", STRUCTURE_REFERENCES, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateBiomes, ChunkStatusTasks::loadPassThrough);
+      NOISE = register("noise", BIOMES, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateNoise, ChunkStatusTasks::loadPassThrough);
+      SURFACE = register("surface", NOISE, 8, false, PRE_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateSurface, ChunkStatusTasks::loadPassThrough);
+      CARVERS = register("carvers", SURFACE, 8, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateCarvers, ChunkStatusTasks::loadPassThrough);
+      FEATURES = register("features", CARVERS, 8, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateFeatures, ChunkStatusTasks::loadPassThrough);
+      INITIALIZE_LIGHT = register("initialize_light", FEATURES, 0, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateInitializeLight, ChunkStatusTasks::loadInitializeLight);
+      LIGHT = register("light", INITIALIZE_LIGHT, 1, true, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateLight, ChunkStatusTasks::loadLight);
+      SPAWN = register("spawn", LIGHT, 1, false, POST_FEATURES, ChunkType.PROTOCHUNK, ChunkStatusTasks::generateSpawn, ChunkStatusTasks::loadPassThrough);
+      FULL = register("full", SPAWN, 0, false, POST_FEATURES, ChunkType.LEVELCHUNK, ChunkStatusTasks::generateFull, ChunkStatusTasks::loadFull);
+      STATUS_BY_RANGE = ImmutableList.of(FULL, INITIALIZE_LIGHT, CARVERS, BIOMES, STRUCTURE_STARTS, STRUCTURE_STARTS, STRUCTURE_STARTS, STRUCTURE_STARTS, STRUCTURE_STARTS, STRUCTURE_STARTS, STRUCTURE_STARTS, STRUCTURE_STARTS, new ChunkStatus[0]);
+      RANGE_BY_STATUS = (IntList)Util.make(new IntArrayList(getStatusList().size()), (var0) -> {
+         int var1 = 0;
+
+         for(int var2 = getStatusList().size() - 1; var2 >= 0; --var2) {
+            while(var1 + 1 < STATUS_BY_RANGE.size() && var2 <= ((ChunkStatus)STATUS_BY_RANGE.get(var1 + 1)).getIndex()) {
+               ++var1;
+            }
+
+            var0.add(0, var1);
+         }
+
+      });
    }
 
    @FunctionalInterface

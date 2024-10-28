@@ -7,6 +7,7 @@ import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,10 +22,10 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity> 
 
    public void render(LecternBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       BlockState var7 = var1.getBlockState();
-      if (var7.getValue(LecternBlock.HAS_BOOK)) {
+      if ((Boolean)var7.getValue(LecternBlock.HAS_BOOK)) {
          var3.pushPose();
          var3.translate(0.5F, 1.0625F, 0.5F);
-         float var8 = var7.getValue(LecternBlock.FACING).getClockWise().toYRot();
+         float var8 = ((Direction)var7.getValue(LecternBlock.FACING)).getClockWise().toYRot();
          var3.mulPose(Axis.YP.rotationDegrees(-var8));
          var3.mulPose(Axis.ZP.rotationDegrees(67.5F));
          var3.translate(0.0F, -0.125F, 0.0F);

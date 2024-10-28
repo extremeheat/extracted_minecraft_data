@@ -4,6 +4,7 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -43,23 +44,29 @@ public class PlayerDataStorage {
       } catch (Exception var7) {
          LOGGER.warn("Failed to save player data for {}", var1.getName().getString());
       }
+
    }
 
    private void backup(Player var1, String var2) {
       Path var3 = this.playerDir.toPath();
-      Path var4 = var3.resolve(var1.getStringUUID() + var2);
-      Path var5 = var3.resolve(var1.getStringUUID() + "_corrupted_" + LocalDateTime.now().format(FORMATTER) + var2);
-      if (Files.isRegularFile(var4)) {
+      String var10001 = var1.getStringUUID();
+      Path var4 = var3.resolve(var10001 + var2);
+      var10001 = var1.getStringUUID();
+      Path var5 = var3.resolve(var10001 + "_corrupted_" + LocalDateTime.now().format(FORMATTER) + var2);
+      if (Files.isRegularFile(var4, new LinkOption[0])) {
          try {
             Files.copy(var4, var5, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
          } catch (Exception var7) {
             LOGGER.warn("Failed to copy the player.dat file for {}", var1.getName().getString(), var7);
          }
+
       }
    }
 
    private Optional<CompoundTag> load(Player var1, String var2) {
-      File var3 = new File(this.playerDir, var1.getStringUUID() + var2);
+      File var10002 = this.playerDir;
+      String var10003 = var1.getStringUUID();
+      File var3 = new File(var10002, var10003 + var2);
       if (var3.exists() && var3.isFile()) {
          try {
             return Optional.of(NbtIo.readCompressed(var3.toPath(), NbtAccounter.unlimitedHeap()));
@@ -77,7 +84,9 @@ public class PlayerDataStorage {
          this.backup(var1, ".dat");
       }
 
-      return var2.or(() -> this.load(var1, ".dat_old")).map(var2x -> {
+      return var2.or(() -> {
+         return this.load(var1, ".dat_old");
+      }).map((var2x) -> {
          int var3 = NbtUtils.getDataVersion(var2x, -1);
          var2x = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, var2x, var3);
          var1.load(var2x);

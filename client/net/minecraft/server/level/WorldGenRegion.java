@@ -70,8 +70,12 @@ public class WorldGenRegion implements WorldGenLevel {
    private final LevelData levelData;
    private final RandomSource random;
    private final DimensionType dimensionType;
-   private final WorldGenTickAccess<Block> blockTicks = new WorldGenTickAccess<>(var1x -> this.getChunk(var1x).getBlockTicks());
-   private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess<>(var1x -> this.getChunk(var1x).getFluidTicks());
+   private final WorldGenTickAccess<Block> blockTicks = new WorldGenTickAccess((var1x) -> {
+      return this.getChunk(var1x).getBlockTicks();
+   });
+   private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess((var1x) -> {
+      return this.getChunk(var1x).getFluidTicks();
+   });
    private final BiomeManager biomeManager;
    private final ChunkPos firstPos;
    private final ChunkPos lastPos;
@@ -112,29 +116,21 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.center.getPos();
    }
 
-   @Override
    public void setCurrentlyGenerating(@Nullable Supplier<String> var1) {
       this.currentlyGenerating = var1;
    }
 
-   @Override
    public ChunkAccess getChunk(int var1, int var2) {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY);
    }
 
-   @Override
-   public boolean isPotato() {
-      return this.level.isPotato();
-   }
-
    @Nullable
-   @Override
    public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
       ChunkAccess var5;
       if (this.hasChunk(var1, var2)) {
          int var6 = var1 - this.firstPos.x;
          int var7 = var2 - this.firstPos.z;
-         var5 = this.cache.get(var6 + var7 * this.size);
+         var5 = (ChunkAccess)this.cache.get(var6 + var7 * this.size);
          if (var5.getStatus().isOrAfter(var3)) {
             return var5;
          }
@@ -142,67 +138,61 @@ public class WorldGenRegion implements WorldGenLevel {
          var5 = null;
       }
 
-      CrashReport var8 = CrashReport.forThrowable(
-         new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk"
-      );
+      CrashReport var8 = CrashReport.forThrowable(new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk");
       CrashReportCategory var9 = var8.addCategory("Chunk request details");
-      var9.setDetail("Requested chunk", String.format(Locale.ROOT, "%d, %d", var1, var2));
-      var9.setDetail("Requested status", () -> BuiltInRegistries.CHUNK_STATUS.getKey(var3).toString());
-      var9.setDetail("Actual status", () -> var5 == null ? "[out of region bounds]" : BuiltInRegistries.CHUNK_STATUS.getKey(var5.getStatus()).toString());
-      var9.setDetail("loadOrGenerate", var4);
-      var9.setDetail("Generating chunk", () -> this.center.getPos().toString());
-      var9.setDetail("Region start", this.firstPos);
-      var9.setDetail("Region end", this.lastPos);
+      var9.setDetail("Requested chunk", (Object)String.format(Locale.ROOT, "%d, %d", var1, var2));
+      var9.setDetail("Requested status", () -> {
+         return BuiltInRegistries.CHUNK_STATUS.getKey(var3).toString();
+      });
+      var9.setDetail("Actual status", () -> {
+         return var5 == null ? "[out of region bounds]" : BuiltInRegistries.CHUNK_STATUS.getKey(var5.getStatus()).toString();
+      });
+      var9.setDetail("loadOrGenerate", (Object)var4);
+      var9.setDetail("Generating chunk", () -> {
+         return this.center.getPos().toString();
+      });
+      var9.setDetail("Region start", (Object)this.firstPos);
+      var9.setDetail("Region end", (Object)this.lastPos);
       throw new ReportedException(var8);
    }
 
-   @Override
    public boolean hasChunk(int var1, int var2) {
       return var1 >= this.firstPos.x && var1 <= this.lastPos.x && var2 >= this.firstPos.z && var2 <= this.lastPos.z;
    }
 
-   @Override
    public BlockState getBlockState(BlockPos var1) {
       return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockState(var1);
    }
 
-   @Override
    public FluidState getFluidState(BlockPos var1) {
       return this.getChunk(var1).getFluidState(var1);
    }
 
    @Nullable
-   @Override
    public Player getNearestPlayer(double var1, double var3, double var5, double var7, Predicate<Entity> var9) {
       return null;
    }
 
-   @Override
    public int getSkyDarken() {
       return 0;
    }
 
-   @Override
    public BiomeManager getBiomeManager() {
       return this.biomeManager;
    }
 
-   @Override
    public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
       return this.level.getUncachedNoiseBiome(var1, var2, var3);
    }
 
-   @Override
    public float getShade(Direction var1, boolean var2) {
       return 1.0F;
    }
 
-   @Override
    public LevelLightEngine getLightEngine() {
       return this.level.getLightEngine();
    }
 
-   @Override
    public boolean destroyBlock(BlockPos var1, boolean var2, @Nullable Entity var3, int var4) {
       BlockState var5 = this.getBlockState(var1);
       if (var5.isAir()) {
@@ -218,7 +208,6 @@ public class WorldGenRegion implements WorldGenLevel {
    }
 
    @Nullable
-   @Override
    public BlockEntity getBlockEntity(BlockPos var1) {
       ChunkAccess var2 = this.getChunk(var1);
       BlockEntity var3 = var2.getBlockEntity(var1);
@@ -252,7 +241,6 @@ public class WorldGenRegion implements WorldGenLevel {
       }
    }
 
-   @Override
    public boolean ensureCanWrite(BlockPos var1) {
       int var2 = SectionPos.blockToSectionCoord(var1.getX());
       int var3 = SectionPos.blockToSectionCoord(var1.getZ());
@@ -269,22 +257,11 @@ public class WorldGenRegion implements WorldGenLevel {
 
          return true;
       } else {
-         Util.logAndPauseIfInIde(
-            "Detected setBlock in a far chunk ["
-               + var2
-               + ", "
-               + var3
-               + "], pos: "
-               + var1
-               + ", status: "
-               + this.generatingStatus
-               + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get())
-         );
+         Util.logAndPauseIfInIde("Detected setBlock in a far chunk [" + var2 + ", " + var3 + "], pos: " + String.valueOf(var1) + ", status: " + String.valueOf(this.generatingStatus) + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get()));
          return false;
       }
    }
 
-   @Override
    public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
       if (!this.ensureCanWrite(var1)) {
          return false;
@@ -327,7 +304,6 @@ public class WorldGenRegion implements WorldGenLevel {
       this.getChunk(var1).markPosForPostprocessing(var1);
    }
 
-   @Override
    public boolean addFreshEntity(Entity var1) {
       int var2 = SectionPos.blockToSectionCoord(var1.getBlockX());
       int var3 = SectionPos.blockToSectionCoord(var1.getBlockZ());
@@ -335,43 +311,36 @@ public class WorldGenRegion implements WorldGenLevel {
       return true;
    }
 
-   @Override
    public boolean removeBlock(BlockPos var1, boolean var2) {
       return this.setBlock(var1, Blocks.AIR.defaultBlockState(), 3);
    }
 
-   @Override
    public WorldBorder getWorldBorder() {
       return this.level.getWorldBorder();
    }
 
-   @Override
    public boolean isClientSide() {
       return false;
    }
 
+   /** @deprecated */
    @Deprecated
-   @Override
    public ServerLevel getLevel() {
       return this.level;
    }
 
-   @Override
    public RegistryAccess registryAccess() {
       return this.level.registryAccess();
    }
 
-   @Override
    public FeatureFlagSet enabledFeatures() {
       return this.level.enabledFeatures();
    }
 
-   @Override
    public LevelData getLevelData() {
       return this.levelData;
    }
 
-   @Override
    public DifficultyInstance getCurrentDifficultyAt(BlockPos var1) {
       if (!this.hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()))) {
          throw new RuntimeException("We are asking a region for a chunk out of bound");
@@ -381,103 +350,82 @@ public class WorldGenRegion implements WorldGenLevel {
    }
 
    @Nullable
-   @Override
    public MinecraftServer getServer() {
       return this.level.getServer();
    }
 
-   @Override
    public ChunkSource getChunkSource() {
       return this.level.getChunkSource();
    }
 
-   @Override
    public long getSeed() {
       return this.seed;
    }
 
-   @Override
    public LevelTickAccess<Block> getBlockTicks() {
       return this.blockTicks;
    }
 
-   @Override
    public LevelTickAccess<Fluid> getFluidTicks() {
       return this.fluidTicks;
    }
 
-   @Override
    public int getSeaLevel() {
       return this.level.getSeaLevel();
    }
 
-   @Override
    public RandomSource getRandom() {
       return this.random;
    }
 
-   @Override
    public int getHeight(Heightmap.Types var1, int var2, int var3) {
       return this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
    }
 
-   @Override
    public void playSound(@Nullable Player var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
    }
 
-   @Override
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
    }
 
-   @Override
    public void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4) {
    }
 
-   @Override
    public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
    }
 
-   @Override
    public DimensionType dimensionType() {
       return this.dimensionType;
    }
 
-   @Override
    public boolean isStateAtPosition(BlockPos var1, Predicate<BlockState> var2) {
       return var2.test(this.getBlockState(var1));
    }
 
-   @Override
    public boolean isFluidAtPosition(BlockPos var1, Predicate<FluidState> var2) {
       return var2.test(this.getFluidState(var1));
    }
 
-   @Override
    public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
       return Collections.emptyList();
    }
 
-   @Override
    public List<Entity> getEntities(@Nullable Entity var1, AABB var2, @Nullable Predicate<? super Entity> var3) {
       return Collections.emptyList();
    }
 
-   @Override
    public List<Player> players() {
       return Collections.emptyList();
    }
 
-   @Override
    public int getMinBuildHeight() {
       return this.level.getMinBuildHeight();
    }
 
-   @Override
    public int getHeight() {
       return this.level.getHeight();
    }
 
-   @Override
    public long nextSubTickCount() {
       return this.subTickCount.getAndIncrement();
    }

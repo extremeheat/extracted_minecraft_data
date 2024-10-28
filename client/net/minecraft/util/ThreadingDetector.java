@@ -51,7 +51,9 @@ public class ThreadingDetector {
          if (!var1) {
             this.stackTraceLock.unlock();
          }
+
       }
+
    }
 
    public void checkAndUnlock() {
@@ -69,19 +71,21 @@ public class ThreadingDetector {
       } finally {
          this.stackTraceLock.unlock();
       }
+
    }
 
    public static ReportedException makeThreadingException(String var0, @Nullable Thread var1) {
-      String var2 = Stream.of(Thread.currentThread(), var1).filter(Objects::nonNull).map(ThreadingDetector::stackTrace).collect(Collectors.joining("\n"));
+      String var2 = (String)Stream.of(Thread.currentThread(), var1).filter(Objects::nonNull).map(ThreadingDetector::stackTrace).collect(Collectors.joining("\n"));
       String var3 = "Accessing " + var0 + " from multiple threads";
       CrashReport var4 = new CrashReport(var3, new IllegalStateException(var3));
       CrashReportCategory var5 = var4.addCategory("Thread dumps");
-      var5.setDetail("Thread dumps", var2);
+      var5.setDetail("Thread dumps", (Object)var2);
       LOGGER.error("Thread dumps: \n" + var2);
       return new ReportedException(var4);
    }
 
    private static String stackTrace(Thread var0) {
-      return var0.getName() + ": \n\tat " + (String)Arrays.stream(var0.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
+      String var10000 = var0.getName();
+      return var10000 + ": \n\tat " + (String)Arrays.stream(var0.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
    }
 }

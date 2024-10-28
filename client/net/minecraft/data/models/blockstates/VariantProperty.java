@@ -15,10 +15,9 @@ public class VariantProperty<T> {
    }
 
    public VariantProperty<T>.Value withValue(T var1) {
-      return new VariantProperty.Value(var1);
+      return new Value(var1);
    }
 
-   @Override
    public String toString() {
       return this.key;
    }
@@ -28,7 +27,7 @@ public class VariantProperty<T> {
 
       public Value(T var2) {
          super();
-         this.value = (T)var2;
+         this.value = var2;
       }
 
       public VariantProperty<T> getKey() {
@@ -39,9 +38,9 @@ public class VariantProperty<T> {
          var1.add(VariantProperty.this.key, (JsonElement)VariantProperty.this.serializer.apply(this.value));
       }
 
-      @Override
       public String toString() {
-         return VariantProperty.this.key + "=" + this.value;
+         String var10000 = VariantProperty.this.key;
+         return var10000 + "=" + String.valueOf(this.value);
       }
    }
 }

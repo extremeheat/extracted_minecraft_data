@@ -23,12 +23,14 @@ import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 
 public interface DataProvider {
-   ToIntFunction<String> FIXED_ORDER_FIELDS = Util.make(new Object2IntOpenHashMap(), var0 -> {
+   ToIntFunction<String> FIXED_ORDER_FIELDS = (ToIntFunction)Util.make(new Object2IntOpenHashMap(), (var0) -> {
       var0.put("type", 0);
       var0.put("parent", 1);
       var0.defaultReturnValue(2);
    });
-   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing(var0 -> var0);
+   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing((var0) -> {
+      return var0;
+   });
    Logger LOGGER = LogUtils.getLogger();
 
    CompletableFuture<?> run(CachedOutput var1);
@@ -37,7 +39,7 @@ public interface DataProvider {
 
    static <T> CompletableFuture<?> saveStable(CachedOutput var0, HolderLookup.Provider var1, Codec<T> var2, T var3, Path var4) {
       RegistryOps var5 = var1.createSerializationContext(JsonOps.INSTANCE);
-      JsonElement var6 = Util.getOrThrow(var2.encodeStart(var5, var3), IllegalStateException::new);
+      JsonElement var6 = (JsonElement)var2.encodeStart(var5, var3).getOrThrow();
       return saveStable(var0, var6, var4);
    }
 
@@ -67,6 +69,7 @@ public interface DataProvider {
          } catch (IOException var10) {
             LOGGER.error("Failed to save file to {}", var2, var10);
          }
+
       }, Util.backgroundExecutor());
    }
 

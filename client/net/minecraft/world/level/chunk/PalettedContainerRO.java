@@ -24,20 +24,25 @@ public interface PalettedContainerRO<T> {
 
    PalettedContainer<T> recreate();
 
-   PalettedContainerRO.PackedData<T> pack(IdMap<T> var1, PalettedContainer.Strategy var2);
+   PackedData<T> pack(IdMap<T> var1, PalettedContainer.Strategy var2);
 
-   public static record PackedData<T>(List<T> a, Optional<LongStream> b) {
-      private final List<T> paletteEntries;
-      private final Optional<LongStream> storage;
+   public interface Unpacker<T, C extends PalettedContainerRO<T>> {
+      DataResult<C> read(IdMap<T> var1, PalettedContainer.Strategy var2, PackedData<T> var3);
+   }
 
+   public static record PackedData<T>(List<T> paletteEntries, Optional<LongStream> storage) {
       public PackedData(List<T> var1, Optional<LongStream> var2) {
          super();
          this.paletteEntries = var1;
          this.storage = var2;
       }
-   }
 
-   public interface Unpacker<T, C extends PalettedContainerRO<T>> {
-      DataResult<C> read(IdMap<T> var1, PalettedContainer.Strategy var2, PalettedContainerRO.PackedData<T> var3);
+      public List<T> paletteEntries() {
+         return this.paletteEntries;
+      }
+
+      public Optional<LongStream> storage() {
+         return this.storage;
+      }
    }
 }

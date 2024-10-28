@@ -14,7 +14,6 @@ public class StriderGravityFix extends NamedEntityFix {
       return var1.get("NoGravity").asBoolean(false) ? var1.set("NoGravity", var1.createBoolean(false)) : var1;
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fixTag);
    }

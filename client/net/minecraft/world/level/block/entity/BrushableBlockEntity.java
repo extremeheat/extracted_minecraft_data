@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -43,7 +44,7 @@ public class BrushableBlockEntity extends BlockEntity {
    private int brushCount;
    private long brushCountResetsAtTick;
    private long coolDownEndsAtTick;
-   private ItemStack item = ItemStack.EMPTY;
+   private ItemStack item;
    @Nullable
    private Direction hitDirection;
    @Nullable
@@ -52,6 +53,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    public BrushableBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.BRUSHABLE_BLOCK, var1, var2);
+      this.item = ItemStack.EMPTY;
    }
 
    public boolean brush(long var1, Player var3, Direction var4) {
@@ -72,7 +74,7 @@ public class BrushableBlockEntity extends BlockEntity {
             int var6 = this.getCompletionState();
             if (var5 != var6) {
                BlockState var7 = this.getBlockState();
-               BlockState var8 = var7.setValue(BlockStateProperties.DUSTED, Integer.valueOf(var6));
+               BlockState var8 = (BlockState)var7.setValue(BlockStateProperties.DUSTED, var6);
                this.level.setBlock(this.getBlockPos(), var8, 3);
             }
 
@@ -86,32 +88,32 @@ public class BrushableBlockEntity extends BlockEntity {
    public void unpackLootTable(Player var1) {
       if (this.lootTable != null && this.level != null && !this.level.isClientSide() && this.level.getServer() != null) {
          LootTable var2 = this.level.getServer().reloadableRegistries().getLootTable(this.lootTable);
-         if (var1 instanceof ServerPlayer var3) {
-            CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var3, this.lootTable);
+         if (var1 instanceof ServerPlayer) {
+            ServerPlayer var3 = (ServerPlayer)var1;
+            CriteriaTriggers.GENERATE_LOOT.trigger(var3, this.lootTable);
          }
 
-         LootParams var5 = new LootParams.Builder((ServerLevel)this.level)
-            .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition))
-            .withLuck(var1.getLuck())
-            .withParameter(LootContextParams.THIS_ENTITY, var1)
-            .create(LootContextParamSets.CHEST);
+         LootParams var5 = (new LootParams.Builder((ServerLevel)this.level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition)).withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1).create(LootContextParamSets.CHEST);
          ObjectArrayList var4 = var2.getRandomItems(var5, this.lootTableSeed);
-
-         this.item = switch(var4.size()) {
-            case 0 -> ItemStack.EMPTY;
-            case 1 -> (ItemStack)var4.get(0);
-            default -> {
+         ItemStack var10001;
+         switch (var4.size()) {
+            case 0:
+               var10001 = ItemStack.EMPTY;
+               break;
+            case 1:
+               var10001 = (ItemStack)var4.get(0);
+               break;
+            default:
                LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var4.size());
-               yield (ItemStack)var4.get(0);
-            }
-         };
+               var10001 = (ItemStack)var4.get(0);
+         }
+
+         this.item = var10001;
          this.lootTable = null;
          this.setChanged();
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void brushingCompleted(Player var1) {
       if (this.level != null && this.level.getServer() != null) {
          this.dropContent(var1);
@@ -119,7 +121,8 @@ public class BrushableBlockEntity extends BlockEntity {
          this.level.levelEvent(3008, this.getBlockPos(), Block.getId(var2));
          Block var3 = this.getBlockState().getBlock();
          Block var4;
-         if (var3 instanceof BrushableBlock var5) {
+         if (var3 instanceof BrushableBlock) {
+            BrushableBlock var5 = (BrushableBlock)var3;
             var4 = var5.getTurnsInto();
          } else {
             var4 = Blocks.AIR;
@@ -136,8 +139,8 @@ public class BrushableBlockEntity extends BlockEntity {
             double var2 = (double)EntityType.ITEM.getWidth();
             double var4 = 1.0 - var2;
             double var6 = var2 / 2.0;
-            Direction var8 = Objects.requireNonNullElse(this.hitDirection, Direction.UP);
-            BlockPos var9 = this.worldPosition.relative(var8, 1);
+            Direction var8 = (Direction)Objects.requireNonNullElse(this.hitDirection, Direction.UP);
+            BlockPos var9 = this.worldPosition.relative((Direction)var8, 1);
             double var10 = (double)var9.getX() + 0.5 * var4 + var6;
             double var12 = (double)var9.getY() + 0.5 + (double)(EntityType.ITEM.getHeight() / 2.0F);
             double var14 = (double)var9.getZ() + 0.5 * var4 + var6;
@@ -146,6 +149,7 @@ public class BrushableBlockEntity extends BlockEntity {
             this.level.addFreshEntity(var16);
             this.item = ItemStack.EMPTY;
          }
+
       }
    }
 
@@ -156,7 +160,7 @@ public class BrushableBlockEntity extends BlockEntity {
             this.brushCount = Math.max(0, this.brushCount - 2);
             int var2 = this.getCompletionState();
             if (var1 != var2) {
-               this.level.setBlock(this.getBlockPos(), this.getBlockState().setValue(BlockStateProperties.DUSTED, Integer.valueOf(var2)), 3);
+               this.level.setBlock(this.getBlockPos(), (BlockState)this.getBlockState().setValue(BlockStateProperties.DUSTED, var2), 3);
             }
 
             boolean var3 = true;
@@ -170,6 +174,7 @@ public class BrushableBlockEntity extends BlockEntity {
          } else {
             this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
          }
+
       }
    }
 
@@ -196,7 +201,6 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
       CompoundTag var2 = super.getUpdateTag(var1);
       if (this.hitDirection != null) {
@@ -214,10 +218,10 @@ public class BrushableBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (!this.tryLoadLootTable(var1) && var1.contains("item")) {
-         this.item = ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
+         this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
       } else {
          this.item = ItemStack.EMPTY;
       }
@@ -225,13 +229,15 @@ public class BrushableBlockEntity extends BlockEntity {
       if (var1.contains("hit_direction")) {
          this.hitDirection = Direction.values()[var1.getInt("hit_direction")];
       }
+
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
          var1.put("item", this.item.save(var2));
       }
+
    }
 
    public void setLootTable(ResourceKey<LootTable> var1, long var2) {
@@ -256,5 +262,10 @@ public class BrushableBlockEntity extends BlockEntity {
 
    public ItemStack getItem() {
       return this.item;
+   }
+
+   // $FF: synthetic method
+   public Packet getUpdatePacket() {
+      return this.getUpdatePacket();
    }
 }

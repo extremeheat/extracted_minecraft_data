@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class CherryLeavesBlock extends LeavesBlock {
    public static final MapCodec<CherryLeavesBlock> CODEC = simpleCodec(CherryLeavesBlock::new);
 
-   @Override
    public MapCodec<CherryLeavesBlock> codec() {
       return CODEC;
    }
@@ -22,7 +21,6 @@ public class CherryLeavesBlock extends LeavesBlock {
       super(var1);
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       super.animateTick(var1, var2, var3, var4);
       if (var4.nextInt(10) == 0) {

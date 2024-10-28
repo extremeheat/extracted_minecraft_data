@@ -74,7 +74,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       if (var1.contains("CustomName", 8)) {
          this.setCustomName(Component.Serializer.fromJson(var1.getString("CustomName"), var2));
       } else {
-         this.setCustomName(null);
+         this.setCustomName((Component)null);
       }
 
       if (var1.contains("TrackOutput", 1)) {
@@ -100,6 +100,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       } else {
          this.lastExecution = -1L;
       }
+
    }
 
    public void setCommand(String var1) {
@@ -112,40 +113,45 @@ public abstract class BaseCommandBlock implements CommandSource {
    }
 
    public boolean performCommand(Level var1) {
-      if (var1.isClientSide || var1.getGameTime() == this.lastExecution) {
-         return false;
-      } else if ("Searge".equalsIgnoreCase(this.command)) {
-         this.lastOutput = Component.literal("#itzlipofutzli");
-         this.successCount = 1;
-         return true;
-      } else {
-         this.successCount = 0;
-         MinecraftServer var2 = this.getLevel().getServer();
-         if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
-            try {
-               this.lastOutput = null;
-               CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
-                  if (var1x) {
-                     ++this.successCount;
-                  }
-               });
-               var2.getCommands().performPrefixedCommand(var3, this.command);
-            } catch (Throwable var6) {
-               CrashReport var4 = CrashReport.forThrowable(var6, "Executing command block");
-               CrashReportCategory var5 = var4.addCategory("Command to be executed");
-               var5.setDetail("Command", this::getCommand);
-               var5.setDetail("Name", () -> this.getName().getString());
-               throw new ReportedException(var4);
-            }
-         }
-
-         if (this.updateLastExecution) {
-            this.lastExecution = var1.getGameTime();
+      if (!var1.isClientSide && var1.getGameTime() != this.lastExecution) {
+         if ("Searge".equalsIgnoreCase(this.command)) {
+            this.lastOutput = Component.literal("#itzlipofutzli");
+            this.successCount = 1;
+            return true;
          } else {
-            this.lastExecution = -1L;
-         }
+            this.successCount = 0;
+            MinecraftServer var2 = this.getLevel().getServer();
+            if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
+               try {
+                  this.lastOutput = null;
+                  CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
+                     if (var1x) {
+                        ++this.successCount;
+                     }
 
-         return true;
+                  });
+                  var2.getCommands().performPrefixedCommand(var3, this.command);
+               } catch (Throwable var6) {
+                  CrashReport var4 = CrashReport.forThrowable(var6, "Executing command block");
+                  CrashReportCategory var5 = var4.addCategory("Command to be executed");
+                  var5.setDetail("Command", this::getCommand);
+                  var5.setDetail("Name", () -> {
+                     return this.getName().getString();
+                  });
+                  throw new ReportedException(var4);
+               }
+            }
+
+            if (this.updateLastExecution) {
+               this.lastExecution = var1.getGameTime();
+            } else {
+               this.lastExecution = -1L;
+            }
+
+            return true;
+         }
+      } else {
+         return false;
       }
    }
 
@@ -162,12 +168,14 @@ public abstract class BaseCommandBlock implements CommandSource {
       this.customName = var1;
    }
 
-   @Override
    public void sendSystemMessage(Component var1) {
       if (this.trackOutput) {
-         this.lastOutput = Component.literal("[" + TIME_FORMAT.format(new Date()) + "] ").append(var1);
+         SimpleDateFormat var10001 = TIME_FORMAT;
+         Date var10002 = new Date();
+         this.lastOutput = Component.literal("[" + var10001.format(var10002) + "] ").append(var1);
          this.onUpdated();
       }
+
    }
 
    public abstract ServerLevel getLevel();
@@ -202,17 +210,14 @@ public abstract class BaseCommandBlock implements CommandSource {
 
    public abstract CommandSourceStack createCommandSourceStack();
 
-   @Override
    public boolean acceptsSuccess() {
       return this.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK) && this.trackOutput;
    }
 
-   @Override
    public boolean acceptsFailure() {
       return this.trackOutput;
    }
 
-   @Override
    public boolean shouldInformAdmins() {
       return this.getLevel().getGameRules().getBoolean(GameRules.RULE_COMMANDBLOCKOUTPUT);
    }

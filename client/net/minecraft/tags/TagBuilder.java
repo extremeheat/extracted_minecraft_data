@@ -5,7 +5,7 @@ import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 
 public class TagBuilder {
-   private final List<TagEntry> entries = new ArrayList<>();
+   private final List<TagEntry> entries = new ArrayList();
 
    public TagBuilder() {
       super();

@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSelectAdvancementsTabPacket::write, ClientboundSelectAdvancementsTabPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket> STREAM_CODEC = Packet.codec(ClientboundSelectAdvancementsTabPacket::write, ClientboundSelectAdvancementsTabPacket::new);
    @Nullable
    private final ResourceLocation tab;
 
@@ -21,14 +19,13 @@ public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGame
 
    private ClientboundSelectAdvancementsTabPacket(FriendlyByteBuf var1) {
       super();
-      this.tab = var1.readNullable(FriendlyByteBuf::readResourceLocation);
+      this.tab = (ResourceLocation)var1.readNullable(FriendlyByteBuf::readResourceLocation);
    }
 
    private void write(FriendlyByteBuf var1) {
       var1.writeNullable(this.tab, FriendlyByteBuf::writeResourceLocation);
    }
 
-   @Override
    public PacketType<ClientboundSelectAdvancementsTabPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SELECT_ADVANCEMENTS_TAB;
    }

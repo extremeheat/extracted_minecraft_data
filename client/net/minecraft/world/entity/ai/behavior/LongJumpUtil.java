@@ -14,7 +14,7 @@ public final class LongJumpUtil {
 
    public static Optional<Vec3> calculateJumpVectorForAngle(Mob var0, Vec3 var1, float var2, int var3, boolean var4) {
       Vec3 var5 = var0.position();
-      Vec3 var6 = new Vec3(var1.x - var5.x, 0.0, var1.z - var5.z).normalize().scale(0.5);
+      Vec3 var6 = (new Vec3(var1.x - var5.x, 0.0, var1.z - var5.z)).normalize().scale(0.5);
       Vec3 var7 = var1.subtract(var6);
       Vec3 var8 = var7.subtract(var5);
       float var9 = (float)var3 * 3.1415927F / 180.0F;
@@ -59,7 +59,7 @@ public final class LongJumpUtil {
                }
             }
 
-            return Optional.of(new Vec3(var36 * var30, var38, var36 * var28).scale(0.949999988079071));
+            return Optional.of((new Vec3(var36 * var30, var38, var36 * var28)).scale(0.949999988079071));
          }
       }
    }

@@ -12,10 +12,8 @@ import com.mojang.serialization.DynamicOps;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -33,21 +31,19 @@ import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class ItemParser {
-   static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.item.id.invalid", var0)
-   );
-   static final DynamicCommandExceptionType ERROR_UNKNOWN_COMPONENT = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("arguments.item.component.unknown", var0)
-   );
-   static final Dynamic2CommandExceptionType ERROR_MALFORMED_COMPONENT = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("arguments.item.component.malformed", var0, var1)
-   );
-   static final SimpleCommandExceptionType ERROR_EXPECTED_COMPONENT = new SimpleCommandExceptionType(
-      Component.translatable("arguments.item.component.expected")
-   );
-   static final DynamicCommandExceptionType ERROR_REPEATED_COMPONENT = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("arguments.item.component.repeated", var0)
-   );
+   static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.item.id.invalid", var0);
+   });
+   static final DynamicCommandExceptionType ERROR_UNKNOWN_COMPONENT = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("arguments.item.component.unknown", var0);
+   });
+   static final Dynamic2CommandExceptionType ERROR_MALFORMED_COMPONENT = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("arguments.item.component.malformed", var0, var1);
+   });
+   static final SimpleCommandExceptionType ERROR_EXPECTED_COMPONENT = new SimpleCommandExceptionType(Component.translatable("arguments.item.component.expected"));
+   static final DynamicCommandExceptionType ERROR_REPEATED_COMPONENT = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("arguments.item.component.repeated", var0);
+   });
    public static final char SYNTAX_START_COMPONENTS = '[';
    public static final char SYNTAX_END_COMPONENTS = ']';
    public static final char SYNTAX_COMPONENT_SEPARATOR = ',';
@@ -62,28 +58,26 @@ public class ItemParser {
       this.registryOps = var1.createSerializationContext(NbtOps.INSTANCE);
    }
 
-   public ItemParser.ItemResult parse(StringReader var1) throws CommandSyntaxException {
+   public ItemResult parse(StringReader var1) throws CommandSyntaxException {
       final MutableObject var2 = new MutableObject();
       final DataComponentMap.Builder var3 = DataComponentMap.builder();
-      this.parse(var1, new ItemParser.Visitor() {
-         @Override
+      this.parse(var1, new Visitor(this) {
          public void visitItem(Holder<Item> var1) {
             var2.setValue(var1);
          }
 
-         @Override
          public <T> void visitComponent(DataComponentType<T> var1, T var2x) {
-            var3.set(var1, (T)var2x);
+            var3.set(var1, var2x);
          }
       });
-      return new ItemParser.ItemResult(Objects.requireNonNull((Holder<Item>)var2.getValue(), "Parser gave no item"), var3.build());
+      return new ItemResult((Holder)Objects.requireNonNull((Holder)var2.getValue(), "Parser gave no item"), var3.build());
    }
 
-   public void parse(StringReader var1, ItemParser.Visitor var2) throws CommandSyntaxException {
+   public void parse(StringReader var1, Visitor var2) throws CommandSyntaxException {
       int var3 = var1.getCursor();
 
       try {
-         new ItemParser.State(var1, var2).parse();
+         (new State(var1, var2)).parse();
       } catch (CommandSyntaxException var5) {
          var1.setCursor(var3);
          throw var5;
@@ -93,8 +87,8 @@ public class ItemParser {
    public CompletableFuture<Suggestions> fillSuggestions(SuggestionsBuilder var1) {
       StringReader var2 = new StringReader(var1.getInput());
       var2.setCursor(var1.getStart());
-      ItemParser.SuggestionsVisitor var3 = new ItemParser.SuggestionsVisitor();
-      ItemParser.State var4 = new ItemParser.State(var2, var3);
+      SuggestionsVisitor var3 = new SuggestionsVisitor();
+      State var4 = new State(var2, var3);
 
       try {
          var4.parse();
@@ -104,22 +98,38 @@ public class ItemParser {
       return var3.resolveSuggestions(var1, var2);
    }
 
-   public static record ItemResult(Holder<Item> a, DataComponentMap b) {
-      private final Holder<Item> item;
-      private final DataComponentMap components;
+   public interface Visitor {
+      default void visitItem(Holder<Item> var1) {
+      }
 
+      default <T> void visitComponent(DataComponentType<T> var1, T var2) {
+      }
+
+      default void visitSuggestions(Function<SuggestionsBuilder, CompletableFuture<Suggestions>> var1) {
+      }
+   }
+
+   public static record ItemResult(Holder<Item> item, DataComponentMap components) {
       public ItemResult(Holder<Item> var1, DataComponentMap var2) {
          super();
          this.item = var1;
          this.components = var2;
       }
+
+      public Holder<Item> item() {
+         return this.item;
+      }
+
+      public DataComponentMap components() {
+         return this.components;
+      }
    }
 
-   class State {
+   private class State {
       private final StringReader reader;
-      private final ItemParser.Visitor visitor;
+      private final Visitor visitor;
 
-      State(StringReader var2, ItemParser.Visitor var3) {
+      State(StringReader var2, Visitor var3) {
          super();
          this.reader = var2;
          this.visitor = var3;
@@ -133,12 +143,13 @@ public class ItemParser {
             this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
             this.readComponents();
          }
+
       }
 
       private void readItem() throws CommandSyntaxException {
          int var1 = this.reader.getCursor();
          ResourceLocation var2 = ResourceLocation.read(this.reader);
-         this.visitor.visitItem(ItemParser.this.items.get(ResourceKey.create(Registries.ITEM, var2)).orElseThrow(() -> {
+         this.visitor.visitItem((Holder)ItemParser.this.items.get(ResourceKey.create(Registries.ITEM, var2)).orElseThrow(() -> {
             this.reader.setCursor(var1);
             return ItemParser.ERROR_UNKNOWN_ITEM.createWithContext(this.reader, var2);
          }));
@@ -186,7 +197,7 @@ public class ItemParser {
          } else {
             int var1 = var0.getCursor();
             ResourceLocation var2 = ResourceLocation.read(var0);
-            DataComponentType var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.get(var2);
+            DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.get(var2);
             if (var3 != null && !var3.isTransient()) {
                return var3;
             } else {
@@ -198,9 +209,9 @@ public class ItemParser {
 
       private <T> void readComponent(DataComponentType<T> var1) throws CommandSyntaxException {
          int var2 = this.reader.getCursor();
-         Tag var3 = new TagParser(this.reader).readValue();
+         Tag var3 = (new TagParser(this.reader)).readValue();
          DataResult var4 = var1.codecOrThrow().parse(ItemParser.this.registryOps, var3);
-         this.visitor.visitComponent(var1, Util.getOrThrow(var4, var3x -> {
+         this.visitor.visitComponent(var1, var4.getOrThrow((var3x) -> {
             this.reader.setCursor(var2);
             return ItemParser.ERROR_MALFORMED_COMPONENT.createWithContext(this.reader, var1.toString(), var3x);
          }));
@@ -237,42 +248,34 @@ public class ItemParser {
 
       private CompletableFuture<Suggestions> suggestComponentAssignment(SuggestionsBuilder var1) {
          String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var2, var0 -> var0.getKey().location(), var1x -> {
-            DataComponentType var2xx = var1x.getValue();
-            if (var2xx.codec() != null) {
-               ResourceLocation var3 = var1x.getKey().location();
+         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var2, (var0) -> {
+            return ((ResourceKey)var0.getKey()).location();
+         }, (var1x) -> {
+            DataComponentType var2 = (DataComponentType)var1x.getValue();
+            if (var2.codec() != null) {
+               ResourceLocation var3 = ((ResourceKey)var1x.getKey()).location();
                var1.suggest(var3.toString() + "=");
             }
+
          });
          return var1.buildFuture();
       }
    }
 
-   static class SuggestionsVisitor implements ItemParser.Visitor {
-      private Function<SuggestionsBuilder, CompletableFuture<Suggestions>> suggestions = ItemParser.SUGGEST_NOTHING;
+   private static class SuggestionsVisitor implements Visitor {
+      private Function<SuggestionsBuilder, CompletableFuture<Suggestions>> suggestions;
 
       SuggestionsVisitor() {
          super();
+         this.suggestions = ItemParser.SUGGEST_NOTHING;
       }
 
-      @Override
       public void visitSuggestions(Function<SuggestionsBuilder, CompletableFuture<Suggestions>> var1) {
          this.suggestions = var1;
       }
 
       public CompletableFuture<Suggestions> resolveSuggestions(SuggestionsBuilder var1, StringReader var2) {
-         return this.suggestions.apply(var1.createOffset(var2.getCursor()));
-      }
-   }
-
-   public interface Visitor {
-      default void visitItem(Holder<Item> var1) {
-      }
-
-      default <T> void visitComponent(DataComponentType<T> var1, T var2) {
-      }
-
-      default void visitSuggestions(Function<SuggestionsBuilder, CompletableFuture<Suggestions>> var1) {
+         return (CompletableFuture)this.suggestions.apply(var1.createOffset(var2.getCursor()));
       }
    }
 }

@@ -12,7 +12,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class AirBlock extends Block {
    public static final MapCodec<AirBlock> CODEC = simpleCodec(AirBlock::new);
 
-   @Override
    public MapCodec<AirBlock> codec() {
       return CODEC;
    }
@@ -21,12 +20,10 @@ public class AirBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }

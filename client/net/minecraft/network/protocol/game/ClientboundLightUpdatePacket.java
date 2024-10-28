@@ -10,9 +10,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 
 public class ClientboundLightUpdatePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundLightUpdatePacket> STREAM_CODEC = Packet.codec(
-      ClientboundLightUpdatePacket::write, ClientboundLightUpdatePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundLightUpdatePacket> STREAM_CODEC = Packet.codec(ClientboundLightUpdatePacket::write, ClientboundLightUpdatePacket::new);
    private final int x;
    private final int z;
    private final ClientboundLightUpdatePacketData lightData;
@@ -37,7 +35,6 @@ public class ClientboundLightUpdatePacket implements Packet<ClientGamePacketList
       this.lightData.write(var1);
    }
 
-   @Override
    public PacketType<ClientboundLightUpdatePacket> type() {
       return GamePacketTypes.CLIENTBOUND_LIGHT_UPDATE;
    }

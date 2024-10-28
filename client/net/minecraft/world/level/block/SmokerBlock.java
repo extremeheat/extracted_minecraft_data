@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class SmokerBlock extends AbstractFurnaceBlock {
    public static final MapCodec<SmokerBlock> CODEC = simpleCodec(SmokerBlock::new);
 
-   @Override
    public MapCodec<SmokerBlock> codec() {
       return CODEC;
    }
@@ -30,29 +29,26 @@ public class SmokerBlock extends AbstractFurnaceBlock {
       super(var1);
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new SmokerBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createFurnaceTicker(var1, var3, BlockEntityType.SMOKER);
    }
 
-   @Override
    protected void openContainer(Level var1, BlockPos var2, Player var3) {
       BlockEntity var4 = var1.getBlockEntity(var2);
       if (var4 instanceof SmokerBlockEntity) {
          var3.openMenu((MenuProvider)var4);
          var3.awardStat(Stats.INTERACT_WITH_SMOKER);
       }
+
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(LIT)) {
+      if ((Boolean)var1.getValue(LIT)) {
          double var5 = (double)var3.getX() + 0.5;
          double var7 = (double)var3.getY();
          double var9 = (double)var3.getZ() + 0.5;

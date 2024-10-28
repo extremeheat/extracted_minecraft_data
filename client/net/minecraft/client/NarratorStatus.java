@@ -28,7 +28,7 @@ public enum NarratorStatus {
    }
 
    public static NarratorStatus byId(int var0) {
-      return BY_ID.apply(var0);
+      return (NarratorStatus)BY_ID.apply(var0);
    }
 
    public boolean shouldNarrateChat() {
@@ -37,5 +37,10 @@ public enum NarratorStatus {
 
    public boolean shouldNarrateSystem() {
       return this == ALL || this == SYSTEM;
+   }
+
+   // $FF: synthetic method
+   private static NarratorStatus[] $values() {
+      return new NarratorStatus[]{OFF, ALL, CHAT, SYSTEM};
    }
 }

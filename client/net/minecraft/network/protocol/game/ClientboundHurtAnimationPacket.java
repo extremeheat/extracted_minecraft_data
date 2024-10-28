@@ -6,12 +6,8 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.LivingEntity;
 
-public record ClientboundHurtAnimationPacket(int b, float c) implements Packet<ClientGamePacketListener> {
-   private final int id;
-   private final float yaw;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundHurtAnimationPacket> STREAM_CODEC = Packet.codec(
-      ClientboundHurtAnimationPacket::write, ClientboundHurtAnimationPacket::new
-   );
+public record ClientboundHurtAnimationPacket(int id, float yaw) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundHurtAnimationPacket> STREAM_CODEC = Packet.codec(ClientboundHurtAnimationPacket::write, ClientboundHurtAnimationPacket::new);
 
    public ClientboundHurtAnimationPacket(LivingEntity var1) {
       this(var1.getId(), var1.getHurtDir());
@@ -32,12 +28,19 @@ public record ClientboundHurtAnimationPacket(int b, float c) implements Packet<C
       var1.writeFloat(this.yaw);
    }
 
-   @Override
    public PacketType<ClientboundHurtAnimationPacket> type() {
       return GamePacketTypes.CLIENTBOUND_HURT_ANIMATION;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleHurtAnimation(this);
+   }
+
+   public int id() {
+      return this.id;
+   }
+
+   public float yaw() {
+      return this.yaw;
    }
 }

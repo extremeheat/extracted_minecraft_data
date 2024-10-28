@@ -19,6 +19,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractHurtingProjectile extends Projectile {
+   public static final double DEFLECTION_SCALE = 0.05;
    public double xPower;
    public double yPower;
    public double zPower;
@@ -32,9 +33,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       this.setPos(var2, var4, var6);
    }
 
-   public AbstractHurtingProjectile(
-      EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, double var8, double var10, double var12, Level var14
-   ) {
+   public AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, double var8, double var10, double var12, Level var14) {
       this(var1, var14);
       this.moveTo(var2, var4, var6, this.getYRot(), this.getXRot());
       this.reapplyPosition();
@@ -47,11 +46,9 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       this.setRot(var2.getYRot(), var2.getXRot());
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       double var3 = this.getBoundingBox().getSize() * 4.0;
       if (Double.isNaN(var3)) {
@@ -66,10 +63,11 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       return ClipContext.Block.COLLIDER;
    }
 
-   @Override
    public void tick() {
       Entity var1 = this.getOwner();
-      if (this.level().isClientSide || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
+      if (!this.level().isClientSide && (var1 != null && var1.isRemoved() || !this.level().hasChunkAt(this.blockPosition()))) {
+         this.discard();
+      } else {
          super.tick();
          if (this.shouldBurn()) {
             this.igniteForSeconds(1);
@@ -77,7 +75,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
          if (var2.getType() != HitResult.Type.MISS) {
-            this.onHit(var2);
+            this.hitOrDeflect(var2);
          }
 
          this.checkInsideBlocks();
@@ -105,18 +103,9 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          }
 
          this.setPos(var4, var6, var8);
-      } else {
-         this.discard();
       }
    }
 
-   @Override
-   public void lerpMotion(double var1, double var3, double var5) {
-      super.lerpMotion(var1, var3, var5);
-      this.assignPower(var1, var3, var5);
-   }
-
-   @Override
    protected boolean canHitEntity(Entity var1) {
       return super.canHitEntity(var1) && !var1.noPhysics;
    }
@@ -138,13 +127,11 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       return 0.8F;
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.put("power", this.newDoubleList(new double[]{this.xPower, this.yPower, this.zPower}));
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("power", 9)) {
@@ -155,19 +142,17 @@ public abstract class AbstractHurtingProjectile extends Projectile {
             this.zPower = var2.getDouble(2);
          }
       }
+
    }
 
-   @Override
    public boolean isPickable() {
       return true;
    }
 
-   @Override
    public float getPickRadius() {
       return 1.0F;
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
@@ -191,31 +176,16 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       }
    }
 
-   @Override
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   @Override
    public Packet<ClientGamePacketListener> getAddEntityPacket() {
       Entity var1 = this.getOwner();
       int var2 = var1 == null ? 0 : var1.getId();
-      return new ClientboundAddEntityPacket(
-         this.getId(),
-         this.getUUID(),
-         this.getX(),
-         this.getY(),
-         this.getZ(),
-         this.getXRot(),
-         this.getYRot(),
-         this.getType(),
-         var2,
-         new Vec3(this.xPower, this.yPower, this.zPower),
-         0.0
-      );
+      return new ClientboundAddEntityPacket(this.getId(), this.getUUID(), this.getX(), this.getY(), this.getZ(), this.getXRot(), this.getYRot(), this.getType(), var2, new Vec3(this.xPower, this.yPower, this.zPower), 0.0);
    }
 
-   @Override
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
       double var2 = var1.getXa();
@@ -231,5 +201,12 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          this.yPower = var3 / var7 * 0.1;
          this.zPower = var5 / var7 * 0.1;
       }
+
+   }
+
+   public void onDeflection() {
+      this.xPower = this.getDeltaMovement().x * 0.05;
+      this.yPower = this.getDeltaMovement().y * 0.05;
+      this.zPower = this.getDeltaMovement().z * 0.05;
    }
 }

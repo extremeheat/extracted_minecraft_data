@@ -14,7 +14,6 @@ public class EntityShulkerColorFix extends NamedEntityFix {
       return var1.get("Color").map(Dynamic::asNumber).result().isEmpty() ? var1.set("Color", var1.createByte((byte)10)) : var1;
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fixTag);
    }

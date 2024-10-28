@@ -33,6 +33,13 @@ public class CallFunction<T extends ExecutionCommandSource<T>> implements Unboun
       int var6 = var3.depth() + 1;
       Frame.FrameControl var7 = this.returnParentFrame ? var3.frameControl() : var2.frameControlForDepth(var6);
       Frame var8 = new Frame(var6, this.resultCallback, var7);
-      ContinuationTask.schedule(var2, var8, var4, (var1x, var2x) -> new CommandQueueEntry<>(var1x, var2x.bind(var1)));
+      ContinuationTask.schedule(var2, var8, var4, (var1x, var2x) -> {
+         return new CommandQueueEntry(var1x, var2x.bind(var1));
+      });
+   }
+
+   // $FF: synthetic method
+   public void execute(Object var1, ExecutionContext var2, Frame var3) {
+      this.execute((ExecutionCommandSource)var1, var2, var3);
    }
 }

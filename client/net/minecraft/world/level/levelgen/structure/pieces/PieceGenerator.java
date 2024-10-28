@@ -9,19 +9,9 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 @FunctionalInterface
 public interface PieceGenerator<C extends FeatureConfiguration> {
-   void generatePieces(StructurePiecesBuilder var1, PieceGenerator.Context<C> var2);
+   void generatePieces(StructurePiecesBuilder var1, Context<C> var2);
 
-   public static record Context<C extends FeatureConfiguration>(
-      C a, ChunkGenerator b, StructureTemplateManager c, ChunkPos d, LevelHeightAccessor e, WorldgenRandom f, long g
-   ) {
-      private final C config;
-      private final ChunkGenerator chunkGenerator;
-      private final StructureTemplateManager structureTemplateManager;
-      private final ChunkPos chunkPos;
-      private final LevelHeightAccessor heightAccessor;
-      private final WorldgenRandom random;
-      private final long seed;
-
+   public static record Context<C extends FeatureConfiguration>(C config, ChunkGenerator chunkGenerator, StructureTemplateManager structureTemplateManager, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, WorldgenRandom random, long seed) {
       public Context(C var1, ChunkGenerator var2, StructureTemplateManager var3, ChunkPos var4, LevelHeightAccessor var5, WorldgenRandom var6, long var7) {
          super();
          this.config = var1;
@@ -31,6 +21,34 @@ public interface PieceGenerator<C extends FeatureConfiguration> {
          this.heightAccessor = var5;
          this.random = var6;
          this.seed = var7;
+      }
+
+      public C config() {
+         return this.config;
+      }
+
+      public ChunkGenerator chunkGenerator() {
+         return this.chunkGenerator;
+      }
+
+      public StructureTemplateManager structureTemplateManager() {
+         return this.structureTemplateManager;
+      }
+
+      public ChunkPos chunkPos() {
+         return this.chunkPos;
+      }
+
+      public LevelHeightAccessor heightAccessor() {
+         return this.heightAccessor;
+      }
+
+      public WorldgenRandom random() {
+         return this.random;
+      }
+
+      public long seed() {
+         return this.seed;
       }
    }
 }

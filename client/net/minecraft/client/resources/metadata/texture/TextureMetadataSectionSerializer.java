@@ -15,8 +15,12 @@ public class TextureMetadataSectionSerializer implements MetadataSectionSerializ
       return new TextureMetadataSection(var2, var3);
    }
 
-   @Override
    public String getMetadataSectionName() {
       return "texture";
+   }
+
+   // $FF: synthetic method
+   public Object fromJson(JsonObject var1) {
+      return this.fromJson(var1);
    }
 }

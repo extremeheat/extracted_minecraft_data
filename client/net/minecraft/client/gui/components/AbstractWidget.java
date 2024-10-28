@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -17,7 +18,9 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -47,19 +50,13 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       this.message = var5;
    }
 
-   @Override
    public int getHeight() {
       return this.height;
    }
 
-   @Override
    public final void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
-         this.isHovered = var1.containsPointInScissor(var2, var3)
-            && var2 >= this.getX()
-            && var3 >= this.getY()
-            && var2 < this.getX() + this.width
-            && var3 < this.getY() + this.height;
+         this.isHovered = var1.containsPointInScissor(var2, var3) && var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
          this.renderWidget(var1, var2, var3, var4);
          this.tooltip.refreshTooltipForNextRenderPass(this.isHovered(), this.isFocused(), this.getRectangle());
       }
@@ -93,11 +90,14 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      int var9 = var1.width(var2);
-      int var10 = (var5 + var7 - 9) / 2 + 1;
+      int var9 = var1.width((FormattedText)var2);
+      int var10000 = var5 + var7;
+      Objects.requireNonNull(var1);
+      int var10 = (var10000 - 9) / 2 + 1;
       int var11 = var6 - var4;
+      int var12;
       if (var9 > var11) {
-         int var12 = var9 - var11;
+         var12 = var9 - var11;
          double var13 = (double)Util.getMillis() / 1000.0;
          double var15 = Math.max((double)var12 * 0.5, 3.0);
          double var17 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var13 / var15)) / 2.0 + 0.5;
@@ -106,9 +106,10 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
          var0.drawString(var1, var2, var4 - (int)var19, var10, var8);
          var0.disableScissor();
       } else {
-         int var21 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
-         var0.drawCenteredString(var1, var2, var21, var10, var8);
+         var12 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
+         var0.drawCenteredString(var1, var2, var12, var10, var8);
       }
+
    }
 
    protected void renderScrollingString(GuiGraphics var1, Font var2, int var3, int var4) {
@@ -126,7 +127,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    protected void onDrag(double var1, double var3, double var5, double var7) {
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.active && this.visible) {
          if (this.isValidClickButton(var5)) {
@@ -144,7 +144,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   @Override
    public boolean mouseReleased(double var1, double var3, int var5) {
       if (this.isValidClickButton(var5)) {
          this.onRelease(var1, var3);
@@ -158,7 +157,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return var1 == 0;
    }
 
-   @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
       if (this.isValidClickButton(var5)) {
          this.onDrag(var1, var3, var6, var8);
@@ -169,39 +167,26 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    protected boolean clicked(double var1, double var3) {
-      return this.active
-         && this.visible
-         && var1 >= (double)this.getX()
-         && var3 >= (double)this.getY()
-         && var1 < (double)(this.getX() + this.getWidth())
-         && var3 < (double)(this.getY() + this.getHeight());
+      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getX() + this.getWidth()) && var3 < (double)(this.getY() + this.getHeight());
    }
 
    @Nullable
-   @Override
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-      if (!this.active || !this.visible) {
-         return null;
-      } else {
+      if (this.active && this.visible) {
          return !this.isFocused() ? ComponentPath.leaf(this) : null;
+      } else {
+         return null;
       }
    }
 
-   @Override
    public boolean isMouseOver(double var1, double var3) {
-      return this.active
-         && this.visible
-         && var1 >= (double)this.getX()
-         && var3 >= (double)this.getY()
-         && var1 < (double)(this.getX() + this.width)
-         && var3 < (double)(this.getY() + this.height);
+      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getX() + this.width) && var3 < (double)(this.getY() + this.height);
    }
 
    public void playDownSound(SoundManager var1) {
-      var1.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+      var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
    }
 
-   @Override
    public int getWidth() {
       return this.width;
    }
@@ -226,7 +211,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return this.message;
    }
 
-   @Override
    public boolean isFocused() {
       return this.focused;
    }
@@ -239,17 +223,14 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return this.isHovered() || this.isFocused();
    }
 
-   @Override
    public boolean isActive() {
       return this.visible && this.active;
    }
 
-   @Override
    public void setFocused(boolean var1) {
       this.focused = var1;
    }
 
-   @Override
    public NarratableEntry.NarrationPriority narrationPriority() {
       if (this.isFocused()) {
          return NarratableEntry.NarrationPriority.FOCUSED;
@@ -258,7 +239,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   @Override
    public final void updateNarration(NarrationElementOutput var1) {
       this.updateWidgetNarration(var1);
       this.tooltip.updateNarration(var1);
@@ -267,32 +247,29 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    protected abstract void updateWidgetNarration(NarrationElementOutput var1);
 
    protected void defaultButtonNarrationText(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
+      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.focused"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.focused"));
          } else {
-            var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
          }
       }
+
    }
 
-   @Override
    public int getX() {
       return this.x;
    }
 
-   @Override
    public void setX(int var1) {
       this.x = var1;
    }
 
-   @Override
    public int getY() {
       return this.y;
    }
 
-   @Override
    public void setY(int var1) {
       this.y = var1;
    }
@@ -305,7 +282,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return this.getY() + this.getHeight();
    }
 
-   @Override
    public void visitWidgets(Consumer<AbstractWidget> var1) {
       var1.accept(this);
    }
@@ -315,7 +291,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       this.height = var2;
    }
 
-   @Override
    public ScreenRectangle getRectangle() {
       return LayoutElement.super.getRectangle();
    }
@@ -325,7 +300,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       this.setPosition(var3, var4);
    }
 
-   @Override
    public int getTabOrderGroup() {
       return this.tabOrderGroup;
    }

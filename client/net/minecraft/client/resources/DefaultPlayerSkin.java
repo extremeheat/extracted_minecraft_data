@@ -5,26 +5,7 @@ import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
 
 public class DefaultPlayerSkin {
-   private static final PlayerSkin[] DEFAULT_SKINS = new PlayerSkin[]{
-      create("textures/entity/player/slim/alex.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/ari.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/efe.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/kai.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/makena.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/noor.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/steve.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/sunny.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/slim/zuri.png", PlayerSkin.Model.SLIM),
-      create("textures/entity/player/wide/alex.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/ari.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/efe.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/kai.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/makena.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/noor.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/steve.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/sunny.png", PlayerSkin.Model.WIDE),
-      create("textures/entity/player/wide/zuri.png", PlayerSkin.Model.WIDE)
-   };
+   private static final PlayerSkin[] DEFAULT_SKINS;
 
    public DefaultPlayerSkin() {
       super();
@@ -43,6 +24,10 @@ public class DefaultPlayerSkin {
    }
 
    private static PlayerSkin create(String var0, PlayerSkin.Model var1) {
-      return new PlayerSkin(new ResourceLocation(var0), null, null, null, var1, true);
+      return new PlayerSkin(new ResourceLocation(var0), (String)null, (ResourceLocation)null, (ResourceLocation)null, var1, true);
+   }
+
+   static {
+      DEFAULT_SKINS = new PlayerSkin[]{create("textures/entity/player/slim/alex.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/ari.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/efe.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/kai.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/makena.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/noor.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/steve.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/sunny.png", PlayerSkin.Model.SLIM), create("textures/entity/player/slim/zuri.png", PlayerSkin.Model.SLIM), create("textures/entity/player/wide/alex.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/ari.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/efe.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/kai.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/makena.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/noor.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/steve.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/sunny.png", PlayerSkin.Model.WIDE), create("textures/entity/player/wide/zuri.png", PlayerSkin.Model.WIDE)};
    }
 }

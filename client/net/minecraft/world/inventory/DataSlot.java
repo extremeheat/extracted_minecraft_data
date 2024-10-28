@@ -9,12 +9,10 @@ public abstract class DataSlot {
 
    public static DataSlot forContainer(final ContainerData var0, final int var1) {
       return new DataSlot() {
-         @Override
          public int get() {
             return var0.get(var1);
          }
 
-         @Override
          public void set(int var1x) {
             var0.set(var1, var1x);
          }
@@ -23,12 +21,10 @@ public abstract class DataSlot {
 
    public static DataSlot shared(final int[] var0, final int var1) {
       return new DataSlot() {
-         @Override
          public int get() {
             return var0[var1];
          }
 
-         @Override
          public void set(int var1x) {
             var0[var1] = var1x;
          }
@@ -39,12 +35,10 @@ public abstract class DataSlot {
       return new DataSlot() {
          private int value;
 
-         @Override
          public int get() {
             return this.value;
          }
 
-         @Override
          public void set(int var1) {
             this.value = var1;
          }

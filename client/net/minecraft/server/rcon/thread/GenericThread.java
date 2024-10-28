@@ -25,7 +25,8 @@ public abstract class GenericThread implements Runnable {
          return true;
       } else {
          this.running = true;
-         this.thread = new Thread(this, this.name + " #" + UNIQUE_THREAD_ID.incrementAndGet());
+         String var10004 = this.name;
+         this.thread = new Thread(this, var10004 + " #" + UNIQUE_THREAD_ID.incrementAndGet());
          this.thread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER));
          this.thread.start();
          LOGGER.info("Thread {} started", this.name);
@@ -41,7 +42,8 @@ public abstract class GenericThread implements Runnable {
          while(this.thread.isAlive()) {
             try {
                this.thread.join(1000L);
-               if (++var1 >= 5) {
+               ++var1;
+               if (var1 >= 5) {
                   LOGGER.warn("Waited {} seconds attempting force stop!", var1);
                } else if (this.thread.isAlive()) {
                   LOGGER.warn("Thread {} ({}) failed to exit after {} second(s)", new Object[]{this, this.thread.getState(), var1, new Exception("Stack:")});

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens;
 import com.mojang.logging.LogUtils;
 import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
@@ -82,7 +83,6 @@ public class ConnectScreen extends Screen {
    private void connect(final Minecraft var1, final ServerAddress var2, final ServerData var3, @Nullable final TransferState var4) {
       LOGGER.info("Connecting to {}, {}", var2.getHost(), var2.getPort());
       Thread var5 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
-         @Override
          public void run() {
             InetSocketAddress var1x = null;
 
@@ -97,48 +97,40 @@ public class ConnectScreen extends Screen {
                }
 
                if (var2x.isEmpty()) {
-                  var1.execute(
-                     () -> var1.setScreen(
-                           new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)
-                        )
-                  );
+                  var1.execute(() -> {
+                     var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE));
+                  });
                   return;
                }
 
                var1x = (InetSocketAddress)var2x.get();
-               Connection var10;
+               Connection var11;
                synchronized(ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      return;
                   }
 
-                  var10 = new Connection(PacketFlow.CLIENTBOUND);
-                  var10.setBandwidthLogger(var1.getDebugOverlay().getBandwidthLogger());
-                  ConnectScreen.this.channelFuture = Connection.connect(var1x, var1.options.useNativeTransport(), var10);
+                  var11 = new Connection(PacketFlow.CLIENTBOUND);
+                  var11.setBandwidthLogger(var1.getDebugOverlay().getBandwidthLogger());
+                  ConnectScreen.this.channelFuture = Connection.connect(var1x, var1.options.useNativeTransport(), var11);
                }
 
                ConnectScreen.this.channelFuture.syncUninterruptibly();
                synchronized(ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
-                     var10.disconnect(ConnectScreen.ABORT_CONNECTION);
+                     var11.disconnect(ConnectScreen.ABORT_CONNECTION);
                      return;
                   }
 
-                  ConnectScreen.this.connection = var10;
-                  var1.getDownloadedPackSource().configureForServerControl(var10, convertPackStatus(var3.getResourcePackStatus()));
+                  ConnectScreen.this.connection = var11;
+                  var1.getDownloadedPackSource().configureForServerControl(var11, convertPackStatus(var3.getResourcePackStatus()));
                }
 
-               ConnectScreen.this.connection
-                  .initiateServerboundPlayConnection(
-                     var1x.getHostName(),
-                     var1x.getPort(),
-                     LoginProtocols.SERVERBOUND,
-                     LoginProtocols.CLIENTBOUND,
-                     new ClientHandshakePacketListenerImpl(
-                        ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus, var4
-                     ),
-                     var4 != null
-                  );
+               Connection var10000 = ConnectScreen.this.connection;
+               String var10001 = var1x.getHostName();
+               int var10002 = var1x.getPort();
+               ConnectScreen var10013 = ConnectScreen.this;
+               var10000.initiateServerboundPlayConnection(var10001, var10002, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, new ClientHandshakePacketListenerImpl(ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, (Duration)null, var10013::updateStatus, var4), var4 != null);
                ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getUser().getProfileId()));
             } catch (Exception var9) {
                if (ConnectScreen.this.aborted) {
@@ -148,31 +140,30 @@ public class ConnectScreen extends Screen {
                Throwable var5 = var9.getCause();
                Exception var3x;
                if (var5 instanceof Exception var4x) {
-                  var3x = (Exception)var4x;
+                  var3x = var4x;
                } else {
                   var3x = var9;
                }
 
                ConnectScreen.LOGGER.error("Couldn't connect to server", var9);
-               String var11 = var1x == null
-                  ? var3x.getMessage()
-                  : var3x.getMessage().replaceAll(var1x.getHostName() + ":" + var1x.getPort(), "").replaceAll(var1x.toString(), "");
-               var1.execute(
-                  () -> var1.setScreen(
-                        new DisconnectedScreen(
-                           ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var11)
-                        )
-                     )
-               );
+               String var10 = var1x == null ? var3x.getMessage() : var3x.getMessage().replaceAll(var1x.getHostName() + ":" + var1x.getPort(), "").replaceAll(var1x.toString(), "");
+               var1.execute(() -> {
+                  var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var10)));
+               });
             }
+
          }
 
          private static ServerPackManager.PackPromptStatus convertPackStatus(ServerData.ServerPackStatus var0) {
-            return switch(var0) {
-               case ENABLED -> ServerPackManager.PackPromptStatus.ALLOWED;
-               case DISABLED -> ServerPackManager.PackPromptStatus.DECLINED;
-               case PROMPT -> ServerPackManager.PackPromptStatus.PENDING;
-            };
+            ServerPackManager.PackPromptStatus var10000;
+            switch (var0) {
+               case ENABLED -> var10000 = ServerPackManager.PackPromptStatus.ALLOWED;
+               case DISABLED -> var10000 = ServerPackManager.PackPromptStatus.DECLINED;
+               case PROMPT -> var10000 = ServerPackManager.PackPromptStatus.PENDING;
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            return var10000;
          }
       };
       var5.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
@@ -183,7 +174,6 @@ public class ConnectScreen extends Screen {
       this.status = var1;
    }
 
-   @Override
    public void tick() {
       if (this.connection != null) {
          if (this.connection.isConnected()) {
@@ -192,16 +182,15 @@ public class ConnectScreen extends Screen {
             this.connection.handleDisconnection();
          }
       }
+
    }
 
-   @Override
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   @Override
    protected void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
          synchronized(this) {
             this.aborted = true;
             if (this.channelFuture != null) {
@@ -218,13 +207,12 @@ public class ConnectScreen extends Screen {
       }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
          this.lastNarration = var5;
-         this.minecraft.getNarrator().sayNow(Component.translatable("narrator.joining"));
+         this.minecraft.getNarrator().sayNow((Component)Component.translatable("narrator.joining"));
       }
 
       var1.drawCenteredString(this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);

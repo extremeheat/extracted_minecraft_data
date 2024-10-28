@@ -15,6 +15,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -23,17 +24,15 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
       super(var1, var2, var3, var4);
    }
 
-   @Override
    protected abstract MapCodec<? extends GrowingPlantBodyBlock> codec();
 
    protected BlockState updateHeadAfterConvertedFromBody(BlockState var1, BlockState var2) {
       return var2;
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == this.growthDirection.getOpposite() && !var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, this, 1);
+         var4.scheduleTick(var5, (Block)this, 1);
       }
 
       GrowingPlantHeadBlock var7 = this.getHeadBlock();
@@ -41,49 +40,44 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
          return this.updateHeadAfterConvertedFromBody(var1, var7.getStateForPlacement(var4));
       } else {
          if (this.scheduleFluidTicks) {
-            var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+            var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
          }
 
          return super.updateShape(var1, var2, var3, var4, var5, var6);
       }
    }
 
-   @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(this.getHeadBlock());
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       Optional var4 = this.getHeadPos(var1, var2, var3.getBlock());
       return var4.isPresent() && this.getHeadBlock().canGrowInto(var1.getBlockState(((BlockPos)var4.get()).relative(this.growthDirection)));
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       Optional var5 = this.getHeadPos(var1, var3, var4.getBlock());
       if (var5.isPresent()) {
          BlockState var6 = var1.getBlockState((BlockPos)var5.get());
          ((GrowingPlantHeadBlock)var6.getBlock()).performBonemeal(var1, var2, (BlockPos)var5.get(), var6);
       }
+
    }
 
    private Optional<BlockPos> getHeadPos(BlockGetter var1, BlockPos var2, Block var3) {
       return BlockUtil.getTopConnectedBlock(var1, var2, var3, this.growthDirection, this.getHeadBlock());
    }
 
-   @Override
    protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       boolean var3 = super.canBeReplaced(var1, var2);
       return var3 && var2.getItemInHand().is(this.getHeadBlock().asItem()) ? false : var3;
    }
 
-   @Override
    protected Block getBodyBlock() {
       return this;
    }

@@ -5,4 +5,9 @@ public enum RemoteDebugSampleType {
 
    private RemoteDebugSampleType() {
    }
+
+   // $FF: synthetic method
+   private static RemoteDebugSampleType[] $values() {
+      return new RemoteDebugSampleType[]{TICK_TIME};
+   }
 }

@@ -17,23 +17,20 @@ public class FullTextSearchTree<T> extends IdSearchTree<T> {
       this.filler = var1;
    }
 
-   @Override
    public void refresh() {
       super.refresh();
       this.plainTextSearchTree = PlainTextSearchTree.create(this.contents, this.filler);
    }
 
-   @Override
    protected List<T> searchPlainText(String var1) {
       return this.plainTextSearchTree.search(var1);
    }
 
-   @Override
    protected List<T> searchResourceLocation(String var1, String var2) {
       List var3 = this.resourceLocationSearchTree.searchNamespace(var1);
       List var4 = this.resourceLocationSearchTree.searchPath(var2);
       List var5 = this.plainTextSearchTree.search(var2);
-      MergingUniqueIterator var6 = new MergingUniqueIterator<>(var4.iterator(), var5.iterator(), this.additionOrder);
-      return ImmutableList.copyOf(new IntersectionIterator<T>(var3.iterator(), var6, this.additionOrder));
+      MergingUniqueIterator var6 = new MergingUniqueIterator(var4.iterator(), var5.iterator(), this.additionOrder);
+      return ImmutableList.copyOf(new IntersectionIterator(var3.iterator(), var6, this.additionOrder));
    }
 }

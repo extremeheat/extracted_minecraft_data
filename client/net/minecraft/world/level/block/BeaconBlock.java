@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
@@ -20,7 +19,6 @@ import net.minecraft.world.phys.BlockHitResult;
 public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
    public static final MapCodec<BeaconBlock> CODEC = simpleCodec(BeaconBlock::new);
 
-   @Override
    public MapCodec<BeaconBlock> codec() {
       return CODEC;
    }
@@ -29,30 +27,27 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
       super(var1);
    }
 
-   @Override
    public DyeColor getColor() {
       return DyeColor.WHITE;
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BeaconBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return createTickerHelper(var3, BlockEntityType.BEACON, BeaconBlockEntity::tick);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof BeaconBlockEntity var6) {
-            var4.openMenu((MenuProvider)var6);
+         if (var7 instanceof BeaconBlockEntity) {
+            BeaconBlockEntity var6 = (BeaconBlockEntity)var7;
+            var4.openMenu(var6);
             var4.awardStat(Stats.INTERACT_WITH_BEACON);
          }
 
@@ -60,7 +55,6 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
       }
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }

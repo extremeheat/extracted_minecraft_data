@@ -6,19 +6,20 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.WitchItemLayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Witch;
 
 public class WitchRenderer extends MobRenderer<Witch, WitchModel<Witch>> {
    private static final ResourceLocation WITCH_LOCATION = new ResourceLocation("textures/entity/witch.png");
 
    public WitchRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new WitchModel<>(var1.bakeLayer(ModelLayers.WITCH)), 0.5F);
-      this.addLayer(new WitchItemLayer<>(this, var1.getItemInHandRenderer()));
+      super(var1, new WitchModel(var1.bakeLayer(ModelLayers.WITCH)), 0.5F);
+      this.addLayer(new WitchItemLayer(this, var1.getItemInHandRenderer()));
    }
 
    public void render(Witch var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      this.model.setHoldingItem(!var1.getMainHandItem().isEmpty());
-      super.render(var1, var2, var3, var4, var5, var6);
+      ((WitchModel)this.model).setHoldingItem(!var1.getMainHandItem().isEmpty());
+      super.render((Mob)var1, var2, var3, var4, var5, var6);
    }
 
    public ResourceLocation getTextureLocation(Witch var1) {

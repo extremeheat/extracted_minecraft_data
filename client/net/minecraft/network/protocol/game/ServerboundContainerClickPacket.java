@@ -12,13 +12,9 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 
 public class ServerboundContainerClickPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacket> STREAM_CODEC = Packet.codec(
-      ServerboundContainerClickPacket::write, ServerboundContainerClickPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacket> STREAM_CODEC = Packet.codec(ServerboundContainerClickPacket::write, ServerboundContainerClickPacket::new);
    private static final int MAX_SLOT_COUNT = 128;
-   private static final StreamCodec<RegistryFriendlyByteBuf, Int2ObjectMap<ItemStack>> SLOTS_STREAM_CODEC = ByteBufCodecs.map(
-      Int2ObjectOpenHashMap::new, ByteBufCodecs.SHORT.map(Short::intValue, Integer::shortValue), ItemStack.OPTIONAL_STREAM_CODEC, 128
-   );
+   private static final StreamCodec<RegistryFriendlyByteBuf, Int2ObjectMap<ItemStack>> SLOTS_STREAM_CODEC;
    private final int containerId;
    private final int stateId;
    private final int slotNum;
@@ -44,9 +40,9 @@ public class ServerboundContainerClickPacket implements Packet<ServerGamePacketL
       this.stateId = var1.readVarInt();
       this.slotNum = var1.readShort();
       this.buttonNum = var1.readByte();
-      this.clickType = var1.readEnum(ClickType.class);
+      this.clickType = (ClickType)var1.readEnum(ClickType.class);
       this.changedSlots = Int2ObjectMaps.unmodifiable((Int2ObjectMap)SLOTS_STREAM_CODEC.decode(var1));
-      this.carriedItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
+      this.carriedItem = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -59,7 +55,6 @@ public class ServerboundContainerClickPacket implements Packet<ServerGamePacketL
       ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.carriedItem);
    }
 
-   @Override
    public PacketType<ServerboundContainerClickPacket> type() {
       return GamePacketTypes.SERVERBOUND_CONTAINER_CLICK;
    }
@@ -94,5 +89,9 @@ public class ServerboundContainerClickPacket implements Packet<ServerGamePacketL
 
    public int getStateId() {
       return this.stateId;
+   }
+
+   static {
+      SLOTS_STREAM_CODEC = ByteBufCodecs.map(Int2ObjectOpenHashMap::new, ByteBufCodecs.SHORT.map(Short::intValue, Integer::shortValue), ItemStack.OPTIONAL_STREAM_CODEC, 128);
    }
 }

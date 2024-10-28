@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 public interface SignedMessageValidator {
    Logger LOGGER = LogUtils.getLogger();
    SignedMessageValidator ACCEPT_UNSIGNED = PlayerChatMessage::removeSignature;
-   SignedMessageValidator REJECT_ALL = var0 -> {
+   SignedMessageValidator REJECT_ALL = (var0) -> {
       LOGGER.error("Received chat message from {}, but they have no chat session initialized and secure chat is enforced", var0.sender());
       return null;
    };
@@ -35,10 +35,7 @@ public interface SignedMessageValidator {
          if (var1.equals(this.lastMessage)) {
             return true;
          } else if (this.lastMessage != null && !var1.link().isDescendantOf(this.lastMessage.link())) {
-            LOGGER.error(
-               "Received out-of-order chat message from {}: expected index > {} for session {}, but was {} for session {}",
-               new Object[]{var1.sender(), this.lastMessage.link().index(), this.lastMessage.link().sessionId(), var1.link().index(), var1.link().sessionId()}
-            );
+            LOGGER.error("Received out-of-order chat message from {}: expected index > {} for session {}, but was {} for session {}", new Object[]{var1.sender(), this.lastMessage.link().index(), this.lastMessage.link().sessionId(), var1.link().index(), var1.link().sessionId()});
             return false;
          } else {
             return true;
@@ -58,7 +55,6 @@ public interface SignedMessageValidator {
       }
 
       @Nullable
-      @Override
       public PlayerChatMessage updateAndValidate(PlayerChatMessage var1) {
          this.isChainValid = this.isChainValid && this.validate(var1);
          if (!this.isChainValid) {

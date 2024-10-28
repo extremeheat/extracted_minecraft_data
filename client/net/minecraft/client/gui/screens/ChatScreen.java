@@ -31,11 +31,9 @@ public class ChatScreen extends Screen {
       this.initial = var1;
    }
 
-   @Override
    protected void init() {
       this.historyPos = this.minecraft.gui.getChat().getRecentChat().size();
       this.input = new EditBox(this.minecraft.fontFilterFishy, 4, this.height - 12, this.width - 4, 12, Component.translatable("chat.editBox")) {
-         @Override
          protected MutableComponent createNarrationMessage() {
             return super.createNarrationMessage().append(ChatScreen.this.commandSuggestions.getNarrationMessage());
          }
@@ -51,12 +49,10 @@ public class ChatScreen extends Screen {
       this.commandSuggestions.updateCommandInfo();
    }
 
-   @Override
    protected void setInitialFocus() {
       this.setInitialFocus(this.input);
    }
 
-   @Override
    public void resize(Minecraft var1, int var2, int var3) {
       String var4 = this.input.getValue();
       this.init(var1, var2, var3);
@@ -64,7 +60,6 @@ public class ChatScreen extends Screen {
       this.commandSuggestions.updateCommandInfo();
    }
 
-   @Override
    public void removed() {
       this.minecraft.gui.getChat().resetChatScroll();
    }
@@ -75,37 +70,37 @@ public class ChatScreen extends Screen {
       this.commandSuggestions.updateCommandInfo();
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.commandSuggestions.keyPressed(var1, var2, var3)) {
          return true;
       } else if (super.keyPressed(var1, var2, var3)) {
          return true;
       } else if (var1 == 256) {
-         this.minecraft.setScreen(null);
+         this.minecraft.setScreen((Screen)null);
          return true;
-      } else if (var1 == 257 || var1 == 335) {
-         this.handleChatInput(this.input.getValue(), true);
-         this.minecraft.setScreen(null);
-         return true;
-      } else if (var1 == 265) {
-         this.moveInHistory(-1);
-         return true;
-      } else if (var1 == 264) {
-         this.moveInHistory(1);
-         return true;
-      } else if (var1 == 266) {
-         this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
-         return true;
-      } else if (var1 == 267) {
-         this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
-         return true;
+      } else if (var1 != 257 && var1 != 335) {
+         if (var1 == 265) {
+            this.moveInHistory(-1);
+            return true;
+         } else if (var1 == 264) {
+            this.moveInHistory(1);
+            return true;
+         } else if (var1 == 266) {
+            this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
+            return true;
+         } else if (var1 == 267) {
+            this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
+            return true;
+         } else {
+            return false;
+         }
       } else {
-         return false;
+         this.handleChatInput(this.input.getValue(), true);
+         this.minecraft.setScreen((Screen)null);
+         return true;
       }
    }
 
-   @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       var7 = Mth.clamp(var7, -1.0, 1.0);
       if (this.commandSuggestions.mouseScrolled(var7)) {
@@ -120,7 +115,6 @@ public class ChatScreen extends Screen {
       }
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.commandSuggestions.mouseClicked((double)((int)var1), (double)((int)var3), var5)) {
          return true;
@@ -142,13 +136,13 @@ public class ChatScreen extends Screen {
       }
    }
 
-   @Override
    protected void insertText(String var1, boolean var2) {
       if (var2) {
          this.input.setValue(var1);
       } else {
          this.input.insertText(var1);
       }
+
    }
 
    public void moveInHistory(int var1) {
@@ -164,14 +158,13 @@ public class ChatScreen extends Screen {
                this.historyBuffer = this.input.getValue();
             }
 
-            this.input.setValue(this.minecraft.gui.getChat().getRecentChat().get(var2));
+            this.input.setValue((String)this.minecraft.gui.getChat().getRecentChat().get(var2));
             this.commandSuggestions.setAllowSuggestions(false);
             this.historyPos = var2;
          }
       }
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
@@ -190,13 +183,12 @@ public class ChatScreen extends Screen {
             var1.renderComponentHoverEffect(this.font, var6, var2, var3);
          }
       }
+
    }
 
-   @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
-   @Override
    public boolean isPauseScreen() {
       return false;
    }
@@ -205,14 +197,14 @@ public class ChatScreen extends Screen {
       this.input.setValue(var1);
    }
 
-   @Override
    protected void updateNarrationState(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.getTitle());
       var1.add(NarratedElementType.USAGE, USAGE_TEXT);
       String var2 = this.input.getValue();
       if (!var2.isEmpty()) {
-         var1.nest().add(NarratedElementType.TITLE, Component.translatable("chat_screen.message", var2));
+         var1.nest().add(NarratedElementType.TITLE, (Component)Component.translatable("chat_screen.message", var2));
       }
+
    }
 
    @Nullable
@@ -232,6 +224,7 @@ public class ChatScreen extends Screen {
          } else {
             this.minecraft.player.connection.sendChat(var1);
          }
+
       }
    }
 

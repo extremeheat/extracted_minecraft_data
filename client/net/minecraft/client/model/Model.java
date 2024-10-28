@@ -15,7 +15,7 @@ public abstract class Model {
    }
 
    public final RenderType renderType(ResourceLocation var1) {
-      return this.renderType.apply(var1);
+      return (RenderType)this.renderType.apply(var1);
    }
 
    public abstract void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8);

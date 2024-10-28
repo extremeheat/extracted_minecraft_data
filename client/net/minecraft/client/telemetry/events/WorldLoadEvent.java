@@ -43,11 +43,12 @@ public class WorldLoadEvent {
    public boolean send(TelemetryEventSender var1) {
       if (!this.eventSent && this.gameMode != null && this.serverBrand != null) {
          this.eventSent = true;
-         var1.send(TelemetryEventType.WORLD_LOADED, var1x -> {
+         var1.send(TelemetryEventType.WORLD_LOADED, (var1x) -> {
             var1x.put(TelemetryProperty.GAME_MODE, this.gameMode);
             if (this.minigameName != null) {
                var1x.put(TelemetryProperty.REALMS_MAP_CONTENT, this.minigameName);
             }
+
          });
          return true;
       } else {
@@ -56,12 +57,16 @@ public class WorldLoadEvent {
    }
 
    public void setGameMode(GameType var1, boolean var2) {
-      this.gameMode = switch(var1) {
-         case SURVIVAL -> var2 ? TelemetryProperty.GameMode.HARDCORE : TelemetryProperty.GameMode.SURVIVAL;
-         case CREATIVE -> TelemetryProperty.GameMode.CREATIVE;
-         case ADVENTURE -> TelemetryProperty.GameMode.ADVENTURE;
-         case SPECTATOR -> TelemetryProperty.GameMode.SPECTATOR;
-      };
+      TelemetryProperty.GameMode var10001;
+      switch (var1) {
+         case SURVIVAL -> var10001 = var2 ? TelemetryProperty.GameMode.HARDCORE : TelemetryProperty.GameMode.SURVIVAL;
+         case CREATIVE -> var10001 = TelemetryProperty.GameMode.CREATIVE;
+         case ADVENTURE -> var10001 = TelemetryProperty.GameMode.ADVENTURE;
+         case SPECTATOR -> var10001 = TelemetryProperty.GameMode.SPECTATOR;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      this.gameMode = var10001;
    }
 
    public void setServerBrand(String var1) {

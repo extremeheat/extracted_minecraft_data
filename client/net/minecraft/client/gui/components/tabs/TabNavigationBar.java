@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -15,6 +16,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -44,86 +46,85 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       this.tabManager = var2;
       this.tabs = ImmutableList.copyOf(var3);
       this.layout.defaultCellSetting().alignHorizontallyCenter();
-      com.google.common.collect.ImmutableList.Builder var4 = ImmutableList.builder();
+      ImmutableList.Builder var4 = ImmutableList.builder();
+      Iterator var5 = var3.iterator();
 
-      for(Tab var6 : var3) {
-         var4.add(this.layout.addChild(new TabButton(var2, var6, 0, 24)));
+      while(var5.hasNext()) {
+         Tab var6 = (Tab)var5.next();
+         var4.add((TabButton)this.layout.addChild(new TabButton(var2, var6, 0, 24)));
       }
 
       this.tabButtons = var4.build();
    }
 
-   public static TabNavigationBar.Builder builder(TabManager var0, int var1) {
-      return new TabNavigationBar.Builder(var0, var1);
+   public static Builder builder(TabManager var0, int var1) {
+      return new Builder(var0, var1);
    }
 
    public void setWidth(int var1) {
       this.width = var1;
    }
 
-   @Override
    public void setFocused(boolean var1) {
       super.setFocused(var1);
       if (this.getFocused() != null) {
          this.getFocused().setFocused(var1);
       }
+
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void setFocused(@Nullable GuiEventListener var1) {
       super.setFocused(var1);
       if (var1 instanceof TabButton var2) {
          this.tabManager.setCurrentTab(var2.tab(), true);
       }
+
    }
 
    @Nullable
-   @Override
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (!this.isFocused()) {
          TabButton var2 = this.currentTabButton();
          if (var2 != null) {
-            return ComponentPath.path(this, ComponentPath.leaf(var2));
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var2));
          }
       }
 
       return var1 instanceof FocusNavigationEvent.TabNavigation ? null : super.nextFocusPath(var1);
    }
 
-   @Override
    public List<? extends GuiEventListener> children() {
       return this.tabButtons;
    }
 
-   @Override
    public NarratableEntry.NarrationPriority narrationPriority() {
-      return this.tabButtons.stream().map(AbstractWidget::narrationPriority).max(Comparator.naturalOrder()).orElse(NarratableEntry.NarrationPriority.NONE);
+      return (NarratableEntry.NarrationPriority)this.tabButtons.stream().map(AbstractWidget::narrationPriority).max(Comparator.naturalOrder()).orElse(NarratableEntry.NarrationPriority.NONE);
    }
 
-   @Override
    public void updateNarration(NarrationElementOutput var1) {
-      Optional var2 = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> Optional.ofNullable(this.currentTabButton()));
-      var2.ifPresent(var2x -> {
+      Optional var2 = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> {
+         return Optional.ofNullable(this.currentTabButton());
+      });
+      var2.ifPresent((var2x) -> {
          this.narrateListElementPosition(var1.nest(), var2x);
          var2x.updateNarration(var1);
       });
       if (this.isFocused()) {
          var1.add(NarratedElementType.USAGE, USAGE_NARRATION);
       }
+
    }
 
    protected void narrateListElementPosition(NarrationElementOutput var1, TabButton var2) {
       if (this.tabs.size() > 1) {
          int var3 = this.tabButtons.indexOf(var2);
          if (var3 != -1) {
-            var1.add(NarratedElementType.POSITION, Component.translatable("narrator.position.tab", var3 + 1, this.tabs.size()));
+            var1.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.tab", var3 + 1, this.tabs.size()));
          }
       }
+
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       RenderSystem.enableBlend();
       var1.blit(Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
@@ -136,9 +137,9 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
          TabButton var7 = (TabButton)var6.next();
          var7.render(var1, var2, var3, var4);
       }
+
    }
 
-   @Override
    public ScreenRectangle getRectangle() {
       return this.layout.getRectangle();
    }
@@ -164,6 +165,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       } else {
          this.tabManager.setCurrentTab((Tab)this.tabs.get(var1), var2);
       }
+
    }
 
    public boolean keyPressed(int var1) {
@@ -209,7 +211,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    public static class Builder {
       private final int width;
       private final TabManager tabManager;
-      private final List<Tab> tabs = new ArrayList<>();
+      private final List<Tab> tabs = new ArrayList();
 
       Builder(TabManager var1, int var2) {
          super();
@@ -217,7 +219,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
          this.width = var2;
       }
 
-      public TabNavigationBar.Builder addTabs(Tab... var1) {
+      public Builder addTabs(Tab... var1) {
          Collections.addAll(this.tabs, var1);
          return this;
       }

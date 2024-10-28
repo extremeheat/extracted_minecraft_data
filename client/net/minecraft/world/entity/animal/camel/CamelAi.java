@@ -11,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -42,24 +43,8 @@ public class CamelAi {
    private static final float SPEED_MULTIPLIER_WHEN_FOLLOWING_ADULT = 2.5F;
    private static final float SPEED_MULTIPLIER_WHEN_MAKING_LOVE = 1.0F;
    private static final UniformInt ADULT_FOLLOW_RANGE = UniformInt.of(5, 16);
-   private static final ImmutableList<SensorType<? extends Sensor<? super Camel>>> SENSOR_TYPES = ImmutableList.of(
-      SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.CAMEL_TEMPTATIONS, SensorType.NEAREST_ADULT
-   );
-   private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES = ImmutableList.of(
-      MemoryModuleType.IS_PANICKING,
-      MemoryModuleType.HURT_BY,
-      MemoryModuleType.HURT_BY_ENTITY,
-      MemoryModuleType.WALK_TARGET,
-      MemoryModuleType.LOOK_TARGET,
-      MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
-      MemoryModuleType.PATH,
-      MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-      MemoryModuleType.TEMPTING_PLAYER,
-      MemoryModuleType.TEMPTATION_COOLDOWN_TICKS,
-      MemoryModuleType.GAZE_COOLDOWN_TICKS,
-      MemoryModuleType.IS_TEMPTED,
-      new MemoryModuleType[]{MemoryModuleType.BREED_TARGET, MemoryModuleType.NEAREST_VISIBLE_ADULT}
-   );
+   private static final ImmutableList<SensorType<? extends Sensor<? super Camel>>> SENSOR_TYPES;
+   private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
    public CamelAi() {
       super();
@@ -82,50 +67,15 @@ public class CamelAi {
    }
 
    private static void initCoreActivity(Brain<Camel> var0) {
-      var0.addActivity(
-         Activity.CORE,
-         0,
-         ImmutableList.of(
-            new Swim(0.8F),
-            new CamelAi.CamelPanic(4.0F),
-            new LookAtTargetSink(45, 90),
-            new MoveToTargetSink(),
-            new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
-            new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
-         )
-      );
+      var0.addActivity(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new CamelPanic(4.0F), new LookAtTargetSink(45, 90), new MoveToTargetSink(), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS), new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)));
    }
 
    private static void initIdleActivity(Brain<Camel> var0) {
-      var0.addActivity(
-         Activity.IDLE,
-         ImmutableList.of(
-            Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
-            Pair.of(1, new AnimalMakeLove(EntityType.CAMEL)),
-            Pair.of(
-               2,
-               new RunOne(
-                  ImmutableList.of(
-                     Pair.of(new FollowTemptation(var0x -> 2.5F, var0x -> var0x.isBaby() ? 2.5 : 3.5), 1),
-                     Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 2.5F)), 1)
-                  )
-               )
-            ),
-            Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)),
-            Pair.of(
-               4,
-               new RunOne(
-                  ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
-                  ImmutableList.of(
-                     Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), RandomStroll.stroll(2.0F)), 1),
-                     Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), SetWalkTargetFromLookTarget.create(2.0F, 3)), 1),
-                     Pair.of(new CamelAi.RandomSitting(20), 1),
-                     Pair.of(new DoNothing(30, 60), 1)
-                  )
-               )
-            )
-         )
-      );
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.CAMEL)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((var0x) -> {
+         return 2.5F;
+      }, (var0x) -> {
+         return var0x.isBaby() ? 2.5 : 3.5;
+      }), 1), Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 2.5F)), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), RandomStroll.stroll(2.0F)), 1), Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), SetWalkTargetFromLookTarget.create(2.0F, 3)), 1), Pair.of(new RandomSitting(20), 1), Pair.of(new DoNothing(30, 60), 1))))));
    }
 
    public static void updateActivity(Camel var0) {
@@ -133,7 +83,14 @@ public class CamelAi {
    }
 
    public static Predicate<ItemStack> getTemptations() {
-      return var0 -> var0.is(ItemTags.CAMEL_FOOD);
+      return (var0) -> {
+         return var0.is(ItemTags.CAMEL_FOOD);
+      };
+   }
+
+   static {
+      SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.CAMEL_TEMPTATIONS, SensorType.NEAREST_ADULT);
+      MEMORY_TYPES = ImmutableList.of(MemoryModuleType.IS_PANICKING, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryModuleType.GAZE_COOLDOWN_TICKS, MemoryModuleType.IS_TEMPTED, new MemoryModuleType[]{MemoryModuleType.BREED_TARGET, MemoryModuleType.NEAREST_VISIBLE_ADULT});
    }
 
    public static class CamelPanic extends AnimalPanic<Camel> {
@@ -143,7 +100,17 @@ public class CamelAi {
 
       protected void start(ServerLevel var1, Camel var2, long var3) {
          var2.standUpInstantly();
-         super.start(var1, var2, var3);
+         super.start(var1, (PathfinderMob)var2, var3);
+      }
+
+      // $FF: synthetic method
+      protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
+         this.start(var1, (Camel)var2, var3);
+      }
+
+      // $FF: synthetic method
+      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+         this.start(var1, (Camel)var2, var3);
       }
    }
 
@@ -156,12 +123,7 @@ public class CamelAi {
       }
 
       protected boolean checkExtraStartConditions(ServerLevel var1, Camel var2) {
-         return !var2.isInWater()
-            && var2.getPoseTime() >= (long)this.minimalPoseTicks
-            && !var2.isLeashed()
-            && var2.onGround()
-            && !var2.hasControllingPassenger()
-            && var2.canCamelChangePose();
+         return !var2.isInWater() && var2.getPoseTime() >= (long)this.minimalPoseTicks && !var2.isLeashed() && var2.onGround() && !var2.hasControllingPassenger() && var2.canCamelChangePose();
       }
 
       protected void start(ServerLevel var1, Camel var2, long var3) {
@@ -170,6 +132,12 @@ public class CamelAi {
          } else if (!var2.isPanicking()) {
             var2.sitDown();
          }
+
+      }
+
+      // $FF: synthetic method
+      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+         this.start(var1, (Camel)var2, var3);
       }
    }
 }

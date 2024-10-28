@@ -19,7 +19,6 @@ public class PlainTextButton extends Button {
       this.underlinedMessage = ComponentUtils.mergeStyles(var5.copy(), Style.EMPTY.withUnderlined(true));
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Component var5 = this.isHoveredOrFocused() ? this.underlinedMessage : this.message;
       var1.drawString(this.font, var5, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);

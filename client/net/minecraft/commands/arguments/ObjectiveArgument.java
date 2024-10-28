@@ -15,15 +15,16 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Scoreboard;
 
 public class ObjectiveArgument implements ArgumentType<String> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "*", "012");
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("arguments.objective.notFound", var0)
-   );
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("arguments.objective.readonly", var0)
-   );
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("arguments.objective.notFound", var0);
+   });
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("arguments.objective.readonly", var0);
+   });
 
    public ObjectiveArgument() {
       super();
@@ -36,7 +37,7 @@ public class ObjectiveArgument implements ArgumentType<String> {
    public static Objective getObjective(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       String var2 = (String)var0.getArgument(var1, String.class);
       ServerScoreboard var3 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
-      Objective var4 = var3.getObjective(var2);
+      Objective var4 = ((Scoreboard)var3).getObjective(var2);
       if (var4 == null) {
          throw ERROR_OBJECTIVE_NOT_FOUND.create(var2);
       } else {
@@ -57,18 +58,23 @@ public class ObjectiveArgument implements ArgumentType<String> {
       return var1.readUnquotedString();
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       Object var3 = var1.getSource();
       if (var3 instanceof CommandSourceStack var4) {
-         return SharedSuggestionProvider.suggest(var4.getServer().getScoreboard().getObjectiveNames(), var2);
+         return SharedSuggestionProvider.suggest((Iterable)var4.getServer().getScoreboard().getObjectiveNames(), var2);
+      } else if (var3 instanceof SharedSuggestionProvider var5) {
+         return var5.customSuggestion(var1);
       } else {
-         return var3 instanceof SharedSuggestionProvider var5 ? var5.customSuggestion(var1) : Suggestions.empty();
+         return Suggestions.empty();
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

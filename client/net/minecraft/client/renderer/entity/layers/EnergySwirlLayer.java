@@ -16,7 +16,6 @@ public abstract class EnergySwirlLayer<T extends Entity & PowerableMob, M extend
       super(var1);
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if (((PowerableMob)var4).isPowered()) {
          float var11 = (float)var4.tickCount + var7;

@@ -12,15 +12,17 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
 
    private SingletonArgumentInfo(Function<CommandBuildContext, A> var1) {
       super();
-      this.template = new SingletonArgumentInfo.Template(var1);
+      this.template = new Template(var1);
    }
 
    public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextFree(Supplier<T> var0) {
-      return new SingletonArgumentInfo<>(var1 -> (T)var0.get());
+      return new SingletonArgumentInfo((var1) -> {
+         return (ArgumentType)var0.get();
+      });
    }
 
    public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextAware(Function<CommandBuildContext, T> var0) {
-      return new SingletonArgumentInfo<>(var0);
+      return new SingletonArgumentInfo(var0);
    }
 
    public void serializeToNetwork(SingletonArgumentInfo<A>.Template var1, FriendlyByteBuf var2) {
@@ -37,6 +39,16 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
       return this.template;
    }
 
+   // $FF: synthetic method
+   public ArgumentTypeInfo.Template unpack(ArgumentType var1) {
+      return this.unpack(var1);
+   }
+
+   // $FF: synthetic method
+   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+      return this.deserializeFromNetwork(var1);
+   }
+
    public final class Template implements ArgumentTypeInfo.Template<A> {
       private final Function<CommandBuildContext, A> constructor;
 
@@ -45,12 +57,10 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
          this.constructor = var2;
       }
 
-      @Override
       public A instantiate(CommandBuildContext var1) {
-         return (A)this.constructor.apply(var1);
+         return (ArgumentType)this.constructor.apply(var1);
       }
 
-      @Override
       public ArgumentTypeInfo<A, ?> type() {
          return SingletonArgumentInfo.this;
       }

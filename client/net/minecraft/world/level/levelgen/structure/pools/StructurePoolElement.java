@@ -25,10 +25,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public abstract class StructurePoolElement {
-   public static final Codec<StructurePoolElement> CODEC = BuiltInRegistries.STRUCTURE_POOL_ELEMENT
-      .byNameCodec()
-      .dispatch("element_type", StructurePoolElement::getType, StructurePoolElementType::codec);
-   private static final Holder<StructureProcessorList> EMPTY = Holder.direct(new StructureProcessorList(List.of()));
+   public static final Codec<StructurePoolElement> CODEC;
+   private static final Holder<StructureProcessorList> EMPTY;
    @Nullable
    private volatile StructureTemplatePool.Projection projection;
 
@@ -43,30 +41,15 @@ public abstract class StructurePoolElement {
 
    public abstract Vec3i getSize(StructureTemplateManager var1, Rotation var2);
 
-   public abstract List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(
-      StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4
-   );
+   public abstract List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4);
 
    public abstract BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3);
 
-   public abstract boolean place(
-      StructureTemplateManager var1,
-      WorldGenLevel var2,
-      StructureManager var3,
-      ChunkGenerator var4,
-      BlockPos var5,
-      BlockPos var6,
-      Rotation var7,
-      BoundingBox var8,
-      RandomSource var9,
-      boolean var10
-   );
+   public abstract boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, boolean var10);
 
    public abstract StructurePoolElementType<?> getType();
 
-   public void handleDataMarker(
-      LevelAccessor var1, StructureTemplate.StructureBlockInfo var2, BlockPos var3, Rotation var4, RandomSource var5, BoundingBox var6
-   ) {
+   public void handleDataMarker(LevelAccessor var1, StructureTemplate.StructureBlockInfo var2, BlockPos var3, Rotation var4, RandomSource var5, BoundingBox var6) {
    }
 
    public StructurePoolElement setProjection(StructureTemplatePool.Projection var1) {
@@ -88,32 +71,51 @@ public abstract class StructurePoolElement {
    }
 
    public static Function<StructureTemplatePool.Projection, EmptyPoolElement> empty() {
-      return var0 -> EmptyPoolElement.INSTANCE;
+      return (var0) -> {
+         return EmptyPoolElement.INSTANCE;
+      };
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0) {
-      return var1 -> new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
+      return (var1) -> {
+         return new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
+      };
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0, Holder<StructureProcessorList> var1) {
-      return var2 -> new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), var1, var2);
+      return (var2) -> {
+         return new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), var1, var2);
+      };
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0) {
-      return var1 -> new SinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
+      return (var1) -> {
+         return new SinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
+      };
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1) {
-      return var2 -> new SinglePoolElement(Either.left(new ResourceLocation(var0)), var1, var2);
+      return (var2) -> {
+         return new SinglePoolElement(Either.left(new ResourceLocation(var0)), var1, var2);
+      };
    }
 
    public static Function<StructureTemplatePool.Projection, FeaturePoolElement> feature(Holder<PlacedFeature> var0) {
-      return var1 -> new FeaturePoolElement(var0, var1);
+      return (var1) -> {
+         return new FeaturePoolElement(var0, var1);
+      };
    }
 
-   public static Function<StructureTemplatePool.Projection, ListPoolElement> list(
-      List<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>> var0
-   ) {
-      return var1 -> new ListPoolElement(var0.stream().map(var1x -> (StructurePoolElement)var1x.apply(var1)).collect(Collectors.toList()), var1);
+   public static Function<StructureTemplatePool.Projection, ListPoolElement> list(List<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>> var0) {
+      return (var1) -> {
+         return new ListPoolElement((List)var0.stream().map((var1x) -> {
+            return (StructurePoolElement)var1x.apply(var1);
+         }).collect(Collectors.toList()), var1);
+      };
+   }
+
+   static {
+      CODEC = BuiltInRegistries.STRUCTURE_POOL_ELEMENT.byNameCodec().dispatch("element_type", StructurePoolElement::getType, StructurePoolElementType::codec);
+      EMPTY = Holder.direct(new StructureProcessorList(List.of()));
    }
 }

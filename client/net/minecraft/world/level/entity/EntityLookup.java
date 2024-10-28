@@ -24,13 +24,16 @@ public class EntityLookup<T extends EntityAccess> {
    public <U extends T> void getEntities(EntityTypeTest<T, U> var1, AbortableIterationConsumer<U> var2) {
       ObjectIterator var3 = this.byId.values().iterator();
 
-      while(var3.hasNext()) {
-         EntityAccess var4 = (EntityAccess)var3.next();
-         EntityAccess var5 = (EntityAccess)var1.tryCast(var4);
-         if (var5 != null && var2.accept(var5).shouldAbort()) {
+      EntityAccess var5;
+      do {
+         if (!var3.hasNext()) {
             return;
          }
-      }
+
+         EntityAccess var4 = (EntityAccess)var3.next();
+         var5 = (EntityAccess)var1.tryCast(var4);
+      } while(var5 == null || !var2.accept(var5).shouldAbort());
+
    }
 
    public Iterable<T> getAllEntities() {
@@ -42,7 +45,7 @@ public class EntityLookup<T extends EntityAccess> {
       if (this.byUuid.containsKey(var2)) {
          LOGGER.warn("Duplicate entity UUID {}: {}", var2, var1);
       } else {
-         this.byUuid.put(var2, (T)var1);
+         this.byUuid.put(var2, var1);
          this.byId.put(var1.getId(), var1);
       }
    }
@@ -54,12 +57,12 @@ public class EntityLookup<T extends EntityAccess> {
 
    @Nullable
    public T getEntity(int var1) {
-      return (T)this.byId.get(var1);
+      return (EntityAccess)this.byId.get(var1);
    }
 
    @Nullable
    public T getEntity(UUID var1) {
-      return this.byUuid.get(var1);
+      return (EntityAccess)this.byUuid.get(var1);
    }
 
    public int count() {

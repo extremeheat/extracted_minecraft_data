@@ -51,6 +51,7 @@ public class Channel {
          AL10.alDeleteSources(new int[]{this.source});
          OpenAlUtil.checkALError("Cleanup");
       }
+
    }
 
    public void play() {
@@ -65,12 +66,14 @@ public class Channel {
       if (this.getState() == 4114) {
          AL10.alSourcePause(this.source);
       }
+
    }
 
    public void unpause() {
       if (this.getState() == 4115) {
          AL10.alSourcePlay(this.source);
       }
+
    }
 
    public void stop() {
@@ -78,6 +81,7 @@ public class Channel {
          AL10.alSourceStop(this.source);
          OpenAlUtil.checkALError("Stop");
       }
+
    }
 
    public boolean playing() {
@@ -120,7 +124,9 @@ public class Channel {
    }
 
    public void attachStaticBuffer(SoundBuffer var1) {
-      var1.getAlBuffer().ifPresent(var1x -> AL10.alSourcei(this.source, 4105, var1x));
+      var1.getAlBuffer().ifPresent((var1x) -> {
+         AL10.alSourcei(this.source, 4105, var1x);
+      });
    }
 
    public void attachBufferStream(AudioStream var1) {
@@ -140,13 +146,16 @@ public class Channel {
             for(int var2 = 0; var2 < var1; ++var2) {
                ByteBuffer var3 = this.stream.read(this.streamingBufferSize);
                if (var3 != null) {
-                  new SoundBuffer(var3, this.stream.getFormat()).releaseAlBuffer().ifPresent(var1x -> AL10.alSourceQueueBuffers(this.source, new int[]{var1x}));
+                  (new SoundBuffer(var3, this.stream.getFormat())).releaseAlBuffer().ifPresent((var1x) -> {
+                     AL10.alSourceQueueBuffers(this.source, new int[]{var1x});
+                  });
                }
             }
          } catch (IOException var4) {
             LOGGER.error("Failed to read from audio stream", var4);
          }
       }
+
    }
 
    public void updateStream() {
@@ -154,6 +163,7 @@ public class Channel {
          int var1 = this.removeProcessedBuffers();
          this.pumpBuffers(var1);
       }
+
    }
 
    private int removeProcessedBuffers() {

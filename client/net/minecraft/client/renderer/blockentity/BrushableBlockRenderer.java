@@ -22,7 +22,7 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
 
    public void render(BrushableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       if (var1.getLevel() != null) {
-         int var7 = var1.getBlockState().getValue(BlockStateProperties.DUSTED);
+         int var7 = (Integer)var1.getBlockState().getValue(BlockStateProperties.DUSTED);
          if (var7 > 0) {
             Direction var8 = var1.getHitDirection();
             if (var8 != null) {
@@ -48,24 +48,13 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
    private float[] translations(Direction var1, int var2) {
       float[] var3 = new float[]{0.5F, 0.0F, 0.5F};
       float var4 = (float)var2 / 10.0F * 0.75F;
-      switch(var1) {
-         case EAST:
-            var3[0] = 0.73F + var4;
-            break;
-         case WEST:
-            var3[0] = 0.25F - var4;
-            break;
-         case UP:
-            var3[1] = 0.25F + var4;
-            break;
-         case DOWN:
-            var3[1] = -0.23F - var4;
-            break;
-         case NORTH:
-            var3[2] = 0.25F - var4;
-            break;
-         case SOUTH:
-            var3[2] = 0.73F + var4;
+      switch (var1) {
+         case EAST -> var3[0] = 0.73F + var4;
+         case WEST -> var3[0] = 0.25F - var4;
+         case UP -> var3[1] = 0.25F + var4;
+         case DOWN -> var3[1] = -0.23F - var4;
+         case NORTH -> var3[2] = 0.25F - var4;
+         case SOUTH -> var3[2] = 0.73F + var4;
       }
 
       return var3;

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.util;
 
+import java.util.Objects;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,7 @@ public class LandRandomPos {
 
    @Nullable
    public static Vec3 getPos(PathfinderMob var0, int var1, int var2) {
+      Objects.requireNonNull(var0);
       return getPos(var0, var1, var2, var0::getWalkTargetValue);
    }
 
@@ -20,8 +22,8 @@ public class LandRandomPos {
    public static Vec3 getPos(PathfinderMob var0, int var1, int var2, ToDoubleFunction<BlockPos> var3) {
       boolean var4 = GoalUtils.mobRestricted(var0, var1);
       return RandomPos.generateRandomPos(() -> {
-         BlockPos var4xx = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
-         BlockPos var5 = generateRandomPosTowardDirection(var0, var1, var4, var4xx);
+         BlockPos var4x = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
+         BlockPos var5 = generateRandomPosTowardDirection(var0, var1, var4, var4x);
          return var5 == null ? null : movePosUpOutOfSolid(var0, var5);
       }, var3);
    }
@@ -55,15 +57,15 @@ public class LandRandomPos {
 
    @Nullable
    public static BlockPos movePosUpOutOfSolid(PathfinderMob var0, BlockPos var1) {
-      var1 = RandomPos.moveUpOutOfSolid(var1, var0.level().getMaxBuildHeight(), var1x -> GoalUtils.isSolid(var0, var1x));
+      var1 = RandomPos.moveUpOutOfSolid(var1, var0.level().getMaxBuildHeight(), (var1x) -> {
+         return GoalUtils.isSolid(var0, var1x);
+      });
       return !GoalUtils.isWater(var0, var1) && !GoalUtils.hasMalus(var0, var1) ? var1 : null;
    }
 
    @Nullable
    public static BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, boolean var2, BlockPos var3) {
       BlockPos var4 = RandomPos.generateRandomPosTowardDirection(var0, var1, var0.getRandom(), var3);
-      return !GoalUtils.isOutsideLimits(var4, var0) && !GoalUtils.isRestricted(var2, var0, var4) && !GoalUtils.isNotStable(var0.getNavigation(), var4)
-         ? var4
-         : null;
+      return !GoalUtils.isOutsideLimits(var4, var0) && !GoalUtils.isRestricted(var2, var0, var4) && !GoalUtils.isNotStable(var0.getNavigation(), var4) ? var4 : null;
    }
 }

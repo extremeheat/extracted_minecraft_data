@@ -10,9 +10,7 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
    private static final int MOVE_HINT_DELAY = 100;
    private static final int LOOK_HINT_DELAY = 20;
    private static final int INCOMPLETE = -1;
-   private static final Component MOVE_TITLE = Component.translatable(
-      "tutorial.move.title", Tutorial.key("forward"), Tutorial.key("left"), Tutorial.key("back"), Tutorial.key("right")
-   );
+   private static final Component MOVE_TITLE = Component.translatable("tutorial.move.title", Tutorial.key("forward"), Tutorial.key("left"), Tutorial.key("back"), Tutorial.key("right"));
    private static final Component MOVE_DESCRIPTION = Component.translatable("tutorial.move.description", Tutorial.key("jump"));
    private static final Component LOOK_TITLE = Component.translatable("tutorial.look.title");
    private static final Component LOOK_DESCRIPTION = Component.translatable("tutorial.look.description");
@@ -32,7 +30,6 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
       this.tutorial = var1;
    }
 
-   @Override
    public void tick() {
       ++this.timeWaiting;
       if (this.moved) {
@@ -88,9 +85,9 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
             this.tutorial.getMinecraft().getToasts().addToast(this.lookToast);
          }
       }
+
    }
 
-   @Override
    public void clear() {
       if (this.moveToast != null) {
          this.moveToast.hide();
@@ -101,19 +98,20 @@ public class MovementTutorialStepInstance implements TutorialStepInstance {
          this.lookToast.hide();
          this.lookToast = null;
       }
+
    }
 
-   @Override
    public void onInput(Input var1) {
       if (var1.up || var1.down || var1.left || var1.right || var1.jumping) {
          this.moved = true;
       }
+
    }
 
-   @Override
    public void onMouse(double var1, double var3) {
       if (Math.abs(var1) > 0.01 || Math.abs(var3) > 0.01) {
          this.turned = true;
       }
+
    }
 }

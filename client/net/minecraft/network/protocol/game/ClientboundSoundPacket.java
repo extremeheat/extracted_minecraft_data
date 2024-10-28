@@ -9,9 +9,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
 public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSoundPacket::write, ClientboundSoundPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundPacket> STREAM_CODEC = Packet.codec(ClientboundSoundPacket::write, ClientboundSoundPacket::new);
    public static final float LOCATION_ACCURACY = 8.0F;
    private final Holder<SoundEvent> sound;
    private final SoundSource source;
@@ -36,8 +34,8 @@ public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> 
 
    private ClientboundSoundPacket(RegistryFriendlyByteBuf var1) {
       super();
-      this.sound = SoundEvent.STREAM_CODEC.decode(var1);
-      this.source = var1.readEnum(SoundSource.class);
+      this.sound = (Holder)SoundEvent.STREAM_CODEC.decode(var1);
+      this.source = (SoundSource)var1.readEnum(SoundSource.class);
       this.x = var1.readInt();
       this.y = var1.readInt();
       this.z = var1.readInt();
@@ -57,7 +55,6 @@ public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> 
       var1.writeLong(this.seed);
    }
 
-   @Override
    public PacketType<ClientboundSoundPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SOUND;
    }

@@ -14,7 +14,6 @@ public class ResourceLocationParseRule implements Rule<StringReader, ResourceLoc
       super();
    }
 
-   @Override
    public Optional<ResourceLocation> parse(ParseState<StringReader> var1) {
       ((StringReader)var1.input()).skipWhitespace();
 

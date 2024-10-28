@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.pools.alias;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import net.minecraft.core.registries.Registries;
@@ -12,16 +11,10 @@ import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
-record Random(ResourceKey<StructureTemplatePool> c, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> d) implements PoolAliasBinding {
-   private final ResourceKey<StructureTemplatePool> alias;
-   private final SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> targets;
-   static Codec<Random> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Random::alias),
-               SimpleWeightedRandomList.wrappedCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(Random::targets)
-            )
-            .apply(var0, Random::new)
-   );
+record Random(ResourceKey<StructureTemplatePool> alias, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> targets) implements PoolAliasBinding {
+   static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Random::alias), SimpleWeightedRandomList.wrappedCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(Random::targets)).apply(var0, Random::new);
+   });
 
    Random(ResourceKey<StructureTemplatePool> var1, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> var2) {
       super();
@@ -29,18 +22,25 @@ record Random(ResourceKey<StructureTemplatePool> c, SimpleWeightedRandomList<Res
       this.targets = var2;
    }
 
-   @Override
    public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {
-      this.targets.getRandom(var1).ifPresent(var2x -> var2.accept(this.alias, var2x.getData()));
+      this.targets.getRandom(var1).ifPresent((var2x) -> {
+         var2.accept(this.alias, (ResourceKey)var2x.data());
+      });
    }
 
-   @Override
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {
-      return this.targets.unwrap().stream().map(WeightedEntry.Wrapper::getData);
+      return this.targets.unwrap().stream().map(WeightedEntry.Wrapper::data);
    }
 
-   @Override
-   public Codec<Random> codec() {
+   public MapCodec<Random> codec() {
       return CODEC;
+   }
+
+   public ResourceKey<StructureTemplatePool> alias() {
+      return this.alias;
+   }
+
+   public SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> targets() {
+      return this.targets;
    }
 }

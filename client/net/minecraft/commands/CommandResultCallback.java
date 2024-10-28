@@ -3,11 +3,9 @@ package net.minecraft.commands;
 @FunctionalInterface
 public interface CommandResultCallback {
    CommandResultCallback EMPTY = new CommandResultCallback() {
-      @Override
       public void onResult(boolean var1, int var2) {
       }
 
-      @Override
       public String toString() {
          return "<empty>";
       }

@@ -1,11 +1,10 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.realmsclient.RealmsAvailability;
-import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.task.DataFetcher;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
@@ -20,17 +19,18 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    private static final ResourceLocation NEWS_SPRITE = new ResourceLocation("icon/news");
    private static final ResourceLocation INVITE_SPRITE = new ResourceLocation("icon/invite");
    private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = new ResourceLocation("icon/trial_available");
-   private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply(var0 -> var0.type() == RealmsAvailability.Type.SUCCESS);
+   private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply((var0) -> {
+      return var0.type() == RealmsAvailability.Type.SUCCESS;
+   });
    @Nullable
    private DataFetcher.Subscription realmsDataSubscription;
    @Nullable
-   private RealmsNotificationsScreen.DataFetcherConfiguration currentConfiguration;
+   private DataFetcherConfiguration currentConfiguration;
    private volatile int numberOfPendingInvites;
    private static boolean trialAvailable;
    private static boolean hasUnreadNews;
    private static boolean hasUnseenNotifications;
-   private final RealmsNotificationsScreen.DataFetcherConfiguration showAll = new RealmsNotificationsScreen.DataFetcherConfiguration() {
-      @Override
+   private final DataFetcherConfiguration showAll = new DataFetcherConfiguration() {
       public DataFetcher.Subscription initDataFetcher(RealmsDataFetcher var1) {
          DataFetcher.Subscription var2 = var1.dataFetcher.createSubscription();
          RealmsNotificationsScreen.this.addNewsAndInvitesSubscriptions(var1, var2);
@@ -38,20 +38,17 @@ public class RealmsNotificationsScreen extends RealmsScreen {
          return var2;
       }
 
-      @Override
       public boolean showOldNotifications() {
          return true;
       }
    };
-   private final RealmsNotificationsScreen.DataFetcherConfiguration onlyNotifications = new RealmsNotificationsScreen.DataFetcherConfiguration() {
-      @Override
+   private final DataFetcherConfiguration onlyNotifications = new DataFetcherConfiguration() {
       public DataFetcher.Subscription initDataFetcher(RealmsDataFetcher var1) {
          DataFetcher.Subscription var2 = var1.dataFetcher.createSubscription();
          RealmsNotificationsScreen.this.addNotificationsSubscriptions(var1, var2);
          return var2;
       }
 
-      @Override
       public boolean showOldNotifications() {
          return false;
       }
@@ -61,22 +58,21 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       super(GameNarrator.NO_TITLE);
    }
 
-   @Override
    public void init() {
       if (this.realmsDataSubscription != null) {
          this.realmsDataSubscription.forceUpdate();
       }
+
    }
 
-   @Override
    public void added() {
       super.added();
       this.minecraft.realmsDataFetcher().notificationsTask.reset();
    }
 
    @Nullable
-   private RealmsNotificationsScreen.DataFetcherConfiguration getConfiguration() {
-      boolean var1 = this.inTitleScreen() && this.validClient.getNow(false);
+   private DataFetcherConfiguration getConfiguration() {
+      boolean var1 = this.inTitleScreen() && (Boolean)this.validClient.getNow(false);
       if (!var1) {
          return null;
       } else {
@@ -84,9 +80,8 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       }
    }
 
-   @Override
    public void tick() {
-      RealmsNotificationsScreen.DataFetcherConfiguration var1 = this.getConfiguration();
+      DataFetcherConfiguration var1 = this.getConfiguration();
       if (!Objects.equals(this.currentConfiguration, var1)) {
          this.currentConfiguration = var1;
          if (this.currentConfiguration != null) {
@@ -99,25 +94,25 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       if (this.realmsDataSubscription != null) {
          this.realmsDataSubscription.tick();
       }
+
    }
 
    private boolean getRealmsNotificationsEnabled() {
-      return this.minecraft.options.realmsNotifications().get();
+      return (Boolean)this.minecraft.options.realmsNotifications().get();
    }
 
    private boolean inTitleScreen() {
       return this.minecraft.screen instanceof TitleScreen;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      if (this.validClient.getNow(false)) {
+      if ((Boolean)this.validClient.getNow(false)) {
          this.drawIcons(var1);
       }
+
    }
 
-   @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
@@ -148,31 +143,39 @@ public class RealmsNotificationsScreen extends RealmsScreen {
             var1.blitSprite(TRIAL_AVAILABLE_SPRITE, var7 - 10, var6 + 4, 8, 8);
          }
       }
+
    }
 
    void addNewsAndInvitesSubscriptions(RealmsDataFetcher var1, DataFetcher.Subscription var2) {
-      var2.subscribe(var1.pendingInvitesTask, var1x -> this.numberOfPendingInvites = var1x);
-      var2.subscribe(var1.trialAvailabilityTask, var0 -> trialAvailable = var0);
-      var2.subscribe(var1.newsTask, var1x -> {
+      var2.subscribe(var1.pendingInvitesTask, (var1x) -> {
+         this.numberOfPendingInvites = var1x;
+      });
+      var2.subscribe(var1.trialAvailabilityTask, (var0) -> {
+         trialAvailable = var0;
+      });
+      var2.subscribe(var1.newsTask, (var1x) -> {
          var1.newsManager.updateUnreadNews(var1x);
          hasUnreadNews = var1.newsManager.hasUnreadNews();
       });
    }
 
    void addNotificationsSubscriptions(RealmsDataFetcher var1, DataFetcher.Subscription var2) {
-      var2.subscribe(var1.notificationsTask, var0 -> {
+      var2.subscribe(var1.notificationsTask, (var0) -> {
          hasUnseenNotifications = false;
+         Iterator var1 = var0.iterator();
 
-         for(RealmsNotification var2xx : var0) {
-            if (!var2xx.seen()) {
+         while(var1.hasNext()) {
+            RealmsNotification var2 = (RealmsNotification)var1.next();
+            if (!var2.seen()) {
                hasUnseenNotifications = true;
                break;
             }
          }
+
       });
    }
 
-   interface DataFetcherConfiguration {
+   private interface DataFetcherConfiguration {
       DataFetcher.Subscription initDataFetcher(RealmsDataFetcher var1);
 
       boolean showOldNotifications();

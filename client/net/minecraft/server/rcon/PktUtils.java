@@ -12,10 +12,9 @@ public class PktUtils {
 
    public static String stringFromByteArray(byte[] var0, int var1, int var2) {
       int var3 = var2 - 1;
-      int var4 = var1 > var3 ? var3 : var1;
 
-      while(0 != var0[var4] && var4 < var3) {
-         ++var4;
+      int var4;
+      for(var4 = var1 > var3 ? var3 : var1; 0 != var0[var4] && var4 < var3; ++var4) {
       }
 
       return new String(var0, var1, var4 - var1, StandardCharsets.UTF_8);
@@ -26,14 +25,15 @@ public class PktUtils {
    }
 
    public static int intFromByteArray(byte[] var0, int var1, int var2) {
-      return 0 > var2 - var1 - 4 ? 0 : var0[var1 + 3] << 24 | (var0[var1 + 2] & 0xFF) << 16 | (var0[var1 + 1] & 0xFF) << 8 | var0[var1] & 0xFF;
+      return 0 > var2 - var1 - 4 ? 0 : var0[var1 + 3] << 24 | (var0[var1 + 2] & 255) << 16 | (var0[var1 + 1] & 255) << 8 | var0[var1] & 255;
    }
 
    public static int intFromNetworkByteArray(byte[] var0, int var1, int var2) {
-      return 0 > var2 - var1 - 4 ? 0 : var0[var1] << 24 | (var0[var1 + 1] & 0xFF) << 16 | (var0[var1 + 2] & 0xFF) << 8 | var0[var1 + 3] & 0xFF;
+      return 0 > var2 - var1 - 4 ? 0 : var0[var1] << 24 | (var0[var1 + 1] & 255) << 16 | (var0[var1 + 2] & 255) << 8 | var0[var1 + 3] & 255;
    }
 
    public static String toHexString(byte var0) {
-      return "" + HEX_CHAR[(var0 & 240) >>> 4] + HEX_CHAR[var0 & 15];
+      char var10000 = HEX_CHAR[(var0 & 240) >>> 4];
+      return "" + var10000 + HEX_CHAR[var0 & 15];
    }
 }

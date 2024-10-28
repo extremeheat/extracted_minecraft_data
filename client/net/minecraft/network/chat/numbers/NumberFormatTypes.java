@@ -11,21 +11,25 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public class NumberFormatTypes {
-   public static final MapCodec<NumberFormat> MAP_CODEC = BuiltInRegistries.NUMBER_FORMAT_TYPE
-      .byNameCodec()
-      .dispatchMap(NumberFormat::type, var0 -> var0.mapCodec().codec());
-   public static final Codec<NumberFormat> CODEC = MAP_CODEC.codec();
-   public static final StreamCodec<RegistryFriendlyByteBuf, NumberFormat> STREAM_CODEC = ByteBufCodecs.registry(Registries.NUMBER_FORMAT_TYPE)
-      .dispatch(NumberFormat::type, NumberFormatType::streamCodec);
-   public static final StreamCodec<RegistryFriendlyByteBuf, Optional<NumberFormat>> OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
+   public static final MapCodec<NumberFormat> MAP_CODEC;
+   public static final Codec<NumberFormat> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, NumberFormat> STREAM_CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Optional<NumberFormat>> OPTIONAL_STREAM_CODEC;
 
    public NumberFormatTypes() {
       super();
    }
 
    public static NumberFormatType<?> bootstrap(Registry<NumberFormatType<?>> var0) {
-      Registry.register(var0, "blank", BlankFormat.TYPE);
-      Registry.register(var0, "styled", StyledFormat.TYPE);
-      return Registry.register(var0, "fixed", FixedFormat.TYPE);
+      Registry.register(var0, (String)"blank", BlankFormat.TYPE);
+      Registry.register(var0, (String)"styled", StyledFormat.TYPE);
+      return (NumberFormatType)Registry.register(var0, (String)"fixed", FixedFormat.TYPE);
+   }
+
+   static {
+      MAP_CODEC = BuiltInRegistries.NUMBER_FORMAT_TYPE.byNameCodec().dispatchMap(NumberFormat::type, NumberFormatType::mapCodec);
+      CODEC = MAP_CODEC.codec();
+      STREAM_CODEC = ByteBufCodecs.registry(Registries.NUMBER_FORMAT_TYPE).dispatch(NumberFormat::type, NumberFormatType::streamCodec);
+      OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
    }
 }

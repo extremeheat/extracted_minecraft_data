@@ -13,17 +13,20 @@ public enum RedstoneSide implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String toString() {
       return this.getSerializedName();
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    public boolean isConnected() {
       return this != NONE;
+   }
+
+   // $FF: synthetic method
+   private static RedstoneSide[] $values() {
+      return new RedstoneSide[]{UP, SIDE, NONE};
    }
 }

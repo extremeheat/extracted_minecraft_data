@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -19,16 +18,13 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class BendingTrunkPlacer extends TrunkPlacer {
-   public static final Codec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.create(
-      var0 -> trunkPlacerParts(var0)
-            .and(
-               var0.group(
-                  ExtraCodecs.POSITIVE_INT.optionalFieldOf("min_height_for_leaves", 1).forGetter(var0x -> var0x.minHeightForLeaves),
-                  IntProvider.codec(1, 64).fieldOf("bend_length").forGetter(var0x -> var0x.bendLength)
-               )
-            )
-            .apply(var0, BendingTrunkPlacer::new)
-   );
+   public static final MapCodec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return trunkPlacerParts(var0).and(var0.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("min_height_for_leaves", 1).forGetter((var0x) -> {
+         return var0x.minHeightForLeaves;
+      }), IntProvider.codec(1, 64).fieldOf("bend_length").forGetter((var0x) -> {
+         return var0x.bendLength;
+      }))).apply(var0, BendingTrunkPlacer::new);
+   });
    private final int minHeightForLeaves;
    private final IntProvider bendLength;
 
@@ -38,15 +34,11 @@ public class BendingTrunkPlacer extends TrunkPlacer {
       this.bendLength = var5;
    }
 
-   @Override
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.BENDING_TRUNK_PLACER;
    }
 
-   @Override
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(
-      LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6
-   ) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
       Direction var7 = Direction.Plane.HORIZONTAL.getRandomDirection(var3);
       int var8 = var4 - 1;
       BlockPos.MutableBlockPos var9 = var5.mutable();
@@ -54,7 +46,8 @@ public class BendingTrunkPlacer extends TrunkPlacer {
       setDirtAt(var1, var2, var3, var10, var6);
       ArrayList var11 = Lists.newArrayList();
 
-      for(int var12 = 0; var12 <= var8; ++var12) {
+      int var12;
+      for(var12 = 0; var12 <= var8; ++var12) {
          if (var12 + 1 >= var8 + var3.nextInt(2)) {
             var9.move(var7);
          }
@@ -70,9 +63,9 @@ public class BendingTrunkPlacer extends TrunkPlacer {
          var9.move(Direction.UP);
       }
 
-      int var14 = this.bendLength.sample(var3);
+      var12 = this.bendLength.sample(var3);
 
-      for(int var13 = 0; var13 <= var14; ++var13) {
+      for(int var13 = 0; var13 <= var12; ++var13) {
          if (TreeFeature.validTreePos(var1, var9)) {
             this.placeLog(var1, var2, var3, var9, var6);
          }

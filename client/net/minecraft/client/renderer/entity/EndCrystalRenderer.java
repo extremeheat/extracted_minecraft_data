@@ -22,8 +22,8 @@ import org.joml.Quaternionf;
 
 public class EndCrystalRenderer extends EntityRenderer<EndCrystal> {
    private static final ResourceLocation END_CRYSTAL_LOCATION = new ResourceLocation("textures/entity/end_crystal/end_crystal.png");
-   private static final RenderType RENDER_TYPE = RenderType.entityCutoutNoCull(END_CRYSTAL_LOCATION);
-   private static final float SIN_45 = (float)Math.sin(0.7853981633974483);
+   private static final RenderType RENDER_TYPE;
+   private static final float SIN_45;
    private static final String GLASS = "glass";
    private static final String BASE = "base";
    private final ModelPart cube;
@@ -63,15 +63,15 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal> {
 
       var4.mulPose(Axis.YP.rotationDegrees(var8));
       var4.translate(0.0F, 1.5F + var7 / 2.0F, 0.0F);
-      var4.mulPose(new Quaternionf().setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
+      var4.mulPose((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
       this.glass.render(var4, var9, var6, var10);
       float var11 = 0.875F;
       var4.scale(0.875F, 0.875F, 0.875F);
-      var4.mulPose(new Quaternionf().setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
+      var4.mulPose((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
       var4.mulPose(Axis.YP.rotationDegrees(var8));
       this.glass.render(var4, var9, var6, var10);
       var4.scale(0.875F, 0.875F, 0.875F);
-      var4.mulPose(new Quaternionf().setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
+      var4.mulPose((new Quaternionf()).setAngleAxis(1.0471976F, SIN_45, 0.0F, SIN_45));
       var4.mulPose(Axis.YP.rotationDegrees(var8));
       this.cube.render(var4, var9, var6, var10);
       var4.popPose();
@@ -104,5 +104,10 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal> {
 
    public boolean shouldRender(EndCrystal var1, Frustum var2, double var3, double var5, double var7) {
       return super.shouldRender(var1, var2, var3, var5, var7) || var1.getBeamTarget() != null;
+   }
+
+   static {
+      RENDER_TYPE = RenderType.entityCutoutNoCull(END_CRYSTAL_LOCATION);
+      SIN_45 = (float)Math.sin(0.7853981633974483);
    }
 }

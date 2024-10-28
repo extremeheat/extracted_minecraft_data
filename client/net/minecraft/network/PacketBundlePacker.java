@@ -38,11 +38,17 @@ public class PacketBundlePacker extends MessageToMessageDecoder<Packet<?>> {
             }
          }
       }
+
    }
 
    private static void verifyNonTerminalPacket(Packet<?> var0) {
       if (var0.isTerminal()) {
          throw new DecoderException("Terminal message received in bundle");
       }
+   }
+
+   // $FF: synthetic method
+   protected void decode(ChannelHandlerContext var1, Object var2, List var3) throws Exception {
+      this.decode(var1, (Packet)var2, var3);
    }
 }

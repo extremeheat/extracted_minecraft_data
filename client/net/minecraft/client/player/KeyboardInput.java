@@ -18,7 +18,6 @@ public class KeyboardInput extends Input {
       }
    }
 
-   @Override
    public void tick(boolean var1, float var2) {
       this.up = this.options.keyUp.isDown();
       this.down = this.options.keyDown.isDown();
@@ -32,5 +31,6 @@ public class KeyboardInput extends Input {
          this.leftImpulse *= var2;
          this.forwardImpulse *= var2;
       }
+
    }
 }

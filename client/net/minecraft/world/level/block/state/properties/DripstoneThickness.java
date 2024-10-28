@@ -15,13 +15,16 @@ public enum DripstoneThickness implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static DripstoneThickness[] $values() {
+      return new DripstoneThickness[]{TIP_MERGE, TIP, FRUSTUM, MIDDLE, BASE};
    }
 }

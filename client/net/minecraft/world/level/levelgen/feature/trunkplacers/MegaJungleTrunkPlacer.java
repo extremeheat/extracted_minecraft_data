@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -16,21 +15,19 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
-   public static final Codec<MegaJungleTrunkPlacer> CODEC = RecordCodecBuilder.create(var0 -> trunkPlacerParts(var0).apply(var0, MegaJungleTrunkPlacer::new));
+   public static final MapCodec<MegaJungleTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return trunkPlacerParts(var0).apply(var0, MegaJungleTrunkPlacer::new);
+   });
 
    public MegaJungleTrunkPlacer(int var1, int var2, int var3) {
       super(var1, var2, var3);
    }
 
-   @Override
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.MEGA_JUNGLE_TRUNK_PLACER;
    }
 
-   @Override
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(
-      LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6
-   ) {
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
       ArrayList var7 = Lists.newArrayList();
       var7.addAll(super.placeTrunk(var1, var2, var3, var4, var5, var6));
 

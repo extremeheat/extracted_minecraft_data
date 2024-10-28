@@ -6,11 +6,8 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.TickRateManager;
 
-public record ClientboundTickingStepPacket(int b) implements Packet<ClientGamePacketListener> {
-   private final int tickSteps;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTickingStepPacket> STREAM_CODEC = Packet.codec(
-      ClientboundTickingStepPacket::write, ClientboundTickingStepPacket::new
-   );
+public record ClientboundTickingStepPacket(int tickSteps) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundTickingStepPacket> STREAM_CODEC = Packet.codec(ClientboundTickingStepPacket::write, ClientboundTickingStepPacket::new);
 
    private ClientboundTickingStepPacket(FriendlyByteBuf var1) {
       this(var1.readVarInt());
@@ -29,12 +26,15 @@ public record ClientboundTickingStepPacket(int b) implements Packet<ClientGamePa
       var1.writeVarInt(this.tickSteps);
    }
 
-   @Override
    public PacketType<ClientboundTickingStepPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TICKING_STEP;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleTickingStep(this);
+   }
+
+   public int tickSteps() {
+      return this.tickSteps;
    }
 }

@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -32,10 +33,8 @@ public abstract class BasePressurePlateBlock extends Block {
       this.type = var2;
    }
 
-   @Override
    protected abstract MapCodec<? extends BasePressurePlateBlock> codec();
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.getSignalForState(var1) > 0 ? PRESSED_AABB : AABB;
    }
@@ -44,37 +43,34 @@ public abstract class BasePressurePlateBlock extends Block {
       return 20;
    }
 
-   @Override
    public boolean isPossibleToRespawnInThis(BlockState var1) {
       return true;
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.DOWN && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return canSupportRigidBlock(var2, var4) || canSupportCenter(var2, var4, Direction.UP);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       int var5 = this.getSignalForState(var1);
       if (var5 > 0) {
-         this.checkPressed(null, var2, var3, var1, var5);
+         this.checkPressed((Entity)null, var2, var3, var1, var5);
       }
+
    }
 
-   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide) {
          int var5 = this.getSignalForState(var1);
          if (var5 == 0) {
             this.checkPressed(var4, var2, var3, var1, var5);
          }
+
       }
    }
 
@@ -90,19 +86,19 @@ public abstract class BasePressurePlateBlock extends Block {
       }
 
       if (!var8 && var7) {
-         var2.playSound(null, var3, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
+         var2.playSound((Player)null, var3, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
          var2.gameEvent(var1, GameEvent.BLOCK_DEACTIVATE, var3);
       } else if (var8 && !var7) {
-         var2.playSound(null, var3, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
+         var2.playSound((Player)null, var3, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
          var2.gameEvent(var1, GameEvent.BLOCK_ACTIVATE, var3);
       }
 
       if (var8) {
          var2.scheduleTick(new BlockPos(var3), this, this.getPressedTime());
       }
+
    }
 
-   @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          if (this.getSignalForState(var1) > 0) {
@@ -118,23 +114,22 @@ public abstract class BasePressurePlateBlock extends Block {
       var1.updateNeighborsAt(var2.below(), this);
    }
 
-   @Override
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return this.getSignalForState(var1);
    }
 
-   @Override
    protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var4 == Direction.UP ? this.getSignalForState(var1) : 0;
    }
 
-   @Override
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    protected static int getEntityCount(Level var0, AABB var1, Class<? extends Entity> var2) {
-      return var0.getEntitiesOfClass(var2, var1, EntitySelector.NO_SPECTATORS.and(var0x -> !var0x.isIgnoringBlockTriggers())).size();
+      return var0.getEntitiesOfClass(var2, var1, EntitySelector.NO_SPECTATORS.and((var0x) -> {
+         return !var0x.isIgnoringBlockTriggers();
+      })).size();
    }
 
    protected abstract int getSignalStrength(Level var1, BlockPos var2);

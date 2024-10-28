@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -17,9 +18,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DirtPathBlock extends Block {
    public static final MapCodec<DirtPathBlock> CODEC = simpleCodec(DirtPathBlock::new);
-   protected static final VoxelShape SHAPE = FarmBlock.SHAPE;
+   protected static final VoxelShape SHAPE;
 
-   @Override
    public MapCodec<DirtPathBlock> codec() {
       return CODEC;
    }
@@ -28,50 +28,40 @@ public class DirtPathBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return !this.defaultBlockState().canSurvive(var1.getLevel(), var1.getClickedPos())
-         ? Block.pushEntitiesUp(
-            this.defaultBlockState(),
-            (var1.getLevel().isPotato() ? Blocks.TERREDEPOMME : Blocks.DIRT).defaultBlockState(),
-            var1.getLevel(),
-            var1.getClickedPos()
-         )
-         : super.getStateForPlacement(var1);
+      return !this.defaultBlockState().canSurvive(var1.getLevel(), var1.getClickedPos()) ? Block.pushEntitiesUp(this.defaultBlockState(), Blocks.DIRT.defaultBlockState(), var1.getLevel(), var1.getClickedPos()) : super.getStateForPlacement(var1);
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.UP && !var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, this, 1);
+         var4.scheduleTick(var5, (Block)this, 1);
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      FarmBlock.turnToDirt(null, var1, var2, var3);
+      FarmBlock.turnToDirt((Entity)null, var1, var2, var3);
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.above());
       return !var4.isSolid() || var4.getBlock() instanceof FenceGateBlock;
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
+   }
+
+   static {
+      SHAPE = FarmBlock.SHAPE;
    }
 }

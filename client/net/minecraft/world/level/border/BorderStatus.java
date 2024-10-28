@@ -14,4 +14,9 @@ public enum BorderStatus {
    public int getColor() {
       return this.color;
    }
+
+   // $FF: synthetic method
+   private static BorderStatus[] $values() {
+      return new BorderStatus[]{GROWING, SHRINKING, STATIONARY};
+   }
 }

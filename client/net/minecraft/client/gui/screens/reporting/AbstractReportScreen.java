@@ -23,20 +23,20 @@ import org.slf4j.Logger;
 
 public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends Screen {
    private static final Component REPORT_SENT_MESSAGE = Component.translatable("gui.abuseReport.report_sent_msg");
-   private static final Component REPORT_SENDING_TITLE = Component.translatable("gui.abuseReport.sending.title").withStyle(ChatFormatting.BOLD);
-   private static final Component REPORT_SENT_TITLE = Component.translatable("gui.abuseReport.sent.title").withStyle(ChatFormatting.BOLD);
-   private static final Component REPORT_ERROR_TITLE = Component.translatable("gui.abuseReport.error.title").withStyle(ChatFormatting.BOLD);
-   private static final Component REPORT_SEND_GENERIC_ERROR = Component.translatable("gui.abuseReport.send.generic_error");
-   protected static final Component SEND_REPORT = Component.translatable("gui.abuseReport.send");
-   protected static final Component OBSERVED_WHAT_LABEL = Component.translatable("gui.abuseReport.observed_what");
-   protected static final Component SELECT_REASON = Component.translatable("gui.abuseReport.select_reason");
-   private static final Component DESCRIBE_PLACEHOLDER = Component.translatable("gui.abuseReport.describe");
-   protected static final Component MORE_COMMENTS_LABEL = Component.translatable("gui.abuseReport.more_comments");
-   private static final Component MORE_COMMENTS_NARRATION = Component.translatable("gui.abuseReport.comments");
+   private static final Component REPORT_SENDING_TITLE;
+   private static final Component REPORT_SENT_TITLE;
+   private static final Component REPORT_ERROR_TITLE;
+   private static final Component REPORT_SEND_GENERIC_ERROR;
+   protected static final Component SEND_REPORT;
+   protected static final Component OBSERVED_WHAT_LABEL;
+   protected static final Component SELECT_REASON;
+   private static final Component DESCRIBE_PLACEHOLDER;
+   protected static final Component MORE_COMMENTS_LABEL;
+   private static final Component MORE_COMMENTS_NARRATION;
    protected static final int MARGIN = 20;
    protected static final int SCREEN_WIDTH = 280;
    protected static final int SPACING = 8;
-   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER;
    protected final Screen lastScreen;
    protected final ReportingContext reportingContext;
    protected B reportBuilder;
@@ -58,7 +58,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    }
 
    protected void sendReport() {
-      this.reportBuilder.build(this.reportingContext).ifLeft(var1 -> {
+      this.reportBuilder.build(this.reportingContext).ifLeft((var1) -> {
          CompletableFuture var2 = this.reportingContext.sender().send(var1.id(), var1.reportType(), var1.report());
          this.minecraft.setScreen(GenericWaitingScreen.createWaiting(REPORT_SENDING_TITLE, CommonComponents.GUI_CANCEL, () -> {
             this.minecraft.setScreen(this);
@@ -77,19 +77,18 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
             return null;
          }, this.minecraft);
-      }).ifRight(var1 -> this.displayReportSendError(var1.message()));
+      }).ifRight((var1) -> {
+         this.displayReportSendError(var1.message());
+      });
    }
 
    private void onReportSendSuccess() {
       this.clearDraft();
-      this.minecraft
-         .setScreen(
-            GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> this.minecraft.setScreen(null))
-         );
+      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> {
+         this.minecraft.setScreen((Screen)null);
+      }));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void onReportSendError(Throwable var1) {
       LOGGER.error("Encountered error while sending abuse report", var1);
       Throwable var4 = var1.getCause();
@@ -105,70 +104,93 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    private void displayReportSendError(Component var1) {
       MutableComponent var2 = var1.copy().withStyle(ChatFormatting.RED);
-      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
+      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> {
+         this.minecraft.setScreen(this);
+      }));
    }
 
    void saveDraft() {
       if (this.reportBuilder.hasContent()) {
          this.reportingContext.setReportDraft(this.reportBuilder.report().copy());
       }
+
    }
 
    void clearDraft() {
-      this.reportingContext.setReportDraft(null);
+      this.reportingContext.setReportDraft((Report)null);
    }
 
-   @Override
    public void onClose() {
       if (this.reportBuilder.hasContent()) {
-         this.minecraft.setScreen(new AbstractReportScreen.DiscardReportWarningScreen());
+         this.minecraft.setScreen(new DiscardReportWarningScreen());
       } else {
          this.minecraft.setScreen(this.lastScreen);
       }
+
    }
 
-   @Override
    public void removed() {
       this.saveDraft();
       super.removed();
    }
 
-   class DiscardReportWarningScreen extends WarningScreen {
-      private static final Component TITLE = Component.translatable("gui.abuseReport.discard.title").withStyle(ChatFormatting.BOLD);
-      private static final Component MESSAGE = Component.translatable("gui.abuseReport.discard.content");
-      private static final Component RETURN = Component.translatable("gui.abuseReport.discard.return");
-      private static final Component DRAFT = Component.translatable("gui.abuseReport.discard.draft");
-      private static final Component DISCARD = Component.translatable("gui.abuseReport.discard.discard");
+   static {
+      REPORT_SENDING_TITLE = Component.translatable("gui.abuseReport.sending.title").withStyle(ChatFormatting.BOLD);
+      REPORT_SENT_TITLE = Component.translatable("gui.abuseReport.sent.title").withStyle(ChatFormatting.BOLD);
+      REPORT_ERROR_TITLE = Component.translatable("gui.abuseReport.error.title").withStyle(ChatFormatting.BOLD);
+      REPORT_SEND_GENERIC_ERROR = Component.translatable("gui.abuseReport.send.generic_error");
+      SEND_REPORT = Component.translatable("gui.abuseReport.send");
+      OBSERVED_WHAT_LABEL = Component.translatable("gui.abuseReport.observed_what");
+      SELECT_REASON = Component.translatable("gui.abuseReport.select_reason");
+      DESCRIBE_PLACEHOLDER = Component.translatable("gui.abuseReport.describe");
+      MORE_COMMENTS_LABEL = Component.translatable("gui.abuseReport.more_comments");
+      MORE_COMMENTS_NARRATION = Component.translatable("gui.abuseReport.comments");
+      LOGGER = LogUtils.getLogger();
+   }
+
+   private class DiscardReportWarningScreen extends WarningScreen {
+      private static final Component TITLE;
+      private static final Component MESSAGE;
+      private static final Component RETURN;
+      private static final Component DRAFT;
+      private static final Component DISCARD;
 
       protected DiscardReportWarningScreen() {
          super(TITLE, MESSAGE, MESSAGE);
       }
 
-      @Override
       protected Layout addFooterButtons() {
          LinearLayout var1 = LinearLayout.vertical().spacing(8);
          var1.defaultCellSetting().alignHorizontallyCenter();
-         LinearLayout var2 = var1.addChild(LinearLayout.horizontal().spacing(8));
-         var2.addChild(Button.builder(RETURN, var1x -> this.onClose()).build());
-         var2.addChild(Button.builder(DRAFT, var1x -> {
+         LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
+         var2.addChild(Button.builder(RETURN, (var1x) -> {
+            this.onClose();
+         }).build());
+         var2.addChild(Button.builder(DRAFT, (var1x) -> {
             AbstractReportScreen.this.saveDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
          }).build());
-         var1.addChild(Button.builder(DISCARD, var1x -> {
+         var1.addChild(Button.builder(DISCARD, (var1x) -> {
             AbstractReportScreen.this.clearDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
          }).build());
          return var1;
       }
 
-      @Override
       public void onClose() {
          this.minecraft.setScreen(AbstractReportScreen.this);
       }
 
-      @Override
       public boolean shouldCloseOnEsc() {
          return false;
+      }
+
+      static {
+         TITLE = Component.translatable("gui.abuseReport.discard.title").withStyle(ChatFormatting.BOLD);
+         MESSAGE = Component.translatable("gui.abuseReport.discard.content");
+         RETURN = Component.translatable("gui.abuseReport.discard.return");
+         DRAFT = Component.translatable("gui.abuseReport.discard.draft");
+         DISCARD = Component.translatable("gui.abuseReport.discard.discard");
       }
    }
 }

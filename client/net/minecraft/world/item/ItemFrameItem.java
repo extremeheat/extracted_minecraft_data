@@ -11,7 +11,6 @@ public class ItemFrameItem extends HangingEntityItem {
       super(var1, var2);
    }
 
-   @Override
    protected boolean mayPlace(Player var1, Direction var2, ItemStack var3, BlockPos var4) {
       return !var1.level().isOutsideBuildHeight(var4) && var1.mayUseItemAt(var4, var2, var3);
    }

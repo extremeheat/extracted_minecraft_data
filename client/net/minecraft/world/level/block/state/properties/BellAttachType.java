@@ -14,8 +14,12 @@ public enum BellAttachType implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static BellAttachType[] $values() {
+      return new BellAttachType[]{FLOOR, CEILING, SINGLE_WALL, DOUBLE_WALL};
    }
 }

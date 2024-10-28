@@ -21,13 +21,23 @@ public class ReturnCommand {
    }
 
    public static <T extends ExecutionCommandSource<T>> void register(CommandDispatcher<T> var0) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return")
-                     .requires(var0x -> var0x.hasPermission(2)))
-                  .then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnCommand.ReturnValueCustomExecutor())))
-               .then(LiteralArgumentBuilder.literal("fail").executes(new ReturnCommand.ReturnFailCustomExecutor())))
-            .then(LiteralArgumentBuilder.literal("run").forward(var0.getRoot(), new ReturnCommand.ReturnFromCommandCustomModifier(), false))
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").requires((var0x) -> {
+         return var0x.hasPermission(2);
+      })).then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(var0.getRoot(), new ReturnFromCommandCustomModifier(), false)));
+   }
+
+   static class ReturnValueCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
+      ReturnValueCustomExecutor() {
+         super();
+      }
+
+      public void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) {
+         int var5 = IntegerArgumentType.getInteger(var2.getTopContext(), "value");
+         var1.callback().onSuccess(var5);
+         Frame var6 = var4.currentFrame();
+         var6.returnSuccess(var5);
+         var6.discard();
+      }
    }
 
    static class ReturnFailCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
@@ -53,26 +63,13 @@ public class ReturnCommand {
             if (var4.isReturn()) {
                var5.queueNext(FallthroughTask.instance());
             }
+
          } else {
             var5.currentFrame().discard();
             ContextChain var6 = var3.nextStage();
             String var7 = var6.getTopContext().getInput();
-            var5.queueNext(new BuildContexts.Continuation<>(var7, var6, var4.setReturn(), (T)var1, var2));
+            var5.queueNext(new BuildContexts.Continuation(var7, var6, var4.setReturn(), var1, var2));
          }
-      }
-   }
-
-   static class ReturnValueCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
-      ReturnValueCustomExecutor() {
-         super();
-      }
-
-      public void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) {
-         int var5 = IntegerArgumentType.getInteger(var2.getTopContext(), "value");
-         var1.callback().onSuccess(var5);
-         Frame var6 = var4.currentFrame();
-         var6.returnSuccess(var5);
-         var6.discard();
       }
    }
 }

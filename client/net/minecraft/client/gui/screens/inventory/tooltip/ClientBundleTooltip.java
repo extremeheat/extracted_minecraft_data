@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
+import org.apache.commons.lang3.math.Fraction;
 
 public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("container/bundle/background");
@@ -20,12 +21,10 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       this.contents = var1;
    }
 
-   @Override
    public int getHeight() {
       return this.backgroundHeight() + 4;
    }
 
-   @Override
    public int getWidth(Font var1) {
       return this.backgroundWidth();
    }
@@ -38,12 +37,11 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       return this.gridSizeY() * 20 + 2;
    }
 
-   @Override
    public void renderImage(Font var1, int var2, int var3, GuiGraphics var4) {
       int var5 = this.gridSizeX();
       int var6 = this.gridSizeY();
       var4.blitSprite(BACKGROUND_SPRITE, var2, var3, this.backgroundWidth(), this.backgroundHeight());
-      boolean var7 = this.contents.weight() >= 64;
+      boolean var7 = this.contents.weight().compareTo(Fraction.ONE) >= 0;
       int var8 = 0;
 
       for(int var9 = 0; var9 < var6; ++var9) {
@@ -53,6 +51,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
             this.renderSlot(var11, var12, var8++, var7, var4, var1);
          }
       }
+
    }
 
    private void renderSlot(int var1, int var2, int var3, boolean var4, GuiGraphics var5, Font var6) {
@@ -66,11 +65,12 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          if (var3 == 0) {
             AbstractContainerScreen.renderSlotHighlight(var5, var1 + 1, var2 + 1, 0);
          }
+
       }
    }
 
-   private void blit(GuiGraphics var1, int var2, int var3, ClientBundleTooltip.Texture var4) {
-      var1.blitSprite(var4.sprite, var2, var3, 0, var4.w, var4.h);
+   private void blit(GuiGraphics var1, int var2, int var3, Texture var4) {
+      var1.blitSprite((ResourceLocation)var4.sprite, var2, var3, 0, var4.w, var4.h);
    }
 
    private int gridSizeX() {
@@ -93,6 +93,11 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          this.sprite = var3;
          this.w = var4;
          this.h = var5;
+      }
+
+      // $FF: synthetic method
+      private static Texture[] $values() {
+         return new Texture[]{BLOCKED_SLOT, SLOT};
       }
    }
 }

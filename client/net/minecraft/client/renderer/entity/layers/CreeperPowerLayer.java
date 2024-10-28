@@ -14,20 +14,17 @@ public class CreeperPowerLayer extends EnergySwirlLayer<Creeper, CreeperModel<Cr
 
    public CreeperPowerLayer(RenderLayerParent<Creeper, CreeperModel<Creeper>> var1, EntityModelSet var2) {
       super(var1);
-      this.model = new CreeperModel<>(var2.bakeLayer(ModelLayers.CREEPER_ARMOR));
+      this.model = new CreeperModel(var2.bakeLayer(ModelLayers.CREEPER_ARMOR));
    }
 
-   @Override
    protected float xOffset(float var1) {
       return var1 * 0.01F;
    }
 
-   @Override
    protected ResourceLocation getTextureLocation() {
       return POWER_LOCATION;
    }
 
-   @Override
    protected EntityModel<Creeper> model() {
       return this.model;
    }

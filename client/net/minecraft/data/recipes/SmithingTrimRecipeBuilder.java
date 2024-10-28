@@ -2,6 +2,7 @@ package net.minecraft.data.recipes;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
@@ -16,7 +17,7 @@ public class SmithingTrimRecipeBuilder {
    private final Ingredient template;
    private final Ingredient base;
    private final Ingredient addition;
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
+   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
 
    public SmithingTrimRecipeBuilder(RecipeCategory var1, Ingredient var2, Ingredient var3, Ingredient var4) {
       super();
@@ -37,18 +38,17 @@ public class SmithingTrimRecipeBuilder {
 
    public void save(RecipeOutput var1, ResourceLocation var2) {
       this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement()
-         .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
-         .rewards(AdvancementRewards.Builder.recipe(var2))
-         .requirements(AdvancementRequirements.Strategy.OR);
-      this.criteria.forEach(var3::addCriterion);
+      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
+      Map var10000 = this.criteria;
+      Objects.requireNonNull(var3);
+      var10000.forEach(var3::addCriterion);
       SmithingTrimRecipe var4 = new SmithingTrimRecipe(this.template, this.base, this.addition);
       var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1));
       }
    }
 }

@@ -25,7 +25,7 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
    }
 
    public static EnumSet<Direction.Axis> getSwizzle(CommandContext<CommandSourceStack> var0, String var1) {
-      return (EnumSet<Direction.Axis>)var0.getArgument(var1, EnumSet.class);
+      return (EnumSet)var0.getArgument(var1, EnumSet.class);
    }
 
    public EnumSet<Direction.Axis> parse(StringReader var1) throws CommandSyntaxException {
@@ -33,13 +33,14 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
 
       while(var1.canRead() && var1.peek() != ' ') {
          char var3 = var1.read();
-
-         Direction.Axis var4 = switch(var3) {
-            case 'x' -> Direction.Axis.X;
-            case 'y' -> Direction.Axis.Y;
-            case 'z' -> Direction.Axis.Z;
+         Direction.Axis var4;
+         switch (var3) {
+            case 'x' -> var4 = Direction.Axis.X;
+            case 'y' -> var4 = Direction.Axis.Y;
+            case 'z' -> var4 = Direction.Axis.Z;
             default -> throw ERROR_INVALID.createWithContext(var1);
-         };
+         }
+
          if (var2.contains(var4)) {
             throw ERROR_INVALID.createWithContext(var1);
          }
@@ -52,5 +53,10 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

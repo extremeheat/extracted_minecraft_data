@@ -6,10 +6,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public interface ResourceManagerReloadListener extends PreparableReloadListener {
-   @Override
-   default CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
+   default CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
       return var1.wait(Unit.INSTANCE).thenRunAsync(() -> {
          var4.startTick();
          var4.push("listener");

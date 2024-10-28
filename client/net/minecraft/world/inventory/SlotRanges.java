@@ -14,7 +14,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
 
 public class SlotRanges {
-   private static final List<SlotRange> SLOTS = Util.make(new ArrayList<>(), var0 -> {
+   private static final List<SlotRange> SLOTS = (List)Util.make(new ArrayList(), (var0) -> {
       addSingleSlot(var0, "contents", 0);
       addSlotRange(var0, "container.", 0, 54);
       addSlotRange(var0, "hotbar.", 0, 9);
@@ -44,8 +44,10 @@ public class SlotRanges {
       addSingleSlot(var0, "player.cursor", 499);
       addSlotRange(var0, "player.crafting.", 500, 4);
    });
-   public static final Codec<SlotRange> CODEC = StringRepresentable.fromValues(() -> SLOTS.toArray(new SlotRange[0]));
-   private static final Function<String, SlotRange> NAME_LOOKUP = StringRepresentable.createNameLookup(SLOTS.toArray(new SlotRange[0]), var0 -> var0);
+   public static final Codec<SlotRange> CODEC = StringRepresentable.fromValues(() -> {
+      return (SlotRange[])SLOTS.toArray(new SlotRange[0]);
+   });
+   private static final Function<String, SlotRange> NAME_LOOKUP;
 
    public SlotRanges() {
       super();
@@ -76,7 +78,7 @@ public class SlotRanges {
          var4.add(var6);
       }
 
-      var0.add(create(var1 + "*", var4));
+      var0.add(create(var1 + "*", (IntList)var4));
    }
 
    private static void addSlots(List<SlotRange> var0, String var1, int... var2) {
@@ -85,7 +87,7 @@ public class SlotRanges {
 
    @Nullable
    public static SlotRange nameToIds(String var0) {
-      return NAME_LOOKUP.apply(var0);
+      return (SlotRange)NAME_LOOKUP.apply(var0);
    }
 
    public static Stream<String> allNames() {
@@ -93,6 +95,14 @@ public class SlotRanges {
    }
 
    public static Stream<String> singleSlotNames() {
-      return SLOTS.stream().filter(var0 -> var0.size() == 1).map(StringRepresentable::getSerializedName);
+      return SLOTS.stream().filter((var0) -> {
+         return var0.size() == 1;
+      }).map(StringRepresentable::getSerializedName);
+   }
+
+   static {
+      NAME_LOOKUP = StringRepresentable.createNameLookup((SlotRange[])SLOTS.toArray(new SlotRange[0]), (var0) -> {
+         return var0;
+      });
    }
 }

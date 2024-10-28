@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.WorldVersion;
@@ -17,8 +18,8 @@ public class DataGenerator {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Path rootOutputFolder;
    private final PackOutput vanillaPackOutput;
-   final Set<String> allProviderIds = new HashSet<>();
-   final Map<String, DataProvider> providersToRun = new LinkedHashMap<>();
+   final Set<String> allProviderIds = new HashSet();
+   final Map<String, DataProvider> providersToRun = new LinkedHashMap();
    private final WorldVersion version;
    private final boolean alwaysGenerate;
 
@@ -40,6 +41,7 @@ public class DataGenerator {
          } else {
             LOGGER.info("Starting provider: {}", var3x);
             var3.start();
+            Objects.requireNonNull(var4);
             var1.applyUpdate((HashCache.UpdateResult)var1.generateUpdate(var3x, var4::run).join());
             var3.stop();
             LOGGER.info("{} finished after {} ms", var3x, var3.elapsed(TimeUnit.MILLISECONDS));
@@ -50,13 +52,13 @@ public class DataGenerator {
       var1.purgeStaleAndWrite();
    }
 
-   public DataGenerator.PackGenerator getVanillaPack(boolean var1) {
-      return new DataGenerator.PackGenerator(var1, "vanilla", this.vanillaPackOutput);
+   public PackGenerator getVanillaPack(boolean var1) {
+      return new PackGenerator(var1, "vanilla", this.vanillaPackOutput);
    }
 
-   public DataGenerator.PackGenerator getBuiltinDatapack(boolean var1, String var2) {
+   public PackGenerator getBuiltinDatapack(boolean var1, String var2) {
       Path var3 = this.vanillaPackOutput.getOutputFolder(PackOutput.Target.DATA_PACK).resolve("minecraft").resolve("datapacks").resolve(var2);
-      return new DataGenerator.PackGenerator(var1, var2, new PackOutput(var3));
+      return new PackGenerator(var1, var2, new PackOutput(var3));
    }
 
    static {
@@ -77,7 +79,8 @@ public class DataGenerator {
 
       public <T extends DataProvider> T addProvider(DataProvider.Factory<T> var1) {
          DataProvider var2 = var1.create(this.output);
-         String var3 = this.providerPrefix + "/" + var2.getName();
+         String var10000 = this.providerPrefix;
+         String var3 = var10000 + "/" + var2.getName();
          if (!DataGenerator.this.allProviderIds.add(var3)) {
             throw new IllegalStateException("Duplicate provider: " + var3);
          } else {
@@ -85,7 +88,7 @@ public class DataGenerator {
                DataGenerator.this.providersToRun.put(var3, var2);
             }
 
-            return (T)var2;
+            return var2;
          }
       }
    }

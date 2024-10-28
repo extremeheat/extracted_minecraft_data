@@ -1,8 +1,8 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.util.RandomSource;
@@ -15,16 +15,13 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
-   public static final Codec<EnchantWithLevelsFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  NumberProviders.CODEC.fieldOf("levels").forGetter(var0x -> var0x.levels),
-                  Codec.BOOL.fieldOf("treasure").orElse(false).forGetter(var0x -> var0x.treasure)
-               )
-            )
-            .apply(var0, EnchantWithLevelsFunction::new)
-   );
+   public static final MapCodec<EnchantWithLevelsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("levels").forGetter((var0x) -> {
+         return var0x.levels;
+      }), Codec.BOOL.fieldOf("treasure").orElse(false).forGetter((var0x) -> {
+         return var0x.treasure;
+      }))).apply(var0, EnchantWithLevelsFunction::new);
+   });
    private final NumberProvider levels;
    private final boolean treasure;
 
@@ -34,27 +31,24 @@ public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
       this.treasure = var3;
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.ENCHANT_WITH_LEVELS;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return this.levels.getReferencedContextParams();
    }
 
-   @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       RandomSource var3 = var2.getRandom();
-      return EnchantmentHelper.enchantItem(var3, var1, this.levels.getInt(var2), this.treasure);
+      return EnchantmentHelper.enchantItem(var2.getLevel().enabledFeatures(), var3, var1, this.levels.getInt(var2), this.treasure);
    }
 
-   public static EnchantWithLevelsFunction.Builder enchantWithLevels(NumberProvider var0) {
-      return new EnchantWithLevelsFunction.Builder(var0);
+   public static Builder enchantWithLevels(NumberProvider var0) {
+      return new Builder(var0);
    }
 
-   public static class Builder extends LootItemConditionalFunction.Builder<EnchantWithLevelsFunction.Builder> {
+   public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private final NumberProvider levels;
       private boolean treasure;
 
@@ -63,18 +57,22 @@ public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
          this.levels = var1;
       }
 
-      protected EnchantWithLevelsFunction.Builder getThis() {
+      protected Builder getThis() {
          return this;
       }
 
-      public EnchantWithLevelsFunction.Builder allowTreasure() {
+      public Builder allowTreasure() {
          this.treasure = true;
          return this;
       }
 
-      @Override
       public LootItemFunction build() {
          return new EnchantWithLevelsFunction(this.getConditions(), this.levels, this.treasure);
+      }
+
+      // $FF: synthetic method
+      protected LootItemConditionalFunction.Builder getThis() {
+         return this.getThis();
       }
    }
 }

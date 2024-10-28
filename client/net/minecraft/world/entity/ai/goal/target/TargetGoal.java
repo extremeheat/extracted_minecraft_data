@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import javax.annotation.Nullable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -22,7 +23,7 @@ public abstract class TargetGoal extends Goal {
    private int unseenTicks;
    @Nullable
    protected LivingEntity targetMob;
-   protected int unseenMemoryTicks = 60;
+   protected int unseenMemoryTicks;
 
    public TargetGoal(Mob var1, boolean var2) {
       this(var1, var2, false);
@@ -30,12 +31,12 @@ public abstract class TargetGoal extends Goal {
 
    public TargetGoal(Mob var1, boolean var2, boolean var3) {
       super();
+      this.unseenMemoryTicks = 60;
       this.mob = var1;
       this.mustSee = var2;
       this.mustReach = var3;
    }
 
-   @Override
    public boolean canContinueToUse() {
       LivingEntity var1 = this.mob.getTarget();
       if (var1 == null) {
@@ -75,16 +76,14 @@ public abstract class TargetGoal extends Goal {
       return this.mob.getAttributeValue(Attributes.FOLLOW_RANGE);
    }
 
-   @Override
    public void start() {
       this.reachCache = 0;
       this.reachCacheTime = 0;
       this.unseenTicks = 0;
    }
 
-   @Override
    public void stop() {
-      this.mob.setTarget(null);
+      this.mob.setTarget((LivingEntity)null);
       this.targetMob = null;
    }
 
@@ -116,7 +115,7 @@ public abstract class TargetGoal extends Goal {
 
    private boolean canReach(LivingEntity var1) {
       this.reachCacheTime = reducedTickDelay(10 + this.mob.getRandom().nextInt(5));
-      Path var2 = this.mob.getNavigation().createPath(var1, 0);
+      Path var2 = this.mob.getNavigation().createPath((Entity)var1, 0);
       if (var2 == null) {
          return false;
       } else {

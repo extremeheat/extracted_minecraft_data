@@ -13,47 +13,7 @@ public class PaintingVariantTagsProvider extends TagsProvider<PaintingVariant> {
       super(var1, Registries.PAINTING_VARIANT, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
-      this.tag(PaintingVariantTags.POTATO)
-         .add(
-            PaintingVariants.POISONOUS_POTATO,
-            PaintingVariants.MR_POTATO,
-            PaintingVariants.BURNING_POTATO,
-            PaintingVariants.UBIQUITATO,
-            PaintingVariants.ABSTRACTATO,
-            PaintingVariants.CECI,
-            PaintingVariants.POTATOE
-         );
-      this.tag(PaintingVariantTags.PLACEABLE)
-         .add(
-            PaintingVariants.KEBAB,
-            PaintingVariants.AZTEC,
-            PaintingVariants.ALBAN,
-            PaintingVariants.AZTEC2,
-            PaintingVariants.BOMB,
-            PaintingVariants.PLANT,
-            PaintingVariants.WASTELAND,
-            PaintingVariants.POOL,
-            PaintingVariants.COURBET,
-            PaintingVariants.SEA,
-            PaintingVariants.SUNSET,
-            PaintingVariants.CREEBET,
-            PaintingVariants.WANDERER,
-            PaintingVariants.GRAHAM,
-            PaintingVariants.MATCH,
-            PaintingVariants.BUST,
-            PaintingVariants.STAGE,
-            PaintingVariants.VOID,
-            PaintingVariants.SKULL_AND_ROSES,
-            PaintingVariants.WITHER,
-            PaintingVariants.FIGHTERS,
-            PaintingVariants.POINTER,
-            PaintingVariants.PIGSCENE,
-            PaintingVariants.BURNING_SKULL,
-            PaintingVariants.SKELETON,
-            PaintingVariants.DONKEY_KONG
-         )
-         .addTag(PaintingVariantTags.POTATO);
+      this.tag(PaintingVariantTags.PLACEABLE).add(PaintingVariants.KEBAB, PaintingVariants.AZTEC, PaintingVariants.ALBAN, PaintingVariants.AZTEC2, PaintingVariants.BOMB, PaintingVariants.PLANT, PaintingVariants.WASTELAND, PaintingVariants.POOL, PaintingVariants.COURBET, PaintingVariants.SEA, PaintingVariants.SUNSET, PaintingVariants.CREEBET, PaintingVariants.WANDERER, PaintingVariants.GRAHAM, PaintingVariants.MATCH, PaintingVariants.BUST, PaintingVariants.STAGE, PaintingVariants.VOID, PaintingVariants.SKULL_AND_ROSES, PaintingVariants.WITHER, PaintingVariants.FIGHTERS, PaintingVariants.POINTER, PaintingVariants.PIGSCENE, PaintingVariants.BURNING_SKULL, PaintingVariants.SKELETON, PaintingVariants.DONKEY_KONG);
    }
 }

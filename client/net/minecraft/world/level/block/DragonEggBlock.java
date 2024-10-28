@@ -20,7 +20,6 @@ public class DragonEggBlock extends FallingBlock {
    public static final MapCodec<DragonEggBlock> CODEC = simpleCodec(DragonEggBlock::new);
    protected static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
 
-   @Override
    public MapCodec<DragonEggBlock> codec() {
       return CODEC;
    }
@@ -29,18 +28,15 @@ public class DragonEggBlock extends FallingBlock {
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       this.teleport(var1, var2, var3);
       return InteractionResult.sidedSuccess(var2.isClientSide);
    }
 
-   @Override
    protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
       this.teleport(var1, var2, var3);
    }
@@ -49,11 +45,7 @@ public class DragonEggBlock extends FallingBlock {
       WorldBorder var4 = var2.getWorldBorder();
 
       for(int var5 = 0; var5 < 1000; ++var5) {
-         BlockPos var6 = var3.offset(
-            var2.random.nextInt(16) - var2.random.nextInt(16),
-            var2.random.nextInt(8) - var2.random.nextInt(8),
-            var2.random.nextInt(16) - var2.random.nextInt(16)
-         );
+         BlockPos var6 = var3.offset(var2.random.nextInt(16) - var2.random.nextInt(16), var2.random.nextInt(8) - var2.random.nextInt(8), var2.random.nextInt(16) - var2.random.nextInt(16));
          if (var2.getBlockState(var6).isAir() && var4.isWithinBounds(var6)) {
             if (var2.isClientSide) {
                for(int var7 = 0; var7 < 128; ++var7) {
@@ -74,14 +66,13 @@ public class DragonEggBlock extends FallingBlock {
             return;
          }
       }
+
    }
 
-   @Override
    protected int getDelayAfterPlace() {
       return 5;
    }
 
-   @Override
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }

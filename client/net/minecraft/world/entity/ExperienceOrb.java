@@ -1,8 +1,8 @@
 package net.minecraft.world.entity;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import javax.annotation.Nullable;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -29,43 +29,36 @@ public class ExperienceOrb extends Entity {
    private static final int ORB_GROUPS_PER_AREA = 40;
    private static final double ORB_MERGE_DISTANCE = 0.5;
    private int age;
-   private int health = 5;
+   private int health;
    private int value;
-   private int count = 1;
-   @Nullable
-   private ExperienceOrb.Target followingTarget;
+   private int count;
+   private Player followingPlayer;
 
    public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {
       this(EntityType.EXPERIENCE_ORB, var1);
       this.setPos(var2, var4, var6);
       this.setYRot((float)(this.random.nextDouble() * 360.0));
-      this.setDeltaMovement(
-         (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0,
-         this.random.nextDouble() * 0.2 * 2.0,
-         (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0
-      );
+      this.setDeltaMovement((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
       this.value = var8;
    }
 
    public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
       super(var1, var2);
+      this.health = 5;
+      this.count = 1;
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.NONE;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.03;
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.xo = this.getX();
@@ -78,11 +71,7 @@ public class ExperienceOrb extends Entity {
       }
 
       if (this.level().getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
-         this.setDeltaMovement(
-            (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F),
-            0.20000000298023224,
-            (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F)
-         );
+         this.setDeltaMovement((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F), 0.20000000298023224, (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F));
       }
 
       if (!this.level().noCollision(this.getBoundingBox())) {
@@ -93,16 +82,16 @@ public class ExperienceOrb extends Entity {
          this.scanForEntities();
       }
 
-      if (this.followingTarget != null) {
-         if (this.followingTarget.valid()) {
-            Vec3 var1 = this.followingTarget.target().subtract(this.getX(), this.getY(), this.getZ());
-            double var2 = var1.lengthSqr();
-            if (var2 < 64.0) {
-               double var4 = 1.0 - Math.sqrt(var2) / 8.0;
-               this.setDeltaMovement(this.getDeltaMovement().add(var1.normalize().scale(var4 * var4 * 0.1)));
-            }
-         } else {
-            this.followingTarget = null;
+      if (this.followingPlayer != null && (this.followingPlayer.isSpectator() || this.followingPlayer.isDeadOrDying())) {
+         this.followingPlayer = null;
+      }
+
+      if (this.followingPlayer != null) {
+         Vec3 var1 = new Vec3(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0 - this.getY(), this.followingPlayer.getZ() - this.getZ());
+         double var2 = var1.lengthSqr();
+         if (var2 < 64.0) {
+            double var4 = 1.0 - Math.sqrt(var2) / 8.0;
+            this.setDeltaMovement(this.getDeltaMovement().add(var1.normalize().scale(var4 * var4 * 0.1)));
          }
       }
 
@@ -121,26 +110,28 @@ public class ExperienceOrb extends Entity {
       if (this.age >= 6000) {
          this.discard();
       }
+
    }
 
-   @Override
    protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
       return this.getOnPos(0.999999F);
    }
 
    private void scanForEntities() {
-      if (this.followingTarget == null || this.followingTarget.target().distanceToSqr(this.getX(), this.getY(), this.getZ()) > 64.0) {
-         Player var1 = this.level().getNearestPlayer(this, 8.0);
-         if (var1 != null) {
-            this.followingTarget = new ExperienceOrb.PlayerTarget(var1);
-         }
+      if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0) {
+         this.followingPlayer = this.level().getNearestPlayer(this, 8.0);
       }
 
       if (this.level() instanceof ServerLevel) {
-         for(ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
+         List var1 = this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge);
+         Iterator var2 = var1.iterator();
+
+         while(var2.hasNext()) {
+            ExperienceOrb var3 = (ExperienceOrb)var2.next();
             this.merge(var3);
          }
       }
+
    }
 
    public static void award(ServerLevel var0, Vec3 var1, int var2) {
@@ -151,12 +142,15 @@ public class ExperienceOrb extends Entity {
             var0.addFreshEntity(new ExperienceOrb(var0, var1.x(), var1.y(), var1.z(), var3));
          }
       }
+
    }
 
    private static boolean tryMergeToExisting(ServerLevel var0, Vec3 var1, int var2) {
       AABB var3 = AABB.ofSize(var1, 1.0, 1.0, 1.0);
       int var4 = var0.getRandom().nextInt(40);
-      List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, var2x -> canMerge(var2x, var4, var2));
+      List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, (var2x) -> {
+         return canMerge(var2x, var4, var2);
+      });
       if (!var5.isEmpty()) {
          ExperienceOrb var6 = (ExperienceOrb)var5.get(0);
          ++var6.count;
@@ -186,11 +180,9 @@ public class ExperienceOrb extends Entity {
       this.setDeltaMovement(var1.x * 0.9900000095367432, Math.min(var1.y + 5.000000237487257E-4, 0.05999999865889549), var1.z * 0.9900000095367432);
    }
 
-   @Override
    protected void doWaterSplashEffect() {
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
@@ -207,7 +199,6 @@ public class ExperienceOrb extends Entity {
       }
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
@@ -215,7 +206,6 @@ public class ExperienceOrb extends Entity {
       var1.putInt("Count", this.count);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       this.health = var1.getShort("Health");
       this.age = var1.getShort("Age");
@@ -223,7 +213,6 @@ public class ExperienceOrb extends Entity {
       this.count = Math.max(var1.getInt("Count"), 1);
    }
 
-   @Override
    public void playerTouch(Player var1) {
       if (!this.level().isClientSide) {
          if (var1.takeXpDelay == 0) {
@@ -239,11 +228,12 @@ public class ExperienceOrb extends Entity {
                this.discard();
             }
          }
+
       }
    }
 
    private int repairPlayerItems(Player var1, int var2) {
-      Entry var3 = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, var1, ItemStack::isDamaged);
+      Map.Entry var3 = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, var1, ItemStack::isDamaged);
       if (var3 != null) {
          ItemStack var4 = (ItemStack)var3.getValue();
          int var5 = Math.min(this.xpToDurability(var2), var4.getDamageValue());
@@ -265,10 +255,6 @@ public class ExperienceOrb extends Entity {
 
    public int getValue() {
       return this.value;
-   }
-
-   public int getTotalValue() {
-      return this.value * this.count;
    }
 
    public int getIcon() {
@@ -319,69 +305,15 @@ public class ExperienceOrb extends Entity {
       }
    }
 
-   @Override
    public boolean isAttackable() {
       return false;
    }
 
-   @Override
    public Packet<ClientGamePacketListener> getAddEntityPacket() {
       return new ClientboundAddExperienceOrbPacket(this);
    }
 
-   public void targetBlock(BlockPos var1) {
-      ExperienceOrb.BlockTarget var2 = new ExperienceOrb.BlockTarget(var1);
-      if (this.followingTarget == null || this.followingTarget.target().distanceTo(this.position()) > var2.target().distanceTo(this.position())) {
-         this.followingTarget = var2;
-      }
-   }
-
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.AMBIENT;
-   }
-
-   static class BlockTarget implements ExperienceOrb.Target {
-      private final BlockPos pos;
-
-      BlockTarget(BlockPos var1) {
-         super();
-         this.pos = var1;
-      }
-
-      @Override
-      public Vec3 target() {
-         return Vec3.atCenterOf(this.pos);
-      }
-
-      @Override
-      public boolean valid() {
-         return true;
-      }
-   }
-
-   static class PlayerTarget implements ExperienceOrb.Target {
-      private final Player player;
-
-      PlayerTarget(Player var1) {
-         super();
-         this.player = var1;
-      }
-
-      @Override
-      public Vec3 target() {
-         return new Vec3(this.player.getX(), this.player.getY() + (double)this.player.getEyeHeight() / 2.0, this.player.getZ());
-      }
-
-      @Override
-      public boolean valid() {
-         return !this.player.isSpectator() && !this.player.isDeadOrDying();
-      }
-   }
-
-   interface Target {
-      Vec3 target();
-
-      boolean valid();
    }
 }

@@ -17,26 +17,24 @@ public class SimpleAnimatedParticle extends TextureSheetParticle {
    }
 
    public void setColor(int var1) {
-      float var2 = (float)((var1 & 0xFF0000) >> 16) / 255.0F;
-      float var3 = (float)((var1 & 0xFF00) >> 8) / 255.0F;
-      float var4 = (float)((var1 & 0xFF) >> 0) / 255.0F;
+      float var2 = (float)((var1 & 16711680) >> 16) / 255.0F;
+      float var3 = (float)((var1 & '\uff00') >> 8) / 255.0F;
+      float var4 = (float)((var1 & 255) >> 0) / 255.0F;
       float var5 = 1.0F;
       this.setColor(var2 * 1.0F, var3 * 1.0F, var4 * 1.0F);
    }
 
    public void setFadeColor(int var1) {
-      this.fadeR = (float)((var1 & 0xFF0000) >> 16) / 255.0F;
-      this.fadeG = (float)((var1 & 0xFF00) >> 8) / 255.0F;
-      this.fadeB = (float)((var1 & 0xFF) >> 0) / 255.0F;
+      this.fadeR = (float)((var1 & 16711680) >> 16) / 255.0F;
+      this.fadeG = (float)((var1 & '\uff00') >> 8) / 255.0F;
+      this.fadeB = (float)((var1 & 255) >> 0) / 255.0F;
       this.hasFade = true;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.setSpriteFromAge(this.sprites);
@@ -48,9 +46,9 @@ public class SimpleAnimatedParticle extends TextureSheetParticle {
             this.bCol += (this.fadeB - this.bCol) * 0.2F;
          }
       }
+
    }
 
-   @Override
    public int getLightColor(float var1) {
       return 15728880;
    }

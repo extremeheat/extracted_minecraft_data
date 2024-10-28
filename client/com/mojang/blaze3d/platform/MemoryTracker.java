@@ -2,10 +2,9 @@ package com.mojang.blaze3d.platform;
 
 import java.nio.ByteBuffer;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.MemoryUtil.MemoryAllocator;
 
 public class MemoryTracker {
-   private static final MemoryAllocator ALLOCATOR = MemoryUtil.getAllocator(false);
+   private static final MemoryUtil.MemoryAllocator ALLOCATOR = MemoryUtil.getAllocator(false);
 
    public MemoryTracker() {
       super();
@@ -23,7 +22,8 @@ public class MemoryTracker {
    public static ByteBuffer resize(ByteBuffer var0, int var1) {
       long var2 = ALLOCATOR.realloc(MemoryUtil.memAddress0(var0), (long)var1);
       if (var2 == 0L) {
-         throw new OutOfMemoryError("Failed to resize buffer from " + var0.capacity() + " bytes to " + var1 + " bytes");
+         int var10002 = var0.capacity();
+         throw new OutOfMemoryError("Failed to resize buffer from " + var10002 + " bytes to " + var1 + " bytes");
       } else {
          return MemoryUtil.memByteBuffer(var2, var1);
       }

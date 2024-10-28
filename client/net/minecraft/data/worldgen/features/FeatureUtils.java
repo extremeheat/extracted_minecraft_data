@@ -49,33 +49,27 @@ public class FeatureUtils {
       return new RandomPatchConfiguration(var0, 7, 3, var1);
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> RandomPatchConfiguration simplePatchConfiguration(
-      F var0, FC var1, List<Block> var2, int var3
-   ) {
-      return simpleRandomPatchConfiguration(var3, PlacementUtils.filtered((F)var0, var1, simplePatchPredicate(var2)));
+   public static <FC extends FeatureConfiguration, F extends Feature<FC>> RandomPatchConfiguration simplePatchConfiguration(F var0, FC var1, List<Block> var2, int var3) {
+      return simpleRandomPatchConfiguration(var3, PlacementUtils.filtered(var0, var1, simplePatchPredicate(var2)));
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> RandomPatchConfiguration simplePatchConfiguration(F var0, FC var1, List<Block> var2) {
-      return simplePatchConfiguration((F)var0, var1, var2, 96);
+      return simplePatchConfiguration(var0, var1, var2, 96);
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> RandomPatchConfiguration simplePatchConfiguration(F var0, FC var1) {
-      return simplePatchConfiguration((F)var0, var1, List.of(), 96);
+      return simplePatchConfiguration(var0, var1, List.of(), 96);
    }
 
    public static ResourceKey<ConfiguredFeature<?, ?>> createKey(String var0) {
       return ResourceKey.create(Registries.CONFIGURED_FEATURE, new ResourceLocation(var0));
    }
 
-   public static void register(
-      BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, Feature<NoneFeatureConfiguration> var2
-   ) {
+   public static void register(BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, Feature<NoneFeatureConfiguration> var2) {
       register(var0, var1, var2, FeatureConfiguration.NONE);
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> void register(
-      BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, F var2, FC var3
-   ) {
-      var0.register(var1, new ConfiguredFeature((F)var2, var3));
+   public static <FC extends FeatureConfiguration, F extends Feature<FC>> void register(BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, F var2, FC var3) {
+      var0.register(var1, new ConfiguredFeature(var2, var3));
    }
 }

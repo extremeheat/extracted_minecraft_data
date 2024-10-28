@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BedBlock;
@@ -29,5 +30,10 @@ public class BedBlockEntity extends BlockEntity {
 
    public void setColor(DyeColor var1) {
       this.color = var1;
+   }
+
+   // $FF: synthetic method
+   public Packet getUpdatePacket() {
+      return this.getUpdatePacket();
    }
 }

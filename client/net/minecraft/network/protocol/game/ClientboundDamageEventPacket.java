@@ -15,37 +15,18 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public record ClientboundDamageEventPacket(int b, Holder<DamageType> c, int d, int e, Optional<Vec3> f) implements Packet<ClientGamePacketListener> {
-   private final int entityId;
-   private final Holder<DamageType> sourceType;
-   private final int sourceCauseId;
-   private final int sourceDirectId;
-   private final Optional<Vec3> sourcePosition;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDamageEventPacket> STREAM_CODEC = Packet.codec(
-      ClientboundDamageEventPacket::write, ClientboundDamageEventPacket::new
-   );
-   private static final StreamCodec<RegistryFriendlyByteBuf, Holder<DamageType>> DAMAGE_TYPE_ID_STREAM_CODEC = ByteBufCodecs.holderRegistry(
-      Registries.DAMAGE_TYPE
-   );
+public record ClientboundDamageEventPacket(int entityId, Holder<DamageType> sourceType, int sourceCauseId, int sourceDirectId, Optional<Vec3> sourcePosition) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDamageEventPacket> STREAM_CODEC = Packet.codec(ClientboundDamageEventPacket::write, ClientboundDamageEventPacket::new);
+   private static final StreamCodec<RegistryFriendlyByteBuf, Holder<DamageType>> DAMAGE_TYPE_ID_STREAM_CODEC;
 
    public ClientboundDamageEventPacket(Entity var1, DamageSource var2) {
-      this(
-         var1.getId(),
-         var2.typeHolder(),
-         var2.getEntity() != null ? var2.getEntity().getId() : -1,
-         var2.getDirectEntity() != null ? var2.getDirectEntity().getId() : -1,
-         Optional.ofNullable(var2.sourcePositionRaw())
-      );
+      this(var1.getId(), var2.typeHolder(), var2.getEntity() != null ? var2.getEntity().getId() : -1, var2.getDirectEntity() != null ? var2.getDirectEntity().getId() : -1, Optional.ofNullable(var2.sourcePositionRaw()));
    }
 
    private ClientboundDamageEventPacket(RegistryFriendlyByteBuf var1) {
-      this(
-         var1.readVarInt(),
-         DAMAGE_TYPE_ID_STREAM_CODEC.decode(var1),
-         readOptionalEntityId(var1),
-         readOptionalEntityId(var1),
-         var1.readOptional(var0 -> new Vec3(var0.readDouble(), var0.readDouble(), var0.readDouble()))
-      );
+      this(var1.readVarInt(), (Holder)DAMAGE_TYPE_ID_STREAM_CODEC.decode(var1), readOptionalEntityId(var1), readOptionalEntityId(var1), var1.readOptional((var0) -> {
+         return new Vec3(var0.readDouble(), var0.readDouble(), var0.readDouble());
+      }));
    }
 
    public ClientboundDamageEventPacket(int var1, Holder<DamageType> var2, int var3, int var4, Optional<Vec3> var5) {
@@ -77,7 +58,6 @@ public record ClientboundDamageEventPacket(int b, Holder<DamageType> c, int d, i
       });
    }
 
-   @Override
    public PacketType<ClientboundDamageEventPacket> type() {
       return GamePacketTypes.CLIENTBOUND_DAMAGE_EVENT;
    }
@@ -88,11 +68,35 @@ public record ClientboundDamageEventPacket(int b, Holder<DamageType> c, int d, i
 
    public DamageSource getSource(Level var1) {
       if (this.sourcePosition.isPresent()) {
-         return new DamageSource(this.sourceType, this.sourcePosition.get());
+         return new DamageSource(this.sourceType, (Vec3)this.sourcePosition.get());
       } else {
          Entity var2 = var1.getEntity(this.sourceCauseId);
          Entity var3 = var1.getEntity(this.sourceDirectId);
          return new DamageSource(this.sourceType, var3, var2);
       }
+   }
+
+   public int entityId() {
+      return this.entityId;
+   }
+
+   public Holder<DamageType> sourceType() {
+      return this.sourceType;
+   }
+
+   public int sourceCauseId() {
+      return this.sourceCauseId;
+   }
+
+   public int sourceDirectId() {
+      return this.sourceDirectId;
+   }
+
+   public Optional<Vec3> sourcePosition() {
+      return this.sourcePosition;
+   }
+
+   static {
+      DAMAGE_TYPE_ID_STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.DAMAGE_TYPE);
    }
 }

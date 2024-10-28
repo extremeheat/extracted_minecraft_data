@@ -20,22 +20,18 @@ public class ElytraItem extends Item implements Equipable {
       return var0.getDamageValue() < var0.getMaxDamage() - 1;
    }
 
-   @Override
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
       return var2.is(Items.PHANTOM_MEMBRANE);
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       return this.swapWithEquipmentSlot(this, var1, var2, var3);
    }
 
-   @Override
    public Holder<SoundEvent> getEquipSound() {
       return SoundEvents.ARMOR_EQUIP_ELYTRA;
    }
 
-   @Override
    public EquipmentSlot getEquipmentSlot() {
       return EquipmentSlot.CHEST;
    }

@@ -10,20 +10,17 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, HorseModel<AbstractHorse>> {
-   private static final Map<EntityType<?>, ResourceLocation> MAP = Maps.newHashMap(
-      ImmutableMap.of(
-         EntityType.ZOMBIE_HORSE,
-         new ResourceLocation("textures/entity/horse/horse_zombie.png"),
-         EntityType.SKELETON_HORSE,
-         new ResourceLocation("textures/entity/horse/horse_skeleton.png")
-      )
-   );
+   private static final Map<EntityType<?>, ResourceLocation> MAP;
 
    public UndeadHorseRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
-      super(var1, new HorseModel<>(var1.bakeLayer(var2)), 1.0F);
+      super(var1, new HorseModel(var1.bakeLayer(var2)), 1.0F);
    }
 
    public ResourceLocation getTextureLocation(AbstractHorse var1) {
-      return MAP.get(var1.getType());
+      return (ResourceLocation)MAP.get(var1.getType());
+   }
+
+   static {
+      MAP = Maps.newHashMap(ImmutableMap.of(EntityType.ZOMBIE_HORSE, new ResourceLocation("textures/entity/horse/horse_zombie.png"), EntityType.SKELETON_HORSE, new ResourceLocation("textures/entity/horse/horse_skeleton.png")));
    }
 }

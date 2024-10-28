@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -41,14 +40,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
 
 public class Slime extends Mob implements Enemy {
-   private static final EntityDataAccessor<Integer> ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
+   private static final EntityDataAccessor<Integer> ID_SIZE;
    public static final int MIN_SIZE = 1;
    public static final int MAX_SIZE = 127;
+   public static final int MAX_NATURAL_SIZE = 4;
    public float targetSquish;
    public float squish;
    public float oSquish;
@@ -57,26 +56,24 @@ public class Slime extends Mob implements Enemy {
    public Slime(EntityType<? extends Slime> var1, Level var2) {
       super(var1, var2);
       this.fixupDimensions();
-      this.moveControl = new Slime.SlimeMoveControl(this);
+      this.moveControl = new SlimeMoveControl(this);
    }
 
-   @Override
    protected void registerGoals() {
-      this.goalSelector.addGoal(1, new Slime.SlimeFloatGoal(this));
-      this.goalSelector.addGoal(2, new Slime.SlimeAttackGoal(this));
-      this.goalSelector.addGoal(3, new Slime.SlimeRandomDirectionGoal(this));
-      this.goalSelector.addGoal(5, new Slime.SlimeKeepOnJumpingGoal(this));
-      this.targetSelector
-         .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, var1 -> Math.abs(var1.getY() - this.getY()) <= 4.0));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
+      this.goalSelector.addGoal(1, new SlimeFloatGoal(this));
+      this.goalSelector.addGoal(2, new SlimeAttackGoal(this));
+      this.goalSelector.addGoal(3, new SlimeRandomDirectionGoal(this));
+      this.goalSelector.addGoal(5, new SlimeKeepOnJumpingGoal(this));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1) -> {
+         return Math.abs(var1.getY() - this.getY()) <= 4.0;
+      }));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(ID_SIZE, 1);
@@ -99,17 +96,15 @@ public class Slime extends Mob implements Enemy {
    }
 
    public int getSize() {
-      return this.entityData.get(ID_SIZE);
+      return (Integer)this.entityData.get(ID_SIZE);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Size", this.getSize() - 1);
       var1.putBoolean("wasOnGround", this.wasOnGround);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       this.setSize(var1.getInt("Size") + 1, false);
       super.readAdditionalSaveData(var1);
@@ -124,12 +119,10 @@ public class Slime extends Mob implements Enemy {
       return ParticleTypes.ITEM_SLIME;
    }
 
-   @Override
    protected boolean shouldDespawnInPeaceful() {
       return this.getSize() > 0;
    }
 
-   @Override
    public void tick() {
       this.squish += (this.targetSquish - this.squish) * 0.5F;
       this.oSquish = this.squish;
@@ -164,7 +157,6 @@ public class Slime extends Mob implements Enemy {
       return this.random.nextInt(20) + 10;
    }
 
-   @Override
    public void refreshDimensions() {
       double var1 = this.getX();
       double var3 = this.getY();
@@ -173,7 +165,6 @@ public class Slime extends Mob implements Enemy {
       this.setPos(var1, var3, var5);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (ID_SIZE.equals(var1)) {
          this.refreshDimensions();
@@ -187,12 +178,10 @@ public class Slime extends Mob implements Enemy {
       super.onSyncedDataUpdated(var1);
    }
 
-   @Override
    public EntityType<? extends Slime> getType() {
       return super.getType();
    }
 
-   @Override
    public void remove(Entity.RemovalReason var1) {
       int var2 = this.getSize();
       if (!this.level().isClientSide && var2 > 1 && this.isDeadOrDying()) {
@@ -206,7 +195,7 @@ public class Slime extends Mob implements Enemy {
          for(int var9 = 0; var9 < var8; ++var9) {
             float var10 = ((float)(var9 % 2) - 0.5F) * var6;
             float var11 = ((float)(var9 / 2) - 0.5F) * var6;
-            Slime var12 = this.getType().create(this.level());
+            Slime var12 = (Slime)this.getType().create(this.level());
             if (var12 != null) {
                if (this.isPersistenceRequired()) {
                   var12.setPersistenceRequired();
@@ -225,34 +214,32 @@ public class Slime extends Mob implements Enemy {
       super.remove(var1);
    }
 
-   @Override
    public void push(Entity var1) {
       super.push(var1);
       if (var1 instanceof IronGolem && this.isDealsDamage()) {
          this.dealDamage((LivingEntity)var1);
       }
+
    }
 
-   @Override
    public void playerTouch(Player var1) {
       if (this.isDealsDamage()) {
          this.dealDamage(var1);
       }
+
    }
 
    protected void dealDamage(LivingEntity var1) {
       if (this.isAlive()) {
          int var2 = this.getSize();
-         if (this.distanceToSqr(var1) < 0.6 * (double)var2 * 0.6 * (double)var2
-            && this.hasLineOfSight(var1)
-            && var1.hurt(this.damageSources().mobAttack(this), this.getAttackDamage())) {
+         if (this.distanceToSqr(var1) < 0.6 * (double)var2 * 0.6 * (double)var2 && this.hasLineOfSight(var1) && var1.hurt(this.damageSources().mobAttack(this), this.getAttackDamage())) {
             this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             this.doEnchantDamageEffects(this, var1);
          }
       }
+
    }
 
-   @Override
    protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
       return new Vec3(0.0, (double)var2.height() - 0.015625 * (double)this.getSize() * (double)var3, 0.0);
    }
@@ -265,12 +252,10 @@ public class Slime extends Mob implements Enemy {
       return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return this.isTiny() ? SoundEvents.SLIME_HURT_SMALL : SoundEvents.SLIME_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return this.isTiny() ? SoundEvents.SLIME_DEATH_SMALL : SoundEvents.SLIME_DEATH;
    }
@@ -288,17 +273,7 @@ public class Slime extends Mob implements Enemy {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
 
-            Holder var5 = var1.getBiome(var3);
-            if (var5.is(Biomes.WASTELAND)) {
-               return checkMobSpawnRules(var0, var1, var2, var3, var4);
-            }
-
-            if (var5.is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS)
-               && var3.getY() > 50
-               && var3.getY() < 70
-               && var4.nextFloat() < 0.5F
-               && var4.nextFloat() < var1.getMoonBrightness()
-               && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
+            if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS) && var3.getY() > 50 && var3.getY() < 70 && var4.nextFloat() < 0.5F && var4.nextFloat() < var1.getMoonBrightness() && var1.getMaxLocalRawBrightness(var3) <= var4.nextInt(8)) {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
 
@@ -306,9 +281,9 @@ public class Slime extends Mob implements Enemy {
                return false;
             }
 
-            ChunkPos var6 = new ChunkPos(var3);
-            boolean var7 = WorldgenRandom.seedSlimeChunk(var6.x, var6.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
-            if (var4.nextInt(10) == 0 && var7 && var3.getY() < 40) {
+            ChunkPos var5 = new ChunkPos(var3);
+            boolean var6 = WorldgenRandom.seedSlimeChunk(var5.x, var5.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
+            if (var4.nextInt(10) == 0 && var6 && var3.getY() < 40) {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
          }
@@ -317,12 +292,10 @@ public class Slime extends Mob implements Enemy {
       }
    }
 
-   @Override
    protected float getSoundVolume() {
       return 0.4F * (float)this.getSize();
    }
 
-   @Override
    public int getMaxHeadXRot() {
       return 0;
    }
@@ -331,7 +304,6 @@ public class Slime extends Mob implements Enemy {
       return this.getSize() > 0;
    }
 
-   @Override
    protected void jumpFromGround() {
       Vec3 var1 = this.getDeltaMovement();
       this.setDeltaMovement(var1.x, (double)this.getJumpPower(), var1.z);
@@ -339,7 +311,6 @@ public class Slime extends Mob implements Enemy {
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       int var6 = var5.nextInt(3);
@@ -361,131 +332,15 @@ public class Slime extends Mob implements Enemy {
       return this.isTiny() ? SoundEvents.SLIME_JUMP_SMALL : SoundEvents.SLIME_JUMP;
    }
 
-   @Override
    public EntityDimensions getDefaultDimensions(Pose var1) {
       return super.getDefaultDimensions(var1).scale((float)this.getSize());
    }
 
-   static class SlimeAttackGoal extends Goal {
-      private final Slime slime;
-      private int growTiredTimer;
-
-      public SlimeAttackGoal(Slime var1) {
-         super();
-         this.slime = var1;
-         this.setFlags(EnumSet.of(Goal.Flag.LOOK));
-      }
-
-      @Override
-      public boolean canUse() {
-         LivingEntity var1 = this.slime.getTarget();
-         if (var1 == null) {
-            return false;
-         } else {
-            return !this.slime.canAttack(var1) ? false : this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
-         }
-      }
-
-      @Override
-      public void start() {
-         this.growTiredTimer = reducedTickDelay(300);
-         super.start();
-      }
-
-      @Override
-      public boolean canContinueToUse() {
-         LivingEntity var1 = this.slime.getTarget();
-         if (var1 == null) {
-            return false;
-         } else if (!this.slime.canAttack(var1)) {
-            return false;
-         } else {
-            return --this.growTiredTimer > 0;
-         }
-      }
-
-      @Override
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
-      public void tick() {
-         LivingEntity var1 = this.slime.getTarget();
-         if (var1 != null) {
-            this.slime.lookAt(var1, 10.0F, 10.0F);
-         }
-
-         MoveControl var3 = this.slime.getMoveControl();
-         if (var3 instanceof Slime.SlimeMoveControl var2) {
-            var2.setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
-         }
-      }
+   static {
+      ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
    }
 
-   static class SlimeFloatGoal extends Goal {
-      private final Slime slime;
-
-      public SlimeFloatGoal(Slime var1) {
-         super();
-         this.slime = var1;
-         this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
-         var1.getNavigation().setCanFloat(true);
-      }
-
-      @Override
-      public boolean canUse() {
-         return (this.slime.isInWater() || this.slime.isInLava()) && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
-      }
-
-      @Override
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
-      public void tick() {
-         if (this.slime.getRandom().nextFloat() < 0.8F) {
-            this.slime.getJumpControl().jump();
-         }
-
-         MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof Slime.SlimeMoveControl var1) {
-            var1.setWantedMovement(1.2);
-         }
-      }
-   }
-
-   static class SlimeKeepOnJumpingGoal extends Goal {
-      private final Slime slime;
-
-      public SlimeKeepOnJumpingGoal(Slime var1) {
-         super();
-         this.slime = var1;
-         this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
-      }
-
-      @Override
-      public boolean canUse() {
-         return !this.slime.isPassenger();
-      }
-
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
-      public void tick() {
-         MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof Slime.SlimeMoveControl var1) {
-            var1.setWantedMovement(1.0);
-         }
-      }
-   }
-
-   static class SlimeMoveControl extends MoveControl {
+   private static class SlimeMoveControl extends MoveControl {
       private float yRot;
       private int jumpDelay;
       private final Slime slime;
@@ -507,7 +362,6 @@ public class Slime extends Mob implements Enemy {
          this.operation = MoveControl.Operation.MOVE_TO;
       }
 
-      @Override
       public void tick() {
          this.mob.setYRot(this.rotlerp(this.mob.getYRot(), this.yRot, 90.0F));
          this.mob.yHeadRot = this.mob.getYRot();
@@ -536,7 +390,92 @@ public class Slime extends Mob implements Enemy {
             } else {
                this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED)));
             }
+
          }
+      }
+   }
+
+   static class SlimeFloatGoal extends Goal {
+      private final Slime slime;
+
+      public SlimeFloatGoal(Slime var1) {
+         super();
+         this.slime = var1;
+         this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
+         var1.getNavigation().setCanFloat(true);
+      }
+
+      public boolean canUse() {
+         return (this.slime.isInWater() || this.slime.isInLava()) && this.slime.getMoveControl() instanceof SlimeMoveControl;
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         if (this.slime.getRandom().nextFloat() < 0.8F) {
+            this.slime.getJumpControl().jump();
+         }
+
+         MoveControl var2 = this.slime.getMoveControl();
+         if (var2 instanceof SlimeMoveControl var1) {
+            var1.setWantedMovement(1.2);
+         }
+
+      }
+   }
+
+   private static class SlimeAttackGoal extends Goal {
+      private final Slime slime;
+      private int growTiredTimer;
+
+      public SlimeAttackGoal(Slime var1) {
+         super();
+         this.slime = var1;
+         this.setFlags(EnumSet.of(Goal.Flag.LOOK));
+      }
+
+      public boolean canUse() {
+         LivingEntity var1 = this.slime.getTarget();
+         if (var1 == null) {
+            return false;
+         } else {
+            return !this.slime.canAttack(var1) ? false : this.slime.getMoveControl() instanceof SlimeMoveControl;
+         }
+      }
+
+      public void start() {
+         this.growTiredTimer = reducedTickDelay(300);
+         super.start();
+      }
+
+      public boolean canContinueToUse() {
+         LivingEntity var1 = this.slime.getTarget();
+         if (var1 == null) {
+            return false;
+         } else if (!this.slime.canAttack(var1)) {
+            return false;
+         } else {
+            return --this.growTiredTimer > 0;
+         }
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         LivingEntity var1 = this.slime.getTarget();
+         if (var1 != null) {
+            this.slime.lookAt(var1, 10.0F, 10.0F);
+         }
+
+         MoveControl var3 = this.slime.getMoveControl();
+         if (var3 instanceof SlimeMoveControl var2) {
+            var2.setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
+         }
+
       }
    }
 
@@ -551,16 +490,10 @@ public class Slime extends Mob implements Enemy {
          this.setFlags(EnumSet.of(Goal.Flag.LOOK));
       }
 
-      @Override
       public boolean canUse() {
-         return this.slime.getTarget() == null
-            && (this.slime.onGround() || this.slime.isInWater() || this.slime.isInLava() || this.slime.hasEffect(MobEffects.LEVITATION))
-            && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
+         return this.slime.getTarget() == null && (this.slime.onGround() || this.slime.isInWater() || this.slime.isInLava() || this.slime.hasEffect(MobEffects.LEVITATION)) && this.slime.getMoveControl() instanceof SlimeMoveControl;
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
       public void tick() {
          if (--this.nextRandomizeTime <= 0) {
             this.nextRandomizeTime = this.adjustedTickDelay(40 + this.slime.getRandom().nextInt(60));
@@ -568,9 +501,32 @@ public class Slime extends Mob implements Enemy {
          }
 
          MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof Slime.SlimeMoveControl var1) {
+         if (var2 instanceof SlimeMoveControl var1) {
             var1.setDirection(this.chosenDegrees, false);
          }
+
+      }
+   }
+
+   static class SlimeKeepOnJumpingGoal extends Goal {
+      private final Slime slime;
+
+      public SlimeKeepOnJumpingGoal(Slime var1) {
+         super();
+         this.slime = var1;
+         this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
+      }
+
+      public boolean canUse() {
+         return !this.slime.isPassenger();
+      }
+
+      public void tick() {
+         MoveControl var2 = this.slime.getMoveControl();
+         if (var2 instanceof SlimeMoveControl var1) {
+            var1.setWantedMovement(1.0);
+         }
+
       }
    }
 }

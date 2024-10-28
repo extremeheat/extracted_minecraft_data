@@ -7,13 +7,12 @@ import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundFinishConfigurationPacket implements Packet<ServerConfigurationPacketListener> {
    public static final ServerboundFinishConfigurationPacket INSTANCE = new ServerboundFinishConfigurationPacket();
-   public static final StreamCodec<ByteBuf, ServerboundFinishConfigurationPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
+   public static final StreamCodec<ByteBuf, ServerboundFinishConfigurationPacket> STREAM_CODEC;
 
    private ServerboundFinishConfigurationPacket() {
       super();
    }
 
-   @Override
    public PacketType<ServerboundFinishConfigurationPacket> type() {
       return ConfigurationPacketTypes.SERVERBOUND_FINISH_CONFIGURATION;
    }
@@ -22,8 +21,11 @@ public class ServerboundFinishConfigurationPacket implements Packet<ServerConfig
       var1.handleConfigurationFinished(this);
    }
 
-   @Override
    public boolean isTerminal() {
       return true;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.unit(INSTANCE);
    }
 }

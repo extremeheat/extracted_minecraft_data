@@ -42,24 +42,26 @@ public class ChunkSkyLightSources {
                this.set(index(var4, var3), var5);
             }
          }
+
       }
    }
 
    private int findLowestSourceY(ChunkAccess var1, int var2, int var3, int var4) {
       int var5 = SectionPos.sectionToBlockCoord(var1.getSectionYFromSectionIndex(var2) + 1);
       BlockPos.MutableBlockPos var6 = this.mutablePos1.set(var3, var5, var4);
-      BlockPos.MutableBlockPos var7 = this.mutablePos2.setWithOffset(var6, Direction.DOWN);
+      BlockPos.MutableBlockPos var7 = this.mutablePos2.setWithOffset(var6, (Direction)Direction.DOWN);
       BlockState var8 = Blocks.AIR.defaultBlockState();
 
       for(int var9 = var2; var9 >= 0; --var9) {
          LevelChunkSection var10 = var1.getSection(var9);
+         int var11;
          if (var10.hasOnlyAir()) {
             var8 = Blocks.AIR.defaultBlockState();
-            int var13 = var1.getSectionYFromSectionIndex(var9);
-            var6.setY(SectionPos.sectionToBlockCoord(var13));
+            var11 = var1.getSectionYFromSectionIndex(var9);
+            var6.setY(SectionPos.sectionToBlockCoord(var11));
             var7.setY(var6.getY() - 1);
          } else {
-            for(int var11 = 15; var11 >= 0; --var11) {
+            for(var11 = 15; var11 >= 0; --var11) {
                BlockState var12 = var10.getBlockState(var3, var11, var4);
                if (isEdgeOccluded(var1, var6, var8, var7, var12)) {
                   return var6.getY();
@@ -113,7 +115,7 @@ public class ChunkSkyLightSources {
 
    private int findLowestSourceBelow(BlockGetter var1, BlockPos var2, BlockState var3) {
       BlockPos.MutableBlockPos var4 = this.mutablePos1.set(var2);
-      BlockPos.MutableBlockPos var5 = this.mutablePos2.setWithOffset(var2, Direction.DOWN);
+      BlockPos.MutableBlockPos var5 = this.mutablePos2.setWithOffset(var2, (Direction)Direction.DOWN);
       BlockState var6 = var3;
 
       while(var5.getY() >= this.minY) {
@@ -164,6 +166,7 @@ public class ChunkSkyLightSources {
       for(int var3 = 0; var3 < this.heightmap.getSize(); ++var3) {
          this.heightmap.set(var3, var2);
       }
+
    }
 
    private void set(int var1, int var2) {

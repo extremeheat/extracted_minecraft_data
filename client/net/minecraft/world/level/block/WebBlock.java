@@ -11,7 +11,6 @@ import net.minecraft.world.phys.Vec3;
 public class WebBlock extends Block {
    public static final MapCodec<WebBlock> CODEC = simpleCodec(WebBlock::new);
 
-   @Override
    public MapCodec<WebBlock> codec() {
       return CODEC;
    }
@@ -20,7 +19,6 @@ public class WebBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       var4.makeStuckInBlock(var1, new Vec3(0.25, 0.05000000074505806, 0.25));
    }

@@ -1,10 +1,9 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -22,34 +21,35 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    final Minecraft minecraft;
-   private double lastUpdateTime = 5.0E-324;
+   private double lastUpdateTime = 4.9E-324;
    private final int radius = 12;
    @Nullable
-   private ChunkDebugRenderer.ChunkData data;
+   private ChunkData data;
 
    public ChunkDebugRenderer(Minecraft var1) {
       super();
       this.minecraft = var1;
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       double var9 = (double)Util.getNanos();
       if (var9 - this.lastUpdateTime > 3.0E9) {
          this.lastUpdateTime = var9;
          IntegratedServer var11 = this.minecraft.getSingleplayerServer();
          if (var11 != null) {
-            this.data = new ChunkDebugRenderer.ChunkData(var11, var3, var7);
+            this.data = new ChunkData(this, var11, var3, var7);
          } else {
             this.data = null;
          }
       }
 
       if (this.data != null) {
-         Map var24 = this.data.serverData.getNow(null);
+         Map var24 = (Map)this.data.serverData.getNow((Object)null);
          double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
+         Iterator var14 = this.data.clientData.entrySet().iterator();
 
-         for(Entry var15 : this.data.clientData.entrySet()) {
+         while(var14.hasNext()) {
+            Map.Entry var15 = (Map.Entry)var14.next();
             ChunkPos var16 = (ChunkPos)var15.getKey();
             String var17 = (String)var15.getValue();
             if (var24 != null) {
@@ -58,38 +58,30 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
             String[] var18 = var17.split("\n");
             int var19 = 0;
+            String[] var20 = var18;
+            int var21 = var18.length;
 
-            for(String var23 : var18) {
-               DebugRenderer.renderFloatingText(
-                  var1,
-                  var2,
-                  var23,
-                  (double)SectionPos.sectionToBlockCoord(var16.x, 8),
-                  var12 + (double)var19,
-                  (double)SectionPos.sectionToBlockCoord(var16.z, 8),
-                  -1,
-                  0.15F,
-                  true,
-                  0.0F,
-                  true
-               );
+            for(int var22 = 0; var22 < var21; ++var22) {
+               String var23 = var20[var22];
+               DebugRenderer.renderFloatingText(var1, var2, var23, (double)SectionPos.sectionToBlockCoord(var16.x, 8), var12 + (double)var19, (double)SectionPos.sectionToBlockCoord(var16.z, 8), -1, 0.15F, true, 0.0F, true);
                var19 -= 2;
             }
          }
       }
+
    }
 
-   final class ChunkData {
+   private final class ChunkData {
       final Map<ChunkPos, String> clientData;
       final CompletableFuture<Map<ChunkPos, String>> serverData;
 
-      ChunkData(IntegratedServer var2, double var3, double var5) {
+      ChunkData(ChunkDebugRenderer var1, IntegratedServer var2, double var3, double var5) {
          super();
-         ClientLevel var7 = ChunkDebugRenderer.this.minecraft.level;
+         ClientLevel var7 = var1.minecraft.level;
          ResourceKey var8 = var7.dimension();
          int var9 = SectionPos.posToSectionCoord(var3);
          int var10 = SectionPos.posToSectionCoord(var5);
-         Builder var11 = ImmutableMap.builder();
+         ImmutableMap.Builder var11 = ImmutableMap.builder();
          ClientChunkCache var12 = var7.getChunkSource();
 
          for(int var13 = var9 - 12; var13 <= var9 + 12; ++var13) {
@@ -111,17 +103,18 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
          this.clientData = var11.build();
          this.serverData = var2.submit(() -> {
-            ServerLevel var5xx = var2.getLevel(var8);
-            if (var5xx == null) {
+            ServerLevel var5 = var2.getLevel(var8);
+            if (var5 == null) {
                return ImmutableMap.of();
             } else {
-               Builder var6 = ImmutableMap.builder();
-               ServerChunkCache var7xx = var5xx.getChunkSource();
+               ImmutableMap.Builder var6 = ImmutableMap.builder();
+               ServerChunkCache var7 = var5.getChunkSource();
 
-               for(int var8xx = var9 - 12; var8xx <= var9 + 12; ++var8xx) {
-                  for(int var9xx = var10 - 12; var9xx <= var10 + 12; ++var9xx) {
-                     ChunkPos var10xx = new ChunkPos(var8xx, var9xx);
-                     var6.put(var10xx, "Server: " + var7xx.getChunkDebugData(var10xx));
+               for(int var8x = var9 - 12; var8x <= var9 + 12; ++var8x) {
+                  for(int var9x = var10 - 12; var9x <= var10 + 12; ++var9x) {
+                     ChunkPos var10x = new ChunkPos(var8x, var9x);
+                     String var10002 = var7.getChunkDebugData(var10x);
+                     var6.put(var10x, "Server: " + var10002);
                   }
                }
 

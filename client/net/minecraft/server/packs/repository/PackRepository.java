@@ -7,14 +7,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.world.flag.FeatureFlagSet;
 
@@ -29,16 +30,20 @@ public class PackRepository {
    }
 
    public void reload() {
-      List var1 = this.selected.stream().map(Pack::getId).collect(ImmutableList.toImmutableList());
+      List var1 = (List)this.selected.stream().map(Pack::getId).collect(ImmutableList.toImmutableList());
       this.available = this.discoverAvailable();
       this.selected = this.rebuildSelected(var1);
    }
 
    private Map<String, Pack> discoverAvailable() {
       TreeMap var1 = Maps.newTreeMap();
+      Iterator var2 = this.sources.iterator();
 
-      for(RepositorySource var3 : this.sources) {
-         var3.loadPacks(var1x -> var1.put(var1x.getId(), var1x));
+      while(var2.hasNext()) {
+         RepositorySource var3 = (RepositorySource)var2.next();
+         var3.loadPacks((var1x) -> {
+            var1.put(var1x.getId(), var1x);
+         });
       }
 
       return ImmutableMap.copyOf(var1);
@@ -49,7 +54,7 @@ public class PackRepository {
    }
 
    public boolean addPack(String var1) {
-      Pack var2 = this.available.get(var1);
+      Pack var2 = (Pack)this.available.get(var1);
       if (var2 != null && !this.selected.contains(var2)) {
          ArrayList var3 = Lists.newArrayList(this.selected);
          var3.add(var2);
@@ -61,7 +66,7 @@ public class PackRepository {
    }
 
    public boolean removePack(String var1) {
-      Pack var2 = this.available.get(var1);
+      Pack var2 = (Pack)this.available.get(var1);
       if (var2 != null && this.selected.contains(var2)) {
          ArrayList var3 = Lists.newArrayList(this.selected);
          var3.remove(var2);
@@ -73,9 +78,11 @@ public class PackRepository {
    }
 
    private List<Pack> rebuildSelected(Collection<String> var1) {
-      List var2 = this.getAvailablePacks(var1).collect(Collectors.toList());
+      List var2 = (List)this.getAvailablePacks(var1).collect(Util.toMutableList());
+      Iterator var3 = this.available.values().iterator();
 
-      for(Pack var4 : this.available.values()) {
+      while(var3.hasNext()) {
+         Pack var4 = (Pack)var3.next();
          if (var4.isRequired() && !var2.contains(var4)) {
             var4.getDefaultPosition().insert(var2, var4, Pack::selectionConfig, false);
          }
@@ -85,7 +92,10 @@ public class PackRepository {
    }
 
    private Stream<Pack> getAvailablePacks(Collection<String> var1) {
-      return var1.stream().map(this.available::get).filter(Objects::nonNull);
+      Stream var10000 = var1.stream();
+      Map var10001 = this.available;
+      Objects.requireNonNull(var10001);
+      return var10000.map(var10001::get).filter(Objects::nonNull);
    }
 
    public Collection<String> getAvailableIds() {
@@ -97,11 +107,11 @@ public class PackRepository {
    }
 
    public Collection<String> getSelectedIds() {
-      return this.selected.stream().map(Pack::getId).collect(ImmutableSet.toImmutableSet());
+      return (Collection)this.selected.stream().map(Pack::getId).collect(ImmutableSet.toImmutableSet());
    }
 
    public FeatureFlagSet getRequestedFeatureFlags() {
-      return this.getSelectedPacks().stream().map(Pack::getRequestedFeatures).reduce(FeatureFlagSet::join).orElse(FeatureFlagSet.of());
+      return (FeatureFlagSet)this.getSelectedPacks().stream().map(Pack::getRequestedFeatures).reduce(FeatureFlagSet::join).orElse(FeatureFlagSet.of());
    }
 
    public Collection<Pack> getSelectedPacks() {
@@ -110,7 +120,7 @@ public class PackRepository {
 
    @Nullable
    public Pack getPack(String var1) {
-      return this.available.get(var1);
+      return (Pack)this.available.get(var1);
    }
 
    public boolean isAvailable(String var1) {
@@ -118,6 +128,6 @@ public class PackRepository {
    }
 
    public List<PackResources> openAllSelected() {
-      return this.selected.stream().map(Pack::open).collect(ImmutableList.toImmutableList());
+      return (List)this.selected.stream().map(Pack::open).collect(ImmutableList.toImmutableList());
    }
 }

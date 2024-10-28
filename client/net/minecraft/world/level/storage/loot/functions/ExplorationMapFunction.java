@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -12,7 +12,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -27,24 +26,12 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
 
 public class ExplorationMapFunction extends LootItemConditionalFunction {
-   public static final TagKey<Structure> DEFAULT_DESTINATION = StructureTags.ON_TREASURE_MAPS;
-   public static final Holder<MapDecorationType> DEFAULT_DECORATION = MapDecorationTypes.WOODLAND_MANSION;
+   public static final TagKey<Structure> DEFAULT_DESTINATION;
+   public static final Holder<MapDecorationType> DEFAULT_DECORATION;
    public static final byte DEFAULT_ZOOM = 2;
    public static final int DEFAULT_SEARCH_RADIUS = 50;
    public static final boolean DEFAULT_SKIP_EXISTING = true;
-   public static final Codec<ExplorationMapFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  ExtraCodecs.strictOptionalField(TagKey.codec(Registries.STRUCTURE), "destination", DEFAULT_DESTINATION).forGetter(var0x -> var0x.destination),
-                  MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter(var0x -> var0x.mapDecoration),
-                  ExtraCodecs.strictOptionalField(Codec.BYTE, "zoom", (byte)2).forGetter(var0x -> var0x.zoom),
-                  ExtraCodecs.strictOptionalField(Codec.INT, "search_radius", 50).forGetter(var0x -> var0x.searchRadius),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "skip_existing_chunks", true).forGetter(var0x -> var0x.skipKnownStructures)
-               )
-            )
-            .apply(var0, ExplorationMapFunction::new)
-   );
+   public static final MapCodec<ExplorationMapFunction> CODEC;
    private final TagKey<Structure> destination;
    private final Holder<MapDecorationType> mapDecoration;
    private final byte zoom;
@@ -60,22 +47,19 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
       this.skipKnownStructures = var6;
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.EXPLORATION_MAP;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return ImmutableSet.of(LootContextParams.ORIGIN);
    }
 
-   @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (!var1.is(Items.MAP)) {
          return var1;
       } else {
-         Vec3 var3 = var2.getParamOrNull(LootContextParams.ORIGIN);
+         Vec3 var3 = (Vec3)var2.getParamOrNull(LootContextParams.ORIGIN);
          if (var3 != null) {
             ServerLevel var4 = var2.getLevel();
             BlockPos var5 = var4.findNearestMapStructure(this.destination, BlockPos.containing(var3), this.searchRadius, this.skipKnownStructures);
@@ -91,53 +75,80 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
       }
    }
 
-   public static ExplorationMapFunction.Builder makeExplorationMap() {
-      return new ExplorationMapFunction.Builder();
+   public static Builder makeExplorationMap() {
+      return new Builder();
    }
 
-   public static class Builder extends LootItemConditionalFunction.Builder<ExplorationMapFunction.Builder> {
-      private TagKey<Structure> destination = ExplorationMapFunction.DEFAULT_DESTINATION;
-      private Holder<MapDecorationType> mapDecoration = ExplorationMapFunction.DEFAULT_DECORATION;
-      private byte zoom = 2;
-      private int searchRadius = 50;
-      private boolean skipKnownStructures = true;
+   static {
+      DEFAULT_DESTINATION = StructureTags.ON_TREASURE_MAPS;
+      DEFAULT_DECORATION = MapDecorationTypes.WOODLAND_MANSION;
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return commonFields(var0).and(var0.group(TagKey.codec(Registries.STRUCTURE).optionalFieldOf("destination", DEFAULT_DESTINATION).forGetter((var0x) -> {
+            return var0x.destination;
+         }), MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter((var0x) -> {
+            return var0x.mapDecoration;
+         }), Codec.BYTE.optionalFieldOf("zoom", (byte)2).forGetter((var0x) -> {
+            return var0x.zoom;
+         }), Codec.INT.optionalFieldOf("search_radius", 50).forGetter((var0x) -> {
+            return var0x.searchRadius;
+         }), Codec.BOOL.optionalFieldOf("skip_existing_chunks", true).forGetter((var0x) -> {
+            return var0x.skipKnownStructures;
+         }))).apply(var0, ExplorationMapFunction::new);
+      });
+   }
+
+   public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
+      private TagKey<Structure> destination;
+      private Holder<MapDecorationType> mapDecoration;
+      private byte zoom;
+      private int searchRadius;
+      private boolean skipKnownStructures;
 
       public Builder() {
          super();
+         this.destination = ExplorationMapFunction.DEFAULT_DESTINATION;
+         this.mapDecoration = ExplorationMapFunction.DEFAULT_DECORATION;
+         this.zoom = 2;
+         this.searchRadius = 50;
+         this.skipKnownStructures = true;
       }
 
-      protected ExplorationMapFunction.Builder getThis() {
+      protected Builder getThis() {
          return this;
       }
 
-      public ExplorationMapFunction.Builder setDestination(TagKey<Structure> var1) {
+      public Builder setDestination(TagKey<Structure> var1) {
          this.destination = var1;
          return this;
       }
 
-      public ExplorationMapFunction.Builder setMapDecoration(Holder<MapDecorationType> var1) {
+      public Builder setMapDecoration(Holder<MapDecorationType> var1) {
          this.mapDecoration = var1;
          return this;
       }
 
-      public ExplorationMapFunction.Builder setZoom(byte var1) {
+      public Builder setZoom(byte var1) {
          this.zoom = var1;
          return this;
       }
 
-      public ExplorationMapFunction.Builder setSearchRadius(int var1) {
+      public Builder setSearchRadius(int var1) {
          this.searchRadius = var1;
          return this;
       }
 
-      public ExplorationMapFunction.Builder setSkipKnownStructures(boolean var1) {
+      public Builder setSkipKnownStructures(boolean var1) {
          this.skipKnownStructures = var1;
          return this;
       }
 
-      @Override
       public LootItemFunction build() {
          return new ExplorationMapFunction(this.getConditions(), this.destination, this.mapDecoration, this.zoom, this.searchRadius, this.skipKnownStructures);
+      }
+
+      // $FF: synthetic method
+      protected LootItemConditionalFunction.Builder getThis() {
+         return this.getThis();
       }
    }
 }

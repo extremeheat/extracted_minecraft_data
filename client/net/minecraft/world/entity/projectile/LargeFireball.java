@@ -10,35 +10,27 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class LargeFireball extends Fireball {
-   private final boolean fire;
    private int explosionPower = 1;
 
    public LargeFireball(EntityType<? extends LargeFireball> var1, Level var2) {
       super(var1, var2);
-      this.fire = true;
    }
 
    public LargeFireball(Level var1, LivingEntity var2, double var3, double var5, double var7, int var9) {
-      this(var1, var2, var3, var5, var7, var9, true);
-   }
-
-   public LargeFireball(Level var1, LivingEntity var2, double var3, double var5, double var7, int var9, boolean var10) {
       super(EntityType.FIREBALL, var2, var3, var5, var7, var1);
       this.explosionPower = var9;
-      this.fire = var10;
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level().isClientSide) {
          boolean var2 = this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, this.fire && var2, Level.ExplosionInteraction.MOB);
+         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var2, Level.ExplosionInteraction.MOB);
          this.discard();
       }
+
    }
 
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       if (!this.level().isClientSide) {
@@ -48,20 +40,20 @@ public class LargeFireball extends Fireball {
          if (var3 instanceof LivingEntity) {
             this.doEnchantDamageEffects((LivingEntity)var3, var2);
          }
+
       }
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("ExplosionPower", (byte)this.explosionPower);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("ExplosionPower", 99)) {
          this.explosionPower = var1.getByte("ExplosionPower");
       }
+
    }
 }

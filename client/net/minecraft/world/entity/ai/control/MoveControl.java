@@ -23,10 +23,11 @@ public class MoveControl implements Control {
    protected double speedModifier;
    protected float strafeForwards;
    protected float strafeRight;
-   protected MoveControl.Operation operation = MoveControl.Operation.WAIT;
+   protected Operation operation;
 
    public MoveControl(Mob var1) {
       super();
+      this.operation = MoveControl.Operation.WAIT;
       this.mob = var1;
    }
 
@@ -46,6 +47,7 @@ public class MoveControl implements Control {
       if (this.operation != MoveControl.Operation.JUMPING) {
          this.operation = MoveControl.Operation.MOVE_TO;
       }
+
    }
 
    public void strafe(float var1, float var2) {
@@ -56,6 +58,7 @@ public class MoveControl implements Control {
    }
 
    public void tick() {
+      float var9;
       if (this.operation == MoveControl.Operation.STRAFE) {
          float var1 = (float)this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED);
          float var2 = (float)this.speedModifier * var1;
@@ -72,7 +75,7 @@ public class MoveControl implements Control {
          float var6 = Mth.sin(this.mob.getYRot() * 0.017453292F);
          float var7 = Mth.cos(this.mob.getYRot() * 0.017453292F);
          float var8 = var3 * var7 - var4 * var6;
-         float var9 = var4 * var7 + var3 * var6;
+         var9 = var4 * var7 + var3 * var6;
          if (!this.isWalkable(var8, var9)) {
             this.strafeForwards = 1.0F;
             this.strafeRight = 0.0F;
@@ -85,25 +88,21 @@ public class MoveControl implements Control {
       } else if (this.operation == MoveControl.Operation.MOVE_TO) {
          this.operation = MoveControl.Operation.WAIT;
          double var13 = this.wantedX - this.mob.getX();
-         double var15 = this.wantedZ - this.mob.getZ();
-         double var18 = this.wantedY - this.mob.getY();
-         double var19 = var13 * var13 + var18 * var18 + var15 * var15;
-         if (var19 < 2.500000277905201E-7) {
+         double var14 = this.wantedZ - this.mob.getZ();
+         double var15 = this.wantedY - this.mob.getY();
+         double var16 = var13 * var13 + var15 * var15 + var14 * var14;
+         if (var16 < 2.500000277905201E-7) {
             this.mob.setZza(0.0F);
             return;
          }
 
-         float var20 = (float)(Mth.atan2(var15, var13) * 57.2957763671875) - 90.0F;
-         this.mob.setYRot(this.rotlerp(this.mob.getYRot(), var20, 90.0F));
+         var9 = (float)(Mth.atan2(var14, var13) * 57.2957763671875) - 90.0F;
+         this.mob.setYRot(this.rotlerp(this.mob.getYRot(), var9, 90.0F));
          this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED)));
          BlockPos var10 = this.mob.blockPosition();
          BlockState var11 = this.mob.level().getBlockState(var10);
          VoxelShape var12 = var11.getCollisionShape(this.mob.level(), var10);
-         if (var18 > (double)this.mob.maxUpStep() && var13 * var13 + var15 * var15 < (double)Math.max(1.0F, this.mob.getBbWidth())
-            || !var12.isEmpty()
-               && this.mob.getY() < var12.max(Direction.Axis.Y) + (double)var10.getY()
-               && !var11.is(BlockTags.DOORS)
-               && !var11.is(BlockTags.FENCES)) {
+         if (var15 > (double)this.mob.maxUpStep() && var13 * var13 + var14 * var14 < (double)Math.max(1.0F, this.mob.getBbWidth()) || !var12.isEmpty() && this.mob.getY() < var12.max(Direction.Axis.Y) + (double)var10.getY() && !var11.is(BlockTags.DOORS) && !var11.is(BlockTags.FENCES)) {
             this.mob.getJumpControl().jump();
             this.operation = MoveControl.Operation.JUMPING;
          }
@@ -115,15 +114,14 @@ public class MoveControl implements Control {
       } else {
          this.mob.setZza(0.0F);
       }
+
    }
 
    private boolean isWalkable(float var1, float var2) {
       PathNavigation var3 = this.mob.getNavigation();
       if (var3 != null) {
          NodeEvaluator var4 = var3.getNodeEvaluator();
-         if (var4 != null
-            && var4.getPathType(this.mob, BlockPos.containing(this.mob.getX() + (double)var1, (double)this.mob.getBlockY(), this.mob.getZ() + (double)var2))
-               != PathType.WALKABLE) {
+         if (var4 != null && var4.getPathType(this.mob, BlockPos.containing(this.mob.getX() + (double)var1, (double)this.mob.getBlockY(), this.mob.getZ() + (double)var2)) != PathType.WALKABLE) {
             return false;
          }
       }
@@ -170,6 +168,11 @@ public class MoveControl implements Control {
       JUMPING;
 
       private Operation() {
+      }
+
+      // $FF: synthetic method
+      private static Operation[] $values() {
+         return new Operation[]{WAIT, MOVE_TO, STRAFE, JUMPING};
       }
    }
 }

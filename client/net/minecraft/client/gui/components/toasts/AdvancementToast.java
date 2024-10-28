@@ -1,11 +1,14 @@
 package net.minecraft.client.gui.components.toasts;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
@@ -22,29 +25,33 @@ public class AdvancementToast implements Toast {
       this.advancement = var1;
    }
 
-   @Override
    public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
-      DisplayInfo var5 = this.advancement.value().display().orElse(null);
+      DisplayInfo var5 = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
       var1.blitSprite(BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (var5 != null) {
          List var6 = var2.getMinecraft().font.split(var5.getTitle(), 125);
          int var7 = var5.getType() == AdvancementType.CHALLENGE ? 16746751 : 16776960;
          if (var6.size() == 1) {
-            var1.drawString(var2.getMinecraft().font, var5.getType().getDisplayName(), 30, 7, var7 | 0xFF000000, false);
-            var1.drawString(var2.getMinecraft().font, (FormattedCharSequence)var6.get(0), 30, 18, -1, false);
+            var1.drawString(var2.getMinecraft().font, (Component)var5.getType().getDisplayName(), 30, 7, var7 | -16777216, false);
+            var1.drawString(var2.getMinecraft().font, (FormattedCharSequence)((FormattedCharSequence)var6.get(0)), 30, 18, -1, false);
          } else {
             boolean var8 = true;
             float var9 = 300.0F;
+            int var10;
             if (var3 < 1500L) {
-               int var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | 67108864;
-               var1.drawString(var2.getMinecraft().font, var5.getType().getDisplayName(), 30, 11, var7 | var10, false);
+               var10 = Mth.floor(Mth.clamp((float)(1500L - var3) / 300.0F, 0.0F, 1.0F) * 255.0F) << 24 | 67108864;
+               var1.drawString(var2.getMinecraft().font, (Component)var5.getType().getDisplayName(), 30, 11, var7 | var10, false);
             } else {
-               int var14 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | 67108864;
-               int var11 = this.height() / 2 - var6.size() * 9 / 2;
+               var10 = Mth.floor(Mth.clamp((float)(var3 - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F) << 24 | 67108864;
+               int var10000 = this.height() / 2;
+               int var10001 = var6.size();
+               Objects.requireNonNull(var2.getMinecraft().font);
+               int var11 = var10000 - var10001 * 9 / 2;
 
-               for(FormattedCharSequence var13 : var6) {
-                  var1.drawString(var2.getMinecraft().font, var13, 30, var11, 16777215 | var14, false);
-                  var11 += 9;
+               for(Iterator var12 = var6.iterator(); var12.hasNext(); var11 += 9) {
+                  FormattedCharSequence var13 = (FormattedCharSequence)var12.next();
+                  var1.drawString(var2.getMinecraft().font, (FormattedCharSequence)var13, 30, var11, 16777215 | var10, false);
+                  Objects.requireNonNull(var2.getMinecraft().font);
                }
             }
          }

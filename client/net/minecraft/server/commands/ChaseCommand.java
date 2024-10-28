@@ -7,7 +7,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import javax.annotation.Nullable;
@@ -26,7 +25,7 @@ public class ChaseCommand {
    private static final String DEFAULT_BIND_ADDRESS = "0.0.0.0";
    private static final int DEFAULT_PORT = 10000;
    private static final int BROADCAST_INTERVAL_MS = 100;
-   public static BiMap<String, ResourceKey<Level>> DIMENSION_NAMES = ImmutableBiMap.of("o", Level.OVERWORLD, "n", Level.NETHER, "e", Level.END);
+   public static BiMap<String, ResourceKey<Level>> DIMENSION_NAMES;
    @Nullable
    private static ChaseServer chaseServer;
    @Nullable
@@ -37,58 +36,37 @@ public class ChaseCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("chase")
-                  .then(
-                     ((LiteralArgumentBuilder)Commands.literal("follow")
-                           .then(
-                              ((RequiredArgumentBuilder)Commands.argument("host", StringArgumentType.string())
-                                    .executes(var0x -> follow((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "host"), 10000)))
-                                 .then(
-                                    Commands.argument("port", IntegerArgumentType.integer(1, 65535))
-                                       .executes(
-                                          var0x -> follow(
-                                                (CommandSourceStack)var0x.getSource(),
-                                                StringArgumentType.getString(var0x, "host"),
-                                                IntegerArgumentType.getInteger(var0x, "port")
-                                             )
-                                       )
-                                 )
-                           ))
-                        .executes(var0x -> follow((CommandSourceStack)var0x.getSource(), "localhost", 10000))
-                  ))
-               .then(
-                  ((LiteralArgumentBuilder)Commands.literal("lead")
-                        .then(
-                           ((RequiredArgumentBuilder)Commands.argument("bind_address", StringArgumentType.string())
-                                 .executes(var0x -> lead((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "bind_address"), 10000)))
-                              .then(
-                                 Commands.argument("port", IntegerArgumentType.integer(1024, 65535))
-                                    .executes(
-                                       var0x -> lead(
-                                             (CommandSourceStack)var0x.getSource(),
-                                             StringArgumentType.getString(var0x, "bind_address"),
-                                             IntegerArgumentType.getInteger(var0x, "port")
-                                          )
-                                    )
-                              )
-                        ))
-                     .executes(var0x -> lead((CommandSourceStack)var0x.getSource(), "0.0.0.0", 10000))
-               ))
-            .then(Commands.literal("stop").executes(var0x -> stop((CommandSourceStack)var0x.getSource())))
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("chase").then(((LiteralArgumentBuilder)Commands.literal("follow").then(((RequiredArgumentBuilder)Commands.argument("host", StringArgumentType.string()).executes((var0x) -> {
+         return follow((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "host"), 10000);
+      })).then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes((var0x) -> {
+         return follow((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "host"), IntegerArgumentType.getInteger(var0x, "port"));
+      })))).executes((var0x) -> {
+         return follow((CommandSourceStack)var0x.getSource(), "localhost", 10000);
+      }))).then(((LiteralArgumentBuilder)Commands.literal("lead").then(((RequiredArgumentBuilder)Commands.argument("bind_address", StringArgumentType.string()).executes((var0x) -> {
+         return lead((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "bind_address"), 10000);
+      })).then(Commands.argument("port", IntegerArgumentType.integer(1024, 65535)).executes((var0x) -> {
+         return lead((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "bind_address"), IntegerArgumentType.getInteger(var0x, "port"));
+      })))).executes((var0x) -> {
+         return lead((CommandSourceStack)var0x.getSource(), "0.0.0.0", 10000);
+      }))).then(Commands.literal("stop").executes((var0x) -> {
+         return stop((CommandSourceStack)var0x.getSource());
+      })));
    }
 
    private static int stop(CommandSourceStack var0) {
       if (chaseClient != null) {
          chaseClient.stop();
-         var0.sendSuccess(() -> Component.literal("You have now stopped chasing"), false);
+         var0.sendSuccess(() -> {
+            return Component.literal("You have now stopped chasing");
+         }, false);
          chaseClient = null;
       }
 
       if (chaseServer != null) {
          chaseServer.stop();
-         var0.sendSuccess(() -> Component.literal("You are no longer being chased"), false);
+         var0.sendSuccess(() -> {
+            return Component.literal("You are no longer being chased");
+         }, false);
          chaseServer = null;
       }
 
@@ -115,9 +93,9 @@ public class ChaseCommand {
 
          try {
             chaseServer.start();
-            var0.sendSuccess(
-               () -> Component.literal("Chase server is now running on port " + var2 + ". Clients can follow you using /chase follow <ip> <port>"), false
-            );
+            var0.sendSuccess(() -> {
+               return Component.literal("Chase server is now running on port " + var2 + ". Clients can follow you using /chase follow <ip> <port>");
+            }, false);
          } catch (IOException var4) {
             LOGGER.error("Failed to start chase server", var4);
             var0.sendFailure(Component.literal("Failed to start chase server on port " + var2));
@@ -134,17 +112,14 @@ public class ChaseCommand {
       } else {
          chaseClient = new ChaseClient(var1, var2, var0.getServer());
          chaseClient.start();
-         var0.sendSuccess(
-            () -> Component.literal(
-                  "You are now chasing "
-                     + var1
-                     + ":"
-                     + var2
-                     + ". If that server does '/chase lead' then you will automatically go to the same position. Use '/chase stop' to stop chasing."
-               ),
-            false
-         );
+         var0.sendSuccess(() -> {
+            return Component.literal("You are now chasing " + var1 + ":" + var2 + ". If that server does '/chase lead' then you will automatically go to the same position. Use '/chase stop' to stop chasing.");
+         }, false);
          return 0;
       }
+   }
+
+   static {
+      DIMENSION_NAMES = ImmutableBiMap.of("o", Level.OVERWORLD, "n", Level.NETHER, "e", Level.END);
    }
 }

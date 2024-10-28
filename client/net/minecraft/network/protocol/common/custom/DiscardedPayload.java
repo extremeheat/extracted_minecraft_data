@@ -4,9 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record DiscardedPayload(ResourceLocation a) implements CustomPacketPayload {
-   private final ResourceLocation id;
-
+public record DiscardedPayload(ResourceLocation id) implements CustomPacketPayload {
    public DiscardedPayload(ResourceLocation var1) {
       super();
       this.id = var1;
@@ -14,7 +12,7 @@ public record DiscardedPayload(ResourceLocation a) implements CustomPacketPayloa
 
    public static <T extends FriendlyByteBuf> StreamCodec<T, DiscardedPayload> codec(ResourceLocation var0, int var1) {
       return CustomPacketPayload.codec((var0x, var1x) -> {
-      }, var2 -> {
+      }, (var2) -> {
          int var3 = var2.readableBytes();
          if (var3 >= 0 && var3 <= var1) {
             var2.skipBytes(var3);
@@ -25,8 +23,11 @@ public record DiscardedPayload(ResourceLocation a) implements CustomPacketPayloa
       });
    }
 
-   @Override
    public CustomPacketPayload.Type<DiscardedPayload> type() {
-      return new CustomPacketPayload.Type<>(this.id);
+      return new CustomPacketPayload.Type(this.id);
+   }
+
+   public ResourceLocation id() {
+      return this.id;
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity.layers;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -42,28 +43,29 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      this.renderArmorPiece(var1, var2, (T)var4, EquipmentSlot.CHEST, var3, this.getArmorModel(EquipmentSlot.CHEST));
-      this.renderArmorPiece(var1, var2, (T)var4, EquipmentSlot.LEGS, var3, this.getArmorModel(EquipmentSlot.LEGS));
-      this.renderArmorPiece(var1, var2, (T)var4, EquipmentSlot.FEET, var3, this.getArmorModel(EquipmentSlot.FEET));
-      this.renderArmorPiece(var1, var2, (T)var4, EquipmentSlot.HEAD, var3, this.getArmorModel(EquipmentSlot.HEAD));
+      this.renderArmorPiece(var1, var2, var4, EquipmentSlot.CHEST, var3, this.getArmorModel(EquipmentSlot.CHEST));
+      this.renderArmorPiece(var1, var2, var4, EquipmentSlot.LEGS, var3, this.getArmorModel(EquipmentSlot.LEGS));
+      this.renderArmorPiece(var1, var2, var4, EquipmentSlot.FEET, var3, this.getArmorModel(EquipmentSlot.FEET));
+      this.renderArmorPiece(var1, var2, var4, EquipmentSlot.HEAD, var3, this.getArmorModel(EquipmentSlot.HEAD));
    }
 
    private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, T var3, EquipmentSlot var4, int var5, A var6) {
       ItemStack var7 = var3.getItemBySlot(var4);
       Item var9 = var7.getItem();
-      if (var9 instanceof ArmorItem) {
-         ArmorItem var8 = (ArmorItem)var9;
+      if (var9 instanceof ArmorItem var8) {
          if (var8.getEquipmentSlot() == var4) {
-            this.getParentModel().copyPropertiesTo(var6);
-            this.setPartVisibility((A)var6, var4);
+            ((HumanoidModel)this.getParentModel()).copyPropertiesTo(var6);
+            this.setPartVisibility(var6, var4);
             boolean var17 = this.usesInnerModel(var4);
             ArmorMaterial var10 = (ArmorMaterial)var8.getMaterial().value();
             int var11 = var7.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var7, -6265536) : -1;
 
-            for(ArmorMaterial.Layer var13 : var10.layers()) {
-               float var14;
-               float var15;
-               float var16;
+            ArmorMaterial.Layer var13;
+            float var14;
+            float var15;
+            float var16;
+            for(Iterator var12 = var10.layers().iterator(); var12.hasNext(); this.renderModel(var1, var2, var5, var6, var14, var15, var16, var13.texture(var17))) {
+               var13 = (ArmorMaterial.Layer)var12.next();
                if (var13.dyeable() && var11 != -1) {
                   var14 = (float)FastColor.ARGB32.red(var11) / 255.0F;
                   var15 = (float)FastColor.ARGB32.green(var11) / 255.0F;
@@ -73,25 +75,24 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
                   var15 = 1.0F;
                   var16 = 1.0F;
                }
-
-               this.renderModel(var1, var2, var5, (A)var6, var14, var15, var16, var13.texture(var17));
             }
 
-            ArmorTrim var18 = var7.get(DataComponents.TRIM);
+            ArmorTrim var18 = (ArmorTrim)var7.get(DataComponents.TRIM);
             if (var18 != null) {
-               this.renderTrim(var8.getMaterial(), var1, var2, var5, var18, (A)var6, var17);
+               this.renderTrim(var8.getMaterial(), var1, var2, var5, var18, var6, var17);
             }
 
             if (var7.hasFoil()) {
-               this.renderGlint(var1, var2, var5, (A)var6);
+               this.renderGlint(var1, var2, var5, var6);
             }
+
          }
       }
    }
 
    protected void setPartVisibility(A var1, EquipmentSlot var2) {
       var1.setAllVisible(false);
-      switch(var2) {
+      switch (var2) {
          case HEAD:
             var1.head.visible = true;
             var1.hat.visible = true;
@@ -110,6 +111,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
             var1.rightLeg.visible = true;
             var1.leftLeg.visible = true;
       }
+
    }
 
    private void renderModel(PoseStack var1, MultiBufferSource var2, int var3, A var4, float var5, float var6, float var7, ResourceLocation var8) {
@@ -128,7 +130,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
    }
 
    private A getArmorModel(EquipmentSlot var1) {
-      return (A)(this.usesInnerModel(var1) ? this.innerModel : this.outerModel);
+      return this.usesInnerModel(var1) ? this.innerModel : this.outerModel;
    }
 
    private boolean usesInnerModel(EquipmentSlot var1) {

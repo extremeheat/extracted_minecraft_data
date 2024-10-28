@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -20,13 +21,11 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
       super(var1, var2);
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(5, new FollowFlockLeaderGoal(this));
    }
 
-   @Override
    public int getMaxSpawnClusterSize() {
       return this.getMaxSchoolSize();
    }
@@ -35,7 +34,6 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
       return super.getMaxSpawnClusterSize();
    }
 
-   @Override
    protected boolean canRandomSwim() {
       return !this.isFollower();
    }
@@ -67,7 +65,6 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
       return this.hasFollowers() && this.schoolSize < this.getMaxSchoolSize();
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.hasFollowers() && this.level().random.nextInt(200) == 1) {
@@ -76,6 +73,7 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
             this.schoolSize = 1;
          }
       }
+
    }
 
    public boolean hasFollowers() {
@@ -88,22 +86,26 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
 
    public void pathToLeader() {
       if (this.isFollower()) {
-         this.getNavigation().moveTo(this.leader, 1.0);
+         this.getNavigation().moveTo((Entity)this.leader, 1.0);
       }
+
    }
 
    public void addFollowers(Stream<? extends AbstractSchoolingFish> var1) {
-      var1.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter(var1x -> var1x != this).forEach(var1x -> var1x.startFollowing(this));
+      var1.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter((var1x) -> {
+         return var1x != this;
+      }).forEach((var1x) -> {
+         var1x.startFollowing(this);
+      });
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       if (var4 == null) {
-         var4 = new AbstractSchoolingFish.SchoolSpawnGroupData(this);
+         var4 = new SchoolSpawnGroupData(this);
       } else {
-         this.startFollowing(((AbstractSchoolingFish.SchoolSpawnGroupData)var4).leader);
+         this.startFollowing(((SchoolSpawnGroupData)var4).leader);
       }
 
       return (SpawnGroupData)var4;

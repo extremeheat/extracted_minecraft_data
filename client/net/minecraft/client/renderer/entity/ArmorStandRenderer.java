@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
-import net.minecraft.client.renderer.entity.layers.PoisonousPolytraLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -21,18 +20,10 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
 
    public ArmorStandRenderer(EntityRendererProvider.Context var1) {
       super(var1, new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND)), 0.0F);
-      this.addLayer(
-         new HumanoidArmorLayer<>(
-            this,
-            new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_INNER_ARMOR)),
-            new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_OUTER_ARMOR)),
-            var1.getModelManager()
-         )
-      );
-      this.addLayer(new ItemInHandLayer<>(this, var1.getItemInHandRenderer()));
-      this.addLayer(new ElytraLayer<>(this, var1.getModelSet()));
-      this.addLayer(new PoisonousPolytraLayer<>(this, var1.getModelSet()));
-      this.addLayer(new CustomHeadLayer<>(this, var1.getModelSet(), var1.getItemInHandRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_INNER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_OUTER_ARMOR)), var1.getModelManager()));
+      this.addLayer(new ItemInHandLayer(this, var1.getItemInHandRenderer()));
+      this.addLayer(new ElytraLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getItemInHandRenderer()));
    }
 
    public ResourceLocation getTextureLocation(ArmorStand var1) {
@@ -45,6 +36,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       if (var7 < 5.0F) {
          var2.mulPose(Axis.YP.rotationDegrees(Mth.sin(var7 / 1.5F * 3.1415927F) * 3.0F));
       }
+
    }
 
    protected boolean shouldShowName(ArmorStand var1) {

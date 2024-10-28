@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
@@ -16,6 +17,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.freetype.FT_Bitmap;
 import org.lwjgl.util.freetype.FT_Face;
 import org.lwjgl.util.freetype.FT_GlyphSlot;
+import org.lwjgl.util.freetype.FT_Matrix;
 import org.lwjgl.util.freetype.FT_Vector;
 import org.lwjgl.util.freetype.FreeType;
 
@@ -32,7 +34,10 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       this.fontMemory = var1;
       this.face = var2;
       this.oversample = var4;
-      var7.codePoints().forEach(this.skip::add);
+      IntStream var10000 = var7.codePoints();
+      IntSet var10001 = this.skip;
+      Objects.requireNonNull(var10001);
+      var10000.forEach(var10001::add);
       int var8 = Math.round(var3 * var4);
       FreeType.FT_Set_Pixel_Sizes(var2, var8, var8);
       float var9 = var5 * var4;
@@ -41,7 +46,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
       try {
          FT_Vector var12 = FreeTypeUtil.setVector(FT_Vector.malloc(var11), var9, var10);
-         FreeType.FT_Set_Transform(var2, null, var12);
+         FreeType.FT_Set_Transform(var2, (FT_Matrix)null, var12);
       } catch (Throwable var15) {
          if (var11 != null) {
             try {
@@ -57,10 +62,10 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       if (var11 != null) {
          var11.close();
       }
+
    }
 
    @Nullable
-   @Override
    public GlyphInfo getGlyph(int var1) {
       FT_Face var2 = this.validateFontOpen();
       if (this.skip.contains(var1)) {
@@ -71,16 +76,16 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
             return null;
          } else {
             FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(var2, var3, 4194312), "Loading glyph");
-            FT_GlyphSlot var4 = Objects.requireNonNull(var2.glyph(), "Glyph not initialized");
+            FT_GlyphSlot var4 = (FT_GlyphSlot)Objects.requireNonNull(var2.glyph(), "Glyph not initialized");
             float var5 = FreeTypeUtil.x(var4.advance());
             FT_Bitmap var6 = var4.bitmap();
             int var7 = var4.bitmap_left();
             int var8 = var4.bitmap_top();
             int var9 = var6.width();
             int var10 = var6.rows();
-            return (GlyphInfo)(var9 > 0 && var10 > 0
-               ? new TrueTypeGlyphProvider.Glyph((float)var7, (float)var8, var9, var10, var5, var3)
-               : () -> var5 / this.oversample);
+            return (GlyphInfo)(var9 > 0 && var10 > 0 ? new Glyph((float)var7, (float)var8, var9, var10, var5, var3) : () -> {
+               return var5 / this.oversample;
+            });
          }
       }
    }
@@ -93,7 +98,6 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       }
    }
 
-   @Override
    public void close() {
       if (this.face != null) {
          FreeTypeUtil.checkError(FreeType.FT_Done_Face(this.face), "Deleting face");
@@ -104,7 +108,6 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       this.fontMemory = null;
    }
 
-   @Override
    public IntSet getSupportedGlyphs() {
       FT_Face var1 = this.validateFontOpen();
       IntOpenHashSet var2 = new IntOpenHashSet();
@@ -154,40 +157,32 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          this.index = var7;
       }
 
-      @Override
       public float getAdvance() {
          return this.advance;
       }
 
-      @Override
       public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
          return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
-            @Override
             public int getPixelWidth() {
                return Glyph.this.width;
             }
 
-            @Override
             public int getPixelHeight() {
                return Glyph.this.height;
             }
 
-            @Override
             public float getOversample() {
                return TrueTypeGlyphProvider.this.oversample;
             }
 
-            @Override
             public float getBearingLeft() {
                return Glyph.this.bearingX;
             }
 
-            @Override
             public float getBearingTop() {
                return Glyph.this.bearingY;
             }
 
-            @Override
             public void upload(int var1, int var2) {
                FT_Face var3 = TrueTypeGlyphProvider.this.validateFontOpen();
                NativeImage var4 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
@@ -195,7 +190,6 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
                var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
             }
 
-            @Override
             public boolean isColored() {
                return false;
             }

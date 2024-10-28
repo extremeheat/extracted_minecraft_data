@@ -1,5 +1,6 @@
 package net.minecraft.world.phys;
 
+import java.util.Iterator;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -35,9 +36,7 @@ public class AABB {
    }
 
    public static AABB of(BoundingBox var0) {
-      return new AABB(
-         (double)var0.minX(), (double)var0.minY(), (double)var0.minZ(), (double)(var0.maxX() + 1), (double)(var0.maxY() + 1), (double)(var0.maxZ() + 1)
-      );
+      return new AABB((double)var0.minX(), (double)var0.minY(), (double)var0.minZ(), (double)(var0.maxX() + 1), (double)(var0.maxY() + 1), (double)(var0.maxZ() + 1));
    }
 
    public static AABB unitCubeFromLowerCorner(Vec3 var0) {
@@ -45,14 +44,7 @@ public class AABB {
    }
 
    public static AABB encapsulatingFullBlocks(BlockPos var0, BlockPos var1) {
-      return new AABB(
-         (double)Math.min(var0.getX(), var1.getX()),
-         (double)Math.min(var0.getY(), var1.getY()),
-         (double)Math.min(var0.getZ(), var1.getZ()),
-         (double)(Math.max(var0.getX(), var1.getX()) + 1),
-         (double)(Math.max(var0.getY(), var1.getY()) + 1),
-         (double)(Math.max(var0.getZ(), var1.getZ()) + 1)
-      );
+      return new AABB((double)Math.min(var0.getX(), var1.getX()), (double)Math.min(var0.getY(), var1.getY()), (double)Math.min(var0.getZ(), var1.getZ()), (double)(Math.max(var0.getX(), var1.getX()) + 1), (double)(Math.max(var0.getY(), var1.getY()) + 1), (double)(Math.max(var0.getZ(), var1.getZ()) + 1));
    }
 
    public AABB setMinX(double var1) {
@@ -87,7 +79,6 @@ public class AABB {
       return var1.choose(this.maxX, this.maxY, this.maxZ);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -111,7 +102,6 @@ public class AABB {
       }
    }
 
-   @Override
    public int hashCode() {
       long var1 = Double.doubleToLongBits(this.minX);
       int var3 = (int)(var1 ^ var1 >>> 32);
@@ -124,7 +114,8 @@ public class AABB {
       var1 = Double.doubleToLongBits(this.maxY);
       var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
       var1 = Double.doubleToLongBits(this.maxZ);
-      return 31 * var3 + (int)(var1 ^ var1 >>> 32);
+      var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
+      return var3;
    }
 
    public AABB contract(double var1, double var3, double var5) {
@@ -226,14 +217,7 @@ public class AABB {
    }
 
    public AABB move(BlockPos var1) {
-      return new AABB(
-         this.minX + (double)var1.getX(),
-         this.minY + (double)var1.getY(),
-         this.minZ + (double)var1.getZ(),
-         this.maxX + (double)var1.getX(),
-         this.maxY + (double)var1.getY(),
-         this.maxZ + (double)var1.getZ()
-      );
+      return new AABB(this.minX + (double)var1.getX(), this.minY + (double)var1.getY(), this.minZ + (double)var1.getZ(), this.maxX + (double)var1.getX(), this.maxY + (double)var1.getY(), this.maxZ + (double)var1.getZ());
    }
 
    public AABB move(Vec3 var1) {
@@ -249,14 +233,7 @@ public class AABB {
    }
 
    public boolean intersects(Vec3 var1, Vec3 var2) {
-      return this.intersects(
-         Math.min(var1.x, var2.x),
-         Math.min(var1.y, var2.y),
-         Math.min(var1.z, var2.z),
-         Math.max(var1.x, var2.x),
-         Math.max(var1.y, var2.y),
-         Math.max(var1.z, var2.z)
-      );
+      return this.intersects(Math.min(var1.x, var2.x), Math.min(var1.y, var2.y), Math.min(var1.z, var2.z), Math.max(var1.x, var2.x), Math.max(var1.y, var2.y), Math.max(var1.z, var2.z));
    }
 
    public boolean contains(Vec3 var1) {
@@ -299,7 +276,7 @@ public class AABB {
       double var4 = var2.x - var1.x;
       double var6 = var2.y - var1.y;
       double var8 = var2.z - var1.z;
-      Direction var10 = getDirection(this, var1, var3, null, var4, var6, var8);
+      Direction var10 = getDirection(this, var1, var3, (Direction)null, var4, var6, var8);
       if (var10 == null) {
          return Optional.empty();
       } else {
@@ -316,8 +293,9 @@ public class AABB {
       double var8 = var2.y - var1.y;
       double var10 = var2.z - var1.z;
 
-      for(AABB var13 : var0) {
-         var5 = getDirection(var13.move(var3), var1, var4, var5, var6, var8, var10);
+      AABB var13;
+      for(Iterator var12 = var0.iterator(); var12.hasNext(); var5 = getDirection(var13.move(var3), var1, var4, var5, var6, var8, var10)) {
+         var13 = (AABB)var12.next();
       }
 
       if (var5 == null) {
@@ -352,22 +330,7 @@ public class AABB {
    }
 
    @Nullable
-   private static Direction clipPoint(
-      double[] var0,
-      @Nullable Direction var1,
-      double var2,
-      double var4,
-      double var6,
-      double var8,
-      double var10,
-      double var12,
-      double var14,
-      double var16,
-      Direction var18,
-      double var19,
-      double var21,
-      double var23
-   ) {
+   private static Direction clipPoint(double[] var0, @Nullable Direction var1, double var2, double var4, double var6, double var8, double var10, double var12, double var14, double var16, Direction var18, double var19, double var21, double var23) {
       double var25 = (var8 - var19) / var2;
       double var27 = var21 + var25 * var4;
       double var29 = var23 + var25 * var6;
@@ -386,18 +349,12 @@ public class AABB {
       return Mth.lengthSquared(var2, var4, var6);
    }
 
-   @Override
    public String toString() {
       return "AABB[" + this.minX + ", " + this.minY + ", " + this.minZ + "] -> [" + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
    }
 
    public boolean hasNaN() {
-      return Double.isNaN(this.minX)
-         || Double.isNaN(this.minY)
-         || Double.isNaN(this.minZ)
-         || Double.isNaN(this.maxX)
-         || Double.isNaN(this.maxY)
-         || Double.isNaN(this.maxZ);
+      return Double.isNaN(this.minX) || Double.isNaN(this.minY) || Double.isNaN(this.minZ) || Double.isNaN(this.maxX) || Double.isNaN(this.maxY) || Double.isNaN(this.maxZ);
    }
 
    public Vec3 getCenter() {

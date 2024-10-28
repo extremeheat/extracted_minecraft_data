@@ -13,4 +13,9 @@ public enum FogShape {
    public int getIndex() {
       return this.index;
    }
+
+   // $FF: synthetic method
+   private static FogShape[] $values() {
+      return new FogShape[]{SPHERE, CYLINDER};
+   }
 }

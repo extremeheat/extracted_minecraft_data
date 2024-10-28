@@ -25,22 +25,22 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       return this.activeChest == var1;
    }
 
-   @Override
    public void fromTag(ListTag var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
+      int var3;
+      for(var3 = 0; var3 < this.getContainerSize(); ++var3) {
          this.setItem(var3, ItemStack.EMPTY);
       }
 
-      for(int var6 = 0; var6 < var1.size(); ++var6) {
-         CompoundTag var4 = var1.getCompound(var6);
+      for(var3 = 0; var3 < var1.size(); ++var3) {
+         CompoundTag var4 = var1.getCompound(var3);
          int var5 = var4.getByte("Slot") & 255;
          if (var5 >= 0 && var5 < this.getContainerSize()) {
-            this.setItem(var5, ItemStack.parse(var2, var4).orElse(ItemStack.EMPTY));
+            this.setItem(var5, (ItemStack)ItemStack.parse(var2, var4).orElse(ItemStack.EMPTY));
          }
       }
+
    }
 
-   @Override
    public ListTag createTag(HolderLookup.Provider var1) {
       ListTag var2 = new ListTag();
 
@@ -56,12 +56,10 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       return var2;
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.activeChest != null && !this.activeChest.stillValid(var1) ? false : super.stillValid(var1);
    }
 
-   @Override
    public void startOpen(Player var1) {
       if (this.activeChest != null) {
          this.activeChest.startOpen(var1);
@@ -70,7 +68,6 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       super.startOpen(var1);
    }
 
-   @Override
    public void stopOpen(Player var1) {
       if (this.activeChest != null) {
          this.activeChest.stopOpen(var1);

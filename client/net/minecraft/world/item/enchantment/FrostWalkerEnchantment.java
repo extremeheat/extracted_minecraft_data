@@ -1,5 +1,6 @@
 package net.minecraft.world.item.enchantment;
 
+import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,7 +15,6 @@ public class FrostWalkerEnchantment extends Enchantment {
       super(var1);
    }
 
-   @Override
    public boolean isTreasureOnly() {
       return true;
    }
@@ -24,8 +24,10 @@ public class FrostWalkerEnchantment extends Enchantment {
          BlockState var4 = Blocks.FROSTED_ICE.defaultBlockState();
          int var5 = Math.min(16, 2 + var3);
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+         Iterator var7 = BlockPos.betweenClosed(var2.offset(-var5, -1, -var5), var2.offset(var5, -1, var5)).iterator();
 
-         for(BlockPos var8 : BlockPos.betweenClosed(var2.offset(-var5, -1, -var5), var2.offset(var5, -1, var5))) {
+         while(var7.hasNext()) {
+            BlockPos var8 = (BlockPos)var7.next();
             if (var8.closerToCenterThan(var0.position(), (double)var5)) {
                var6.set(var8.getX(), var8.getY() + 1, var8.getZ());
                BlockState var9 = var1.getBlockState(var6);
@@ -38,10 +40,10 @@ public class FrostWalkerEnchantment extends Enchantment {
                }
             }
          }
+
       }
    }
 
-   @Override
    public boolean checkCompatibility(Enchantment var1) {
       return super.checkCompatibility(var1) && var1 != Enchantments.DEPTH_STRIDER;
    }

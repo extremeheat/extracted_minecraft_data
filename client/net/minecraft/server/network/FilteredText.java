@@ -4,9 +4,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.FilterMask;
 
-public record FilteredText(String b, FilterMask c) {
-   private final String raw;
-   private final FilterMask mask;
+public record FilteredText(String raw, FilterMask mask) {
    public static final FilteredText EMPTY = passThrough("");
 
    public FilteredText(String var1, FilterMask var2) {
@@ -29,10 +27,18 @@ public record FilteredText(String b, FilterMask c) {
    }
 
    public String filteredOrEmpty() {
-      return Objects.requireNonNullElse(this.filtered(), "");
+      return (String)Objects.requireNonNullElse(this.filtered(), "");
    }
 
    public boolean isFiltered() {
       return !this.mask.isEmpty();
+   }
+
+   public String raw() {
+      return this.raw;
+   }
+
+   public FilterMask mask() {
+      return this.mask;
    }
 }

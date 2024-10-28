@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
@@ -45,10 +46,8 @@ public class RandomPos {
       if (!var2.test(var0)) {
          return var0;
       } else {
-         BlockPos var3 = var0.above();
-
-         while(var3.getY() < var1 && var2.test(var3)) {
-            var3 = var3.above();
+         BlockPos var3;
+         for(var3 = var0.above(); var3.getY() < var1 && var2.test(var3); var3 = var3.above()) {
          }
 
          return var3;
@@ -62,10 +61,8 @@ public class RandomPos {
       } else if (!var3.test(var0)) {
          return var0;
       } else {
-         BlockPos var4 = var0.above();
-
-         while(var4.getY() < var2 && var3.test(var4)) {
-            var4 = var4.above();
+         BlockPos var4;
+         for(var4 = var0.above(); var4.getY() < var2 && var3.test(var4); var4 = var4.above()) {
          }
 
          BlockPos var5;
@@ -83,6 +80,7 @@ public class RandomPos {
 
    @Nullable
    public static Vec3 generateRandomPos(PathfinderMob var0, Supplier<BlockPos> var1) {
+      Objects.requireNonNull(var0);
       return generateRandomPos(var1, var0::getWalkTargetValue);
    }
 

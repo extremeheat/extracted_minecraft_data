@@ -10,10 +10,7 @@ import java.util.stream.Collectors;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordedThread;
 
-public record ThreadAllocationStat(Instant a, String b, long c) {
-   private final Instant timestamp;
-   private final String threadName;
-   private final long totalBytes;
+public record ThreadAllocationStat(Instant timestamp, String threadName, long totalBytes) {
    private static final String UNKNOWN_THREAD = "unknown";
 
    public ThreadAllocationStat(Instant var1, String var2, long var3) {
@@ -29,9 +26,11 @@ public record ThreadAllocationStat(Instant a, String b, long c) {
       return new ThreadAllocationStat(var0.getStartTime(), var2, var0.getLong("allocated"));
    }
 
-   public static ThreadAllocationStat.Summary summary(List<ThreadAllocationStat> var0) {
+   public static Summary summary(List<ThreadAllocationStat> var0) {
       TreeMap var1 = new TreeMap();
-      Map var2 = var0.stream().collect(Collectors.groupingBy(var0x -> var0x.threadName));
+      Map var2 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> {
+         return var0x.threadName;
+      }));
       var2.forEach((var1x, var2x) -> {
          if (var2x.size() >= 2) {
             ThreadAllocationStat var3 = (ThreadAllocationStat)var2x.get(0);
@@ -41,15 +40,29 @@ public record ThreadAllocationStat(Instant a, String b, long c) {
             var1.put(var1x, (double)var7 / (double)var5);
          }
       });
-      return new ThreadAllocationStat.Summary(var1);
+      return new Summary(var1);
    }
 
-   public static record Summary(Map<String, Double> a) {
-      private final Map<String, Double> allocationsPerSecondByThread;
+   public Instant timestamp() {
+      return this.timestamp;
+   }
 
+   public String threadName() {
+      return this.threadName;
+   }
+
+   public long totalBytes() {
+      return this.totalBytes;
+   }
+
+   public static record Summary(Map<String, Double> allocationsPerSecondByThread) {
       public Summary(Map<String, Double> var1) {
          super();
          this.allocationsPerSecondByThread = var1;
+      }
+
+      public Map<String, Double> allocationsPerSecondByThread() {
+         return this.allocationsPerSecondByThread;
       }
    }
 }

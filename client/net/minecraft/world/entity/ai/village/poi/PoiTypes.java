@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.village.poi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -41,41 +40,16 @@ public class PoiTypes {
    public static final ResourceKey<PoiType> NETHER_PORTAL = createKey("nether_portal");
    public static final ResourceKey<PoiType> LODESTONE = createKey("lodestone");
    public static final ResourceKey<PoiType> LIGHTNING_ROD = createKey("lightning_rod");
-   public static final ResourceKey<PoiType> POTATO_PORTAL = createKey("potato_portal");
-   public static final ResourceKey<PoiType> PEDESTAL = createKey("pedestal");
-   private static final Set<BlockState> BEDS = ImmutableList.of(
-         Blocks.RED_BED,
-         Blocks.BLACK_BED,
-         Blocks.BLUE_BED,
-         Blocks.BROWN_BED,
-         Blocks.CYAN_BED,
-         Blocks.GRAY_BED,
-         Blocks.GREEN_BED,
-         Blocks.LIGHT_BLUE_BED,
-         Blocks.LIGHT_GRAY_BED,
-         Blocks.LIME_BED,
-         Blocks.MAGENTA_BED,
-         Blocks.ORANGE_BED,
-         new Block[]{Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED}
-      )
-      .stream()
-      .flatMap(var0 -> var0.getStateDefinition().getPossibleStates().stream())
-      .filter(var0 -> var0.getValue(BedBlock.PART) == BedPart.HEAD)
-      .collect(ImmutableSet.toImmutableSet());
-   private static final Set<BlockState> CAULDRONS = ImmutableList.of(Blocks.CAULDRON, Blocks.LAVA_CAULDRON, Blocks.WATER_CAULDRON, Blocks.POWDER_SNOW_CAULDRON)
-      .stream()
-      .flatMap(var0 -> var0.getStateDefinition().getPossibleStates().stream())
-      .collect(ImmutableSet.toImmutableSet());
-   private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE = Maps.newHashMap();
+   private static final Set<BlockState> BEDS;
+   private static final Set<BlockState> CAULDRONS;
+   private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE;
 
    public PoiTypes() {
       super();
    }
 
-   private static Set<BlockState> getBlockStates(Block... var0) {
-      return (Set<BlockState>)(var0.length == 1
-         ? ImmutableSet.copyOf(var0[0].getStateDefinition().getPossibleStates())
-         : Arrays.stream(var0).flatMap(var0x -> var0x.getStateDefinition().getPossibleStates().stream()).collect(ImmutableSet.toImmutableSet()));
+   private static Set<BlockState> getBlockStates(Block var0) {
+      return ImmutableSet.copyOf(var0.getStateDefinition().getPossibleStates());
    }
 
    private static ResourceKey<PoiType> createKey(String var0) {
@@ -84,26 +58,22 @@ public class PoiTypes {
 
    private static PoiType register(Registry<PoiType> var0, ResourceKey<PoiType> var1, Set<BlockState> var2, int var3, int var4) {
       PoiType var5 = new PoiType(var2, var3, var4);
-      Registry.register(var0, var1, var5);
+      Registry.register(var0, (ResourceKey)var1, var5);
       registerBlockStates(var0.getHolderOrThrow(var1), var2);
       return var5;
    }
 
    private static void registerBlockStates(Holder<PoiType> var0, Set<BlockState> var1) {
-      var1.forEach(
-         var1x -> {
-            Holder var2 = TYPE_BY_STATE.put(var1x, var0);
-            if (var2 != null) {
-               throw (IllegalStateException)Util.pauseInIde(
-                  new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", var1x))
-               );
-            }
+      var1.forEach((var1x) -> {
+         Holder var2 = (Holder)TYPE_BY_STATE.put(var1x, var0);
+         if (var2 != null) {
+            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", var1x)));
          }
-      );
+      });
    }
 
    public static Optional<Holder<PoiType>> forState(BlockState var0) {
-      return Optional.ofNullable(TYPE_BY_STATE.get(var0));
+      return Optional.ofNullable((Holder)TYPE_BY_STATE.get(var0));
    }
 
    public static boolean hasPoi(BlockState var0) {
@@ -129,9 +99,19 @@ public class PoiTypes {
       register(var0, BEEHIVE, getBlockStates(Blocks.BEEHIVE), 0, 1);
       register(var0, BEE_NEST, getBlockStates(Blocks.BEE_NEST), 0, 1);
       register(var0, NETHER_PORTAL, getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
-      register(var0, POTATO_PORTAL, getBlockStates(Blocks.POTATO_PORTAL), 0, 1);
       register(var0, LODESTONE, getBlockStates(Blocks.LODESTONE), 0, 1);
-      register(var0, PEDESTAL, getBlockStates(Blocks.PEDESTAL), 0, 1);
       return register(var0, LIGHTNING_ROD, getBlockStates(Blocks.LIGHTNING_ROD), 0, 1);
+   }
+
+   static {
+      BEDS = (Set)ImmutableList.of(Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, new Block[]{Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED}).stream().flatMap((var0) -> {
+         return var0.getStateDefinition().getPossibleStates().stream();
+      }).filter((var0) -> {
+         return var0.getValue(BedBlock.PART) == BedPart.HEAD;
+      }).collect(ImmutableSet.toImmutableSet());
+      CAULDRONS = (Set)ImmutableList.of(Blocks.CAULDRON, Blocks.LAVA_CAULDRON, Blocks.WATER_CAULDRON, Blocks.POWDER_SNOW_CAULDRON).stream().flatMap((var0) -> {
+         return var0.getStateDefinition().getPossibleStates().stream();
+      }).collect(ImmutableSet.toImmutableSet());
+      TYPE_BY_STATE = Maps.newHashMap();
    }
 }

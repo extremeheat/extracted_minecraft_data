@@ -26,43 +26,22 @@ public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
       var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(3, 0).addBox(-3.0F, -1.0F, -3.0F, 6.0F, 5.0F, 6.0F), PartPose.offset(0.0F, 19.0F, -10.0F));
-      var1.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create()
-            .texOffs(7, 37)
-            .addBox("shell", -9.5F, 3.0F, -10.0F, 19.0F, 20.0F, 6.0F)
-            .texOffs(31, 1)
-            .addBox("belly", -5.5F, 3.0F, -13.0F, 11.0F, 18.0F, 3.0F),
-         PartPose.offsetAndRotation(0.0F, 11.0F, -10.0F, 1.5707964F, 0.0F, 0.0F)
-      );
-      var1.addOrReplaceChild(
-         "egg_belly",
-         CubeListBuilder.create().texOffs(70, 33).addBox(-4.5F, 3.0F, -14.0F, 9.0F, 18.0F, 1.0F),
-         PartPose.offsetAndRotation(0.0F, 11.0F, -10.0F, 1.5707964F, 0.0F, 0.0F)
-      );
+      var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(7, 37).addBox("shell", -9.5F, 3.0F, -10.0F, 19.0F, 20.0F, 6.0F).texOffs(31, 1).addBox("belly", -5.5F, 3.0F, -13.0F, 11.0F, 18.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 11.0F, -10.0F, 1.5707964F, 0.0F, 0.0F));
+      var1.addOrReplaceChild("egg_belly", CubeListBuilder.create().texOffs(70, 33).addBox(-4.5F, 3.0F, -14.0F, 9.0F, 18.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 11.0F, -10.0F, 1.5707964F, 0.0F, 0.0F));
       boolean var2 = true;
-      var1.addOrReplaceChild(
-         "right_hind_leg", CubeListBuilder.create().texOffs(1, 23).addBox(-2.0F, 0.0F, 0.0F, 4.0F, 1.0F, 10.0F), PartPose.offset(-3.5F, 22.0F, 11.0F)
-      );
-      var1.addOrReplaceChild(
-         "left_hind_leg", CubeListBuilder.create().texOffs(1, 12).addBox(-2.0F, 0.0F, 0.0F, 4.0F, 1.0F, 10.0F), PartPose.offset(3.5F, 22.0F, 11.0F)
-      );
-      var1.addOrReplaceChild(
-         "right_front_leg", CubeListBuilder.create().texOffs(27, 30).addBox(-13.0F, 0.0F, -2.0F, 13.0F, 1.0F, 5.0F), PartPose.offset(-5.0F, 21.0F, -4.0F)
-      );
-      var1.addOrReplaceChild(
-         "left_front_leg", CubeListBuilder.create().texOffs(27, 24).addBox(0.0F, 0.0F, -2.0F, 13.0F, 1.0F, 5.0F), PartPose.offset(5.0F, 21.0F, -4.0F)
-      );
+      var1.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(1, 23).addBox(-2.0F, 0.0F, 0.0F, 4.0F, 1.0F, 10.0F), PartPose.offset(-3.5F, 22.0F, 11.0F));
+      var1.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(1, 12).addBox(-2.0F, 0.0F, 0.0F, 4.0F, 1.0F, 10.0F), PartPose.offset(3.5F, 22.0F, 11.0F));
+      var1.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(27, 30).addBox(-13.0F, 0.0F, -2.0F, 13.0F, 1.0F, 5.0F), PartPose.offset(-5.0F, 21.0F, -4.0F));
+      var1.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(27, 24).addBox(0.0F, 0.0F, -2.0F, 13.0F, 1.0F, 5.0F), PartPose.offset(5.0F, 21.0F, -4.0F));
       return LayerDefinition.create(var0, 128, 64);
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return Iterables.concat(super.bodyParts(), ImmutableList.of(this.eggBelly));
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
+      super.setupAnim(var1, var2, var3, var4, var5, var6);
       this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F * 0.6F) * 0.5F * var3;
       this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F * 0.6F + 3.1415927F) * 0.5F * var3;
       this.rightFrontLeg.zRot = Mth.cos(var2 * 0.6662F * 0.6F + 3.1415927F) * 0.5F * var3;
@@ -90,7 +69,6 @@ public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
       this.eggBelly.visible = !this.young && var1.hasEgg();
    }
 
-   @Override
    public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
       boolean var9 = this.eggBelly.visible;
       if (var9) {
@@ -102,5 +80,6 @@ public class TurtleModel<T extends Turtle> extends QuadrupedModel<T> {
       if (var9) {
          var1.popPose();
       }
+
    }
 }

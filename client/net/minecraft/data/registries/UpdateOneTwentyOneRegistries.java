@@ -13,14 +13,7 @@ import net.minecraft.world.item.armortrim.UpdateOneTwentyOneArmorTrims;
 import net.minecraft.world.level.block.entity.UpdateOneTwentyOneBannerPatterns;
 
 public class UpdateOneTwentyOneRegistries {
-   private static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
-      .add(Registries.TEMPLATE_POOL, UpdateOneTwentyOnePools::bootstrap)
-      .add(Registries.STRUCTURE, UpdateOneTwentyOneStructures::bootstrap)
-      .add(Registries.STRUCTURE_SET, UpdateOneTwentyOneStructureSets::bootstrap)
-      .add(Registries.PROCESSOR_LIST, UpdateOneTwentyOneProcessorLists::bootstrap)
-      .add(Registries.DAMAGE_TYPE, UpdateOneTwentyOneDamageTypes::bootstrap)
-      .add(Registries.BANNER_PATTERN, UpdateOneTwentyOneBannerPatterns::bootstrap)
-      .add(Registries.TRIM_PATTERN, UpdateOneTwentyOneArmorTrims::bootstrap);
+   private static final RegistrySetBuilder BUILDER;
 
    public UpdateOneTwentyOneRegistries() {
       super();
@@ -28,5 +21,9 @@ public class UpdateOneTwentyOneRegistries {
 
    public static CompletableFuture<RegistrySetBuilder.PatchedRegistries> createLookup(CompletableFuture<HolderLookup.Provider> var0) {
       return RegistryPatchGenerator.createLookup(var0, BUILDER);
+   }
+
+   static {
+      BUILDER = (new RegistrySetBuilder()).add(Registries.TEMPLATE_POOL, UpdateOneTwentyOnePools::bootstrap).add(Registries.STRUCTURE, UpdateOneTwentyOneStructures::bootstrap).add(Registries.STRUCTURE_SET, UpdateOneTwentyOneStructureSets::bootstrap).add(Registries.PROCESSOR_LIST, UpdateOneTwentyOneProcessorLists::bootstrap).add(Registries.DAMAGE_TYPE, UpdateOneTwentyOneDamageTypes::bootstrap).add(Registries.BANNER_PATTERN, UpdateOneTwentyOneBannerPatterns::bootstrap).add(Registries.TRIM_PATTERN, UpdateOneTwentyOneArmorTrims::bootstrap);
    }
 }

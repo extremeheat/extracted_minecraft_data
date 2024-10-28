@@ -23,7 +23,6 @@ public class ServerboundPongPacket implements Packet<ServerCommonPacketListener>
       var1.writeInt(this.id);
    }
 
-   @Override
    public PacketType<ServerboundPongPacket> type() {
       return CommonPacketTypes.SERVERBOUND_PONG;
    }

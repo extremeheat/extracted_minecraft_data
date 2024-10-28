@@ -13,27 +13,22 @@ public class Cod extends AbstractSchoolingFish {
       super(var1, var2);
    }
 
-   @Override
    public ItemStack getBucketItemStack() {
       return new ItemStack(Items.COD_BUCKET);
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.COD_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.COD_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.COD_HURT;
    }
 
-   @Override
    protected SoundEvent getFlopSound() {
       return SoundEvents.COD_FLOP;
    }

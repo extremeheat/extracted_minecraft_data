@@ -11,53 +11,16 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public record ClientboundLoginPacket(
-   int b, boolean c, Set<ResourceKey<Level>> d, int e, int f, int g, boolean h, boolean i, boolean j, CommonPlayerSpawnInfo k, boolean l
-) implements Packet<ClientGamePacketListener> {
-   private final int playerId;
-   private final boolean hardcore;
-   private final Set<ResourceKey<Level>> levels;
-   private final int maxPlayers;
-   private final int chunkRadius;
-   private final int simulationDistance;
-   private final boolean reducedDebugInfo;
-   private final boolean showDeathScreen;
-   private final boolean doLimitedCrafting;
-   private final CommonPlayerSpawnInfo commonPlayerSpawnInfo;
-   private final boolean enforcesSecureChat;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLoginPacket> STREAM_CODEC = Packet.codec(
-      ClientboundLoginPacket::write, ClientboundLoginPacket::new
-   );
+public record ClientboundLoginPacket(int playerId, boolean hardcore, Set<ResourceKey<Level>> levels, int maxPlayers, int chunkRadius, int simulationDistance, boolean reducedDebugInfo, boolean showDeathScreen, boolean doLimitedCrafting, CommonPlayerSpawnInfo commonPlayerSpawnInfo, boolean enforcesSecureChat) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLoginPacket> STREAM_CODEC = Packet.codec(ClientboundLoginPacket::write, ClientboundLoginPacket::new);
 
    private ClientboundLoginPacket(RegistryFriendlyByteBuf var1) {
-      this(
-         var1.readInt(),
-         var1.readBoolean(),
-         var1.readCollection(Sets::newHashSetWithExpectedSize, var0 -> var0.readResourceKey(Registries.DIMENSION)),
-         var1.readVarInt(),
-         var1.readVarInt(),
-         var1.readVarInt(),
-         var1.readBoolean(),
-         var1.readBoolean(),
-         var1.readBoolean(),
-         new CommonPlayerSpawnInfo(var1),
-         var1.readBoolean()
-      );
+      this(var1.readInt(), var1.readBoolean(), (Set)var1.readCollection(Sets::newHashSetWithExpectedSize, (var0) -> {
+         return var0.readResourceKey(Registries.DIMENSION);
+      }), var1.readVarInt(), var1.readVarInt(), var1.readVarInt(), var1.readBoolean(), var1.readBoolean(), var1.readBoolean(), new CommonPlayerSpawnInfo(var1), var1.readBoolean());
    }
 
-   public ClientboundLoginPacket(
-      int var1,
-      boolean var2,
-      Set<ResourceKey<Level>> var3,
-      int var4,
-      int var5,
-      int var6,
-      boolean var7,
-      boolean var8,
-      boolean var9,
-      CommonPlayerSpawnInfo var10,
-      boolean var11
-   ) {
+   public ClientboundLoginPacket(int var1, boolean var2, Set<ResourceKey<Level>> var3, int var4, int var5, int var6, boolean var7, boolean var8, boolean var9, CommonPlayerSpawnInfo var10, boolean var11) {
       super();
       this.playerId = var1;
       this.hardcore = var2;
@@ -86,12 +49,55 @@ public record ClientboundLoginPacket(
       var1.writeBoolean(this.enforcesSecureChat);
    }
 
-   @Override
    public PacketType<ClientboundLoginPacket> type() {
       return GamePacketTypes.CLIENTBOUND_LOGIN;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleLogin(this);
+   }
+
+   public int playerId() {
+      return this.playerId;
+   }
+
+   public boolean hardcore() {
+      return this.hardcore;
+   }
+
+   public Set<ResourceKey<Level>> levels() {
+      return this.levels;
+   }
+
+   public int maxPlayers() {
+      return this.maxPlayers;
+   }
+
+   public int chunkRadius() {
+      return this.chunkRadius;
+   }
+
+   public int simulationDistance() {
+      return this.simulationDistance;
+   }
+
+   public boolean reducedDebugInfo() {
+      return this.reducedDebugInfo;
+   }
+
+   public boolean showDeathScreen() {
+      return this.showDeathScreen;
+   }
+
+   public boolean doLimitedCrafting() {
+      return this.doLimitedCrafting;
+   }
+
+   public CommonPlayerSpawnInfo commonPlayerSpawnInfo() {
+      return this.commonPlayerSpawnInfo;
+   }
+
+   public boolean enforcesSecureChat() {
+      return this.enforcesSecureChat;
    }
 }

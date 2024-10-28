@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -10,13 +10,13 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class GravityProcessor extends StructureProcessor {
-   public static final Codec<GravityProcessor> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter(var0x -> var0x.heightmap),
-               Codec.INT.fieldOf("offset").orElse(0).forGetter(var0x -> var0x.offset)
-            )
-            .apply(var0, GravityProcessor::new)
-   );
+   public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((var0x) -> {
+         return var0x.heightmap;
+      }), Codec.INT.fieldOf("offset").orElse(0).forGetter((var0x) -> {
+         return var0x.offset;
+      })).apply(var0, GravityProcessor::new);
+   });
    private final Heightmap.Types heightmap;
    private final int offset;
 
@@ -27,15 +27,7 @@ public class GravityProcessor extends StructureProcessor {
    }
 
    @Nullable
-   @Override
-   public StructureTemplate.StructureBlockInfo processBlock(
-      LevelReader var1,
-      BlockPos var2,
-      BlockPos var3,
-      StructureTemplate.StructureBlockInfo var4,
-      StructureTemplate.StructureBlockInfo var5,
-      StructurePlaceSettings var6
-   ) {
+   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
       Heightmap.Types var7;
       if (var1 instanceof ServerLevel) {
          if (this.heightmap == Heightmap.Types.WORLD_SURFACE_WG) {
@@ -55,7 +47,6 @@ public class GravityProcessor extends StructureProcessor {
       return new StructureTemplate.StructureBlockInfo(new BlockPos(var8.getX(), var9 + var10, var8.getZ()), var5.state(), var5.nbt());
    }
 
-   @Override
    protected StructureProcessorType<?> getType() {
       return StructureProcessorType.GRAVITY;
    }

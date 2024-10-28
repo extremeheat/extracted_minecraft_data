@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundContainerButtonClickPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundContainerButtonClickPacket> STREAM_CODEC = Packet.codec(
-      ServerboundContainerButtonClickPacket::write, ServerboundContainerButtonClickPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundContainerButtonClickPacket> STREAM_CODEC = Packet.codec(ServerboundContainerButtonClickPacket::write, ServerboundContainerButtonClickPacket::new);
    private final int containerId;
    private final int buttonId;
 
@@ -29,7 +27,6 @@ public class ServerboundContainerButtonClickPacket implements Packet<ServerGameP
       var1.writeByte(this.buttonId);
    }
 
-   @Override
    public PacketType<ServerboundContainerButtonClickPacket> type() {
       return GamePacketTypes.SERVERBOUND_CONTAINER_BUTTON_CLICK;
    }

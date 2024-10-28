@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -13,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class NetherrackBlock extends Block implements BonemealableBlock {
    public static final MapCodec<NetherrackBlock> CODEC = simpleCodec(NetherrackBlock::new);
 
-   @Override
    public MapCodec<NetherrackBlock> codec() {
       return CODEC;
    }
@@ -22,32 +22,36 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       super(var1);
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       if (!var1.getBlockState(var2.above()).propagatesSkylightDown(var1, var2)) {
          return false;
       } else {
-         for(BlockPos var5 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
-            if (var1.getBlockState(var5).is(BlockTags.NYLIUM)) {
-               return true;
-            }
-         }
+         Iterator var4 = BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1)).iterator();
 
-         return false;
+         BlockPos var5;
+         do {
+            if (!var4.hasNext()) {
+               return false;
+            }
+
+            var5 = (BlockPos)var4.next();
+         } while(!var1.getBlockState(var5).is(BlockTags.NYLIUM));
+
+         return true;
       }
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       boolean var5 = false;
       boolean var6 = false;
+      Iterator var7 = BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1)).iterator();
 
-      for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1))) {
+      while(var7.hasNext()) {
+         BlockPos var8 = (BlockPos)var7.next();
          BlockState var9 = var1.getBlockState(var8);
          if (var9.is(Blocks.WARPED_NYLIUM)) {
             var6 = true;
@@ -69,9 +73,9 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       } else if (var5) {
          var1.setBlock(var3, Blocks.CRIMSON_NYLIUM.defaultBlockState(), 3);
       }
+
    }
 
-   @Override
    public BonemealableBlock.Type getType() {
       return BonemealableBlock.Type.NEIGHBOR_SPREADER;
    }

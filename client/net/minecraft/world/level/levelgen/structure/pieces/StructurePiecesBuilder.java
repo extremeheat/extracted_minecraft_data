@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.pieces;
 
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
@@ -15,24 +16,28 @@ public class StructurePiecesBuilder implements StructurePieceAccessor {
       super();
    }
 
-   @Override
    public void addPiece(StructurePiece var1) {
       this.pieces.add(var1);
    }
 
    @Nullable
-   @Override
    public StructurePiece findCollisionPiece(BoundingBox var1) {
       return StructurePiece.findCollisionPiece(this.pieces, var1);
    }
 
+   /** @deprecated */
    @Deprecated
    public void offsetPiecesVertically(int var1) {
-      for(StructurePiece var3 : this.pieces) {
+      Iterator var2 = this.pieces.iterator();
+
+      while(var2.hasNext()) {
+         StructurePiece var3 = (StructurePiece)var2.next();
          var3.move(0, var1, 0);
       }
+
    }
 
+   /** @deprecated */
    @Deprecated
    public int moveBelowSeaLevel(int var1, int var2, RandomSource var3, int var4) {
       int var5 = var1 - var4;

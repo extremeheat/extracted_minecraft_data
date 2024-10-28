@@ -6,16 +6,14 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class IoSummary<T> {
-   private final IoSummary.CountAndSize totalCountAndSize;
-   private final List<Pair<T, IoSummary.CountAndSize>> largestSizeContributors;
+   private final CountAndSize totalCountAndSize;
+   private final List<Pair<T, CountAndSize>> largestSizeContributors;
    private final Duration recordingDuration;
 
-   public IoSummary(Duration var1, List<Pair<T, IoSummary.CountAndSize>> var2) {
+   public IoSummary(Duration var1, List<Pair<T, CountAndSize>> var2) {
       super();
       this.recordingDuration = var1;
-      this.totalCountAndSize = (IoSummary.CountAndSize)var2.stream()
-         .map(Pair::getSecond)
-         .reduce((T)(new IoSummary.CountAndSize(0L, 0L)), IoSummary.CountAndSize::add);
+      this.totalCountAndSize = (CountAndSize)var2.stream().map(Pair::getSecond).reduce(new CountAndSize(0L, 0L), CountAndSize::add);
       this.largestSizeContributors = var2.stream().sorted(Comparator.comparing(Pair::getSecond, IoSummary.CountAndSize.SIZE_THEN_COUNT)).limit(10L).toList();
    }
 
@@ -35,16 +33,14 @@ public final class IoSummary<T> {
       return this.totalCountAndSize.totalSize;
    }
 
-   public List<Pair<T, IoSummary.CountAndSize>> largestSizeContributors() {
+   public List<Pair<T, CountAndSize>> largestSizeContributors() {
       return this.largestSizeContributors;
    }
 
-   public static record CountAndSize(long a, long b) {
+   public static record CountAndSize(long totalCount, long totalSize) {
       final long totalCount;
       final long totalSize;
-      static final Comparator<IoSummary.CountAndSize> SIZE_THEN_COUNT = Comparator.comparing(IoSummary.CountAndSize::totalSize)
-         .thenComparing(IoSummary.CountAndSize::totalCount)
-         .reversed();
+      static final Comparator<CountAndSize> SIZE_THEN_COUNT = Comparator.comparing(CountAndSize::totalSize).thenComparing(CountAndSize::totalCount).reversed();
 
       public CountAndSize(long var1, long var3) {
          super();
@@ -52,12 +48,20 @@ public final class IoSummary<T> {
          this.totalSize = var3;
       }
 
-      IoSummary.CountAndSize add(IoSummary.CountAndSize var1) {
-         return new IoSummary.CountAndSize(this.totalCount + var1.totalCount, this.totalSize + var1.totalSize);
+      CountAndSize add(CountAndSize var1) {
+         return new CountAndSize(this.totalCount + var1.totalCount, this.totalSize + var1.totalSize);
       }
 
       public float averageSize() {
          return (float)this.totalSize / (float)this.totalCount;
+      }
+
+      public long totalCount() {
+         return this.totalCount;
+      }
+
+      public long totalSize() {
+         return this.totalSize;
       }
    }
 }

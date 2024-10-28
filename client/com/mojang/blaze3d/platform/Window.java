@@ -19,7 +19,6 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWImage.Buffer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -140,12 +139,13 @@ public final class Window implements AutoCloseable {
       if (var1 != null) {
          var1.close();
       }
+
    }
 
    public void setIcon(PackResources var1, IconSet var2) throws IOException {
       RenderSystem.assertInInitPhase();
       int var3 = GLFW.glfwGetPlatform();
-      switch(var3) {
+      switch (var3) {
          case 393217:
          case 393220:
             List var4 = var2.getStandardIcons(var1);
@@ -155,10 +155,12 @@ public final class Window implements AutoCloseable {
                MemoryStack var6 = MemoryStack.stackPush();
 
                try {
-                  Buffer var7 = GLFWImage.malloc(var4.size(), var6);
+                  GLFWImage.Buffer var7 = GLFWImage.malloc(var4.size(), var6);
 
                   for(int var8 = 0; var8 < var4.size(); ++var8) {
-                     try (NativeImage var9 = NativeImage.read((InputStream)((IoSupplier)var4.get(var8)).get())) {
+                     NativeImage var9 = NativeImage.read((InputStream)((IoSupplier)var4.get(var8)).get());
+
+                     try {
                         ByteBuffer var10 = MemoryUtil.memAlloc(var9.getWidth() * var9.getHeight() * 4);
                         var5.add(var10);
                         var10.asIntBuffer().put(var9.getPixelsRGBA());
@@ -166,10 +168,24 @@ public final class Window implements AutoCloseable {
                         var7.width(var9.getWidth());
                         var7.height(var9.getHeight());
                         var7.pixels(var10);
+                     } catch (Throwable var20) {
+                        if (var9 != null) {
+                           try {
+                              var9.close();
+                           } catch (Throwable var19) {
+                              var20.addSuppressed(var19);
+                           }
+                        }
+
+                        throw var20;
+                     }
+
+                     if (var9 != null) {
+                        var9.close();
                      }
                   }
 
-                  GLFW.glfwSetWindowIcon(this.window, (Buffer)var7.position(0));
+                  GLFW.glfwSetWindowIcon(this.window, (GLFWImage.Buffer)var7.position(0));
                } catch (Throwable var21) {
                   if (var6 != null) {
                      try {
@@ -197,6 +213,7 @@ public final class Window implements AutoCloseable {
          default:
             LOGGER.warn("Not setting icon for unrecognized platform: {}", var3);
       }
+
    }
 
    public void setErrorSection(String var1) {
@@ -211,10 +228,8 @@ public final class Window implements AutoCloseable {
    private static void bootCrash(int var0, long var1) {
       RenderSystem.assertInInitPhase();
       String var3 = "GLFW error " + var0 + ": " + MemoryUtil.memUTF8(var1);
-      TinyFileDialogs.tinyfd_messageBox(
-         "Minecraft", var3 + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false
-      );
-      throw new Window.WindowInitFailed(var3);
+      TinyFileDialogs.tinyfd_messageBox("Minecraft", var3 + ".\n\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).", "ok", "error", false);
+      throw new WindowInitFailed(var3);
    }
 
    public void defaultErrorCallback(int var1, long var2) {
@@ -230,6 +245,7 @@ public final class Window implements AutoCloseable {
       if (var1 != null) {
          var1.free();
       }
+
    }
 
    public void updateVsync(boolean var1) {
@@ -238,7 +254,6 @@ public final class Window implements AutoCloseable {
       GLFW.glfwSwapInterval(var1 ? 1 : 0);
    }
 
-   @Override
    public void close() {
       RenderSystem.assertOnRenderThread();
       Callbacks.glfwFreeCallbacks(this.window);
@@ -262,6 +277,7 @@ public final class Window implements AutoCloseable {
             if (this.getWidth() != var5 || this.getHeight() != var6) {
                this.eventHandler.resizeDisplay();
             }
+
          }
       }
    }
@@ -284,12 +300,14 @@ public final class Window implements AutoCloseable {
       if (var1 == this.window) {
          this.eventHandler.setWindowActive(var3);
       }
+
    }
 
    private void onEnter(long var1, boolean var3) {
       if (var3) {
          this.eventHandler.cursorEntered();
       }
+
    }
 
    public void setFramerateLimit(int var1) {
@@ -306,6 +324,7 @@ public final class Window implements AutoCloseable {
          this.actuallyFullscreen = this.fullscreen;
          this.updateFullscreen(this.vsync);
       }
+
    }
 
    public Optional<VideoMode> getPreferredFullscreenVideoMode() {
@@ -318,6 +337,7 @@ public final class Window implements AutoCloseable {
       if (var2) {
          this.dirty = true;
       }
+
    }
 
    public void changeFullscreenVideoMode() {
@@ -326,6 +346,7 @@ public final class Window implements AutoCloseable {
          this.setMode();
          this.eventHandler.resizeDisplay();
       }
+
    }
 
    private void setMode() {
@@ -365,6 +386,7 @@ public final class Window implements AutoCloseable {
          this.height = this.windowedHeight;
          GLFW.glfwSetWindowMonitor(this.window, 0L, this.x, this.y, this.width, this.height, -1);
       }
+
    }
 
    public void toggleFullScreen() {
@@ -389,19 +411,12 @@ public final class Window implements AutoCloseable {
       } catch (Exception var3) {
          LOGGER.error("Couldn't toggle fullscreen", var3);
       }
+
    }
 
    public int calculateScale(int var1, boolean var2) {
-      int var3 = 1;
-
-      while(
-         var3 != var1
-            && var3 < this.framebufferWidth
-            && var3 < this.framebufferHeight
-            && this.framebufferWidth / (var3 + 1) >= 320
-            && this.framebufferHeight / (var3 + 1) >= 240
-      ) {
-         ++var3;
+      int var3;
+      for(var3 = 1; var3 != var1 && var3 < this.framebufferWidth && var3 < this.framebufferHeight && this.framebufferWidth / (var3 + 1) >= 320 && this.framebufferHeight / (var3 + 1) >= 240; ++var3) {
       }
 
       if (var2 && var3 % 2 != 0) {

@@ -15,20 +15,17 @@ public class WitherArmorLayer extends EnergySwirlLayer<WitherBoss, WitherBossMod
 
    public WitherArmorLayer(RenderLayerParent<WitherBoss, WitherBossModel<WitherBoss>> var1, EntityModelSet var2) {
       super(var1);
-      this.model = new WitherBossModel<>(var2.bakeLayer(ModelLayers.WITHER_ARMOR));
+      this.model = new WitherBossModel(var2.bakeLayer(ModelLayers.WITHER_ARMOR));
    }
 
-   @Override
    protected float xOffset(float var1) {
       return Mth.cos(var1 * 0.02F) * 3.0F;
    }
 
-   @Override
    protected ResourceLocation getTextureLocation() {
       return WITHER_ARMOR_LOCATION;
    }
 
-   @Override
    protected EntityModel<WitherBoss> model() {
       return this.model;
    }

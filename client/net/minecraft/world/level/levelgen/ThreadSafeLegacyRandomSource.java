@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen;
 import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.util.RandomSource;
 
+/** @deprecated */
 @Deprecated
 public class ThreadSafeLegacyRandomSource implements BitRandomSource {
    private static final int MODULUS_BITS = 48;
@@ -17,22 +18,18 @@ public class ThreadSafeLegacyRandomSource implements BitRandomSource {
       this.setSeed(var1);
    }
 
-   @Override
    public RandomSource fork() {
       return new ThreadSafeLegacyRandomSource(this.nextLong());
    }
 
-   @Override
    public PositionalRandomFactory forkPositional() {
       return new LegacyRandomSource.LegacyPositionalRandomFactory(this.nextLong());
    }
 
-   @Override
    public void setSeed(long var1) {
       this.seed.set((var1 ^ 25214903917L) & 281474976710655L);
    }
 
-   @Override
    public int next(int var1) {
       long var2;
       long var4;
@@ -44,7 +41,6 @@ public class ThreadSafeLegacyRandomSource implements BitRandomSource {
       return (int)(var4 >>> 48 - var1);
    }
 
-   @Override
    public double nextGaussian() {
       return this.gaussianSource.nextGaussian();
    }

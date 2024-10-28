@@ -19,7 +19,6 @@ public class RealmsLabel implements Renderable {
       this.color = var4;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       var1.drawCenteredString(Minecraft.getInstance().font, this.text, this.x, this.y, this.color);
    }

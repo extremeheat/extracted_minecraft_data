@@ -7,9 +7,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
@@ -21,7 +23,7 @@ import org.slf4j.Logger;
 
 public class CrashReport {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
+   private static final DateTimeFormatter DATE_TIME_FORMATTER;
    private final String title;
    private final Throwable exception;
    private final List<CrashReportCategory> details = Lists.newArrayList();
@@ -53,15 +55,18 @@ public class CrashReport {
 
    public void getDetails(StringBuilder var1) {
       if ((this.uncategorizedStackTrace == null || this.uncategorizedStackTrace.length <= 0) && !this.details.isEmpty()) {
-         this.uncategorizedStackTrace = (StackTraceElement[])ArrayUtils.subarray(this.details.get(0).getStacktrace(), 0, 1);
+         this.uncategorizedStackTrace = (StackTraceElement[])ArrayUtils.subarray(((CrashReportCategory)this.details.get(0)).getStacktrace(), 0, 1);
       }
 
       if (this.uncategorizedStackTrace != null && this.uncategorizedStackTrace.length > 0) {
          var1.append("-- Head --\n");
          var1.append("Thread: ").append(Thread.currentThread().getName()).append("\n");
          var1.append("Stacktrace:\n");
+         StackTraceElement[] var2 = this.uncategorizedStackTrace;
+         int var3 = var2.length;
 
-         for(StackTraceElement var5 : this.uncategorizedStackTrace) {
+         for(int var4 = 0; var4 < var3; ++var4) {
+            StackTraceElement var5 = var2[var4];
             var1.append("\t").append("at ").append(var5);
             var1.append("\n");
          }
@@ -69,7 +74,10 @@ public class CrashReport {
          var1.append("\n");
       }
 
-      for(CrashReportCategory var7 : this.details) {
+      Iterator var6 = this.details.iterator();
+
+      while(var6.hasNext()) {
+         CrashReportCategory var7 = (CrashReportCategory)var6.next();
          var7.getDetails(var1);
          var1.append("\n\n");
       }
@@ -81,7 +89,7 @@ public class CrashReport {
       StringWriter var1 = null;
       PrintWriter var2 = null;
       Object var3 = this.exception;
-      if (var3.getMessage() == null) {
+      if (((Throwable)var3).getMessage() == null) {
          if (var3 instanceof NullPointerException) {
             var3 = new NullPointerException(this.title);
          } else if (var3 instanceof StackOverflowError) {
@@ -90,14 +98,14 @@ public class CrashReport {
             var3 = new OutOfMemoryError(this.title);
          }
 
-         var3.setStackTrace(this.exception.getStackTrace());
+         ((Throwable)var3).setStackTrace(this.exception.getStackTrace());
       }
 
       String var4;
       try {
          var1 = new StringWriter();
          var2 = new PrintWriter(var1);
-         var3.printStackTrace(var2);
+         ((Throwable)var3).printStackTrace(var2);
          var4 = var1.toString();
       } finally {
          IOUtils.closeQuietly(var1);
@@ -149,9 +157,10 @@ public class CrashReport {
          boolean var4;
          try {
             var2 = new OutputStreamWriter(new FileOutputStream(var1), StandardCharsets.UTF_8);
-            var2.write(this.getFriendlyReport());
+            ((Writer)var2).write(this.getFriendlyReport());
             this.saveFile = var1;
-            return true;
+            boolean var3 = true;
+            return var3;
          } catch (Throwable var8) {
             LOGGER.error("Could not save crash report to {}", var1, var8);
             var4 = false;
@@ -204,42 +213,7 @@ public class CrashReport {
    }
 
    private static String getErrorComment() {
-      String[] var0 = new String[]{
-         "Who set us up the TNT?",
-         "Everything's going to plan. No, really, that was supposed to happen.",
-         "Uh... Did I do that?",
-         "Oops.",
-         "Why did you do that?",
-         "I feel sad now :(",
-         "My bad.",
-         "I'm sorry, Dave.",
-         "I let you down. Sorry :(",
-         "On the bright side, I bought you a teddy bear!",
-         "Daisy, daisy...",
-         "Oh - I know what I did wrong!",
-         "Hey, that tickles! Hehehe!",
-         "I blame Dinnerbone.",
-         "You should try our sister game, Minceraft!",
-         "Don't be sad. I'll do better next time, I promise!",
-         "Don't be sad, have a hug! <3",
-         "I just don't know what went wrong :(",
-         "Shall we play a game?",
-         "Quite honestly, I wouldn't worry myself about that.",
-         "I bet Cylons wouldn't have this problem.",
-         "Sorry :(",
-         "Surprise! Haha. Well, this is awkward.",
-         "Would you like a cupcake?",
-         "Hi. I'm Minecraft, and I'm a crashaholic.",
-         "Ooh. Shiny.",
-         "This doesn't make any sense!",
-         "Why is it breaking :(",
-         "Don't do that.",
-         "Ouch. That hurt :(",
-         "You're mean.",
-         "This is a token for 1 free hug. Redeem at your nearest Mojangsta: [~~HUG~~]",
-         "There are four lights!",
-         "But it works on my machine."
-      };
+      String[] var0 = new String[]{"Who set us up the TNT?", "Everything's going to plan. No, really, that was supposed to happen.", "Uh... Did I do that?", "Oops.", "Why did you do that?", "I feel sad now :(", "My bad.", "I'm sorry, Dave.", "I let you down. Sorry :(", "On the bright side, I bought you a teddy bear!", "Daisy, daisy...", "Oh - I know what I did wrong!", "Hey, that tickles! Hehehe!", "I blame Dinnerbone.", "You should try our sister game, Minceraft!", "Don't be sad. I'll do better next time, I promise!", "Don't be sad, have a hug! <3", "I just don't know what went wrong :(", "Shall we play a game?", "Quite honestly, I wouldn't worry myself about that.", "I bet Cylons wouldn't have this problem.", "Sorry :(", "Surprise! Haha. Well, this is awkward.", "Would you like a cupcake?", "Hi. I'm Minecraft, and I'm a crashaholic.", "Ooh. Shiny.", "This doesn't make any sense!", "Why is it breaking :(", "Don't do that.", "Ouch. That hurt :(", "You're mean.", "This is a token for 1 free hug. Redeem at your nearest Mojangsta: [~~HUG~~]", "There are four lights!", "But it works on my machine."};
 
       try {
          return var0[(int)(Util.getNanos() % (long)var0.length)];
@@ -248,8 +222,6 @@ public class CrashReport {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static CrashReport forThrowable(Throwable var0, String var1) {
       while(var0 instanceof CompletionException && var0.getCause() != null) {
          var0 = var0.getCause();
@@ -267,6 +239,10 @@ public class CrashReport {
 
    public static void preload() {
       MemoryReserve.allocate();
-      new CrashReport("Don't panic!", new Throwable()).getFriendlyReport();
+      (new CrashReport("Don't panic!", new Throwable())).getFriendlyReport();
+   }
+
+   static {
+      DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
    }
 }

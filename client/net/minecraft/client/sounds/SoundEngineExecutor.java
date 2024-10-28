@@ -19,28 +19,27 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
       return var1;
    }
 
-   @Override
    protected Runnable wrapRunnable(Runnable var1) {
       return var1;
    }
 
-   @Override
    protected boolean shouldRun(Runnable var1) {
       return !this.shutdown;
    }
 
-   @Override
    protected Thread getRunningThread() {
       return this.thread;
    }
 
    private void run() {
       while(!this.shutdown) {
-         this.managedBlock(() -> this.shutdown);
+         this.managedBlock(() -> {
+            return this.shutdown;
+         });
       }
+
    }
 
-   @Override
    protected void waitForTasks() {
       LockSupport.park("waiting for tasks");
    }

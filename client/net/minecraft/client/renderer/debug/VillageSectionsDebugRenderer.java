@@ -15,7 +15,6 @@ public class VillageSectionsDebugRenderer implements DebugRenderer.SimpleDebugRe
       super();
    }
 
-   @Override
    public void clear() {
       this.villageSections.clear();
    }
@@ -28,13 +27,13 @@ public class VillageSectionsDebugRenderer implements DebugRenderer.SimpleDebugRe
       this.villageSections.remove(var1);
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       BlockPos var9 = BlockPos.containing(var3, var5, var7);
-      this.villageSections.forEach(var3x -> {
+      this.villageSections.forEach((var3x) -> {
          if (var9.closerThan(var3x.center(), 60.0)) {
             highlightVillageSection(var1, var2, var3x);
          }
+
       });
    }
 

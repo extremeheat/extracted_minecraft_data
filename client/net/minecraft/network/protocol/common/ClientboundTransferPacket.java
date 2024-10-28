@@ -5,12 +5,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundTransferPacket(String b, int c) implements Packet<ClientCommonPacketListener> {
-   private final String host;
-   private final int port;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTransferPacket> STREAM_CODEC = Packet.codec(
-      ClientboundTransferPacket::write, ClientboundTransferPacket::new
-   );
+public record ClientboundTransferPacket(String host, int port) implements Packet<ClientCommonPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundTransferPacket> STREAM_CODEC = Packet.codec(ClientboundTransferPacket::write, ClientboundTransferPacket::new);
 
    private ClientboundTransferPacket(FriendlyByteBuf var1) {
       this(var1.readUtf(), var1.readVarInt());
@@ -27,12 +23,19 @@ public record ClientboundTransferPacket(String b, int c) implements Packet<Clien
       var1.writeVarInt(this.port);
    }
 
-   @Override
    public PacketType<ClientboundTransferPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_TRANSFER;
    }
 
    public void handle(ClientCommonPacketListener var1) {
       var1.handleTransfer(this);
+   }
+
+   public String host() {
+      return this.host;
+   }
+
+   public int port() {
+      return this.port;
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.world.entity.vehicle;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,42 +27,34 @@ public class MinecartChest extends AbstractMinecartContainer {
       super(EntityType.CHEST_MINECART, var2, var4, var6, var1);
    }
 
-   @Override
    protected Item getDropItem() {
       return Items.CHEST_MINECART;
    }
 
-   @Override
    public int getContainerSize() {
       return 27;
    }
 
-   @Override
    public AbstractMinecart.Type getMinecartType() {
       return AbstractMinecart.Type.CHEST;
    }
 
-   @Override
    public BlockState getDefaultDisplayBlockState() {
-      return Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH);
+      return (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH);
    }
 
-   @Override
    public int getDefaultDisplayOffset() {
       return 8;
    }
 
-   @Override
    public AbstractContainerMenu createMenu(int var1, Inventory var2) {
       return ChestMenu.threeRows(var1, var2, this);
    }
 
-   @Override
    public void stopOpen(Player var1) {
-      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(var1));
+      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1));
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       InteractionResult var3 = this.interactWithContainerVehicle(var1);
       if (var3.consumesAction()) {

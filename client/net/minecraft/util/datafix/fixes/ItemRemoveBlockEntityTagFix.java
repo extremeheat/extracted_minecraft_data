@@ -26,7 +26,7 @@ public class ItemRemoveBlockEntityTagFix extends DataFix {
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
       OpticFinder var4 = var3.type().findField("BlockEntityTag");
-      return this.fixTypeEverywhereTyped("ItemRemoveBlockEntityTagFix", var1, var4x -> {
+      return this.fixTypeEverywhereTyped("ItemRemoveBlockEntityTagFix", var1, (var4x) -> {
          Optional var5 = var4x.getOptional(var2);
          if (var5.isPresent() && this.items.contains(((Pair)var5.get()).getSecond())) {
             Optional var6 = var4x.getOptionalTyped(var3);

@@ -25,50 +25,40 @@ public class EnderDragonPart extends Entity {
       this.name = var2;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
    }
 
-   @Override
    public boolean isPickable() {
       return true;
    }
 
    @Nullable
-   @Override
    public ItemStack getPickResult() {
       return this.parentMob.getPickResult();
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       return this.isInvulnerableTo(var1) ? false : this.parentMob.hurt(this, var1, var2);
    }
 
-   @Override
    public boolean is(Entity var1) {
       return this == var1 || this.parentMob == var1;
    }
 
-   @Override
    public Packet<ClientGamePacketListener> getAddEntityPacket() {
       throw new UnsupportedOperationException();
    }
 
-   @Override
    public EntityDimensions getDimensions(Pose var1) {
       return this.size;
    }
 
-   @Override
    public boolean shouldBeSaved() {
       return false;
    }

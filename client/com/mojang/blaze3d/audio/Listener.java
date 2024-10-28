@@ -5,10 +5,11 @@ import org.lwjgl.openal.AL10;
 
 public class Listener {
    private float gain = 1.0F;
-   private ListenerTransform transform = ListenerTransform.INITIAL;
+   private ListenerTransform transform;
 
    public Listener() {
       super();
+      this.transform = ListenerTransform.INITIAL;
    }
 
    public void setTransform(ListenerTransform var1) {

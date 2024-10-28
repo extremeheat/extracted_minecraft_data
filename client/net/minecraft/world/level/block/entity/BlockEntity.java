@@ -1,13 +1,20 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import java.util.HashSet;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
@@ -25,9 +32,11 @@ public abstract class BlockEntity {
    protected final BlockPos worldPosition;
    protected boolean remove;
    private BlockState blockState;
+   private DataComponentMap components;
 
    public BlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
       super();
+      this.components = DataComponentMap.EMPTY;
       this.type = var1;
       this.worldPosition = var2.immutable();
       this.blockState = var3;
@@ -50,7 +59,20 @@ public abstract class BlockEntity {
       return this.level != null;
    }
 
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+   }
+
+   public final void loadWithComponents(CompoundTag var1, HolderLookup.Provider var2) {
+      this.loadAdditional(var1, var2);
+      BlockEntity.ComponentHelper.COMPONENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> {
+         LOGGER.warn("Failed to load components: {}", var0);
+      }).ifPresent((var1x) -> {
+         this.components = var1x;
+      });
+   }
+
+   public final void loadCustomOnly(CompoundTag var1, HolderLookup.Provider var2) {
+      this.loadAdditional(var1, var2);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -71,13 +93,30 @@ public abstract class BlockEntity {
    public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
       this.saveAdditional(var2, var1);
+      BlockEntity.ComponentHelper.COMPONENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.components).resultOrPartial((var0) -> {
+         LOGGER.warn("Failed to save components: {}", var0);
+      }).ifPresent((var1x) -> {
+         var2.merge((CompoundTag)var1x);
+      });
+      return var2;
+   }
+
+   public final CompoundTag saveCustomOnly(HolderLookup.Provider var1) {
+      CompoundTag var2 = new CompoundTag();
+      this.saveAdditional(var2, var1);
+      return var2;
+   }
+
+   public final CompoundTag saveCustomAndMetadata(HolderLookup.Provider var1) {
+      CompoundTag var2 = this.saveCustomOnly(var1);
+      this.saveMetadata(var2);
       return var2;
    }
 
    private void saveId(CompoundTag var1) {
       ResourceLocation var2 = BlockEntityType.getKey(this.getType());
       if (var2 == null) {
-         throw new RuntimeException(this.getClass() + " is missing a mapping! This is a bug!");
+         throw new RuntimeException(String.valueOf(this.getClass()) + " is missing a mapping! This is a bug!");
       } else {
          var1.putString("id", var2.toString());
       }
@@ -88,7 +127,7 @@ public abstract class BlockEntity {
    }
 
    public void saveToItem(ItemStack var1, HolderLookup.Provider var2) {
-      CompoundTag var3 = this.saveWithoutMetadata(var2);
+      CompoundTag var3 = this.saveCustomOnly(var2);
       this.removeComponentsFromTag(var3);
       BlockItem.setBlockEntityData(var1, this.getType(), var3);
       var1.applyComponents(this.collectComponents());
@@ -109,19 +148,19 @@ public abstract class BlockEntity {
          LOGGER.error("Block entity has invalid type: {}", var4);
          return null;
       } else {
-         return BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(var5).map(var3x -> {
+         return (BlockEntity)BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(var5).map((var3x) -> {
             try {
                return var3x.create(var0, var1);
-            } catch (Throwable var5xx) {
-               LOGGER.error("Failed to create block entity {}", var4, var5xx);
+            } catch (Throwable var5) {
+               LOGGER.error("Failed to create block entity {}", var4, var5);
                return null;
             }
-         }).map(var3x -> {
+         }).map((var3x) -> {
             try {
-               var3x.load(var2, var3);
+               var3x.loadWithComponents(var2, var3);
                return var3x;
-            } catch (Throwable var5xx) {
-               LOGGER.error("Failed to load data for block entity {}", var4, var5xx);
+            } catch (Throwable var5) {
+               LOGGER.error("Failed to load data for block entity {}", var4, var5);
                return null;
             }
          }).orElseGet(() -> {
@@ -135,6 +174,7 @@ public abstract class BlockEntity {
       if (this.level != null) {
          setChanged(this.level, this.worldPosition, this.blockState);
       }
+
    }
 
    protected static void setChanged(Level var0, BlockPos var1, BlockState var2) {
@@ -142,6 +182,7 @@ public abstract class BlockEntity {
       if (!var2.isAir()) {
          var0.updateNeighbourForOutputSignal(var1, var2.getBlock());
       }
+
    }
 
    public BlockPos getBlockPos() {
@@ -178,7 +219,10 @@ public abstract class BlockEntity {
    }
 
    public void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Name", () -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()) + " // " + this.getClass().getCanonicalName());
+      var1.setDetail("Name", () -> {
+         String var10000 = String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()));
+         return var10000 + " // " + this.getClass().getCanonicalName();
+      });
       if (this.level != null) {
          CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.getBlockState());
          CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.level.getBlockState(this.worldPosition));
@@ -193,24 +237,78 @@ public abstract class BlockEntity {
       return this.type;
    }
 
+   /** @deprecated */
    @Deprecated
    public void setBlockState(BlockState var1) {
       this.blockState = var1;
    }
 
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(DataComponentInput var1) {
    }
 
-   public void collectComponents(DataComponentMap.Builder var1) {
+   public final void applyComponentsFromItemStack(ItemStack var1) {
+      this.applyComponents(var1.getPrototype(), var1.getComponentsPatch());
    }
 
+   public final void applyComponents(DataComponentMap var1, DataComponentPatch var2) {
+      final HashSet var3 = new HashSet();
+      final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
+      this.applyImplicitComponents(new DataComponentInput(this) {
+         @Nullable
+         public <T> T get(DataComponentType<T> var1) {
+            var3.add(var1);
+            return var4.get(var1);
+         }
+
+         public <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
+            var3.add(var1);
+            return var4.getOrDefault(var1, var2);
+         }
+      });
+      Objects.requireNonNull(var3);
+      DataComponentPatch var5 = var2.forget(var3::contains);
+      this.components = var5.split().added();
+   }
+
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+   }
+
+   /** @deprecated */
    @Deprecated
    public void removeComponentsFromTag(CompoundTag var1) {
    }
 
    public final DataComponentMap collectComponents() {
       DataComponentMap.Builder var1 = DataComponentMap.builder();
-      this.collectComponents(var1);
+      var1.addAll(this.components);
+      this.collectImplicitComponents(var1);
       return var1.build();
+   }
+
+   public DataComponentMap components() {
+      return this.components;
+   }
+
+   public void setComponents(DataComponentMap var1) {
+      this.components = var1;
+   }
+
+   static class ComponentHelper {
+      public static final Codec<DataComponentMap> COMPONENTS_CODEC;
+
+      private ComponentHelper() {
+         super();
+      }
+
+      static {
+         COMPONENTS_CODEC = DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY).codec();
+      }
+   }
+
+   protected interface DataComponentInput {
+      @Nullable
+      <T> T get(DataComponentType<T> var1);
+
+      <T> T getOrDefault(DataComponentType<? extends T> var1, T var2);
    }
 }

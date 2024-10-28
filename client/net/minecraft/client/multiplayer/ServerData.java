@@ -26,14 +26,16 @@ public class ServerData {
    public int protocol = SharedConstants.getCurrentVersion().getProtocolVersion();
    public Component version = Component.literal(SharedConstants.getCurrentVersion().getName());
    public List<Component> playerList = Collections.emptyList();
-   private ServerData.ServerPackStatus packStatus = ServerData.ServerPackStatus.PROMPT;
+   private ServerPackStatus packStatus;
    @Nullable
    private byte[] iconBytes;
-   private ServerData.Type type;
-   private ServerData.State state = ServerData.State.INITIAL;
+   private Type type;
+   private State state;
 
-   public ServerData(String var1, String var2, ServerData.Type var3) {
+   public ServerData(String var1, String var2, Type var3) {
       super();
+      this.packStatus = ServerData.ServerPackStatus.PROMPT;
+      this.state = ServerData.State.INITIAL;
       this.name = var1;
       this.ip = var2;
       this.type = var3;
@@ -56,11 +58,11 @@ public class ServerData {
       return var1;
    }
 
-   public ServerData.ServerPackStatus getResourcePackStatus() {
+   public ServerPackStatus getResourcePackStatus() {
       return this.packStatus;
    }
 
-   public void setResourcePackStatus(ServerData.ServerPackStatus var1) {
+   public void setResourcePackStatus(ServerPackStatus var1) {
       this.packStatus = var1;
    }
 
@@ -105,7 +107,7 @@ public class ServerData {
       return this.type == ServerData.Type.REALM;
    }
 
-   public ServerData.Type type() {
+   public Type type() {
       return this.type;
    }
 
@@ -121,11 +123,11 @@ public class ServerData {
       this.type = var1.type;
    }
 
-   public ServerData.State state() {
+   public State state() {
       return this.state;
    }
 
-   public void setState(ServerData.State var1) {
+   public void setState(State var1) {
       this.state = var1;
    }
 
@@ -159,6 +161,11 @@ public class ServerData {
       public Component getName() {
          return this.name;
       }
+
+      // $FF: synthetic method
+      private static ServerPackStatus[] $values() {
+         return new ServerPackStatus[]{ENABLED, DISABLED, PROMPT};
+      }
    }
 
    public static enum State {
@@ -170,6 +177,11 @@ public class ServerData {
 
       private State() {
       }
+
+      // $FF: synthetic method
+      private static State[] $values() {
+         return new State[]{INITIAL, PINGING, UNREACHABLE, INCOMPATIBLE, SUCCESSFUL};
+      }
    }
 
    public static enum Type {
@@ -178,6 +190,11 @@ public class ServerData {
       OTHER;
 
       private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{LAN, REALM, OTHER};
       }
    }
 }

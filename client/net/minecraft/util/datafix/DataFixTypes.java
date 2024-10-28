@@ -1,12 +1,13 @@
 package net.minecraft.util.datafix;
 
+import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixer;
-import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.Objects;
 import java.util.Set;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
@@ -34,10 +35,10 @@ public enum DataFixTypes {
    WORLD_GEN_SETTINGS(References.WORLD_GEN_SETTINGS),
    ENTITY_CHUNK(References.ENTITY_CHUNK);
 
-   public static final Set<TypeReference> TYPES_FOR_LEVEL_LIST;
-   private final TypeReference type;
+   public static final Set<DSL.TypeReference> TYPES_FOR_LEVEL_LIST = Set.of(LEVEL.type);
+   private final DSL.TypeReference type;
 
-   private DataFixTypes(TypeReference var3) {
+   private DataFixTypes(DSL.TypeReference var3) {
       this.type = var3;
    }
 
@@ -48,12 +49,15 @@ public enum DataFixTypes {
    public <A> Codec<A> wrapCodec(final Codec<A> var1, final DataFixer var2, final int var3) {
       return new Codec<A>() {
          public <T> DataResult<T> encode(A var1x, DynamicOps<T> var2x, T var3x) {
-            return var1.encode(var1x, var2x, var3x)
-               .flatMap(var1xxx -> var2x.mergeToMap(var1xxx, var2x.createString("DataVersion"), var2x.createInt(DataFixTypes.currentVersion())));
+            return var1.encode(var1x, var2x, var3x).flatMap((var1xx) -> {
+               return var2x.mergeToMap(var1xx, var2x.createString("DataVersion"), var2x.createInt(DataFixTypes.currentVersion()));
+            });
          }
 
          public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> var1x, T var2x) {
-            int var3x = var1x.get(var2x, "DataVersion").flatMap(var1x::getNumberValue).map(Number::intValue).result().orElse(var3);
+            DataResult var10000 = var1x.get(var2x, "DataVersion");
+            Objects.requireNonNull(var1x);
+            int var3x = (Integer)var10000.flatMap(var1x::getNumberValue).map(Number::intValue).result().orElse(var3);
             Dynamic var4 = new Dynamic(var1x, var1x.remove(var2x, "DataVersion"));
             Dynamic var5 = DataFixTypes.this.updateToCurrentVersion(var2, var4, var3x);
             return var1.decode(var5);
@@ -77,7 +81,8 @@ public enum DataFixTypes {
       return this.update(var1, var2, var3, currentVersion());
    }
 
-   static {
-      TYPES_FOR_LEVEL_LIST = Set.of(LEVEL.type);
+   // $FF: synthetic method
+   private static DataFixTypes[] $values() {
+      return new DataFixTypes[]{LEVEL, PLAYER, CHUNK, HOTBAR, OPTIONS, STRUCTURE, STATS, SAVED_DATA_COMMAND_STORAGE, SAVED_DATA_FORCED_CHUNKS, SAVED_DATA_MAP_DATA, SAVED_DATA_MAP_INDEX, SAVED_DATA_RAIDS, SAVED_DATA_RANDOM_SEQUENCES, SAVED_DATA_SCOREBOARD, SAVED_DATA_STRUCTURE_FEATURE_INDICES, ADVANCEMENTS, POI_CHUNK, WORLD_GEN_SETTINGS, ENTITY_CHUNK};
    }
 }

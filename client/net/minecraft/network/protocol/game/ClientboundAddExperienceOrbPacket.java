@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.ExperienceOrb;
 
 public class ClientboundAddExperienceOrbPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundAddExperienceOrbPacket> STREAM_CODEC = Packet.codec(
-      ClientboundAddExperienceOrbPacket::write, ClientboundAddExperienceOrbPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundAddExperienceOrbPacket> STREAM_CODEC = Packet.codec(ClientboundAddExperienceOrbPacket::write, ClientboundAddExperienceOrbPacket::new);
    private final int id;
    private final double x;
    private final double y;
@@ -42,7 +40,6 @@ public class ClientboundAddExperienceOrbPacket implements Packet<ClientGamePacke
       var1.writeShort(this.value);
    }
 
-   @Override
    public PacketType<ClientboundAddExperienceOrbPacket> type() {
       return GamePacketTypes.CLIENTBOUND_ADD_EXPERIENCE_ORB;
    }

@@ -38,13 +38,13 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
 
       Brain var11 = var2.getBrain();
       if (!var5.isEmpty()) {
-         var11.setMemory(MemoryModuleType.SECONDARY_JOB_SITE, var5);
+         var11.setMemory(MemoryModuleType.SECONDARY_JOB_SITE, (Object)var5);
       } else {
          var11.eraseMemory(MemoryModuleType.SECONDARY_JOB_SITE);
       }
+
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of(MemoryModuleType.SECONDARY_JOB_SITE);
    }

@@ -6,14 +6,11 @@ import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DynamicOps;
-import java.util.HashMap;
+import com.mojang.datafixers.types.templates.TaggedChoice;
 import java.util.Map;
 
 public class BlockEntityIdFix extends DataFix {
-   private static final Map<String, String> ID_MAP = (Map<String, String>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+   private static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (var0) -> {
       var0.put("Airportal", "minecraft:end_portal");
       var0.put("Banner", "minecraft:banner");
       var0.put("Beacon", "minecraft:beacon");
@@ -46,11 +43,14 @@ public class BlockEntityIdFix extends DataFix {
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       Type var2 = this.getOutputSchema().getType(References.ITEM_STACK);
-      TaggedChoiceType var3 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
-      TaggedChoiceType var4 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
-      return TypeRewriteRule.seq(
-         this.convertUnchecked("item stack block entity name hook converter", var1, var2),
-         this.fixTypeEverywhere("BlockEntityIdFix", var3, var4, var0 -> var0x -> var0x.mapFirst(var0xx -> ID_MAP.getOrDefault(var0xx, var0xx)))
-      );
+      TaggedChoice.TaggedChoiceType var3 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
+      TaggedChoice.TaggedChoiceType var4 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
+      return TypeRewriteRule.seq(this.convertUnchecked("item stack block entity name hook converter", var1, var2), this.fixTypeEverywhere("BlockEntityIdFix", var3, var4, (var0) -> {
+         return (var0x) -> {
+            return var0x.mapFirst((var0) -> {
+               return (String)ID_MAP.getOrDefault(var0, var0);
+            });
+         };
+      }));
    }
 }

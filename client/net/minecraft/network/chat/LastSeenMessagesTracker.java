@@ -42,6 +42,7 @@ public class LastSeenMessagesTracker {
             break;
          }
       }
+
    }
 
    public int getAndClearOffset() {
@@ -50,7 +51,7 @@ public class LastSeenMessagesTracker {
       return var1;
    }
 
-   public LastSeenMessagesTracker.Update generateAndApplyUpdate() {
+   public Update generateAndApplyUpdate() {
       int var1 = this.getAndClearOffset();
       BitSet var2 = new BitSet(this.trackedMessages.length);
       ObjectArrayList var3 = new ObjectArrayList(this.trackedMessages.length);
@@ -65,23 +66,28 @@ public class LastSeenMessagesTracker {
          }
       }
 
-      LastSeenMessages var7 = new LastSeenMessages(var3);
-      LastSeenMessages.Update var8 = new LastSeenMessages.Update(var1, var2);
-      return new LastSeenMessagesTracker.Update(var7, var8);
+      LastSeenMessages var8 = new LastSeenMessages(var3);
+      LastSeenMessages.Update var7 = new LastSeenMessages.Update(var1, var2);
+      return new Update(var8, var7);
    }
 
    public int offset() {
       return this.offset;
    }
 
-   public static record Update(LastSeenMessages a, LastSeenMessages.Update b) {
-      private final LastSeenMessages lastSeen;
-      private final LastSeenMessages.Update update;
-
+   public static record Update(LastSeenMessages lastSeen, LastSeenMessages.Update update) {
       public Update(LastSeenMessages var1, LastSeenMessages.Update var2) {
          super();
          this.lastSeen = var1;
          this.update = var2;
+      }
+
+      public LastSeenMessages lastSeen() {
+         return this.lastSeen;
+      }
+
+      public LastSeenMessages.Update update() {
+         return this.update;
       }
    }
 }

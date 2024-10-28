@@ -9,6 +9,7 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,39 +35,41 @@ public class MultiVariant implements UnbakedModel {
       return this.variants;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
+      } else if (var1 instanceof MultiVariant) {
+         MultiVariant var2 = (MultiVariant)var1;
+         return this.variants.equals(var2.variants);
       } else {
-         return var1 instanceof MultiVariant var2 ? this.variants.equals(var2.variants) : false;
+         return false;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.variants.hashCode();
    }
 
-   @Override
    public Collection<ResourceLocation> getDependencies() {
-      return this.getVariants().stream().map(Variant::getModelLocation).collect(Collectors.toSet());
+      return (Collection)this.getVariants().stream().map(Variant::getModelLocation).collect(Collectors.toSet());
    }
 
-   @Override
    public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
-      this.getVariants().stream().map(Variant::getModelLocation).distinct().forEach(var1x -> ((UnbakedModel)var1.apply(var1x)).resolveParents(var1));
+      this.getVariants().stream().map(Variant::getModelLocation).distinct().forEach((var1x) -> {
+         ((UnbakedModel)var1.apply(var1x)).resolveParents(var1);
+      });
    }
 
    @Nullable
-   @Override
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
       if (this.getVariants().isEmpty()) {
          return null;
       } else {
          WeightedBakedModel.Builder var5 = new WeightedBakedModel.Builder();
+         Iterator var6 = this.getVariants().iterator();
 
-         for(Variant var7 : this.getVariants()) {
+         while(var6.hasNext()) {
+            Variant var7 = (Variant)var6.next();
             BakedModel var8 = var1.bake(var7.getModelLocation(), var7);
             var5.add(var8, var7.getWeight());
          }
@@ -88,7 +91,10 @@ public class MultiVariant implements UnbakedModel {
                throw new JsonParseException("Empty variant array");
             }
 
-            for(JsonElement var7 : var5) {
+            Iterator var6 = var5.iterator();
+
+            while(var6.hasNext()) {
+               JsonElement var7 = (JsonElement)var6.next();
                var4.add((Variant)var3.deserialize(var7, Variant.class));
             }
          } else {
@@ -96,6 +102,11 @@ public class MultiVariant implements UnbakedModel {
          }
 
          return new MultiVariant(var4);
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

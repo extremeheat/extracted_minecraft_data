@@ -8,11 +8,12 @@ import it.unimi.dsi.fastutil.shorts.Short2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -32,36 +33,29 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class FlowingFluid extends Fluid {
-   public static final BooleanProperty FALLING = BlockStateProperties.FALLING;
-   public static final IntegerProperty LEVEL = BlockStateProperties.LEVEL_FLOWING;
+   public static final BooleanProperty FALLING;
+   public static final IntegerProperty LEVEL;
    private static final int CACHE_SIZE = 200;
-   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>(200) {
-         protected void rehash(int var1) {
-         }
-      };
-      var0.defaultReturnValue((byte)127);
-      return var0;
-   });
+   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>> OCCLUSION_CACHE;
    private final Map<FluidState, VoxelShape> shapes = Maps.newIdentityHashMap();
 
    public FlowingFluid() {
       super();
    }
 
-   @Override
    protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {
       var1.add(FALLING);
    }
 
-   @Override
    public Vec3 getFlow(BlockGetter var1, BlockPos var2, FluidState var3) {
       double var4 = 0.0;
       double var6 = 0.0;
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
+      Iterator var9 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var10 : Direction.Plane.HORIZONTAL) {
-         var8.setWithOffset(var2, var10);
+      while(var9.hasNext()) {
+         Direction var10 = (Direction)var9.next();
+         var8.setWithOffset(var2, (Direction)var10);
          FluidState var11 = var1.getFluidState(var8);
          if (this.affectsFlow(var11)) {
             float var12 = var11.getOwnHeight();
@@ -89,14 +83,20 @@ public abstract class FlowingFluid extends Fluid {
       }
 
       Vec3 var16 = new Vec3(var4, 0.0, var6);
-      if (var3.getValue(FALLING)) {
-         for(Direction var18 : Direction.Plane.HORIZONTAL) {
-            var8.setWithOffset(var2, var18);
-            if (this.isSolidFace(var1, var8, var18) || this.isSolidFace(var1, var8.above(), var18)) {
-               var16 = var16.normalize().add(0.0, -6.0, 0.0);
-               break;
+      if ((Boolean)var3.getValue(FALLING)) {
+         Iterator var17 = Direction.Plane.HORIZONTAL.iterator();
+
+         Direction var18;
+         do {
+            if (!var17.hasNext()) {
+               return var16.normalize();
             }
-         }
+
+            var18 = (Direction)var17.next();
+            var8.setWithOffset(var2, (Direction)var18);
+         } while(!this.isSolidFace(var1, var8, var18) && !this.isSolidFace(var1, var8.above(), var18));
+
+         var16 = var16.normalize().add(0.0, -6.0, 0.0);
       }
 
       return var16.normalize();
@@ -132,19 +132,22 @@ public abstract class FlowingFluid extends Fluid {
          } else if (var3.isSource() || !this.isWaterHole(var1, var7.getType(), var2, var4, var5, var6)) {
             this.spreadToSides(var1, var2, var3, var4);
          }
+
       }
    }
 
    private void spreadToSides(Level var1, BlockPos var2, FluidState var3, BlockState var4) {
       int var5 = var3.getAmount() - this.getDropOff(var1);
-      if (var3.getValue(FALLING)) {
+      if ((Boolean)var3.getValue(FALLING)) {
          var5 = 7;
       }
 
       if (var5 > 0) {
          Map var6 = this.getSpread(var1, var2, var4);
+         Iterator var7 = var6.entrySet().iterator();
 
-         for(Entry var8 : var6.entrySet()) {
+         while(var7.hasNext()) {
+            Map.Entry var8 = (Map.Entry)var7.next();
             Direction var9 = (Direction)var8.getKey();
             FluidState var10 = (FluidState)var8.getValue();
             BlockPos var11 = var2.relative(var9);
@@ -153,14 +156,17 @@ public abstract class FlowingFluid extends Fluid {
                this.spreadTo(var1, var11, var12, var9, var10);
             }
          }
+
       }
    }
 
    protected FluidState getNewLiquid(Level var1, BlockPos var2, BlockState var3) {
       int var4 = 0;
       int var5 = 0;
+      Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+      while(var6.hasNext()) {
+         Direction var7 = (Direction)var6.next();
          BlockPos var8 = var2.relative(var7);
          BlockState var9 = var1.getBlockState(var8);
          FluidState var10 = var9.getFluidState();
@@ -188,7 +194,11 @@ public abstract class FlowingFluid extends Fluid {
          return this.getFlowing(8, true);
       } else {
          int var16 = var4 - this.getDropOff(var1);
-         return var16 <= 0 ? Fluids.EMPTY.defaultFluidState() : this.getFlowing(var16, false);
+         if (var16 <= 0) {
+            return Fluids.EMPTY.defaultFluidState();
+         } else {
+            return this.getFlowing(var16, false);
+         }
       }
    }
 
@@ -228,13 +238,13 @@ public abstract class FlowingFluid extends Fluid {
    public abstract Fluid getFlowing();
 
    public FluidState getFlowing(int var1, boolean var2) {
-      return this.getFlowing().defaultFluidState().setValue(LEVEL, Integer.valueOf(var1)).setValue(FALLING, Boolean.valueOf(var2));
+      return (FluidState)((FluidState)this.getFlowing().defaultFluidState().setValue(LEVEL, var1)).setValue(FALLING, var2);
    }
 
    public abstract Fluid getSource();
 
    public FluidState getSource(boolean var1) {
-      return this.getSource().defaultFluidState().setValue(FALLING, Boolean.valueOf(var1));
+      return (FluidState)this.getSource().defaultFluidState().setValue(FALLING, var1);
    }
 
    protected abstract boolean canConvertToSource(Level var1);
@@ -249,6 +259,7 @@ public abstract class FlowingFluid extends Fluid {
 
          var1.setBlock(var2, var5.createLegacyBlock(), 3);
       }
+
    }
 
    protected abstract void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3);
@@ -256,36 +267,29 @@ public abstract class FlowingFluid extends Fluid {
    private static short getCacheKey(BlockPos var0, BlockPos var1) {
       int var2 = var1.getX() - var0.getX();
       int var3 = var1.getZ() - var0.getZ();
-      return (short)((var2 + 128 & 0xFF) << 8 | var3 + 128 & 0xFF);
+      return (short)((var2 + 128 & 255) << 8 | var3 + 128 & 255);
    }
 
-   protected int getSlopeDistance(
-      LevelReader var1,
-      BlockPos var2,
-      int var3,
-      Direction var4,
-      BlockState var5,
-      BlockPos var6,
-      Short2ObjectMap<Pair<BlockState, FluidState>> var7,
-      Short2BooleanMap var8
-   ) {
+   protected int getSlopeDistance(LevelReader var1, BlockPos var2, int var3, Direction var4, BlockState var5, BlockPos var6, Short2ObjectMap<Pair<BlockState, FluidState>> var7, Short2BooleanMap var8) {
       int var9 = 1000;
+      Iterator var10 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var11 : Direction.Plane.HORIZONTAL) {
+      while(var10.hasNext()) {
+         Direction var11 = (Direction)var10.next();
          if (var11 != var4) {
             BlockPos var12 = var2.relative(var11);
             short var13 = getCacheKey(var6, var12);
-            Pair var14 = (Pair)var7.computeIfAbsent(var13, var2x -> {
-               BlockState var3xx = var1.getBlockState(var12);
-               return Pair.of(var3xx, var3xx.getFluidState());
+            Pair var14 = (Pair)var7.computeIfAbsent(var13, (var2x) -> {
+               BlockState var3 = var1.getBlockState(var12);
+               return Pair.of(var3, var3.getFluidState());
             });
             BlockState var15 = (BlockState)var14.getFirst();
             FluidState var16 = (FluidState)var14.getSecond();
             if (this.canPassThrough(var1, this.getFlowing(), var2, var5, var11, var12, var15, var16)) {
-               boolean var17 = var8.computeIfAbsent(var13, var4x -> {
-                  BlockPos var5xx = var12.below();
-                  BlockState var6xx = var1.getBlockState(var5xx);
-                  return this.isWaterHole(var1, this.getFlowing(), var12, var15, var5xx, var6xx);
+               boolean var17 = var8.computeIfAbsent(var13, (var4x) -> {
+                  BlockPos var5 = var12.below();
+                  BlockState var6 = var1.getBlockState(var5);
+                  return this.isWaterHole(var1, this.getFlowing(), var12, var15, var5, var6);
                });
                if (var17) {
                   return var3;
@@ -324,8 +328,10 @@ public abstract class FlowingFluid extends Fluid {
 
    private int sourceNeighborCount(LevelReader var1, BlockPos var2) {
       int var3 = 0;
+      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+      while(var4.hasNext()) {
+         Direction var5 = (Direction)var4.next();
          BlockPos var6 = var2.relative(var5);
          FluidState var7 = var1.getFluidState(var6);
          if (this.isSourceBlockOfThisType(var7)) {
@@ -341,22 +347,24 @@ public abstract class FlowingFluid extends Fluid {
       EnumMap var5 = Maps.newEnumMap(Direction.class);
       Short2ObjectOpenHashMap var6 = new Short2ObjectOpenHashMap();
       Short2BooleanOpenHashMap var7 = new Short2BooleanOpenHashMap();
+      Iterator var8 = Direction.Plane.HORIZONTAL.iterator();
 
-      for(Direction var9 : Direction.Plane.HORIZONTAL) {
+      while(var8.hasNext()) {
+         Direction var9 = (Direction)var8.next();
          BlockPos var10 = var2.relative(var9);
          short var11 = getCacheKey(var2, var10);
-         Pair var12 = (Pair)var6.computeIfAbsent(var11, var2x -> {
-            BlockState var3xx = var1.getBlockState(var10);
-            return Pair.of(var3xx, var3xx.getFluidState());
+         Pair var12 = (Pair)var6.computeIfAbsent(var11, (var2x) -> {
+            BlockState var3 = var1.getBlockState(var10);
+            return Pair.of(var3, var3.getFluidState());
          });
          BlockState var13 = (BlockState)var12.getFirst();
          FluidState var14 = (FluidState)var12.getSecond();
          FluidState var15 = this.getNewLiquid(var1, var10, var13);
          if (this.canPassThrough(var1, var15.getType(), var2, var3, var9, var10, var13, var14)) {
             BlockPos var17 = var10.below();
-            boolean var18 = var7.computeIfAbsent(var11, var5x -> {
-               BlockState var6xx = var1.getBlockState(var17);
-               return this.isWaterHole(var1, this.getFlowing(), var10, var13, var17, var6xx);
+            boolean var18 = var7.computeIfAbsent(var11, (var5x) -> {
+               BlockState var6 = var1.getBlockState(var17);
+               return this.isWaterHole(var1, this.getFlowing(), var10, var13, var17, var6);
             });
             int var16;
             if (var18) {
@@ -379,31 +387,23 @@ public abstract class FlowingFluid extends Fluid {
       return var5;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private boolean canHoldFluid(BlockGetter var1, BlockPos var2, BlockState var3, Fluid var4) {
       Block var5 = var3.getBlock();
       if (var5 instanceof LiquidBlockContainer var6) {
-         return var6.canPlaceLiquid(null, var1, var2, var3, var4);
-      } else if (var5 instanceof DoorBlock || var3.is(BlockTags.SIGNS) || var3.is(Blocks.LADDER) || var3.is(Blocks.SUGAR_CANE) || var3.is(Blocks.BUBBLE_COLUMN)
-         )
-       {
-         return false;
-      } else if (!var3.is(Blocks.NETHER_PORTAL)
-         && !var3.is(Blocks.END_PORTAL)
-         && !var3.is(Blocks.END_GATEWAY)
-         && !var3.is(Blocks.STRUCTURE_VOID)
-         && !var3.is(Blocks.POTATO_PORTAL)) {
-         return !var3.blocksMotion();
+         return var6.canPlaceLiquid((Player)null, var1, var2, var3, var4);
+      } else if (!(var5 instanceof DoorBlock) && !var3.is(BlockTags.SIGNS) && !var3.is(Blocks.LADDER) && !var3.is(Blocks.SUGAR_CANE) && !var3.is(Blocks.BUBBLE_COLUMN)) {
+         if (!var3.is(Blocks.NETHER_PORTAL) && !var3.is(Blocks.END_PORTAL) && !var3.is(Blocks.END_GATEWAY) && !var3.is(Blocks.STRUCTURE_VOID)) {
+            return !var3.blocksMotion();
+         } else {
+            return false;
+         }
       } else {
          return false;
       }
    }
 
    protected boolean canSpreadTo(BlockGetter var1, BlockPos var2, BlockState var3, Direction var4, BlockPos var5, BlockState var6, FluidState var7, Fluid var8) {
-      return var7.canBeReplacedWith(var1, var5, var8, var4)
-         && this.canPassThroughWall(var4, var1, var2, var3, var5, var6)
-         && this.canHoldFluid(var1, var5, var6, var8);
+      return var7.canBeReplacedWith(var1, var5, var8, var4) && this.canPassThroughWall(var4, var1, var2, var3, var5, var6) && this.canHoldFluid(var1, var5, var6, var8);
    }
 
    protected abstract int getDropOff(LevelReader var1);
@@ -412,7 +412,6 @@ public abstract class FlowingFluid extends Fluid {
       return this.getTickDelay(var1);
    }
 
-   @Override
    public void tick(Level var1, BlockPos var2, FluidState var3) {
       if (!var3.isSource()) {
          FluidState var4 = this.getNewLiquid(var1, var2, var1.getBlockState(var2));
@@ -433,30 +432,39 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    protected static int getLegacyLevel(FluidState var0) {
-      return var0.isSource() ? 0 : 8 - Math.min(var0.getAmount(), 8) + (var0.getValue(FALLING) ? 8 : 0);
+      return var0.isSource() ? 0 : 8 - Math.min(var0.getAmount(), 8) + ((Boolean)var0.getValue(FALLING) ? 8 : 0);
    }
 
    private static boolean hasSameAbove(FluidState var0, BlockGetter var1, BlockPos var2) {
       return var0.getType().isSame(var1.getFluidState(var2.above()).getType());
    }
 
-   @Override
    public float getHeight(FluidState var1, BlockGetter var2, BlockPos var3) {
       return hasSameAbove(var1, var2, var3) ? 1.0F : var1.getOwnHeight();
    }
 
-   @Override
    public float getOwnHeight(FluidState var1) {
       return (float)var1.getAmount() / 9.0F;
    }
 
-   @Override
    public abstract int getAmount(FluidState var1);
 
-   @Override
    public VoxelShape getShape(FluidState var1, BlockGetter var2, BlockPos var3) {
-      return var1.getAmount() == 9 && hasSameAbove(var1, var2, var3)
-         ? Shapes.block()
-         : this.shapes.computeIfAbsent(var1, var2x -> Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var2x.getHeight(var2, var3), 1.0));
+      return var1.getAmount() == 9 && hasSameAbove(var1, var2, var3) ? Shapes.block() : (VoxelShape)this.shapes.computeIfAbsent(var1, (var2x) -> {
+         return Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var2x.getHeight(var2, var3), 1.0);
+      });
+   }
+
+   static {
+      FALLING = BlockStateProperties.FALLING;
+      LEVEL = BlockStateProperties.LEVEL_FLOWING;
+      OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
+         Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<Block.BlockStatePairKey>(200) {
+            protected void rehash(int var1) {
+            }
+         };
+         var0.defaultReturnValue((byte)127);
+         return var0;
+      });
    }
 }

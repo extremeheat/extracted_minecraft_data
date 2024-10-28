@@ -21,53 +21,52 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public class SculkCatalystBlock extends BaseEntityBlock {
    public static final MapCodec<SculkCatalystBlock> CODEC = simpleCodec(SculkCatalystBlock::new);
-   public static final BooleanProperty PULSE = BlockStateProperties.BLOOM;
+   public static final BooleanProperty PULSE;
    private final IntProvider xpRange = ConstantInt.of(5);
 
-   @Override
    public MapCodec<SculkCatalystBlock> codec() {
       return CODEC;
    }
 
    public SculkCatalystBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(PULSE, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(PULSE, false));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(PULSE);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(PULSE)) {
-         var2.setBlock(var3, var1.setValue(PULSE, Boolean.valueOf(false)), 3);
+      if ((Boolean)var1.getValue(PULSE)) {
+         var2.setBlock(var3, (BlockState)var1.setValue(PULSE, false), 3);
       }
+
    }
 
    @Nullable
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new SculkCatalystBlockEntity(var1, var2);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.SCULK_CATALYST, SculkCatalystBlockEntity::serverTick);
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
       super.spawnAfterBreak(var1, var2, var3, var4, var5);
       if (var5) {
          this.tryDropExperience(var2, var3, var4, this.xpRange);
       }
+
+   }
+
+   static {
+      PULSE = BlockStateProperties.BLOOM;
    }
 }

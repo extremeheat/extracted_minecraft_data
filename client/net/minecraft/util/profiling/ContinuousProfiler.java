@@ -6,10 +6,11 @@ import java.util.function.LongSupplier;
 public class ContinuousProfiler {
    private final LongSupplier realTime;
    private final IntSupplier tickCount;
-   private ProfileCollector profiler = InactiveProfiler.INSTANCE;
+   private ProfileCollector profiler;
 
    public ContinuousProfiler(LongSupplier var1, IntSupplier var2) {
       super();
+      this.profiler = InactiveProfiler.INSTANCE;
       this.realTime = var1;
       this.tickCount = var2;
    }

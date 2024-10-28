@@ -8,21 +8,28 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
 
 public class PiglinModel<T extends Mob> extends PlayerModel<T> {
-   public final ModelPart rightEar = this.head.getChild("right_ear");
-   private final ModelPart leftEar = this.head.getChild("left_ear");
-   private final PartPose bodyDefault = this.body.storePose();
-   private final PartPose headDefault = this.head.storePose();
-   private final PartPose leftArmDefault = this.leftArm.storePose();
-   private final PartPose rightArmDefault = this.rightArm.storePose();
+   public final ModelPart rightEar;
+   private final ModelPart leftEar;
+   private final PartPose bodyDefault;
+   private final PartPose headDefault;
+   private final PartPose leftArmDefault;
+   private final PartPose rightArmDefault;
 
    public PiglinModel(ModelPart var1) {
       super(var1, false);
+      this.rightEar = this.head.getChild("right_ear");
+      this.leftEar = this.head.getChild("left_ear");
+      this.bodyDefault = this.body.storePose();
+      this.headDefault = this.head.storePose();
+      this.leftArmDefault = this.leftArm.storePose();
+      this.rightArmDefault = this.rightArm.storePose();
    }
 
    public static MeshDefinition createMesh(CubeDeformation var0) {
@@ -36,39 +43,17 @@ public class PiglinModel<T extends Mob> extends PlayerModel<T> {
 
    public static void addHead(CubeDeformation var0, MeshDefinition var1) {
       PartDefinition var2 = var1.getRoot();
-      PartDefinition var3 = var2.addOrReplaceChild(
-         "head",
-         CubeListBuilder.create()
-            .texOffs(0, 0)
-            .addBox(-5.0F, -8.0F, -4.0F, 10.0F, 8.0F, 8.0F, var0)
-            .texOffs(31, 1)
-            .addBox(-2.0F, -4.0F, -5.0F, 4.0F, 4.0F, 1.0F, var0)
-            .texOffs(2, 4)
-            .addBox(2.0F, -2.0F, -5.0F, 1.0F, 2.0F, 1.0F, var0)
-            .texOffs(2, 0)
-            .addBox(-3.0F, -2.0F, -5.0F, 1.0F, 2.0F, 1.0F, var0),
-         PartPose.ZERO
-      );
-      var3.addOrReplaceChild(
-         "left_ear",
-         CubeListBuilder.create().texOffs(51, 6).addBox(0.0F, 0.0F, -2.0F, 1.0F, 5.0F, 4.0F, var0),
-         PartPose.offsetAndRotation(4.5F, -6.0F, 0.0F, 0.0F, 0.0F, -0.5235988F)
-      );
-      var3.addOrReplaceChild(
-         "right_ear",
-         CubeListBuilder.create().texOffs(39, 6).addBox(-1.0F, 0.0F, -2.0F, 1.0F, 5.0F, 4.0F, var0),
-         PartPose.offsetAndRotation(-4.5F, -6.0F, 0.0F, 0.0F, 0.0F, 0.5235988F)
-      );
+      PartDefinition var3 = var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-5.0F, -8.0F, -4.0F, 10.0F, 8.0F, 8.0F, var0).texOffs(31, 1).addBox(-2.0F, -4.0F, -5.0F, 4.0F, 4.0F, 1.0F, var0).texOffs(2, 4).addBox(2.0F, -2.0F, -5.0F, 1.0F, 2.0F, 1.0F, var0).texOffs(2, 0).addBox(-3.0F, -2.0F, -5.0F, 1.0F, 2.0F, 1.0F, var0), PartPose.ZERO);
+      var3.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(51, 6).addBox(0.0F, 0.0F, -2.0F, 1.0F, 5.0F, 4.0F, var0), PartPose.offsetAndRotation(4.5F, -6.0F, 0.0F, 0.0F, 0.0F, -0.5235988F));
+      var3.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(39, 6).addBox(-1.0F, 0.0F, -2.0F, 1.0F, 5.0F, 4.0F, var0), PartPose.offsetAndRotation(-4.5F, -6.0F, 0.0F, 0.0F, 0.0F, 0.5235988F));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.body.loadPose(this.bodyDefault);
       this.head.loadPose(this.headDefault);
       this.leftArm.loadPose(this.leftArmDefault);
       this.rightArm.loadPose(this.rightArmDefault);
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
+      super.setupAnim((LivingEntity)var1, var2, var3, var4, var5, var6);
       float var7 = 0.5235988F;
       float var8 = var4 * 0.1F + var2 * 0.5F;
       float var9 = 0.08F + var3 * 0.4F;
@@ -88,7 +73,7 @@ public class PiglinModel<T extends Mob> extends PlayerModel<T> {
             this.leftArm.y = Mth.sin(var12 * 40.0F) * 0.5F + 1.5F;
             this.body.y = Mth.sin(var12 * 40.0F) * 0.35F;
          } else if (var11 == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON && this.attackTime == 0.0F) {
-            this.holdWeaponHigh((T)var1);
+            this.holdWeaponHigh(var1);
          } else if (var11 == PiglinArmPose.CROSSBOW_HOLD) {
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, !var1.isLeftHanded());
          } else if (var11 == PiglinArmPose.CROSSBOW_CHARGE) {
@@ -120,7 +105,7 @@ public class PiglinModel<T extends Mob> extends PlayerModel<T> {
       if (this.attackTime > 0.0F && var1 instanceof Piglin && ((Piglin)var1).getArmPose() == PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON) {
          AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, var1, this.attackTime, var2);
       } else {
-         super.setupAttackAnimation((T)var1, var2);
+         super.setupAttackAnimation(var1, var2);
       }
    }
 
@@ -130,5 +115,6 @@ public class PiglinModel<T extends Mob> extends PlayerModel<T> {
       } else {
          this.rightArm.xRot = -1.8F;
       }
+
    }
 }

@@ -24,8 +24,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class ThrownTrident extends AbstractArrow {
-   private static final EntityDataAccessor<Byte> ID_LOYALTY = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BYTE);
-   private static final EntityDataAccessor<Boolean> ID_FOIL = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Byte> ID_LOYALTY;
+   private static final EntityDataAccessor<Boolean> ID_FOIL;
    private boolean dealtDamage;
    public int clientSideReturnTridentTickCount;
 
@@ -39,21 +39,25 @@ public class ThrownTrident extends AbstractArrow {
       this.entityData.set(ID_FOIL, var3.hasFoil());
    }
 
-   @Override
+   public ThrownTrident(Level var1, double var2, double var4, double var6, ItemStack var8) {
+      super(EntityType.TRIDENT, var2, var4, var6, var1, var8);
+      this.entityData.set(ID_LOYALTY, (byte)EnchantmentHelper.getLoyalty(var8));
+      this.entityData.set(ID_FOIL, var8.hasFoil());
+   }
+
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(ID_LOYALTY, (byte)0);
       var1.define(ID_FOIL, false);
    }
 
-   @Override
    public void tick() {
       if (this.inGroundTime > 4) {
          this.dealtDamage = true;
       }
 
       Entity var1 = this.getOwner();
-      byte var2 = this.entityData.get(ID_LOYALTY);
+      byte var2 = (Byte)this.entityData.get(ID_LOYALTY);
       if (var2 > 0 && (this.dealtDamage || this.isNoPhysics()) && var1 != null) {
          if (!this.isAcceptibleReturnOwner()) {
             if (!this.level().isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
@@ -84,26 +88,22 @@ public class ThrownTrident extends AbstractArrow {
 
    private boolean isAcceptibleReturnOwner() {
       Entity var1 = this.getOwner();
-      if (var1 == null || !var1.isAlive()) {
-         return false;
-      } else {
+      if (var1 != null && var1.isAlive()) {
          return !(var1 instanceof ServerPlayer) || !var1.isSpectator();
+      } else {
+         return false;
       }
    }
 
    public boolean isFoil() {
-      return this.entityData.get(ID_FOIL);
+      return (Boolean)this.entityData.get(ID_FOIL);
    }
 
    @Nullable
-   @Override
    protected EntityHitResult findHitEntity(Vec3 var1, Vec3 var2) {
       return this.dealtDamage ? null : super.findHitEntity(var1, var2);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       Entity var2 = var1.getEntity();
       float var3 = 8.0F;
@@ -120,13 +120,14 @@ public class ThrownTrident extends AbstractArrow {
             return;
          }
 
-         if (var2 instanceof LivingEntity var7) {
+         if (var2 instanceof LivingEntity) {
+            LivingEntity var7 = (LivingEntity)var2;
             if (var10 instanceof LivingEntity) {
-               EnchantmentHelper.doPostHurtEffects((LivingEntity)var7, var10);
-               EnchantmentHelper.doPostDamageEffects((LivingEntity)var10, (Entity)var7);
+               EnchantmentHelper.doPostHurtEffects(var7, var10);
+               EnchantmentHelper.doPostDamageEffects((LivingEntity)var10, var7);
             }
 
-            this.doPostHurtEffects((LivingEntity)var7);
+            this.doPostHurtEffects(var7);
          }
       }
 
@@ -135,7 +136,7 @@ public class ThrownTrident extends AbstractArrow {
       if (this.level() instanceof ServerLevel && this.level().isThundering() && this.isChanneling()) {
          BlockPos var8 = var2.blockPosition();
          if (this.level().canSeeSky(var8)) {
-            LightningBolt var9 = EntityType.LIGHTNING_BOLT.create(this.level());
+            LightningBolt var9 = (LightningBolt)EntityType.LIGHTNING_BOLT.create(this.level());
             if (var9 != null) {
                var9.moveTo(Vec3.atBottomCenterOf(var8));
                var9.setCause(var10 instanceof ServerPlayer ? (ServerPlayer)var10 : null);
@@ -153,56 +154,54 @@ public class ThrownTrident extends AbstractArrow {
       return EnchantmentHelper.hasChanneling(this.getPickupItemStackOrigin());
    }
 
-   @Override
    protected boolean tryPickup(Player var1) {
       return super.tryPickup(var1) || this.isNoPhysics() && this.ownedBy(var1) && var1.getInventory().add(this.getPickupItem());
    }
 
-   @Override
    protected ItemStack getDefaultPickupItem() {
       return new ItemStack(Items.TRIDENT);
    }
 
-   @Override
    protected SoundEvent getDefaultHitGroundSoundEvent() {
       return SoundEvents.TRIDENT_HIT_GROUND;
    }
 
-   @Override
    public void playerTouch(Player var1) {
       if (this.ownedBy(var1) || this.getOwner() == null) {
          super.playerTouch(var1);
       }
+
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.dealtDamage = var1.getBoolean("DealtDamage");
       this.entityData.set(ID_LOYALTY, (byte)EnchantmentHelper.getLoyalty(this.getPickupItemStackOrigin()));
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("DealtDamage", this.dealtDamage);
    }
 
-   @Override
    public void tickDespawn() {
-      byte var1 = this.entityData.get(ID_LOYALTY);
+      byte var1 = (Byte)this.entityData.get(ID_LOYALTY);
       if (this.pickup != AbstractArrow.Pickup.ALLOWED || var1 <= 0) {
          super.tickDespawn();
       }
+
    }
 
-   @Override
    protected float getWaterInertia() {
       return 0.99F;
    }
 
-   @Override
    public boolean shouldRender(double var1, double var3, double var5) {
       return true;
+   }
+
+   static {
+      ID_LOYALTY = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BYTE);
+      ID_FOIL = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BOOLEAN);
    }
 }

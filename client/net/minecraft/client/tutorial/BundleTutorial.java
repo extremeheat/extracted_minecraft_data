@@ -42,6 +42,7 @@ public class BundleTutorial {
          this.options.hideBundleTutorial = true;
          this.options.save();
       }
+
    }
 
    public void onInventoryAction(ItemStack var1, ItemStack var2, ClickAction var3) {
@@ -55,6 +56,7 @@ public class BundleTutorial {
          } else if (var1.is(Items.BUNDLE) && !var2.isEmpty() && var3 == ClickAction.SECONDARY) {
             this.clearToast();
          }
+
       }
    }
 }

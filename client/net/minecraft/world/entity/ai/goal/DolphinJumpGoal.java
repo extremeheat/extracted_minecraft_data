@@ -21,7 +21,6 @@ public class DolphinJumpGoal extends JumpGoal {
       this.interval = reducedTickDelay(var2);
    }
 
-   @Override
    public boolean canUse() {
       if (this.dolphin.getRandom().nextInt(this.interval) != 0) {
          return false;
@@ -30,8 +29,11 @@ public class DolphinJumpGoal extends JumpGoal {
          int var2 = var1.getStepX();
          int var3 = var1.getStepZ();
          BlockPos var4 = this.dolphin.blockPosition();
+         int[] var5 = STEPS_TO_CHECK;
+         int var6 = var5.length;
 
-         for(int var8 : STEPS_TO_CHECK) {
+         for(int var7 = 0; var7 < var6; ++var7) {
+            int var8 = var5[var7];
             if (!this.waterIsClear(var4, var2, var3, var8) || !this.surfaceIsClear(var4, var2, var3, var8)) {
                return false;
             }
@@ -47,37 +49,28 @@ public class DolphinJumpGoal extends JumpGoal {
    }
 
    private boolean surfaceIsClear(BlockPos var1, int var2, int var3, int var4) {
-      return this.dolphin.level().getBlockState(var1.offset(var2 * var4, 1, var3 * var4)).isAir()
-         && this.dolphin.level().getBlockState(var1.offset(var2 * var4, 2, var3 * var4)).isAir();
+      return this.dolphin.level().getBlockState(var1.offset(var2 * var4, 1, var3 * var4)).isAir() && this.dolphin.level().getBlockState(var1.offset(var2 * var4, 2, var3 * var4)).isAir();
    }
 
-   @Override
    public boolean canContinueToUse() {
       double var1 = this.dolphin.getDeltaMovement().y;
-      return (
-            !(var1 * var1 < 0.029999999329447746) || this.dolphin.getXRot() == 0.0F || !(Math.abs(this.dolphin.getXRot()) < 10.0F) || !this.dolphin.isInWater()
-         )
-         && !this.dolphin.onGround();
+      return (!(var1 * var1 < 0.029999999329447746) || this.dolphin.getXRot() == 0.0F || !(Math.abs(this.dolphin.getXRot()) < 10.0F) || !this.dolphin.isInWater()) && !this.dolphin.onGround();
    }
 
-   @Override
    public boolean isInterruptable() {
       return false;
    }
 
-   @Override
    public void start() {
       Direction var1 = this.dolphin.getMotionDirection();
       this.dolphin.setDeltaMovement(this.dolphin.getDeltaMovement().add((double)var1.getStepX() * 0.6, 0.7, (double)var1.getStepZ() * 0.6));
       this.dolphin.getNavigation().stop();
    }
 
-   @Override
    public void stop() {
       this.dolphin.setXRot(0.0F);
    }
 
-   @Override
    public void tick() {
       boolean var1 = this.breached;
       if (!var1) {
@@ -97,5 +90,6 @@ public class DolphinJumpGoal extends JumpGoal {
          double var5 = Math.atan2(-var7.y, var3) * 57.2957763671875;
          this.dolphin.setXRot((float)var5);
       }
+
    }
 }

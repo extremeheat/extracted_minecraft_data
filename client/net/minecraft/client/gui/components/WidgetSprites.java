@@ -2,12 +2,7 @@ package net.minecraft.client.gui.components;
 
 import net.minecraft.resources.ResourceLocation;
 
-public record WidgetSprites(ResourceLocation a, ResourceLocation b, ResourceLocation c, ResourceLocation d) {
-   private final ResourceLocation enabled;
-   private final ResourceLocation disabled;
-   private final ResourceLocation enabledFocused;
-   private final ResourceLocation disabledFocused;
-
+public record WidgetSprites(ResourceLocation enabled, ResourceLocation disabled, ResourceLocation enabledFocused, ResourceLocation disabledFocused) {
    public WidgetSprites(ResourceLocation var1, ResourceLocation var2) {
       this(var1, var1, var2, var2);
    }
@@ -30,5 +25,21 @@ public record WidgetSprites(ResourceLocation a, ResourceLocation b, ResourceLoca
       } else {
          return var2 ? this.disabledFocused : this.disabled;
       }
+   }
+
+   public ResourceLocation enabled() {
+      return this.enabled;
+   }
+
+   public ResourceLocation disabled() {
+      return this.disabled;
+   }
+
+   public ResourceLocation enabledFocused() {
+      return this.enabledFocused;
+   }
+
+   public ResourceLocation disabledFocused() {
+      return this.disabledFocused;
    }
 }

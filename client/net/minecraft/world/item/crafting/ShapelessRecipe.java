@@ -2,14 +2,14 @@ package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.List;
+import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.Iterator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -29,27 +29,22 @@ public class ShapelessRecipe implements CraftingRecipe {
       this.ingredients = var4;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.SHAPELESS_RECIPE;
    }
 
-   @Override
    public String getGroup() {
       return this.group;
    }
 
-   @Override
    public CraftingBookCategory category() {
       return this.category;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 
-   @Override
    public NonNullList<Ingredient> getIngredients() {
       return this.ingredients;
    }
@@ -66,69 +61,67 @@ public class ShapelessRecipe implements CraftingRecipe {
          }
       }
 
-      return var4 == this.ingredients.size() && var3.canCraft(this, null);
+      return var4 == this.ingredients.size() && var3.canCraft(this, (IntList)null);
    }
 
    public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       return this.result.copy();
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= this.ingredients.size();
    }
 
    public static class Serializer implements RecipeSerializer<ShapelessRecipe> {
-      private static final Codec<ShapelessRecipe> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
-                  CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(var0x -> var0x.category),
-                  ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
-                  Ingredient.CODEC_NONEMPTY
-                     .listOf()
-                     .fieldOf("ingredients")
-                     .flatXmap(
-                        var0x -> {
-                           Ingredient[] var1 = var0x.stream().filter(var0xx -> !var0xx.isEmpty()).toArray(var0xx -> new Ingredient[var0xx]);
-                           if (var1.length == 0) {
-                              return DataResult.error(() -> "No ingredients for shapeless recipe");
-                           } else {
-                              return var1.length > 9
-                                 ? DataResult.error(() -> "Too many ingredients for shapeless recipe")
-                                 : DataResult.success(NonNullList.of(Ingredient.EMPTY, var1));
-                           }
-                        },
-                        DataResult::success
-                     )
-                     .forGetter(var0x -> var0x.ingredients)
-               )
-               .apply(var0, ShapelessRecipe::new)
-      );
-      public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessRecipe> STREAM_CODEC = StreamCodec.of(
-         ShapelessRecipe.Serializer::toNetwork, ShapelessRecipe.Serializer::fromNetwork
-      );
+      private static final MapCodec<ShapelessRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> {
+            return var0x.group;
+         }), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> {
+            return var0x.category;
+         }), ItemStack.CODEC.fieldOf("result").forGetter((var0x) -> {
+            return var0x.result;
+         }), Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap((var0x) -> {
+            Ingredient[] var1 = (Ingredient[])var0x.stream().filter((var0) -> {
+               return !var0.isEmpty();
+            }).toArray((var0) -> {
+               return new Ingredient[var0];
+            });
+            if (var1.length == 0) {
+               return DataResult.error(() -> {
+                  return "No ingredients for shapeless recipe";
+               });
+            } else {
+               return var1.length > 9 ? DataResult.error(() -> {
+                  return "Too many ingredients for shapeless recipe";
+               }) : DataResult.success(NonNullList.of(Ingredient.EMPTY, var1));
+            }
+         }, DataResult::success).forGetter((var0x) -> {
+            return var0x.ingredients;
+         })).apply(var0, ShapelessRecipe::new);
+      });
+      public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessRecipe> STREAM_CODEC = StreamCodec.of(Serializer::toNetwork, Serializer::fromNetwork);
 
       public Serializer() {
          super();
       }
 
-      @Override
-      public Codec<ShapelessRecipe> codec() {
+      public MapCodec<ShapelessRecipe> codec() {
          return CODEC;
       }
 
-      @Override
       public StreamCodec<RegistryFriendlyByteBuf, ShapelessRecipe> streamCodec() {
          return STREAM_CODEC;
       }
 
       private static ShapelessRecipe fromNetwork(RegistryFriendlyByteBuf var0) {
          String var1 = var0.readUtf();
-         CraftingBookCategory var2 = var0.readEnum(CraftingBookCategory.class);
+         CraftingBookCategory var2 = (CraftingBookCategory)var0.readEnum(CraftingBookCategory.class);
          int var3 = var0.readVarInt();
          NonNullList var4 = NonNullList.withSize(var3, Ingredient.EMPTY);
-         var4.replaceAll(var1x -> Ingredient.CONTENTS_STREAM_CODEC.decode(var0));
-         ItemStack var5 = ItemStack.STREAM_CODEC.decode(var0);
+         var4.replaceAll((var1x) -> {
+            return (Ingredient)Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         });
+         ItemStack var5 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
          return new ShapelessRecipe(var1, var2, var5, var4);
       }
 
@@ -136,8 +129,10 @@ public class ShapelessRecipe implements CraftingRecipe {
          var0.writeUtf(var1.group);
          var0.writeEnum(var1.category);
          var0.writeVarInt(var1.ingredients.size());
+         Iterator var2 = var1.ingredients.iterator();
 
-         for(Ingredient var3 : var1.ingredients) {
+         while(var2.hasNext()) {
+            Ingredient var3 = (Ingredient)var2.next();
             Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var3);
          }
 

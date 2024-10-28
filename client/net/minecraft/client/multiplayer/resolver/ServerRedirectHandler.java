@@ -11,7 +11,9 @@ import org.slf4j.Logger;
 @FunctionalInterface
 public interface ServerRedirectHandler {
    Logger LOGGER = LogUtils.getLogger();
-   ServerRedirectHandler EMPTY = var0 -> Optional.empty();
+   ServerRedirectHandler EMPTY = (var0) -> {
+      return Optional.empty();
+   };
 
    Optional<ServerAddress> lookupRedirect(ServerAddress var1);
 
@@ -30,13 +32,13 @@ public interface ServerRedirectHandler {
          return EMPTY;
       }
 
-      return var1x -> {
+      return (var1x) -> {
          if (var1x.getPort() == 25565) {
             try {
-               Attributes var2xx = var0.getAttributes("_minecraft._tcp." + var1x.getHost(), new String[]{"SRV"});
-               Attribute var3xx = var2xx.get("srv");
-               if (var3xx != null) {
-                  String[] var4 = var3xx.get().toString().split(" ", 4);
+               Attributes var2 = var0.getAttributes("_minecraft._tcp." + var1x.getHost(), new String[]{"SRV"});
+               Attribute var3 = var2.get("srv");
+               if (var3 != null) {
+                  String[] var4 = var3.get().toString().split(" ", 4);
                   return Optional.of(new ServerAddress(var4[3], ServerAddress.parsePort(var4[2])));
                }
             } catch (Throwable var5) {

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
@@ -9,10 +9,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
-   public static final Codec<AlterGroundDecorator> CODEC = BlockStateProvider.CODEC
-      .fieldOf("provider")
-      .xmap(AlterGroundDecorator::new, var0 -> var0.provider)
-      .codec();
+   public static final MapCodec<AlterGroundDecorator> CODEC;
    private final BlockStateProvider provider;
 
    public AlterGroundDecorator(BlockStateProvider var1) {
@@ -20,12 +17,10 @@ public class AlterGroundDecorator extends TreeDecorator {
       this.provider = var1;
    }
 
-   @Override
    protected TreeDecoratorType<?> type() {
       return TreeDecoratorType.ALTER_GROUND;
    }
 
-   @Override
    public void place(TreeDecorator.Context var1) {
       ArrayList var2 = Lists.newArrayList();
       ObjectArrayList var3 = var1.roots();
@@ -41,20 +36,23 @@ public class AlterGroundDecorator extends TreeDecorator {
 
       if (!var2.isEmpty()) {
          int var5 = ((BlockPos)var2.get(0)).getY();
-         var2.stream().filter(var1x -> var1x.getY() == var5).forEach(var2x -> {
+         var2.stream().filter((var1x) -> {
+            return var1x.getY() == var5;
+         }).forEach((var2x) -> {
             this.placeCircle(var1, var2x.west().north());
             this.placeCircle(var1, var2x.east(2).north());
             this.placeCircle(var1, var2x.west().south(2));
             this.placeCircle(var1, var2x.east(2).south(2));
 
-            for(int var3xx = 0; var3xx < 5; ++var3xx) {
-               int var4xx = var1.random().nextInt(64);
-               int var5xx = var4xx % 8;
-               int var6 = var4xx / 8;
-               if (var5xx == 0 || var5xx == 7 || var6 == 0 || var6 == 7) {
-                  this.placeCircle(var1, var2x.offset(-3 + var5xx, 0, -3 + var6));
+            for(int var3 = 0; var3 < 5; ++var3) {
+               int var4 = var1.random().nextInt(64);
+               int var5 = var4 % 8;
+               int var6 = var4 / 8;
+               if (var5 == 0 || var5 == 7 || var6 == 0 || var6 == 7) {
+                  this.placeCircle(var1, var2x.offset(-3 + var5, 0, -3 + var6));
                }
             }
+
          });
       }
    }
@@ -67,6 +65,7 @@ public class AlterGroundDecorator extends TreeDecorator {
             }
          }
       }
+
    }
 
    private void placeBlockAt(TreeDecorator.Context var1, BlockPos var2) {
@@ -81,5 +80,12 @@ public class AlterGroundDecorator extends TreeDecorator {
             break;
          }
       }
+
+   }
+
+   static {
+      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (var0) -> {
+         return var0.provider;
+      });
    }
 }

@@ -13,49 +13,16 @@ public class DamageTypeTagsProvider extends TagsProvider<DamageType> {
       super(var1, Registries.DAMAGE_TYPE, var2);
    }
 
-   @Override
    protected void addTags(HolderLookup.Provider var1) {
       this.tag(DamageTypeTags.DAMAGES_HELMET).add(DamageTypes.FALLING_ANVIL, DamageTypes.FALLING_BLOCK, DamageTypes.FALLING_STALACTITE);
-      this.tag(DamageTypeTags.BYPASSES_ARMOR)
-         .add(
-            DamageTypes.ON_FIRE,
-            DamageTypes.IN_WALL,
-            DamageTypes.CRAMMING,
-            DamageTypes.DROWN,
-            DamageTypes.FLY_INTO_WALL,
-            DamageTypes.GENERIC,
-            DamageTypes.WITHER,
-            DamageTypes.DRAGON_BREATH,
-            DamageTypes.STARVE,
-            DamageTypes.FALL,
-            DamageTypes.FREEZE,
-            DamageTypes.STALAGMITE,
-            DamageTypes.MAGIC,
-            DamageTypes.INDIRECT_MAGIC,
-            DamageTypes.FELL_OUT_OF_WORLD,
-            DamageTypes.GENERIC_KILL,
-            DamageTypes.SONIC_BOOM,
-            DamageTypes.OUTSIDE_BORDER,
-            DamageTypes.POTATO_MAGIC
-         );
+      this.tag(DamageTypeTags.BYPASSES_ARMOR).add(DamageTypes.ON_FIRE, DamageTypes.IN_WALL, DamageTypes.CRAMMING, DamageTypes.DROWN, DamageTypes.FLY_INTO_WALL, DamageTypes.GENERIC, DamageTypes.WITHER, DamageTypes.DRAGON_BREATH, DamageTypes.STARVE, DamageTypes.FALL, DamageTypes.FREEZE, DamageTypes.STALAGMITE, DamageTypes.MAGIC, DamageTypes.INDIRECT_MAGIC, DamageTypes.FELL_OUT_OF_WORLD, DamageTypes.GENERIC_KILL, DamageTypes.SONIC_BOOM, DamageTypes.OUTSIDE_BORDER);
       this.tag(DamageTypeTags.BYPASSES_SHIELD).addTag(DamageTypeTags.BYPASSES_ARMOR).add(DamageTypes.FALLING_ANVIL, DamageTypes.FALLING_STALACTITE);
       this.tag(DamageTypeTags.BYPASSES_INVULNERABILITY).add(DamageTypes.FELL_OUT_OF_WORLD, DamageTypes.GENERIC_KILL);
       this.tag(DamageTypeTags.BYPASSES_EFFECTS).add(DamageTypes.STARVE);
       this.tag(DamageTypeTags.BYPASSES_RESISTANCE).add(DamageTypes.FELL_OUT_OF_WORLD, DamageTypes.GENERIC_KILL);
       this.tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).add(DamageTypes.SONIC_BOOM);
-      this.tag(DamageTypeTags.IS_FIRE)
-         .add(DamageTypes.IN_FIRE, DamageTypes.ON_FIRE, DamageTypes.LAVA, DamageTypes.HOT_FLOOR, DamageTypes.UNATTRIBUTED_FIREBALL, DamageTypes.FIREBALL);
-      this.tag(DamageTypeTags.IS_PROJECTILE)
-         .add(
-            DamageTypes.ARROW,
-            DamageTypes.TRIDENT,
-            DamageTypes.MOB_PROJECTILE,
-            DamageTypes.UNATTRIBUTED_FIREBALL,
-            DamageTypes.FIREBALL,
-            DamageTypes.WITHER_SKULL,
-            DamageTypes.THROWN,
-            DamageTypes.POTATO_MAGIC
-         );
+      this.tag(DamageTypeTags.IS_FIRE).add(DamageTypes.IN_FIRE, DamageTypes.ON_FIRE, DamageTypes.LAVA, DamageTypes.HOT_FLOOR, DamageTypes.UNATTRIBUTED_FIREBALL, DamageTypes.FIREBALL);
+      this.tag(DamageTypeTags.IS_PROJECTILE).add(DamageTypes.ARROW, DamageTypes.TRIDENT, DamageTypes.MOB_PROJECTILE, DamageTypes.UNATTRIBUTED_FIREBALL, DamageTypes.FIREBALL, DamageTypes.WITHER_SKULL, DamageTypes.THROWN);
       this.tag(DamageTypeTags.WITCH_RESISTANT_TO).add(DamageTypes.MAGIC, DamageTypes.INDIRECT_MAGIC, DamageTypes.SONIC_BOOM, DamageTypes.THORNS);
       this.tag(DamageTypeTags.IS_EXPLOSION).add(DamageTypes.FIREWORKS, DamageTypes.EXPLOSION, DamageTypes.PLAYER_EXPLOSION, DamageTypes.BAD_RESPAWN_POINT);
       this.tag(DamageTypeTags.IS_FALL).add(DamageTypes.FALL, DamageTypes.STALAGMITE);
@@ -74,20 +41,7 @@ public class DamageTypeTagsProvider extends TagsProvider<DamageType> {
       this.tag(DamageTypeTags.NO_KNOCKBACK).add(DamageTypes.EXPLOSION, DamageTypes.PLAYER_EXPLOSION, DamageTypes.BAD_RESPAWN_POINT);
       this.tag(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS).add(DamageTypes.ARROW, DamageTypes.TRIDENT, DamageTypes.FIREBALL, DamageTypes.WITHER_SKULL);
       this.tag(DamageTypeTags.CAN_BREAK_ARMOR_STAND).add(DamageTypes.PLAYER_ATTACK, DamageTypes.PLAYER_EXPLOSION);
-      this.tag(DamageTypeTags.BYPASSES_WOLF_ARMOR)
-         .addTag(DamageTypeTags.BYPASSES_INVULNERABILITY)
-         .add(
-            DamageTypes.CRAMMING,
-            DamageTypes.DROWN,
-            DamageTypes.DRY_OUT,
-            DamageTypes.FREEZE,
-            DamageTypes.IN_WALL,
-            DamageTypes.INDIRECT_MAGIC,
-            DamageTypes.MAGIC,
-            DamageTypes.OUTSIDE_BORDER,
-            DamageTypes.STARVE,
-            DamageTypes.THORNS,
-            DamageTypes.WITHER
-         );
+      this.tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).addTag(DamageTypeTags.BYPASSES_INVULNERABILITY).add(DamageTypes.CRAMMING, DamageTypes.DROWN, DamageTypes.DRY_OUT, DamageTypes.FREEZE, DamageTypes.IN_WALL, DamageTypes.INDIRECT_MAGIC, DamageTypes.MAGIC, DamageTypes.OUTSIDE_BORDER, DamageTypes.STARVE, DamageTypes.THORNS, DamageTypes.WITHER);
+      this.tag(DamageTypeTags.IS_PLAYER_ATTACK).add(DamageTypes.PLAYER_ATTACK);
    }
 }

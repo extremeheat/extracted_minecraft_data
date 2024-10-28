@@ -9,14 +9,13 @@ import net.minecraft.world.level.GameRules;
 
 public class FoodData {
    private int foodLevel = 20;
-   private float saturationLevel;
+   private float saturationLevel = 5.0F;
    private float exhaustionLevel;
    private int tickTimer;
    private int lastFoodLevel = 20;
 
    public FoodData() {
       super();
-      this.saturationLevel = 5.0F;
    }
 
    public void eat(int var1, float var2) {
@@ -25,10 +24,11 @@ public class FoodData {
    }
 
    public void eat(ItemStack var1) {
-      FoodProperties var2 = var1.get(DataComponents.FOOD);
+      FoodProperties var2 = (FoodProperties)var1.get(DataComponents.FOOD);
       if (var2 != null) {
          this.eat(var2.nutrition(), var2.saturationModifier());
       }
+
    }
 
    public void tick(Player var1) {
@@ -39,15 +39,12 @@ public class FoodData {
          if (this.saturationLevel > 0.0F) {
             this.saturationLevel = Math.max(this.saturationLevel - 1.0F, 0.0F);
          } else if (var2 != Difficulty.PEACEFUL) {
-            boolean var3 = var1.tryEatArmor();
-            if (!var3) {
-               this.foodLevel = Math.max(this.foodLevel - 1, 0);
-            }
+            this.foodLevel = Math.max(this.foodLevel - 1, 0);
          }
       }
 
-      boolean var5 = var1.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
-      if (var5 && this.saturationLevel > 0.0F && var1.isHurt() && this.foodLevel >= 20) {
+      boolean var3 = var1.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
+      if (var3 && this.saturationLevel > 0.0F && var1.isHurt() && this.foodLevel >= 20) {
          ++this.tickTimer;
          if (this.tickTimer >= 10) {
             float var4 = Math.min(this.saturationLevel, 6.0F);
@@ -55,7 +52,7 @@ public class FoodData {
             this.addExhaustion(var4);
             this.tickTimer = 0;
          }
-      } else if (var5 && this.foodLevel >= 18 && var1.isHurt()) {
+      } else if (var3 && this.foodLevel >= 18 && var1.isHurt()) {
          ++this.tickTimer;
          if (this.tickTimer >= 80) {
             var1.heal(1.0F);
@@ -74,6 +71,7 @@ public class FoodData {
       } else {
          this.tickTimer = 0;
       }
+
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -83,6 +81,7 @@ public class FoodData {
          this.saturationLevel = var1.getFloat("foodSaturationLevel");
          this.exhaustionLevel = var1.getFloat("foodExhaustionLevel");
       }
+
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

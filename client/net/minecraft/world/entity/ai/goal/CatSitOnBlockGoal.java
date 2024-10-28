@@ -8,7 +8,6 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FurnaceBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
@@ -20,30 +19,25 @@ public class CatSitOnBlockGoal extends MoveToBlockGoal {
       this.cat = var1;
    }
 
-   @Override
    public boolean canUse() {
       return this.cat.isTame() && !this.cat.isOrderedToSit() && super.canUse();
    }
 
-   @Override
    public void start() {
       super.start();
       this.cat.setInSittingPose(false);
    }
 
-   @Override
    public void stop() {
       super.stop();
       this.cat.setInSittingPose(false);
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.cat.setInSittingPose(this.isReachedTarget());
    }
 
-   @Override
    protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
       if (!var1.isEmptyBlock(var2.above())) {
          return false;
@@ -52,9 +46,11 @@ public class CatSitOnBlockGoal extends MoveToBlockGoal {
          if (var3.is(Blocks.CHEST)) {
             return ChestBlockEntity.getOpenCount(var1, var2) < 1;
          } else {
-            return var3.is(Blocks.FURNACE) && var3.getValue(FurnaceBlock.LIT)
-               ? true
-               : var3.is(BlockTags.BEDS, var0 -> var0.<BedPart>getOptionalValue(BedBlock.PART).map(var0x -> var0x != BedPart.HEAD).orElse(true));
+            return var3.is(Blocks.FURNACE) && (Boolean)var3.getValue(FurnaceBlock.LIT) ? true : var3.is(BlockTags.BEDS, (var0) -> {
+               return (Boolean)var0.getOptionalValue(BedBlock.PART).map((var0x) -> {
+                  return var0x != BedPart.HEAD;
+               }).orElse(true);
+            });
          }
       }
    }

@@ -23,7 +23,7 @@ public class MacosUtil {
    }
 
    public static void clearResizableBit(long var0) {
-      getNsWindow(var0).ifPresent(var0x -> {
+      getNsWindow(var0).ifPresent((var0x) -> {
          long var1 = getStyleMask(var0x);
          var0x.send("setStyleMask:", new Object[]{var1 & -9L});
       });
@@ -39,7 +39,7 @@ public class MacosUtil {
    }
 
    private static long getStyleMask(NSObject var0) {
-      return var0.sendRaw("styleMask", new Object[0]);
+      return (Long)var0.sendRaw("styleMask", new Object[0]);
    }
 
    private static void toggleNativeFullscreen(NSObject var0) {
@@ -47,12 +47,29 @@ public class MacosUtil {
    }
 
    public static void loadIcon(IoSupplier<InputStream> var0) throws IOException {
-      try (InputStream var1 = (InputStream)var0.get()) {
+      InputStream var1 = (InputStream)var0.get();
+
+      try {
          String var2 = Base64.getEncoder().encodeToString(var1.readAllBytes());
          Client var3 = Client.getInstance();
          Object var4 = var3.sendProxy("NSData", "alloc", new Object[0]).send("initWithBase64Encoding:", new Object[]{var2});
          Object var5 = var3.sendProxy("NSImage", "alloc", new Object[0]).send("initWithData:", new Object[]{var4});
          var3.sendProxy("NSApplication", "sharedApplication", new Object[0]).send("setApplicationIconImage:", new Object[]{var5});
+      } catch (Throwable var7) {
+         if (var1 != null) {
+            try {
+               var1.close();
+            } catch (Throwable var6) {
+               var7.addSuppressed(var6);
+            }
+         }
+
+         throw var7;
       }
+
+      if (var1 != null) {
+         var1.close();
+      }
+
    }
 }

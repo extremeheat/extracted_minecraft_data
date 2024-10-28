@@ -4,14 +4,15 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.exception.RealmsDefaultUncaughtExceptionHandler;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -37,9 +38,13 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       if (this.queuedTasks.isEmpty()) {
          throw new IllegalArgumentException("No tasks added");
       } else {
-         this.title = this.queuedTasks.get(0).getTitle();
+         this.title = ((LongRunningTask)this.queuedTasks.get(0)).getTitle();
          Runnable var3 = () -> {
-            for(LongRunningTask var5 : var2) {
+            LongRunningTask[] var2x = var2;
+            int var3 = var2.length;
+
+            for(int var4 = 0; var4 < var3; ++var4) {
+               LongRunningTask var5 = var2x[var4];
                this.setTitle(var5.getTitle());
                if (var5.aborted()) {
                   break;
@@ -50,6 +55,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
                   return;
                }
             }
+
          };
          Thread var4 = new Thread(var3, "Realms-long-running-task");
          var4.setUncaughtExceptionHandler(new RealmsDefaultUncaughtExceptionHandler(LOGGER));
@@ -57,15 +63,14 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       }
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.loadingDotsWidget != null) {
          REPEATED_NARRATOR.narrate(this.minecraft.getNarrator(), this.loadingDotsWidget.getMessage());
       }
+
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
          this.cancel();
@@ -75,25 +80,31 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       }
    }
 
-   @Override
    public void init() {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.loadingDotsWidget = new LoadingDotsWidget(this.font, this.title);
-      this.layout.addChild(this.loadingDotsWidget, var0 -> var0.paddingBottom(30));
-      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.cancel()).build());
-      this.layout.visitWidgets(var1 -> {
+      this.layout.addChild(this.loadingDotsWidget, (Consumer)((var0) -> {
+         var0.paddingBottom(30);
+      }));
+      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
+         this.cancel();
+      }).build());
+      this.layout.visitWidgets((var1) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
       });
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
    protected void cancel() {
-      for(LongRunningTask var2 : this.queuedTasks) {
+      Iterator var1 = this.queuedTasks.iterator();
+
+      while(var1.hasNext()) {
+         LongRunningTask var2 = (LongRunningTask)var1.next();
          var2.abortTask();
       }
 

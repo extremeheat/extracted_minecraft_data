@@ -2,7 +2,6 @@ package net.minecraft.world.item.armortrim;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,44 +14,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 
 public class ArmorTrim implements TooltipProvider {
-   public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material),
-               TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
-            )
-            .apply(var0, ArmorTrim::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, ArmorTrim> STREAM_CODEC = StreamCodec.composite(
-      TrimMaterial.STREAM_CODEC,
-      ArmorTrim::material,
-      TrimPattern.STREAM_CODEC,
-      ArmorTrim::pattern,
-      ByteBufCodecs.BOOL,
-      var0 -> var0.showInTooltip,
-      ArmorTrim::new
-   );
-   private static final Component UPGRADE_TITLE = Component.translatable(Util.makeDescriptionId("item", new ResourceLocation("smithing_template.upgrade")))
-      .withStyle(ChatFormatting.GRAY);
+   public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter((var0x) -> {
+         return var0x.showInTooltip;
+      })).apply(var0, ArmorTrim::new);
+   });
+   public static final StreamCodec<RegistryFriendlyByteBuf, ArmorTrim> STREAM_CODEC;
+   private static final Component UPGRADE_TITLE;
    private final Holder<TrimMaterial> material;
    private final Holder<TrimPattern> pattern;
    private final boolean showInTooltip;
    private final Function<Holder<ArmorMaterial>, ResourceLocation> innerTexture;
    private final Function<Holder<ArmorMaterial>, ResourceLocation> outerTexture;
 
-   private ArmorTrim(
-      Holder<TrimMaterial> var1,
-      Holder<TrimPattern> var2,
-      boolean var3,
-      Function<Holder<ArmorMaterial>, ResourceLocation> var4,
-      Function<Holder<ArmorMaterial>, ResourceLocation> var5
-   ) {
+   private ArmorTrim(Holder<TrimMaterial> var1, Holder<TrimPattern> var2, boolean var3, Function<Holder<ArmorMaterial>, ResourceLocation> var4, Function<Holder<ArmorMaterial>, ResourceLocation> var5) {
       super();
       this.material = var1;
       this.pattern = var2;
@@ -65,15 +45,19 @@ public class ArmorTrim implements TooltipProvider {
       super();
       this.material = var1;
       this.pattern = var2;
-      this.innerTexture = Util.memoize(var2x -> {
-         ResourceLocation var3xx = ((TrimPattern)var2.value()).assetId();
+      this.innerTexture = Util.memoize((var2x) -> {
+         ResourceLocation var3 = ((TrimPattern)var2.value()).assetId();
          String var4 = getColorPaletteSuffix(var1, var2x);
-         return var3xx.withPath(var1xx -> "trims/models/armor/" + var1xx + "_leggings_" + var4);
+         return var3.withPath((var1x) -> {
+            return "trims/models/armor/" + var1x + "_leggings_" + var4;
+         });
       });
-      this.outerTexture = Util.memoize(var2x -> {
-         ResourceLocation var3xx = ((TrimPattern)var2.value()).assetId();
+      this.outerTexture = Util.memoize((var2x) -> {
+         ResourceLocation var3 = ((TrimPattern)var2.value()).assetId();
          String var4 = getColorPaletteSuffix(var1, var2x);
-         return var3xx.withPath(var1xx -> "trims/models/armor/" + var1xx + "_" + var4);
+         return var3.withPath((var1x) -> {
+            return "trims/models/armor/" + var1x + "_" + var4;
+         });
       });
       this.showInTooltip = var3;
    }
@@ -101,31 +85,28 @@ public class ArmorTrim implements TooltipProvider {
    }
 
    public ResourceLocation innerTexture(Holder<ArmorMaterial> var1) {
-      return this.innerTexture.apply(var1);
+      return (ResourceLocation)this.innerTexture.apply(var1);
    }
 
    public ResourceLocation outerTexture(Holder<ArmorMaterial> var1) {
-      return this.outerTexture.apply(var1);
+      return (ResourceLocation)this.outerTexture.apply(var1);
    }
 
-   @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof ArmorTrim)) {
+      if (!(var1 instanceof ArmorTrim var2)) {
          return false;
       } else {
-         ArmorTrim var2 = (ArmorTrim)var1;
          return this.showInTooltip == var2.showInTooltip && this.pattern.equals(var2.pattern) && this.material.equals(var2.material);
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.material.hashCode();
       var1 = 31 * var1 + this.pattern.hashCode();
-      return 31 * var1 + (this.showInTooltip ? 1 : 0);
+      var1 = 31 * var1 + (this.showInTooltip ? 1 : 0);
+      return var1;
    }
 
-   @Override
    public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
       if (this.showInTooltip) {
          var1.accept(UPGRADE_TITLE);
@@ -136,5 +117,12 @@ public class ArmorTrim implements TooltipProvider {
 
    public ArmorTrim withTooltip(boolean var1) {
       return new ArmorTrim(this.material, this.pattern, var1, this.innerTexture, this.outerTexture);
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(TrimMaterial.STREAM_CODEC, ArmorTrim::material, TrimPattern.STREAM_CODEC, ArmorTrim::pattern, ByteBufCodecs.BOOL, (var0) -> {
+         return var0.showInTooltip;
+      }, ArmorTrim::new);
+      UPGRADE_TITLE = Component.translatable(Util.makeDescriptionId("item", new ResourceLocation("smithing_template.upgrade"))).withStyle(ChatFormatting.GRAY);
    }
 }

@@ -41,12 +41,9 @@ public class ProgramManager {
       GlStateManager.glLinkProgram(var0.getId());
       int var1 = GlStateManager.glGetProgrami(var0.getId(), 35714);
       if (var1 == 0) {
-         LOGGER.warn(
-            "Error encountered when linking program containing VS {} and FS {}. Log output:",
-            var0.getVertexProgram().getName(),
-            var0.getFragmentProgram().getName()
-         );
+         LOGGER.warn("Error encountered when linking program containing VS {} and FS {}. Log output:", var0.getVertexProgram().getName(), var0.getFragmentProgram().getName());
          LOGGER.warn(GlStateManager.glGetProgramInfoLog(var0.getId(), 32768));
       }
+
    }
 }

@@ -27,7 +27,6 @@ public class TrackingEmitter extends NoRenderParticle {
       this.tick();
    }
 
-   @Override
    public void tick() {
       for(int var1 = 0; var1 < 16; ++var1) {
          double var2 = (double)(this.random.nextFloat() * 2.0F - 1.0F);
@@ -45,5 +44,6 @@ public class TrackingEmitter extends NoRenderParticle {
       if (this.life >= this.lifeTime) {
          this.remove();
       }
+
    }
 }

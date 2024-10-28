@@ -44,10 +44,9 @@ public class Activity {
    }
 
    private static Activity register(String var0) {
-      return Registry.register(BuiltInRegistries.ACTIVITY, var0, new Activity(var0));
+      return (Activity)Registry.register(BuiltInRegistries.ACTIVITY, (String)var0, new Activity(var0));
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -59,12 +58,10 @@ public class Activity {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.hashCode;
    }
 
-   @Override
    public String toString() {
       return this.getName();
    }

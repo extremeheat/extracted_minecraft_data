@@ -74,7 +74,6 @@ public class WorldCoordinate {
       return var1;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -90,11 +89,11 @@ public class WorldCoordinate {
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.relative ? 1 : 0;
       long var2 = Double.doubleToLongBits(this.value);
-      return 31 * var1 + (int)(var2 ^ var2 >>> 32);
+      var1 = 31 * var1 + (int)(var2 ^ var2 >>> 32);
+      return var1;
    }
 
    public boolean isRelative() {

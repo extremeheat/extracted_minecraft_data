@@ -9,7 +9,6 @@ public class ClientboundBundlePacket extends BundlePacket<ClientGamePacketListen
       super(var1);
    }
 
-   @Override
    public PacketType<ClientboundBundlePacket> type() {
       return GamePacketTypes.CLIENTBOUND_BUNDLE;
    }

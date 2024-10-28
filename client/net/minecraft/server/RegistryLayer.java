@@ -18,6 +18,11 @@ public enum RegistryLayer {
    }
 
    public static LayeredRegistryAccess<RegistryLayer> createRegistryAccess() {
-      return new LayeredRegistryAccess<>(VALUES).replaceFrom(STATIC, STATIC_ACCESS);
+      return (new LayeredRegistryAccess(VALUES)).replaceFrom(STATIC, (RegistryAccess.Frozen[])(STATIC_ACCESS));
+   }
+
+   // $FF: synthetic method
+   private static RegistryLayer[] $values() {
+      return new RegistryLayer[]{STATIC, WORLDGEN, DIMENSIONS, RELOADABLE};
    }
 }

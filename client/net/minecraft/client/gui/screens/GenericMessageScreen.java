@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.FocusableTextWidget;
@@ -13,31 +14,31 @@ public class GenericMessageScreen extends Screen {
       super(var1);
    }
 
-   @Override
    protected void init() {
-      this.textWidget = this.addRenderableWidget(new FocusableTextWidget(this.width, this.title, this.font, 12));
+      this.textWidget = (FocusableTextWidget)this.addRenderableWidget(new FocusableTextWidget(this.width, this.title, this.font, 12));
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       if (this.textWidget != null) {
          this.textWidget.containWithin(this.width);
-         this.textWidget.setPosition(this.width / 2 - this.textWidget.getWidth() / 2, this.height / 2 - 9 / 2);
+         FocusableTextWidget var10000 = this.textWidget;
+         int var10001 = this.width / 2 - this.textWidget.getWidth() / 2;
+         int var10002 = this.height / 2;
+         Objects.requireNonNull(this.font);
+         var10000.setPosition(var10001, var10002 - 9 / 2);
       }
+
    }
 
-   @Override
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   @Override
    protected boolean shouldNarrateNavigation() {
       return false;
    }
 
-   @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderPanorama(var1, var4);
       this.renderBlurredBackground(var4);

@@ -15,35 +15,36 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public abstract class VehicleEntity extends Entity {
-   protected static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
-   protected static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
-   protected static final EntityDataAccessor<Float> DATA_ID_DAMAGE = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
+   protected static final EntityDataAccessor<Integer> DATA_ID_HURT;
+   protected static final EntityDataAccessor<Integer> DATA_ID_HURTDIR;
+   protected static final EntityDataAccessor<Float> DATA_ID_DAMAGE;
 
    public VehicleEntity(EntityType<?> var1, Level var2) {
       super(var1, var2);
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
-      if (this.level().isClientSide || this.isRemoved()) {
-         return true;
-      } else if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else {
-         this.setHurtDir(-this.getHurtDir());
-         this.setHurtTime(10);
-         this.markHurt();
-         this.setDamage(this.getDamage() + var2 * 10.0F);
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
-         if ((var3 || !(this.getDamage() > 40.0F)) && !this.shouldSourceDestroy(var1)) {
-            if (var3) {
-               this.discard();
-            }
+      if (!this.level().isClientSide && !this.isRemoved()) {
+         if (this.isInvulnerableTo(var1)) {
+            return false;
          } else {
-            this.destroy(var1);
-         }
+            this.setHurtDir(-this.getHurtDir());
+            this.setHurtTime(10);
+            this.markHurt();
+            this.setDamage(this.getDamage() + var2 * 10.0F);
+            this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+            boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
+            if ((var3 || !(this.getDamage() > 40.0F)) && !this.shouldSourceDestroy(var1)) {
+               if (var3) {
+                  this.discard();
+               }
+            } else {
+               this.destroy(var1);
+            }
 
+            return true;
+         }
+      } else {
          return true;
       }
    }
@@ -61,7 +62,6 @@ public abstract class VehicleEntity extends Entity {
       }
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_ID_HURT, 0);
       var1.define(DATA_ID_HURTDIR, 1);
@@ -81,15 +81,15 @@ public abstract class VehicleEntity extends Entity {
    }
 
    public float getDamage() {
-      return this.entityData.get(DATA_ID_DAMAGE);
+      return (Float)this.entityData.get(DATA_ID_DAMAGE);
    }
 
    public int getHurtTime() {
-      return this.entityData.get(DATA_ID_HURT);
+      return (Integer)this.entityData.get(DATA_ID_HURT);
    }
 
    public int getHurtDir() {
-      return this.entityData.get(DATA_ID_HURTDIR);
+      return (Integer)this.entityData.get(DATA_ID_HURTDIR);
    }
 
    protected void destroy(DamageSource var1) {
@@ -97,4 +97,10 @@ public abstract class VehicleEntity extends Entity {
    }
 
    abstract Item getDropItem();
+
+   static {
+      DATA_ID_HURT = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
+      DATA_ID_HURTDIR = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
+      DATA_ID_DAMAGE = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
+   }
 }

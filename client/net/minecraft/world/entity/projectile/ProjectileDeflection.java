@@ -9,9 +9,11 @@ public interface ProjectileDeflection {
    };
    ProjectileDeflection REVERSE = (var0, var1, var2) -> {
       float var3 = 180.0F + var2.nextFloat() * 20.0F;
-      var0.setDeltaMovement(var0.getDeltaMovement().scale(-0.25));
+      var0.setDeltaMovement(var0.getDeltaMovement().scale(-0.5));
       var0.setYRot(var0.getYRot() + var3);
       var0.yRotO += var3;
+      var0.hurtMarked = true;
+      var0.onDeflection();
    };
 
    void deflect(Projectile var1, Entity var2, RandomSource var3);

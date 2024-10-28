@@ -32,12 +32,8 @@ public class CreeperModel<T extends Entity> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer(CubeDeformation var0) {
       MeshDefinition var1 = new MeshDefinition();
       PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.offset(0.0F, 6.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0), PartPose.offset(0.0F, 6.0F, 0.0F)
-      );
+      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.offset(0.0F, 6.0F, 0.0F));
+      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0), PartPose.offset(0.0F, 6.0F, 0.0F));
       CubeListBuilder var3 = CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 6.0F, 4.0F, var0);
       var2.addOrReplaceChild("right_hind_leg", var3, PartPose.offset(-2.0F, 18.0F, 4.0F));
       var2.addOrReplaceChild("left_hind_leg", var3, PartPose.offset(2.0F, 18.0F, 4.0F));
@@ -46,12 +42,10 @@ public class CreeperModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var1, 64, 32);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       this.head.yRot = var5 * 0.017453292F;
       this.head.xRot = var6 * 0.017453292F;

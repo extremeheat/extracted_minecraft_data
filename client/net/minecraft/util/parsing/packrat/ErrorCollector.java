@@ -25,19 +25,19 @@ public interface ErrorCollector<S> {
             this.lastCursor = var1;
             this.entries.clear();
          }
+
       }
 
-      @Override
       public void finish(int var1) {
          this.discardErrorsFromShorterParse(var1);
       }
 
-      @Override
       public void store(int var1, SuggestionSupplier<S> var2, Object var3) {
          this.discardErrorsFromShorterParse(var1);
          if (var1 == this.lastCursor) {
             this.entries.add(new ErrorEntry(var1, var2, var3));
          }
+
       }
 
       public List<ErrorEntry<S>> entries() {

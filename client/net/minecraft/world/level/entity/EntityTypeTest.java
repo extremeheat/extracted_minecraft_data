@@ -6,12 +6,10 @@ public interface EntityTypeTest<B, T extends B> {
    static <B, T extends B> EntityTypeTest<B, T> forClass(final Class<T> var0) {
       return new EntityTypeTest<B, T>() {
          @Nullable
-         @Override
          public T tryCast(B var1) {
-            return (T)(var0.isInstance(var1) ? var1 : null);
+            return var0.isInstance(var1) ? var1 : null;
          }
 
-         @Override
          public Class<? extends B> getBaseClass() {
             return var0;
          }
@@ -21,12 +19,10 @@ public interface EntityTypeTest<B, T extends B> {
    static <B, T extends B> EntityTypeTest<B, T> forExactClass(final Class<T> var0) {
       return new EntityTypeTest<B, T>() {
          @Nullable
-         @Override
          public T tryCast(B var1) {
-            return (T)(var0.equals(var1.getClass()) ? var1 : null);
+            return var0.equals(var1.getClass()) ? var1 : null;
          }
 
-         @Override
          public Class<? extends B> getBaseClass() {
             return var0;
          }

@@ -12,10 +12,9 @@ public interface TaskChainer {
 
    static TaskChainer immediate(final Executor var0) {
       return new TaskChainer() {
-         @Override
          public <T> void append(CompletableFuture<T> var1, Consumer<T> var2) {
-            var1.thenAcceptAsync(var2, var0).exceptionally(var0xx -> {
-               LOGGER.error("Task failed", var0xx);
+            var1.thenAcceptAsync(var2, var0).exceptionally((var0x) -> {
+               LOGGER.error("Task failed", var0x);
                return null;
             });
          }
@@ -23,7 +22,9 @@ public interface TaskChainer {
    }
 
    default void append(Runnable var1) {
-      this.append(CompletableFuture.completedFuture(null), var1x -> var1.run());
+      this.append(CompletableFuture.completedFuture((Object)null), (var1x) -> {
+         var1.run();
+      });
    }
 
    <T> void append(CompletableFuture<T> var1, Consumer<T> var2);

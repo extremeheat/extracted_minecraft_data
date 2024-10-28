@@ -1,7 +1,6 @@
 package net.minecraft.nbt.visitors;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Set;
@@ -17,10 +16,13 @@ public class CollectFields extends CollectToTag {
    public CollectFields(FieldSelector... var1) {
       super();
       this.fieldsToGetCount = var1.length;
-      Builder var2 = ImmutableSet.builder();
+      ImmutableSet.Builder var2 = ImmutableSet.builder();
       FieldTree var3 = FieldTree.createRoot();
+      FieldSelector[] var4 = var1;
+      int var5 = var1.length;
 
-      for(FieldSelector var7 : var1) {
+      for(int var6 = 0; var6 < var5; ++var6) {
+         FieldSelector var7 = var4[var6];
          var3.addEntry(var7);
          var2.add(var7.type());
       }
@@ -30,12 +32,10 @@ public class CollectFields extends CollectToTag {
       this.wantedTypes = var2.build();
    }
 
-   @Override
    public StreamTagVisitor.ValueResult visitRootEntry(TagType<?> var1) {
       return var1 != CompoundTag.TYPE ? StreamTagVisitor.ValueResult.HALT : super.visitRootEntry(var1);
    }
 
-   @Override
    public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1) {
       FieldTree var2 = (FieldTree)this.stack.element();
       if (this.depth() > var2.depth()) {
@@ -47,7 +47,6 @@ public class CollectFields extends CollectToTag {
       }
    }
 
-   @Override
    public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
       FieldTree var3 = (FieldTree)this.stack.element();
       if (this.depth() > var3.depth()) {
@@ -68,7 +67,6 @@ public class CollectFields extends CollectToTag {
       }
    }
 
-   @Override
    public StreamTagVisitor.ValueResult visitContainerEnd() {
       if (this.depth() == ((FieldTree)this.stack.element()).depth()) {
          this.stack.pop();

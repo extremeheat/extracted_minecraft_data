@@ -16,4 +16,9 @@ public enum ReportType {
    public String backendName() {
       return this.backendName;
    }
+
+   // $FF: synthetic method
+   private static ReportType[] $values() {
+      return new ReportType[]{CHAT, SKIN, USERNAME};
+   }
 }

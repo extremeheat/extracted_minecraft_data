@@ -14,12 +14,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Locale;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.execution.ChainModifiers;
@@ -31,6 +33,7 @@ import net.minecraft.commands.execution.TraceCallbacks;
 import net.minecraft.commands.execution.tasks.CallFunction;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.InstantiatedFunction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -42,9 +45,7 @@ import org.slf4j.Logger;
 public class DebugCommand {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_NOT_RUNNING = new SimpleCommandExceptionType(Component.translatable("commands.debug.notRunning"));
-   private static final SimpleCommandExceptionType ERROR_ALREADY_RUNNING = new SimpleCommandExceptionType(
-      Component.translatable("commands.debug.alreadyRunning")
-   );
+   private static final SimpleCommandExceptionType ERROR_ALREADY_RUNNING = new SimpleCommandExceptionType(Component.translatable("commands.debug.alreadyRunning"));
    static final SimpleCommandExceptionType NO_RECURSIVE_TRACES = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noRecursion"));
    static final SimpleCommandExceptionType NO_RETURN_RUN = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noReturnRun"));
 
@@ -53,20 +54,15 @@ public class DebugCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug")
-                     .requires(var0x -> var0x.hasPermission(3)))
-                  .then(Commands.literal("start").executes(var0x -> start((CommandSourceStack)var0x.getSource()))))
-               .then(Commands.literal("stop").executes(var0x -> stop((CommandSourceStack)var0x.getSource()))))
-            .then(
-               ((LiteralArgumentBuilder)Commands.literal("function").requires(var0x -> var0x.hasPermission(3)))
-                  .then(
-                     Commands.argument("name", FunctionArgument.functions())
-                        .suggests(FunctionCommand.SUGGEST_FUNCTION)
-                        .executes(new DebugCommand.TraceCustomExecutor())
-                  )
-            )
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires((var0x) -> {
+         return var0x.hasPermission(3);
+      })).then(Commands.literal("start").executes((var0x) -> {
+         return start((CommandSourceStack)var0x.getSource());
+      }))).then(Commands.literal("stop").executes((var0x) -> {
+         return stop((CommandSourceStack)var0x.getSource());
+      }))).then(((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> {
+         return var0x.hasPermission(3);
+      })).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
    }
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {
@@ -75,7 +71,9 @@ public class DebugCommand {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
          var1.startTimeProfiler();
-         var0.sendSuccess(() -> Component.translatable("commands.debug.started"), true);
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.debug.started");
+         }, true);
          return 0;
       }
    }
@@ -88,19 +86,14 @@ public class DebugCommand {
          ProfileResults var2 = var1.stopTimeProfiler();
          double var3 = (double)var2.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
          double var5 = (double)var2.getTickDuration() / var3;
-         var0.sendSuccess(
-            () -> Component.translatable(
-                  "commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format(Locale.ROOT, "%.2f", var5)
-               ),
-            true
-         );
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format(Locale.ROOT, "%.2f", var5));
+         }, true);
          return (int)var5;
       }
    }
 
-   static class TraceCustomExecutor
-      extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack>
-      implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
+   private static class TraceCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
       TraceCustomExecutor() {
          super();
       }
@@ -122,17 +115,25 @@ public class DebugCommand {
                Path var11 = var7.getFile("debug").toPath();
                Files.createDirectories(var11);
                final PrintWriter var12 = new PrintWriter(Files.newBufferedWriter(var11.resolve(var8), StandardCharsets.UTF_8));
-               DebugCommand.Tracer var13 = new DebugCommand.Tracer(var12);
+               Tracer var13 = new Tracer(var12);
                var4.tracer(var13);
+               Iterator var14 = var6.iterator();
 
-               for(final CommandFunction var15 : var6) {
+               while(var14.hasNext()) {
+                  final CommandFunction var15 = (CommandFunction)var14.next();
+
                   try {
                      CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
-                     InstantiatedFunction var17 = var15.instantiate(null, var9);
-                     var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
+                     InstantiatedFunction var17 = var15.instantiate((CompoundTag)null, var9);
+                     var4.queueNext((new CallFunction<CommandSourceStack>(this, var17, CommandResultCallback.EMPTY, false) {
                         public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
                            var12.println(var15.id());
-                           super.execute(var1, var2, var3);
+                           super.execute((ExecutionCommandSource)var1, var2, var3);
+                        }
+
+                        // $FF: synthetic method
+                        public void execute(Object var1, ExecutionContext var2, Frame var3) {
+                           this.execute((CommandSourceStack)var1, var2, var3);
                         }
                      }).bind(var16));
                      var10 += var17.entries().size();
@@ -145,26 +146,28 @@ public class DebugCommand {
                var1.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
             }
 
-            int var20 = var10;
-            var4.queueNext(
-               (var4x, var5x) -> {
-                  if (var6.size() == 1) {
-                     var1.sendSuccess(
-                        () -> Component.translatable(
-                              "commands.debug.function.success.single", var20, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8
-                           ),
-                        true
-                     );
-                  } else {
-                     var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var20, var6.size(), var8), true);
-                  }
+            var4.queueNext((var4x, var5x) -> {
+               if (var6.size() == 1) {
+                  var1.sendSuccess(() -> {
+                     return Component.translatable("commands.debug.function.success.single", var10, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8);
+                  }, true);
+               } else {
+                  var1.sendSuccess(() -> {
+                     return Component.translatable("commands.debug.function.success.multiple", var10, var6.size(), var8);
+                  }, true);
                }
-            );
+
+            });
          }
+      }
+
+      // $FF: synthetic method
+      public void runGuarded(ExecutionCommandSource var1, ContextChain var2, ChainModifiers var3, ExecutionControl var4) throws CommandSyntaxException {
+         this.runGuarded((CommandSourceStack)var1, var2, var3, var4);
       }
    }
 
-   static class Tracer implements CommandSource, TraceCallbacks {
+   private static class Tracer implements CommandSource, TraceCallbacks {
       public static final int INDENT_OFFSET = 1;
       private final PrintWriter output;
       private int lastIndent;
@@ -184,6 +187,7 @@ public class DebugCommand {
          for(int var2 = 0; var2 < var1 + 1; ++var2) {
             this.output.write("    ");
          }
+
       }
 
       private void newLine() {
@@ -191,9 +195,9 @@ public class DebugCommand {
             this.output.println();
             this.waitingForResult = false;
          }
+
       }
 
-      @Override
       public void onCommand(int var1, String var2) {
          this.newLine();
          this.indentAndSave(var1);
@@ -202,7 +206,6 @@ public class DebugCommand {
          this.waitingForResult = true;
       }
 
-      @Override
       public void onReturn(int var1, String var2, int var3) {
          if (this.waitingForResult) {
             this.output.print(" -> ");
@@ -215,9 +218,9 @@ public class DebugCommand {
             this.output.print("] ");
             this.output.println(var2);
          }
+
       }
 
-      @Override
       public void onCall(int var1, ResourceLocation var2, int var3) {
          this.newLine();
          this.indentAndSave(var1);
@@ -227,7 +230,6 @@ public class DebugCommand {
          this.output.println(var3);
       }
 
-      @Override
       public void onError(String var1) {
          this.newLine();
          this.indentAndSave(this.lastIndent + 1);
@@ -235,7 +237,6 @@ public class DebugCommand {
          this.output.print(var1);
       }
 
-      @Override
       public void sendSystemMessage(Component var1) {
          this.newLine();
          this.printIndent(this.lastIndent + 1);
@@ -243,27 +244,22 @@ public class DebugCommand {
          this.output.println(var1.getString());
       }
 
-      @Override
       public boolean acceptsSuccess() {
          return true;
       }
 
-      @Override
       public boolean acceptsFailure() {
          return true;
       }
 
-      @Override
       public boolean shouldInformAdmins() {
          return false;
       }
 
-      @Override
       public boolean alwaysAccepts() {
          return true;
       }
 
-      @Override
       public void close() {
          IOUtils.closeQuietly(this.output);
       }

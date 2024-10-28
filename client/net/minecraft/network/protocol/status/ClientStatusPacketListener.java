@@ -5,7 +5,6 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.ping.ClientPongPacketListener;
 
 public interface ClientStatusPacketListener extends ClientPongPacketListener, ClientboundPacketListener {
-   @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.STATUS;
    }

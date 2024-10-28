@@ -19,7 +19,6 @@ public class RegionPingResult extends ValueObject implements ReflectionBasedSeri
       return this.ping;
    }
 
-   @Override
    public String toString() {
       return String.format(Locale.ROOT, "%s --> %.2f ms", this.regionName, (float)this.ping);
    }

@@ -23,11 +23,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockContainer {
    public static final MapCodec<TallSeagrassBlock> CODEC = simpleCodec(TallSeagrassBlock::new);
-   public static final EnumProperty<DoubleBlockHalf> HALF = DoublePlantBlock.HALF;
+   public static final EnumProperty<DoubleBlockHalf> HALF;
    protected static final float AABB_OFFSET = 6.0F;
-   protected static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
+   protected static final VoxelShape SHAPE;
 
-   @Override
    public MapCodec<TallSeagrassBlock> codec() {
       return CODEC;
    }
@@ -36,23 +35,19 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.isFaceSturdy(var2, var3, Direction.UP) && !var1.is(Blocks.MAGMA_BLOCK);
    }
 
-   @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(Blocks.SEAGRASS);
    }
 
    @Nullable
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = super.getStateForPlacement(var1);
       if (var2 != null) {
@@ -65,7 +60,6 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
       return null;
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       if (var1.getValue(HALF) == DoubleBlockHalf.UPPER) {
          BlockState var5 = var2.getBlockState(var3.below());
@@ -76,18 +70,20 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
       }
    }
 
-   @Override
    protected FluidState getFluidState(BlockState var1) {
       return Fluids.WATER.getSource(false);
    }
 
-   @Override
    public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return false;
    }
 
-   @Override
    public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
       return false;
+   }
+
+   static {
+      HALF = DoublePlantBlock.HALF;
+      SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
    }
 }

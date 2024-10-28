@@ -16,7 +16,6 @@ public final class DiscreteCubeMerger implements IndexMerger {
       this.secondDiv = var2 / var3;
    }
 
-   @Override
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.result.size() - 1;
 
@@ -29,12 +28,10 @@ public final class DiscreteCubeMerger implements IndexMerger {
       return true;
    }
 
-   @Override
    public int size() {
       return this.result.size();
    }
 
-   @Override
    public DoubleList getList() {
       return this.result;
    }

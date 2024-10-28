@@ -24,33 +24,22 @@ public class ThrownEgg extends ThrowableItemProjectile {
       super(EntityType.EGG, var2, var4, var6, var1);
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 3) {
          double var2 = 0.08;
 
          for(int var4 = 0; var4 < 8; ++var4) {
-            this.level()
-               .addParticle(
-                  new ItemParticleOption(ParticleTypes.ITEM, this.getItem()),
-                  this.getX(),
-                  this.getY(),
-                  this.getZ(),
-                  ((double)this.random.nextFloat() - 0.5) * 0.08,
-                  ((double)this.random.nextFloat() - 0.5) * 0.08,
-                  ((double)this.random.nextFloat() - 0.5) * 0.08
-               );
+            this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, this.getItem()), this.getX(), this.getY(), this.getZ(), ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08, ((double)this.random.nextFloat() - 0.5) * 0.08);
          }
       }
+
    }
 
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       var1.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level().isClientSide) {
@@ -61,7 +50,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
             }
 
             for(int var3 = 0; var3 < var2; ++var3) {
-               Chicken var4 = EntityType.CHICKEN.create(this.level());
+               Chicken var4 = (Chicken)EntityType.CHICKEN.create(this.level());
                if (var4 != null) {
                   var4.setAge(-24000);
                   var4.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
@@ -73,9 +62,9 @@ public class ThrownEgg extends ThrowableItemProjectile {
          this.level().broadcastEntityEvent(this, (byte)3);
          this.discard();
       }
+
    }
 
-   @Override
    protected Item getDefaultItem() {
       return Items.EGG;
    }

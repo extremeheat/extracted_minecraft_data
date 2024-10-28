@@ -21,7 +21,6 @@ public class ImageButton extends Button {
       this(0, 0, var1, var2, var3, var4, var5);
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
       var1.blitSprite(var5, this.getX(), this.getY(), this.width, this.height);

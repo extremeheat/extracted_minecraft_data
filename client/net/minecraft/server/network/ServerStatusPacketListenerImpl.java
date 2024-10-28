@@ -21,16 +21,13 @@ public class ServerStatusPacketListenerImpl implements ServerStatusPacketListene
       this.connection = var2;
    }
 
-   @Override
    public void onDisconnect(Component var1) {
    }
 
-   @Override
    public boolean isAcceptingMessages() {
       return this.connection.isConnected();
    }
 
-   @Override
    public void handleStatusRequest(ServerboundStatusRequestPacket var1) {
       if (this.hasRequestedStatus) {
          this.connection.disconnect(DISCONNECT_REASON);
@@ -40,7 +37,6 @@ public class ServerStatusPacketListenerImpl implements ServerStatusPacketListene
       }
    }
 
-   @Override
    public void handlePingRequest(ServerboundPingRequestPacket var1) {
       this.connection.send(new ClientboundPongResponsePacket(var1.getTime()));
       this.connection.disconnect(DISCONNECT_REASON);

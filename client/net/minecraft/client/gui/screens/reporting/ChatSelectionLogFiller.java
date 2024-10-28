@@ -31,7 +31,7 @@ public class ChatSelectionLogFiller {
       this.eventId = this.log.end();
    }
 
-   public void fillNextPage(int var1, ChatSelectionLogFiller.Output var2) {
+   public void fillNextPage(int var1, Output var2) {
       int var3 = 0;
 
       while(var3 < var1) {
@@ -41,25 +41,28 @@ public class ChatSelectionLogFiller {
          }
 
          int var5 = this.eventId--;
-         if (var4 instanceof LoggedChatMessage.Player var6 && !((LoggedChatMessage.Player)var6).message().equals(this.lastMessage)) {
-            if (this.acceptMessage(var2, (LoggedChatMessage.Player)var6)) {
-               if (this.missedCount > 0) {
-                  var2.acceptDivider(Component.translatable("gui.chatSelection.fold", this.missedCount));
-                  this.missedCount = 0;
+         if (var4 instanceof LoggedChatMessage.Player var6) {
+            if (!var6.message().equals(this.lastMessage)) {
+               if (this.acceptMessage(var2, var6)) {
+                  if (this.missedCount > 0) {
+                     var2.acceptDivider(Component.translatable("gui.chatSelection.fold", this.missedCount));
+                     this.missedCount = 0;
+                  }
+
+                  var2.acceptMessage(var5, var6);
+                  ++var3;
+               } else {
+                  ++this.missedCount;
                }
 
-               var2.acceptMessage(var5, (LoggedChatMessage.Player)var6);
-               ++var3;
-            } else {
-               ++this.missedCount;
+               this.lastMessage = var6.message();
             }
-
-            this.lastMessage = ((LoggedChatMessage.Player)var6).message();
          }
       }
+
    }
 
-   private boolean acceptMessage(ChatSelectionLogFiller.Output var1, LoggedChatMessage.Player var2) {
+   private boolean acceptMessage(Output var1, LoggedChatMessage.Player var2) {
       PlayerChatMessage var3 = var2.message();
       boolean var4 = this.contextBuilder.acceptContext(var3);
       if (this.canReport.test(var2)) {

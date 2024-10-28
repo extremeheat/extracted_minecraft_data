@@ -25,4 +25,9 @@ public enum CameraType {
    public CameraType cycle() {
       return VALUES[(this.ordinal() + 1) % VALUES.length];
    }
+
+   // $FF: synthetic method
+   private static CameraType[] $values() {
+      return new CameraType[]{FIRST_PERSON, THIRD_PERSON_BACK, THIRD_PERSON_FRONT};
+   }
 }

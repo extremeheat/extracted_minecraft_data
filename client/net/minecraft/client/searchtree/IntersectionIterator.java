@@ -20,10 +20,10 @@ public class IntersectionIterator<T> extends AbstractIterator<T> {
 
    protected T computeNext() {
       while(this.firstIterator.hasNext() && this.secondIterator.hasNext()) {
-         int var1 = this.comparator.compare((T)this.firstIterator.peek(), (T)this.secondIterator.peek());
+         int var1 = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
          if (var1 == 0) {
             this.secondIterator.next();
-            return (T)this.firstIterator.next();
+            return this.firstIterator.next();
          }
 
          if (var1 < 0) {
@@ -33,6 +33,6 @@ public class IntersectionIterator<T> extends AbstractIterator<T> {
          }
       }
 
-      return (T)this.endOfData();
+      return this.endOfData();
    }
 }

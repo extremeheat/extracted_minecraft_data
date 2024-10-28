@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class SuspendedTownParticle extends TextureSheetParticle {
@@ -18,18 +19,15 @@ public class SuspendedTownParticle extends TextureSheetParticle {
       this.lifetime = (int)(20.0 / (Math.random() * 0.8 + 0.2));
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   @Override
    public void move(double var1, double var3, double var5) {
       this.setBoundingBox(this.getBoundingBox().move(var1, var3, var5));
       this.setLocationFromBoundingbox();
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -44,10 +42,10 @@ public class SuspendedTownParticle extends TextureSheetParticle {
       }
    }
 
-   public static class ComposterFillProvider implements ParticleProvider<SimpleParticleType> {
+   public static class EggCrackProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public ComposterFillProvider(SpriteSet var1) {
+      public EggCrackProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
@@ -56,8 +54,12 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          var15.setColor(1.0F, 1.0F, 1.0F);
-         var15.setLifetime(3 + var2.getRandom().nextInt(5));
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -77,12 +79,17 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          var15.setLifetime(var15.getLifetime() / 2);
          return var15;
       }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
-   public static class EggCrackProvider implements ParticleProvider<SimpleParticleType> {
+   public static class ComposterFillProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public EggCrackProvider(SpriteSet var1) {
+      public ComposterFillProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
@@ -91,7 +98,13 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          var15.setColor(1.0F, 1.0F, 1.0F);
+         var15.setLifetime(3 + var2.getRandom().nextInt(5));
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -109,6 +122,11 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          var15.setColor(1.0F, 1.0F, 1.0F);
          return var15;
       }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -123,6 +141,11 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

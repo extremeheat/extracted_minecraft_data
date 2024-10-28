@@ -14,15 +14,14 @@ public class EntityModelSet implements ResourceManagerReloadListener {
    }
 
    public ModelPart bakeLayer(ModelLayerLocation var1) {
-      LayerDefinition var2 = this.roots.get(var1);
+      LayerDefinition var2 = (LayerDefinition)this.roots.get(var1);
       if (var2 == null) {
-         throw new IllegalArgumentException("No model for layer " + var1);
+         throw new IllegalArgumentException("No model for layer " + String.valueOf(var1));
       } else {
          return var2.bakeRoot();
       }
    }
 
-   @Override
    public void onResourceManagerReload(ResourceManager var1) {
       this.roots = ImmutableMap.copyOf(LayerDefinitions.createRoots());
    }

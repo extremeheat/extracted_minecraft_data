@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
-import net.minecraft.client.telemetry.TelemetryPropertyMap;
 
 public class WorldUnloadEvent {
    private static final int NOT_TRACKING_TIME = -1;
@@ -23,6 +22,7 @@ public class WorldUnloadEvent {
       if (this.worldLoadedTime.isEmpty()) {
          this.worldLoadedTime = Optional.of(Instant.now());
       }
+
    }
 
    public void setTime(long var1) {
@@ -39,9 +39,11 @@ public class WorldUnloadEvent {
    }
 
    public void send(TelemetryEventSender var1) {
-      this.worldLoadedTime.ifPresent(var2 -> var1.send(TelemetryEventType.WORLD_UNLOADED, var2x -> {
+      this.worldLoadedTime.ifPresent((var2) -> {
+         var1.send(TelemetryEventType.WORLD_UNLOADED, (var2x) -> {
             var2x.put(TelemetryProperty.SECONDS_SINCE_LOAD, this.getTimeInSecondsSinceLoad(var2));
             var2x.put(TelemetryProperty.TICKS_SINCE_LOAD, (int)this.totalTicks);
-         }));
+         });
+      });
    }
 }

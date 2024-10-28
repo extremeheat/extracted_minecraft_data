@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -12,19 +11,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockent
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifier;
 
 public class ProcessorRule {
-   public static final Passthrough DEFAULT_BLOCK_ENTITY_MODIFIER = Passthrough.INSTANCE;
-   public static final Codec<ProcessorRule> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               RuleTest.CODEC.fieldOf("input_predicate").forGetter(var0x -> var0x.inputPredicate),
-               RuleTest.CODEC.fieldOf("location_predicate").forGetter(var0x -> var0x.locPredicate),
-               PosRuleTest.CODEC.optionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter(var0x -> var0x.posPredicate),
-               BlockState.CODEC.fieldOf("output_state").forGetter(var0x -> var0x.outputState),
-               RuleBlockEntityModifier.CODEC
-                  .optionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER)
-                  .forGetter(var0x -> var0x.blockEntityModifier)
-            )
-            .apply(var0, ProcessorRule::new)
-   );
+   public static final Passthrough DEFAULT_BLOCK_ENTITY_MODIFIER;
+   public static final Codec<ProcessorRule> CODEC;
    private final RuleTest inputPredicate;
    private final RuleTest locPredicate;
    private final PosRuleTest posPredicate;
@@ -59,5 +47,22 @@ public class ProcessorRule {
    @Nullable
    public CompoundTag getOutputTag(RandomSource var1, @Nullable CompoundTag var2) {
       return this.blockEntityModifier.apply(var1, var2);
+   }
+
+   static {
+      DEFAULT_BLOCK_ENTITY_MODIFIER = Passthrough.INSTANCE;
+      CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(RuleTest.CODEC.fieldOf("input_predicate").forGetter((var0x) -> {
+            return var0x.inputPredicate;
+         }), RuleTest.CODEC.fieldOf("location_predicate").forGetter((var0x) -> {
+            return var0x.locPredicate;
+         }), PosRuleTest.CODEC.lenientOptionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter((var0x) -> {
+            return var0x.posPredicate;
+         }), BlockState.CODEC.fieldOf("output_state").forGetter((var0x) -> {
+            return var0x.outputState;
+         }), RuleBlockEntityModifier.CODEC.lenientOptionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER).forGetter((var0x) -> {
+            return var0x.blockEntityModifier;
+         })).apply(var0, ProcessorRule::new);
+      });
    }
 }

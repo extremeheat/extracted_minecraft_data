@@ -3,7 +3,7 @@ package net.minecraft.client.renderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import java.util.Map.Entry;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
@@ -48,8 +48,9 @@ public class ItemModelShaper {
       ObjectIterator var1 = this.shapes.entrySet().iterator();
 
       while(var1.hasNext()) {
-         Entry var2 = (Entry)var1.next();
+         Map.Entry var2 = (Map.Entry)var1.next();
          this.shapesCache.put((Integer)var2.getKey(), this.modelManager.getModel((ModelResourceLocation)var2.getValue()));
       }
+
    }
 }

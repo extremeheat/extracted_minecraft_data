@@ -7,9 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractScrollWidget extends AbstractWidget implements Renderable, GuiEventListener {
-   private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(
-      new ResourceLocation("widget/text_field"), new ResourceLocation("widget/text_field_highlighted")
-   );
+   private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(new ResourceLocation("widget/text_field"), new ResourceLocation("widget/text_field_highlighted"));
    private static final ResourceLocation SCROLLER_SPRITE = new ResourceLocation("widget/scroller");
    private static final int INNER_PADDING = 4;
    private static final int SCROLL_BAR_WIDTH = 8;
@@ -20,17 +18,12 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       super(var1, var2, var3, var4, var5);
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (!this.visible) {
          return false;
       } else {
          boolean var6 = this.withinContentAreaPoint(var1, var3);
-         boolean var7 = this.scrollbarVisible()
-            && var1 >= (double)(this.getX() + this.width)
-            && var1 <= (double)(this.getX() + this.width + 8)
-            && var3 >= (double)this.getY()
-            && var3 < (double)(this.getY() + this.height);
+         boolean var7 = this.scrollbarVisible() && var1 >= (double)(this.getX() + this.width) && var1 <= (double)(this.getX() + this.width + 8) && var3 >= (double)this.getY() && var3 < (double)(this.getY() + this.height);
          if (var7 && var5 == 0) {
             this.scrolling = true;
             return true;
@@ -40,7 +33,6 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       }
    }
 
-   @Override
    public boolean mouseReleased(double var1, double var3, int var5) {
       if (var5 == 0) {
          this.scrolling = false;
@@ -49,7 +41,6 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       return super.mouseReleased(var1, var3, var5);
    }
 
-   @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
       if (this.visible && this.isFocused() && this.scrolling) {
          if (var3 < (double)this.getY()) {
@@ -68,7 +59,6 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       }
    }
 
-   @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (!this.visible) {
          return false;
@@ -78,7 +68,6 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       }
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       boolean var4 = var1 == 265;
       boolean var5 = var1 == 264;
@@ -93,7 +82,6 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       return super.keyPressed(var1, var2, var3);
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
          this.renderBackground(var1);
@@ -115,6 +103,7 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       if (this.scrollbarVisible()) {
          this.renderScrollBar(var1);
       }
+
    }
 
    protected int innerPadding() {
@@ -162,10 +151,7 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
    }
 
    protected boolean withinContentAreaPoint(double var1, double var3) {
-      return var1 >= (double)this.getX()
-         && var1 < (double)(this.getX() + this.width)
-         && var3 >= (double)this.getY()
-         && var3 < (double)(this.getY() + this.height);
+      return var1 >= (double)this.getX() && var1 < (double)(this.getX() + this.width) && var3 >= (double)this.getY() && var3 < (double)(this.getY() + this.height);
    }
 
    protected boolean scrollbarVisible() {

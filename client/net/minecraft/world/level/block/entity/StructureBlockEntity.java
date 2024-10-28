@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -19,6 +20,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -41,23 +43,28 @@ public class StructureBlockEntity extends BlockEntity {
    private String author = "";
    private String metaData = "";
    private BlockPos structurePos = new BlockPos(0, 1, 0);
-   private Vec3i structureSize = Vec3i.ZERO;
-   private Mirror mirror = Mirror.NONE;
-   private Rotation rotation = Rotation.NONE;
+   private Vec3i structureSize;
+   private Mirror mirror;
+   private Rotation rotation;
    private StructureMode mode;
-   private boolean ignoreEntities = true;
+   private boolean ignoreEntities;
    private boolean powered;
    private boolean showAir;
-   private boolean showBoundingBox = true;
-   private float integrity = 1.0F;
+   private boolean showBoundingBox;
+   private float integrity;
    private long seed;
 
    public StructureBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.STRUCTURE_BLOCK, var1, var2);
-      this.mode = var2.getValue(StructureBlock.MODE);
+      this.structureSize = Vec3i.ZERO;
+      this.mirror = Mirror.NONE;
+      this.rotation = Rotation.NONE;
+      this.ignoreEntities = true;
+      this.showBoundingBox = true;
+      this.integrity = 1.0F;
+      this.mode = (StructureMode)var2.getValue(StructureBlock.MODE);
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putString("name", this.getStructureName());
@@ -80,9 +87,8 @@ public class StructureBlockEntity extends BlockEntity {
       var1.putLong("seed", this.seed);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.setStructureName(var1.getString("name"));
       this.author = var1.getString("author");
       this.metaData = var1.getString("metadata");
@@ -132,8 +138,9 @@ public class StructureBlockEntity extends BlockEntity {
          BlockPos var1 = this.getBlockPos();
          BlockState var2 = this.level.getBlockState(var1);
          if (var2.is(Blocks.STRUCTURE_BLOCK)) {
-            this.level.setBlock(var1, var2.setValue(StructureBlock.MODE, this.mode), 2);
+            this.level.setBlock(var1, (BlockState)var2.setValue(StructureBlock.MODE, this.mode), 2);
          }
+
       }
    }
 
@@ -141,9 +148,8 @@ public class StructureBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public boolean usedBy(Player var1) {
@@ -226,8 +232,9 @@ public class StructureBlockEntity extends BlockEntity {
       this.mode = var1;
       BlockState var2 = this.level.getBlockState(this.getBlockPos());
       if (var2.is(Blocks.STRUCTURE_BLOCK)) {
-         this.level.setBlock(this.getBlockPos(), var2.setValue(StructureBlock.MODE, var1), 2);
+         this.level.setBlock(this.getBlockPos(), (BlockState)var2.setValue(StructureBlock.MODE, var1), 2);
       }
+
    }
 
    public boolean isIgnoreEntities() {
@@ -263,13 +270,13 @@ public class StructureBlockEntity extends BlockEntity {
          BlockPos var3 = new BlockPos(var1.getX() - 80, this.level.getMinBuildHeight(), var1.getZ() - 80);
          BlockPos var4 = new BlockPos(var1.getX() + 80, this.level.getMaxBuildHeight() - 1, var1.getZ() + 80);
          Stream var5 = this.getRelatedCorners(var3, var4);
-         return calculateEnclosingBoundingBox(var1, var5).filter(var2x -> {
-            int var3xx = var2x.maxX() - var2x.minX();
-            int var4xx = var2x.maxY() - var2x.minY();
-            int var5xx = var2x.maxZ() - var2x.minZ();
-            if (var3xx > 1 && var4xx > 1 && var5xx > 1) {
+         return calculateEnclosingBoundingBox(var1, var5).filter((var2x) -> {
+            int var3 = var2x.maxX() - var2x.minX();
+            int var4 = var2x.maxY() - var2x.minY();
+            int var5 = var2x.maxZ() - var2x.minZ();
+            if (var3 > 1 && var4 > 1 && var5 > 1) {
                this.structurePos = new BlockPos(var2x.minX() - var1.getX() + 1, var2x.minY() - var1.getY() + 1, var2x.minZ() - var1.getZ() + 1);
-               this.structureSize = new Vec3i(var3xx - 1, var4xx - 1, var5xx - 1);
+               this.structureSize = new Vec3i(var3 - 1, var4 - 1, var5 - 1);
                this.setChanged();
                BlockState var6 = this.level.getBlockState(var1);
                this.level.sendBlockUpdated(var1, var6, var6, 3);
@@ -282,13 +289,18 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    private Stream<BlockPos> getRelatedCorners(BlockPos var1, BlockPos var2) {
-      return BlockPos.betweenClosedStream(var1, var2)
-         .filter(var1x -> this.level.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK))
-         .map(this.level::getBlockEntity)
-         .filter(var0 -> var0 instanceof StructureBlockEntity)
-         .map(var0 -> (StructureBlockEntity)var0)
-         .filter(var1x -> var1x.mode == StructureMode.CORNER && Objects.equals(this.structureName, var1x.structureName))
-         .map(BlockEntity::getBlockPos);
+      Stream var10000 = BlockPos.betweenClosedStream(var1, var2).filter((var1x) -> {
+         return this.level.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK);
+      });
+      Level var10001 = this.level;
+      Objects.requireNonNull(var10001);
+      return var10000.map(var10001::getBlockEntity).filter((var0) -> {
+         return var0 instanceof StructureBlockEntity;
+      }).map((var0) -> {
+         return (StructureBlockEntity)var0;
+      }).filter((var1x) -> {
+         return var1x.mode == StructureMode.CORNER && Objects.equals(this.structureName, var1x.structureName);
+      }).map(BlockEntity::getBlockPos);
    }
 
    private static Optional<BoundingBox> calculateEnclosingBoundingBox(BlockPos var0, Stream<BlockPos> var1) {
@@ -299,6 +311,7 @@ public class StructureBlockEntity extends BlockEntity {
          BlockPos var3 = (BlockPos)var2.next();
          BoundingBox var4 = new BoundingBox(var3);
          if (var2.hasNext()) {
+            Objects.requireNonNull(var4);
             var2.forEachRemaining(var4::encapsulate);
          } else {
             var4.encapsulate(var0);
@@ -347,7 +360,7 @@ public class StructureBlockEntity extends BlockEntity {
 
    public boolean placeStructureIfSameSize(ServerLevel var1) {
       if (this.mode == StructureMode.LOAD && this.structureName != null) {
-         StructureTemplate var2 = var1.getStructureManager().get(this.structureName).orElse(null);
+         StructureTemplate var2 = (StructureTemplate)var1.getStructureManager().get(this.structureName).orElse((Object)null);
          if (var2 == null) {
             return false;
          } else if (var2.getSize().equals(this.structureSize)) {
@@ -383,16 +396,17 @@ public class StructureBlockEntity extends BlockEntity {
       if (var2 != null) {
          this.placeStructure(var1, var2);
       }
+
    }
 
    @Nullable
    private StructureTemplate getStructureTemplate(ServerLevel var1) {
-      return this.structureName == null ? null : var1.getStructureManager().get(this.structureName).orElse(null);
+      return this.structureName == null ? null : (StructureTemplate)var1.getStructureManager().get(this.structureName).orElse((Object)null);
    }
 
    private void placeStructure(ServerLevel var1, StructureTemplate var2) {
       this.loadStructureInfo(var2);
-      StructurePlaceSettings var3 = new StructurePlaceSettings().setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities);
+      StructurePlaceSettings var3 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities);
       if (this.integrity < 1.0F) {
          var3.clearProcessors().addProcessor(new BlockRotProcessor(Mth.clamp(this.integrity, 0.0F, 1.0F))).setRandom(createRandom(this.seed));
       }
@@ -448,6 +462,16 @@ public class StructureBlockEntity extends BlockEntity {
       this.showBoundingBox = var1;
    }
 
+   // $FF: synthetic method
+   public Packet getUpdatePacket() {
+      return this.getUpdatePacket();
+   }
+
+   // $FF: synthetic method
+   private static void lambda$placeStructure$5(ServerLevel var0, BlockPos var1) {
+      var0.setBlock(var1, Blocks.STRUCTURE_VOID.defaultBlockState(), 2);
+   }
+
    public static enum UpdateType {
       UPDATE_DATA,
       SAVE_AREA,
@@ -455,6 +479,11 @@ public class StructureBlockEntity extends BlockEntity {
       SCAN_AREA;
 
       private UpdateType() {
+      }
+
+      // $FF: synthetic method
+      private static UpdateType[] $values() {
+         return new UpdateType[]{UPDATE_DATA, SAVE_AREA, LOAD_AREA, SCAN_AREA};
       }
    }
 }

@@ -14,60 +14,54 @@ public class NonNullList<E> extends AbstractList<E> {
    private final E defaultValue;
 
    public static <E> NonNullList<E> create() {
-      return new NonNullList<>(Lists.newArrayList(), (E)null);
+      return new NonNullList(Lists.newArrayList(), (Object)null);
    }
 
    public static <E> NonNullList<E> createWithCapacity(int var0) {
-      return new NonNullList<>(Lists.newArrayListWithCapacity(var0), (E)null);
+      return new NonNullList(Lists.newArrayListWithCapacity(var0), (Object)null);
    }
 
    public static <E> NonNullList<E> withSize(int var0, E var1) {
       Validate.notNull(var1);
       Object[] var2 = new Object[var0];
       Arrays.fill(var2, var1);
-      return new NonNullList<>(Arrays.asList((E[])var2), (E)var1);
+      return new NonNullList(Arrays.asList(var2), var1);
    }
 
    @SafeVarargs
    public static <E> NonNullList<E> of(E var0, E... var1) {
-      return new NonNullList<>(Arrays.asList((E[])var1), (E)var0);
+      return new NonNullList(Arrays.asList(var1), var0);
    }
 
    protected NonNullList(List<E> var1, @Nullable E var2) {
       super();
       this.list = var1;
-      this.defaultValue = (E)var2;
+      this.defaultValue = var2;
    }
 
    @Nonnull
-   @Override
    public E get(int var1) {
       return this.list.get(var1);
    }
 
-   @Override
    public E set(int var1, E var2) {
       Validate.notNull(var2);
-      return this.list.set(var1, (E)var2);
+      return this.list.set(var1, var2);
    }
 
-   @Override
    public void add(int var1, E var2) {
       Validate.notNull(var2);
-      this.list.add(var1, (E)var2);
+      this.list.add(var1, var2);
    }
 
-   @Override
    public E remove(int var1) {
       return this.list.remove(var1);
    }
 
-   @Override
    public int size() {
       return this.list.size();
    }
 
-   @Override
    public void clear() {
       if (this.defaultValue == null) {
          super.clear();
@@ -76,5 +70,6 @@ public class NonNullList<E> extends AbstractList<E> {
             this.set(var1, this.defaultValue);
          }
       }
+
    }
 }

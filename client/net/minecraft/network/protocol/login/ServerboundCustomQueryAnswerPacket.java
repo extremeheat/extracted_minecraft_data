@@ -8,13 +8,8 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.login.custom.CustomQueryAnswerPayload;
 import net.minecraft.network.protocol.login.custom.DiscardedQueryAnswerPayload;
 
-public record ServerboundCustomQueryAnswerPacket(int b, @Nullable CustomQueryAnswerPayload c) implements Packet<ServerLoginPacketListener> {
-   private final int transactionId;
-   @Nullable
-   private final CustomQueryAnswerPayload payload;
-   public static final StreamCodec<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket> STREAM_CODEC = Packet.codec(
-      ServerboundCustomQueryAnswerPacket::write, ServerboundCustomQueryAnswerPacket::read
-   );
+public record ServerboundCustomQueryAnswerPacket(int transactionId, @Nullable CustomQueryAnswerPayload payload) implements Packet<ServerLoginPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket> STREAM_CODEC = Packet.codec(ServerboundCustomQueryAnswerPacket::write, ServerboundCustomQueryAnswerPacket::read);
    private static final int MAX_PAYLOAD_SIZE = 1048576;
 
    public ServerboundCustomQueryAnswerPacket(int var1, @Nullable CustomQueryAnswerPayload var2) {
@@ -44,15 +39,25 @@ public record ServerboundCustomQueryAnswerPacket(int b, @Nullable CustomQueryAns
 
    private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.transactionId);
-      var1.writeNullable(this.payload, (var0, var1x) -> var1x.write(var0));
+      var1.writeNullable(this.payload, (var0, var1x) -> {
+         var1x.write(var0);
+      });
    }
 
-   @Override
    public PacketType<ServerboundCustomQueryAnswerPacket> type() {
       return LoginPacketTypes.SERVERBOUND_CUSTOM_QUERY_ANSWER;
    }
 
    public void handle(ServerLoginPacketListener var1) {
       var1.handleCustomQueryPacket(this);
+   }
+
+   public int transactionId() {
+      return this.transactionId;
+   }
+
+   @Nullable
+   public CustomQueryAnswerPayload payload() {
+      return this.payload;
    }
 }

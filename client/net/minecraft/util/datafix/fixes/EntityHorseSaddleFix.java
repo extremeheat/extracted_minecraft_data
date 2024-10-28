@@ -15,7 +15,6 @@ public class EntityHorseSaddleFix extends NamedEntityFix {
       super(var1, var2, "EntityHorseSaddleFix", References.ENTITY, "EntityHorse");
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       Type var3 = this.getInputSchema().getTypeRaw(References.ITEM_STACK);

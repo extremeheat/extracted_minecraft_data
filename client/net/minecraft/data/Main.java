@@ -94,35 +94,27 @@ public class Main {
          boolean var16 = var13 || var11.has(var5);
          boolean var17 = var13 || var11.has(var6);
          boolean var18 = var13 || var11.has(var7);
-         DataGenerator var19 = createStandardGenerator(
-            var12,
-            var11.valuesOf(var10).stream().map(var0x -> Paths.get(var0x)).collect(Collectors.toList()),
-            var14,
-            var15,
-            var16,
-            var17,
-            var18,
-            SharedConstants.getCurrentVersion(),
-            true
-         );
+         DataGenerator var19 = createStandardGenerator(var12, (Collection)var11.valuesOf(var10).stream().map((var0x) -> {
+            return Paths.get(var0x);
+         }).collect(Collectors.toList()), var14, var15, var16, var17, var18, SharedConstants.getCurrentVersion(), true);
          var19.run();
       } else {
          var1.printHelpOn(System.out);
       }
    }
 
-   private static <T extends DataProvider> DataProvider.Factory<T> bindRegistries(
-      BiFunction<PackOutput, CompletableFuture<HolderLookup.Provider>, T> var0, CompletableFuture<HolderLookup.Provider> var1
-   ) {
-      return var2 -> (T)var0.apply(var2, var1);
+   private static <T extends DataProvider> DataProvider.Factory<T> bindRegistries(BiFunction<PackOutput, CompletableFuture<HolderLookup.Provider>, T> var0, CompletableFuture<HolderLookup.Provider> var1) {
+      return (var2) -> {
+         return (DataProvider)var0.apply(var2, var1);
+      };
    }
 
-   public static DataGenerator createStandardGenerator(
-      Path var0, Collection<Path> var1, boolean var2, boolean var3, boolean var4, boolean var5, boolean var6, WorldVersion var7, boolean var8
-   ) {
+   public static DataGenerator createStandardGenerator(Path var0, Collection<Path> var1, boolean var2, boolean var3, boolean var4, boolean var5, boolean var6, WorldVersion var7, boolean var8) {
       DataGenerator var9 = new DataGenerator(var0, var7, var8);
       DataGenerator.PackGenerator var10 = var9.getVanillaPack(var2 || var3);
-      var10.addProvider(var1x -> new SnbtToNbt(var1x, var1).addFilter(new StructureUpdater()));
+      var10.addProvider((var1x) -> {
+         return (new SnbtToNbt(var1x, var1)).addFilter(new StructureUpdater());
+      });
       CompletableFuture var20 = CompletableFuture.supplyAsync(VanillaRegistries::createLookup, Util.backgroundExecutor());
       DataGenerator.PackGenerator var11 = var9.getVanillaPack(var2);
       var11.addProvider(ModelProvider::new);
@@ -131,11 +123,13 @@ public class Main {
       var16.addProvider(bindRegistries(VanillaAdvancementProvider::create, var20));
       var16.addProvider(bindRegistries(VanillaLootTableProvider::create, var20));
       var16.addProvider(bindRegistries(VanillaRecipeProvider::new, var20));
-      TagsProvider var21 = var16.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var20));
-      TagsProvider var12 = var16.addProvider(var2x -> new VanillaItemTagsProvider(var2x, var20, var21.contentsGetter()));
-      TagsProvider var13 = var16.addProvider(bindRegistries(BiomeTagsProvider::new, var20));
-      TagsProvider var14 = var16.addProvider(bindRegistries(BannerPatternTagsProvider::new, var20));
-      TagsProvider var15 = var16.addProvider(bindRegistries(StructureTagsProvider::new, var20));
+      TagsProvider var21 = (TagsProvider)var16.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var20));
+      TagsProvider var12 = (TagsProvider)var16.addProvider((var2x) -> {
+         return new VanillaItemTagsProvider(var2x, var20, var21.contentsGetter());
+      });
+      TagsProvider var13 = (TagsProvider)var16.addProvider(bindRegistries(BiomeTagsProvider::new, var20));
+      TagsProvider var14 = (TagsProvider)var16.addProvider(bindRegistries(BannerPatternTagsProvider::new, var20));
+      TagsProvider var15 = (TagsProvider)var16.addProvider(bindRegistries(StructureTagsProvider::new, var20));
       var16.addProvider(bindRegistries(CatVariantTagsProvider::new, var20));
       var16.addProvider(bindRegistries(DamageTypeTagsProvider::new, var20));
       var16.addProvider(bindRegistries(EntityTypeTagsProvider::new, var20));
@@ -147,7 +141,9 @@ public class Main {
       var16.addProvider(bindRegistries(PoiTypeTagsProvider::new, var20));
       var16.addProvider(bindRegistries(WorldPresetTagsProvider::new, var20));
       var16 = var9.getVanillaPack(var4);
-      var16.addProvider(var1x -> new NbtToSnbt(var1x, var1));
+      var16.addProvider((var1x) -> {
+         return new NbtToSnbt(var1x, var1);
+      });
       var16 = var9.getVanillaPack(var5);
       var16.addProvider(bindRegistries(BiomeParametersDumpReport::new, var20));
       var16.addProvider(bindRegistries(ItemListReport::new, var20));
@@ -156,36 +152,42 @@ public class Main {
       var16.addProvider(RegistryDumpReport::new);
       var16 = var9.getBuiltinDatapack(var3, "bundle");
       var16.addProvider(bindRegistries(BundleRecipeProvider::new, var20));
-      var16.addProvider(
-         var0x -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.bundle.description"), FeatureFlagSet.of(FeatureFlags.BUNDLE))
-      );
+      var16.addProvider((var0x) -> {
+         return PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.bundle.description"), FeatureFlagSet.of(FeatureFlags.BUNDLE));
+      });
       var16 = var9.getBuiltinDatapack(var3, "trade_rebalance");
-      var16.addProvider(
-         var0x -> PackMetadataGenerator.forFeaturePack(
-               var0x, Component.translatable("dataPack.trade_rebalance.description"), FeatureFlagSet.of(FeatureFlags.TRADE_REBALANCE)
-            )
-      );
+      var16.addProvider((var0x) -> {
+         return PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.trade_rebalance.description"), FeatureFlagSet.of(FeatureFlags.TRADE_REBALANCE));
+      });
       var16.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var20));
       var16.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var20));
-      CompletableFuture var26 = UpdateOneTwentyOneRegistries.createLookup(var20);
-      CompletableFuture var17 = var26.thenApply(RegistrySetBuilder.PatchedRegistries::full);
+      CompletableFuture var22 = UpdateOneTwentyOneRegistries.createLookup(var20);
+      CompletableFuture var17 = var22.thenApply(RegistrySetBuilder.PatchedRegistries::full);
       DataGenerator.PackGenerator var18 = var9.getBuiltinDatapack(var3, "update_1_21");
-      var18.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var26.thenApply(RegistrySetBuilder.PatchedRegistries::patches)));
+      var18.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var22.thenApply(RegistrySetBuilder.PatchedRegistries::patches)));
       var18.addProvider(bindRegistries(UpdateOneTwentyOneRecipeProvider::new, var17));
-      TagsProvider var19 = var18.addProvider(var2x -> new UpdateOneTwentyOneBlockTagsProvider(var2x, var17, var21.contentsGetter()));
-      var18.addProvider(var3x -> new UpdateOneTwentyOneItemTagsProvider(var3x, var17, var12.contentsGetter(), var19.contentsGetter()));
-      var18.addProvider(var2x -> new UpdateOneTwentyOneBiomeTagsProvider(var2x, var17, var13.contentsGetter()));
+      TagsProvider var19 = (TagsProvider)var18.addProvider((var2x) -> {
+         return new UpdateOneTwentyOneBlockTagsProvider(var2x, var17, var21.contentsGetter());
+      });
+      var18.addProvider((var3x) -> {
+         return new UpdateOneTwentyOneItemTagsProvider(var3x, var17, var12.contentsGetter(), var19.contentsGetter());
+      });
+      var18.addProvider((var2x) -> {
+         return new UpdateOneTwentyOneBiomeTagsProvider(var2x, var17, var13.contentsGetter());
+      });
       var18.addProvider(bindRegistries(UpdateOneTwentyOneLootTableProvider::create, var17));
-      var18.addProvider(
-         var0x -> PackMetadataGenerator.forFeaturePack(
-               var0x, Component.translatable("dataPack.update_1_21.description"), FeatureFlagSet.of(FeatureFlags.UPDATE_1_21)
-            )
-      );
+      var18.addProvider((var0x) -> {
+         return PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.update_1_21.description"), FeatureFlagSet.of(FeatureFlags.UPDATE_1_21));
+      });
       var18.addProvider(bindRegistries(UpdateOneTwentyOneEntityTypeTagsProvider::new, var17));
       var18.addProvider(bindRegistries(UpdateOneTwentyOneDamageTypeTagsProvider::new, var17));
       var18.addProvider(bindRegistries(UpdateOneTwentyOneAdvancementProvider::create, var17));
-      var18.addProvider(var2x -> new UpdateOneTwentyOneBannerPatternTagsProvider(var2x, var17, var14.contentsGetter()));
-      var18.addProvider(var2x -> new UpdateOneTwentyOneStructureTagsProvider(var2x, var17, var15.contentsGetter()));
+      var18.addProvider((var2x) -> {
+         return new UpdateOneTwentyOneBannerPatternTagsProvider(var2x, var17, var14.contentsGetter());
+      });
+      var18.addProvider((var2x) -> {
+         return new UpdateOneTwentyOneStructureTagsProvider(var2x, var17, var15.contentsGetter());
+      });
       return var9;
    }
 }

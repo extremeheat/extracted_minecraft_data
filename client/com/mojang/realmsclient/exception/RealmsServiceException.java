@@ -10,7 +10,6 @@ public class RealmsServiceException extends Exception {
       this.realmsError = var1;
    }
 
-   @Override
    public String getMessage() {
       return this.realmsError.logMessage();
    }

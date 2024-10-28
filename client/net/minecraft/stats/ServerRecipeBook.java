@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -31,8 +32,10 @@ public class ServerRecipeBook extends RecipeBook {
    public int addRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
+      Iterator var5 = var1.iterator();
 
-      for(RecipeHolder var6 : var1) {
+      while(var5.hasNext()) {
+         RecipeHolder var6 = (RecipeHolder)var5.next();
          ResourceLocation var7 = var6.id();
          if (!this.known.contains(var7) && !var6.value().isSpecial()) {
             this.add(var7);
@@ -53,8 +56,10 @@ public class ServerRecipeBook extends RecipeBook {
    public int removeRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
+      Iterator var5 = var1.iterator();
 
-      for(RecipeHolder var6 : var1) {
+      while(var5.hasNext()) {
+         RecipeHolder var6 = (RecipeHolder)var5.next();
          ResourceLocation var7 = var6.id();
          if (this.known.contains(var7)) {
             this.remove(var7);
@@ -75,15 +80,19 @@ public class ServerRecipeBook extends RecipeBook {
       CompoundTag var1 = new CompoundTag();
       this.getBookSettings().write(var1);
       ListTag var2 = new ListTag();
+      Iterator var3 = this.known.iterator();
 
-      for(ResourceLocation var4 : this.known) {
+      while(var3.hasNext()) {
+         ResourceLocation var4 = (ResourceLocation)var3.next();
          var2.add(StringTag.valueOf(var4.toString()));
       }
 
       var1.put("recipes", var2);
       ListTag var6 = new ListTag();
+      Iterator var7 = this.highlight.iterator();
 
-      for(ResourceLocation var5 : this.highlight) {
+      while(var7.hasNext()) {
+         ResourceLocation var5 = (ResourceLocation)var7.next();
          var6.add(StringTag.valueOf(var5.toString()));
       }
 
@@ -115,6 +124,7 @@ public class ServerRecipeBook extends RecipeBook {
             LOGGER.error("Tried to load improperly formatted recipe: {} removed now.", var5);
          }
       }
+
    }
 
    public void sendInitialRecipeBook(ServerPlayer var1) {

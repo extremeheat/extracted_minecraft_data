@@ -5,6 +5,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,25 +30,21 @@ public class RconConsoleSource implements CommandSource {
 
    public CommandSourceStack createCommandSourceStack() {
       ServerLevel var1 = this.server.overworld();
-      return new CommandSourceStack(this, Vec3.atLowerCornerOf(var1.getSharedSpawnPos()), Vec2.ZERO, var1, 4, "Rcon", RCON_COMPONENT, this.server, null);
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(var1.getSharedSpawnPos()), Vec2.ZERO, var1, 4, "Rcon", RCON_COMPONENT, this.server, (Entity)null);
    }
 
-   @Override
    public void sendSystemMessage(Component var1) {
       this.buffer.append(var1.getString());
    }
 
-   @Override
    public boolean acceptsSuccess() {
       return true;
    }
 
-   @Override
    public boolean acceptsFailure() {
       return true;
    }
 
-   @Override
    public boolean shouldInformAdmins() {
       return this.server.shouldRconBroadcast();
    }

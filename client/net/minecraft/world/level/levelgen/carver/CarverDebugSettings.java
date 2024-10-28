@@ -2,28 +2,12 @@ package net.minecraft.world.level.levelgen.carver;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class CarverDebugSettings {
-   public static final CarverDebugSettings DEFAULT = new CarverDebugSettings(
-      false,
-      Blocks.ACACIA_BUTTON.defaultBlockState(),
-      Blocks.CANDLE.defaultBlockState(),
-      Blocks.ORANGE_STAINED_GLASS.defaultBlockState(),
-      Blocks.GLASS.defaultBlockState()
-   );
-   public static final Codec<CarverDebugSettings> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.BOOL.optionalFieldOf("debug_mode", false).forGetter(CarverDebugSettings::isDebugMode),
-               BlockState.CODEC.optionalFieldOf("air_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getAirState),
-               BlockState.CODEC.optionalFieldOf("water_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getWaterState),
-               BlockState.CODEC.optionalFieldOf("lava_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getLavaState),
-               BlockState.CODEC.optionalFieldOf("barrier_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getBarrierState)
-            )
-            .apply(var0, CarverDebugSettings::new)
-   );
+   public static final CarverDebugSettings DEFAULT;
+   public static final Codec<CarverDebugSettings> CODEC;
    private final boolean debugMode;
    private final BlockState airState;
    private final BlockState waterState;
@@ -69,5 +53,12 @@ public class CarverDebugSettings {
 
    public BlockState getBarrierState() {
       return this.barrierState;
+   }
+
+   static {
+      DEFAULT = new CarverDebugSettings(false, Blocks.ACACIA_BUTTON.defaultBlockState(), Blocks.CANDLE.defaultBlockState(), Blocks.ORANGE_STAINED_GLASS.defaultBlockState(), Blocks.GLASS.defaultBlockState());
+      CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(Codec.BOOL.optionalFieldOf("debug_mode", false).forGetter(CarverDebugSettings::isDebugMode), BlockState.CODEC.optionalFieldOf("air_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getAirState), BlockState.CODEC.optionalFieldOf("water_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getWaterState), BlockState.CODEC.optionalFieldOf("lava_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getLavaState), BlockState.CODEC.optionalFieldOf("barrier_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getBarrierState)).apply(var0, CarverDebugSettings::new);
+      });
    }
 }

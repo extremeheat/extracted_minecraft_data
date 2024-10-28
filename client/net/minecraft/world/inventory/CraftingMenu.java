@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
 import java.util.Optional;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -24,8 +23,8 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
    private static final int INV_SLOT_END = 37;
    private static final int USE_ROW_SLOT_START = 37;
    private static final int USE_ROW_SLOT_END = 46;
-   private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 3, 3);
-   private final ResultContainer resultSlots = new ResultContainer();
+   private final CraftingContainer craftSlots;
+   private final ResultContainer resultSlots;
    private final ContainerLevelAccess access;
    private final Player player;
 
@@ -35,25 +34,30 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
 
    public CraftingMenu(int var1, Inventory var2, ContainerLevelAccess var3) {
       super(MenuType.CRAFTING, var1);
+      this.craftSlots = new TransientCraftingContainer(this, 3, 3);
+      this.resultSlots = new ResultContainer();
       this.access = var3;
       this.player = var2.player;
       this.addSlot(new ResultSlot(var2.player, this.craftSlots, this.resultSlots, 0, 124, 35));
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 3; ++var5) {
+      int var4;
+      int var5;
+      for(var4 = 0; var4 < 3; ++var4) {
+         for(var5 = 0; var5 < 3; ++var5) {
             this.addSlot(new Slot(this.craftSlots, var5 + var4 * 3, 30 + var5 * 18, 17 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 3; ++var6) {
-         for(int var8 = 0; var8 < 9; ++var8) {
-            this.addSlot(new Slot(var2, var8 + var6 * 9 + 9, 8 + var8 * 18, 84 + var6 * 18));
+      for(var4 = 0; var4 < 3; ++var4) {
+         for(var5 = 0; var5 < 9; ++var5) {
+            this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
+      for(var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var2, var4, 8 + var4 * 18, 142));
       }
+
    }
 
    protected static void slotChangedCraftingGrid(AbstractContainerMenu var0, Level var1, Player var2, CraftingContainer var3, ResultContainer var4) {
@@ -78,47 +82,46 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
       }
    }
 
-   @Override
    public void slotsChanged(Container var1) {
-      this.access.execute((var1x, var2) -> slotChangedCraftingGrid(this, var1x, this.player, this.craftSlots, this.resultSlots));
+      this.access.execute((var1x, var2) -> {
+         slotChangedCraftingGrid(this, var1x, this.player, this.craftSlots, this.resultSlots);
+      });
    }
 
-   @Override
    public void fillCraftSlotsStackedContents(StackedContents var1) {
       this.craftSlots.fillStackedContents(var1);
    }
 
-   @Override
    public void clearCraftingContent() {
       this.craftSlots.clearContent();
       this.resultSlots.clearContent();
    }
 
-   @Override
    public boolean recipeMatches(RecipeHolder<? extends Recipe<CraftingContainer>> var1) {
       return var1.value().matches(this.craftSlots, this.player.level());
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.craftSlots));
+      this.access.execute((var2, var3) -> {
+         this.clearContainer(var1, this.craftSlots);
+      });
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return stillValid(this.access, var1, Blocks.CRAFTING_TABLE);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
          if (var2 == 0) {
-            this.access.execute((var2x, var3x) -> var5.getItem().onCraftedBy(var5, var2x, var1));
+            this.access.execute((var2x, var3x) -> {
+               var5.getItem().onCraftedBy(var5, var2x, var1);
+            });
             if (!this.moveItemStackTo(var5, 10, 46, true)) {
                return ItemStack.EMPTY;
             }
@@ -157,37 +160,30 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
       return var3;
    }
 
-   @Override
    public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
       return var2.container != this.resultSlots && super.canTakeItemForPickAll(var1, var2);
    }
 
-   @Override
    public int getResultSlotIndex() {
       return 0;
    }
 
-   @Override
    public int getGridWidth() {
       return this.craftSlots.getWidth();
    }
 
-   @Override
    public int getGridHeight() {
       return this.craftSlots.getHeight();
    }
 
-   @Override
    public int getSize() {
       return 10;
    }
 
-   @Override
    public RecipeBookType getRecipeBookType() {
       return RecipeBookType.CRAFTING;
    }
 
-   @Override
    public boolean shouldMoveToInventory(int var1) {
       return var1 != this.getResultSlotIndex();
    }

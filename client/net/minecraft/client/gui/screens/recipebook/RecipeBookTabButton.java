@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
@@ -30,18 +31,24 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       ClientRecipeBook var2 = var1.player.getRecipeBook();
       List var3 = var2.getCollection(this.category);
       if (var1.player.containerMenu instanceof RecipeBookMenu) {
-         for(RecipeCollection var5 : var3) {
-            for(RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?>)var1.player.containerMenu))) {
+         Iterator var4 = var3.iterator();
+
+         while(var4.hasNext()) {
+            RecipeCollection var5 = (RecipeCollection)var4.next();
+            Iterator var6 = var5.getRecipes(var2.isFiltering((RecipeBookMenu)var1.player.containerMenu)).iterator();
+
+            while(var6.hasNext()) {
+               RecipeHolder var7 = (RecipeHolder)var6.next();
                if (var2.willHighlight(var7)) {
                   this.animationTime = 15.0F;
                   return;
                }
             }
          }
+
       }
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.sprites != null) {
          if (this.animationTime > 0.0F) {
@@ -67,6 +74,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
             var1.pose().popPose();
             this.animationTime -= var4;
          }
+
       }
    }
 
@@ -79,6 +87,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
          var1.renderFakeItem((ItemStack)var3.get(0), this.getX() + 3 + var4, this.getY() + 5);
          var1.renderFakeItem((ItemStack)var3.get(1), this.getX() + 14 + var4, this.getY() + 5);
       }
+
    }
 
    public RecipeBookCategories getCategory() {
@@ -89,7 +98,10 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       List var2 = var1.getCollection(this.category);
       this.visible = false;
       if (var2 != null) {
-         for(RecipeCollection var4 : var2) {
+         Iterator var3 = var2.iterator();
+
+         while(var3.hasNext()) {
+            RecipeCollection var4 = (RecipeCollection)var3.next();
             if (var4.hasKnownRecipes() && var4.hasFitting()) {
                this.visible = true;
                break;

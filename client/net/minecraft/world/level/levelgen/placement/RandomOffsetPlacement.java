@@ -1,8 +1,7 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -10,13 +9,13 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 
 public class RandomOffsetPlacement extends PlacementModifier {
-   public static final Codec<RandomOffsetPlacement> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               IntProvider.codec(-16, 16).fieldOf("xz_spread").forGetter(var0x -> var0x.xzSpread),
-               IntProvider.codec(-16, 16).fieldOf("y_spread").forGetter(var0x -> var0x.ySpread)
-            )
-            .apply(var0, RandomOffsetPlacement::new)
-   );
+   public static final MapCodec<RandomOffsetPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(IntProvider.codec(-16, 16).fieldOf("xz_spread").forGetter((var0x) -> {
+         return var0x.xzSpread;
+      }), IntProvider.codec(-16, 16).fieldOf("y_spread").forGetter((var0x) -> {
+         return var0x.ySpread;
+      })).apply(var0, RandomOffsetPlacement::new);
+   });
    private final IntProvider xzSpread;
    private final IntProvider ySpread;
 
@@ -38,7 +37,6 @@ public class RandomOffsetPlacement extends PlacementModifier {
       this.ySpread = var2;
    }
 
-   @Override
    public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
       int var4 = var3.getX() + this.xzSpread.sample(var2);
       int var5 = var3.getY() + this.ySpread.sample(var2);
@@ -46,7 +44,6 @@ public class RandomOffsetPlacement extends PlacementModifier {
       return Stream.of(new BlockPos(var4, var5, var6));
    }
 
-   @Override
    public PlacementModifierType<?> type() {
       return PlacementModifierType.RANDOM_OFFSET;
    }

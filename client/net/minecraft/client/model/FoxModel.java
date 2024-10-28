@@ -38,17 +38,11 @@ public class FoxModel<T extends Fox> extends AgeableListModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(1, 5).addBox(-3.0F, -2.0F, -5.0F, 8.0F, 6.0F, 6.0F), PartPose.offset(-1.0F, 16.5F, -3.0F)
-      );
+      PartDefinition var2 = var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(1, 5).addBox(-3.0F, -2.0F, -5.0F, 8.0F, 6.0F, 6.0F), PartPose.offset(-1.0F, 16.5F, -3.0F));
       var2.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(8, 1).addBox(-3.0F, -4.0F, -4.0F, 2.0F, 2.0F, 1.0F), PartPose.ZERO);
       var2.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(15, 1).addBox(3.0F, -4.0F, -4.0F, 2.0F, 2.0F, 1.0F), PartPose.ZERO);
       var2.addOrReplaceChild("nose", CubeListBuilder.create().texOffs(6, 18).addBox(-1.0F, 2.01F, -8.0F, 4.0F, 2.0F, 3.0F), PartPose.ZERO);
-      PartDefinition var3 = var1.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create().texOffs(24, 15).addBox(-3.0F, 3.999F, -3.5F, 6.0F, 11.0F, 6.0F),
-         PartPose.offsetAndRotation(0.0F, 16.0F, -6.0F, 1.5707964F, 0.0F, 0.0F)
-      );
+      PartDefinition var3 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(24, 15).addBox(-3.0F, 3.999F, -3.5F, 6.0F, 11.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 16.0F, -6.0F, 1.5707964F, 0.0F, 0.0F));
       CubeDeformation var4 = new CubeDeformation(0.001F);
       CubeListBuilder var5 = CubeListBuilder.create().texOffs(4, 24).addBox(2.0F, 0.5F, -1.0F, 2.0F, 6.0F, 2.0F, var4);
       CubeListBuilder var6 = CubeListBuilder.create().texOffs(13, 24).addBox(2.0F, 0.5F, -1.0F, 2.0F, 6.0F, 2.0F, var4);
@@ -56,11 +50,7 @@ public class FoxModel<T extends Fox> extends AgeableListModel<T> {
       var1.addOrReplaceChild("left_hind_leg", var5, PartPose.offset(-1.0F, 17.5F, 7.0F));
       var1.addOrReplaceChild("right_front_leg", var6, PartPose.offset(-5.0F, 17.5F, 0.0F));
       var1.addOrReplaceChild("left_front_leg", var5, PartPose.offset(-1.0F, 17.5F, 0.0F));
-      var3.addOrReplaceChild(
-         "tail",
-         CubeListBuilder.create().texOffs(30, 0).addBox(2.0F, 0.0F, -1.0F, 4.0F, 9.0F, 5.0F),
-         PartPose.offsetAndRotation(-4.0F, 15.0F, -1.0F, -0.05235988F, 0.0F, 0.0F)
-      );
+      var3.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(30, 0).addBox(2.0F, 0.0F, -1.0F, 4.0F, 9.0F, 5.0F), PartPose.offsetAndRotation(-4.0F, 15.0F, -1.0F, -0.05235988F, 0.0F, 0.0F));
       return LayerDefinition.create(var0, 48, 32);
    }
 
@@ -124,14 +114,13 @@ public class FoxModel<T extends Fox> extends AgeableListModel<T> {
          this.rightFrontLeg.xRot = -0.2617994F;
          this.leftFrontLeg.xRot = -0.2617994F;
       }
+
    }
 
-   @Override
    protected Iterable<ModelPart> headParts() {
       return ImmutableList.of(this.head);
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
       return ImmutableList.of(this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg);
    }
@@ -148,8 +137,9 @@ public class FoxModel<T extends Fox> extends AgeableListModel<T> {
          this.head.zRot = Mth.cos(var4 * 0.027F) / 22.0F;
       }
 
+      float var7;
       if (var1.isCrouching()) {
-         float var7 = Mth.cos(var4) * 0.01F;
+         var7 = Mth.cos(var4) * 0.01F;
          this.body.yRot = var7;
          this.rightHindLeg.zRot = var7;
          this.leftHindLeg.zRot = var7;
@@ -158,12 +148,13 @@ public class FoxModel<T extends Fox> extends AgeableListModel<T> {
       }
 
       if (var1.isFaceplanted()) {
-         float var8 = 0.1F;
+         var7 = 0.1F;
          this.legMotionPos += 0.67F;
          this.rightHindLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F) * 0.1F;
          this.leftHindLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F + 3.1415927F) * 0.1F;
          this.rightFrontLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F + 3.1415927F) * 0.1F;
          this.leftFrontLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F) * 0.1F;
       }
+
    }
 }

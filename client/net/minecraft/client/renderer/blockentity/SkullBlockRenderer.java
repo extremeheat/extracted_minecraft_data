@@ -2,10 +2,8 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -33,7 +31,7 @@ import net.minecraft.world.level.block.state.properties.RotationSegment;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity> {
    private final Map<SkullBlock.Type, SkullModelBase> modelByType;
-   private static final Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE = Util.make(Maps.newHashMap(), var0 -> {
+   private static final Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(SkullBlock.Types.SKELETON, new ResourceLocation("textures/entity/skeleton/skeleton.png"));
       var0.put(SkullBlock.Types.WITHER_SKELETON, new ResourceLocation("textures/entity/skeleton/wither_skeleton.png"));
       var0.put(SkullBlock.Types.ZOMBIE, new ResourceLocation("textures/entity/zombie/zombie.png"));
@@ -44,7 +42,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    });
 
    public static Map<SkullBlock.Type, SkullModelBase> createSkullRenderers(EntityModelSet var0) {
-      Builder var1 = ImmutableMap.builder();
+      ImmutableMap.Builder var1 = ImmutableMap.builder();
       var1.put(SkullBlock.Types.SKELETON, new SkullModel(var0.bakeLayer(ModelLayers.SKELETON_SKULL)));
       var1.put(SkullBlock.Types.WITHER_SKELETON, new SkullModel(var0.bakeLayer(ModelLayers.WITHER_SKELETON_SKULL)));
       var1.put(SkullBlock.Types.PLAYER, new SkullModel(var0.bakeLayer(ModelLayers.PLAYER_HEAD)));
@@ -64,18 +62,16 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       float var7 = var1.getAnimation(var2);
       BlockState var8 = var1.getBlockState();
       boolean var9 = var8.getBlock() instanceof WallSkullBlock;
-      Direction var10 = var9 ? var8.getValue(WallSkullBlock.FACING) : null;
-      int var11 = var9 ? RotationSegment.convertToSegment(var10.getOpposite()) : var8.getValue(SkullBlock.ROTATION);
+      Direction var10 = var9 ? (Direction)var8.getValue(WallSkullBlock.FACING) : null;
+      int var11 = var9 ? RotationSegment.convertToSegment(var10.getOpposite()) : (Integer)var8.getValue(SkullBlock.ROTATION);
       float var12 = RotationSegment.convertToDegrees(var11);
       SkullBlock.Type var13 = ((AbstractSkullBlock)var8.getBlock()).getType();
-      SkullModelBase var14 = this.modelByType.get(var13);
+      SkullModelBase var14 = (SkullModelBase)this.modelByType.get(var13);
       RenderType var15 = getRenderType(var13, var1.getOwnerProfile());
       renderSkull(var10, var12, var7, var3, var4, var5, var14, var15);
    }
 
-   public static void renderSkull(
-      @Nullable Direction var0, float var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, SkullModelBase var6, RenderType var7
-   ) {
+   public static void renderSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, SkullModelBase var6, RenderType var7) {
       var3.pushPose();
       if (var0 == null) {
          var3.translate(0.5F, 0.0F, 0.5F);
@@ -92,7 +88,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    }
 
    public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1) {
-      ResourceLocation var2 = SKIN_BY_TYPE.get(var0);
+      ResourceLocation var2 = (ResourceLocation)SKIN_BY_TYPE.get(var0);
       if (var0 == SkullBlock.Types.PLAYER && var1 != null) {
          SkinManager var3 = Minecraft.getInstance().getSkinManager();
          return RenderType.entityTranslucent(var3.getInsecureSkin(var1.gameProfile()).texture());

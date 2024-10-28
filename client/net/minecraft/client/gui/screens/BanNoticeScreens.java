@@ -15,27 +15,23 @@ import net.minecraft.network.chat.Style;
 import org.apache.commons.lang3.StringUtils;
 
 public class BanNoticeScreens {
-   private static final Component TEMPORARY_BAN_TITLE = Component.translatable("gui.banned.title.temporary").withStyle(ChatFormatting.BOLD);
-   private static final Component PERMANENT_BAN_TITLE = Component.translatable("gui.banned.title.permanent").withStyle(ChatFormatting.BOLD);
-   public static final Component NAME_BAN_TITLE = Component.translatable("gui.banned.name.title").withStyle(ChatFormatting.BOLD);
-   private static final Component SKIN_BAN_TITLE = Component.translatable("gui.banned.skin.title").withStyle(ChatFormatting.BOLD);
-   private static final Component SKIN_BAN_DESCRIPTION = Component.translatable(
-      "gui.banned.skin.description", Component.literal("https://aka.ms/mcjavamoderation")
-   );
+   private static final Component TEMPORARY_BAN_TITLE;
+   private static final Component PERMANENT_BAN_TITLE;
+   public static final Component NAME_BAN_TITLE;
+   private static final Component SKIN_BAN_TITLE;
+   private static final Component SKIN_BAN_DESCRIPTION;
 
    public BanNoticeScreens() {
       super();
    }
 
    public static ConfirmLinkScreen create(BooleanConsumer var0, BanDetails var1) {
-      return new ConfirmLinkScreen(
-         var0, getBannedTitle(var1), getBannedScreenText(var1), "https://aka.ms/mcjavamoderation", CommonComponents.GUI_ACKNOWLEDGE, true
-      );
+      return new ConfirmLinkScreen(var0, getBannedTitle(var1), getBannedScreenText(var1), "https://aka.ms/mcjavamoderation", CommonComponents.GUI_ACKNOWLEDGE, true);
    }
 
    public static ConfirmLinkScreen createSkinBan(Runnable var0) {
       String var1 = "https://aka.ms/mcjavamoderation";
-      return new ConfirmLinkScreen(var1x -> {
+      return new ConfirmLinkScreen((var1x) -> {
          if (var1x) {
             Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
          }
@@ -46,20 +42,13 @@ public class BanNoticeScreens {
 
    public static ConfirmLinkScreen createNameBan(String var0, Runnable var1) {
       String var2 = "https://aka.ms/mcjavamoderation";
-      return new ConfirmLinkScreen(
-         var1x -> {
-            if (var1x) {
-               Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
-            }
-   
-            var1.run();
-         },
-         NAME_BAN_TITLE,
-         Component.translatable("gui.banned.name.description", Component.literal(var0).withStyle(ChatFormatting.YELLOW), "https://aka.ms/mcjavamoderation"),
-         "https://aka.ms/mcjavamoderation",
-         CommonComponents.GUI_ACKNOWLEDGE,
-         true
-      );
+      return new ConfirmLinkScreen((var1x) -> {
+         if (var1x) {
+            Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
+         }
+
+         var1.run();
+      }, NAME_BAN_TITLE, Component.translatable("gui.banned.name.description", Component.literal(var0).withStyle(ChatFormatting.YELLOW), "https://aka.ms/mcjavamoderation"), "https://aka.ms/mcjavamoderation", CommonComponents.GUI_ACKNOWLEDGE, true);
    }
 
    private static Component getBannedTitle(BanDetails var0) {
@@ -67,9 +56,7 @@ public class BanNoticeScreens {
    }
 
    private static Component getBannedScreenText(BanDetails var0) {
-      return Component.translatable(
-         "gui.banned.description", getBanReasonText(var0), getBanStatusText(var0), Component.literal("https://aka.ms/mcjavamoderation")
-      );
+      return Component.translatable("gui.banned.description", getBanReasonText(var0), getBanStatusText(var0), Component.literal("https://aka.ms/mcjavamoderation"));
    }
 
    private static Component getBanReasonText(BanDetails var0) {
@@ -96,9 +83,7 @@ public class BanNoticeScreens {
    private static Component getBanStatusText(BanDetails var0) {
       if (isTemporaryBan(var0)) {
          Component var1 = getBanDurationText(var0);
-         return Component.translatable(
-            "gui.banned.description.temporary", Component.translatable("gui.banned.description.temporary.duration", var1).withStyle(ChatFormatting.BOLD)
-         );
+         return Component.translatable("gui.banned.description.temporary", Component.translatable("gui.banned.description.temporary.duration", var1).withStyle(ChatFormatting.BOLD));
       } else {
          return Component.translatable("gui.banned.description.permanent").withStyle(ChatFormatting.BOLD);
       }
@@ -116,5 +101,13 @@ public class BanNoticeScreens {
 
    private static boolean isTemporaryBan(BanDetails var0) {
       return var0.expires() != null;
+   }
+
+   static {
+      TEMPORARY_BAN_TITLE = Component.translatable("gui.banned.title.temporary").withStyle(ChatFormatting.BOLD);
+      PERMANENT_BAN_TITLE = Component.translatable("gui.banned.title.permanent").withStyle(ChatFormatting.BOLD);
+      NAME_BAN_TITLE = Component.translatable("gui.banned.name.title").withStyle(ChatFormatting.BOLD);
+      SKIN_BAN_TITLE = Component.translatable("gui.banned.skin.title").withStyle(ChatFormatting.BOLD);
+      SKIN_BAN_DESCRIPTION = Component.translatable("gui.banned.skin.description", Component.literal("https://aka.ms/mcjavamoderation"));
    }
 }

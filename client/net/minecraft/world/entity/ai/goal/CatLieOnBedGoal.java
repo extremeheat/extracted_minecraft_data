@@ -17,29 +17,24 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       return this.cat.isTame() && !this.cat.isOrderedToSit() && !this.cat.isLying() && super.canUse();
    }
 
-   @Override
    public void start() {
       super.start();
       this.cat.setInSittingPose(false);
    }
 
-   @Override
    protected int nextStartTick(PathfinderMob var1) {
       return 40;
    }
 
-   @Override
    public void stop() {
       super.stop();
       this.cat.setLying(false);
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.cat.setInSittingPose(false);
@@ -48,9 +43,9 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
       } else if (!this.cat.isLying()) {
          this.cat.setLying(true);
       }
+
    }
 
-   @Override
    protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
       return var1.isEmptyBlock(var2.above()) && var1.getBlockState(var2).is(BlockTags.BEDS);
    }

@@ -30,10 +30,7 @@ public class SkullModel extends SkullModelBase {
    public static LayerDefinition createHumanoidHeadLayer() {
       MeshDefinition var0 = createHeadModel();
       PartDefinition var1 = var0.getRoot();
-      var1.getChild("head")
-         .addOrReplaceChild(
-            "hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.25F)), PartPose.ZERO
-         );
+      var1.getChild("head").addOrReplaceChild("hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.25F)), PartPose.ZERO);
       return LayerDefinition.create(var0, 64, 64);
    }
 
@@ -42,13 +39,11 @@ public class SkullModel extends SkullModelBase {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   @Override
    public void setupAnim(float var1, float var2, float var3) {
       this.head.yRot = var2 * 0.017453292F;
       this.head.xRot = var3 * 0.017453292F;
    }
 
-   @Override
    public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
       this.root.render(var1, var2, var3, var4, var5, var6, var7, var8);
    }

@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class MinecartSpawner extends AbstractMinecart {
    private final BaseSpawner spawner = new BaseSpawner() {
-      @Override
       public void broadcastEvent(Level var1, BlockPos var2, int var3) {
          var1.broadcastEntityEvent(MinecartSpawner.this, (byte)var3);
       }
@@ -30,45 +29,40 @@ public class MinecartSpawner extends AbstractMinecart {
       this.ticker = this.createTicker(var1);
    }
 
-   @Override
    protected Item getDropItem() {
       return Items.MINECART;
    }
 
    private Runnable createTicker(Level var1) {
-      return var1 instanceof ServerLevel
-         ? () -> this.spawner.serverTick((ServerLevel)var1, this.blockPosition())
-         : () -> this.spawner.clientTick(var1, this.blockPosition());
+      return var1 instanceof ServerLevel ? () -> {
+         this.spawner.serverTick((ServerLevel)var1, this.blockPosition());
+      } : () -> {
+         this.spawner.clientTick(var1, this.blockPosition());
+      };
    }
 
-   @Override
    public AbstractMinecart.Type getMinecartType() {
       return AbstractMinecart.Type.SPAWNER;
    }
 
-   @Override
    public BlockState getDefaultDisplayBlockState() {
       return Blocks.SPAWNER.defaultBlockState();
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.spawner.load(this.level(), this.blockPosition(), var1);
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       this.spawner.save(var1);
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       this.spawner.onEventTriggered(this.level(), var1);
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.ticker.run();
@@ -78,7 +72,6 @@ public class MinecartSpawner extends AbstractMinecart {
       return this.spawner;
    }
 
-   @Override
    public boolean onlyOpCanSetNbt() {
       return true;
    }

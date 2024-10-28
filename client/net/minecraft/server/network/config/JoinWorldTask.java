@@ -12,12 +12,10 @@ public class JoinWorldTask implements ConfigurationTask {
       super();
    }
 
-   @Override
    public void start(Consumer<Packet<?>> var1) {
       var1.accept(ClientboundFinishConfigurationPacket.INSTANCE);
    }
 
-   @Override
    public ConfigurationTask.Type type() {
       return TYPE;
    }

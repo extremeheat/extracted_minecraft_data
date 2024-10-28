@@ -5,12 +5,14 @@ import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 
 public class ItemModelGenerator {
@@ -27,7 +29,7 @@ public class ItemModelGenerator {
       ArrayList var4 = Lists.newArrayList();
 
       for(int var5 = 0; var5 < LAYERS.size(); ++var5) {
-         String var6 = LAYERS.get(var5);
+         String var6 = (String)LAYERS.get(var5);
          if (!var2.hasTexture(var6)) {
             break;
          }
@@ -39,17 +41,17 @@ public class ItemModelGenerator {
       }
 
       var3.put("particle", var2.hasTexture("particle") ? Either.left(var2.getMaterial("particle")) : (Either)var3.get("layer0"));
-      BlockModel var9 = new BlockModel(null, var4, var3, false, var2.getGuiLight(), var2.getTransforms(), var2.getOverrides());
+      BlockModel var9 = new BlockModel((ResourceLocation)null, var4, var3, false, var2.getGuiLight(), var2.getTransforms(), var2.getOverrides());
       var9.name = var2.name;
       return var9;
    }
 
    private List<BlockElement> processFrames(int var1, String var2, SpriteContents var3) {
       HashMap var4 = Maps.newHashMap();
-      var4.put(Direction.SOUTH, new BlockElementFace(null, var1, var2, new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0)));
-      var4.put(Direction.NORTH, new BlockElementFace(null, var1, var2, new BlockFaceUV(new float[]{16.0F, 0.0F, 0.0F, 16.0F}, 0)));
+      var4.put(Direction.SOUTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0)));
+      var4.put(Direction.NORTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{16.0F, 0.0F, 0.0F, 16.0F}, 0)));
       ArrayList var5 = Lists.newArrayList();
-      var5.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var4, null, true));
+      var5.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var4, (BlockElementRotation)null, true));
       var5.addAll(this.createSideElements(var3, var2, var1));
       return var5;
    }
@@ -58,8 +60,10 @@ public class ItemModelGenerator {
       float var4 = (float)var1.width();
       float var5 = (float)var1.height();
       ArrayList var6 = Lists.newArrayList();
+      Iterator var7 = this.getSpans(var1).iterator();
 
-      for(ItemModelGenerator.Span var8 : this.getSpans(var1)) {
+      while(var7.hasNext()) {
+         Span var8 = (Span)var7.next();
          float var9 = 0.0F;
          float var10 = 0.0F;
          float var11 = 0.0F;
@@ -73,9 +77,9 @@ public class ItemModelGenerator {
          float var19 = (float)var8.getMin();
          float var20 = (float)var8.getMax();
          float var21 = (float)var8.getAnchor();
-         ItemModelGenerator.SpanFacing var22 = var8.getFacing();
-         switch(var22) {
-            case UP:
+         SpanFacing var22 = var8.getFacing();
+         switch (var22.ordinal()) {
+            case 0:
                var13 = var19;
                var9 = var19;
                var11 = var14 = var20 + 1.0F;
@@ -84,7 +88,7 @@ public class ItemModelGenerator {
                var12 = var21;
                var16 = var21 + 1.0F;
                break;
-            case DOWN:
+            case 1:
                var15 = var21;
                var16 = var21 + 1.0F;
                var13 = var19;
@@ -93,7 +97,7 @@ public class ItemModelGenerator {
                var10 = var21 + 1.0F;
                var12 = var21 + 1.0F;
                break;
-            case LEFT:
+            case 2:
                var13 = var21;
                var9 = var21;
                var11 = var21;
@@ -102,7 +106,7 @@ public class ItemModelGenerator {
                var10 = var19;
                var12 = var15 = var20 + 1.0F;
                break;
-            case RIGHT:
+            case 3:
                var13 = var21;
                var14 = var21 + 1.0F;
                var9 = var21 + 1.0F;
@@ -123,30 +127,30 @@ public class ItemModelGenerator {
          var15 *= var18;
          var16 *= var18;
          HashMap var23 = Maps.newHashMap();
-         var23.put(var22.getDirection(), new BlockElementFace(null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
-         switch(var22) {
-            case UP:
-               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23, null, true));
+         var23.put(var22.getDirection(), new BlockElementFace((Direction)null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
+         switch (var22.ordinal()) {
+            case 0:
+               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23, (BlockElementRotation)null, true));
                break;
-            case DOWN:
-               var6.add(new BlockElement(new Vector3f(var9, var12, 7.5F), new Vector3f(var11, var12, 8.5F), var23, null, true));
+            case 1:
+               var6.add(new BlockElement(new Vector3f(var9, var12, 7.5F), new Vector3f(var11, var12, 8.5F), var23, (BlockElementRotation)null, true));
                break;
-            case LEFT:
-               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var9, var12, 8.5F), var23, null, true));
+            case 2:
+               var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var9, var12, 8.5F), var23, (BlockElementRotation)null, true));
                break;
-            case RIGHT:
-               var6.add(new BlockElement(new Vector3f(var11, var10, 7.5F), new Vector3f(var11, var12, 8.5F), var23, null, true));
+            case 3:
+               var6.add(new BlockElement(new Vector3f(var11, var10, 7.5F), new Vector3f(var11, var12, 8.5F), var23, (BlockElementRotation)null, true));
          }
       }
 
       return var6;
    }
 
-   private List<ItemModelGenerator.Span> getSpans(SpriteContents var1) {
+   private List<Span> getSpans(SpriteContents var1) {
       int var2 = var1.width();
       int var3 = var1.height();
       ArrayList var4 = Lists.newArrayList();
-      var1.getUniqueFrames().forEach(var5 -> {
+      var1.getUniqueFrames().forEach((var5) -> {
          for(int var6 = 0; var6 < var3; ++var6) {
             for(int var7 = 0; var7 < var2; ++var7) {
                boolean var8 = !this.isTransparent(var1, var5, var7, var6, var2, var3);
@@ -156,31 +160,25 @@ public class ItemModelGenerator {
                this.checkTransition(ItemModelGenerator.SpanFacing.RIGHT, var4, var1, var5, var7, var6, var2, var3, var8);
             }
          }
+
       });
       return var4;
    }
 
-   private void checkTransition(
-      ItemModelGenerator.SpanFacing var1,
-      List<ItemModelGenerator.Span> var2,
-      SpriteContents var3,
-      int var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      boolean var9
-   ) {
+   private void checkTransition(SpanFacing var1, List<Span> var2, SpriteContents var3, int var4, int var5, int var6, int var7, int var8, boolean var9) {
       boolean var10 = this.isTransparent(var3, var4, var5 + var1.getXOffset(), var6 + var1.getYOffset(), var7, var8) && var9;
       if (var10) {
          this.createOrExpandSpan(var2, var1, var5, var6);
       }
+
    }
 
-   private void createOrExpandSpan(List<ItemModelGenerator.Span> var1, ItemModelGenerator.SpanFacing var2, int var3, int var4) {
-      ItemModelGenerator.Span var5 = null;
+   private void createOrExpandSpan(List<Span> var1, SpanFacing var2, int var3, int var4) {
+      Span var5 = null;
+      Iterator var6 = var1.iterator();
 
-      for(ItemModelGenerator.Span var7 : var1) {
+      while(var6.hasNext()) {
+         Span var7 = (Span)var6.next();
          if (var7.getFacing() == var2) {
             int var8 = var2.isHorizontal() ? var4 : var3;
             if (var7.getAnchor() == var8) {
@@ -193,23 +191,24 @@ public class ItemModelGenerator {
       int var9 = var2.isHorizontal() ? var4 : var3;
       int var10 = var2.isHorizontal() ? var3 : var4;
       if (var5 == null) {
-         var1.add(new ItemModelGenerator.Span(var2, var10, var9));
+         var1.add(new Span(var2, var10, var9));
       } else {
          var5.expand(var10);
       }
+
    }
 
    private boolean isTransparent(SpriteContents var1, int var2, int var3, int var4, int var5, int var6) {
       return var3 >= 0 && var4 >= 0 && var3 < var5 && var4 < var6 ? var1.isTransparent(var2, var3, var4) : true;
    }
 
-   static class Span {
-      private final ItemModelGenerator.SpanFacing facing;
+   private static class Span {
+      private final SpanFacing facing;
       private int min;
       private int max;
       private final int anchor;
 
-      public Span(ItemModelGenerator.SpanFacing var1, int var2, int var3) {
+      public Span(SpanFacing var1, int var2, int var3) {
          super();
          this.facing = var1;
          this.min = var2;
@@ -223,9 +222,10 @@ public class ItemModelGenerator {
          } else if (var1 > this.max) {
             this.max = var1;
          }
+
       }
 
-      public ItemModelGenerator.SpanFacing getFacing() {
+      public SpanFacing getFacing() {
          return this.facing;
       }
 
@@ -242,7 +242,7 @@ public class ItemModelGenerator {
       }
    }
 
-   static enum SpanFacing {
+   private static enum SpanFacing {
       UP(Direction.UP, 0, -1),
       DOWN(Direction.DOWN, 0, 1),
       LEFT(Direction.EAST, -1, 0),
@@ -272,6 +272,11 @@ public class ItemModelGenerator {
 
       boolean isHorizontal() {
          return this == DOWN || this == UP;
+      }
+
+      // $FF: synthetic method
+      private static SpanFacing[] $values() {
+         return new SpanFacing[]{UP, DOWN, LEFT, RIGHT};
       }
    }
 }

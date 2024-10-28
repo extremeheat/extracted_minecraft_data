@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.structure;
 
 import com.mojang.logging.LogUtils;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,7 @@ import org.slf4j.Logger;
 
 public final class StructureStart {
    public static final String INVALID_START_ID = "INVALID";
-   public static final StructureStart INVALID_START = new StructureStart(null, new ChunkPos(0, 0), 0, new PiecesContainer(List.of()));
+   public static final StructureStart INVALID_START = new StructureStart((Structure)null, new ChunkPos(0, 0), 0, new PiecesContainer(List.of()));
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Structure structure;
    private final PiecesContainer pieceContainer;
@@ -85,8 +86,10 @@ public final class StructureStart {
          BoundingBox var8 = ((StructurePiece)var7.get(0)).boundingBox;
          BlockPos var9 = var8.getCenter();
          BlockPos var10 = new BlockPos(var9.getX(), var8.minY(), var9.getZ());
+         Iterator var11 = var7.iterator();
 
-         for(StructurePiece var12 : var7) {
+         while(var11.hasNext()) {
+            StructurePiece var12 = (StructurePiece)var11.next();
             if (var12.getBoundingBox().intersects(var5)) {
                var12.postProcess(var1, var2, var3, var4, var5, var6, var10);
             }

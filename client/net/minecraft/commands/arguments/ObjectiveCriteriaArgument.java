@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -22,9 +23,9 @@ import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar.baz", "minecraft:foo");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("argument.criteria.invalid", var0)
-   );
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("argument.criteria.invalid", var0);
+   });
 
    private ObjectiveCriteriaArgument() {
       super();
@@ -46,7 +47,7 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
       }
 
       String var3 = var1.getString().substring(var2, var1.getCursor());
-      return ObjectiveCriteria.byName(var3).orElseThrow(() -> {
+      return (ObjectiveCriteria)ObjectiveCriteria.byName(var3).orElseThrow(() -> {
          var1.setCursor(var2);
          return ERROR_INVALID_VALUE.createWithContext(var1, var3);
       });
@@ -54,15 +55,20 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       ArrayList var3 = Lists.newArrayList(ObjectiveCriteria.getCustomCriteriaNames());
+      Iterator var4 = BuiltInRegistries.STAT_TYPE.iterator();
 
-      for(StatType var5 : BuiltInRegistries.STAT_TYPE) {
-         for(Object var7 : var5.getRegistry()) {
+      while(var4.hasNext()) {
+         StatType var5 = (StatType)var4.next();
+         Iterator var6 = var5.getRegistry().iterator();
+
+         while(var6.hasNext()) {
+            Object var7 = var6.next();
             String var8 = this.getName(var5, var7);
             var3.add(var8);
          }
       }
 
-      return SharedSuggestionProvider.suggest(var3, var2);
+      return SharedSuggestionProvider.suggest((Iterable)var3, var2);
    }
 
    public <T> String getName(StatType<T> var1, Object var2) {
@@ -71,5 +77,10 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 }

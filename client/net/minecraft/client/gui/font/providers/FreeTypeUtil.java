@@ -42,7 +42,8 @@ public class FreeTypeUtil {
 
    public static void checkError(int var0, String var1) {
       if (var0 != 0) {
-         throw new IllegalStateException("FreeType error: " + describeError(var0) + " (" + var1 + ")");
+         String var10002 = describeError(var0);
+         throw new IllegalStateException("FreeType error: " + var10002 + " (" + var1 + ")");
       }
    }
 
@@ -66,5 +67,6 @@ public class FreeTypeUtil {
          FreeType.FT_Done_Library(library);
          library = 0L;
       }
+
    }
 }

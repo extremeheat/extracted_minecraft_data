@@ -21,7 +21,6 @@ import net.minecraft.data.worldgen.biome.BiomeData;
 import net.minecraft.data.worldgen.features.FeatureUtils;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.animal.WolfVariants;
@@ -38,28 +37,7 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
 public class VanillaRegistries {
-   private static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
-      .add(Registries.DIMENSION_TYPE, DimensionTypes::bootstrap)
-      .add(Registries.CONFIGURED_CARVER, Carvers::bootstrap)
-      .add(Registries.CONFIGURED_FEATURE, FeatureUtils::bootstrap)
-      .add(Registries.PLACED_FEATURE, PlacementUtils::bootstrap)
-      .add(Registries.STRUCTURE, Structures::bootstrap)
-      .add(Registries.STRUCTURE_SET, StructureSets::bootstrap)
-      .add(Registries.PROCESSOR_LIST, ProcessorLists::bootstrap)
-      .add(Registries.TEMPLATE_POOL, Pools::bootstrap)
-      .add(Registries.BIOME, BiomeData::bootstrap)
-      .add(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterLists::bootstrap)
-      .add(Registries.NOISE, NoiseData::bootstrap)
-      .add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap)
-      .add(Registries.NOISE_SETTINGS, NoiseGeneratorSettings::bootstrap)
-      .add(Registries.WORLD_PRESET, WorldPresets::bootstrap)
-      .add(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPresets::bootstrap)
-      .add(Registries.CHAT_TYPE, ChatType::bootstrap)
-      .add(Registries.TRIM_PATTERN, TrimPatterns::bootstrap)
-      .add(Registries.TRIM_MATERIAL, TrimMaterials::bootstrap)
-      .add(Registries.WOLF_VARIANT, WolfVariants::bootstrap)
-      .add(Registries.DAMAGE_TYPE, DamageTypes::bootstrap)
-      .add(Registries.BANNER_PATTERN, BannerPatterns::bootstrap);
+   private static final RegistrySetBuilder BUILDER;
 
    public VanillaRegistries() {
       super();
@@ -70,19 +48,24 @@ public class VanillaRegistries {
    }
 
    public static void validateThatAllBiomeFeaturesHaveBiomeFilter(HolderGetter<PlacedFeature> var0, HolderLookup<Biome> var1) {
-      var1.listElements().forEach(var1x -> {
+      var1.listElements().forEach((var1x) -> {
          ResourceLocation var2 = var1x.key().location();
          List var3 = ((Biome)var1x.value()).getGenerationSettings().features();
-         var3.stream().flatMap(HolderSet::stream).forEach(var3x -> var3x.unwrap().ifLeft(var2xx -> {
-               Holder.Reference var3xxx = var0.getOrThrow(var2xx);
-               if (!validatePlacedFeature((PlacedFeature)var3xxx.value())) {
-                  Util.logAndPauseIfInIde("Placed feature " + var2xx.location() + " in biome " + var2 + " is missing BiomeFilter.biome()");
+         var3.stream().flatMap(HolderSet::stream).forEach((var3x) -> {
+            var3x.unwrap().ifLeft((var2x) -> {
+               Holder.Reference var3 = var0.getOrThrow(var2x);
+               if (!validatePlacedFeature((PlacedFeature)var3.value())) {
+                  String var10000 = String.valueOf(var2x.location());
+                  Util.logAndPauseIfInIde("Placed feature " + var10000 + " in biome " + String.valueOf(var2) + " is missing BiomeFilter.biome()");
                }
-            }).ifRight(var1xxx -> {
-               if (!validatePlacedFeature(var1xxx)) {
-                  Util.logAndPauseIfInIde("Placed inline feature in biome " + var1x + " is missing BiomeFilter.biome()");
+
+            }).ifRight((var1) -> {
+               if (!validatePlacedFeature(var1)) {
+                  Util.logAndPauseIfInIde("Placed inline feature in biome " + String.valueOf(var1x) + " is missing BiomeFilter.biome()");
                }
-            }));
+
+            });
+         });
       });
    }
 
@@ -95,5 +78,9 @@ public class VanillaRegistries {
       HolderLookup.Provider var1 = BUILDER.build(var0);
       validateThatAllBiomeFeaturesHaveBiomeFilter(var1);
       return var1;
+   }
+
+   static {
+      BUILDER = (new RegistrySetBuilder()).add(Registries.DIMENSION_TYPE, DimensionTypes::bootstrap).add(Registries.CONFIGURED_CARVER, Carvers::bootstrap).add(Registries.CONFIGURED_FEATURE, FeatureUtils::bootstrap).add(Registries.PLACED_FEATURE, PlacementUtils::bootstrap).add(Registries.STRUCTURE, Structures::bootstrap).add(Registries.STRUCTURE_SET, StructureSets::bootstrap).add(Registries.PROCESSOR_LIST, ProcessorLists::bootstrap).add(Registries.TEMPLATE_POOL, Pools::bootstrap).add(Registries.BIOME, BiomeData::bootstrap).add(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterLists::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE_SETTINGS, NoiseGeneratorSettings::bootstrap).add(Registries.WORLD_PRESET, WorldPresets::bootstrap).add(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPresets::bootstrap).add(Registries.CHAT_TYPE, ChatType::bootstrap).add(Registries.TRIM_PATTERN, TrimPatterns::bootstrap).add(Registries.TRIM_MATERIAL, TrimMaterials::bootstrap).add(Registries.WOLF_VARIANT, WolfVariants::bootstrap).add(Registries.DAMAGE_TYPE, DamageTypes::bootstrap).add(Registries.BANNER_PATTERN, BannerPatterns::bootstrap);
    }
 }

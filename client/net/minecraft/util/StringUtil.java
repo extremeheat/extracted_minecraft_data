@@ -35,8 +35,11 @@ public class StringUtil {
    public static String truncateStringIfNecessary(String var0, int var1, boolean var2) {
       if (var0.length() <= var1) {
          return var0;
+      } else if (var2 && var1 > 3) {
+         String var10000 = var0.substring(0, var1 - 3);
+         return var10000 + "...";
       } else {
-         return var2 && var1 > 3 ? var0.substring(0, var1 - 3) + "..." : var0.substring(0, var1);
+         return var0.substring(0, var1);
       }
    }
 
@@ -45,10 +48,9 @@ public class StringUtil {
          return 0;
       } else {
          Matcher var1 = LINE_PATTERN.matcher(var0);
-         int var2 = 1;
 
-         while(var1.find()) {
-            ++var2;
+         int var2;
+         for(var2 = 1; var1.find(); ++var2) {
          }
 
          return var2;
@@ -68,7 +70,9 @@ public class StringUtil {
    }
 
    public static boolean isValidPlayerName(String var0) {
-      return var0.length() > 16 ? false : var0.chars().filter(var0x -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
+      return var0.length() > 16 ? false : var0.chars().filter((var0x) -> {
+         return var0x <= 32 || var0x >= 127;
+      }).findAny().isEmpty();
    }
 
    public static String filterText(String var0) {
@@ -77,8 +81,11 @@ public class StringUtil {
 
    public static String filterText(String var0, boolean var1) {
       StringBuilder var2 = new StringBuilder();
+      char[] var3 = var0.toCharArray();
+      int var4 = var3.length;
 
-      for(char var6 : var0.toCharArray()) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         char var6 = var3[var5];
          if (isAllowedChatCharacter(var6)) {
             var2.append(var6);
          } else if (var1 && var6 == '\n') {

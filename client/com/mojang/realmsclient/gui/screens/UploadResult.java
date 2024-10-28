@@ -21,12 +21,12 @@ public class UploadResult {
          super();
       }
 
-      public UploadResult.Builder withStatusCode(int var1) {
+      public Builder withStatusCode(int var1) {
          this.statusCode = var1;
          return this;
       }
 
-      public UploadResult.Builder withErrorMessage(@Nullable String var1) {
+      public Builder withErrorMessage(@Nullable String var1) {
          this.errorMessage = var1;
          return this;
       }

@@ -20,7 +20,6 @@ public class CloseServerTask extends LongRunningTask {
       this.configureScreen = var2;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
 
@@ -52,9 +51,9 @@ public class CloseServerTask extends LongRunningTask {
             this.error(var5);
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

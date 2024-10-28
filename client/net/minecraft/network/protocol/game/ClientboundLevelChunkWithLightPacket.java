@@ -11,9 +11,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 
 public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket> STREAM_CODEC = Packet.codec(
-      ClientboundLevelChunkWithLightPacket::write, ClientboundLevelChunkWithLightPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkWithLightPacket> STREAM_CODEC = Packet.codec(ClientboundLevelChunkWithLightPacket::write, ClientboundLevelChunkWithLightPacket::new);
    private final int x;
    private final int z;
    private final ClientboundLevelChunkPacketData chunkData;
@@ -43,7 +41,6 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
       this.lightData.write(var1);
    }
 
-   @Override
    public PacketType<ClientboundLevelChunkWithLightPacket> type() {
       return GamePacketTypes.CLIENTBOUND_LEVEL_CHUNK_WITH_LIGHT;
    }

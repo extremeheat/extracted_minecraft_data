@@ -22,7 +22,8 @@ public class AbstractArrowPickupFix extends DataFix {
    private Typed<?> updateProjectiles(Typed<?> var1) {
       var1 = this.updateEntity(var1, "minecraft:arrow", AbstractArrowPickupFix::updatePickup);
       var1 = this.updateEntity(var1, "minecraft:spectral_arrow", AbstractArrowPickupFix::updatePickup);
-      return this.updateEntity(var1, "minecraft:trident", AbstractArrowPickupFix::updatePickup);
+      var1 = this.updateEntity(var1, "minecraft:trident", AbstractArrowPickupFix::updatePickup);
+      return var1;
    }
 
    private static Dynamic<?> updatePickup(Dynamic<?> var0) {
@@ -37,6 +38,8 @@ public class AbstractArrowPickupFix extends DataFix {
    private Typed<?> updateEntity(Typed<?> var1, String var2, Function<Dynamic<?>, Dynamic<?>> var3) {
       Type var4 = this.getInputSchema().getChoiceType(References.ENTITY, var2);
       Type var5 = this.getOutputSchema().getChoiceType(References.ENTITY, var2);
-      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, var1x -> var1x.update(DSL.remainderFinder(), var3));
+      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, (var1x) -> {
+         return var1x.update(DSL.remainderFinder(), var3);
+      });
    }
 }

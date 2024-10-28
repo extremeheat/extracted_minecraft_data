@@ -13,14 +13,8 @@ public class LockIconButton extends Button {
       super(var1, var2, 20, 20, Component.translatable("narrator.button.difficulty_lock"), var3, DEFAULT_NARRATION);
    }
 
-   @Override
    protected MutableComponent createNarrationMessage() {
-      return CommonComponents.joinForNarration(
-         super.createNarrationMessage(),
-         this.isLocked()
-            ? Component.translatable("narrator.button.difficulty_lock.locked")
-            : Component.translatable("narrator.button.difficulty_lock.unlocked")
-      );
+      return CommonComponents.joinForNarration(super.createNarrationMessage(), this.isLocked() ? Component.translatable("narrator.button.difficulty_lock.locked") : Component.translatable("narrator.button.difficulty_lock.unlocked"));
    }
 
    public boolean isLocked() {
@@ -31,9 +25,8 @@ public class LockIconButton extends Button {
       this.locked = var1;
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      LockIconButton.Icon var5;
+      Icon var5;
       if (!this.active) {
          var5 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
       } else if (this.isHoveredOrFocused()) {
@@ -45,7 +38,7 @@ public class LockIconButton extends Button {
       var1.blitSprite(var5.sprite, this.getX(), this.getY(), this.width, this.height);
    }
 
-   static enum Icon {
+   private static enum Icon {
       LOCKED(new ResourceLocation("widget/locked_button")),
       LOCKED_HOVER(new ResourceLocation("widget/locked_button_highlighted")),
       LOCKED_DISABLED(new ResourceLocation("widget/locked_button_disabled")),
@@ -57,6 +50,11 @@ public class LockIconButton extends Button {
 
       private Icon(ResourceLocation var3) {
          this.sprite = var3;
+      }
+
+      // $FF: synthetic method
+      private static Icon[] $values() {
+         return new Icon[]{LOCKED, LOCKED_HOVER, LOCKED_DISABLED, UNLOCKED, UNLOCKED_HOVER, UNLOCKED_DISABLED};
       }
    }
 }

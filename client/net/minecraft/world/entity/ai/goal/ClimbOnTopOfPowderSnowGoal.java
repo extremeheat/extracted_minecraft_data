@@ -20,7 +20,6 @@ public class ClimbOnTopOfPowderSnowGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.JUMP));
    }
 
-   @Override
    public boolean canUse() {
       boolean var1 = this.mob.wasInPowderSnow || this.mob.isInPowderSnow;
       if (var1 && this.mob.getType().is(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS)) {
@@ -32,12 +31,10 @@ public class ClimbOnTopOfPowderSnowGoal extends Goal {
       }
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   @Override
    public void tick() {
       this.mob.getJumpControl().jump();
    }

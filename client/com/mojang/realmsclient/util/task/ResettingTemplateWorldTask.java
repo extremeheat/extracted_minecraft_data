@@ -13,7 +13,6 @@ public class ResettingTemplateWorldTask extends ResettingWorldTask {
       this.template = var1;
    }
 
-   @Override
    protected void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException {
       var1.resetWorldWithTemplate(var2, this.template.id);
    }

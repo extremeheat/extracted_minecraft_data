@@ -1,9 +1,6 @@
 package net.minecraft.network.syncher;
 
-public record EntityDataAccessor<T>(int a, EntityDataSerializer<T> b) {
-   private final int id;
-   private final EntityDataSerializer<T> serializer;
-
+public record EntityDataAccessor<T>(int id, EntityDataSerializer<T> serializer) {
    public EntityDataAccessor(int var1, EntityDataSerializer<T> var2) {
       super();
       this.id = var1;
@@ -27,5 +24,13 @@ public record EntityDataAccessor<T>(int a, EntityDataSerializer<T> b) {
 
    public String toString() {
       return "<entity data: " + this.id + ">";
+   }
+
+   public int id() {
+      return this.id;
+   }
+
+   public EntityDataSerializer<T> serializer() {
+      return this.serializer;
    }
 }

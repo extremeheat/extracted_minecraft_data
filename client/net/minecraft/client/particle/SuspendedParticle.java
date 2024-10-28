@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import java.util.Optional;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleGroup;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -30,9 +31,30 @@ public class SuspendedParticle extends TextureSheetParticle {
       this.gravity = 0.0F;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+   }
+
+   public static class WarpedSporeProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public WarpedSporeProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         double var15 = (double)var2.random.nextFloat() * -1.9 * (double)var2.random.nextFloat() * 0.1;
+         SuspendedParticle var17 = new SuspendedParticle(var2, this.sprite, var3, var5, var7, 0.0, var15, 0.0);
+         var17.setColor(0.1F, 0.1F, 0.3F);
+         var17.setSize(0.001F, 0.001F);
+         return var17;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
    public static class CrimsonSporeProvider implements ParticleProvider<SimpleParticleType> {
@@ -52,6 +74,11 @@ public class SuspendedParticle extends TextureSheetParticle {
          var22.setColor(0.9F, 0.4F, 0.5F);
          return var22;
       }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
    public static class SporeBlossomAirProvider implements ParticleProvider<SimpleParticleType> {
@@ -63,8 +90,7 @@ public class SuspendedParticle extends TextureSheetParticle {
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SuspendedParticle var15 = new SuspendedParticle(var2, this.sprite, var3, var5, var7, 0.0, -0.800000011920929, 0.0) {
-            @Override
+         SuspendedParticle var15 = new SuspendedParticle(this, var2, this.sprite, var3, var5, var7, 0.0, -0.800000011920929, 0.0) {
             public Optional<ParticleGroup> getParticleGroup() {
                return Optional.of(ParticleGroup.SPORE_BLOSSOM);
             }
@@ -73,6 +99,11 @@ public class SuspendedParticle extends TextureSheetParticle {
          var15.gravity = 0.01F;
          var15.setColor(0.32F, 0.5F, 0.22F);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -89,22 +120,10 @@ public class SuspendedParticle extends TextureSheetParticle {
          var15.setColor(0.4F, 0.4F, 0.7F);
          return var15;
       }
-   }
 
-   public static class WarpedSporeProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public WarpedSporeProvider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         double var15 = (double)var2.random.nextFloat() * -1.9 * (double)var2.random.nextFloat() * 0.1;
-         SuspendedParticle var17 = new SuspendedParticle(var2, this.sprite, var3, var5, var7, 0.0, var15, 0.0);
-         var17.setColor(0.1F, 0.1F, 0.3F);
-         var17.setSize(0.001F, 0.001F);
-         return var17;
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

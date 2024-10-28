@@ -70,7 +70,6 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       return (var1 * this.ySize + var2) * this.zSize + var3;
    }
 
-   @Override
    public boolean isFull(int var1, int var2, int var3) {
       return this.storage.get(this.getIndex(var1, var2, var3));
    }
@@ -85,24 +84,21 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
          this.yMax = Math.max(this.yMax, var2 + 1);
          this.zMax = Math.max(this.zMax, var3 + 1);
       }
+
    }
 
-   @Override
    public void fill(int var1, int var2, int var3) {
       this.fillUpdateBounds(var1, var2, var3, true);
    }
 
-   @Override
    public boolean isEmpty() {
       return this.storage.isEmpty();
    }
 
-   @Override
    public int firstFull(Direction.Axis var1) {
       return var1.choose(this.xMin, this.yMin, this.zMin);
    }
 
-   @Override
    public int lastFull(Direction.Axis var1) {
       return var1.choose(this.xMax, this.yMax, this.zMax);
    }
@@ -188,6 +184,7 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
             }
          }
       }
+
    }
 
    private boolean isZStripFull(int var1, int var2, int var3, int var4) {
@@ -214,13 +211,6 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
 
    public boolean isInterior(int var1, int var2, int var3) {
       boolean var4 = var1 > 0 && var1 < this.xSize - 1 && var2 > 0 && var2 < this.ySize - 1 && var3 > 0 && var3 < this.zSize - 1;
-      return var4
-         && this.isFull(var1, var2, var3)
-         && this.isFull(var1 - 1, var2, var3)
-         && this.isFull(var1 + 1, var2, var3)
-         && this.isFull(var1, var2 - 1, var3)
-         && this.isFull(var1, var2 + 1, var3)
-         && this.isFull(var1, var2, var3 - 1)
-         && this.isFull(var1, var2, var3 + 1);
+      return var4 && this.isFull(var1, var2, var3) && this.isFull(var1 - 1, var2, var3) && this.isFull(var1 + 1, var2, var3) && this.isFull(var1, var2 - 1, var3) && this.isFull(var1, var2 + 1, var3) && this.isFull(var1, var2, var3 - 1) && this.isFull(var1, var2, var3 + 1);
    }
 }

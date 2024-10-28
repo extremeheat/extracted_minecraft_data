@@ -2,7 +2,9 @@ package net.minecraft.world.level.chunk.storage;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.io.DataInput;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -41,7 +43,9 @@ public final class RegionFileStorage implements AutoCloseable {
          }
 
          FileUtil.createDirectoriesSafe(this.folder);
-         Path var5 = this.folder.resolve("r." + var1.getRegionX() + "." + var1.getRegionZ() + ".mca");
+         Path var10000 = this.folder;
+         int var10001 = var1.getRegionX();
+         Path var5 = var10000.resolve("r." + var10001 + "." + var1.getRegionZ() + ".mca");
          RegionFile var6 = new RegionFile(this.info, var5, this.folder, this.sync);
          this.regionCache.putAndMoveToFirst(var2, var6);
          return var6;
@@ -51,14 +55,38 @@ public final class RegionFileStorage implements AutoCloseable {
    @Nullable
    public CompoundTag read(ChunkPos var1) throws IOException {
       RegionFile var2 = this.getRegionFile(var1);
+      DataInputStream var3 = var2.getChunkDataInputStream(var1);
 
       CompoundTag var4;
-      try (DataInputStream var3 = var2.getChunkDataInputStream(var1)) {
-         if (var3 == null) {
-            return null;
+      label43: {
+         try {
+            if (var3 == null) {
+               var4 = null;
+               break label43;
+            }
+
+            var4 = NbtIo.read((DataInput)var3);
+         } catch (Throwable var7) {
+            if (var3 != null) {
+               try {
+                  var3.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
+               }
+            }
+
+            throw var7;
          }
 
-         var4 = NbtIo.read(var3);
+         if (var3 != null) {
+            var3.close();
+         }
+
+         return var4;
+      }
+
+      if (var3 != null) {
+         var3.close();
       }
 
       return var4;
@@ -66,12 +94,28 @@ public final class RegionFileStorage implements AutoCloseable {
 
    public void scanChunk(ChunkPos var1, StreamTagVisitor var2) throws IOException {
       RegionFile var3 = this.getRegionFile(var1);
+      DataInputStream var4 = var3.getChunkDataInputStream(var1);
 
-      try (DataInputStream var4 = var3.getChunkDataInputStream(var1)) {
+      try {
          if (var4 != null) {
             NbtIo.parse(var4, var2, NbtAccounter.unlimitedHeap());
          }
+      } catch (Throwable var8) {
+         if (var4 != null) {
+            try {
+               var4.close();
+            } catch (Throwable var7) {
+               var8.addSuppressed(var7);
+            }
+         }
+
+         throw var8;
       }
+
+      if (var4 != null) {
+         var4.close();
+      }
+
    }
 
    protected void write(ChunkPos var1, @Nullable CompoundTag var2) throws IOException {
@@ -79,13 +123,29 @@ public final class RegionFileStorage implements AutoCloseable {
       if (var2 == null) {
          var3.clear(var1);
       } else {
-         try (DataOutputStream var4 = var3.getChunkDataOutputStream(var1)) {
-            NbtIo.write(var2, var4);
+         DataOutputStream var4 = var3.getChunkDataOutputStream(var1);
+
+         try {
+            NbtIo.write(var2, (DataOutput)var4);
+         } catch (Throwable var8) {
+            if (var4 != null) {
+               try {
+                  var4.close();
+               } catch (Throwable var7) {
+                  var8.addSuppressed(var7);
+               }
+            }
+
+            throw var8;
+         }
+
+         if (var4 != null) {
+            var4.close();
          }
       }
+
    }
 
-   @Override
    public void close() throws IOException {
       ExceptionCollector var1 = new ExceptionCollector();
       ObjectIterator var2 = this.regionCache.values().iterator();
@@ -110,5 +170,6 @@ public final class RegionFileStorage implements AutoCloseable {
          RegionFile var2 = (RegionFile)var1.next();
          var2.flush();
       }
+
    }
 }

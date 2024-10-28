@@ -10,7 +10,6 @@ public class TrappedChestBlockEntity extends ChestBlockEntity {
       super(BlockEntityType.TRAPPED_CHEST, var1, var2);
    }
 
-   @Override
    protected void signalOpenCount(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
       super.signalOpenCount(var1, var2, var3, var4, var5);
       if (var4 != var5) {
@@ -18,5 +17,6 @@ public class TrappedChestBlockEntity extends ChestBlockEntity {
          var1.updateNeighborsAt(var2, var6);
          var1.updateNeighborsAt(var2.below(), var6);
       }
+
    }
 }

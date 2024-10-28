@@ -11,13 +11,11 @@ public class ServerItemCooldowns extends ItemCooldowns {
       this.player = var1;
    }
 
-   @Override
    protected void onCooldownStarted(Item var1, int var2) {
       super.onCooldownStarted(var1, var2);
       this.player.connection.send(new ClientboundCooldownPacket(var1, var2));
    }
 
-   @Override
    protected void onCooldownEnded(Item var1) {
       super.onCooldownEnded(var1);
       this.player.connection.send(new ClientboundCooldownPacket(var1, 0));

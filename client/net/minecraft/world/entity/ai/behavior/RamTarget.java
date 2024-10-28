@@ -22,6 +22,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.goat.Goat;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 public class RamTarget extends Behavior<Goat> {
@@ -35,14 +36,7 @@ public class RamTarget extends Behavior<Goat> {
    private final Function<Goat, SoundEvent> getImpactSound;
    private final Function<Goat, SoundEvent> getHornBreakSound;
 
-   public RamTarget(
-      Function<Goat, UniformInt> var1,
-      TargetingConditions var2,
-      float var3,
-      ToDoubleFunction<Goat> var4,
-      Function<Goat, SoundEvent> var5,
-      Function<Goat, SoundEvent> var6
-   ) {
+   public RamTarget(Function<Goat, UniformInt> var1, TargetingConditions var2, float var3, ToDoubleFunction<Goat> var4, Function<Goat, SoundEvent> var5, Function<Goat, SoundEvent> var6) {
       super(ImmutableMap.of(MemoryModuleType.RAM_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.RAM_TARGET, MemoryStatus.VALUE_PRESENT), 200);
       this.getTimeBetweenRams = var1;
       this.ramTargeting = var2;
@@ -64,9 +58,9 @@ public class RamTarget extends Behavior<Goat> {
    protected void start(ServerLevel var1, Goat var2, long var3) {
       BlockPos var5 = var2.blockPosition();
       Brain var6 = var2.getBrain();
-      Vec3 var7 = var6.getMemory(MemoryModuleType.RAM_TARGET).get();
-      this.ramDirection = new Vec3((double)var5.getX() - var7.x(), 0.0, (double)var5.getZ() - var7.z()).normalize();
-      var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var7, this.speed, 0));
+      Vec3 var7 = (Vec3)var6.getMemory(MemoryModuleType.RAM_TARGET).get();
+      this.ramDirection = (new Vec3((double)var5.getX() - var7.x(), 0.0, (double)var5.getZ() - var7.z())).normalize();
+      var6.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var7, this.speed, 0)));
    }
 
    protected void tick(ServerLevel var1, Goat var2, long var3) {
@@ -82,12 +76,12 @@ public class RamTarget extends Behavior<Goat> {
          float var12 = var7.isDamageSourceBlocked(var1.damageSources().mobAttack(var2)) ? 0.5F : 1.0F;
          var7.knockback((double)(var12 * var11) * this.getKnockbackForce.applyAsDouble(var2), this.ramDirection.x(), this.ramDirection.z());
          this.finishRam(var1, var2);
-         var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Player)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
       } else if (this.hasRammedHornBreakingBlock(var1, var2)) {
-         var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Player)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          boolean var13 = var2.dropHorn();
          if (var13) {
-            var1.playSound(null, var2, this.getHornBreakSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            var1.playSound((Player)null, var2, (SoundEvent)this.getHornBreakSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
 
          this.finishRam(var1, var2);
@@ -99,6 +93,7 @@ public class RamTarget extends Behavior<Goat> {
             this.finishRam(var1, var2);
          }
       }
+
    }
 
    private boolean hasRammedHornBreakingBlock(ServerLevel var1, Goat var2) {
@@ -109,7 +104,12 @@ public class RamTarget extends Behavior<Goat> {
 
    protected void finishRam(ServerLevel var1, Goat var2) {
       var1.broadcastEntityEvent(var2, (byte)59);
-      var2.getBrain().setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, this.getTimeBetweenRams.apply(var2).sample(var1.random));
+      var2.getBrain().setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, (Object)((UniformInt)this.getTimeBetweenRams.apply(var2)).sample(var1.random));
       var2.getBrain().eraseMemory(MemoryModuleType.RAM_TARGET);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Goat)var2, var3);
    }
 }

@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class RenderPipeline {
-   private final List<ConcurrentLinkedQueue<RenderCall>> renderCalls = ImmutableList.of(
-      new ConcurrentLinkedQueue(), new ConcurrentLinkedQueue(), new ConcurrentLinkedQueue(), new ConcurrentLinkedQueue()
-   );
+   private final List<ConcurrentLinkedQueue<RenderCall>> renderCalls = ImmutableList.of(new ConcurrentLinkedQueue(), new ConcurrentLinkedQueue(), new ConcurrentLinkedQueue(), new ConcurrentLinkedQueue());
    private volatile boolean isRecording;
    private volatile int recordingBuffer;
    private volatile boolean isProcessing;
@@ -84,14 +82,14 @@ public class RenderPipeline {
    }
 
    public ConcurrentLinkedQueue<RenderCall> startRendering() {
-      return this.renderCalls.get(this.renderingBuffer);
+      return (ConcurrentLinkedQueue)this.renderCalls.get(this.renderingBuffer);
    }
 
    public ConcurrentLinkedQueue<RenderCall> getRecordingQueue() {
-      return this.renderCalls.get(this.recordingBuffer);
+      return (ConcurrentLinkedQueue)this.renderCalls.get(this.recordingBuffer);
    }
 
    public ConcurrentLinkedQueue<RenderCall> getProcessedQueue() {
-      return this.renderCalls.get(this.processedBuffer);
+      return (ConcurrentLinkedQueue)this.renderCalls.get(this.processedBuffer);
    }
 }

@@ -20,4 +20,9 @@ public class BlockPredicate implements Predicate<BlockState> {
    public boolean test(@Nullable BlockState var1) {
       return var1 != null && var1.is(this.block);
    }
+
+   // $FF: synthetic method
+   public boolean test(@Nullable Object var1) {
+      return this.test((BlockState)var1);
+   }
 }

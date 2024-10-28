@@ -21,6 +21,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -31,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 
 public class GsonHelper {
-   private static final Gson GSON = new GsonBuilder().create();
+   private static final Gson GSON = (new GsonBuilder()).create();
 
    public GsonHelper() {
       super();
@@ -115,9 +117,9 @@ public class GsonHelper {
    public static Holder<Item> convertToItem(JsonElement var0, String var1) {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
-         return BuiltInRegistries.ITEM
-            .getHolder(new ResourceLocation(var2))
-            .orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
+         return (Holder)BuiltInRegistries.ITEM.getHolder(new ResourceLocation(var2)).orElseThrow(() -> {
+            return new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'");
+         });
       } else {
          throw new JsonSyntaxException("Expected " + var1 + " to be an item, was " + getType(var0));
       }
@@ -383,7 +385,7 @@ public class GsonHelper {
 
    public static <T> T convertToObject(@Nullable JsonElement var0, String var1, JsonDeserializationContext var2, Class<? extends T> var3) {
       if (var0 != null) {
-         return (T)var2.deserialize(var0, var3);
+         return var2.deserialize(var0, var3);
       } else {
          throw new JsonSyntaxException("Missing " + var1);
       }
@@ -400,7 +402,7 @@ public class GsonHelper {
    @Nullable
    @Contract("_,_,!null,_,_->!null;_,_,null,_,_->_")
    public static <T> T getAsObject(JsonObject var0, String var1, @Nullable T var2, JsonDeserializationContext var3, Class<? extends T> var4) {
-      return (T)(var0.has(var1) ? convertToObject(var0.get(var1), var1, var3, var4) : var2);
+      return var0.has(var1) ? convertToObject(var0.get(var1), var1, var3, var4) : var2;
    }
 
    public static String getType(@Nullable JsonElement var0) {
@@ -434,7 +436,7 @@ public class GsonHelper {
       try {
          JsonReader var4 = new JsonReader(var1);
          var4.setLenient(var3);
-         return (T)var0.getAdapter(var2).read(var4);
+         return var0.getAdapter(var2).read(var4);
       } catch (IOException var5) {
          throw new JsonParseException(var5);
       }
@@ -445,7 +447,7 @@ public class GsonHelper {
       if (var4 == null) {
          throw new JsonParseException("JSON data was null or empty");
       } else {
-         return (T)var4;
+         return var4;
       }
    }
 
@@ -454,7 +456,7 @@ public class GsonHelper {
       try {
          JsonReader var4 = new JsonReader(var1);
          var4.setLenient(var3);
-         return (T)var0.getAdapter(var2).read(var4);
+         return var0.getAdapter(var2).read(var4);
       } catch (IOException var5) {
          throw new JsonParseException(var5);
       }
@@ -465,22 +467,22 @@ public class GsonHelper {
       if (var4 == null) {
          throw new JsonParseException("JSON data was null or empty");
       } else {
-         return (T)var4;
+         return var4;
       }
    }
 
    @Nullable
    public static <T> T fromNullableJson(Gson var0, String var1, TypeToken<T> var2, boolean var3) {
-      return fromNullableJson(var0, new StringReader(var1), var2, var3);
+      return fromNullableJson(var0, (Reader)(new StringReader(var1)), (TypeToken)var2, var3);
    }
 
    public static <T> T fromJson(Gson var0, String var1, Class<T> var2, boolean var3) {
-      return fromJson(var0, new StringReader(var1), var2, var3);
+      return fromJson(var0, (Reader)(new StringReader(var1)), (Class)var2, var3);
    }
 
    @Nullable
    public static <T> T fromNullableJson(Gson var0, String var1, Class<T> var2, boolean var3) {
-      return fromNullableJson(var0, new StringReader(var1), var2, var3);
+      return fromNullableJson(var0, (Reader)(new StringReader(var1)), (Class)var2, var3);
    }
 
    public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2) {
@@ -501,11 +503,11 @@ public class GsonHelper {
    }
 
    public static JsonObject parse(String var0, boolean var1) {
-      return parse(new StringReader(var0), var1);
+      return parse((Reader)(new StringReader(var0)), var1);
    }
 
    public static JsonObject parse(Reader var0, boolean var1) {
-      return fromJson(GSON, var0, JsonObject.class, var1);
+      return (JsonObject)fromJson(GSON, var0, JsonObject.class, var1);
    }
 
    public static JsonObject parse(String var0) {
@@ -517,11 +519,11 @@ public class GsonHelper {
    }
 
    public static JsonArray parseArray(String var0) {
-      return parseArray(new StringReader(var0));
+      return parseArray((Reader)(new StringReader(var0)));
    }
 
    public static JsonArray parseArray(Reader var0) {
-      return fromJson(GSON, var0, JsonArray.class, false);
+      return (JsonArray)fromJson(GSON, var0, JsonArray.class, false);
    }
 
    public static String toStableString(JsonElement var0) {
@@ -538,42 +540,52 @@ public class GsonHelper {
    }
 
    public static void writeValue(JsonWriter var0, @Nullable JsonElement var1, @Nullable Comparator<String> var2) throws IOException {
-      if (var1 == null || var1.isJsonNull()) {
-         var0.nullValue();
-      } else if (var1.isJsonPrimitive()) {
-         JsonPrimitive var3 = var1.getAsJsonPrimitive();
-         if (var3.isNumber()) {
-            var0.value(var3.getAsNumber());
-         } else if (var3.isBoolean()) {
-            var0.value(var3.getAsBoolean());
+      if (var1 != null && !var1.isJsonNull()) {
+         if (var1.isJsonPrimitive()) {
+            JsonPrimitive var3 = var1.getAsJsonPrimitive();
+            if (var3.isNumber()) {
+               var0.value(var3.getAsNumber());
+            } else if (var3.isBoolean()) {
+               var0.value(var3.getAsBoolean());
+            } else {
+               var0.value(var3.getAsString());
+            }
          } else {
-            var0.value(var3.getAsString());
-         }
-      } else if (var1.isJsonArray()) {
-         var0.beginArray();
+            Iterator var5;
+            if (var1.isJsonArray()) {
+               var0.beginArray();
+               var5 = var1.getAsJsonArray().iterator();
 
-         for(JsonElement var4 : var1.getAsJsonArray()) {
-            writeValue(var0, var4, var2);
-         }
+               while(var5.hasNext()) {
+                  JsonElement var4 = (JsonElement)var5.next();
+                  writeValue(var0, var4, var2);
+               }
 
-         var0.endArray();
+               var0.endArray();
+            } else {
+               if (!var1.isJsonObject()) {
+                  throw new IllegalArgumentException("Couldn't write " + String.valueOf(var1.getClass()));
+               }
+
+               var0.beginObject();
+               var5 = sortByKeyIfNeeded(var1.getAsJsonObject().entrySet(), var2).iterator();
+
+               while(var5.hasNext()) {
+                  Map.Entry var6 = (Map.Entry)var5.next();
+                  var0.name((String)var6.getKey());
+                  writeValue(var0, (JsonElement)var6.getValue(), var2);
+               }
+
+               var0.endObject();
+            }
+         }
       } else {
-         if (!var1.isJsonObject()) {
-            throw new IllegalArgumentException("Couldn't write " + var1.getClass());
-         }
-
-         var0.beginObject();
-
-         for(Entry var7 : sortByKeyIfNeeded(var1.getAsJsonObject().entrySet(), var2)) {
-            var0.name((String)var7.getKey());
-            writeValue(var0, (JsonElement)var7.getValue(), var2);
-         }
-
-         var0.endObject();
+         var0.nullValue();
       }
+
    }
 
-   private static Collection<Entry<String, JsonElement>> sortByKeyIfNeeded(Collection<Entry<String, JsonElement>> var0, @Nullable Comparator<String> var1) {
+   private static Collection<Map.Entry<String, JsonElement>> sortByKeyIfNeeded(Collection<Map.Entry<String, JsonElement>> var0, @Nullable Comparator<String> var1) {
       if (var1 == null) {
          return var0;
       } else {

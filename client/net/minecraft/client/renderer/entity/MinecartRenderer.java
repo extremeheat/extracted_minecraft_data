@@ -24,12 +24,12 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
    public MinecartRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
       super(var1);
       this.shadowRadius = 0.7F;
-      this.model = new MinecartModel<>(var1.bakeLayer(var2));
+      this.model = new MinecartModel(var1.bakeLayer(var2));
       this.blockRenderer = var1.getBlockRenderDispatcher();
    }
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      super.render((T)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
       var4.pushPose();
       long var7 = (long)var1.getId() * 493286711L;
       var7 = var7 * var7 * 4392167121L + var7 * 98761L;
@@ -66,32 +66,32 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
       var4.translate(0.0F, 0.375F, 0.0F);
       var4.mulPose(Axis.YP.rotationDegrees(180.0F - var2));
       var4.mulPose(Axis.ZP.rotationDegrees(-var21));
-      float var28 = (float)var1.getHurtTime() - var3;
-      float var29 = var1.getDamage() - var3;
-      if (var29 < 0.0F) {
-         var29 = 0.0F;
+      float var27 = (float)var1.getHurtTime() - var3;
+      float var28 = var1.getDamage() - var3;
+      if (var28 < 0.0F) {
+         var28 = 0.0F;
       }
 
-      if (var28 > 0.0F) {
-         var4.mulPose(Axis.XP.rotationDegrees(Mth.sin(var28) * var28 * var29 / 10.0F * (float)var1.getHurtDir()));
+      if (var27 > 0.0F) {
+         var4.mulPose(Axis.XP.rotationDegrees(Mth.sin(var27) * var27 * var28 / 10.0F * (float)var1.getHurtDir()));
       }
 
-      int var31 = var1.getDisplayOffset();
+      int var29 = var1.getDisplayOffset();
       BlockState var25 = var1.getDisplayBlockState();
       if (var25.getRenderShape() != RenderShape.INVISIBLE) {
          var4.pushPose();
          float var26 = 0.75F;
          var4.scale(0.75F, 0.75F, 0.75F);
-         var4.translate(-0.5F, (float)(var31 - 8) / 16.0F, 0.5F);
+         var4.translate(-0.5F, (float)(var29 - 8) / 16.0F, 0.5F);
          var4.mulPose(Axis.YP.rotationDegrees(90.0F));
-         this.renderMinecartContents((T)var1, var3, var25, var4, var5, var6);
+         this.renderMinecartContents(var1, var3, var25, var4, var5, var6);
          var4.popPose();
       }
 
       var4.scale(-1.0F, -1.0F, 1.0F);
-      this.model.setupAnim((T)var1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
-      VertexConsumer var32 = var5.getBuffer(this.model.renderType(this.getTextureLocation((T)var1)));
-      this.model.renderToBuffer(var4, var32, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      this.model.setupAnim(var1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+      VertexConsumer var30 = var5.getBuffer(this.model.renderType(this.getTextureLocation(var1)));
+      this.model.renderToBuffer(var4, var30, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
       var4.popPose();
    }
 

@@ -19,10 +19,15 @@ public enum FrontAndTop implements StringRepresentable {
    NORTH_UP("north_up", Direction.NORTH, Direction.UP),
    SOUTH_UP("south_up", Direction.SOUTH, Direction.UP);
 
-   private static final Int2ObjectMap<FrontAndTop> LOOKUP_TOP_FRONT = Util.make(new Int2ObjectOpenHashMap(values().length), var0 -> {
-      for(FrontAndTop var4 : values()) {
+   private static final Int2ObjectMap<FrontAndTop> LOOKUP_TOP_FRONT = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(values().length), (var0) -> {
+      FrontAndTop[] var1 = values();
+      int var2 = var1.length;
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         FrontAndTop var4 = var1[var3];
          var0.put(lookupKey(var4.front, var4.top), var4);
       }
+
    });
    private final String name;
    private final Direction top;
@@ -38,7 +43,6 @@ public enum FrontAndTop implements StringRepresentable {
       this.top = var5;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
@@ -54,5 +58,10 @@ public enum FrontAndTop implements StringRepresentable {
 
    public Direction top() {
       return this.top;
+   }
+
+   // $FF: synthetic method
+   private static FrontAndTop[] $values() {
+      return new FrontAndTop[]{DOWN_EAST, DOWN_NORTH, DOWN_SOUTH, DOWN_WEST, UP_EAST, UP_NORTH, UP_SOUTH, UP_WEST, WEST_UP, EAST_UP, NORTH_UP, SOUTH_UP};
    }
 }

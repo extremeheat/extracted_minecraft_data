@@ -18,33 +18,30 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.Level;
 
 public abstract class SpellcasterIllager extends AbstractIllager {
-   private static final EntityDataAccessor<Byte> DATA_SPELL_CASTING_ID = SynchedEntityData.defineId(SpellcasterIllager.class, EntityDataSerializers.BYTE);
+   private static final EntityDataAccessor<Byte> DATA_SPELL_CASTING_ID;
    protected int spellCastingTickCount;
-   private SpellcasterIllager.IllagerSpell currentSpell = SpellcasterIllager.IllagerSpell.NONE;
+   private IllagerSpell currentSpell;
 
    protected SpellcasterIllager(EntityType<? extends SpellcasterIllager> var1, Level var2) {
       super(var1, var2);
+      this.currentSpell = SpellcasterIllager.IllagerSpell.NONE;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_SPELL_CASTING_ID, (byte)0);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.spellCastingTickCount = var1.getInt("SpellTicks");
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("SpellTicks", this.spellCastingTickCount);
    }
 
-   @Override
    public AbstractIllager.IllagerArmPose getArmPose() {
       if (this.isCastingSpell()) {
          return AbstractIllager.IllagerArmPose.SPELLCASTING;
@@ -55,34 +52,33 @@ public abstract class SpellcasterIllager extends AbstractIllager {
 
    public boolean isCastingSpell() {
       if (this.level().isClientSide) {
-         return this.entityData.get(DATA_SPELL_CASTING_ID) > 0;
+         return (Byte)this.entityData.get(DATA_SPELL_CASTING_ID) > 0;
       } else {
          return this.spellCastingTickCount > 0;
       }
    }
 
-   public void setIsCastingSpell(SpellcasterIllager.IllagerSpell var1) {
+   public void setIsCastingSpell(IllagerSpell var1) {
       this.currentSpell = var1;
       this.entityData.set(DATA_SPELL_CASTING_ID, (byte)var1.id);
    }
 
-   protected SpellcasterIllager.IllagerSpell getCurrentSpell() {
-      return !this.level().isClientSide ? this.currentSpell : SpellcasterIllager.IllagerSpell.byId(this.entityData.get(DATA_SPELL_CASTING_ID));
+   protected IllagerSpell getCurrentSpell() {
+      return !this.level().isClientSide ? this.currentSpell : SpellcasterIllager.IllagerSpell.byId((Byte)this.entityData.get(DATA_SPELL_CASTING_ID));
    }
 
-   @Override
    protected void customServerAiStep() {
       super.customServerAiStep();
       if (this.spellCastingTickCount > 0) {
          --this.spellCastingTickCount;
       }
+
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.level().isClientSide && this.isCastingSpell()) {
-         SpellcasterIllager.IllagerSpell var1 = this.getCurrentSpell();
+         IllagerSpell var1 = this.getCurrentSpell();
          float var2 = (float)var1.spellColor[0];
          float var3 = (float)var1.spellColor[1];
          float var4 = (float)var1.spellColor[2];
@@ -91,27 +87,10 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          float var7 = Mth.sin(var5);
          double var8 = 0.6 * (double)this.getScale();
          double var10 = 1.8 * (double)this.getScale();
-         this.level()
-            .addParticle(
-               ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4),
-               this.getX() + (double)var6 * var8,
-               this.getY() + var10,
-               this.getZ() + (double)var7 * var8,
-               0.0,
-               0.0,
-               0.0
-            );
-         this.level()
-            .addParticle(
-               ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4),
-               this.getX() - (double)var6 * var8,
-               this.getY() + var10,
-               this.getZ() - (double)var7 * var8,
-               0.0,
-               0.0,
-               0.0
-            );
+         this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4), this.getX() + (double)var6 * var8, this.getY() + var10, this.getZ() + (double)var7 * var8, 0.0, 0.0, 0.0);
+         this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4), this.getX() - (double)var6 * var8, this.getY() + var10, this.getZ() - (double)var7 * var8, 0.0, 0.0, 0.0);
       }
+
    }
 
    protected int getSpellCastingTime() {
@@ -119,6 +98,10 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    protected abstract SoundEvent getCastingSoundEvent();
+
+   static {
+      DATA_SPELL_CASTING_ID = SynchedEntityData.defineId(SpellcasterIllager.class, EntityDataSerializers.BYTE);
+   }
 
    protected static enum IllagerSpell {
       NONE(0, 0.0, 0.0, 0.0),
@@ -128,7 +111,9 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       DISAPPEAR(4, 0.3, 0.3, 0.8),
       BLINDNESS(5, 0.1, 0.1, 0.2);
 
-      private static final IntFunction<SpellcasterIllager.IllagerSpell> BY_ID = ByIdMap.continuous(var0 -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      private static final IntFunction<IllagerSpell> BY_ID = ByIdMap.continuous((var0) -> {
+         return var0.id;
+      }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       final int id;
       final double[] spellColor;
 
@@ -137,40 +122,13 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          this.spellColor = new double[]{var4, var6, var8};
       }
 
-      public static SpellcasterIllager.IllagerSpell byId(int var0) {
-         return BY_ID.apply(var0);
-      }
-   }
-
-   protected class SpellcasterCastingSpellGoal extends Goal {
-      public SpellcasterCastingSpellGoal() {
-         super();
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+      public static IllagerSpell byId(int var0) {
+         return (IllagerSpell)BY_ID.apply(var0);
       }
 
-      @Override
-      public boolean canUse() {
-         return SpellcasterIllager.this.getSpellCastingTime() > 0;
-      }
-
-      @Override
-      public void start() {
-         super.start();
-         SpellcasterIllager.this.navigation.stop();
-      }
-
-      @Override
-      public void stop() {
-         super.stop();
-         SpellcasterIllager.this.setIsCastingSpell(SpellcasterIllager.IllagerSpell.NONE);
-      }
-
-      @Override
-      public void tick() {
-         if (SpellcasterIllager.this.getTarget() != null) {
-            SpellcasterIllager.this.getLookControl()
-               .setLookAt(SpellcasterIllager.this.getTarget(), (float)SpellcasterIllager.this.getMaxHeadYRot(), (float)SpellcasterIllager.this.getMaxHeadXRot());
-         }
+      // $FF: synthetic method
+      private static IllagerSpell[] $values() {
+         return new IllagerSpell[]{NONE, SUMMON_VEX, FANGS, WOLOLO, DISAPPEAR, BLINDNESS};
       }
    }
 
@@ -182,25 +140,24 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          super();
       }
 
-      @Override
       public boolean canUse() {
          LivingEntity var1 = SpellcasterIllager.this.getTarget();
-         if (var1 == null || !var1.isAlive()) {
-            return false;
-         } else if (SpellcasterIllager.this.isCastingSpell()) {
-            return false;
+         if (var1 != null && var1.isAlive()) {
+            if (SpellcasterIllager.this.isCastingSpell()) {
+               return false;
+            } else {
+               return SpellcasterIllager.this.tickCount >= this.nextAttackTickCount;
+            }
          } else {
-            return SpellcasterIllager.this.tickCount >= this.nextAttackTickCount;
+            return false;
          }
       }
 
-      @Override
       public boolean canContinueToUse() {
          LivingEntity var1 = SpellcasterIllager.this.getTarget();
          return var1 != null && var1.isAlive() && this.attackWarmupDelay > 0;
       }
 
-      @Override
       public void start() {
          this.attackWarmupDelay = this.adjustedTickDelay(this.getCastWarmupTime());
          SpellcasterIllager.this.spellCastingTickCount = this.getCastingTime();
@@ -213,13 +170,13 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          SpellcasterIllager.this.setIsCastingSpell(this.getSpell());
       }
 
-      @Override
       public void tick() {
          --this.attackWarmupDelay;
          if (this.attackWarmupDelay == 0) {
             this.performSpellCasting();
             SpellcasterIllager.this.playSound(SpellcasterIllager.this.getCastingSoundEvent(), 1.0F, 1.0F);
          }
+
       }
 
       protected abstract void performSpellCasting();
@@ -235,6 +192,34 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       @Nullable
       protected abstract SoundEvent getSpellPrepareSound();
 
-      protected abstract SpellcasterIllager.IllagerSpell getSpell();
+      protected abstract IllagerSpell getSpell();
+   }
+
+   protected class SpellcasterCastingSpellGoal extends Goal {
+      public SpellcasterCastingSpellGoal() {
+         super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+      }
+
+      public boolean canUse() {
+         return SpellcasterIllager.this.getSpellCastingTime() > 0;
+      }
+
+      public void start() {
+         super.start();
+         SpellcasterIllager.this.navigation.stop();
+      }
+
+      public void stop() {
+         super.stop();
+         SpellcasterIllager.this.setIsCastingSpell(SpellcasterIllager.IllagerSpell.NONE);
+      }
+
+      public void tick() {
+         if (SpellcasterIllager.this.getTarget() != null) {
+            SpellcasterIllager.this.getLookControl().setLookAt(SpellcasterIllager.this.getTarget(), (float)SpellcasterIllager.this.getMaxHeadYRot(), (float)SpellcasterIllager.this.getMaxHeadXRot());
+         }
+
+      }
    }
 }

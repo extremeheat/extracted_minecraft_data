@@ -30,52 +30,39 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFish, Colorabl
 
    public TropicalFishPatternLayer(RenderLayerParent<TropicalFish, ColorableHierarchicalModel<TropicalFish>> var1, EntityModelSet var2) {
       super(var1);
-      this.modelA = new TropicalFishModelA<>(var2.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL_PATTERN));
-      this.modelB = new TropicalFishModelB<>(var2.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE_PATTERN));
+      this.modelA = new TropicalFishModelA(var2.bakeLayer(ModelLayers.TROPICAL_FISH_SMALL_PATTERN));
+      this.modelB = new TropicalFishModelB(var2.bakeLayer(ModelLayers.TROPICAL_FISH_LARGE_PATTERN));
    }
 
-   public void render(
-      PoseStack var1, MultiBufferSource var2, int var3, TropicalFish var4, float var5, float var6, float var7, float var8, float var9, float var10
-   ) {
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, TropicalFish var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       TropicalFish.Pattern var11 = var4.getVariant();
+      Object var10000;
+      switch (var11.base()) {
+         case SMALL -> var10000 = this.modelA;
+         case LARGE -> var10000 = this.modelB;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
 
-      Object var12 = switch(var11.base()) {
-         case SMALL -> this.modelA;
-         case LARGE -> this.modelB;
-      };
+      Object var12 = var10000;
+      ResourceLocation var15;
+      switch (var11) {
+         case KOB -> var15 = KOB_TEXTURE;
+         case SUNSTREAK -> var15 = SUNSTREAK_TEXTURE;
+         case SNOOPER -> var15 = SNOOPER_TEXTURE;
+         case DASHER -> var15 = DASHER_TEXTURE;
+         case BRINELY -> var15 = BRINELY_TEXTURE;
+         case SPOTTY -> var15 = SPOTTY_TEXTURE;
+         case FLOPPER -> var15 = FLOPPER_TEXTURE;
+         case STRIPEY -> var15 = STRIPEY_TEXTURE;
+         case GLITTER -> var15 = GLITTER_TEXTURE;
+         case BLOCKFISH -> var15 = BLOCKFISH_TEXTURE;
+         case BETTY -> var15 = BETTY_TEXTURE;
+         case CLAYFISH -> var15 = CLAYFISH_TEXTURE;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
 
-      ResourceLocation var13 = switch(var11) {
-         case KOB -> KOB_TEXTURE;
-         case SUNSTREAK -> SUNSTREAK_TEXTURE;
-         case SNOOPER -> SNOOPER_TEXTURE;
-         case DASHER -> DASHER_TEXTURE;
-         case BRINELY -> BRINELY_TEXTURE;
-         case SPOTTY -> SPOTTY_TEXTURE;
-         case FLOPPER -> FLOPPER_TEXTURE;
-         case STRIPEY -> STRIPEY_TEXTURE;
-         case GLITTER -> GLITTER_TEXTURE;
-         case BLOCKFISH -> BLOCKFISH_TEXTURE;
-         case BETTY -> BETTY_TEXTURE;
-         case CLAYFISH -> CLAYFISH_TEXTURE;
-      };
+      ResourceLocation var13 = var15;
       float[] var14 = var4.getPatternColor().getTextureDiffuseColors();
-      coloredCutoutModelCopyLayerRender(
-         this.getParentModel(),
-         (EntityModel<TropicalFish>)var12,
-         var13,
-         var1,
-         var2,
-         var3,
-         var4,
-         var5,
-         var6,
-         var8,
-         var9,
-         var10,
-         var7,
-         var14[0],
-         var14[1],
-         var14[2]
-      );
+      coloredCutoutModelCopyLayerRender(this.getParentModel(), (EntityModel)var12, var13, var1, var2, var3, var4, var5, var6, var8, var9, var10, var7, var14[0], var14[1], var14[2]);
    }
 }

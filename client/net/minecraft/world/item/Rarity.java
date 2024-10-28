@@ -13,12 +13,15 @@ public enum Rarity implements StringRepresentable {
    COMMON(0, "common", ChatFormatting.WHITE),
    UNCOMMON(1, "uncommon", ChatFormatting.YELLOW),
    RARE(2, "rare", ChatFormatting.AQUA),
-   EPIC(3, "epic", ChatFormatting.LIGHT_PURPLE),
-   POTATO(4, "potato", ChatFormatting.GREEN);
+   EPIC(3, "epic", ChatFormatting.LIGHT_PURPLE);
 
    public static final Codec<Rarity> CODEC = StringRepresentable.fromValues(Rarity::values);
-   public static final IntFunction<Rarity> BY_ID = ByIdMap.continuous(var0 -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, Rarity> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, var0 -> var0.id);
+   public static final IntFunction<Rarity> BY_ID = ByIdMap.continuous((var0) -> {
+      return var0.id;
+   }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StreamCodec<ByteBuf, Rarity> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> {
+      return var0.id;
+   });
    private final int id;
    private final String name;
    private final ChatFormatting color;
@@ -33,8 +36,12 @@ public enum Rarity implements StringRepresentable {
       return this.color;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static Rarity[] $values() {
+      return new Rarity[]{COMMON, UNCOMMON, RARE, EPIC};
    }
 }

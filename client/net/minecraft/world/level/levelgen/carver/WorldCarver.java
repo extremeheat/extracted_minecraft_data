@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.carver;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -10,7 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -28,30 +28,31 @@ import net.minecraft.world.level.material.Fluids;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public abstract class WorldCarver<C extends CarverConfiguration> {
-   public static final WorldCarver<CaveCarverConfiguration> CAVE = register("cave", new CaveWorldCarver(CaveCarverConfiguration.CODEC));
-   public static final WorldCarver<CaveCarverConfiguration> NETHER_CAVE = register("nether_cave", new NetherWorldCarver(CaveCarverConfiguration.CODEC));
-   public static final WorldCarver<CanyonCarverConfiguration> CANYON = register("canyon", new CanyonWorldCarver(CanyonCarverConfiguration.CODEC));
-   protected static final BlockState AIR = Blocks.AIR.defaultBlockState();
-   protected static final BlockState CAVE_AIR = Blocks.CAVE_AIR.defaultBlockState();
-   protected static final FluidState WATER = Fluids.WATER.defaultFluidState();
-   protected static final FluidState LAVA = Fluids.LAVA.defaultFluidState();
-   protected Set<Fluid> liquids = ImmutableSet.of(Fluids.WATER);
-   private final Codec<ConfiguredWorldCarver<C>> configuredCodec;
+   public static final WorldCarver<CaveCarverConfiguration> CAVE;
+   public static final WorldCarver<CaveCarverConfiguration> NETHER_CAVE;
+   public static final WorldCarver<CanyonCarverConfiguration> CANYON;
+   protected static final BlockState AIR;
+   protected static final BlockState CAVE_AIR;
+   protected static final FluidState WATER;
+   protected static final FluidState LAVA;
+   protected Set<Fluid> liquids;
+   private final MapCodec<ConfiguredWorldCarver<C>> configuredCodec;
 
    private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(String var0, F var1) {
-      return Registry.register(BuiltInRegistries.CARVER, var0, (F)var1);
+      return (WorldCarver)Registry.register(BuiltInRegistries.CARVER, (String)var0, var1);
    }
 
    public WorldCarver(Codec<C> var1) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config).codec();
+      this.liquids = ImmutableSet.of(Fluids.WATER);
+      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config);
    }
 
    public ConfiguredWorldCarver<C> configured(C var1) {
-      return new ConfiguredWorldCarver<>(this, var1);
+      return new ConfiguredWorldCarver(this, var1);
    }
 
-   public Codec<ConfiguredWorldCarver<C>> configuredCodec() {
+   public MapCodec<ConfiguredWorldCarver<C>> configuredCodec() {
       return this.configuredCodec;
    }
 
@@ -59,20 +60,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       return 4;
    }
 
-   protected boolean carveEllipsoid(
-      CarvingContext var1,
-      C var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      Aquifer var5,
-      double var6,
-      double var8,
-      double var10,
-      double var12,
-      double var14,
-      CarvingMask var16,
-      WorldCarver.CarveSkipChecker var17
-   ) {
+   protected boolean carveEllipsoid(CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, Aquifer var5, double var6, double var8, double var10, double var12, double var14, CarvingMask var16, CarveSkipChecker var17) {
       ChunkPos var18 = var3.getPos();
       double var19 = (double)var18.getMiddleBlockX();
       double var21 = (double)var18.getMiddleBlockZ();
@@ -106,7 +94,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
                      if (!var17.shouldSkip(var1, var39, var47, var43, var46) && (!var16.get(var37, var46, var41) || isDebugEnabled(var2))) {
                         var16.set(var37, var46, var41);
                         var35.set(var38, var46, var42);
-                        var34 |= this.carveBlock(var1, (C)var2, var3, var4, var16, var35, var36, var5, var45);
+                        var34 |= this.carveBlock(var1, var2, var3, var4, var16, var35, var36, var5, var45);
                      }
                   }
                }
@@ -119,26 +107,16 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       }
    }
 
-   protected boolean carveBlock(
-      CarvingContext var1,
-      C var2,
-      ChunkAccess var3,
-      Function<BlockPos, Holder<Biome>> var4,
-      CarvingMask var5,
-      BlockPos.MutableBlockPos var6,
-      BlockPos.MutableBlockPos var7,
-      Aquifer var8,
-      MutableBoolean var9
-   ) {
+   protected boolean carveBlock(CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, CarvingMask var5, BlockPos.MutableBlockPos var6, BlockPos.MutableBlockPos var7, Aquifer var8, MutableBoolean var9) {
       BlockState var10 = var3.getBlockState(var6);
-      if (var10.is(BlockTags.ANIMALS_SPAWNABLE_ON) || var10.is(Blocks.MYCELIUM)) {
+      if (var10.is(Blocks.GRASS_BLOCK) || var10.is(Blocks.MYCELIUM)) {
          var9.setTrue();
       }
 
-      if (!this.canReplaceBlock((C)var2, var10) && !isDebugEnabled(var2)) {
+      if (!this.canReplaceBlock(var2, var10) && !isDebugEnabled(var2)) {
          return false;
       } else {
-         BlockState var11 = var3.isPotato() ? Blocks.CAVE_AIR.defaultBlockState() : this.getCarveState(var1, (C)var2, var6, var8);
+         BlockState var11 = this.getCarveState(var1, var2, var6, var8);
          if (var11 == null) {
             return false;
          } else {
@@ -148,14 +126,14 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
             }
 
             if (var9.isTrue()) {
-               var7.setWithOffset(var6, Direction.DOWN);
-               BlockState var12 = var3.getBlockState(var7);
-               if (var12.is(Blocks.DIRT) || var12.is(Blocks.TERREDEPOMME)) {
-                  var1.topMaterial(var4, var3, var7, !var11.getFluidState().isEmpty()).ifPresent(var2x -> {
+               var7.setWithOffset(var6, (Direction)Direction.DOWN);
+               if (var3.getBlockState(var7).is(Blocks.DIRT)) {
+                  var1.topMaterial(var4, var3, var7, !var11.getFluidState().isEmpty()).ifPresent((var2x) -> {
                      var3.setBlockState(var7, var2x, false);
                      if (!var2x.getFluidState().isEmpty()) {
                         var3.markPosForPostprocessing(var7);
                      }
+
                   });
                }
             }
@@ -184,15 +162,13 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
          return var0.debugSettings.getAirState();
       } else if (var1.is(Blocks.WATER)) {
          BlockState var2 = var0.debugSettings.getWaterState();
-         return var2.hasProperty(BlockStateProperties.WATERLOGGED) ? var2.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(true)) : var2;
+         return var2.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)var2.setValue(BlockStateProperties.WATERLOGGED, true) : var2;
       } else {
          return var1.is(Blocks.LAVA) ? var0.debugSettings.getLavaState() : var1;
       }
    }
 
-   public abstract boolean carve(
-      CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8
-   );
+   public abstract boolean carve(CarvingContext var1, C var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8);
 
    public abstract boolean isStartChunk(C var1, RandomSource var2);
 
@@ -212,6 +188,16 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
 
    private static boolean isDebugEnabled(CarverConfiguration var0) {
       return var0.debugSettings.isDebugMode();
+   }
+
+   static {
+      CAVE = register("cave", new CaveWorldCarver(CaveCarverConfiguration.CODEC));
+      NETHER_CAVE = register("nether_cave", new NetherWorldCarver(CaveCarverConfiguration.CODEC));
+      CANYON = register("canyon", new CanyonWorldCarver(CanyonCarverConfiguration.CODEC));
+      AIR = Blocks.AIR.defaultBlockState();
+      CAVE_AIR = Blocks.CAVE_AIR.defaultBlockState();
+      WATER = Fluids.WATER.defaultFluidState();
+      LAVA = Fluids.LAVA.defaultFluidState();
    }
 
    public interface CarveSkipChecker {

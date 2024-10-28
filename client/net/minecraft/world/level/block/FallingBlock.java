@@ -21,21 +21,17 @@ public abstract class FallingBlock extends Block implements Fallable {
       super(var1);
    }
 
-   @Override
    protected abstract MapCodec<? extends FallingBlock> codec();
 
-   @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       var2.scheduleTick(var3, this, this.getDelayAfterPlace());
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      var4.scheduleTick(var5, this, this.getDelayAfterPlace());
+      var4.scheduleTick(var5, (Block)this, this.getDelayAfterPlace());
       return super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinBuildHeight()) {
          FallingBlockEntity var5 = FallingBlockEntity.fall(var2, var3, var1);
@@ -54,7 +50,6 @@ public abstract class FallingBlock extends Block implements Fallable {
       return var0.isAir() || var0.is(BlockTags.FIRE) || var0.liquid() || var0.canBeReplaced();
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(16) == 0) {
          BlockPos var5 = var3.below();
@@ -62,6 +57,7 @@ public abstract class FallingBlock extends Block implements Fallable {
             ParticleUtils.spawnParticleBelow(var2, var3, var4, new BlockParticleOption(ParticleTypes.FALLING_DUST, var1));
          }
       }
+
    }
 
    public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {

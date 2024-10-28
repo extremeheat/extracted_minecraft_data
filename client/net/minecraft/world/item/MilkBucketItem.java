@@ -16,11 +16,10 @@ public class MilkBucketItem extends Item {
       super(var1);
    }
 
-   @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       if (var3 instanceof ServerPlayer var4) {
-         CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer)var4, var1);
-         ((ServerPlayer)var4).awardStat(Stats.ITEM_USED.get(this));
+         CriteriaTriggers.CONSUME_ITEM.trigger(var4, var1);
+         var4.awardStat(Stats.ITEM_USED.get(this));
       }
 
       var1.consume(1, var3);
@@ -31,17 +30,14 @@ public class MilkBucketItem extends Item {
       return var1.isEmpty() ? new ItemStack(Items.BUCKET) : var1;
    }
 
-   @Override
    public int getUseDuration(ItemStack var1) {
       return 32;
    }
 
-   @Override
    public UseAnim getUseAnimation(ItemStack var1) {
       return UseAnim.DRINK;
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       return ItemUtils.startUsingInstantly(var1, var2, var3);
    }

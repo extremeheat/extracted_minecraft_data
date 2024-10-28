@@ -27,8 +27,12 @@ public enum CaveSurface implements StringRepresentable {
       return this.y;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
+   }
+
+   // $FF: synthetic method
+   private static CaveSurface[] $values() {
+      return new CaveSurface[]{CEILING, FLOOR};
    }
 }

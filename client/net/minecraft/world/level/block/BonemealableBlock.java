@@ -15,13 +15,17 @@ public interface BonemealableBlock {
    void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4);
 
    default BlockPos getParticlePos(BlockPos var1) {
-      return switch(this.getType()) {
-         case NEIGHBOR_SPREADER -> var1.above();
-         case GROWER -> var1;
-      };
+      BlockPos var10000;
+      switch (this.getType().ordinal()) {
+         case 0 -> var10000 = var1.above();
+         case 1 -> var10000 = var1;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
-   default BonemealableBlock.Type getType() {
+   default Type getType() {
       return BonemealableBlock.Type.GROWER;
    }
 
@@ -30,6 +34,11 @@ public interface BonemealableBlock {
       GROWER;
 
       private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{NEIGHBOR_SPREADER, GROWER};
       }
    }
 }

@@ -27,16 +27,23 @@ public class DynamicGameEventListener<T extends GameEventListener> {
    }
 
    public void remove(ServerLevel var1) {
-      ifChunkExists(var1, this.lastSection, var1x -> var1x.unregister(this.listener));
+      ifChunkExists(var1, this.lastSection, (var1x) -> {
+         var1x.unregister(this.listener);
+      });
    }
 
    public void move(ServerLevel var1) {
-      this.listener.getListenerSource().getPosition(var1).map(SectionPos::of).ifPresent(var2 -> {
+      this.listener.getListenerSource().getPosition(var1).map(SectionPos::of).ifPresent((var2) -> {
          if (this.lastSection == null || !this.lastSection.equals(var2)) {
-            ifChunkExists(var1, this.lastSection, var1xx -> var1xx.unregister(this.listener));
+            ifChunkExists(var1, this.lastSection, (var1x) -> {
+               var1x.unregister(this.listener);
+            });
             this.lastSection = var2;
-            ifChunkExists(var1, this.lastSection, var1xx -> var1xx.register(this.listener));
+            ifChunkExists(var1, this.lastSection, (var1x) -> {
+               var1x.register(this.listener);
+            });
          }
+
       });
    }
 
@@ -46,6 +53,7 @@ public class DynamicGameEventListener<T extends GameEventListener> {
          if (var3 != null) {
             var2.accept(var3.getListenerRegistry(var1.y()));
          }
+
       }
    }
 }

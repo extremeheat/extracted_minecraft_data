@@ -3,10 +3,11 @@ package net.minecraft.world.flag;
 import it.unimi.dsi.fastutil.HashCommon;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import javax.annotation.Nullable;
 
 public final class FeatureFlagSet {
-   private static final FeatureFlagSet EMPTY = new FeatureFlagSet(null, 0L);
+   private static final FeatureFlagSet EMPTY = new FeatureFlagSet((FeatureFlagUniverse)null, 0L);
    public static final int MAX_CONTAINER_SIZE = 64;
    @Nullable
    private final FeatureFlagUniverse universe;
@@ -41,12 +42,13 @@ public final class FeatureFlagSet {
    }
 
    private static long computeMask(FeatureFlagUniverse var0, long var1, Iterable<FeatureFlag> var3) {
-      for(FeatureFlag var5 : var3) {
+      FeatureFlag var5;
+      for(Iterator var4 = var3.iterator(); var4.hasNext(); var1 |= var5.mask) {
+         var5 = (FeatureFlag)var4.next();
          if (var0 != var5.universe) {
-            throw new IllegalStateException("Mismatched feature universe, expected '" + var0 + "', but got '" + var5.universe + "'");
+            String var10002 = String.valueOf(var0);
+            throw new IllegalStateException("Mismatched feature universe, expected '" + var10002 + "', but got '" + String.valueOf(var5.universe) + "'");
          }
-
-         var1 |= var5.mask;
       }
 
       return var1;
@@ -80,26 +82,31 @@ public final class FeatureFlagSet {
       } else if (var1.universe == null) {
          return this;
       } else if (this.universe != var1.universe) {
-         throw new IllegalArgumentException("Mismatched set elements: '" + this.universe + "' != '" + var1.universe + "'");
+         String var10002 = String.valueOf(this.universe);
+         throw new IllegalArgumentException("Mismatched set elements: '" + var10002 + "' != '" + String.valueOf(var1.universe) + "'");
       } else {
          return new FeatureFlagSet(this.universe, this.mask | var1.mask);
       }
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof FeatureFlagSet var2 && this.universe == var2.universe && this.mask == var2.mask) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof FeatureFlagSet) {
+            FeatureFlagSet var2 = (FeatureFlagSet)var1;
+            if (this.universe == var2.universe && this.mask == var2.mask) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       return (int)HashCommon.mix(this.mask);
    }

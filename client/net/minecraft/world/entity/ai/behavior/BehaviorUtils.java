@@ -1,9 +1,11 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -41,11 +43,15 @@ public class BehaviorUtils {
    }
 
    public static boolean targetIsValid(Brain<?> var0, MemoryModuleType<? extends LivingEntity> var1, EntityType<?> var2) {
-      return targetIsValid(var0, var1, var1x -> var1x.getType() == var2);
+      return targetIsValid(var0, var1, (var1x) -> {
+         return var1x.getType() == var2;
+      });
    }
 
    private static boolean targetIsValid(Brain<?> var0, MemoryModuleType<? extends LivingEntity> var1, Predicate<LivingEntity> var2) {
-      return var0.<LivingEntity>getMemory(var1).filter(var2).filter(LivingEntity::isAlive).filter(var1x -> entityIsVisible(var0, var1x)).isPresent();
+      return var0.getMemory(var1).filter(var2).filter(LivingEntity::isAlive).filter((var1x) -> {
+         return entityIsVisible(var0, var1x);
+      }).isPresent();
    }
 
    private static void lookAtEachOther(LivingEntity var0, LivingEntity var1) {
@@ -54,26 +60,26 @@ public class BehaviorUtils {
    }
 
    public static void lookAtEntity(LivingEntity var0, LivingEntity var1) {
-      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var1, true));
+      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1, true)));
    }
 
    private static void setWalkAndLookTargetMemoriesToEachOther(LivingEntity var0, LivingEntity var1, float var2, int var3) {
-      setWalkAndLookTargetMemories(var0, var1, var2, var3);
-      setWalkAndLookTargetMemories(var1, var0, var2, var3);
+      setWalkAndLookTargetMemories(var0, (Entity)var1, var2, var3);
+      setWalkAndLookTargetMemories(var1, (Entity)var0, var2, var3);
    }
 
    public static void setWalkAndLookTargetMemories(LivingEntity var0, Entity var1, float var2, int var3) {
-      setWalkAndLookTargetMemories(var0, new EntityTracker(var1, true), var2, var3);
+      setWalkAndLookTargetMemories(var0, (PositionTracker)(new EntityTracker(var1, true)), var2, var3);
    }
 
    public static void setWalkAndLookTargetMemories(LivingEntity var0, BlockPos var1, float var2, int var3) {
-      setWalkAndLookTargetMemories(var0, new BlockPosTracker(var1), var2, var3);
+      setWalkAndLookTargetMemories(var0, (PositionTracker)(new BlockPosTracker(var1)), var2, var3);
    }
 
    public static void setWalkAndLookTargetMemories(LivingEntity var0, PositionTracker var1, float var2, int var3) {
       WalkTarget var4 = new WalkTarget(var1, var2, var3);
-      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, var1);
-      var0.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var4);
+      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)var1);
+      var0.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)var4);
    }
 
    public static void throwItem(LivingEntity var0, ItemStack var1, Vec3 var2) {
@@ -94,17 +100,20 @@ public class BehaviorUtils {
 
    public static SectionPos findSectionClosestToVillage(ServerLevel var0, SectionPos var1, int var2) {
       int var3 = var0.sectionsToVillage(var1);
-      return SectionPos.cube(var1, var2)
-         .filter(var2x -> var0.sectionsToVillage(var2x) < var3)
-         .min(Comparator.comparingInt(var0::sectionsToVillage))
-         .orElse(var1);
+      Stream var10000 = SectionPos.cube(var1, var2).filter((var2x) -> {
+         return var0.sectionsToVillage(var2x) < var3;
+      });
+      Objects.requireNonNull(var0);
+      return (SectionPos)var10000.min(Comparator.comparingInt(var0::sectionsToVillage)).orElse(var1);
    }
 
    public static boolean isWithinAttackRange(Mob var0, LivingEntity var1, int var2) {
       Item var4 = var0.getMainHandItem().getItem();
-      if (var4 instanceof ProjectileWeaponItem var3 && var0.canFireProjectileWeapon((ProjectileWeaponItem)var3)) {
-         int var5 = ((ProjectileWeaponItem)var3).getDefaultProjectileRange() - var2;
-         return var0.closerThan(var1, (double)var5);
+      if (var4 instanceof ProjectileWeaponItem var3) {
+         if (var0.canFireProjectileWeapon(var3)) {
+            int var5 = var3.getDefaultProjectileRange() - var2;
+            return var0.closerThan(var1, (double)var5);
+         }
       }
 
       return var0.isWithinMeleeAttackRange(var1);
@@ -123,9 +132,7 @@ public class BehaviorUtils {
 
    public static boolean canSee(LivingEntity var0, LivingEntity var1) {
       Brain var2 = var0.getBrain();
-      return !var2.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-         ? false
-         : var2.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get().contains(var1);
+      return !var2.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES) ? false : ((NearestVisibleLivingEntities)var2.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get()).contains(var1);
    }
 
    public static LivingEntity getNearestTarget(LivingEntity var0, Optional<LivingEntity> var1, LivingEntity var2) {
@@ -140,16 +147,25 @@ public class BehaviorUtils {
 
    public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(LivingEntity var0, MemoryModuleType<UUID> var1) {
       Optional var2 = var0.getBrain().getMemory(var1);
-      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level()).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1xx ? var1xx : null);
+      return var2.map((var1x) -> {
+         return ((ServerLevel)var0.level()).getEntity(var1x);
+      }).map((var0x) -> {
+         LivingEntity var10000;
+         if (var0x instanceof LivingEntity var1) {
+            var10000 = var1;
+         } else {
+            var10000 = null;
+         }
+
+         return var10000;
+      });
    }
 
    @Nullable
    public static Vec3 getRandomSwimmablePos(PathfinderMob var0, int var1, int var2) {
       Vec3 var3 = DefaultRandomPos.getPos(var0, var1, var2);
-      int var4 = 0;
 
-      while(var3 != null && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(PathComputationType.WATER) && var4++ < 10) {
-         var3 = DefaultRandomPos.getPos(var0, var1, var2);
+      for(int var4 = 0; var3 != null && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(PathComputationType.WATER) && var4++ < 10; var3 = DefaultRandomPos.getPos(var0, var1, var2)) {
       }
 
       return var3;

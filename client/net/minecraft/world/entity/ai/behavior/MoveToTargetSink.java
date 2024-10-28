@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
@@ -30,18 +31,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
    }
 
    public MoveToTargetSink(int var1, int var2) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.PATH,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_PRESENT
-         ),
-         var1,
-         var2
-      );
+      super(ImmutableMap.of(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryStatus.REGISTERED, MemoryModuleType.PATH, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_PRESENT), var1, var2);
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
@@ -50,7 +40,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
          return false;
       } else {
          Brain var3 = var2.getBrain();
-         WalkTarget var4 = var3.getMemory(MemoryModuleType.WALK_TARGET).get();
+         WalkTarget var4 = (WalkTarget)var3.getMemory(MemoryModuleType.WALK_TARGET).get();
          boolean var5 = this.reachedTarget(var2, var4);
          if (!var5 && this.tryComputePath(var2, var4, var1.getGameTime())) {
             this.lastTargetPos = var4.getTarget().currentBlockPosition();
@@ -69,7 +59,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
    protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {
       if (this.path != null && this.lastTargetPos != null) {
          Optional var5 = var2.getBrain().getMemory(MemoryModuleType.WALK_TARGET);
-         boolean var6 = var5.map(MoveToTargetSink::isWalkTargetSpectator).orElse(false);
+         boolean var6 = (Boolean)var5.map(MoveToTargetSink::isWalkTargetSpectator).orElse(false);
          PathNavigation var7 = var2.getNavigation();
          return !var7.isDone() && var5.isPresent() && !this.reachedTarget(var2, (WalkTarget)var5.get()) && !var6;
       } else {
@@ -78,9 +68,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
    }
 
    protected void stop(ServerLevel var1, Mob var2, long var3) {
-      if (var2.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
-         && !this.reachedTarget(var2, var2.getBrain().getMemory(MemoryModuleType.WALK_TARGET).get())
-         && var2.getNavigation().isStuck()) {
+      if (var2.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET) && !this.reachedTarget(var2, (WalkTarget)var2.getBrain().getMemory(MemoryModuleType.WALK_TARGET).get()) && var2.getNavigation().isStuck()) {
          this.remainingCooldown = var1.getRandom().nextInt(40);
       }
 
@@ -91,7 +79,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
    }
 
    protected void start(ServerLevel var1, Mob var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.PATH, this.path);
+      var2.getBrain().setMemory(MemoryModuleType.PATH, (Object)this.path);
       var2.getNavigation().moveTo(this.path, (double)this.speedModifier);
    }
 
@@ -100,21 +88,22 @@ public class MoveToTargetSink extends Behavior<Mob> {
       Brain var6 = var2.getBrain();
       if (this.path != var5) {
          this.path = var5;
-         var6.setMemory(MemoryModuleType.PATH, var5);
+         var6.setMemory(MemoryModuleType.PATH, (Object)var5);
       }
 
       if (var5 != null && this.lastTargetPos != null) {
-         WalkTarget var7 = var6.getMemory(MemoryModuleType.WALK_TARGET).get();
+         WalkTarget var7 = (WalkTarget)var6.getMemory(MemoryModuleType.WALK_TARGET).get();
          if (var7.getTarget().currentBlockPosition().distSqr(this.lastTargetPos) > 4.0 && this.tryComputePath(var2, var7, var1.getGameTime())) {
             this.lastTargetPos = var7.getTarget().currentBlockPosition();
             this.start(var1, var2, var3);
          }
+
       }
    }
 
    private boolean tryComputePath(Mob var1, WalkTarget var2, long var3) {
       BlockPos var5 = var2.getTarget().currentBlockPosition();
-      this.path = var1.getNavigation().createPath(var5, 0);
+      this.path = var1.getNavigation().createPath((BlockPos)var5, 0);
       this.speedModifier = var2.getSpeedModifier();
       Brain var6 = var1.getBrain();
       if (this.reachedTarget(var1, var2)) {
@@ -124,7 +113,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
          if (var7) {
             var6.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
          } else if (!var6.hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)) {
-            var6.setMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, var3);
+            var6.setMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, (Object)var3);
          }
 
          if (this.path != null) {
@@ -147,6 +136,20 @@ public class MoveToTargetSink extends Behavior<Mob> {
 
    private static boolean isWalkTargetSpectator(WalkTarget var0) {
       PositionTracker var1 = var0.getTarget();
-      return var1 instanceof EntityTracker var2 ? var2.getEntity().isSpectator() : false;
+      if (var1 instanceof EntityTracker var2) {
+         return var2.getEntity().isSpectator();
+      } else {
+         return false;
+      }
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Mob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Mob)var2, var3);
    }
 }

@@ -6,13 +6,13 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.BufferedReader;
+import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -39,26 +39,7 @@ import org.slf4j.Logger;
 
 public class ModelManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<ResourceLocation, ResourceLocation> VANILLA_ATLASES = Map.of(
-      Sheets.BANNER_SHEET,
-      new ResourceLocation("banner_patterns"),
-      Sheets.BED_SHEET,
-      new ResourceLocation("beds"),
-      Sheets.CHEST_SHEET,
-      new ResourceLocation("chests"),
-      Sheets.SHIELD_SHEET,
-      new ResourceLocation("shield_patterns"),
-      Sheets.SIGN_SHEET,
-      new ResourceLocation("signs"),
-      Sheets.SHULKER_SHEET,
-      new ResourceLocation("shulker_boxes"),
-      Sheets.ARMOR_TRIMS_SHEET,
-      new ResourceLocation("armor_trims"),
-      Sheets.DECORATED_POT_SHEET,
-      new ResourceLocation("decorated_pot"),
-      TextureAtlas.LOCATION_BLOCKS,
-      new ResourceLocation("blocks")
-   );
+   private static final Map<ResourceLocation, ResourceLocation> VANILLA_ATLASES;
    private Map<ResourceLocation, BakedModel> bakedRegistry;
    private final AtlasSet atlases;
    private final BlockModelShaper blockModelShaper;
@@ -76,7 +57,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    public BakedModel getModel(ModelResourceLocation var1) {
-      return this.bakedRegistry.getOrDefault(var1, this.missingModel);
+      return (BakedModel)this.bakedRegistry.getOrDefault(var1, this.missingModel);
    }
 
    public BakedModel getMissingModel() {
@@ -87,136 +68,174 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       return this.blockModelShaper;
    }
 
-   @Override
-   public final CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
+   public final CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
       var3.startTick();
       CompletableFuture var7 = loadBlockModels(var2, var5);
       CompletableFuture var8 = loadBlockStates(var2, var5);
-      CompletableFuture var9 = var7.thenCombineAsync(var8, (var2x, var3x) -> new ModelBakery(this.blockColors, var3, var2x, var3x), var5);
+      CompletableFuture var9 = var7.thenCombineAsync(var8, (var2x, var3x) -> {
+         return new ModelBakery(this.blockColors, var3, var2x, var3x);
+      }, var5);
       Map var10 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var5);
-      return CompletableFuture.allOf(Stream.concat(var10.values().stream(), Stream.of(var9)).toArray(var0 -> new CompletableFuture[var0]))
-         .thenApplyAsync(
-            var4x -> this.loadModels(
-                  var3,
-                  var10.entrySet()
-                     .stream()
-                     .collect(Collectors.toMap(Entry::getKey, var0 -> (AtlasSet.StitchResult)((CompletableFuture)var0.getValue()).join())),
-                  (ModelBakery)var9.join()
-               ),
-            var5
-         )
-         .thenCompose(var0 -> var0.readyForUpload.thenApply(var1x -> var0))
-         .thenCompose(var1::wait)
-         .thenAcceptAsync(var2x -> this.apply(var2x, var4), var6);
+      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])Stream.concat(var10.values().stream(), Stream.of(var9)).toArray((var0) -> {
+         return new CompletableFuture[var0];
+      })).thenApplyAsync((var4x) -> {
+         return this.loadModels(var3, (Map)var10.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0) -> {
+            return (AtlasSet.StitchResult)((CompletableFuture)var0.getValue()).join();
+         })), (ModelBakery)var9.join());
+      }, var5).thenCompose((var0) -> {
+         return var0.readyForUpload.thenApply((var1) -> {
+            return var0;
+         });
+      });
+      Objects.requireNonNull(var1);
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var2x) -> {
+         this.apply(var2x, var4);
+      }, var6);
    }
 
    private static CompletableFuture<Map<ResourceLocation, BlockModel>> loadBlockModels(ResourceManager var0, Executor var1) {
-      return CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> ModelBakery.MODEL_LISTER.listMatchingResources(var0), var1)
-         .thenCompose(
-            var1x -> {
-               ArrayList var2 = new ArrayList(var1x.size());
-      
-               for(Entry var4 : var1x.entrySet()) {
-                  var2.add(CompletableFuture.supplyAsync(() -> {
-                     try {
-                        Pair var2x;
-                        try (BufferedReader var1xxx = ((Resource)var4.getValue()).openAsReader()) {
-                           var2x = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1xxx));
+      return CompletableFuture.supplyAsync(() -> {
+         return ModelBakery.MODEL_LISTER.listMatchingResources(var0);
+      }, var1).thenCompose((var1x) -> {
+         ArrayList var2 = new ArrayList(var1x.size());
+         Iterator var3 = var1x.entrySet().iterator();
+
+         while(var3.hasNext()) {
+            Map.Entry var4 = (Map.Entry)var3.next();
+            var2.add(CompletableFuture.supplyAsync(() -> {
+               try {
+                  BufferedReader var1 = ((Resource)var4.getValue()).openAsReader();
+
+                  Pair var2;
+                  try {
+                     var2 = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1));
+                  } catch (Throwable var5) {
+                     if (var1 != null) {
+                        try {
+                           ((Reader)var1).close();
+                        } catch (Throwable var4x) {
+                           var5.addSuppressed(var4x);
                         }
-      
-                        return var2x;
-                     } catch (Exception var6) {
-                        LOGGER.error("Failed to load model {}", var4.getKey(), var6);
-                        return null;
                      }
-                  }, var1));
+
+                     throw var5;
+                  }
+
+                  if (var1 != null) {
+                     ((Reader)var1).close();
+                  }
+
+                  return var2;
+               } catch (Exception var6) {
+                  LOGGER.error("Failed to load model {}", var4.getKey(), var6);
+                  return null;
                }
-      
-               return Util.sequence(var2)
-                  .thenApply(var0xx -> var0xx.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
-            }
-         );
+            }, var1));
+         }
+
+         return Util.sequence(var2).thenApply((var0) -> {
+            return (Map)var0.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond));
+         });
+      });
    }
 
    private static CompletableFuture<Map<ResourceLocation, List<ModelBakery.LoadedJson>>> loadBlockStates(ResourceManager var0, Executor var1) {
-      return CompletableFuture.<Map<ResourceLocation, List<Resource>>>supplyAsync(() -> ModelBakery.BLOCKSTATE_LISTER.listMatchingResourceStacks(var0), var1)
-         .thenCompose(
-            var1x -> {
-               ArrayList var2 = new ArrayList(var1x.size());
-      
-               for(Entry var4 : var1x.entrySet()) {
-                  var2.add(CompletableFuture.supplyAsync(() -> {
-                     List var1xxx = (List)var4.getValue();
-                     ArrayList var2xx = new ArrayList(var1xxx.size());
-      
-                     for(Resource var4xx : var1xxx) {
-                        try (BufferedReader var5 = var4xx.openAsReader()) {
-                           JsonObject var6 = GsonHelper.parse(var5);
-                           var2xx.add(new ModelBakery.LoadedJson(var4xx.sourcePackId(), var6));
-                        } catch (Exception var10) {
-                           LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4xx.sourcePackId(), var10});
+      return CompletableFuture.supplyAsync(() -> {
+         return ModelBakery.BLOCKSTATE_LISTER.listMatchingResourceStacks(var0);
+      }, var1).thenCompose((var1x) -> {
+         ArrayList var2 = new ArrayList(var1x.size());
+         Iterator var3 = var1x.entrySet().iterator();
+
+         while(var3.hasNext()) {
+            Map.Entry var4 = (Map.Entry)var3.next();
+            var2.add(CompletableFuture.supplyAsync(() -> {
+               List var1 = (List)var4.getValue();
+               ArrayList var2 = new ArrayList(var1.size());
+               Iterator var3 = var1.iterator();
+
+               while(var3.hasNext()) {
+                  Resource var4x = (Resource)var3.next();
+
+                  try {
+                     BufferedReader var5 = var4x.openAsReader();
+
+                     try {
+                        JsonObject var6 = GsonHelper.parse((Reader)var5);
+                        var2.add(new ModelBakery.LoadedJson(var4x.sourcePackId(), var6));
+                     } catch (Throwable var9) {
+                        if (var5 != null) {
+                           try {
+                              ((Reader)var5).close();
+                           } catch (Throwable var8) {
+                              var9.addSuppressed(var8);
+                           }
                         }
+
+                        throw var9;
                      }
-      
-                     return Pair.of((ResourceLocation)var4.getKey(), var2xx);
-                  }, var1));
+
+                     if (var5 != null) {
+                        ((Reader)var5).close();
+                     }
+                  } catch (Exception var10) {
+                     LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4x.sourcePackId(), var10});
+                  }
                }
-      
-               return Util.sequence(var2)
-                  .thenApply(var0xx -> var0xx.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
-            }
-         );
+
+               return Pair.of((ResourceLocation)var4.getKey(), var2);
+            }, var1));
+         }
+
+         return Util.sequence(var2).thenApply((var0) -> {
+            return (Map)var0.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond));
+         });
+      });
    }
 
-   private ModelManager.ReloadState loadModels(ProfilerFiller var1, Map<ResourceLocation, AtlasSet.StitchResult> var2, ModelBakery var3) {
+   private ReloadState loadModels(ProfilerFiller var1, Map<ResourceLocation, AtlasSet.StitchResult> var2, ModelBakery var3) {
       var1.push("load");
       var1.popPush("baking");
       HashMultimap var4 = HashMultimap.create();
       var3.bakeModels((var2x, var3x) -> {
-         AtlasSet.StitchResult var4xx = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
-         TextureAtlasSprite var5xx = var4xx.getSprite(var3x.texture());
-         if (var5xx != null) {
-            return var5xx;
+         AtlasSet.StitchResult var4x = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
+         TextureAtlasSprite var5 = var4x.getSprite(var3x.texture());
+         if (var5 != null) {
+            return var5;
          } else {
             var4.put(var2x, var3x);
-            return var4xx.missing();
+            return var4x.missing();
          }
       });
-      var4.asMap()
-         .forEach(
-            (var0, var1x) -> LOGGER.warn(
-                  "Missing textures in model {}:\n{}",
-                  var0,
-                  var1x.stream()
-                     .sorted(Material.COMPARATOR)
-                     .map(var0x -> "    " + var0x.atlasLocation() + ":" + var0x.texture())
-                     .collect(Collectors.joining("\n"))
-               )
-         );
+      var4.asMap().forEach((var0, var1x) -> {
+         LOGGER.warn("Missing textures in model {}:\n{}", var0, var1x.stream().sorted(Material.COMPARATOR).map((var0x) -> {
+            String var10000 = String.valueOf(var0x.atlasLocation());
+            return "    " + var10000 + ":" + String.valueOf(var0x.texture());
+         }).collect(Collectors.joining("\n")));
+      });
       var1.popPush("dispatch");
       Map var5 = var3.getBakedTopLevelModels();
       BakedModel var6 = (BakedModel)var5.get(ModelBakery.MISSING_MODEL_LOCATION);
       IdentityHashMap var7 = new IdentityHashMap();
+      Iterator var8 = BuiltInRegistries.BLOCK.iterator();
 
-      for(Block var9 : BuiltInRegistries.BLOCK) {
-         var9.getStateDefinition().getPossibleStates().forEach(var3x -> {
-            ResourceLocation var4xx = var3x.getBlock().builtInRegistryHolder().key().location();
-            BakedModel var5xx = var5.getOrDefault(BlockModelShaper.stateToModelLocation(var4xx, var3x), var6);
-            var7.put(var3x, var5xx);
+      while(var8.hasNext()) {
+         Block var9 = (Block)var8.next();
+         var9.getStateDefinition().getPossibleStates().forEach((var3x) -> {
+            ResourceLocation var4 = var3x.getBlock().builtInRegistryHolder().key().location();
+            BakedModel var5x = (BakedModel)var5.getOrDefault(BlockModelShaper.stateToModelLocation(var4, var3x), var6);
+            var7.put(var3x, var5x);
          });
       }
 
-      CompletableFuture var10 = CompletableFuture.allOf(
-         var2.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray(var0 -> new CompletableFuture[var0])
-      );
+      CompletableFuture var10 = CompletableFuture.allOf((CompletableFuture[])var2.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray((var0) -> {
+         return new CompletableFuture[var0];
+      }));
       var1.pop();
       var1.endTick();
-      return new ModelManager.ReloadState(var3, var6, var7, var2, var10);
+      return new ReloadState(var3, var6, var7, var2, var10);
    }
 
-   private void apply(ModelManager.ReloadState var1, ProfilerFiller var2) {
+   private void apply(ReloadState var1, ProfilerFiller var2) {
       var2.startTick();
       var2.push("upload");
       var1.atlasPreparations.values().forEach(AtlasSet.StitchResult::upload);
@@ -252,7 +271,6 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       return this.atlases.getAtlas(var1);
    }
 
-   @Override
    public void close() {
       this.atlases.close();
    }
@@ -261,24 +279,44 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       this.maxMipmapLevels = var1;
    }
 
-   static record ReloadState(
-      ModelBakery a, BakedModel b, Map<BlockState, BakedModel> c, Map<ResourceLocation, AtlasSet.StitchResult> d, CompletableFuture<Void> e
-   ) {
+   static {
+      VANILLA_ATLASES = Map.of(Sheets.BANNER_SHEET, new ResourceLocation("banner_patterns"), Sheets.BED_SHEET, new ResourceLocation("beds"), Sheets.CHEST_SHEET, new ResourceLocation("chests"), Sheets.SHIELD_SHEET, new ResourceLocation("shield_patterns"), Sheets.SIGN_SHEET, new ResourceLocation("signs"), Sheets.SHULKER_SHEET, new ResourceLocation("shulker_boxes"), Sheets.ARMOR_TRIMS_SHEET, new ResourceLocation("armor_trims"), Sheets.DECORATED_POT_SHEET, new ResourceLocation("decorated_pot"), TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("blocks"));
+   }
+
+   static record ReloadState(ModelBakery modelBakery, BakedModel missingModel, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, CompletableFuture<Void> readyForUpload) {
       final ModelBakery modelBakery;
       final BakedModel missingModel;
       final Map<BlockState, BakedModel> modelCache;
       final Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations;
       final CompletableFuture<Void> readyForUpload;
 
-      ReloadState(
-         ModelBakery var1, BakedModel var2, Map<BlockState, BakedModel> var3, Map<ResourceLocation, AtlasSet.StitchResult> var4, CompletableFuture<Void> var5
-      ) {
+      ReloadState(ModelBakery var1, BakedModel var2, Map<BlockState, BakedModel> var3, Map<ResourceLocation, AtlasSet.StitchResult> var4, CompletableFuture<Void> var5) {
          super();
          this.modelBakery = var1;
          this.missingModel = var2;
          this.modelCache = var3;
          this.atlasPreparations = var4;
          this.readyForUpload = var5;
+      }
+
+      public ModelBakery modelBakery() {
+         return this.modelBakery;
+      }
+
+      public BakedModel missingModel() {
+         return this.missingModel;
+      }
+
+      public Map<BlockState, BakedModel> modelCache() {
+         return this.modelCache;
+      }
+
+      public Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations() {
+         return this.atlasPreparations;
+      }
+
+      public CompletableFuture<Void> readyForUpload() {
+         return this.readyForUpload;
       }
    }
 }

@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity.layers;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.model.HorseModel;
@@ -16,8 +15,8 @@ import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.Markings;
 
 public class HorseMarkingLayer extends RenderLayer<Horse, HorseModel<Horse>> {
-   private static final Map<Markings, ResourceLocation> LOCATION_BY_MARKINGS = Util.make(Maps.newEnumMap(Markings.class), var0 -> {
-      var0.put(Markings.NONE, null);
+   private static final Map<Markings, ResourceLocation> LOCATION_BY_MARKINGS = (Map)Util.make(Maps.newEnumMap(Markings.class), (var0) -> {
+      var0.put(Markings.NONE, (Object)null);
       var0.put(Markings.WHITE, new ResourceLocation("textures/entity/horse/horse_markings_white.png"));
       var0.put(Markings.WHITE_FIELD, new ResourceLocation("textures/entity/horse/horse_markings_whitefield.png"));
       var0.put(Markings.WHITE_DOTS, new ResourceLocation("textures/entity/horse/horse_markings_whitedots.png"));
@@ -29,10 +28,10 @@ public class HorseMarkingLayer extends RenderLayer<Horse, HorseModel<Horse>> {
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, Horse var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      ResourceLocation var11 = LOCATION_BY_MARKINGS.get(var4.getMarkings());
+      ResourceLocation var11 = (ResourceLocation)LOCATION_BY_MARKINGS.get(var4.getMarkings());
       if (var11 != null && !var4.isInvisible()) {
          VertexConsumer var12 = var2.getBuffer(RenderType.entityTranslucent(var11));
-         this.getParentModel().renderToBuffer(var1, var12, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), 1.0F, 1.0F, 1.0F, 1.0F);
+         ((HorseModel)this.getParentModel()).renderToBuffer(var1, var12, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), 1.0F, 1.0F, 1.0F, 1.0F);
       }
    }
 }

@@ -11,7 +11,6 @@ public class DebugLoggedPrintStream extends LoggedPrintStream {
       super(var1, var2);
    }
 
-   @Override
    protected void logLine(String var1) {
       StackTraceElement[] var2 = Thread.currentThread().getStackTrace();
       StackTraceElement var3 = var2[Math.min(3, var2.length)];

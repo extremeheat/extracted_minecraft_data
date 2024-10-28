@@ -3,22 +3,18 @@ package net.minecraft.advancements.critereon;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.phys.Vec3;
 
-public record FishingHookPredicate(Optional<Boolean> d) implements EntitySubPredicate {
-   private final Optional<Boolean> inOpenWater;
+public record FishingHookPredicate(Optional<Boolean> inOpenWater) implements EntitySubPredicate {
    public static final FishingHookPredicate ANY = new FishingHookPredicate(Optional.empty());
-   public static final MapCodec<FishingHookPredicate> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(ExtraCodecs.strictOptionalField(Codec.BOOL, "in_open_water").forGetter(FishingHookPredicate::inOpenWater))
-            .apply(var0, FishingHookPredicate::new)
-   );
+   public static final MapCodec<FishingHookPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.BOOL.optionalFieldOf("in_open_water").forGetter(FishingHookPredicate::inOpenWater)).apply(var0, FishingHookPredicate::new);
+   });
 
    public FishingHookPredicate(Optional<Boolean> var1) {
       super();
@@ -29,21 +25,22 @@ public record FishingHookPredicate(Optional<Boolean> d) implements EntitySubPred
       return new FishingHookPredicate(Optional.of(var0));
    }
 
-   @Override
    public MapCodec<FishingHookPredicate> codec() {
       return EntitySubPredicates.FISHING_HOOK;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
       if (this.inOpenWater.isEmpty()) {
          return true;
-      } else if (var1 instanceof FishingHook var4) {
-         return this.inOpenWater.get() == var4.isOpenWaterFishing();
+      } else if (var1 instanceof FishingHook) {
+         FishingHook var4 = (FishingHook)var1;
+         return (Boolean)this.inOpenWater.get() == var4.isOpenWaterFishing();
       } else {
          return false;
       }
+   }
+
+   public Optional<Boolean> inOpenWater() {
+      return this.inOpenWater;
    }
 }

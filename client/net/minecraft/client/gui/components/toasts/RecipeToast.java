@@ -22,7 +22,6 @@ public class RecipeToast implements Toast {
       this.recipes.add(var1);
    }
 
-   @Override
    public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
       if (this.changed) {
          this.lastChanged = var3;
@@ -33,16 +32,9 @@ public class RecipeToast implements Toast {
          return Toast.Visibility.HIDE;
       } else {
          var1.blitSprite(BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
-         var1.drawString(var2.getMinecraft().font, TITLE_TEXT, 30, 7, -11534256, false);
-         var1.drawString(var2.getMinecraft().font, DESCRIPTION_TEXT, 30, 18, -16777216, false);
-         RecipeHolder var5 = (RecipeHolder)this.recipes
-            .get(
-               (int)(
-                  (double)var3
-                     / Math.max(1.0, 5000.0 * var2.getNotificationDisplayTimeMultiplier() / (double)this.recipes.size())
-                     % (double)this.recipes.size()
-               )
-            );
+         var1.drawString(var2.getMinecraft().font, (Component)TITLE_TEXT, 30, 7, -11534256, false);
+         var1.drawString(var2.getMinecraft().font, (Component)DESCRIPTION_TEXT, 30, 18, -16777216, false);
+         RecipeHolder var5 = (RecipeHolder)this.recipes.get((int)((double)var3 / Math.max(1.0, 5000.0 * var2.getNotificationDisplayTimeMultiplier() / (double)this.recipes.size()) % (double)this.recipes.size()));
          ItemStack var6 = var5.value().getToastSymbol();
          var1.pose().pushPose();
          var1.pose().scale(0.6F, 0.6F, 1.0F);
@@ -59,11 +51,12 @@ public class RecipeToast implements Toast {
    }
 
    public static void addOrUpdate(ToastComponent var0, RecipeHolder<?> var1) {
-      RecipeToast var2 = var0.getToast(RecipeToast.class, NO_TOKEN);
+      RecipeToast var2 = (RecipeToast)var0.getToast(RecipeToast.class, NO_TOKEN);
       if (var2 == null) {
          var0.addToast(new RecipeToast(var1));
       } else {
          var2.addItem(var1);
       }
+
    }
 }

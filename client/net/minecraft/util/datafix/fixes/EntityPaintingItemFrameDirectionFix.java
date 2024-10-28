@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -46,16 +45,20 @@ public class EntityPaintingItemFrameDirectionFix extends DataFix {
       Type var3 = this.getInputSchema().getChoiceType(References.ENTITY, "ItemFrame");
       OpticFinder var4 = DSL.namedChoice("ItemFrame", var3);
       Type var5 = this.getInputSchema().getType(References.ENTITY);
-      TypeRewriteRule var6 = this.fixTypeEverywhereTyped(
-         "EntityPaintingFix",
-         var5,
-         var3x -> var3x.updateTyped(var2, var1, var1xx -> var1xx.update(DSL.remainderFinder(), var1xxx -> this.doFix(var1xxx, true, false)))
-      );
-      TypeRewriteRule var7 = this.fixTypeEverywhereTyped(
-         "EntityItemFrameFix",
-         var5,
-         var3x -> var3x.updateTyped(var4, var3, var1xx -> var1xx.update(DSL.remainderFinder(), var1xxx -> this.doFix(var1xxx, false, true)))
-      );
+      TypeRewriteRule var6 = this.fixTypeEverywhereTyped("EntityPaintingFix", var5, (var3x) -> {
+         return var3x.updateTyped(var2, var1, (var1x) -> {
+            return var1x.update(DSL.remainderFinder(), (var1) -> {
+               return this.doFix(var1, true, false);
+            });
+         });
+      });
+      TypeRewriteRule var7 = this.fixTypeEverywhereTyped("EntityItemFrameFix", var5, (var3x) -> {
+         return var3x.updateTyped(var4, var3, (var1) -> {
+            return var1.update(DSL.remainderFinder(), (var1x) -> {
+               return this.doFix(var1x, false, true);
+            });
+         });
+      });
       return TypeRewriteRule.seq(var6, var7);
    }
 }

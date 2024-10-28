@@ -24,34 +24,18 @@ public class TropicalFishModelA<T extends Entity> extends ColorableHierarchicalM
       MeshDefinition var1 = new MeshDefinition();
       PartDefinition var2 = var1.getRoot();
       boolean var3 = true;
-      var2.addOrReplaceChild(
-         "body", CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -1.5F, -3.0F, 2.0F, 3.0F, 6.0F, var0), PartPose.offset(0.0F, 22.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "tail", CubeListBuilder.create().texOffs(22, -6).addBox(0.0F, -1.5F, 0.0F, 0.0F, 3.0F, 6.0F, var0), PartPose.offset(0.0F, 22.0F, 3.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_fin",
-         CubeListBuilder.create().texOffs(2, 16).addBox(-2.0F, -1.0F, 0.0F, 2.0F, 2.0F, 0.0F, var0),
-         PartPose.offsetAndRotation(-1.0F, 22.5F, 0.0F, 0.0F, 0.7853982F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "left_fin",
-         CubeListBuilder.create().texOffs(2, 12).addBox(0.0F, -1.0F, 0.0F, 2.0F, 2.0F, 0.0F, var0),
-         PartPose.offsetAndRotation(1.0F, 22.5F, 0.0F, 0.0F, -0.7853982F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "top_fin", CubeListBuilder.create().texOffs(10, -5).addBox(0.0F, -3.0F, 0.0F, 0.0F, 3.0F, 6.0F, var0), PartPose.offset(0.0F, 20.5F, -3.0F)
-      );
+      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -1.5F, -3.0F, 2.0F, 3.0F, 6.0F, var0), PartPose.offset(0.0F, 22.0F, 0.0F));
+      var2.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(22, -6).addBox(0.0F, -1.5F, 0.0F, 0.0F, 3.0F, 6.0F, var0), PartPose.offset(0.0F, 22.0F, 3.0F));
+      var2.addOrReplaceChild("right_fin", CubeListBuilder.create().texOffs(2, 16).addBox(-2.0F, -1.0F, 0.0F, 2.0F, 2.0F, 0.0F, var0), PartPose.offsetAndRotation(-1.0F, 22.5F, 0.0F, 0.0F, 0.7853982F, 0.0F));
+      var2.addOrReplaceChild("left_fin", CubeListBuilder.create().texOffs(2, 12).addBox(0.0F, -1.0F, 0.0F, 2.0F, 2.0F, 0.0F, var0), PartPose.offsetAndRotation(1.0F, 22.5F, 0.0F, 0.0F, -0.7853982F, 0.0F));
+      var2.addOrReplaceChild("top_fin", CubeListBuilder.create().texOffs(10, -5).addBox(0.0F, -3.0F, 0.0F, 0.0F, 3.0F, 6.0F, var0), PartPose.offset(0.0F, 20.5F, -3.0F));
       return LayerDefinition.create(var1, 32, 32);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }
 
-   @Override
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       float var7 = 1.0F;
       if (!var1.isInWater()) {

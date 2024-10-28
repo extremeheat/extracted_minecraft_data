@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -21,6 +20,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -28,7 +28,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -39,7 +38,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.FireBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.slf4j.Logger;
@@ -48,40 +46,12 @@ public class BeehiveBlockEntity extends BlockEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_FLOWER_POS = "flower_pos";
    private static final String BEES = "bees";
-   static final List<String> IGNORED_BEE_TAGS = Arrays.asList(
-      "Air",
-      "ArmorDropChances",
-      "ArmorItems",
-      "Brain",
-      "CanPickUpLoot",
-      "DeathTime",
-      "FallDistance",
-      "FallFlying",
-      "Fire",
-      "HandDropChances",
-      "HandItems",
-      "HurtByTimestamp",
-      "HurtTime",
-      "LeftHanded",
-      "Motion",
-      "NoGravity",
-      "OnGround",
-      "PortalCooldown",
-      "Pos",
-      "Rotation",
-      "CannotEnterHiveTicks",
-      "TicksSincePollination",
-      "CropsGrownSincePollination",
-      "hive_pos",
-      "Passengers",
-      "leash",
-      "UUID"
-   );
+   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "ArmorDropChances", "ArmorItems", "Brain", "CanPickUpLoot", "DeathTime", "FallDistance", "FallFlying", "Fire", "HandDropChances", "HandItems", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
    public static final int MAX_OCCUPANTS = 3;
    private static final int MIN_TICKS_BEFORE_REENTERING_HIVE = 400;
    private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
    public static final int MIN_OCCUPATION_TICKS_NECTARLESS = 600;
-   private final List<BeehiveBlockEntity.BeeData> stored = Lists.newArrayList();
+   private final List<BeeData> stored = Lists.newArrayList();
    @Nullable
    private BlockPos savedFlowerPos;
 
@@ -89,10 +59,9 @@ public class BeehiveBlockEntity extends BlockEntity {
       super(BlockEntityType.BEEHIVE, var1, var2);
    }
 
-   @Override
    public void setChanged() {
       if (this.isFireNearby()) {
-         this.emptyAllLivingFromHive(null, this.level.getBlockState(this.getBlockPos()), BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
+         this.emptyAllLivingFromHive((Player)null, this.level.getBlockState(this.getBlockPos()), BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
       }
 
       super.setChanged();
@@ -102,13 +71,18 @@ public class BeehiveBlockEntity extends BlockEntity {
       if (this.level == null) {
          return false;
       } else {
-         for(BlockPos var2 : BlockPos.betweenClosed(this.worldPosition.offset(-1, -1, -1), this.worldPosition.offset(1, 1, 1))) {
-            if (this.level.getBlockState(var2).getBlock() instanceof FireBlock) {
-               return true;
-            }
-         }
+         Iterator var1 = BlockPos.betweenClosed(this.worldPosition.offset(-1, -1, -1), this.worldPosition.offset(1, 1, 1)).iterator();
 
-         return false;
+         BlockPos var2;
+         do {
+            if (!var1.hasNext()) {
+               return false;
+            }
+
+            var2 = (BlockPos)var1.next();
+         } while(!(this.level.getBlockState(var2).getBlock() instanceof FireBlock));
+
+         return true;
       }
    }
 
@@ -120,26 +94,33 @@ public class BeehiveBlockEntity extends BlockEntity {
       return this.stored.size() == 3;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   public void emptyAllLivingFromHive(@Nullable Player var1, BlockState var2, BeehiveBlockEntity.BeeReleaseStatus var3) {
+   public void emptyAllLivingFromHive(@Nullable Player var1, BlockState var2, BeeReleaseStatus var3) {
       List var4 = this.releaseAllOccupants(var2, var3);
       if (var1 != null) {
-         for(Entity var6 : var4) {
-            if (var6 instanceof Bee var7 && var1.position().distanceToSqr(var6.position()) <= 16.0) {
-               if (!this.isSedated()) {
-                  var7.setTarget(var1);
-               } else {
-                  var7.setStayOutOfHiveCountdown(400);
+         Iterator var5 = var4.iterator();
+
+         while(var5.hasNext()) {
+            Entity var6 = (Entity)var5.next();
+            if (var6 instanceof Bee) {
+               Bee var7 = (Bee)var6;
+               if (var1.position().distanceToSqr(var6.position()) <= 16.0) {
+                  if (!this.isSedated()) {
+                     var7.setTarget(var1);
+                  } else {
+                     var7.setStayOutOfHiveCountdown(400);
+                  }
                }
             }
          }
       }
+
    }
 
-   private List<Entity> releaseAllOccupants(BlockState var1, BeehiveBlockEntity.BeeReleaseStatus var2) {
+   private List<Entity> releaseAllOccupants(BlockState var1, BeeReleaseStatus var2) {
       ArrayList var3 = Lists.newArrayList();
-      this.stored.removeIf(var4 -> releaseOccupant(this.level, this.worldPosition, var1, var4.toOccupant(), var3, var2, this.savedFlowerPos));
+      this.stored.removeIf((var4) -> {
+         return releaseOccupant(this.level, this.worldPosition, var1, var4.toOccupant(), var3, var2, this.savedFlowerPos);
+      });
       if (!var3.isEmpty()) {
          super.setChanged();
       }
@@ -153,7 +134,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    }
 
    public static int getHoneyLevel(BlockState var0) {
-      return var0.getValue(BeehiveBlock.HONEY_LEVEL);
+      return (Integer)var0.getValue(BeehiveBlock.HONEY_LEVEL);
    }
 
    @VisibleForDebug
@@ -161,21 +142,21 @@ public class BeehiveBlockEntity extends BlockEntity {
       return CampfireBlock.isSmokeyPos(this.level, this.getBlockPos());
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void addOccupant(Entity var1) {
       if (this.stored.size() < 3) {
          var1.stopRiding();
          var1.ejectPassengers();
          this.storeBee(BeehiveBlockEntity.Occupant.of(var1));
          if (this.level != null) {
-            if (var1 instanceof Bee var2 && var2.hasSavedFlowerPos() && (!this.hasSavedFlowerPos() || this.level.random.nextBoolean())) {
-               this.savedFlowerPos = var2.getSavedFlowerPos();
+            if (var1 instanceof Bee) {
+               Bee var2 = (Bee)var1;
+               if (var2.hasSavedFlowerPos() && (!this.hasSavedFlowerPos() || this.level.random.nextBoolean())) {
+                  this.savedFlowerPos = var2.getSavedFlowerPos();
+               }
             }
 
             BlockPos var3 = this.getBlockPos();
-            this.level
-               .playSound(null, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level.playSound((Player)null, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
             this.level.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1, this.getBlockState()));
          }
 
@@ -184,23 +165,15 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
    }
 
-   public void storeBee(BeehiveBlockEntity.Occupant var1) {
-      this.stored.add(new BeehiveBlockEntity.BeeData(var1));
+   public void storeBee(Occupant var1) {
+      this.stored.add(new BeeData(var1));
    }
 
-   private static boolean releaseOccupant(
-      Level var0,
-      BlockPos var1,
-      BlockState var2,
-      BeehiveBlockEntity.Occupant var3,
-      @Nullable List<Entity> var4,
-      BeehiveBlockEntity.BeeReleaseStatus var5,
-      @Nullable BlockPos var6
-   ) {
+   private static boolean releaseOccupant(Level var0, BlockPos var1, BlockState var2, Occupant var3, @Nullable List<Entity> var4, BeeReleaseStatus var5, @Nullable BlockPos var6) {
       if ((var0.isNight() || var0.isRaining()) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
          return false;
       } else {
-         Direction var7 = var2.getValue(BeehiveBlock.FACING);
+         Direction var7 = (Direction)var2.getValue(BeehiveBlock.FACING);
          BlockPos var8 = var1.relative(var7);
          boolean var9 = !var0.getBlockState(var8).getCollisionShape(var0, var8).isEmpty();
          if (var9 && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
@@ -208,14 +181,17 @@ public class BeehiveBlockEntity extends BlockEntity {
          } else {
             Entity var10 = var3.createEntity(var0, var1);
             if (var10 != null) {
-               if (var10 instanceof Bee var11) {
-                  if (var6 != null && !((Bee)var11).hasSavedFlowerPos() && var0.random.nextFloat() < 0.9F) {
-                     ((Bee)var11).setSavedFlowerPos(var6);
+               if (var10 instanceof Bee) {
+                  Bee var11 = (Bee)var10;
+                  if (var6 != null && !var11.hasSavedFlowerPos() && var0.random.nextFloat() < 0.9F) {
+                     var11.setSavedFlowerPos(var6);
                   }
 
                   if (var5 == BeehiveBlockEntity.BeeReleaseStatus.HONEY_DELIVERED) {
-                     ((Bee)var11).dropOffNectar();
-                     if (var2.is(BlockTags.BEEHIVES, var0x -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL))) {
+                     var11.dropOffNectar();
+                     if (var2.is(BlockTags.BEEHIVES, (var0x) -> {
+                        return var0x.hasProperty(BeehiveBlock.HONEY_LEVEL);
+                     })) {
                         int var12 = getHoneyLevel(var2);
                         if (var12 < 5) {
                            int var13 = var0.random.nextInt(100) == 0 ? 2 : 1;
@@ -223,7 +199,7 @@ public class BeehiveBlockEntity extends BlockEntity {
                               --var13;
                            }
 
-                           var0.setBlockAndUpdate(var1, var2.setValue(BeehiveBlock.HONEY_LEVEL, Integer.valueOf(var12 + var13)));
+                           var0.setBlockAndUpdate(var1, (BlockState)var2.setValue(BeehiveBlock.HONEY_LEVEL, var12 + var13));
                         }
                      }
                   }
@@ -240,7 +216,7 @@ public class BeehiveBlockEntity extends BlockEntity {
                   var10.moveTo(var15, var17, var19, var10.getYRot(), var10.getXRot());
                }
 
-               var0.playSound(null, var1, SoundEvents.BEEHIVE_EXIT, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var0.playSound((Player)null, (BlockPos)var1, SoundEvents.BEEHIVE_EXIT, SoundSource.BLOCKS, 1.0F, 1.0F);
                var0.gameEvent(GameEvent.BLOCK_CHANGE, var1, GameEvent.Context.of(var10, var0.getBlockState(var1)));
                return var0.addFreshEntity(var10);
             } else {
@@ -254,17 +230,15 @@ public class BeehiveBlockEntity extends BlockEntity {
       return this.savedFlowerPos != null;
    }
 
-   private static void tickOccupants(Level var0, BlockPos var1, BlockState var2, List<BeehiveBlockEntity.BeeData> var3, @Nullable BlockPos var4) {
+   private static void tickOccupants(Level var0, BlockPos var1, BlockState var2, List<BeeData> var3, @Nullable BlockPos var4) {
       boolean var5 = false;
       Iterator var6 = var3.iterator();
 
       while(var6.hasNext()) {
-         BeehiveBlockEntity.BeeData var7 = (BeehiveBlockEntity.BeeData)var6.next();
+         BeeData var7 = (BeeData)var6.next();
          if (var7.tick()) {
-            BeehiveBlockEntity.BeeReleaseStatus var8 = var7.hasNectar()
-               ? BeehiveBlockEntity.BeeReleaseStatus.HONEY_DELIVERED
-               : BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED;
-            if (releaseOccupant(var0, var1, var2, var7.toOccupant(), null, var8, var4)) {
+            BeeReleaseStatus var8 = var7.hasNectar() ? BeehiveBlockEntity.BeeReleaseStatus.HONEY_DELIVERED : BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED;
+            if (releaseOccupant(var0, var1, var2, var7.toOccupant(), (List)null, var8, var4)) {
                var5 = true;
                var6.remove();
             }
@@ -274,6 +248,7 @@ public class BeehiveBlockEntity extends BlockEntity {
       if (var5) {
          setChanged(var0, var1, var2);
       }
+
    }
 
    public static void serverTick(Level var0, BlockPos var1, BlockState var2, BeehiveBlockEntity var3) {
@@ -282,80 +257,54 @@ public class BeehiveBlockEntity extends BlockEntity {
          double var4 = (double)var1.getX() + 0.5;
          double var6 = (double)var1.getY();
          double var8 = (double)var1.getZ() + 0.5;
-         var0.playSound(null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       DebugPackets.sendHiveInfo(var0, var1, var2, var3);
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.stored.clear();
       if (var1.contains("bees")) {
-         BeehiveBlockEntity.Occupant.LIST_CODEC
-            .parse(NbtOps.INSTANCE, var1.get("bees"))
-            .resultOrPartial(var0 -> LOGGER.error("Failed to parse bees: '{}'", var0))
-            .ifPresent(var1x -> var1x.forEach(this::storeBee));
+         BeehiveBlockEntity.Occupant.LIST_CODEC.parse(NbtOps.INSTANCE, var1.get("bees")).resultOrPartial((var0) -> {
+            LOGGER.error("Failed to parse bees: '{}'", var0);
+         }).ifPresent((var1x) -> {
+            var1x.forEach(this::storeBee);
+         });
       }
 
-      this.savedFlowerPos = NbtUtils.readBlockPos(var1, "flower_pos").orElse(null);
+      this.savedFlowerPos = (BlockPos)NbtUtils.readBlockPos(var1, "flower_pos").orElse((Object)null);
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      var1.put("bees", Util.getOrThrow(BeehiveBlockEntity.Occupant.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.getBees()), IllegalStateException::new));
+      var1.put("bees", (Tag)BeehiveBlockEntity.Occupant.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.getBees()).getOrThrow());
       if (this.hasSavedFlowerPos()) {
          var1.put("flower_pos", NbtUtils.writeBlockPos(this.savedFlowerPos));
       }
+
    }
 
-   @Override
-   public void applyComponents(DataComponentMap var1) {
-      super.applyComponents(var1);
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.stored.clear();
-      List var2 = var1.getOrDefault(DataComponents.BEES, List.of());
+      List var2 = (List)var1.getOrDefault(DataComponents.BEES, List.of());
       var2.forEach(this::storeBee);
    }
 
-   @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
-      super.collectComponents(var1);
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.BEES, this.getBees());
    }
 
-   @Override
    public void removeComponentsFromTag(CompoundTag var1) {
       super.removeComponentsFromTag(var1);
       var1.remove("bees");
    }
 
-   private List<BeehiveBlockEntity.Occupant> getBees() {
-      return this.stored.stream().map(BeehiveBlockEntity.BeeData::toOccupant).toList();
-   }
-
-   static class BeeData {
-      private final BeehiveBlockEntity.Occupant occupant;
-      private int ticksInHive;
-
-      BeeData(BeehiveBlockEntity.Occupant var1) {
-         super();
-         this.occupant = var1;
-         this.ticksInHive = var1.ticksInHive();
-      }
-
-      public boolean tick() {
-         return this.ticksInHive++ > this.occupant.minTicksInHive;
-      }
-
-      public BeehiveBlockEntity.Occupant toOccupant() {
-         return new BeehiveBlockEntity.Occupant(this.occupant.entityData, this.ticksInHive, this.occupant.minTicksInHive);
-      }
-
-      public boolean hasNectar() {
-         return this.occupant.entityData.getUnsafe().getBoolean("HasNectar");
-      }
+   private List<Occupant> getBees() {
+      return this.stored.stream().map(BeeData::toOccupant).toList();
    }
 
    public static enum BeeReleaseStatus {
@@ -365,30 +314,21 @@ public class BeehiveBlockEntity extends BlockEntity {
 
       private BeeReleaseStatus() {
       }
+
+      // $FF: synthetic method
+      private static BeeReleaseStatus[] $values() {
+         return new BeeReleaseStatus[]{HONEY_DELIVERED, BEE_RELEASED, EMERGENCY};
+      }
    }
 
-   public static record Occupant(CustomData d, int e, int f) {
+   public static record Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
       final CustomData entityData;
-      private final int ticksInHive;
       final int minTicksInHive;
-      public static final Codec<BeehiveBlockEntity.Occupant> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(CustomData.CODEC, "entity_data", CustomData.EMPTY).forGetter(BeehiveBlockEntity.Occupant::entityData),
-                  Codec.INT.fieldOf("ticks_in_hive").forGetter(BeehiveBlockEntity.Occupant::ticksInHive),
-                  Codec.INT.fieldOf("min_ticks_in_hive").forGetter(BeehiveBlockEntity.Occupant::minTicksInHive)
-               )
-               .apply(var0, BeehiveBlockEntity.Occupant::new)
-      );
-      public static final Codec<List<BeehiveBlockEntity.Occupant>> LIST_CODEC = CODEC.listOf();
-      public static final StreamCodec<ByteBuf, BeehiveBlockEntity.Occupant> STREAM_CODEC = StreamCodec.composite(
-         CustomData.STREAM_CODEC,
-         BeehiveBlockEntity.Occupant::entityData,
-         ByteBufCodecs.VAR_INT,
-         BeehiveBlockEntity.Occupant::ticksInHive,
-         ByteBufCodecs.VAR_INT,
-         BeehiveBlockEntity.Occupant::minTicksInHive,
-         BeehiveBlockEntity.Occupant::new
-      );
+      public static final Codec<Occupant> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(CustomData.CODEC.optionalFieldOf("entity_data", CustomData.EMPTY).forGetter(Occupant::entityData), Codec.INT.fieldOf("ticks_in_hive").forGetter(Occupant::ticksInHive), Codec.INT.fieldOf("min_ticks_in_hive").forGetter(Occupant::minTicksInHive)).apply(var0, Occupant::new);
+      });
+      public static final Codec<List<Occupant>> LIST_CODEC;
+      public static final StreamCodec<ByteBuf, Occupant> STREAM_CODEC;
 
       public Occupant(CustomData var1, int var2, int var3) {
          super();
@@ -397,30 +337,37 @@ public class BeehiveBlockEntity extends BlockEntity {
          this.minTicksInHive = var3;
       }
 
-      public static BeehiveBlockEntity.Occupant of(Entity var0) {
+      public static Occupant of(Entity var0) {
          CompoundTag var1 = new CompoundTag();
          var0.save(var1);
-         BeehiveBlockEntity.IGNORED_BEE_TAGS.forEach(var1::remove);
+         List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
+         Objects.requireNonNull(var1);
+         var10000.forEach(var1::remove);
          boolean var2 = var1.getBoolean("HasNectar");
-         return new BeehiveBlockEntity.Occupant(CustomData.of(var1), 0, var2 ? 2400 : 600);
+         return new Occupant(CustomData.of(var1), 0, var2 ? 2400 : 600);
       }
 
-      public static BeehiveBlockEntity.Occupant create(int var0) {
+      public static Occupant create(int var0) {
          CompoundTag var1 = new CompoundTag();
          var1.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.BEE).toString());
-         return new BeehiveBlockEntity.Occupant(CustomData.of(var1), var0, 600);
+         return new Occupant(CustomData.of(var1), var0, 600);
       }
 
       @Nullable
       public Entity createEntity(Level var1, BlockPos var2) {
          CompoundTag var3 = this.entityData.copyTag();
-         BeehiveBlockEntity.IGNORED_BEE_TAGS.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive(var3, var1, var0 -> var0);
+         List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
+         Objects.requireNonNull(var3);
+         var10000.forEach(var3::remove);
+         Entity var4 = EntityType.loadEntityRecursive(var3, var1, (var0) -> {
+            return var0;
+         });
          if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {
             var4.setNoGravity(true);
-            if (var4 instanceof Bee var5) {
-               ((Bee)var5).setHivePos(var2);
-               setBeeReleaseData(this.ticksInHive, (Bee)var5);
+            if (var4 instanceof Bee) {
+               Bee var5 = (Bee)var4;
+               var5.setHivePos(var2);
+               setBeeReleaseData(this.ticksInHive, var5);
             }
 
             return var4;
@@ -438,6 +385,46 @@ public class BeehiveBlockEntity extends BlockEntity {
          }
 
          var1.setInLoveTime(Math.max(0, var1.getInLoveTime() - var0));
+      }
+
+      public CustomData entityData() {
+         return this.entityData;
+      }
+
+      public int ticksInHive() {
+         return this.ticksInHive;
+      }
+
+      public int minTicksInHive() {
+         return this.minTicksInHive;
+      }
+
+      static {
+         LIST_CODEC = CODEC.listOf();
+         STREAM_CODEC = StreamCodec.composite(CustomData.STREAM_CODEC, Occupant::entityData, ByteBufCodecs.VAR_INT, Occupant::ticksInHive, ByteBufCodecs.VAR_INT, Occupant::minTicksInHive, Occupant::new);
+      }
+   }
+
+   static class BeeData {
+      private final Occupant occupant;
+      private int ticksInHive;
+
+      BeeData(Occupant var1) {
+         super();
+         this.occupant = var1;
+         this.ticksInHive = var1.ticksInHive();
+      }
+
+      public boolean tick() {
+         return this.ticksInHive++ > this.occupant.minTicksInHive;
+      }
+
+      public Occupant toOccupant() {
+         return new Occupant(this.occupant.entityData, this.ticksInHive, this.occupant.minTicksInHive);
+      }
+
+      public boolean hasNectar() {
+         return this.occupant.entityData.getUnsafe().getBoolean("HasNectar");
       }
    }
 }

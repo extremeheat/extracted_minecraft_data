@@ -30,102 +30,71 @@ public abstract class WaterFluid extends FlowingFluid {
       super();
    }
 
-   @Override
    public Fluid getFlowing() {
       return Fluids.FLOWING_WATER;
    }
 
-   @Override
    public Fluid getSource() {
       return Fluids.WATER;
    }
 
-   @Override
    public Item getBucket() {
       return Items.WATER_BUCKET;
    }
 
-   @Override
    public void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
-      if (!var3.isSource() && !var3.getValue(FALLING)) {
+      if (!var3.isSource() && !(Boolean)var3.getValue(FALLING)) {
          if (var4.nextInt(64) == 0) {
-            var1.playLocalSound(
-               (double)var2.getX() + 0.5,
-               (double)var2.getY() + 0.5,
-               (double)var2.getZ() + 0.5,
-               SoundEvents.WATER_AMBIENT,
-               SoundSource.BLOCKS,
-               var4.nextFloat() * 0.25F + 0.75F,
-               var4.nextFloat() + 0.5F,
-               false
-            );
+            var1.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
          }
       } else if (var4.nextInt(10) == 0) {
-         var1.addParticle(
-            ParticleTypes.UNDERWATER,
-            (double)var2.getX() + var4.nextDouble(),
-            (double)var2.getY() + var4.nextDouble(),
-            (double)var2.getZ() + var4.nextDouble(),
-            0.0,
-            0.0,
-            0.0
-         );
+         var1.addParticle(ParticleTypes.UNDERWATER, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + var4.nextDouble(), (double)var2.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
       }
+
    }
 
    @Nullable
-   @Override
    public ParticleOptions getDripParticle() {
       return ParticleTypes.DRIPPING_WATER;
    }
 
-   @Override
    protected boolean canConvertToSource(Level var1) {
       return var1.getGameRules().getBoolean(GameRules.RULE_WATER_SOURCE_CONVERSION);
    }
 
-   @Override
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
       BlockEntity var4 = var3.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
       Block.dropResources(var3, var1, var2, var4);
    }
 
-   @Override
    public int getSlopeFindDistance(LevelReader var1) {
       return 4;
    }
 
-   @Override
    public BlockState createLegacyBlock(FluidState var1) {
-      return Blocks.WATER.defaultBlockState().setValue(LiquidBlock.LEVEL, Integer.valueOf(getLegacyLevel(var1)));
+      return (BlockState)Blocks.WATER.defaultBlockState().setValue(LiquidBlock.LEVEL, getLegacyLevel(var1));
    }
 
-   @Override
    public boolean isSame(Fluid var1) {
       return var1 == Fluids.WATER || var1 == Fluids.FLOWING_WATER;
    }
 
-   @Override
    public int getDropOff(LevelReader var1) {
       return 1;
    }
 
-   @Override
    public int getTickDelay(LevelReader var1) {
       return 5;
    }
 
-   @Override
    public boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5) {
       return var5 == Direction.DOWN && !var4.is(FluidTags.WATER);
    }
 
-   @Override
    protected float getExplosionResistance() {
       return 100.0F;
    }
 
-   @Override
    public Optional<SoundEvent> getPickupSound() {
       return Optional.of(SoundEvents.BUCKET_FILL);
    }
@@ -135,18 +104,15 @@ public abstract class WaterFluid extends FlowingFluid {
          super();
       }
 
-      @Override
       protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {
          super.createFluidStateDefinition(var1);
          var1.add(LEVEL);
       }
 
-      @Override
       public int getAmount(FluidState var1) {
-         return var1.getValue(LEVEL);
+         return (Integer)var1.getValue(LEVEL);
       }
 
-      @Override
       public boolean isSource(FluidState var1) {
          return false;
       }
@@ -157,12 +123,10 @@ public abstract class WaterFluid extends FlowingFluid {
          super();
       }
 
-      @Override
       public int getAmount(FluidState var1) {
          return 8;
       }
 
-      @Override
       public boolean isSource(FluidState var1) {
          return true;
       }

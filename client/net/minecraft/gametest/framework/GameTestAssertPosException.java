@@ -15,20 +15,9 @@ public class GameTestAssertPosException extends GameTestAssertException {
       this.tick = var4;
    }
 
-   @Override
    public String getMessage() {
-      String var1 = this.absolutePos.getX()
-         + ","
-         + this.absolutePos.getY()
-         + ","
-         + this.absolutePos.getZ()
-         + " (relative: "
-         + this.relativePos.getX()
-         + ","
-         + this.relativePos.getY()
-         + ","
-         + this.relativePos.getZ()
-         + ")";
+      int var10000 = this.absolutePos.getX();
+      String var1 = "" + var10000 + "," + this.absolutePos.getY() + "," + this.absolutePos.getZ() + " (relative: " + this.relativePos.getX() + "," + this.relativePos.getY() + "," + this.relativePos.getZ() + ")";
       return super.getMessage() + " at " + var1 + " (t=" + this.tick + ")";
    }
 

@@ -2,10 +2,9 @@ package net.minecraft.world.item.component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -22,13 +21,7 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
-public record WrittenBookContent(Filterable<String> l, String m, int n, List<Filterable<Component>> o, boolean p)
-   implements BookContent<Component, WrittenBookContent> {
-   private final Filterable<String> title;
-   private final String author;
-   private final int generation;
-   private final List<Filterable<Component>> pages;
-   private final boolean resolved;
+public record WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) implements BookContent<Component, WrittenBookContent> {
    public static final WrittenBookContent EMPTY = new WrittenBookContent(Filterable.passThrough(""), "", 0, List.of(), true);
    public static final int PAGE_LENGTH = 32767;
    public static final int MAX_PAGES = 100;
@@ -37,30 +30,9 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    public static final int MAX_GENERATION = 3;
    public static final int MAX_CRAFTABLE_GENERATION = 2;
    public static final Codec<Component> CONTENT_CODEC = ComponentSerialization.flatCodec(32767);
-   public static final Codec<List<Filterable<Component>>> PAGES_CODEC = pagesCodec(CONTENT_CODEC);
-   public static final Codec<WrittenBookContent> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Filterable.codec(ExtraCodecs.sizeLimitedString(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title),
-               Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author),
-               ExtraCodecs.strictOptionalField(ExtraCodecs.intRange(0, 3), "generation", 0).forGetter(WrittenBookContent::generation),
-               ExtraCodecs.strictOptionalField(PAGES_CODEC, "pages", List.of()).forGetter(WrittenBookContent::pages),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "resolved", false).forGetter(WrittenBookContent::resolved)
-            )
-            .apply(var0, WrittenBookContent::new)
-   );
-   public static final StreamCodec<RegistryFriendlyByteBuf, WrittenBookContent> STREAM_CODEC = StreamCodec.composite(
-      Filterable.streamCodec(ByteBufCodecs.stringUtf8(32)),
-      WrittenBookContent::title,
-      ByteBufCodecs.STRING_UTF8,
-      WrittenBookContent::author,
-      ByteBufCodecs.VAR_INT,
-      WrittenBookContent::generation,
-      Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list(100)),
-      WrittenBookContent::pages,
-      ByteBufCodecs.BOOL,
-      WrittenBookContent::resolved,
-      WrittenBookContent::new
-   );
+   public static final Codec<List<Filterable<Component>>> PAGES_CODEC;
+   public static final Codec<WrittenBookContent> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, WrittenBookContent> STREAM_CODEC;
 
    public WrittenBookContent(Filterable<String> var1, String var2, int var3, List<Filterable<Component>> var4, boolean var5) {
       super();
@@ -76,7 +48,7 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    }
 
    public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
-      return ExtraCodecs.sizeLimitedList(pageCodec(var0).listOf(), 100);
+      return pageCodec(var0).sizeLimitedListOf(100);
    }
 
    @Nullable
@@ -89,9 +61,11 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
       if (this.resolved) {
          return null;
       } else {
-         Builder var3 = ImmutableList.builderWithExpectedSize(this.pages.size());
+         ImmutableList.Builder var3 = ImmutableList.builderWithExpectedSize(this.pages.size());
+         Iterator var4 = this.pages.iterator();
 
-         for(Filterable var5 : this.pages) {
+         while(var4.hasNext()) {
+            Filterable var5 = (Filterable)var4.next();
             Optional var6 = resolvePage(var1, var2, var5);
             if (var6.isEmpty()) {
                return null;
@@ -109,9 +83,9 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    }
 
    private static Optional<Filterable<Component>> resolvePage(CommandSourceStack var0, @Nullable Player var1, Filterable<Component> var2) {
-      return var2.resolve(var2x -> {
+      return var2.resolve((var2x) -> {
          try {
-            MutableComponent var3 = ComponentUtils.updateForEntity(var0, var2x, var1, 0);
+            MutableComponent var3 = ComponentUtils.updateForEntity(var0, (Component)var2x, var1, 0);
             return isPageTooLarge(var3, var0.registryAccess()) ? Optional.empty() : Optional.of(var3);
          } catch (Exception var4) {
             return Optional.of(var2x);
@@ -124,10 +98,45 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    }
 
    public List<Component> getPages(boolean var1) {
-      return Lists.transform(this.pages, var1x -> (Component)var1x.get(var1));
+      return Lists.transform(this.pages, (var1x) -> {
+         return (Component)var1x.get(var1);
+      });
    }
 
    public WrittenBookContent withReplacedPages(List<Filterable<Component>> var1) {
       return new WrittenBookContent(this.title, this.author, this.generation, var1, false);
+   }
+
+   public Filterable<String> title() {
+      return this.title;
+   }
+
+   public String author() {
+      return this.author;
+   }
+
+   public int generation() {
+      return this.generation;
+   }
+
+   public List<Filterable<Component>> pages() {
+      return this.pages;
+   }
+
+   public boolean resolved() {
+      return this.resolved;
+   }
+
+   // $FF: synthetic method
+   public Object withReplacedPages(List var1) {
+      return this.withReplacedPages(var1);
+   }
+
+   static {
+      PAGES_CODEC = pagesCodec(CONTENT_CODEC);
+      CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title), Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation), PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages), Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)).apply(var0, WrittenBookContent::new);
+      });
+      STREAM_CODEC = StreamCodec.composite(Filterable.streamCodec(ByteBufCodecs.stringUtf8(32)), WrittenBookContent::title, ByteBufCodecs.STRING_UTF8, WrittenBookContent::author, ByteBufCodecs.VAR_INT, WrittenBookContent::generation, Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list(100)), WrittenBookContent::pages, ByteBufCodecs.BOOL, WrittenBookContent::resolved, WrittenBookContent::new);
    }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.VibrationParticleOption;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.gameevent.PositionSource;
@@ -33,15 +34,19 @@ public class VibrationSignalParticle extends TextureSheetParticle {
          this.rotO = this.rot = (float)Mth.atan2(var12, var16);
          this.pitchO = this.pitch = (float)Mth.atan2(var14, Math.sqrt(var12 * var12 + var16 * var16));
       }
+
    }
 
-   @Override
    public void render(VertexConsumer var1, Camera var2, float var3) {
       float var4 = Mth.sin(((float)this.age + var3 - 6.2831855F) * 0.05F) * 2.0F;
       float var5 = Mth.lerp(var3, this.rotO, this.rot);
       float var6 = Mth.lerp(var3, this.pitchO, this.pitch) + 1.5707964F;
-      this.renderSignal(var1, var2, var3, var3x -> var3x.rotateY(var5).rotateX(-var6).rotateY(var4));
-      this.renderSignal(var1, var2, var3, var3x -> var3x.rotateY(-3.1415927F + var5).rotateX(var6).rotateY(var4));
+      this.renderSignal(var1, var2, var3, (var3x) -> {
+         var3x.rotateY(var5).rotateX(-var6).rotateY(var4);
+      });
+      this.renderSignal(var1, var2, var3, (var3x) -> {
+         var3x.rotateY(-3.1415927F + var5).rotateX(var6).rotateY(var4);
+      });
    }
 
    private void renderSignal(VertexConsumer var1, Camera var2, float var3, Consumer<Quaternionf> var4) {
@@ -49,12 +54,10 @@ public class VibrationSignalParticle extends TextureSheetParticle {
       float var6 = (float)(Mth.lerp((double)var3, this.xo, this.x) - var5.x());
       float var7 = (float)(Mth.lerp((double)var3, this.yo, this.y) - var5.y());
       float var8 = (float)(Mth.lerp((double)var3, this.zo, this.z) - var5.z());
-      Vector3f var9 = new Vector3f(0.5F, 0.5F, 0.5F).normalize();
-      Quaternionf var10 = new Quaternionf().setAngleAxis(0.0F, var9.x(), var9.y(), var9.z());
+      Vector3f var9 = (new Vector3f(0.5F, 0.5F, 0.5F)).normalize();
+      Quaternionf var10 = (new Quaternionf()).setAngleAxis(0.0F, var9.x(), var9.y(), var9.z());
       var4.accept(var10);
-      Vector3f[] var11 = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-      };
+      Vector3f[] var11 = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
       float var12 = this.getQuadSize(var3);
 
       for(int var13 = 0; var13 < 4; ++var13) {
@@ -69,39 +72,20 @@ public class VibrationSignalParticle extends TextureSheetParticle {
       float var15 = this.getV0();
       float var16 = this.getV1();
       int var17 = this.getLightColor(var3);
-      var1.vertex((double)var11[0].x(), (double)var11[0].y(), (double)var11[0].z())
-         .uv(var19, var16)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var17)
-         .endVertex();
-      var1.vertex((double)var11[1].x(), (double)var11[1].y(), (double)var11[1].z())
-         .uv(var19, var15)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var17)
-         .endVertex();
-      var1.vertex((double)var11[2].x(), (double)var11[2].y(), (double)var11[2].z())
-         .uv(var18, var15)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var17)
-         .endVertex();
-      var1.vertex((double)var11[3].x(), (double)var11[3].y(), (double)var11[3].z())
-         .uv(var18, var16)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var17)
-         .endVertex();
+      var1.vertex((double)var11[0].x(), (double)var11[0].y(), (double)var11[0].z()).uv(var19, var16).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
+      var1.vertex((double)var11[1].x(), (double)var11[1].y(), (double)var11[1].z()).uv(var19, var15).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
+      var1.vertex((double)var11[2].x(), (double)var11[2].y(), (double)var11[2].z()).uv(var18, var15).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
+      var1.vertex((double)var11[3].x(), (double)var11[3].y(), (double)var11[3].z()).uv(var18, var16).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var17).endVertex();
    }
 
-   @Override
    public int getLightColor(float var1) {
       return 240;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -138,13 +122,16 @@ public class VibrationSignalParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(
-         VibrationParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13
-      ) {
+      public Particle createParticle(VibrationParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          VibrationSignalParticle var15 = new VibrationSignalParticle(var2, var3, var5, var7, var1.getDestination(), var1.getArrivalInTicks());
          var15.pickSprite(this.sprite);
          var15.setAlpha(1.0F);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((VibrationParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

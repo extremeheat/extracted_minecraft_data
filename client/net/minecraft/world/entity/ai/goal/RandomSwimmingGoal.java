@@ -11,7 +11,6 @@ public class RandomSwimmingGoal extends RandomStrollGoal {
    }
 
    @Nullable
-   @Override
    protected Vec3 getPosition() {
       return BehaviorUtils.getRandomSwimmablePos(this.mob, 10, 7);
    }

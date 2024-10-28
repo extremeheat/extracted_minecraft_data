@@ -8,6 +8,7 @@ import net.minecraft.Util;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.math.Fraction;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -28,15 +29,14 @@ public class Mth {
    public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
    public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
    public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
-   private static final float[] SIN = Util.make(new float[65536], var0x -> {
-      for(int var1xx = 0; var1xx < var0x.length; ++var1xx) {
-         var0x[var1xx] = (float)Math.sin((double)var1xx * 3.141592653589793 * 2.0 / 65536.0);
+   private static final float[] SIN = (float[])Util.make(new float[65536], (var0x) -> {
+      for(int var1 = 0; var1 < var0x.length; ++var1) {
+         var0x[var1] = (float)Math.sin((double)var1 * 3.141592653589793 * 2.0 / 65536.0);
       }
+
    });
    private static final RandomSource RANDOM = RandomSource.createThreadSafe();
-   private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[]{
-      0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-   };
+   private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[]{0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
    private static final double ONE_SIXTH = 0.16666666666666666;
    private static final int FRAC_EXP = 8;
    private static final int LUT_SIZE = 257;
@@ -49,11 +49,11 @@ public class Mth {
    }
 
    public static float sin(float var0) {
-      return SIN[(int)(var0 * 10430.378F) & 65535];
+      return SIN[(int)(var0 * 10430.378F) & '\uffff'];
    }
 
    public static float cos(float var0) {
-      return SIN[(int)(var0 * 10430.378F + 16384.0F) & 65535];
+      return SIN[(int)(var0 * 10430.378F + 16384.0F) & '\uffff'];
    }
 
    public static float sqrt(float var0) {
@@ -279,11 +279,13 @@ public class Mth {
       return var0 - (double)lfloor(var0);
    }
 
+   /** @deprecated */
    @Deprecated
    public static long getSeed(Vec3i var0) {
       return getSeed(var0.getX(), var0.getY(), var0.getZ());
    }
 
+   /** @deprecated */
    @Deprecated
    public static long getSeed(int var0, int var1, int var2) {
       long var3 = (long)(var0 * 3129871) ^ (long)var2 * 116129781L ^ (long)var1;
@@ -364,15 +366,16 @@ public class Mth {
          }
 
          boolean var8 = var0 > var2;
+         double var9;
          if (var8) {
-            double var9 = var2;
+            var9 = var2;
             var2 = var0;
             var0 = var9;
          }
 
-         double var28 = fastInvSqrt(var4);
-         var2 *= var28;
-         var0 *= var28;
+         var9 = fastInvSqrt(var4);
+         var2 *= var9;
+         var0 *= var9;
          double var11 = FRAC_BIAS + var0;
          int var13 = (int)Double.doubleToRawLongBits(var11);
          double var14 = ASIN_TAB[var13];
@@ -405,13 +408,15 @@ public class Mth {
       return org.joml.Math.invsqrt(var0);
    }
 
+   /** @deprecated */
    @Deprecated
    public static double fastInvSqrt(double var0) {
       double var2 = 0.5 * var0;
       long var4 = Double.doubleToRawLongBits(var0);
       var4 = 6910469410427058090L - (var4 >> 1);
       var0 = Double.longBitsToDouble(var4);
-      return var0 * (1.5 - var2 * var0 * var0);
+      var0 *= 1.5 - var2 * var0 * var0;
+      return var0;
    }
 
    public static float fastInvCubeRoot(float var0) {
@@ -419,7 +424,8 @@ public class Mth {
       var1 = 1419967116 - var1 / 3;
       float var2 = Float.intBitsToFloat(var1);
       var2 = 0.6666667F * var2 + 1.0F / (3.0F * var2 * var2 * var0);
-      return 0.6666667F * var2 + 1.0F / (3.0F * var2 * var2 * var0);
+      var2 = 0.6666667F * var2 + 1.0F / (3.0F * var2 * var2 * var0);
+      return var2;
    }
 
    public static int hsvToRgb(float var0, float var1, float var2) {
@@ -431,7 +437,7 @@ public class Mth {
       float var8;
       float var9;
       float var10;
-      switch(var3) {
+      switch (var3) {
          case 0:
             var8 = var2;
             var9 = var7;
@@ -474,7 +480,8 @@ public class Mth {
       var0 *= -2048144789;
       var0 ^= var0 >>> 13;
       var0 *= -1028477387;
-      return var0 ^ var0 >>> 16;
+      var0 ^= var0 >>> 16;
+      return var0;
    }
 
    public static int binarySearch(int var0, int var1, IntPredicate var2) {
@@ -515,20 +522,12 @@ public class Mth {
       return lerp(var2, lerp(var0, var4, var6), lerp(var0, var8, var10));
    }
 
-   public static double lerp3(
-      double var0, double var2, double var4, double var6, double var8, double var10, double var12, double var14, double var16, double var18, double var20
-   ) {
+   public static double lerp3(double var0, double var2, double var4, double var6, double var8, double var10, double var12, double var14, double var16, double var18, double var20) {
       return lerp(var4, lerp2(var0, var2, var6, var8, var10, var12), lerp2(var0, var2, var14, var16, var18, var20));
    }
 
    public static float catmullrom(float var0, float var1, float var2, float var3, float var4) {
-      return 0.5F
-         * (
-            2.0F * var2
-               + (var3 - var1) * var0
-               + (2.0F * var1 - 5.0F * var2 + 4.0F * var3 - var4) * var0 * var0
-               + (3.0F * var2 - var1 - 3.0F * var3 + var4) * var0 * var0 * var0
-         );
+      return 0.5F * (2.0F * var2 + (var3 - var1) * var0 + (2.0F * var1 - 5.0F * var2 + 4.0F * var3 - var4) * var0 * var0 + (3.0F * var2 - var1 - 3.0F * var3 + var4) * var0 * var0 * var0);
    }
 
    public static double smoothstep(double var0) {
@@ -645,10 +644,10 @@ public class Mth {
       } else if (var3 < 1) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "steps expected to be >= 1, was %d", var3));
       } else {
-         return var0 >= var1 && var0 <= var2 ? IntStream.iterate(var0, var3x -> {
+         return var0 >= var1 && var0 <= var2 ? IntStream.iterate(var0, (var3x) -> {
             int var4 = Math.abs(var0 - var3x);
             return var0 - var4 >= var1 || var0 + var4 <= var2;
-         }, var4 -> {
+         }, (var4) -> {
             boolean var5 = var4 <= var0;
             int var6 = Math.abs(var0 - var4);
             boolean var7 = var0 + var6 + var3 <= var2;
@@ -669,6 +668,10 @@ public class Mth {
       return var2.set(var0.x * var3, var0.y * var3, var0.z * var3, var1.w).normalize();
    }
 
+   public static int mulAndTruncate(Fraction var0, int var1) {
+      return var0.getNumerator() * var1 / var0.getDenominator();
+   }
+
    static {
       for(int var0 = 0; var0 < 257; ++var0) {
          double var1 = (double)var0 / 256.0;
@@ -676,5 +679,6 @@ public class Mth {
          COS_TAB[var0] = Math.cos(var3);
          ASIN_TAB[var0] = var3;
       }
+
    }
 }

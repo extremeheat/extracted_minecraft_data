@@ -16,9 +16,9 @@ public class User {
    private final String accessToken;
    private final Optional<String> xuid;
    private final Optional<String> clientId;
-   private final User.Type type;
+   private final Type type;
 
-   public User(String var1, UUID var2, String var3, Optional<String> var4, Optional<String> var5, User.Type var6) {
+   public User(String var1, UUID var2, String var3, Optional<String> var4, Optional<String> var5, Type var6) {
       super();
       this.name = var1;
       this.uuid = var2;
@@ -29,7 +29,8 @@ public class User {
    }
 
    public String getSessionId() {
-      return "token:" + this.accessToken + ":" + UndashedUuid.toString(this.uuid);
+      String var10000 = this.accessToken;
+      return "token:" + var10000 + ":" + UndashedUuid.toString(this.uuid);
    }
 
    public UUID getProfileId() {
@@ -52,7 +53,7 @@ public class User {
       return this.xuid;
    }
 
-   public User.Type getType() {
+   public Type getType() {
       return this.type;
    }
 
@@ -61,7 +62,9 @@ public class User {
       MOJANG("mojang"),
       MSA("msa");
 
-      private static final Map<String, User.Type> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.name, Function.identity()));
+      private static final Map<String, Type> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
+         return var0.name;
+      }, Function.identity()));
       private final String name;
 
       private Type(String var3) {
@@ -69,12 +72,17 @@ public class User {
       }
 
       @Nullable
-      public static User.Type byName(String var0) {
-         return BY_NAME.get(var0.toLowerCase(Locale.ROOT));
+      public static Type byName(String var0) {
+         return (Type)BY_NAME.get(var0.toLowerCase(Locale.ROOT));
       }
 
       public String getName() {
          return this.name;
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{LEGACY, MOJANG, MSA};
       }
    }
 }

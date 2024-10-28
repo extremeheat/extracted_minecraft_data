@@ -7,7 +7,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum SpecialGlyphs implements GlyphInfo {
-   WHITE(() -> generate(5, 8, (var0, var1) -> -1)),
+   WHITE(() -> {
+      return generate(5, 8, (var0, var1) -> {
+         return -1;
+      });
+   }),
    MISSING(() -> {
       boolean var0 = true;
       boolean var1 = true;
@@ -19,7 +23,7 @@ public enum SpecialGlyphs implements GlyphInfo {
 
    final NativeImage image;
 
-   private static NativeImage generate(int var0, int var1, SpecialGlyphs.PixelProvider var2) {
+   private static NativeImage generate(int var0, int var1, PixelProvider var2) {
       NativeImage var3 = new NativeImage(NativeImage.Format.RGBA, var0, var1, false);
 
       for(int var4 = 0; var4 < var1; ++var4) {
@@ -32,47 +36,45 @@ public enum SpecialGlyphs implements GlyphInfo {
       return var3;
    }
 
-   private SpecialGlyphs(Supplier<NativeImage> var3) {
+   private SpecialGlyphs(Supplier var3) {
       this.image = (NativeImage)var3.get();
    }
 
-   @Override
    public float getAdvance() {
       return (float)(this.image.getWidth() + 1);
    }
 
-   @Override
    public BakedGlyph bake(Function<SheetGlyphInfo, BakedGlyph> var1) {
       return (BakedGlyph)var1.apply(new SheetGlyphInfo() {
-         @Override
          public int getPixelWidth() {
             return SpecialGlyphs.this.image.getWidth();
          }
 
-         @Override
          public int getPixelHeight() {
             return SpecialGlyphs.this.image.getHeight();
          }
 
-         @Override
          public float getOversample() {
             return 1.0F;
          }
 
-         @Override
          public void upload(int var1, int var2) {
             SpecialGlyphs.this.image.upload(0, var1, var2, false);
          }
 
-         @Override
          public boolean isColored() {
             return true;
          }
       });
    }
 
+   // $FF: synthetic method
+   private static SpecialGlyphs[] $values() {
+      return new SpecialGlyphs[]{WHITE, MISSING};
+   }
+
    @FunctionalInterface
-   interface PixelProvider {
+   private interface PixelProvider {
       int getColor(int var1, int var2);
    }
 }

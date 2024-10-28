@@ -6,7 +6,7 @@ import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.execution.Frame;
 
 public class FallthroughTask<T extends ExecutionCommandSource<T>> implements EntryAction<T> {
-   private static final FallthroughTask<? extends ExecutionCommandSource<?>> INSTANCE = new FallthroughTask<>();
+   private static final FallthroughTask<? extends ExecutionCommandSource<?>> INSTANCE = new FallthroughTask();
 
    public FallthroughTask() {
       super();
@@ -16,7 +16,6 @@ public class FallthroughTask<T extends ExecutionCommandSource<T>> implements Ent
       return INSTANCE;
    }
 
-   @Override
    public void execute(ExecutionContext<T> var1, Frame var2) {
       var2.returnFailure();
       var2.discard();

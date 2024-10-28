@@ -22,8 +22,7 @@ public class PathTypeCache {
       return var6 != null ? var6 : this.compute(var1, var2, var5, var3);
    }
 
-   @Nullable
-   private PathType get(int var1, long var2) {
+   private @Nullable PathType get(int var1, long var2) {
       return this.positions[var1] == var2 ? this.pathTypes[var1] : null;
    }
 
@@ -40,6 +39,7 @@ public class PathTypeCache {
       if (this.positions[var4] == var2) {
          this.pathTypes[var4] = null;
       }
+
    }
 
    private static int index(long var0) {

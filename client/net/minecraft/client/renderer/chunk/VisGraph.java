@@ -22,7 +22,7 @@ public class VisGraph {
    private static final int INVALID_INDEX = -1;
    private static final Direction[] DIRECTIONS = Direction.values();
    private final BitSet bitSet = new BitSet(4096);
-   private static final int[] INDEX_OF_EDGES = Util.make(new int[1352], var0 -> {
+   private static final int[] INDEX_OF_EDGES = (int[])Util.make(new int[1352], (var0) -> {
       boolean var1 = false;
       boolean var2 = true;
       int var3 = 0;
@@ -36,6 +36,7 @@ public class VisGraph {
             }
          }
       }
+
    });
    private int empty = 4096;
 
@@ -63,7 +64,11 @@ public class VisGraph {
       } else if (this.empty == 0) {
          var1.setAll(false);
       } else {
-         for(int var5 : INDEX_OF_EDGES) {
+         int[] var2 = INDEX_OF_EDGES;
+         int var3 = var2.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            int var5 = var2[var4];
             if (!this.bitSet.get(var5)) {
                var1.add(this.floodFill(var5));
             }
@@ -82,8 +87,11 @@ public class VisGraph {
       while(!var3.isEmpty()) {
          int var4 = var3.dequeueInt();
          this.addEdges(var4, var2);
+         Direction[] var5 = DIRECTIONS;
+         int var6 = var5.length;
 
-         for(Direction var8 : DIRECTIONS) {
+         for(int var7 = 0; var7 < var6; ++var7) {
+            Direction var8 = var5[var7];
             int var9 = this.getNeighborIndexAtFace(var4, var8);
             if (var9 >= 0 && !this.bitSet.get(var9)) {
                this.bitSet.set(var9, true);
@@ -116,10 +124,11 @@ public class VisGraph {
       } else if (var5 == 15) {
          var2.add(Direction.SOUTH);
       }
+
    }
 
    private int getNeighborIndexAtFace(int var1, Direction var2) {
-      switch(var2) {
+      switch (var2) {
          case DOWN:
             if ((var1 >> 8 & 15) == 0) {
                return -1;

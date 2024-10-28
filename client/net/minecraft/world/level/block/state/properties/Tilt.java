@@ -16,12 +16,16 @@ public enum Tilt implements StringRepresentable {
       this.causesVibration = var4;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    public boolean causesVibration() {
       return this.causesVibration;
+   }
+
+   // $FF: synthetic method
+   private static Tilt[] $values() {
+      return new Tilt[]{NONE, UNSTABLE, PARTIAL, FULL};
    }
 }

@@ -12,7 +12,6 @@ public class VanillaShearingLoot implements LootTableSubProvider {
       super();
    }
 
-   @Override
    public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
       var2.accept(BuiltInLootTables.BOGGED_SHEAR, LootTable.lootTable());
    }

@@ -24,10 +24,11 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
    public static final MenuType<CraftingMenu> CRAFTING = register("crafting", CraftingMenu::new);
    public static final MenuType<EnchantmentMenu> ENCHANTMENT = register("enchantment", EnchantmentMenu::new);
    public static final MenuType<FurnaceMenu> FURNACE = register("furnace", FurnaceMenu::new);
-   public static final MenuType<FletchingMenu> FLETCHING = register("fletching", FletchingMenu::new);
    public static final MenuType<GrindstoneMenu> GRINDSTONE = register("grindstone", GrindstoneMenu::new);
    public static final MenuType<HopperMenu> HOPPER = register("hopper", HopperMenu::new);
-   public static final MenuType<LecternMenu> LECTERN = register("lectern", (var0, var1) -> new LecternMenu(var0));
+   public static final MenuType<LecternMenu> LECTERN = register("lectern", (var0, var1) -> {
+      return new LecternMenu(var0);
+   });
    public static final MenuType<LoomMenu> LOOM = register("loom", LoomMenu::new);
    public static final MenuType<MerchantMenu> MERCHANT = register("merchant", MerchantMenu::new);
    public static final MenuType<ShulkerBoxMenu> SHULKER_BOX = register("shulker_box", ShulkerBoxMenu::new);
@@ -35,20 +36,18 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
    public static final MenuType<SmokerMenu> SMOKER = register("smoker", SmokerMenu::new);
    public static final MenuType<CartographyTableMenu> CARTOGRAPHY_TABLE = register("cartography_table", CartographyTableMenu::new);
    public static final MenuType<StonecutterMenu> STONECUTTER = register("stonecutter", StonecutterMenu::new);
-   public static final MenuType<PoisonousPotatoCutterMenu> POISONOUS_POTATO_CUTTER = register("poisonous_potato_cutter", PoisonousPotatoCutterMenu::new);
-   public static final MenuType<PotatoRefineryMenu> POTATO_REFINERY = register("potato_refinery", PotatoRefineryMenu::new);
    private final FeatureFlagSet requiredFeatures;
-   private final MenuType.MenuSupplier<T> constructor;
+   private final MenuSupplier<T> constructor;
 
-   private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuType.MenuSupplier<T> var1) {
-      return Registry.register(BuiltInRegistries.MENU, var0, new MenuType<>(var1, FeatureFlags.VANILLA_SET));
+   private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuSupplier<T> var1) {
+      return (MenuType)Registry.register(BuiltInRegistries.MENU, (String)var0, new MenuType(var1, FeatureFlags.VANILLA_SET));
    }
 
-   private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuType.MenuSupplier<T> var1, FeatureFlag... var2) {
-      return Registry.register(BuiltInRegistries.MENU, var0, new MenuType<>(var1, FeatureFlags.REGISTRY.subset(var2)));
+   private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuSupplier<T> var1, FeatureFlag... var2) {
+      return (MenuType)Registry.register(BuiltInRegistries.MENU, (String)var0, new MenuType(var1, FeatureFlags.REGISTRY.subset(var2)));
    }
 
-   private MenuType(MenuType.MenuSupplier<T> var1, FeatureFlagSet var2) {
+   private MenuType(MenuSupplier<T> var1, FeatureFlagSet var2) {
       super();
       this.constructor = var1;
       this.requiredFeatures = var2;
@@ -58,12 +57,11 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
       return this.constructor.create(var1, var2);
    }
 
-   @Override
    public FeatureFlagSet requiredFeatures() {
       return this.requiredFeatures;
    }
 
-   interface MenuSupplier<T extends AbstractContainerMenu> {
+   private interface MenuSupplier<T extends AbstractContainerMenu> {
       T create(int var1, Inventory var2);
    }
 }

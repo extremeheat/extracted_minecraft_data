@@ -14,16 +14,10 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, DrownedMode
    private static final ResourceLocation DROWNED_LOCATION = new ResourceLocation("textures/entity/zombie/drowned.png");
 
    public DrownedRenderer(EntityRendererProvider.Context var1) {
-      super(
-         var1,
-         new DrownedModel<>(var1.bakeLayer(ModelLayers.DROWNED)),
-         new DrownedModel<>(var1.bakeLayer(ModelLayers.DROWNED_INNER_ARMOR)),
-         new DrownedModel<>(var1.bakeLayer(ModelLayers.DROWNED_OUTER_ARMOR))
-      );
-      this.addLayer(new DrownedOuterLayer<>(this, var1.getModelSet()));
+      super(var1, new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_INNER_ARMOR)), new DrownedModel(var1.bakeLayer(ModelLayers.DROWNED_OUTER_ARMOR)));
+      this.addLayer(new DrownedOuterLayer(this, var1.getModelSet()));
    }
 
-   @Override
    public ResourceLocation getTextureLocation(Zombie var1) {
       return DROWNED_LOCATION;
    }
@@ -36,5 +30,6 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, DrownedMode
          float var9 = Mth.lerp(var7, 0.0F, var8);
          var2.rotateAround(Axis.XP.rotationDegrees(var9), 0.0F, var1.getBbHeight() / 2.0F / var6, 0.0F);
       }
+
    }
 }

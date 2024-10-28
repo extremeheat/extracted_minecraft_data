@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 @FunctionalInterface
 public interface BlockEntityRendererProvider<T extends BlockEntity> {
-   BlockEntityRenderer<T> create(BlockEntityRendererProvider.Context var1);
+   BlockEntityRenderer<T> create(Context var1);
 
    public static class Context {
       private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -21,9 +21,7 @@ public interface BlockEntityRendererProvider<T extends BlockEntity> {
       private final EntityModelSet modelSet;
       private final Font font;
 
-      public Context(
-         BlockEntityRenderDispatcher var1, BlockRenderDispatcher var2, ItemRenderer var3, EntityRenderDispatcher var4, EntityModelSet var5, Font var6
-      ) {
+      public Context(BlockEntityRenderDispatcher var1, BlockRenderDispatcher var2, ItemRenderer var3, EntityRenderDispatcher var4, EntityModelSet var5, Font var6) {
          super();
          this.blockEntityRenderDispatcher = var1;
          this.blockRenderDispatcher = var2;

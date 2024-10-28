@@ -17,13 +17,16 @@ public class StringReaderParserState extends ParseState<StringReader> {
       return this.input;
    }
 
-   @Override
    public int mark() {
       return this.input.getCursor();
    }
 
-   @Override
    public void restore(int var1) {
       this.input.setCursor(var1);
+   }
+
+   // $FF: synthetic method
+   public Object input() {
+      return this.input();
    }
 }

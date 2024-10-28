@@ -14,19 +14,18 @@ public class GrindstoneScreen extends AbstractContainerScreen<GrindstoneMenu> {
       super(var1, var2, var3);
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(GRINDSTONE_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      if ((this.menu.getSlot(0).hasItem() || this.menu.getSlot(1).hasItem()) && !this.menu.getSlot(2).hasItem()) {
+      if ((((GrindstoneMenu)this.menu).getSlot(0).hasItem() || ((GrindstoneMenu)this.menu).getSlot(1).hasItem()) && !((GrindstoneMenu)this.menu).getSlot(2).hasItem()) {
          var1.blitSprite(ERROR_SPRITE, var5 + 92, var6 + 31, 28, 21);
       }
+
    }
 }

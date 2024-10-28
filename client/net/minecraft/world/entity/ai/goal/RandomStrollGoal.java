@@ -34,7 +34,6 @@ public class RandomStrollGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (this.mob.hasControllingPassenger()) {
          return false;
@@ -67,17 +66,14 @@ public class RandomStrollGoal extends Goal {
       return DefaultRandomPos.getPos(this.mob, 10, 7);
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.mob.getNavigation().isDone() && !this.mob.hasControllingPassenger();
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().moveTo(this.wantedX, this.wantedY, this.wantedZ, this.speedModifier);
    }
 
-   @Override
    public void stop() {
       this.mob.getNavigation().stop();
       super.stop();

@@ -2,10 +2,7 @@ package net.minecraft.network.protocol;
 
 import net.minecraft.resources.ResourceLocation;
 
-public record PacketType<T extends Packet<?>>(PacketFlow a, ResourceLocation b) {
-   private final PacketFlow flow;
-   private final ResourceLocation id;
-
+public record PacketType<T extends Packet<?>>(PacketFlow flow, ResourceLocation id) {
    public PacketType(PacketFlow var1, ResourceLocation var2) {
       super();
       this.flow = var1;
@@ -13,6 +10,15 @@ public record PacketType<T extends Packet<?>>(PacketFlow a, ResourceLocation b) 
    }
 
    public String toString() {
-      return this.flow.id() + "/" + this.id;
+      String var10000 = this.flow.id();
+      return var10000 + "/" + String.valueOf(this.id);
+   }
+
+   public PacketFlow flow() {
+      return this.flow;
+   }
+
+   public ResourceLocation id() {
+      return this.id;
    }
 }

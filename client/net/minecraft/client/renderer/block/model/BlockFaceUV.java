@@ -50,6 +50,7 @@ public class BlockFaceUV {
       if (this.uvs == null) {
          this.uvs = var1;
       }
+
    }
 
    protected static class Deserializer implements JsonDeserializer<BlockFaceUV> {
@@ -93,6 +94,11 @@ public class BlockFaceUV {
                return var3;
             }
          }
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

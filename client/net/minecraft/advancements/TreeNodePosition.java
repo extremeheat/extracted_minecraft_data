@@ -1,6 +1,7 @@
 package net.minecraft.advancements;
 
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -35,20 +36,23 @@ public class TreeNodePosition {
          this.y = -1.0F;
          TreeNodePosition var6 = null;
 
-         for(AdvancementNode var8 : var1.children()) {
-            var6 = this.addChild(var8, var6);
+         AdvancementNode var8;
+         for(Iterator var7 = var1.children().iterator(); var7.hasNext(); var6 = this.addChild(var8, var6)) {
+            var8 = (AdvancementNode)var7.next();
          }
+
       }
    }
 
    @Nullable
    private TreeNodePosition addChild(AdvancementNode var1, @Nullable TreeNodePosition var2) {
+      AdvancementNode var4;
       if (var1.advancement().display().isPresent()) {
          var2 = new TreeNodePosition(var1, this, var2, this.children.size() + 1, this.x + 1);
          this.children.add(var2);
       } else {
-         for(AdvancementNode var4 : var1.children()) {
-            var2 = this.addChild(var4, var2);
+         for(Iterator var3 = var1.children().iterator(); var3.hasNext(); var2 = this.addChild(var4, var2)) {
+            var4 = (AdvancementNode)var3.next();
          }
       }
 
@@ -62,22 +66,25 @@ public class TreeNodePosition {
          } else {
             this.y = 0.0F;
          }
+
       } else {
          TreeNodePosition var1 = null;
 
-         for(TreeNodePosition var3 : this.children) {
+         TreeNodePosition var3;
+         for(Iterator var2 = this.children.iterator(); var2.hasNext(); var1 = var3.apportion(var1 == null ? var3 : var1)) {
+            var3 = (TreeNodePosition)var2.next();
             var3.firstWalk();
-            var1 = var3.apportion(var1 == null ? var3 : var1);
          }
 
          this.executeShifts();
-         float var4 = (this.children.get(0).y + this.children.get(this.children.size() - 1).y) / 2.0F;
+         float var4 = (((TreeNodePosition)this.children.get(0)).y + ((TreeNodePosition)this.children.get(this.children.size() - 1)).y) / 2.0F;
          if (this.previousSibling != null) {
             this.y = this.previousSibling.y + 1.0F;
             this.mod = this.y - var4;
          } else {
             this.y = var4;
          }
+
       }
    }
 
@@ -88,8 +95,9 @@ public class TreeNodePosition {
          var3 = this.y;
       }
 
-      for(TreeNodePosition var5 : this.children) {
-         var3 = var5.secondWalk(var1 + this.mod, var2 + 1, var3);
+      TreeNodePosition var5;
+      for(Iterator var4 = this.children.iterator(); var4.hasNext(); var3 = var5.secondWalk(var1 + this.mod, var2 + 1, var3)) {
+         var5 = (TreeNodePosition)var4.next();
       }
 
       return var3;
@@ -97,10 +105,13 @@ public class TreeNodePosition {
 
    private void thirdWalk(float var1) {
       this.y += var1;
+      Iterator var2 = this.children.iterator();
 
-      for(TreeNodePosition var3 : this.children) {
+      while(var2.hasNext()) {
+         TreeNodePosition var3 = (TreeNodePosition)var2.next();
          var3.thirdWalk(var1);
       }
+
    }
 
    private void executeShifts() {
@@ -108,12 +119,13 @@ public class TreeNodePosition {
       float var2 = 0.0F;
 
       for(int var3 = this.children.size() - 1; var3 >= 0; --var3) {
-         TreeNodePosition var4 = this.children.get(var3);
+         TreeNodePosition var4 = (TreeNodePosition)this.children.get(var3);
          var4.y += var1;
          var4.mod += var1;
          var2 += var4.change;
          var1 += var4.shift + var2;
       }
+
    }
 
    @Nullable
@@ -121,7 +133,7 @@ public class TreeNodePosition {
       if (this.thread != null) {
          return this.thread;
       } else {
-         return !this.children.isEmpty() ? this.children.get(0) : null;
+         return !this.children.isEmpty() ? (TreeNodePosition)this.children.get(0) : null;
       }
    }
 
@@ -130,7 +142,7 @@ public class TreeNodePosition {
       if (this.thread != null) {
          return this.thread;
       } else {
-         return !this.children.isEmpty() ? this.children.get(this.children.size() - 1) : null;
+         return !this.children.isEmpty() ? (TreeNodePosition)this.children.get(this.children.size() - 1) : null;
       }
    }
 
@@ -141,7 +153,7 @@ public class TreeNodePosition {
          TreeNodePosition var2 = this;
          TreeNodePosition var3 = this;
          TreeNodePosition var4 = this.previousSibling;
-         TreeNodePosition var5 = this.parent.children.get(0);
+         TreeNodePosition var5 = (TreeNodePosition)this.parent.children.get(0);
          float var6 = this.mod;
          float var7 = this.mod;
          float var8 = var4.mod;
@@ -198,19 +210,25 @@ public class TreeNodePosition {
    }
 
    private void finalizePosition() {
-      this.node.advancement().display().ifPresent(var1 -> var1.setLocation((float)this.x, this.y));
+      this.node.advancement().display().ifPresent((var1x) -> {
+         var1x.setLocation((float)this.x, this.y);
+      });
       if (!this.children.isEmpty()) {
-         for(TreeNodePosition var2 : this.children) {
+         Iterator var1 = this.children.iterator();
+
+         while(var1.hasNext()) {
+            TreeNodePosition var2 = (TreeNodePosition)var1.next();
             var2.finalizePosition();
          }
       }
+
    }
 
    public static void run(AdvancementNode var0) {
       if (var0.advancement().display().isEmpty()) {
          throw new IllegalArgumentException("Can't position children of an invisible root!");
       } else {
-         TreeNodePosition var1 = new TreeNodePosition(var0, null, null, 1, 0);
+         TreeNodePosition var1 = new TreeNodePosition(var0, (TreeNodePosition)null, (TreeNodePosition)null, 1, 0);
          var1.firstWalk();
          float var2 = var1.secondWalk(0.0F, 0, var1.y);
          if (var2 < 0.0F) {

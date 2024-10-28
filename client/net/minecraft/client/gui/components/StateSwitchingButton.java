@@ -28,12 +28,10 @@ public class StateSwitchingButton extends AbstractWidget {
       return this.isStateTriggered;
    }
 
-   @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
       this.defaultButtonNarrationText(var1);
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.sprites != null) {
          RenderSystem.disableDepthTest();

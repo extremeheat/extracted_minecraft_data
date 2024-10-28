@@ -16,34 +16,28 @@ public class FlyingPathNavigation extends PathNavigation {
       super(var1, var2);
    }
 
-   @Override
    protected PathFinder createPathFinder(int var1) {
       this.nodeEvaluator = new FlyNodeEvaluator();
       this.nodeEvaluator.setCanPassDoors(true);
       return new PathFinder(this.nodeEvaluator, var1);
    }
 
-   @Override
    protected boolean canMoveDirectly(Vec3 var1, Vec3 var2) {
       return isClearForMovementBetween(this.mob, var1, var2, true);
    }
 
-   @Override
    protected boolean canUpdatePath() {
       return this.canFloat() && this.mob.isInLiquid() || !this.mob.isPassenger();
    }
 
-   @Override
    protected Vec3 getTempMobPos() {
       return this.mob.position();
    }
 
-   @Override
    public Path createPath(Entity var1, int var2) {
       return this.createPath(var1.blockPosition(), var2);
    }
 
-   @Override
    public void tick() {
       ++this.tick;
       if (this.hasDelayedRecomputation) {
@@ -51,10 +45,11 @@ public class FlyingPathNavigation extends PathNavigation {
       }
 
       if (!this.isDone()) {
+         Vec3 var1;
          if (this.canUpdatePath()) {
             this.followThePath();
          } else if (this.path != null && !this.path.isDone()) {
-            Vec3 var1 = this.path.getNextEntityPos(this.mob);
+            var1 = this.path.getNextEntityPos(this.mob);
             if (this.mob.getBlockX() == Mth.floor(var1.x) && this.mob.getBlockY() == Mth.floor(var1.y) && this.mob.getBlockZ() == Mth.floor(var1.z)) {
                this.path.advance();
             }
@@ -62,8 +57,8 @@ public class FlyingPathNavigation extends PathNavigation {
 
          DebugPackets.sendPathFindingPacket(this.level, this.mob, this.path, this.maxDistanceToWaypoint);
          if (!this.isDone()) {
-            Vec3 var2 = this.path.getNextEntityPos(this.mob);
-            this.mob.getMoveControl().setWantedPosition(var2.x, var2.y, var2.z, this.speedModifier);
+            var1 = this.path.getNextEntityPos(this.mob);
+            this.mob.getMoveControl().setWantedPosition(var1.x, var1.y, var1.z, this.speedModifier);
          }
       }
    }
@@ -84,7 +79,6 @@ public class FlyingPathNavigation extends PathNavigation {
       return this.nodeEvaluator.canPassDoors();
    }
 
-   @Override
    public boolean isStableDestination(BlockPos var1) {
       return this.level.getBlockState(var1).entityCanStandOn(this.level, var1, this.mob);
    }

@@ -1,5 +1,7 @@
 package net.minecraft.client.gui.components;
 
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
@@ -9,6 +11,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringUtil;
 
@@ -48,12 +51,10 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       return this.textField.value();
    }
 
-   @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, Component.translatable("gui.narrate.editBox", this.getMessage(), this.getValue()));
+      var1.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.editBox", this.getMessage(), this.getValue()));
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.withinContentAreaPoint(var1, var3) && var5 == 0) {
          this.textField.setSelecting(Screen.hasShiftDown());
@@ -64,7 +65,6 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       }
    }
 
-   @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
       if (super.mouseDragged(var1, var3, var5, var6, var8)) {
          return true;
@@ -78,12 +78,10 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       }
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       return this.textField.keyPressed(var1);
    }
 
-   @Override
    public boolean charTyped(char var1, int var2) {
       if (this.visible && this.isFocused() && StringUtil.isAllowedChatCharacter(var1)) {
          this.textField.insertText(Character.toString(var1));
@@ -93,18 +91,10 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       }
    }
 
-   @Override
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       String var5 = this.textField.value();
       if (var5.isEmpty() && !this.isFocused()) {
-         var1.drawWordWrap(
-            this.font,
-            this.placeholder,
-            this.getX() + this.innerPadding(),
-            this.getY() + this.innerPadding(),
-            this.width - this.totalInnerPadding(),
-            -857677600
-         );
+         var1.drawWordWrap(this.font, this.placeholder, this.getX() + this.innerPadding(), this.getY() + this.innerPadding(), this.width - this.totalInnerPadding(), -857677600);
       } else {
          int var6 = this.textField.cursor();
          boolean var7 = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L;
@@ -113,84 +103,102 @@ public class MultiLineEditBox extends AbstractScrollWidget {
          int var10 = 0;
          int var11 = this.getY() + this.innerPadding();
 
-         for(MultilineTextField.StringView var13 : this.textField.iterateLines()) {
+         int var10002;
+         int var10004;
+         for(Iterator var12 = this.textField.iterateLines().iterator(); var12.hasNext(); var11 += 9) {
+            MultilineTextField.StringView var13 = (MultilineTextField.StringView)var12.next();
+            Objects.requireNonNull(this.font);
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
                   var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var6), this.getX() + this.innerPadding(), var11, -2039584) - 1;
-                  var1.fill(var9, var11 - 1, var9 + 1, var11 + 1 + 9, -3092272);
+                  var10002 = var11 - 1;
+                  int var10003 = var9 + 1;
+                  var10004 = var11 + 1;
+                  Objects.requireNonNull(this.font);
+                  var1.fill(var9, var10002, var10003, var10004 + 9, -3092272);
                   var1.drawString(this.font, var5.substring(var6, var13.endIndex()), var9, var11, -2039584);
                }
             } else {
                if (var14) {
-                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var13.endIndex()), this.getX() + this.innerPadding(), var11, -2039584)
-                     - 1;
+                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var13.endIndex()), this.getX() + this.innerPadding(), var11, -2039584) - 1;
                }
 
                var10 = var11;
             }
 
-            var11 += 9;
+            Objects.requireNonNull(this.font);
          }
 
-         if (var7 && !var8 && this.withinContentAreaTopBottom(var10, var10 + 9)) {
-            var1.drawString(this.font, "_", var9, var10, -3092272);
+         if (var7 && !var8) {
+            Objects.requireNonNull(this.font);
+            if (this.withinContentAreaTopBottom(var10, var10 + 9)) {
+               var1.drawString(this.font, "_", var9, var10, -3092272);
+            }
          }
 
          if (this.textField.hasSelection()) {
-            MultilineTextField.StringView var19 = this.textField.getSelected();
-            int var20 = this.getX() + this.innerPadding();
+            MultilineTextField.StringView var18 = this.textField.getSelected();
+            int var19 = this.getX() + this.innerPadding();
             var11 = this.getY() + this.innerPadding();
+            Iterator var20 = this.textField.iterateLines().iterator();
 
-            for(MultilineTextField.StringView var15 : this.textField.iterateLines()) {
-               if (var19.beginIndex() > var15.endIndex()) {
+            while(var20.hasNext()) {
+               MultilineTextField.StringView var15 = (MultilineTextField.StringView)var20.next();
+               if (var18.beginIndex() > var15.endIndex()) {
+                  Objects.requireNonNull(this.font);
                   var11 += 9;
                } else {
-                  if (var15.beginIndex() > var19.endIndex()) {
+                  if (var15.beginIndex() > var18.endIndex()) {
                      break;
                   }
 
+                  Objects.requireNonNull(this.font);
                   if (this.withinContentAreaTopBottom(var11, var11 + 9)) {
-                     int var16 = this.font.width(var5.substring(var15.beginIndex(), Math.max(var19.beginIndex(), var15.beginIndex())));
+                     int var16 = this.font.width(var5.substring(var15.beginIndex(), Math.max(var18.beginIndex(), var15.beginIndex())));
                      int var17;
-                     if (var19.endIndex() > var15.endIndex()) {
+                     if (var18.endIndex() > var15.endIndex()) {
                         var17 = this.width - this.innerPadding();
                      } else {
-                        var17 = this.font.width(var5.substring(var15.beginIndex(), var19.endIndex()));
+                        var17 = this.font.width(var5.substring(var15.beginIndex(), var18.endIndex()));
                      }
 
-                     this.renderHighlight(var1, var20 + var16, var11, var20 + var17, var11 + 9);
+                     var10002 = var19 + var16;
+                     var10004 = var19 + var17;
+                     Objects.requireNonNull(this.font);
+                     this.renderHighlight(var1, var10002, var11, var10004, var11 + 9);
                   }
 
+                  Objects.requireNonNull(this.font);
                   var11 += 9;
                }
             }
          }
+
       }
    }
 
-   @Override
    protected void renderDecorations(GuiGraphics var1) {
       super.renderDecorations(var1);
       if (this.textField.hasCharacterLimit()) {
          int var2 = this.textField.characterLimit();
          MutableComponent var3 = Component.translatable("gui.multiLineEditBox.character_limit", this.textField.value().length(), var2);
-         var1.drawString(this.font, var3, this.getX() + this.width - this.font.width(var3), this.getY() + this.height + 4, 10526880);
+         var1.drawString(this.font, (Component)var3, this.getX() + this.width - this.font.width((FormattedText)var3), this.getY() + this.height + 4, 10526880);
       }
+
    }
 
-   @Override
    public int getInnerHeight() {
+      Objects.requireNonNull(this.font);
       return 9 * this.textField.getLineCount();
    }
 
-   @Override
    protected boolean scrollbarVisible() {
       return (double)this.textField.getLineCount() > this.getDisplayableLineCount();
    }
 
-   @Override
    protected double scrollRate() {
+      Objects.requireNonNull(this.font);
       return 9.0 / 2.0;
    }
 
@@ -200,13 +208,25 @@ public class MultiLineEditBox extends AbstractScrollWidget {
 
    private void scrollToCursor() {
       double var1 = this.scrollAmount();
-      MultilineTextField.StringView var3 = this.textField.getLineView((int)(var1 / 9.0));
+      MultilineTextField var10000 = this.textField;
+      Objects.requireNonNull(this.font);
+      MultilineTextField.StringView var3 = var10000.getLineView((int)(var1 / 9.0));
+      int var5;
       if (this.textField.cursor() <= var3.beginIndex()) {
-         var1 = (double)(this.textField.getLineAtCursor() * 9);
+         var5 = this.textField.getLineAtCursor();
+         Objects.requireNonNull(this.font);
+         var1 = (double)(var5 * 9);
       } else {
-         MultilineTextField.StringView var4 = this.textField.getLineView((int)((var1 + (double)this.height) / 9.0) - 1);
+         var10000 = this.textField;
+         double var10001 = var1 + (double)this.height;
+         Objects.requireNonNull(this.font);
+         MultilineTextField.StringView var4 = var10000.getLineView((int)(var10001 / 9.0) - 1);
          if (this.textField.cursor() > var4.endIndex()) {
-            var1 = (double)(this.textField.getLineAtCursor() * 9 - this.height + 9 + this.totalInnerPadding());
+            var5 = this.textField.getLineAtCursor();
+            Objects.requireNonNull(this.font);
+            var5 = var5 * 9 - this.height;
+            Objects.requireNonNull(this.font);
+            var1 = (double)(var5 + 9 + this.totalInnerPadding());
          }
       }
 
@@ -214,7 +234,9 @@ public class MultiLineEditBox extends AbstractScrollWidget {
    }
 
    private double getDisplayableLineCount() {
-      return (double)(this.height - this.totalInnerPadding()) / 9.0;
+      double var10000 = (double)(this.height - this.totalInnerPadding());
+      Objects.requireNonNull(this.font);
+      return var10000 / 9.0;
    }
 
    private void seekCursorScreen(double var1, double var3) {
@@ -223,11 +245,11 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       this.textField.seekCursorToPoint(var5, var7);
    }
 
-   @Override
    public void setFocused(boolean var1) {
       super.setFocused(var1);
       if (var1) {
          this.focusedTime = Util.getMillis();
       }
+
    }
 }

@@ -1,8 +1,10 @@
 package net.minecraft.client.resources;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -26,7 +28,7 @@ public abstract class TextureAtlasHolder implements PreparableReloadListener, Au
       super();
       this.atlasInfoLocation = var3;
       this.textureAtlas = new TextureAtlas(var2);
-      var1.register(this.textureAtlas.location(), this.textureAtlas);
+      var1.register((ResourceLocation)this.textureAtlas.location(), (AbstractTexture)this.textureAtlas);
       this.metadataSections = var4;
    }
 
@@ -34,15 +36,12 @@ public abstract class TextureAtlasHolder implements PreparableReloadListener, Au
       return this.textureAtlas.getSprite(var1);
    }
 
-   @Override
-   public final CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
-      return SpriteLoader.create(this.textureAtlas)
-         .loadAndStitch(var2, this.atlasInfoLocation, 0, var5, this.metadataSections)
-         .thenCompose(SpriteLoader.Preparations::waitForUpload)
-         .thenCompose(var1::wait)
-         .thenAcceptAsync(var2x -> this.apply(var2x, var4), var6);
+   public final CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
+      CompletableFuture var10000 = SpriteLoader.create(this.textureAtlas).loadAndStitch(var2, this.atlasInfoLocation, 0, var5, this.metadataSections).thenCompose(SpriteLoader.Preparations::waitForUpload);
+      Objects.requireNonNull(var1);
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var2x) -> {
+         this.apply(var2x, var4);
+      }, var6);
    }
 
    private void apply(SpriteLoader.Preparations var1, ProfilerFiller var2) {
@@ -53,7 +52,6 @@ public abstract class TextureAtlasHolder implements PreparableReloadListener, Au
       var2.endTick();
    }
 
-   @Override
    public void close() {
       this.textureAtlas.clearTextureData();
    }

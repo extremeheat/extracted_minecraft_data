@@ -23,9 +23,8 @@ public class SimpleTexture extends AbstractTexture {
       this.location = var1;
    }
 
-   @Override
    public void load(ResourceManager var1) throws IOException {
-      SimpleTexture.TextureImage var2 = this.getTextureImage(var1);
+      TextureImage var2 = this.getTextureImage(var1);
       var2.throwIfError();
       TextureMetadataSection var5 = var2.getTextureMetadata();
       boolean var3;
@@ -40,10 +39,13 @@ public class SimpleTexture extends AbstractTexture {
 
       NativeImage var6 = var2.getImage();
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> this.doLoad(var6, var3, var4));
+         RenderSystem.recordRenderCall(() -> {
+            this.doLoad(var6, var3, var4);
+         });
       } else {
          this.doLoad(var6, var3, var4);
       }
+
    }
 
    private void doLoad(NativeImage var1, boolean var2, boolean var3) {
@@ -51,7 +53,7 @@ public class SimpleTexture extends AbstractTexture {
       var1.upload(0, 0, 0, 0, 0, var1.getWidth(), var1.getHeight(), var2, var3, false, true);
    }
 
-   protected SimpleTexture.TextureImage getTextureImage(ResourceManager var1) {
+   protected TextureImage getTextureImage(ResourceManager var1) {
       return SimpleTexture.TextureImage.load(var1, this.location);
    }
 
@@ -77,26 +79,41 @@ public class SimpleTexture extends AbstractTexture {
          this.image = var2;
       }
 
-      public static SimpleTexture.TextureImage load(ResourceManager var0, ResourceLocation var1) {
+      public static TextureImage load(ResourceManager var0, ResourceLocation var1) {
          try {
             Resource var2 = var0.getResourceOrThrow(var1);
+            InputStream var4 = var2.open();
 
             NativeImage var3;
-            try (InputStream var4 = var2.open()) {
+            try {
                var3 = NativeImage.read(var4);
+            } catch (Throwable var9) {
+               if (var4 != null) {
+                  try {
+                     var4.close();
+                  } catch (Throwable var7) {
+                     var9.addSuppressed(var7);
+                  }
+               }
+
+               throw var9;
+            }
+
+            if (var4 != null) {
+               var4.close();
             }
 
             TextureMetadataSection var11 = null;
 
             try {
-               var11 = var2.metadata().getSection(TextureMetadataSection.SERIALIZER).orElse(null);
+               var11 = (TextureMetadataSection)var2.metadata().getSection(TextureMetadataSection.SERIALIZER).orElse((Object)null);
             } catch (RuntimeException var8) {
                SimpleTexture.LOGGER.warn("Failed reading metadata of: {}", var1, var8);
             }
 
-            return new SimpleTexture.TextureImage(var11, var3);
+            return new TextureImage(var11, var3);
          } catch (IOException var10) {
-            return new SimpleTexture.TextureImage(var10);
+            return new TextureImage(var10);
          }
       }
 
@@ -113,11 +130,11 @@ public class SimpleTexture extends AbstractTexture {
          }
       }
 
-      @Override
       public void close() {
          if (this.image != null) {
             this.image.close();
          }
+
       }
 
       public void throwIfError() throws IOException {

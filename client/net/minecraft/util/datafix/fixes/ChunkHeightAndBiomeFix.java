@@ -7,7 +7,6 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -25,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -48,51 +48,10 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    private static final int HEIGHTMAP_BITS = 9;
    private static final long HEIGHTMAP_MASK = 511L;
    private static final int HEIGHTMAP_OFFSET = 64;
-   private static final String[] HEIGHTMAP_TYPES = new String[]{
-      "WORLD_SURFACE_WG", "WORLD_SURFACE", "WORLD_SURFACE_IGNORE_SNOW", "OCEAN_FLOOR_WG", "OCEAN_FLOOR", "MOTION_BLOCKING", "MOTION_BLOCKING_NO_LEAVES"
-   };
-   private static final Set<String> STATUS_IS_OR_AFTER_SURFACE = Set.of(
-      "surface", "carvers", "liquid_carvers", "features", "light", "spawn", "heightmaps", "full"
-   );
-   private static final Set<String> STATUS_IS_OR_AFTER_NOISE = Set.of(
-      "noise", "surface", "carvers", "liquid_carvers", "features", "light", "spawn", "heightmaps", "full"
-   );
-   private static final Set<String> BLOCKS_BEFORE_FEATURE_STATUS = Set.of(
-      "minecraft:air",
-      "minecraft:basalt",
-      "minecraft:bedrock",
-      "minecraft:blackstone",
-      "minecraft:calcite",
-      "minecraft:cave_air",
-      "minecraft:coarse_dirt",
-      "minecraft:crimson_nylium",
-      "minecraft:dirt",
-      "minecraft:end_stone",
-      "minecraft:grass_block",
-      "minecraft:gravel",
-      "minecraft:ice",
-      "minecraft:lava",
-      "minecraft:mycelium",
-      "minecraft:nether_wart_block",
-      "minecraft:netherrack",
-      "minecraft:orange_terracotta",
-      "minecraft:packed_ice",
-      "minecraft:podzol",
-      "minecraft:powder_snow",
-      "minecraft:red_sand",
-      "minecraft:red_sandstone",
-      "minecraft:sand",
-      "minecraft:sandstone",
-      "minecraft:snow_block",
-      "minecraft:soul_sand",
-      "minecraft:soul_soil",
-      "minecraft:stone",
-      "minecraft:terracotta",
-      "minecraft:warped_nylium",
-      "minecraft:warped_wart_block",
-      "minecraft:water",
-      "minecraft:white_terracotta"
-   );
+   private static final String[] HEIGHTMAP_TYPES = new String[]{"WORLD_SURFACE_WG", "WORLD_SURFACE", "WORLD_SURFACE_IGNORE_SNOW", "OCEAN_FLOOR_WG", "OCEAN_FLOOR", "MOTION_BLOCKING", "MOTION_BLOCKING_NO_LEAVES"};
+   private static final Set<String> STATUS_IS_OR_AFTER_SURFACE = Set.of("surface", "carvers", "liquid_carvers", "features", "light", "spawn", "heightmaps", "full");
+   private static final Set<String> STATUS_IS_OR_AFTER_NOISE = Set.of("noise", "surface", "carvers", "liquid_carvers", "features", "light", "spawn", "heightmaps", "full");
+   private static final Set<String> BLOCKS_BEFORE_FEATURE_STATUS = Set.of("minecraft:air", "minecraft:basalt", "minecraft:bedrock", "minecraft:blackstone", "minecraft:calcite", "minecraft:cave_air", "minecraft:coarse_dirt", "minecraft:crimson_nylium", "minecraft:dirt", "minecraft:end_stone", "minecraft:grass_block", "minecraft:gravel", "minecraft:ice", "minecraft:lava", "minecraft:mycelium", "minecraft:nether_wart_block", "minecraft:netherrack", "minecraft:orange_terracotta", "minecraft:packed_ice", "minecraft:podzol", "minecraft:powder_snow", "minecraft:red_sand", "minecraft:red_sandstone", "minecraft:sand", "minecraft:sandstone", "minecraft:snow_block", "minecraft:soul_sand", "minecraft:soul_soil", "minecraft:stone", "minecraft:terracotta", "minecraft:warped_nylium", "minecraft:warped_wart_block", "minecraft:water", "minecraft:white_terracotta");
    private static final int BIOME_CONTAINER_LAYER_SIZE = 16;
    private static final int BIOME_CONTAINER_SIZE = 64;
    private static final int BIOME_CONTAINER_TOP_LAYER_OFFSET = 1008;
@@ -111,91 +70,83 @@ public class ChunkHeightAndBiomeFix extends DataFix {
       Type var5 = var4.getType(References.CHUNK);
       Type var6 = var5.findField("Level").type();
       Type var7 = var6.findField("Sections").type();
-      return this.fixTypeEverywhereTyped(
-         "ChunkHeightAndBiomeFix",
-         var1,
-         var5,
-         var5x -> var5x.updateTyped(
-               var2,
-               var6,
-               var4xx -> {
-                  Dynamic var5xxx = (Dynamic)var4xx.get(DSL.remainderFinder());
-                  OptionalDynamic var6xx = ((Dynamic)var5x.get(DSL.remainderFinder())).get("__context");
-                  String var7xx = var6xx.get("dimension").asString().result().orElse("");
-                  String var8 = var6xx.get("generator").asString().result().orElse("");
-                  boolean var9 = "minecraft:overworld".equals(var7xx);
-                  MutableBoolean var10 = new MutableBoolean();
-                  int var11 = var9 ? -4 : 0;
-                  Dynamic[] var12 = getBiomeContainers(var5xxx, var9, var11, var10);
-                  Dynamic var13 = makePalettedContainer(
-                     var5xxx.createList(Stream.of(var5xxx.createMap(ImmutableMap.of(var5xxx.createString("Name"), var5xxx.createString("minecraft:air")))))
-                  );
-                  HashSet var14 = Sets.newHashSet();
-                  MutableObject var15 = new MutableObject((Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>)() -> null);
-                  var4xx = var4xx.updateTyped(var3, var7, var7xx -> {
-                     IntOpenHashSet var8xx = new IntOpenHashSet();
-                     Dynamic var9xx = (Dynamic)var7xx.write().result().orElseThrow(() -> new IllegalStateException("Malformed Chunk.Level.Sections"));
-                     List var10xx = var9xx.asStream().map(var6xxx -> {
-                        int var7xxxx = var6xxx.get("Y").asInt(0);
-                        Dynamic var8xxx = (Dynamic)DataFixUtils.orElse(var6xxx.get("Palette").result().flatMap(var2xxxxx -> {
-                           var2xxxxx.asStream().map(var0xxx -> var0xxx.get("Name").asString("minecraft:air")).forEach(var14::add);
-                           return var6xxx.get("BlockStates").result().map(var1xxxxxx -> makeOptimizedPalettedContainer(var2xxxxx, var1xxxxxx));
-                        }), var13);
-                        Dynamic var9xxx = var6xxx;
-                        int var10xxx = var7xxxx - var11;
-                        if (var10xxx >= 0 && var10xxx < var12.length) {
-                           var9xxx = var6xxx.set("biomes", var12[var10xxx]);
-                        }
-      
-                        var8x.add(var7xxxx);
-                        if (var6xxx.get("Y").asInt(2147483647) == 0) {
-                           var15.setValue((Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>)() -> {
-                              List var1xxxxxx = var8xx.get("palette").asList(Function.identity());
-                              long[] var2xxxxxx = var8xx.get("data").asLongStream().toArray();
-                              return new ChunkProtoTickListFix.PoorMansPalettedContainer(var1xxxxxx, var2xxxxxx);
-                           });
-                        }
-      
-                        return var9xxx.set("block_states", var8xxx).remove("Palette").remove("BlockStates");
-                     }).collect(Collectors.toCollection(ArrayList::new));
-      
-                     for(int var11xx = 0; var11xx < var12.length; ++var11xx) {
-                        int var12xx = var11xx + var11;
-                        if (var8xx.add(var12xx)) {
-                           Dynamic var13xx = var5xx.createMap(Map.of(var5xx.createString("Y"), var5xx.createInt(var12xx)));
-                           var13xx = var13xx.set("block_states", var13);
-                           var13xx = var13xx.set("biomes", var12[var11xx]);
-                           var10xx.add(var13xx);
-                        }
-                     }
-      
-                     return Util.readTypedOrThrow(var7, var5xx.createList(var10xx.stream()));
-                  });
-                  return var4xx.update(
-                     DSL.remainderFinder(),
-                     var6xx -> {
-                        if (var9) {
-                           var6xx = this.predictChunkStatusBeforeSurface(var6xx, var14);
-                        }
-         
-                        return updateChunkTag(
-                           var6xx,
-                           var9,
-                           var10.booleanValue(),
-                           "minecraft:noise".equals(var8),
-                           (Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>)var15.getValue()
-                        );
-                     }
-                  );
+      return this.fixTypeEverywhereTyped("ChunkHeightAndBiomeFix", var1, var5, (var5x) -> {
+         return var5x.updateTyped(var2, var6, (var4) -> {
+            Dynamic var5 = (Dynamic)var4.get(DSL.remainderFinder());
+            OptionalDynamic var6 = ((Dynamic)var5x.get(DSL.remainderFinder())).get("__context");
+            String var7x = (String)var6.get("dimension").asString().result().orElse("");
+            String var8 = (String)var6.get("generator").asString().result().orElse("");
+            boolean var9 = "minecraft:overworld".equals(var7x);
+            MutableBoolean var10 = new MutableBoolean();
+            int var11 = var9 ? -4 : 0;
+            Dynamic[] var12 = getBiomeContainers(var5, var9, var11, var10);
+            Dynamic var13 = makePalettedContainer(var5.createList(Stream.of(var5.createMap(ImmutableMap.of(var5.createString("Name"), var5.createString("minecraft:air"))))));
+            HashSet var14 = Sets.newHashSet();
+            MutableObject var15 = new MutableObject(() -> {
+               return null;
+            });
+            var4 = var4.updateTyped(var3, var7, (var7xx) -> {
+               IntOpenHashSet var8 = new IntOpenHashSet();
+               Dynamic var9 = (Dynamic)var7xx.write().result().orElseThrow(() -> {
+                  return new IllegalStateException("Malformed Chunk.Level.Sections");
+               });
+               List var10 = (List)var9.asStream().map((var6) -> {
+                  int var7 = var6.get("Y").asInt(0);
+                  Dynamic var8x = (Dynamic)DataFixUtils.orElse(var6.get("Palette").result().flatMap((var2) -> {
+                     Stream var10000 = var2.asStream().map((var0) -> {
+                        return var0.get("Name").asString("minecraft:air");
+                     });
+                     Objects.requireNonNull(var14);
+                     var10000.forEach(var14::add);
+                     return var6.get("BlockStates").result().map((var1) -> {
+                        return makeOptimizedPalettedContainer(var2, var1);
+                     });
+                  }), var13);
+                  Dynamic var9 = var6;
+                  int var10 = var7 - var11;
+                  if (var10 >= 0 && var10 < var12.length) {
+                     var9 = var6.set("biomes", var12[var10]);
+                  }
+
+                  var8.add(var7);
+                  if (var6.get("Y").asInt(2147483647) == 0) {
+                     var15.setValue(() -> {
+                        List var1 = var8x.get("palette").asList(Function.identity());
+                        long[] var2 = var8x.get("data").asLongStream().toArray();
+                        return new ChunkProtoTickListFix.PoorMansPalettedContainer(var1, var2);
+                     });
+                  }
+
+                  return var9.set("block_states", var8x).remove("Palette").remove("BlockStates");
+               }).collect(Collectors.toCollection(ArrayList::new));
+
+               for(int var11x = 0; var11x < var12.length; ++var11x) {
+                  int var12x = var11x + var11;
+                  if (var8.add(var12x)) {
+                     Dynamic var13x = var5.createMap(Map.of(var5.createString("Y"), var5.createInt(var12x)));
+                     var13x = var13x.set("block_states", var13);
+                     var13x = var13x.set("biomes", var12[var11x]);
+                     var10.add(var13x);
+                  }
                }
-            )
-      );
+
+               return Util.readTypedOrThrow(var7, var5.createList(var10.stream()));
+            });
+            return var4.update(DSL.remainderFinder(), (var6x) -> {
+               if (var9) {
+                  var6x = this.predictChunkStatusBeforeSurface(var6x, var14);
+               }
+
+               return updateChunkTag(var6x, var9, var10.booleanValue(), "minecraft:noise".equals(var8), (Supplier)var15.getValue());
+            });
+         });
+      });
    }
 
    private Dynamic<?> predictChunkStatusBeforeSurface(Dynamic<?> var1, Set<String> var2) {
-      return var1.update("Status", var1x -> {
-         String var2xx = var1x.asString("empty");
-         if (STATUS_IS_OR_AFTER_SURFACE.contains(var2xx)) {
+      return var1.update("Status", (var1x) -> {
+         String var2x = var1x.asString("empty");
+         if (STATUS_IS_OR_AFTER_SURFACE.contains(var2x)) {
             return var1x;
          } else {
             var2.remove("minecraft:air");
@@ -204,10 +155,10 @@ public class ChunkHeightAndBiomeFix extends DataFix {
             boolean var4 = !var2.isEmpty();
             if (var4) {
                return var1x.createString("liquid_carvers");
-            } else if ("noise".equals(var2xx) || var3) {
-               return var1x.createString("noise");
+            } else if (!"noise".equals(var2x) && !var3) {
+               return "biomes".equals(var2x) ? var1x.createString("structure_references") : var1x;
             } else {
-               return "biomes".equals(var2xx) ? var1x.createString("structure_references") : var1x;
+               return var1x.createString("noise");
             }
          }
       });
@@ -215,30 +166,39 @@ public class ChunkHeightAndBiomeFix extends DataFix {
 
    private static Dynamic<?>[] getBiomeContainers(Dynamic<?> var0, boolean var1, int var2, MutableBoolean var3) {
       Dynamic[] var4 = new Dynamic[var1 ? 24 : 16];
-      int[] var5 = (int[])var0.get("Biomes").asIntStreamOpt().result().map(IntStream::toArray).orElse(null);
+      int[] var5 = (int[])var0.get("Biomes").asIntStreamOpt().result().map(IntStream::toArray).orElse((Object)null);
+      int var6;
       if (var5 != null && var5.length == 1536) {
          var3.setValue(true);
 
-         for(int var10 = 0; var10 < 24; ++var10) {
-            int var12 = var10;
-            var4[var10] = makeBiomeContainer(var0, var2x -> getOldBiome(var5, var12 * 64 + var2x));
+         for(var6 = 0; var6 < 24; ++var6) {
+            var4[var6] = makeBiomeContainer(var0, (var2x) -> {
+               return getOldBiome(var5, var6 * 64 + var2x);
+            });
          }
       } else if (var5 != null && var5.length == 1024) {
-         for(int var6 = 0; var6 < 16; ++var6) {
+         for(var6 = 0; var6 < 16; ++var6) {
             int var7 = var6 - var2;
-            var4[var7] = makeBiomeContainer(var0, var2x -> getOldBiome(var5, var6 * 64 + var2x));
+            var4[var7] = makeBiomeContainer(var0, (var2x) -> {
+               return getOldBiome(var5, var6 * 64 + var2x);
+            });
          }
 
          if (var1) {
-            Dynamic var9 = makeBiomeContainer(var0, var1x -> getOldBiome(var5, var1x % 16));
-            Dynamic var11 = makeBiomeContainer(var0, var1x -> getOldBiome(var5, var1x % 16 + 1008));
+            Dynamic var9 = makeBiomeContainer(var0, (var1x) -> {
+               return getOldBiome(var5, var1x % 16);
+            });
+            Dynamic var10 = makeBiomeContainer(var0, (var1x) -> {
+               return getOldBiome(var5, var1x % 16 + 1008);
+            });
 
-            for(int var8 = 0; var8 < 4; ++var8) {
+            int var8;
+            for(var8 = 0; var8 < 4; ++var8) {
                var4[var8] = var9;
             }
 
-            for(int var13 = 20; var13 < 24; ++var13) {
-               var4[var13] = var11;
+            for(var8 = 20; var8 < 24; ++var8) {
+               var4[var8] = var10;
             }
          }
       } else {
@@ -249,12 +209,10 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    }
 
    private static int getOldBiome(int[] var0, int var1) {
-      return var0[var1] & 0xFF;
+      return var0[var1] & 255;
    }
 
-   private static Dynamic<?> updateChunkTag(
-      Dynamic<?> var0, boolean var1, boolean var2, boolean var3, Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer> var4
-   ) {
+   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, boolean var1, boolean var2, boolean var3, Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer> var4) {
       var0 = var0.remove("Biomes");
       if (!var1) {
          return updateCarvingMasks(var0, 16, 0);
@@ -275,10 +233,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                Dynamic var6 = (Dynamic)var5.get();
                String var7 = var6.asString("");
                if (!"empty".equals(var7)) {
-                  var0 = var0.set(
-                     "blending_data",
-                     var0.createMap(ImmutableMap.of(var0.createString("old_noise"), var0.createBoolean(STATUS_IS_OR_AFTER_NOISE.contains(var7))))
-                  );
+                  var0 = var0.set("blending_data", var0.createMap(ImmutableMap.of(var0.createString("old_noise"), var0.createBoolean(STATUS_IS_OR_AFTER_NOISE.contains(var7)))));
                   ChunkProtoTickListFix.PoorMansPalettedContainer var8 = (ChunkProtoTickListFix.PoorMansPalettedContainer)var4.get();
                   if (var8 != null) {
                      BitSet var9 = new BitSet(256);
@@ -298,18 +253,8 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                      }
 
                      if (var10 && var9.cardinality() != var9.size()) {
-                        Dynamic var24 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
-                        var0 = var0.set(
-                           "below_zero_retrogen",
-                           var0.createMap(
-                              ImmutableMap.of(
-                                 var0.createString("target_status"),
-                                 var24,
-                                 var0.createString("missing_bedrock"),
-                                 var0.createLongList(LongStream.of(var9.toLongArray()))
-                              )
-                           )
-                        );
+                        Dynamic var16 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
+                        var0 = var0.set("below_zero_retrogen", var0.createMap(ImmutableMap.of(var0.createString("target_status"), var16, var0.createString("missing_bedrock"), var0.createLongList(LongStream.of(var9.toLongArray())))));
                         var0 = var0.set("Status", var0.createString("empty"));
                      }
 
@@ -324,34 +269,37 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    }
 
    private static <T> Dynamic<T> shiftUpgradeData(Dynamic<T> var0) {
-      return var0.update("Indices", var0x -> {
+      return var0.update("Indices", (var0x) -> {
          HashMap var1 = new HashMap();
-         var0x.getMapValues().result().ifPresent(var1x -> var1x.forEach((var1xx, var2) -> {
+         var0x.getMapValues().ifSuccess((var1x) -> {
+            var1x.forEach((var1xx, var2) -> {
                try {
-                  var1xx.asString().result().map(Integer::parseInt).ifPresent(var3 -> {
-                     int var4xx = var3 - -4;
-                     var1.put(var1xx.createString(Integer.toString(var4xx)), var2);
+                  var1xx.asString().result().map(Integer::parseInt).ifPresent((var3) -> {
+                     int var4 = var3 - -4;
+                     var1.put(var1xx.createString(Integer.toString(var4)), var2);
                   });
                } catch (NumberFormatException var4) {
                }
-            }));
+
+            });
+         });
          return var0x.createMap(var1);
       });
    }
 
    private static Dynamic<?> updateCarvingMasks(Dynamic<?> var0, int var1, int var2) {
       Dynamic var3 = var0.get("CarvingMasks").orElseEmptyMap();
-      var3 = var3.updateMapValues(var3x -> {
-         long[] var4xx = BitSet.valueOf(((Dynamic)var3x.getSecond()).asByteBuffer().array()).toLongArray();
+      var3 = var3.updateMapValues((var3x) -> {
+         long[] var4 = BitSet.valueOf(((Dynamic)var3x.getSecond()).asByteBuffer().array()).toLongArray();
          long[] var5 = new long[64 * var1];
-         System.arraycopy(var4xx, 0, var5, 64 * var2, var4xx.length);
+         System.arraycopy(var4, 0, var5, 64 * var2, var4.length);
          return Pair.of((Dynamic)var3x.getFirst(), var0.createLongList(LongStream.of(var5)));
       });
       return var0.set("CarvingMasks", var3);
    }
 
    private static Dynamic<?> addPaddingEntries(Dynamic<?> var0, String var1) {
-      List var2 = var0.get(var1).orElseEmptyList().asStream().collect(Collectors.toCollection(ArrayList::new));
+      List var2 = (List)var0.get(var1).orElseEmptyList().asStream().collect(Collectors.toCollection(ArrayList::new));
       if (var2.size() == 24) {
          return var0;
       } else {
@@ -367,8 +315,12 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    }
 
    private static Dynamic<?> updateHeightmaps(Dynamic<?> var0) {
-      return var0.update("Heightmaps", var0x -> {
-         for(String var4 : HEIGHTMAP_TYPES) {
+      return var0.update("Heightmaps", (var0x) -> {
+         String[] var1 = HEIGHTMAP_TYPES;
+         int var2 = var1.length;
+
+         for(int var3 = 0; var3 < var2; ++var3) {
+            String var4 = var1[var3];
             var0x = var0x.update(var4, ChunkHeightAndBiomeFix::getFixedHeightmap);
          }
 
@@ -377,7 +329,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    }
 
    private static Dynamic<?> getFixedHeightmap(Dynamic<?> var0) {
-      return var0.createLongList(var0.asLongStream().map(var0x -> {
+      return var0.createLongList(var0.asLongStream().map((var0x) -> {
          long var2 = 0L;
 
          for(int var4 = 0; var4 + 9 <= 64; var4 += 9) {
@@ -399,19 +351,22 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    private static Dynamic<?> makeBiomeContainer(Dynamic<?> var0, Int2IntFunction var1) {
       Int2IntLinkedOpenHashMap var2 = new Int2IntLinkedOpenHashMap();
 
+      int var4;
       for(int var3 = 0; var3 < 64; ++var3) {
-         int var4 = var1.applyAsInt(var3);
+         var4 = var1.applyAsInt(var3);
          if (!var2.containsKey(var4)) {
             var2.put(var4, var2.size());
          }
       }
 
-      Dynamic var12 = var0.createList(var2.keySet().stream().map(var1x -> var0.createString((String)BIOMES_BY_ID.getOrDefault(var1x, "minecraft:plains"))));
-      int var13 = ceillog2(var2.size());
-      if (var13 == 0) {
+      Dynamic var12 = var0.createList(var2.keySet().stream().map((var1x) -> {
+         return var0.createString((String)BIOMES_BY_ID.getOrDefault(var1x, "minecraft:plains"));
+      }));
+      var4 = ceillog2(var2.size());
+      if (var4 == 0) {
          return makePalettedContainer(var12);
       } else {
-         int var5 = 64 / var13;
+         int var5 = 64 / var4;
          int var6 = (64 + var5 - 1) / var5;
          long[] var7 = new long[var6];
          int var8 = 0;
@@ -420,15 +375,15 @@ public class ChunkHeightAndBiomeFix extends DataFix {
          for(int var10 = 0; var10 < 64; ++var10) {
             int var11 = var1.applyAsInt(var10);
             var7[var8] |= (long)var2.get(var11) << var9;
-            var9 += var13;
-            if (var9 + var13 > 64) {
+            var9 += var4;
+            if (var9 + var4 > 64) {
                ++var8;
                var9 = 0;
             }
          }
 
-         Dynamic var14 = var0.createLongList(Arrays.stream(var7));
-         return makePalettedContainer(var12, var14);
+         Dynamic var13 = var0.createLongList(Arrays.stream(var7));
+         return makePalettedContainer(var12, var13);
       }
    }
 
@@ -441,7 +396,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    }
 
    private static Dynamic<?> makeOptimizedPalettedContainer(Dynamic<?> var0, Dynamic<?> var1) {
-      List var2 = var0.asStream().collect(Collectors.toCollection(ArrayList::new));
+      List var2 = (List)var0.asStream().collect(Collectors.toCollection(ArrayList::new));
       if (var2.size() == 1) {
          return makePalettedContainer(var0);
       } else {

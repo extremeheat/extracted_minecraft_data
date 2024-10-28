@@ -7,9 +7,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public record PngInfo(int a, int b) {
-   private final int width;
-   private final int height;
+public record PngInfo(int width, int height) {
    private static final long PNG_HEADER = -8552249625308161526L;
    private static final int IHDR_TYPE = 1229472850;
    private static final int IHDR_SIZE = 13;
@@ -51,5 +49,13 @@ public record PngInfo(int a, int b) {
       } else {
          var0.order(var1);
       }
+   }
+
+   public int width() {
+      return this.width;
+   }
+
+   public int height() {
+      return this.height;
    }
 }

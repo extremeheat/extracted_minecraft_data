@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.telemetry;
 
 import java.nio.file.Path;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -30,9 +30,7 @@ public class TelemetryInfoScreen extends Screen {
    private static final boolean EXTRA_TELEMETRY_AVAILABLE = Minecraft.getInstance().extraTelemetryAvailable();
    private final Screen lastScreen;
    private final Options options;
-   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(
-      this, 16 + 9 * 5 + 20, EXTRA_TELEMETRY_AVAILABLE ? 33 + Checkbox.getBoxSize(Minecraft.getInstance().font) : 33
-   );
+   private final HeaderAndFooterLayout layout;
    @Nullable
    private TelemetryEventWidget telemetryEventWidget;
    @Nullable
@@ -41,41 +39,45 @@ public class TelemetryInfoScreen extends Screen {
 
    public TelemetryInfoScreen(Screen var1, Options var2) {
       super(TITLE);
+      Objects.requireNonNull(Minecraft.getInstance().font);
+      this.layout = new HeaderAndFooterLayout(this, 16 + 9 * 5 + 20, EXTRA_TELEMETRY_AVAILABLE ? 33 + Checkbox.getBoxSize(Minecraft.getInstance().font) : 33);
       this.lastScreen = var1;
       this.options = var2;
    }
 
-   @Override
    public Component getNarrationMessage() {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), DESCRIPTION);
    }
 
-   @Override
    protected void init() {
-      LinearLayout var1 = this.layout.addToHeader(LinearLayout.vertical().spacing(4));
+      LinearLayout var1 = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(TITLE, this.font));
-      this.description = var1.addChild(new MultiLineTextWidget(DESCRIPTION, this.font).setCentered(true));
-      LinearLayout var2 = var1.addChild(LinearLayout.horizontal().spacing(8));
+      this.description = (MultiLineTextWidget)var1.addChild((new MultiLineTextWidget(DESCRIPTION, this.font)).setCentered(true));
+      LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
       var2.addChild(Button.builder(BUTTON_PRIVACY_STATEMENT, this::openPrivacyStatementLink).build());
       var2.addChild(Button.builder(BUTTON_GIVE_FEEDBACK, this::openFeedbackLink).build());
-      LinearLayout var3 = this.layout.addToFooter(LinearLayout.vertical().spacing(4));
+      LinearLayout var3 = (LinearLayout)this.layout.addToFooter(LinearLayout.vertical().spacing(4));
       if (EXTRA_TELEMETRY_AVAILABLE) {
          var3.addChild(this.createTelemetryCheckbox());
       }
 
-      LinearLayout var4 = var3.addChild(LinearLayout.horizontal().spacing(8));
+      LinearLayout var4 = (LinearLayout)var3.addChild(LinearLayout.horizontal().spacing(8));
       var4.addChild(Button.builder(BUTTON_VIEW_DATA, this::openDataFolder).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).build());
-      LinearLayout var5 = this.layout.addToContents(LinearLayout.vertical().spacing(8));
-      this.telemetryEventWidget = var5.addChild(new TelemetryEventWidget(0, 0, this.width - 40, this.layout.getContentHeight(), this.font));
-      this.telemetryEventWidget.setOnScrolledListener(var1x -> this.savedScroll = var1x);
-      this.layout.visitWidgets(var1x -> {
+      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+         this.onClose();
+      }).build());
+      LinearLayout var5 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
+      this.telemetryEventWidget = (TelemetryEventWidget)var5.addChild(new TelemetryEventWidget(0, 0, this.width - 40, this.layout.getContentHeight(), this.font));
+      this.telemetryEventWidget.setOnScrolledListener((var1x) -> {
+         this.savedScroll = var1x;
+      });
+      this.layout.visitWidgets((var1x) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       if (this.telemetryEventWidget != null) {
          this.telemetryEventWidget.setScrollAmount(this.savedScroll);
@@ -91,11 +93,11 @@ public class TelemetryInfoScreen extends Screen {
       this.layout.arrangeElements();
    }
 
-   @Override
    protected void setInitialFocus() {
       if (this.telemetryEventWidget != null) {
          this.setInitialFocus(this.telemetryEventWidget);
       }
+
    }
 
    private AbstractWidget createTelemetryCheckbox() {
@@ -107,6 +109,7 @@ public class TelemetryInfoScreen extends Screen {
       if (this.telemetryEventWidget != null) {
          this.telemetryEventWidget.onOptInChanged(var2);
       }
+
    }
 
    private void openPrivacyStatementLink(Button var1) {
@@ -122,7 +125,6 @@ public class TelemetryInfoScreen extends Screen {
       Util.getPlatform().openUri(var2.toUri());
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }

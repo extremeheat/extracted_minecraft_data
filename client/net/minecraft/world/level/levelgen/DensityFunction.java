@@ -12,15 +12,19 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 public interface DensityFunction {
    Codec<DensityFunction> DIRECT_CODEC = DensityFunctions.DIRECT_CODEC;
    Codec<Holder<DensityFunction>> CODEC = RegistryFileCodec.create(Registries.DENSITY_FUNCTION, DIRECT_CODEC);
-   Codec<DensityFunction> HOLDER_HELPER_CODEC = CODEC.xmap(
-      DensityFunctions.HolderHolder::new, var0 -> (Holder)(var0 instanceof DensityFunctions.HolderHolder var1 ? var1.function() : new Holder.Direct<>(var0))
-   );
+   Codec<DensityFunction> HOLDER_HELPER_CODEC = CODEC.xmap(DensityFunctions.HolderHolder::new, (var0) -> {
+      if (var0 instanceof DensityFunctions.HolderHolder var1) {
+         return var1.function();
+      } else {
+         return new Holder.Direct(var0);
+      }
+   });
 
-   double compute(DensityFunction.FunctionContext var1);
+   double compute(FunctionContext var1);
 
-   void fillArray(double[] var1, DensityFunction.ContextProvider var2);
+   void fillArray(double[] var1, ContextProvider var2);
 
-   DensityFunction mapAll(DensityFunction.Visitor var1);
+   DensityFunction mapAll(Visitor var1);
 
    double minValue();
 
@@ -56,10 +60,25 @@ public interface DensityFunction {
       return DensityFunctions.map(this, DensityFunctions.Mapped.Type.SQUEEZE);
    }
 
-   public interface ContextProvider {
-      DensityFunction.FunctionContext forIndex(int var1);
+   public static record SinglePointContext(int blockX, int blockY, int blockZ) implements FunctionContext {
+      public SinglePointContext(int var1, int var2, int var3) {
+         super();
+         this.blockX = var1;
+         this.blockY = var2;
+         this.blockZ = var3;
+      }
 
-      void fillAllDirectly(double[] var1, DensityFunction var2);
+      public int blockX() {
+         return this.blockX;
+      }
+
+      public int blockY() {
+         return this.blockY;
+      }
+
+      public int blockZ() {
+         return this.blockZ;
+      }
    }
 
    public interface FunctionContext {
@@ -74,15 +93,29 @@ public interface DensityFunction {
       }
    }
 
-   public static record NoiseHolder(Holder<NormalNoise.NoiseParameters> b, @Nullable NormalNoise c) {
-      private final Holder<NormalNoise.NoiseParameters> noiseData;
-      @Nullable
-      private final NormalNoise noise;
-      public static final Codec<DensityFunction.NoiseHolder> CODEC = NormalNoise.NoiseParameters.CODEC
-         .xmap(var0 -> new DensityFunction.NoiseHolder(var0, null), DensityFunction.NoiseHolder::noiseData);
+   public interface SimpleFunction extends DensityFunction {
+      default void fillArray(double[] var1, ContextProvider var2) {
+         var2.fillAllDirectly(var1, this);
+      }
+
+      default DensityFunction mapAll(Visitor var1) {
+         return var1.apply(this);
+      }
+   }
+
+   public interface Visitor {
+      DensityFunction apply(DensityFunction var1);
+
+      default NoiseHolder visitNoise(NoiseHolder var1) {
+         return var1;
+      }
+   }
+
+   public static record NoiseHolder(Holder<NormalNoise.NoiseParameters> noiseData, @Nullable NormalNoise noise) {
+      public static final Codec<NoiseHolder> CODEC;
 
       public NoiseHolder(Holder<NormalNoise.NoiseParameters> var1) {
-         this(var1, null);
+         this(var1, (NormalNoise)null);
       }
 
       public NoiseHolder(Holder<NormalNoise.NoiseParameters> var1, @Nullable NormalNoise var2) {
@@ -98,38 +131,26 @@ public interface DensityFunction {
       public double maxValue() {
          return this.noise == null ? 2.0 : this.noise.maxValue();
       }
-   }
 
-   public interface SimpleFunction extends DensityFunction {
-      @Override
-      default void fillArray(double[] var1, DensityFunction.ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
+      public Holder<NormalNoise.NoiseParameters> noiseData() {
+         return this.noiseData;
       }
 
-      @Override
-      default DensityFunction mapAll(DensityFunction.Visitor var1) {
-         return var1.apply(this);
+      @Nullable
+      public NormalNoise noise() {
+         return this.noise;
       }
-   }
 
-   public static record SinglePointContext(int a, int b, int c) implements DensityFunction.FunctionContext {
-      private final int blockX;
-      private final int blockY;
-      private final int blockZ;
-
-      public SinglePointContext(int var1, int var2, int var3) {
-         super();
-         this.blockX = var1;
-         this.blockY = var2;
-         this.blockZ = var3;
+      static {
+         CODEC = NormalNoise.NoiseParameters.CODEC.xmap((var0) -> {
+            return new NoiseHolder(var0, (NormalNoise)null);
+         }, NoiseHolder::noiseData);
       }
    }
 
-   public interface Visitor {
-      DensityFunction apply(DensityFunction var1);
+   public interface ContextProvider {
+      FunctionContext forIndex(int var1);
 
-      default DensityFunction.NoiseHolder visitNoise(DensityFunction.NoiseHolder var1) {
-         return var1;
-      }
+      void fillAllDirectly(double[] var1, DensityFunction var2);
    }
 }

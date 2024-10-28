@@ -4,7 +4,6 @@ import com.mojang.datafixers.kinds.Const;
 import com.mojang.datafixers.kinds.IdF;
 import com.mojang.datafixers.kinds.K1;
 import com.mojang.datafixers.kinds.OptionalBox;
-import com.mojang.datafixers.kinds.Const.Mu;
 import com.mojang.datafixers.util.Unit;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -20,60 +19,60 @@ public interface MemoryCondition<F extends K1, Value> {
    @Nullable
    MemoryAccessor<F, Value> createAccessor(Brain<?> var1, Optional<Value> var2);
 
-   public static record Absent<Value>(MemoryModuleType<Value> a) implements MemoryCondition<Mu<Unit>, Value> {
-      private final MemoryModuleType<Value> memory;
-
+   public static record Absent<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<Const.Mu<Unit>, Value> {
       public Absent(MemoryModuleType<Value> var1) {
          super();
          this.memory = var1;
       }
 
-      @Override
       public MemoryStatus condition() {
          return MemoryStatus.VALUE_ABSENT;
       }
 
-      @Override
-      public MemoryAccessor<Mu<Unit>, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
-         return var2.isPresent() ? null : new MemoryAccessor<>(var1, this.memory, Const.create(Unit.INSTANCE));
+      public MemoryAccessor<Const.Mu<Unit>, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
+         return var2.isPresent() ? null : new MemoryAccessor(var1, this.memory, Const.create(Unit.INSTANCE));
+      }
+
+      public MemoryModuleType<Value> memory() {
+         return this.memory;
       }
    }
 
-   public static record Present<Value>(MemoryModuleType<Value> a) implements MemoryCondition<com.mojang.datafixers.kinds.IdF.Mu, Value> {
-      private final MemoryModuleType<Value> memory;
-
+   public static record Present<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<IdF.Mu, Value> {
       public Present(MemoryModuleType<Value> var1) {
          super();
          this.memory = var1;
       }
 
-      @Override
       public MemoryStatus condition() {
          return MemoryStatus.VALUE_PRESENT;
       }
 
-      @Override
-      public MemoryAccessor<com.mojang.datafixers.kinds.IdF.Mu, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
-         return var2.isEmpty() ? null : new MemoryAccessor<>(var1, this.memory, IdF.create(var2.get()));
+      public MemoryAccessor<IdF.Mu, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
+         return var2.isEmpty() ? null : new MemoryAccessor(var1, this.memory, IdF.create(var2.get()));
+      }
+
+      public MemoryModuleType<Value> memory() {
+         return this.memory;
       }
    }
 
-   public static record Registered<Value>(MemoryModuleType<Value> a) implements MemoryCondition<com.mojang.datafixers.kinds.OptionalBox.Mu, Value> {
-      private final MemoryModuleType<Value> memory;
-
+   public static record Registered<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<OptionalBox.Mu, Value> {
       public Registered(MemoryModuleType<Value> var1) {
          super();
          this.memory = var1;
       }
 
-      @Override
       public MemoryStatus condition() {
          return MemoryStatus.REGISTERED;
       }
 
-      @Override
-      public MemoryAccessor<com.mojang.datafixers.kinds.OptionalBox.Mu, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
-         return new MemoryAccessor<>(var1, this.memory, OptionalBox.create(var2));
+      public MemoryAccessor<OptionalBox.Mu, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
+         return new MemoryAccessor(var1, this.memory, OptionalBox.create(var2));
+      }
+
+      public MemoryModuleType<Value> memory() {
+         return this.memory;
       }
    }
 }

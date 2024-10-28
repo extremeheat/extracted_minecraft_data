@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
@@ -17,13 +19,13 @@ import org.slf4j.Logger;
 public class RealmsAvailability {
    private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
-   private static CompletableFuture<RealmsAvailability.Result> future;
+   private static CompletableFuture<Result> future;
 
    public RealmsAvailability() {
       super();
    }
 
-   public static CompletableFuture<RealmsAvailability.Result> get() {
+   public static CompletableFuture<Result> get() {
       if (future == null || shouldRefresh(future)) {
          future = check();
       }
@@ -31,49 +33,39 @@ public class RealmsAvailability {
       return future;
    }
 
-   private static boolean shouldRefresh(CompletableFuture<RealmsAvailability.Result> var0) {
-      RealmsAvailability.Result var1 = (RealmsAvailability.Result)var0.getNow(null);
+   private static boolean shouldRefresh(CompletableFuture<Result> var0) {
+      Result var1 = (Result)var0.getNow((Object)null);
       return var1 != null && var1.exception() != null;
    }
 
-   private static CompletableFuture<RealmsAvailability.Result> check() {
-      return CompletableFuture.supplyAsync(
-         () -> {
-            RealmsClient var0 = RealmsClient.create();
-   
-            try {
-               if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
-                  return new RealmsAvailability.Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
-               } else {
-                  return !var0.hasParentalConsent()
-                     ? new RealmsAvailability.Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT)
-                     : new RealmsAvailability.Result(RealmsAvailability.Type.SUCCESS);
-               }
-            } catch (RealmsServiceException var2) {
-               LOGGER.error("Couldn't connect to realms", var2);
-               return var2.realmsError.errorCode() == 401
-                  ? new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)
-                  : new RealmsAvailability.Result(var2);
+   private static CompletableFuture<Result> check() {
+      User var0 = Minecraft.getInstance().getUser();
+      return var0.getType() != User.Type.MSA ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)) : CompletableFuture.supplyAsync(() -> {
+         RealmsClient var0 = RealmsClient.create();
+
+         try {
+            if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
+               return new Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
+            } else {
+               return !var0.hasParentalConsent() ? new Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT) : new Result(RealmsAvailability.Type.SUCCESS);
             }
-         },
-         Util.ioPool()
-      );
+         } catch (RealmsServiceException var2) {
+            LOGGER.error("Couldn't connect to realms", var2);
+            return var2.realmsError.errorCode() == 401 ? new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR) : new Result(var2);
+         }
+      }, Util.ioPool());
    }
 
-   public static record Result(RealmsAvailability.Type a, @Nullable RealmsServiceException b) {
-      private final RealmsAvailability.Type type;
-      @Nullable
-      private final RealmsServiceException exception;
-
-      public Result(RealmsAvailability.Type var1) {
-         this(var1, null);
+   public static record Result(Type type, @Nullable RealmsServiceException exception) {
+      public Result(Type var1) {
+         this(var1, (RealmsServiceException)null);
       }
 
       public Result(RealmsServiceException var1) {
          this(RealmsAvailability.Type.UNEXPECTED_ERROR, var1);
       }
 
-      public Result(RealmsAvailability.Type var1, @Nullable RealmsServiceException var2) {
+      public Result(Type var1, @Nullable RealmsServiceException var2) {
          super();
          this.type = var1;
          this.exception = var2;
@@ -81,15 +73,26 @@ public class RealmsAvailability {
 
       @Nullable
       public Screen createErrorScreen(Screen var1) {
-         return (Screen)(switch(this.type) {
-            case SUCCESS -> null;
-            case INCOMPATIBLE_CLIENT -> new RealmsClientOutdatedScreen(var1);
-            case NEEDS_PARENTAL_CONSENT -> new RealmsParentalConsentScreen(var1);
-            case AUTHENTICATION_ERROR -> new RealmsGenericErrorScreen(
-            Component.translatable("mco.error.invalid.session.title"), Component.translatable("mco.error.invalid.session.message"), var1
-         );
-            case UNEXPECTED_ERROR -> new RealmsGenericErrorScreen(Objects.requireNonNull(this.exception), var1);
-         });
+         Object var10000;
+         switch (this.type.ordinal()) {
+            case 0 -> var10000 = null;
+            case 1 -> var10000 = new RealmsClientOutdatedScreen(var1);
+            case 2 -> var10000 = new RealmsParentalConsentScreen(var1);
+            case 3 -> var10000 = new RealmsGenericErrorScreen(Component.translatable("mco.error.invalid.session.title"), Component.translatable("mco.error.invalid.session.message"), var1);
+            case 4 -> var10000 = new RealmsGenericErrorScreen((RealmsServiceException)Objects.requireNonNull(this.exception), var1);
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (Screen)var10000;
+      }
+
+      public Type type() {
+         return this.type;
+      }
+
+      @Nullable
+      public RealmsServiceException exception() {
+         return this.exception;
       }
    }
 
@@ -101,6 +104,11 @@ public class RealmsAvailability {
       UNEXPECTED_ERROR;
 
       private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{SUCCESS, INCOMPATIBLE_CLIENT, NEEDS_PARENTAL_CONSENT, AUTHENTICATION_ERROR, UNEXPECTED_ERROR};
       }
    }
 }

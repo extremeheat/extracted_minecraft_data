@@ -25,7 +25,6 @@ public class FleeSunGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (this.mob.getTarget() != null) {
          return false;
@@ -52,12 +51,10 @@ public class FleeSunGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.mob.getNavigation().isDone();
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().moveTo(this.wantedX, this.wantedY, this.wantedZ, this.speedModifier);
    }

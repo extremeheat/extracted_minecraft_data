@@ -18,8 +18,8 @@ public class CodepointMap<T> {
 
    public CodepointMap(IntFunction<T[]> var1, IntFunction<T[][]> var2) {
       super();
-      this.empty = (T[])((Object[])var1.apply(256));
-      this.blockMap = (T[][])((Object[][])var2.apply(4352));
+      this.empty = (Object[])var1.apply(256);
+      this.blockMap = (Object[][])var2.apply(4352);
       Arrays.fill(this.blockMap, this.empty);
       this.blockConstructor = var1;
    }
@@ -31,61 +31,61 @@ public class CodepointMap<T> {
    @Nullable
    public T get(int var1) {
       int var2 = var1 >> 8;
-      int var3 = var1 & 0xFF;
+      int var3 = var1 & 255;
       return this.blockMap[var2][var3];
    }
 
    @Nullable
    public T put(int var1, T var2) {
       int var3 = var1 >> 8;
-      int var4 = var1 & 0xFF;
+      int var4 = var1 & 255;
       Object[] var5 = this.blockMap[var3];
       if (var5 == this.empty) {
          var5 = (Object[])this.blockConstructor.apply(256);
-         this.blockMap[var3] = (T[])var5;
+         this.blockMap[var3] = var5;
          var5[var4] = var2;
          return null;
       } else {
          Object var6 = var5[var4];
          var5[var4] = var2;
-         return (T)var6;
+         return var6;
       }
    }
 
    public T computeIfAbsent(int var1, IntFunction<T> var2) {
       int var3 = var1 >> 8;
-      int var4 = var1 & 0xFF;
+      int var4 = var1 & 255;
       Object[] var5 = this.blockMap[var3];
       Object var6 = var5[var4];
       if (var6 != null) {
-         return (T)var6;
+         return var6;
       } else {
          if (var5 == this.empty) {
             var5 = (Object[])this.blockConstructor.apply(256);
-            this.blockMap[var3] = (T[])var5;
+            this.blockMap[var3] = var5;
          }
 
          Object var7 = var2.apply(var1);
          var5[var4] = var7;
-         return (T)var7;
+         return var7;
       }
    }
 
    @Nullable
    public T remove(int var1) {
       int var2 = var1 >> 8;
-      int var3 = var1 & 0xFF;
+      int var3 = var1 & 255;
       Object[] var4 = this.blockMap[var2];
       if (var4 == this.empty) {
          return null;
       } else {
          Object var5 = var4[var3];
          var4[var3] = null;
-         return (T)var5;
+         return var5;
       }
    }
 
-   public void forEach(CodepointMap.Output<T> var1) {
+   public void forEach(Output<T> var1) {
       for(int var2 = 0; var2 < this.blockMap.length; ++var2) {
          Object[] var3 = this.blockMap[var2];
          if (var3 != this.empty) {
@@ -93,16 +93,19 @@ public class CodepointMap<T> {
                Object var5 = var3[var4];
                if (var5 != null) {
                   int var6 = var2 << 8 | var4;
-                  var1.accept(var6, (T)var5);
+                  var1.accept(var6, var5);
                }
             }
          }
       }
+
    }
 
    public IntSet keySet() {
       IntOpenHashSet var1 = new IntOpenHashSet();
-      this.forEach((var1x, var2) -> var1.add(var1x));
+      this.forEach((var1x, var2) -> {
+         var1.add(var1x);
+      });
       return var1;
    }
 

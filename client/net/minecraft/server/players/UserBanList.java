@@ -10,7 +10,6 @@ public class UserBanList extends StoredUserList<GameProfile, UserBanListEntry> {
       super(var1);
    }
 
-   @Override
    protected StoredUserEntry<GameProfile> createEntry(JsonObject var1) {
       return new UserBanListEntry(var1);
    }
@@ -19,12 +18,18 @@ public class UserBanList extends StoredUserList<GameProfile, UserBanListEntry> {
       return this.contains(var1);
    }
 
-   @Override
    public String[] getUserList() {
-      return this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray(var0 -> new String[var0]);
+      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray((var0) -> {
+         return new String[var0];
+      });
    }
 
    protected String getKeyForUser(GameProfile var1) {
       return var1.getId().toString();
+   }
+
+   // $FF: synthetic method
+   protected String getKeyForUser(Object var1) {
+      return this.getKeyForUser((GameProfile)var1);
    }
 }

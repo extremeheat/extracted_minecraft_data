@@ -26,12 +26,11 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
          if (var9 != null) {
             renderEntityInSpawner(var2, var3, var4, var5, var9, this.entityRenderer, var8.getoSpin(), var8.getSpin());
          }
+
       }
    }
 
-   public static void renderEntityInSpawner(
-      float var0, PoseStack var1, MultiBufferSource var2, int var3, Entity var4, EntityRenderDispatcher var5, double var6, double var8
-   ) {
+   public static void renderEntityInSpawner(float var0, PoseStack var1, MultiBufferSource var2, int var3, Entity var4, EntityRenderDispatcher var5, double var6, double var8) {
       var1.pushPose();
       var1.translate(0.5F, 0.0F, 0.5F);
       float var10 = 0.53125F;

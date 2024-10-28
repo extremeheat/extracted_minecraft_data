@@ -49,9 +49,9 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private ModelPart flag;
    @Nullable
    private BannerPatternLayers resultBannerPatterns;
-   private ItemStack bannerStack = ItemStack.EMPTY;
-   private ItemStack dyeStack = ItemStack.EMPTY;
-   private ItemStack patternStack = ItemStack.EMPTY;
+   private ItemStack bannerStack;
+   private ItemStack dyeStack;
+   private ItemStack patternStack;
    private boolean displayPatterns;
    private boolean hasMaxPatterns;
    private float scrollOffs;
@@ -60,35 +60,35 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
    public LoomScreen(LoomMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
+      this.bannerStack = ItemStack.EMPTY;
+      this.dyeStack = ItemStack.EMPTY;
+      this.patternStack = ItemStack.EMPTY;
       var1.registerUpdateListener(this::containerChanged);
       this.titleLabelY -= 2;
    }
 
-   @Override
    protected void init() {
       super.init();
       this.flag = this.minecraft.getEntityModels().bakeLayer(ModelLayers.BANNER).getChild("flag");
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
    private int totalRowCount() {
-      return Mth.positiveCeilDiv(this.menu.getSelectablePatterns().size(), 4);
+      return Mth.positiveCeilDiv(((LoomMenu)this.menu).getSelectablePatterns().size(), 4);
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
       var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      Slot var7 = this.menu.getBannerSlot();
-      Slot var8 = this.menu.getDyeSlot();
-      Slot var9 = this.menu.getPatternSlot();
-      Slot var10 = this.menu.getResultSlot();
+      Slot var7 = ((LoomMenu)this.menu).getBannerSlot();
+      Slot var8 = ((LoomMenu)this.menu).getDyeSlot();
+      Slot var9 = ((LoomMenu)this.menu).getPatternSlot();
+      Slot var10 = ((LoomMenu)this.menu).getResultSlot();
       if (!var7.hasItem()) {
          var1.blitSprite(BANNER_SLOT_SPRITE, var5 + var7.x, var6 + var7.y, 16, 16);
       }
@@ -115,9 +115,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          this.flag.xRot = 0.0F;
          this.flag.y = -32.0F;
          DyeColor var14 = ((BannerItem)var10.getItem().getItem()).getColor();
-         BannerRenderer.renderPatterns(
-            var1.pose(), var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns
-         );
+         BannerRenderer.renderPatterns(var1.pose(), var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns);
          var1.pose().popPose();
          var1.flush();
       } else if (this.hasMaxPatterns) {
@@ -127,22 +125,22 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       if (this.displayPatterns) {
          int var24 = var5 + 60;
          int var25 = var6 + 13;
-         List var15 = this.menu.getSelectablePatterns();
+         List var15 = ((LoomMenu)this.menu).getSelectablePatterns();
 
-         label64:
+         label63:
          for(int var16 = 0; var16 < 4; ++var16) {
             for(int var17 = 0; var17 < 4; ++var17) {
                int var18 = var16 + this.startRow;
                int var19 = var18 * 4 + var17;
                if (var19 >= var15.size()) {
-                  break label64;
+                  break label63;
                }
 
                int var20 = var24 + var17 * 14;
                int var21 = var25 + var16 * 14;
                boolean var22 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
                ResourceLocation var23;
-               if (var19 == this.menu.getSelectedBannerPatternIndex()) {
+               if (var19 == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
                   var23 = PATTERN_SELECTED_SPRITE;
                } else if (var22) {
                   var23 = PATTERN_HIGHLIGHTED_SPRITE;
@@ -151,7 +149,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                }
 
                var1.blitSprite(var23, var20, var21, 14, 14);
-               this.renderPattern(var1, (Holder<BannerPattern>)var15.get(var19), var20, var21);
+               this.renderPattern(var1, (Holder)var15.get(var19), var20, var21);
             }
          }
       }
@@ -170,15 +168,12 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       var5.scale(0.6666667F, -0.6666667F, -0.6666667F);
       this.flag.xRot = 0.0F;
       this.flag.y = -32.0F;
-      BannerPatternLayers var7 = new BannerPatternLayers.Builder().add(var2, DyeColor.WHITE).build();
-      BannerRenderer.renderPatterns(
-         var5, var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7
-      );
+      BannerPatternLayers var7 = (new BannerPatternLayers.Builder()).add(var2, DyeColor.WHITE).build();
+      BannerRenderer.renderPatterns(var5, var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7);
       var5.popPose();
       var1.flush();
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       this.scrolling = false;
       if (this.displayPatterns) {
@@ -191,9 +186,9 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                double var12 = var3 - (double)(var7 + var8 * 14);
                int var14 = var8 + this.startRow;
                int var15 = var14 * 4 + var9;
-               if (var10 >= 0.0 && var12 >= 0.0 && var10 < 14.0 && var12 < 14.0 && this.menu.clickMenuButton(this.minecraft.player, var15)) {
+               if (var10 >= 0.0 && var12 >= 0.0 && var10 < 14.0 && var12 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var15)) {
                   Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                  this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, var15);
+                  this.minecraft.gameMode.handleInventoryButtonClick(((LoomMenu)this.menu).containerId, var15);
                   return true;
                }
             }
@@ -209,7 +204,6 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       return super.mouseClicked(var1, var3, var5);
    }
 
-   @Override
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
       int var10 = this.totalRowCount() - 4;
       if (this.scrolling && this.displayPatterns && var10 > 0) {
@@ -224,7 +218,6 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
    }
 
-   @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       int var9 = this.totalRowCount() - 4;
       if (this.displayPatterns && var9 > 0) {
@@ -236,30 +229,29 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       return true;
    }
 
-   @Override
    protected boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7) {
       return var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
    }
 
    private void containerChanged() {
-      ItemStack var1 = this.menu.getResultSlot().getItem();
+      ItemStack var1 = ((LoomMenu)this.menu).getResultSlot().getItem();
       if (var1.isEmpty()) {
          this.resultBannerPatterns = null;
       } else {
-         this.resultBannerPatterns = var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+         this.resultBannerPatterns = (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
       }
 
-      ItemStack var2 = this.menu.getBannerSlot().getItem();
-      ItemStack var3 = this.menu.getDyeSlot().getItem();
-      ItemStack var4 = this.menu.getPatternSlot().getItem();
-      BannerPatternLayers var5 = var2.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+      ItemStack var2 = ((LoomMenu)this.menu).getBannerSlot().getItem();
+      ItemStack var3 = ((LoomMenu)this.menu).getDyeSlot().getItem();
+      ItemStack var4 = ((LoomMenu)this.menu).getPatternSlot().getItem();
+      BannerPatternLayers var5 = (BannerPatternLayers)var2.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
       this.hasMaxPatterns = var5.layers().size() >= 6;
       if (this.hasMaxPatterns) {
          this.resultBannerPatterns = null;
       }
 
       if (!ItemStack.matches(var2, this.bannerStack) || !ItemStack.matches(var3, this.dyeStack) || !ItemStack.matches(var4, this.patternStack)) {
-         this.displayPatterns = !var2.isEmpty() && !var3.isEmpty() && !this.hasMaxPatterns && !this.menu.getSelectablePatterns().isEmpty();
+         this.displayPatterns = !var2.isEmpty() && !var3.isEmpty() && !this.hasMaxPatterns && !((LoomMenu)this.menu).getSelectablePatterns().isEmpty();
       }
 
       if (this.startRow >= this.totalRowCount()) {

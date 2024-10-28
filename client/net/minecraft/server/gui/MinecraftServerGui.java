@@ -4,14 +4,15 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogQueues;
 import com.mojang.logging.LogUtils;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -24,6 +25,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import net.minecraft.DefaultUncaughtExceptionHandler;
@@ -51,18 +53,19 @@ public class MinecraftServerGui extends JComponent {
       var1.setDefaultCloseOperation(2);
       var1.add(var2);
       var1.pack();
-      var1.setLocationRelativeTo(null);
+      var1.setLocationRelativeTo((Component)null);
       var1.setVisible(true);
       var1.addWindowListener(new WindowAdapter() {
-         @Override
          public void windowClosing(WindowEvent var1x) {
             if (!var2.isClosing.getAndSet(true)) {
                var1.setTitle("Minecraft server - shutting down!");
                var0.halt(true);
                var2.runFinalizers();
             }
+
          }
       });
+      Objects.requireNonNull(var1);
       var2.addFinalizer(var1::dispose);
       var2.start();
       return var2;
@@ -80,6 +83,7 @@ public class MinecraftServerGui extends JComponent {
       } catch (Exception var3) {
          LOGGER.error("Couldn't build server GUI", var3);
       }
+
    }
 
    public void addFinalizer(Runnable var1) {
@@ -89,7 +93,9 @@ public class MinecraftServerGui extends JComponent {
    private JComponent buildInfoPanel() {
       JPanel var1 = new JPanel(new BorderLayout());
       StatsComponent var2 = new StatsComponent(this.server);
-      this.finalizers.add(var2::close);
+      Collection var10000 = this.finalizers;
+      Objects.requireNonNull(var2);
+      var10000.add(var2::close);
       var1.add(var2, "North");
       var1.add(this.buildPlayerPanel(), "Center");
       var1.setBorder(new TitledBorder(new EtchedBorder(), "Stats"));
@@ -110,16 +116,15 @@ public class MinecraftServerGui extends JComponent {
       var2.setEditable(false);
       var2.setFont(MONOSPACED);
       JTextField var4 = new JTextField();
-      var4.addActionListener(var2x -> {
-         String var3xx = var4.getText().trim();
-         if (!var3xx.isEmpty()) {
-            this.server.handleConsoleInput(var3xx, this.server.createCommandSourceStack());
+      var4.addActionListener((var2x) -> {
+         String var3 = var4.getText().trim();
+         if (!var3.isEmpty()) {
+            this.server.handleConsoleInput(var3, this.server.createCommandSourceStack());
          }
 
          var4.setText("");
       });
-      var2.addFocusListener(new FocusAdapter() {
-         @Override
+      var2.addFocusListener(new FocusAdapter(this) {
          public void focusGained(FocusEvent var1) {
          }
       });
@@ -131,6 +136,7 @@ public class MinecraftServerGui extends JComponent {
          while((var3x = LogQueues.getNextLogEvent("ServerGuiConsole")) != null) {
             this.print(var2, var3, var3x);
          }
+
       });
       this.logAppenderThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       this.logAppenderThread.setDaemon(true);
@@ -145,6 +151,7 @@ public class MinecraftServerGui extends JComponent {
       if (!this.isClosing.getAndSet(true)) {
          this.runFinalizers();
       }
+
    }
 
    void runFinalizers() {
@@ -153,7 +160,9 @@ public class MinecraftServerGui extends JComponent {
 
    public void print(JTextArea var1, JScrollPane var2, String var3) {
       if (!SwingUtilities.isEventDispatchThread()) {
-         SwingUtilities.invokeLater(() -> this.print(var1, var2, var3));
+         SwingUtilities.invokeLater(() -> {
+            this.print(var1, var2, var3);
+         });
       } else {
          Document var4 = var1.getDocument();
          JScrollBar var5 = var2.getVerticalScrollBar();
@@ -163,13 +172,14 @@ public class MinecraftServerGui extends JComponent {
          }
 
          try {
-            var4.insertString(var4.getLength(), var3, null);
+            var4.insertString(var4.getLength(), var3, (AttributeSet)null);
          } catch (BadLocationException var8) {
          }
 
          if (var6) {
             var5.setValue(2147483647);
          }
+
       }
    }
 }

@@ -15,6 +15,7 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -24,11 +25,13 @@ import org.slf4j.Logger;
 public class ChiseledBookShelfBlockEntity extends BlockEntity implements Container {
    public static final int MAX_BOOKS_IN_STORAGE = 6;
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final NonNullList<ItemStack> items = NonNullList.withSize(6, ItemStack.EMPTY);
-   private int lastInteractedSlot = -1;
+   private final NonNullList<ItemStack> items;
+   private int lastInteractedSlot;
 
    public ChiseledBookShelfBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CHISELED_BOOKSHELF, var1, var2);
+      this.items = NonNullList.withSize(6, ItemStack.EMPTY);
+      this.lastInteractedSlot = -1;
    }
 
    private void updateState(int var1) {
@@ -38,26 +41,26 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
 
          for(int var3 = 0; var3 < ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.size(); ++var3) {
             boolean var4 = !this.getItem(var3).isEmpty();
-            BooleanProperty var5 = ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.get(var3);
-            var2 = var2.setValue(var5, Boolean.valueOf(var4));
+            BooleanProperty var5 = (BooleanProperty)ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES.get(var3);
+            var2 = (BlockState)var2.setValue(var5, var4);
          }
 
-         Objects.requireNonNull(this.level).setBlock(this.worldPosition, var2, 3);
+         ((Level)Objects.requireNonNull(this.level)).setBlock(this.worldPosition, var2, 3);
          this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.worldPosition, GameEvent.Context.of(var2));
       } else {
          LOGGER.error("Expected slot 0-5, got {}", var1);
       }
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
       this.lastInteractedSlot = var1.getInt("last_interacted_slot");
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       ContainerHelper.saveAllItems(var1, this.items, true, var2);
       var1.putInt("last_interacted_slot", this.lastInteractedSlot);
    }
@@ -66,29 +69,24 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       return (int)this.items.stream().filter(Predicate.not(ItemStack::isEmpty)).count();
    }
 
-   @Override
    public void clearContent() {
       this.items.clear();
    }
 
-   @Override
    public int getContainerSize() {
       return 6;
    }
 
-   @Override
    public boolean isEmpty() {
       return this.items.stream().allMatch(ItemStack::isEmpty);
    }
 
-   @Override
    public ItemStack getItem(int var1) {
-      return this.items.get(var1);
+      return (ItemStack)this.items.get(var1);
    }
 
-   @Override
    public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = Objects.requireNonNullElse(this.items.get(var1), ItemStack.EMPTY);
+      ItemStack var3 = (ItemStack)Objects.requireNonNullElse((ItemStack)this.items.get(var1), ItemStack.EMPTY);
       this.items.set(var1, ItemStack.EMPTY);
       if (!var3.isEmpty()) {
          this.updateState(var1);
@@ -97,12 +95,10 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       return var3;
    }
 
-   @Override
    public ItemStack removeItemNoUpdate(int var1) {
       return this.removeItem(var1, 1);
    }
 
-   @Override
    public void setItem(int var1, ItemStack var2) {
       if (var2.is(ItemTags.BOOKSHELF_BOOKS)) {
          this.items.set(var1, var2);
@@ -110,11 +106,11 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       } else if (var2.isEmpty()) {
          this.removeItem(var1, 1);
       }
+
    }
 
-   @Override
    public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
-      return var1.hasAnyMatching(var2x -> {
+      return var1.hasAnyMatching((var2x) -> {
          if (var2x.isEmpty()) {
             return true;
          } else {
@@ -123,17 +119,14 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       });
    }
 
-   @Override
    public int getMaxStackSize() {
       return 1;
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return Container.stillValidBlockEntity(this, var1);
    }
 
-   @Override
    public boolean canPlaceItem(int var1, ItemStack var2) {
       return var2.is(ItemTags.BOOKSHELF_BOOKS) && this.getItem(var1).isEmpty() && var2.getCount() == this.getMaxStackSize();
    }
@@ -142,17 +135,16 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       return this.lastInteractedSlot;
    }
 
-   @Override
-   public void applyComponents(DataComponentMap var1) {
-      var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.items);
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
+      ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.items);
    }
 
-   @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.items));
    }
 
-   @Override
    public void removeComponentsFromTag(CompoundTag var1) {
       var1.remove("Items");
    }

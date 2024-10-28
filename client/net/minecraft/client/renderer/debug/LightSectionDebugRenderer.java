@@ -27,7 +27,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
    private final LightLayer lightLayer;
    private Instant lastUpdateTime = Instant.now();
    @Nullable
-   private LightSectionDebugRenderer.SectionData data;
+   private SectionData data;
 
    public LightSectionDebugRenderer(Minecraft var1, LightLayer var2) {
       super();
@@ -35,14 +35,11 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       this.lightLayer = var2;
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       Instant var9 = Instant.now();
       if (this.data == null || Duration.between(this.lastUpdateTime, var9).compareTo(REFRESH_INTERVAL) > 0) {
          this.lastUpdateTime = var9;
-         this.data = new LightSectionDebugRenderer.SectionData(
-            this.minecraft.level.getLightEngine(), SectionPos.of(this.minecraft.player.blockPosition()), 10, this.lightLayer
-         );
+         this.data = new SectionData(this.minecraft.level.getLightEngine(), SectionPos.of(this.minecraft.player.blockPosition()), 10, this.lightLayer);
       }
 
       renderEdges(var1, this.data.lightAndBlocksShape, this.data.minPos, var2, var3, var5, var7, LIGHT_AND_BLOCKS_COLOR);
@@ -52,9 +49,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       renderFaces(var1, this.data.lightShape, this.data.minPos, var10, var3, var5, var7, LIGHT_ONLY_COLOR);
    }
 
-   private static void renderFaces(
-      PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, VertexConsumer var3, double var4, double var6, double var8, Vector4f var10
-   ) {
+   private static void renderFaces(PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, VertexConsumer var3, double var4, double var6, double var8, Vector4f var10) {
       var1.forAllFaces((var10x, var11, var12, var13) -> {
          int var14 = var11 + var2.getX();
          int var15 = var12 + var2.getY();
@@ -63,9 +58,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       });
    }
 
-   private static void renderEdges(
-      PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, MultiBufferSource var3, double var4, double var6, double var8, Vector4f var10
-   ) {
+   private static void renderEdges(PoseStack var0, DiscreteVoxelShape var1, SectionPos var2, MultiBufferSource var3, double var4, double var6, double var8, Vector4f var10) {
       var1.forAllEdges((var10x, var11, var12, var13, var14, var15) -> {
          int var16 = var10x + var2.getX();
          int var17 = var11 + var2.getY();
@@ -78,9 +71,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       }, true);
    }
 
-   private static void renderFace(
-      PoseStack var0, VertexConsumer var1, Direction var2, double var3, double var5, double var7, int var9, int var10, int var11, Vector4f var12
-   ) {
+   private static void renderFace(PoseStack var0, VertexConsumer var1, Direction var2, double var3, double var5, double var7, int var9, int var10, int var11, Vector4f var12) {
       float var13 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var3);
       float var14 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var5);
       float var15 = (float)((double)SectionPos.sectionToBlockCoord(var11) - var7);
@@ -92,7 +83,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       float var21 = var12.z();
       float var22 = var12.w();
       Matrix4f var23 = var0.last().pose();
-      switch(var2) {
+      switch (var2) {
          case DOWN:
             var1.vertex(var23, var13, var14, var15).color(var19, var20, var21, var22).endVertex();
             var1.vertex(var23, var16, var14, var15).color(var19, var20, var21, var22).endVertex();
@@ -129,22 +120,10 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
             var1.vertex(var23, var16, var17, var18).color(var19, var20, var21, var22).endVertex();
             var1.vertex(var23, var16, var14, var18).color(var19, var20, var21, var22).endVertex();
       }
+
    }
 
-   private static void renderEdge(
-      PoseStack var0,
-      VertexConsumer var1,
-      double var2,
-      double var4,
-      double var6,
-      int var8,
-      int var9,
-      int var10,
-      int var11,
-      int var12,
-      int var13,
-      Vector4f var14
-   ) {
+   private static void renderEdge(PoseStack var0, VertexConsumer var1, double var2, double var4, double var6, int var8, int var9, int var10, int var11, int var12, int var13, Vector4f var14) {
       float var15 = (float)((double)SectionPos.sectionToBlockCoord(var8) - var2);
       float var16 = (float)((double)SectionPos.sectionToBlockCoord(var9) - var4);
       float var17 = (float)((double)SectionPos.sectionToBlockCoord(var10) - var6);
@@ -156,7 +135,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       var1.vertex(var21, var18, var19, var20).color(var14.x(), var14.y(), var14.z(), 1.0F).endVertex();
    }
 
-   static final class SectionData {
+   private static final class SectionData {
       final DiscreteVoxelShape lightAndBlocksShape;
       final DiscreteVoxelShape lightShape;
       final SectionPos minPos;

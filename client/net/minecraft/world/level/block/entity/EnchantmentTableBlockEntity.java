@@ -33,20 +33,20 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
       super(BlockEntityType.ENCHANTING_TABLE, var1, var2);
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (this.hasCustomName()) {
          var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
       }
+
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("CustomName", 8)) {
          this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
+
    }
 
    public static void bookAnimationTick(Level var0, BlockPos var1, BlockState var2, EnchantmentTableBlockEntity var3) {
@@ -86,10 +86,8 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
          var3.tRot += 6.2831855F;
       }
 
-      float var10 = var3.tRot - var3.rot;
-
-      while(var10 >= 3.1415927F) {
-         var10 -= 6.2831855F;
+      float var10;
+      for(var10 = var3.tRot - var3.rot; var10 >= 3.1415927F; var10 -= 6.2831855F) {
       }
 
       while(var10 < -3.1415927F) {
@@ -101,13 +99,12 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
       ++var3.time;
       var3.oFlip = var3.flip;
       float var6 = (var3.flipT - var3.flip) * 0.4F;
-      float var12 = 0.2F;
+      float var11 = 0.2F;
       var6 = Mth.clamp(var6, -0.2F, 0.2F);
       var3.flipA += (var6 - var3.flipA) * 0.9F;
       var3.flip += var3.flipA;
    }
 
-   @Override
    public Component getName() {
       return (Component)(this.name != null ? this.name : Component.translatable("container.enchant"));
    }
@@ -117,22 +114,20 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    }
 
    @Nullable
-   @Override
    public Component getCustomName() {
       return this.name;
    }
 
-   @Override
-   public void applyComponents(DataComponentMap var1) {
-      this.name = var1.get(DataComponents.CUSTOM_NAME);
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
+      this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);
    }
 
-   @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.CUSTOM_NAME, this.name);
    }
 
-   @Override
    public void removeComponentsFromTag(CompoundTag var1) {
       var1.remove("CustomName");
    }

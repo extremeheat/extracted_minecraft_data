@@ -13,28 +13,28 @@ public abstract class Column {
       super();
    }
 
-   public static Column.Range around(int var0, int var1) {
-      return new Column.Range(var0 - 1, var1 + 1);
+   public static Range around(int var0, int var1) {
+      return new Range(var0 - 1, var1 + 1);
    }
 
-   public static Column.Range inside(int var0, int var1) {
-      return new Column.Range(var0, var1);
+   public static Range inside(int var0, int var1) {
+      return new Range(var0, var1);
    }
 
    public static Column below(int var0) {
-      return new Column.Ray(var0, false);
+      return new Ray(var0, false);
    }
 
    public static Column fromHighest(int var0) {
-      return new Column.Ray(var0 + 1, false);
+      return new Ray(var0 + 1, false);
    }
 
    public static Column above(int var0) {
-      return new Column.Ray(var0, true);
+      return new Ray(var0, true);
    }
 
    public static Column fromLowest(int var0) {
-      return new Column.Ray(var0 - 1, true);
+      return new Ray(var0 - 1, true);
    }
 
    public static Column line() {
@@ -77,9 +77,7 @@ public abstract class Column {
       }
    }
 
-   private static OptionalInt scanDirection(
-      LevelSimulatedReader var0, int var1, Predicate<BlockState> var2, Predicate<BlockState> var3, BlockPos.MutableBlockPos var4, int var5, Direction var6
-   ) {
+   private static OptionalInt scanDirection(LevelSimulatedReader var0, int var1, Predicate<BlockState> var2, Predicate<BlockState> var3, BlockPos.MutableBlockPos var4, int var5, Direction var6) {
       var4.setY(var5);
 
       for(int var7 = 1; var7 < var1 && var0.isStateAtPosition(var4, var2); ++var7) {
@@ -87,34 +85,6 @@ public abstract class Column {
       }
 
       return var0.isStateAtPosition(var4, var3) ? OptionalInt.of(var4.getY()) : OptionalInt.empty();
-   }
-
-   public static final class Line extends Column {
-      static final Column.Line INSTANCE = new Column.Line();
-
-      private Line() {
-         super();
-      }
-
-      @Override
-      public OptionalInt getCeiling() {
-         return OptionalInt.empty();
-      }
-
-      @Override
-      public OptionalInt getFloor() {
-         return OptionalInt.empty();
-      }
-
-      @Override
-      public OptionalInt getHeight() {
-         return OptionalInt.empty();
-      }
-
-      @Override
-      public String toString() {
-         return "C(-)";
-      }
    }
 
    public static final class Range extends Column {
@@ -126,21 +96,18 @@ public abstract class Column {
          this.floor = var1;
          this.ceiling = var2;
          if (this.height() < 0) {
-            throw new IllegalArgumentException("Column of negative height: " + this);
+            throw new IllegalArgumentException("Column of negative height: " + String.valueOf(this));
          }
       }
 
-      @Override
       public OptionalInt getCeiling() {
          return OptionalInt.of(this.ceiling);
       }
 
-      @Override
       public OptionalInt getFloor() {
          return OptionalInt.of(this.floor);
       }
 
-      @Override
       public OptionalInt getHeight() {
          return OptionalInt.of(this.height());
       }
@@ -157,7 +124,6 @@ public abstract class Column {
          return this.ceiling - this.floor - 1;
       }
 
-      @Override
       public String toString() {
          return "C(" + this.ceiling + "-" + this.floor + ")";
       }
@@ -173,24 +139,44 @@ public abstract class Column {
          this.pointingUp = var2;
       }
 
-      @Override
       public OptionalInt getCeiling() {
          return this.pointingUp ? OptionalInt.empty() : OptionalInt.of(this.edge);
       }
 
-      @Override
       public OptionalInt getFloor() {
          return this.pointingUp ? OptionalInt.of(this.edge) : OptionalInt.empty();
       }
 
-      @Override
       public OptionalInt getHeight() {
          return OptionalInt.empty();
       }
 
-      @Override
       public String toString() {
          return this.pointingUp ? "C(" + this.edge + "-)" : "C(-" + this.edge + ")";
+      }
+   }
+
+   public static final class Line extends Column {
+      static final Line INSTANCE = new Line();
+
+      private Line() {
+         super();
+      }
+
+      public OptionalInt getCeiling() {
+         return OptionalInt.empty();
+      }
+
+      public OptionalInt getFloor() {
+         return OptionalInt.empty();
+      }
+
+      public OptionalInt getHeight() {
+         return OptionalInt.empty();
+      }
+
+      public String toString() {
+         return "C(-)";
       }
    }
 }

@@ -22,7 +22,6 @@ public class SwitchMinigameTask extends LongRunningTask {
       this.lastScreen = var4;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
 
@@ -51,9 +50,9 @@ public class SwitchMinigameTask extends LongRunningTask {
             this.error(var5);
          }
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }

@@ -2,7 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -21,15 +21,15 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends BushBlock implements BonemealableBlock {
-   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter(var0x -> var0x.feature), propertiesCodec())
-            .apply(var0, MushroomBlock::new)
-   );
+   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> {
+         return var0x.feature;
+      }), propertiesCodec()).apply(var0, MushroomBlock::new);
+   });
    protected static final float AABB_OFFSET = 3.0F;
    protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);
    private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 
-   @Override
    public MapCodec<MushroomBlock> codec() {
       return CODEC;
    }
@@ -39,20 +39,21 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
       this.feature = var1;
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(25) == 0) {
          int var5 = 5;
          boolean var6 = true;
+         Iterator var7 = BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4)).iterator();
 
-         for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4))) {
+         while(var7.hasNext()) {
+            BlockPos var8 = (BlockPos)var7.next();
             if (var2.getBlockState(var8).is(this)) {
-               if (--var5 <= 0) {
+               --var5;
+               if (var5 <= 0) {
                   return;
                }
             }
@@ -72,14 +73,13 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
             var2.setBlock(var9, var1, 2);
          }
       }
+
    }
 
-   @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.isSolidRender(var2, var3);
    }
 
-   @Override
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
@@ -105,17 +105,14 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
       }
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return true;
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return (double)var2.nextFloat() < 0.4;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       this.growMushroom(var1, var3, var4, var2);
    }

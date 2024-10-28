@@ -38,12 +38,11 @@ public class ItemTransform {
 
          int var6 = var1 ? -1 : 1;
          var2.translate((float)var6 * this.translation.x(), this.translation.y(), this.translation.z());
-         var2.mulPose(new Quaternionf().rotationXYZ(var3 * 0.017453292F, var4 * 0.017453292F, var5 * 0.017453292F));
+         var2.mulPose((new Quaternionf()).rotationXYZ(var3 * 0.017453292F, var4 * 0.017453292F, var5 * 0.017453292F));
          var2.scale(this.scale.x(), this.scale.y(), this.scale.z());
       }
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -55,11 +54,11 @@ public class ItemTransform {
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.rotation.hashCode();
       var1 = 31 * var1 + this.translation.hashCode();
-      return 31 * var1 + this.scale.hashCode();
+      var1 = 31 * var1 + this.scale.hashCode();
+      return var1;
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemTransform> {
@@ -101,6 +100,11 @@ public class ItemTransform {
                return new Vector3f(var5[0], var5[1], var5[2]);
             }
          }
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

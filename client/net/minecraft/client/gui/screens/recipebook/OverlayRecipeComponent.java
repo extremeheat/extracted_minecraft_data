@@ -36,7 +36,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
    private static final int MAX_ROW_LARGE = 5;
    private static final float ITEM_RENDER_SCALE = 0.375F;
    public static final int BUTTON_SIZE = 25;
-   private final List<OverlayRecipeComponent.OverlayRecipeButton> recipeButtons = Lists.newArrayList();
+   private final List<OverlayRecipeButton> recipeButtons = Lists.newArrayList();
    private boolean isVisible;
    private int x;
    private int y;
@@ -58,7 +58,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          this.isFurnaceMenu = true;
       }
 
-      boolean var8 = var1.player.getRecipeBook().isFiltering((RecipeBookMenu<?>)var1.player.containerMenu);
+      boolean var8 = var1.player.getRecipeBook().isFiltering((RecipeBookMenu)var1.player.containerMenu);
       List var9 = var2.getDisplayRecipes(true);
       List var10 = var8 ? Collections.emptyList() : var2.getDisplayRecipes(false);
       int var11 = var9.size();
@@ -94,9 +94,9 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          int var24 = this.x + 4 + 25 * (var21 % var13);
          int var25 = this.y + 5 + 25 * (var21 / var13);
          if (this.isFurnaceMenu) {
-            this.recipeButtons.add(new OverlayRecipeComponent.OverlaySmeltingRecipeButton(var24, var25, var23, var22));
+            this.recipeButtons.add(new OverlaySmeltingRecipeButton(this, var24, var25, var23, var22));
          } else {
-            this.recipeButtons.add(new OverlayRecipeComponent.OverlayRecipeButton(var24, var25, var23, var22));
+            this.recipeButtons.add(new OverlayRecipeButton(var24, var25, var23, var22));
          }
       }
 
@@ -112,28 +112,30 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       return this.lastRecipeClicked;
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (var5 != 0) {
          return false;
       } else {
-         for(OverlayRecipeComponent.OverlayRecipeButton var7 : this.recipeButtons) {
-            if (var7.mouseClicked(var1, var3, var5)) {
-               this.lastRecipeClicked = var7.recipe;
-               return true;
-            }
-         }
+         Iterator var6 = this.recipeButtons.iterator();
 
-         return false;
+         OverlayRecipeButton var7;
+         do {
+            if (!var6.hasNext()) {
+               return false;
+            }
+
+            var7 = (OverlayRecipeButton)var6.next();
+         } while(!var7.mouseClicked(var1, var3, var5));
+
+         this.lastRecipeClicked = var7.recipe;
+         return true;
       }
    }
 
-   @Override
    public boolean isMouseOver(double var1, double var3) {
       return false;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible) {
          this.time += var4;
@@ -146,8 +148,10 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          boolean var8 = true;
          var1.blitSprite(OVERLAY_RECIPE_SPRITE, this.x, this.y, var6 * 25 + 8, var7 * 25 + 8);
          RenderSystem.disableBlend();
+         Iterator var9 = this.recipeButtons.iterator();
 
-         for(OverlayRecipeComponent.OverlayRecipeButton var10 : this.recipeButtons) {
+         while(var9.hasNext()) {
+            OverlayRecipeButton var10 = (OverlayRecipeButton)var9.next();
             var10.render(var1, var2, var3, var4);
          }
 
@@ -163,19 +167,29 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       return this.isVisible;
    }
 
-   @Override
    public void setFocused(boolean var1) {
    }
 
-   @Override
    public boolean isFocused() {
       return false;
    }
 
-   class OverlayRecipeButton extends AbstractWidget implements PlaceRecipe<Ingredient> {
+   class OverlaySmeltingRecipeButton extends OverlayRecipeButton {
+      public OverlaySmeltingRecipeButton(OverlayRecipeComponent var1, int var2, int var3, RecipeHolder var4, boolean var5) {
+         super(var2, var3, var4, var5);
+      }
+
+      protected void calculateIngredientsPositions(RecipeHolder<?> var1) {
+         Ingredient var2 = (Ingredient)var1.value().getIngredients().get(0);
+         ItemStack[] var3 = var2.getItems();
+         this.ingredientPos.add(new OverlayRecipeButton.Pos(this, 10, 10, var3));
+      }
+   }
+
+   private class OverlayRecipeButton extends AbstractWidget implements PlaceRecipe<Ingredient> {
       final RecipeHolder<?> recipe;
       private final boolean isCraftable;
-      protected final List<OverlayRecipeComponent.OverlayRecipeButton.Pos> ingredientPos = Lists.newArrayList();
+      protected final List<Pos> ingredientPos = Lists.newArrayList();
 
       public OverlayRecipeButton(int var2, int var3, RecipeHolder<?> var4, boolean var5) {
          super(var2, var3, 200, 20, CommonComponents.EMPTY);
@@ -190,20 +204,18 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          this.placeRecipe(3, 3, -1, var1, var1.value().getIngredients().iterator(), 0);
       }
 
-      @Override
       public void updateWidgetNarration(NarrationElementOutput var1) {
          this.defaultButtonNarrationText(var1);
       }
 
-      @Override
       public void addItemToSlot(Iterator<Ingredient> var1, int var2, int var3, int var4, int var5) {
          ItemStack[] var6 = ((Ingredient)var1.next()).getItems();
          if (var6.length != 0) {
-            this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(3 + var5 * 7, 3 + var4 * 7, var6));
+            this.ingredientPos.add(new Pos(this, 3 + var5 * 7, 3 + var4 * 7, var6));
          }
+
       }
 
-      @Override
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
          ResourceLocation var5;
          if (this.isCraftable) {
@@ -213,20 +225,17 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
                var5 = this.isHoveredOrFocused() ? OverlayRecipeComponent.CRAFTING_OVERLAY_HIGHLIGHTED_SPRITE : OverlayRecipeComponent.CRAFTING_OVERLAY_SPRITE;
             }
          } else if (OverlayRecipeComponent.this.isFurnaceMenu) {
-            var5 = this.isHoveredOrFocused()
-               ? OverlayRecipeComponent.FURNACE_OVERLAY_DISABLED_HIGHLIGHTED_SPRITE
-               : OverlayRecipeComponent.FURNACE_OVERLAY_DISABLED_SPRITE;
+            var5 = this.isHoveredOrFocused() ? OverlayRecipeComponent.FURNACE_OVERLAY_DISABLED_HIGHLIGHTED_SPRITE : OverlayRecipeComponent.FURNACE_OVERLAY_DISABLED_SPRITE;
          } else {
-            var5 = this.isHoveredOrFocused()
-               ? OverlayRecipeComponent.CRAFTING_OVERLAY_DISABLED_HIGHLIGHTED_SPRITE
-               : OverlayRecipeComponent.CRAFTING_OVERLAY_DISABLED_SPRITE;
+            var5 = this.isHoveredOrFocused() ? OverlayRecipeComponent.CRAFTING_OVERLAY_DISABLED_HIGHLIGHTED_SPRITE : OverlayRecipeComponent.CRAFTING_OVERLAY_DISABLED_SPRITE;
          }
 
          var1.blitSprite(var5, this.getX(), this.getY(), this.width, this.height);
          var1.pose().pushPose();
          var1.pose().translate((double)(this.getX() + 2), (double)(this.getY() + 2), 150.0);
 
-         for(OverlayRecipeComponent.OverlayRecipeButton.Pos var7 : this.ingredientPos) {
+         for(Iterator var6 = this.ingredientPos.iterator(); var6.hasNext(); var1.pose().popPose()) {
+            Pos var7 = (Pos)var6.next();
             var1.pose().pushPose();
             var1.pose().translate((double)var7.x, (double)var7.y, 0.0);
             var1.pose().scale(0.375F, 0.375F, 1.0F);
@@ -234,8 +243,6 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
             if (var7.ingredients.length > 0) {
                var1.renderItem(var7.ingredients[Mth.floor(OverlayRecipeComponent.this.time / 30.0F) % var7.ingredients.length], 0, 0);
             }
-
-            var1.pose().popPose();
          }
 
          var1.pose().popPose();
@@ -246,25 +253,12 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          public final int x;
          public final int y;
 
-         public Pos(int var2, int var3, ItemStack[] var4) {
+         public Pos(OverlayRecipeButton var1, int var2, int var3, ItemStack[] var4) {
             super();
             this.x = var2;
             this.y = var3;
             this.ingredients = var4;
          }
-      }
-   }
-
-   class OverlaySmeltingRecipeButton extends OverlayRecipeComponent.OverlayRecipeButton {
-      public OverlaySmeltingRecipeButton(int var2, int var3, RecipeHolder<?> var4, boolean var5) {
-         super(var2, var3, var4, var5);
-      }
-
-      @Override
-      protected void calculateIngredientsPositions(RecipeHolder<?> var1) {
-         Ingredient var2 = var1.value().getIngredients().get(0);
-         ItemStack[] var3 = var2.getItems();
-         this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(10, 10, var3));
       }
    }
 }

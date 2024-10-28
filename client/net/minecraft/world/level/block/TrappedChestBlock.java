@@ -18,36 +18,32 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TrappedChestBlock extends ChestBlock {
    public static final MapCodec<TrappedChestBlock> CODEC = simpleCodec(TrappedChestBlock::new);
 
-   @Override
    public MapCodec<TrappedChestBlock> codec() {
       return CODEC;
    }
 
    public TrappedChestBlock(BlockBehaviour.Properties var1) {
-      super(var1, () -> BlockEntityType.TRAPPED_CHEST);
+      super(var1, () -> {
+         return BlockEntityType.TRAPPED_CHEST;
+      });
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new TrappedChestBlockEntity(var1, var2);
    }
 
-   @Override
    protected Stat<ResourceLocation> getOpenChestStat() {
       return Stats.CUSTOM.get(Stats.TRIGGER_TRAPPED_CHEST);
    }
 
-   @Override
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return Mth.clamp(ChestBlockEntity.getOpenCount(var2, var3), 0, 15);
    }
 
-   @Override
    protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var4 == Direction.UP ? var1.getSignal(var2, var3, var4) : 0;
    }

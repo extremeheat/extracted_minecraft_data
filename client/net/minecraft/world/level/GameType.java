@@ -38,7 +38,6 @@ public enum GameType implements StringRepresentable {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
@@ -84,7 +83,7 @@ public enum GameType implements StringRepresentable {
    }
 
    public static GameType byId(int var0) {
-      return BY_ID.apply(var0);
+      return (GameType)BY_ID.apply(var0);
    }
 
    public static GameType byName(String var0) {
@@ -94,7 +93,7 @@ public enum GameType implements StringRepresentable {
    @Nullable
    @Contract("_,!null->!null;_,null->_")
    public static GameType byName(String var0, @Nullable GameType var1) {
-      GameType var2 = CODEC.byName(var0);
+      GameType var2 = (GameType)CODEC.byName(var0);
       return var2 != null ? var2 : var1;
    }
 
@@ -105,5 +104,10 @@ public enum GameType implements StringRepresentable {
    @Nullable
    public static GameType byNullableId(int var0) {
       return var0 == -1 ? null : byId(var0);
+   }
+
+   // $FF: synthetic method
+   private static GameType[] $values() {
+      return new GameType[]{SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR};
    }
 }

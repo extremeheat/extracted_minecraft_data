@@ -15,15 +15,15 @@ public class FastColor {
       }
 
       public static int red(int var0) {
-         return var0 & 0xFF;
+         return var0 & 255;
       }
 
       public static int green(int var0) {
-         return var0 >> 8 & 0xFF;
+         return var0 >> 8 & 255;
       }
 
       public static int blue(int var0) {
-         return var0 >> 16 & 0xFF;
+         return var0 >> 16 & 255;
       }
 
       public static int transparent(int var0) {
@@ -31,7 +31,7 @@ public class FastColor {
       }
 
       public static int opaque(int var0) {
-         return var0 | 0xFF000000;
+         return var0 | -16777216;
       }
 
       public static int color(int var0, int var1, int var2, int var3) {
@@ -53,15 +53,15 @@ public class FastColor {
       }
 
       public static int red(int var0) {
-         return var0 >> 16 & 0xFF;
+         return var0 >> 16 & 255;
       }
 
       public static int green(int var0) {
-         return var0 >> 8 & 0xFF;
+         return var0 >> 8 & 255;
       }
 
       public static int blue(int var0) {
-         return var0 & 0xFF;
+         return var0 & 255;
       }
 
       public static int color(int var0, int var1, int var2, int var3) {
@@ -85,7 +85,7 @@ public class FastColor {
       }
 
       public static int opaque(int var0) {
-         return var0 | 0xFF000000;
+         return var0 | -16777216;
       }
 
       public static int color(int var0, int var1) {

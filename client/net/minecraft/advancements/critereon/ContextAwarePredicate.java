@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 
 public class ContextAwarePredicate {
-   public static final Codec<ContextAwarePredicate> CODEC = LootItemConditions.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, var0 -> var0.conditions);
+   public static final Codec<ContextAwarePredicate> CODEC;
    private final List<LootItemCondition> conditions;
    private final Predicate<LootContext> compositePredicates;
 
@@ -30,8 +30,15 @@ public class ContextAwarePredicate {
 
    public void validate(ValidationContext var1) {
       for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
-         LootItemCondition var3 = this.conditions.get(var2);
+         LootItemCondition var3 = (LootItemCondition)this.conditions.get(var2);
          var3.validate(var1.forChild("[" + var2 + "]"));
       }
+
+   }
+
+   static {
+      CODEC = LootItemConditions.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (var0) -> {
+         return var0.conditions;
+      });
    }
 }

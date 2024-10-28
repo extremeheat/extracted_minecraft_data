@@ -9,9 +9,7 @@ import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 
 public class ClientboundHelloPacket implements Packet<ClientLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundHelloPacket> STREAM_CODEC = Packet.codec(
-      ClientboundHelloPacket::write, ClientboundHelloPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundHelloPacket> STREAM_CODEC = Packet.codec(ClientboundHelloPacket::write, ClientboundHelloPacket::new);
    private final String serverId;
    private final byte[] publicKey;
    private final byte[] challenge;
@@ -40,7 +38,6 @@ public class ClientboundHelloPacket implements Packet<ClientLoginPacketListener>
       var1.writeBoolean(this.shouldAuthenticate);
    }
 
-   @Override
    public PacketType<ClientboundHelloPacket> type() {
       return LoginPacketTypes.CLIENTBOUND_HELLO;
    }

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Endermite;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -26,42 +27,29 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       super(EntityType.ENDER_PEARL, var2, var1);
    }
 
-   @Override
    protected Item getDefaultItem() {
       return Items.ENDER_PEARL;
    }
 
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       var1.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
 
       for(int var2 = 0; var2 < 32; ++var2) {
-         this.level()
-            .addParticle(
-               ParticleTypes.PORTAL,
-               this.getX(),
-               this.getY() + this.random.nextDouble() * 2.0,
-               this.getZ(),
-               this.random.nextGaussian(),
-               0.0,
-               this.random.nextGaussian()
-            );
+         this.level().addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.random.nextDouble() * 2.0, this.getZ(), this.random.nextGaussian(), 0.0, this.random.nextGaussian());
       }
 
       if (!this.level().isClientSide && !this.isRemoved()) {
          Entity var5 = this.getOwner();
-         if (var5 instanceof ServerPlayer var3) {
+         if (var5 instanceof ServerPlayer) {
+            ServerPlayer var3 = (ServerPlayer)var5;
             if (var3.connection.isAcceptingMessages() && var3.level() == this.level() && !var3.isSleeping()) {
                if (this.random.nextFloat() < 0.05F && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                  Endermite var4 = EntityType.ENDERMITE.create(this.level());
+                  Endermite var4 = (Endermite)EntityType.ENDERMITE.create(this.level());
                   if (var4 != null) {
                      var4.moveTo(var5.getX(), var5.getY(), var5.getZ(), var5.getYRot(), var5.getXRot());
                      this.level().addFreshEntity(var4);
@@ -76,7 +64,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
                var5.resetFallDistance();
                var5.hurt(this.damageSources().fall(), 5.0F);
-               this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
+               this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
             }
          } else if (var5 != null) {
             var5.teleportTo(this.getX(), this.getY(), this.getZ());
@@ -85,9 +73,9 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
          this.discard();
       }
+
    }
 
-   @Override
    public void tick() {
       Entity var1 = this.getOwner();
       if (var1 instanceof ServerPlayer && !var1.isAlive() && this.level().getGameRules().getBoolean(GameRules.RULE_ENDER_PEARLS_VANISH_ON_DEATH)) {
@@ -95,16 +83,16 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       } else {
          super.tick();
       }
+
    }
 
    @Nullable
-   @Override
-   public Entity changeDimension(ServerLevel var1, boolean var2) {
-      Entity var3 = this.getOwner();
-      if (var3 != null && var3.level().dimension() != var1.dimension()) {
-         this.setOwner(null);
+   public Entity changeDimension(ServerLevel var1) {
+      Entity var2 = this.getOwner();
+      if (var2 != null && var2.level().dimension() != var1.dimension()) {
+         this.setOwner((Entity)null);
       }
 
-      return super.changeDimension(var1, var2);
+      return super.changeDimension(var1);
    }
 }

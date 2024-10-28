@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.packs;
 
+import java.util.Objects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,7 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.util.FormattedCharSequence;
 
-public class TransferableSelectionList extends ObjectSelectionList<TransferableSelectionList.PackEntry> {
+public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
    static final ResourceLocation SELECT_HIGHLIGHTED_SPRITE = new ResourceLocation("transferable_list/select_highlighted");
    static final ResourceLocation SELECT_SPRITE = new ResourceLocation("transferable_list/select");
    static final ResourceLocation UNSELECT_HIGHLIGHTED_SPRITE = new ResourceLocation("transferable_list/unselect_highlighted");
@@ -34,26 +35,23 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       this.screen = var2;
       this.title = var5;
       this.centerListVertically = false;
+      Objects.requireNonNull(var1.font);
       this.setRenderHeader(true, (int)(9.0F * 1.5F));
    }
 
-   @Override
    protected void renderHeader(GuiGraphics var1, int var2, int var3) {
       MutableComponent var4 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.getY() + 3, var3), -1, false);
+      var1.drawString(this.minecraft.font, (Component)var4, var2 + this.width / 2 - this.minecraft.font.width((FormattedText)var4) / 2, Math.min(this.getY() + 3, var3), -1, false);
    }
 
-   @Override
    public int getRowWidth() {
       return this.width;
    }
 
-   @Override
    protected int getScrollbarPosition() {
       return this.getRight() - 6;
    }
 
-   @Override
    protected void renderSelection(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       if (this.scrollbarVisible()) {
          boolean var7 = true;
@@ -66,24 +64,24 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       } else {
          super.renderSelection(var1, var2, var3, var4, var5, var6);
       }
+
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.getSelected() != null) {
-         switch(var1) {
+         switch (var1) {
             case 32:
             case 257:
-               this.getSelected().keyboardSelection();
+               ((PackEntry)this.getSelected()).keyboardSelection();
                return true;
             default:
                if (Screen.hasShiftDown()) {
-                  switch(var1) {
+                  switch (var1) {
                      case 264:
-                        this.getSelected().keyboardMoveDown();
+                        ((PackEntry)this.getSelected()).keyboardMoveDown();
                         return true;
                      case 265:
-                        this.getSelected().keyboardMoveUp();
+                        ((PackEntry)this.getSelected()).keyboardMoveUp();
                         return true;
                   }
                }
@@ -93,7 +91,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       return super.keyPressed(var1, var2, var3);
    }
 
-   public static class PackEntry extends ObjectSelectionList.Entry<TransferableSelectionList.PackEntry> {
+   public static class PackEntry extends ObjectSelectionList.Entry<PackEntry> {
       private static final int MAX_DESCRIPTION_WIDTH_PIXELS = 157;
       private static final int MAX_NAME_WIDTH_PIXELS = 157;
       private static final String TOO_LONG_NAME_SUFFIX = "...";
@@ -117,7 +115,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       }
 
       private static FormattedCharSequence cacheName(Minecraft var0, Component var1) {
-         int var2 = var0.font.width(var1);
+         int var2 = var0.font.width((FormattedText)var1);
          if (var2 > 157) {
             FormattedText var3 = FormattedText.composite(var0.font.substrByWidth(var1, 157 - var0.font.width("...")), FormattedText.of("..."));
             return Language.getInstance().getVisualOrder(var3);
@@ -130,12 +128,10 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
          return MultiLineLabel.create(var0.font, var1, 157, 2);
       }
 
-      @Override
       public Component getNarration() {
          return Component.translatable("narrator.select", this.pack.getTitle());
       }
 
-      @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          PackCompatibility var11 = this.pack.getCompatibility();
          if (!var11.isCompatible()) {
@@ -146,7 +142,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
          var1.blit(this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          FormattedCharSequence var16 = this.nameDisplayCache;
          MultiLineLabel var13 = this.descriptionDisplayCache;
-         if (this.showHoverOverlay() && (this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
+         if (this.showHoverOverlay() && ((Boolean)this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var14 = var7 - var4;
             int var15 = var8 - var3;
@@ -207,18 +203,21 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             this.pack.unselect();
             this.parent.screen.updateFocus(this.parent);
          }
+
       }
 
       void keyboardMoveUp() {
          if (this.pack.canMoveUp()) {
             this.pack.moveUp();
          }
+
       }
 
       void keyboardMoveDown() {
          if (this.pack.canMoveDown()) {
             this.pack.moveDown();
          }
+
       }
 
       private boolean handlePackSelection() {
@@ -227,17 +226,17 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             return true;
          } else {
             Component var1 = this.pack.getCompatibility().getConfirmation();
-            this.minecraft.setScreen(new ConfirmScreen(var1x -> {
+            this.minecraft.setScreen(new ConfirmScreen((var1x) -> {
                this.minecraft.setScreen(this.parent.screen);
                if (var1x) {
                   this.pack.select();
                }
+
             }, TransferableSelectionList.INCOMPATIBLE_CONFIRM_TITLE, var1));
             return false;
          }
       }
 
-      @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
          double var6 = var1 - (double)this.parent.getRowLeft();
          double var8 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));

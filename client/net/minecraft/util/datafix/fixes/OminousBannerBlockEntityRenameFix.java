@@ -11,7 +11,6 @@ public class OminousBannerBlockEntityRenameFix extends NamedEntityFix {
       super(var1, var2, "OminousBannerBlockEntityRenameFix", References.BLOCK_ENTITY, "minecraft:banner");
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), this::fixTag);
    }

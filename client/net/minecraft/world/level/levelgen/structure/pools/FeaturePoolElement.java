@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -19,6 +18,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -26,9 +26,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class FeaturePoolElement extends StructurePoolElement {
-   public static final Codec<FeaturePoolElement> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter(var0x -> var0x.feature), projectionCodec()).apply(var0, FeaturePoolElement::new)
-   );
+   public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> {
+         return var0x.feature;
+      }), projectionCodec()).apply(var0, FeaturePoolElement::new);
+   });
    private final Holder<PlacedFeature> feature;
    private final CompoundTag defaultJigsawNBT;
 
@@ -48,53 +50,30 @@ public class FeaturePoolElement extends StructurePoolElement {
       return var1;
    }
 
-   @Override
    public Vec3i getSize(StructureTemplateManager var1, Rotation var2) {
       return Vec3i.ZERO;
    }
 
-   @Override
    public List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
       ArrayList var5 = Lists.newArrayList();
-      var5.add(
-         new StructureTemplate.StructureBlockInfo(
-            var2,
-            Blocks.JIGSAW.defaultBlockState().setValue(JigsawBlock.ORIENTATION, FrontAndTop.fromFrontAndTop(Direction.DOWN, Direction.SOUTH)),
-            this.defaultJigsawNBT
-         )
-      );
+      var5.add(new StructureTemplate.StructureBlockInfo(var2, (BlockState)Blocks.JIGSAW.defaultBlockState().setValue(JigsawBlock.ORIENTATION, FrontAndTop.fromFrontAndTop(Direction.DOWN, Direction.SOUTH)), this.defaultJigsawNBT));
       return var5;
    }
 
-   @Override
    public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
       Vec3i var4 = this.getSize(var1, var3);
       return new BoundingBox(var2.getX(), var2.getY(), var2.getZ(), var2.getX() + var4.getX(), var2.getY() + var4.getY(), var2.getZ() + var4.getZ());
    }
 
-   @Override
-   public boolean place(
-      StructureTemplateManager var1,
-      WorldGenLevel var2,
-      StructureManager var3,
-      ChunkGenerator var4,
-      BlockPos var5,
-      BlockPos var6,
-      Rotation var7,
-      BoundingBox var8,
-      RandomSource var9,
-      boolean var10
-   ) {
+   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, boolean var10) {
       return ((PlacedFeature)this.feature.value()).place(var2, var4, var9, var5);
    }
 
-   @Override
    public StructurePoolElementType<?> getType() {
       return StructurePoolElementType.FEATURE;
    }
 
-   @Override
    public String toString() {
-      return "Feature[" + this.feature + "]";
+      return "Feature[" + String.valueOf(this.feature) + "]";
    }
 }

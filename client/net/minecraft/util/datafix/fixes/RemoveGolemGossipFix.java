@@ -10,12 +10,15 @@ public class RemoveGolemGossipFix extends NamedEntityFix {
       super(var1, var2, "Remove Golem Gossip Fix", References.ENTITY, "minecraft:villager");
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), RemoveGolemGossipFix::fixValue);
    }
 
    private static Dynamic<?> fixValue(Dynamic<?> var0) {
-      return var0.update("Gossips", var1 -> var0.createList(var1.asStream().filter(var0xx -> !var0xx.get("Type").asString("").equals("golem"))));
+      return var0.update("Gossips", (var1) -> {
+         return var0.createList(var1.asStream().filter((var0x) -> {
+            return !var0x.get("Type").asString("").equals("golem");
+         }));
+      });
    }
 }

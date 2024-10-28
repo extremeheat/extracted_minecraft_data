@@ -35,19 +35,17 @@ public class RecordItem extends Item {
       BY_NAME.put(this.sound, this);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      if (var4.is(Blocks.JUKEBOX) && !var4.getValue(JukeboxBlock.HAS_RECORD)) {
+      if (var4.is(Blocks.JUKEBOX) && !(Boolean)var4.getValue(JukeboxBlock.HAS_RECORD)) {
          ItemStack var5 = var1.getItemInHand();
          if (!var2.isClientSide) {
             Player var6 = var1.getPlayer();
             BlockEntity var8 = var2.getBlockEntity(var3);
-            if (var8 instanceof JukeboxBlockEntity var7) {
+            if (var8 instanceof JukeboxBlockEntity) {
+               JukeboxBlockEntity var7 = (JukeboxBlockEntity)var8;
                var7.setTheItem(var5.copy());
                var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var6, var4));
             }
@@ -68,8 +66,7 @@ public class RecordItem extends Item {
       return this.analogOutput;
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       var3.add(this.getDisplayName().withStyle(ChatFormatting.GRAY));
    }
 
@@ -79,7 +76,7 @@ public class RecordItem extends Item {
 
    @Nullable
    public static RecordItem getBySound(SoundEvent var0) {
-      return BY_NAME.get(var0);
+      return (RecordItem)BY_NAME.get(var0);
    }
 
    public SoundEvent getSound() {

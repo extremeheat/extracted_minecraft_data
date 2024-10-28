@@ -39,24 +39,8 @@ public class WitherBossModel<T extends WitherBoss> extends HierarchicalModel<T> 
       PartDefinition var2 = var1.getRoot();
       var2.addOrReplaceChild("shoulders", CubeListBuilder.create().texOffs(0, 16).addBox(-10.0F, 3.9F, -0.5F, 20.0F, 3.0F, 3.0F, var0), PartPose.ZERO);
       float var3 = 0.20420352F;
-      var2.addOrReplaceChild(
-         "ribcage",
-         CubeListBuilder.create()
-            .texOffs(0, 22)
-            .addBox(0.0F, 0.0F, 0.0F, 3.0F, 10.0F, 3.0F, var0)
-            .texOffs(24, 22)
-            .addBox(-4.0F, 1.5F, 0.5F, 11.0F, 2.0F, 2.0F, var0)
-            .texOffs(24, 22)
-            .addBox(-4.0F, 4.0F, 0.5F, 11.0F, 2.0F, 2.0F, var0)
-            .texOffs(24, 22)
-            .addBox(-4.0F, 6.5F, 0.5F, 11.0F, 2.0F, 2.0F, var0),
-         PartPose.offsetAndRotation(-2.0F, 6.9F, -0.5F, 0.20420352F, 0.0F, 0.0F)
-      );
-      var2.addOrReplaceChild(
-         "tail",
-         CubeListBuilder.create().texOffs(12, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 6.0F, 3.0F, var0),
-         PartPose.offsetAndRotation(-2.0F, 6.9F + Mth.cos(0.20420352F) * 10.0F, -0.5F + Mth.sin(0.20420352F) * 10.0F, 0.83252203F, 0.0F, 0.0F)
-      );
+      var2.addOrReplaceChild("ribcage", CubeListBuilder.create().texOffs(0, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 10.0F, 3.0F, var0).texOffs(24, 22).addBox(-4.0F, 1.5F, 0.5F, 11.0F, 2.0F, 2.0F, var0).texOffs(24, 22).addBox(-4.0F, 4.0F, 0.5F, 11.0F, 2.0F, 2.0F, var0).texOffs(24, 22).addBox(-4.0F, 6.5F, 0.5F, 11.0F, 2.0F, 2.0F, var0), PartPose.offsetAndRotation(-2.0F, 6.9F, -0.5F, 0.20420352F, 0.0F, 0.0F));
+      var2.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(12, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 6.0F, 3.0F, var0), PartPose.offsetAndRotation(-2.0F, 6.9F + Mth.cos(0.20420352F) * 10.0F, -0.5F + Mth.sin(0.20420352F) * 10.0F, 0.83252203F, 0.0F, 0.0F));
       var2.addOrReplaceChild("center_head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.ZERO);
       CubeListBuilder var4 = CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F, var0);
       var2.addOrReplaceChild("right_head", var4, PartPose.offset(-8.0F, 4.0F, 0.0F));
@@ -64,7 +48,6 @@ public class WitherBossModel<T extends WitherBoss> extends HierarchicalModel<T> 
       return LayerDefinition.create(var1, 64, 64);
    }
 
-   @Override
    public ModelPart root() {
       return this.root;
    }

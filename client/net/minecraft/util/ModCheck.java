@@ -3,11 +3,8 @@ package net.minecraft.util;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.ObjectUtils;
 
-public record ModCheck(ModCheck.Confidence a, String b) {
-   private final ModCheck.Confidence confidence;
-   private final String description;
-
-   public ModCheck(ModCheck.Confidence var1, String var2) {
+public record ModCheck(Confidence confidence, String description) {
+   public ModCheck(Confidence var1, String var2) {
       super();
       this.confidence = var1;
       this.description = var2;
@@ -18,9 +15,7 @@ public record ModCheck(ModCheck.Confidence a, String b) {
       if (!var0.equals(var4)) {
          return new ModCheck(ModCheck.Confidence.DEFINITELY, var2 + " brand changed to '" + var4 + "'");
       } else {
-         return var3.getSigners() == null
-            ? new ModCheck(ModCheck.Confidence.VERY_LIKELY, var2 + " jar signature invalidated")
-            : new ModCheck(ModCheck.Confidence.PROBABLY_NOT, var2 + " jar signature and brand is untouched");
+         return var3.getSigners() == null ? new ModCheck(ModCheck.Confidence.VERY_LIKELY, var2 + " jar signature invalidated") : new ModCheck(ModCheck.Confidence.PROBABLY_NOT, var2 + " jar signature and brand is untouched");
       }
    }
 
@@ -29,13 +24,19 @@ public record ModCheck(ModCheck.Confidence a, String b) {
    }
 
    public ModCheck merge(ModCheck var1) {
-      return new ModCheck(
-         (ModCheck.Confidence)ObjectUtils.max(new ModCheck.Confidence[]{this.confidence, var1.confidence}), this.description + "; " + var1.description
-      );
+      return new ModCheck((Confidence)ObjectUtils.max(new Confidence[]{this.confidence, var1.confidence}), this.description + "; " + var1.description);
    }
 
    public String fullDescription() {
       return this.confidence.description + " " + this.description;
+   }
+
+   public Confidence confidence() {
+      return this.confidence;
+   }
+
+   public String description() {
+      return this.description;
    }
 
    public static enum Confidence {
@@ -49,6 +50,11 @@ public record ModCheck(ModCheck.Confidence a, String b) {
       private Confidence(String var3, boolean var4) {
          this.description = var3;
          this.shouldReportAsModified = var4;
+      }
+
+      // $FF: synthetic method
+      private static Confidence[] $values() {
+         return new Confidence[]{PROBABLY_NOT, VERY_LIKELY, DEFINITELY};
       }
    }
 }

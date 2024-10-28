@@ -31,7 +31,11 @@ public interface LevelData {
    boolean isDifficultyLocked();
 
    default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-      var1.setDetail("Level spawn location", () -> CrashReportCategory.formatLocation(var2, this.getSpawnPos()));
-      var1.setDetail("Level time", () -> String.format(Locale.ROOT, "%d game time, %d day time", this.getGameTime(), this.getDayTime()));
+      var1.setDetail("Level spawn location", () -> {
+         return CrashReportCategory.formatLocation(var2, this.getSpawnPos());
+      });
+      var1.setDetail("Level time", () -> {
+         return String.format(Locale.ROOT, "%d game time, %d day time", this.getGameTime(), this.getDayTime());
+      });
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.recipebook;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,7 +38,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
             this.stackedContents.clear();
             var1.getInventory().fillStackedContents(this.stackedContents);
             this.menu.fillCraftSlotsStackedContents(this.stackedContents);
-            if (this.stackedContents.canCraft(var2.value(), null)) {
+            if (this.stackedContents.canCraft(var2.value(), (IntList)null)) {
                this.handleRecipeClicked(var2, var3);
             } else {
                this.clearGrid();
@@ -63,9 +64,10 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
 
    protected void handleRecipeClicked(RecipeHolder<? extends Recipe<C>> var1, boolean var2) {
       boolean var3 = this.menu.recipeMatches(var1);
-      int var4 = this.stackedContents.getBiggestCraftableStack(var1, null);
+      int var4 = this.stackedContents.getBiggestCraftableStack(var1, (IntList)null);
+      int var5;
       if (var3) {
-         for(int var5 = 0; var5 < this.menu.getGridHeight() * this.menu.getGridWidth() + 1; ++var5) {
+         for(var5 = 0; var5 < this.menu.getGridHeight() * this.menu.getGridWidth() + 1; ++var5) {
             if (var5 != this.menu.getResultSlotIndex()) {
                ItemStack var6 = this.menu.getSlot(var5).getItem();
                if (!var6.isEmpty() && Math.min(var4, var6.getMaxStackSize()) < var6.getCount() + 1) {
@@ -75,17 +77,20 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
          }
       }
 
-      int var11 = this.getStackSize(var2, var4, var3);
+      var5 = this.getStackSize(var2, var4, var3);
       IntArrayList var12 = new IntArrayList();
-      if (this.stackedContents.canCraft(var1.value(), var12, var11)) {
-         int var7 = var11;
+      if (this.stackedContents.canCraft(var1.value(), var12, var5)) {
+         int var7 = var5;
          IntListIterator var8 = var12.iterator();
 
          while(var8.hasNext()) {
-            int var9 = var8.next();
-            int var10 = StackedContents.fromStackingIndex(var9).getMaxStackSize();
-            if (var10 < var7) {
-               var7 = var10;
+            int var9 = (Integer)var8.next();
+            ItemStack var10 = StackedContents.fromStackingIndex(var9);
+            if (!var10.isEmpty()) {
+               int var11 = var10.getMaxStackSize();
+               if (var11 < var7) {
+                  var7 = var11;
+               }
             }
          }
 
@@ -94,17 +99,18 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
             this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var12.iterator(), var7);
          }
       }
+
    }
 
-   @Override
    public void addItemToSlot(Iterator<Integer> var1, int var2, int var3, int var4, int var5) {
       Slot var6 = this.menu.getSlot(var2);
-      ItemStack var7 = StackedContents.fromStackingIndex(var1.next());
+      ItemStack var7 = StackedContents.fromStackingIndex((Integer)var1.next());
       if (!var7.isEmpty()) {
          for(int var8 = 0; var8 < var3; ++var8) {
             this.moveItemToGrid(var6, var7);
          }
       }
+
    }
 
    protected int getStackSize(boolean var1, int var2, boolean var3) {
@@ -147,6 +153,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
             } else {
                var1.getItem().grow(1);
             }
+
          }
       }
    }
@@ -161,10 +168,11 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
             if (!var4.isEmpty()) {
                int var5 = this.inventory.getSlotWithRemainingSpace(var4);
                if (var5 == -1 && var1.size() <= var2) {
-                  for(ItemStack var7 : var1) {
-                     if (ItemStack.isSameItem(var7, var4)
-                        && var7.getCount() != var7.getMaxStackSize()
-                        && var7.getCount() + var4.getCount() <= var7.getMaxStackSize()) {
+                  Iterator var6 = var1.iterator();
+
+                  while(var6.hasNext()) {
+                     ItemStack var7 = (ItemStack)var6.next();
+                     if (ItemStack.isSameItem(var7, var4) && var7.getCount() != var7.getMaxStackSize() && var7.getCount() + var4.getCount() <= var7.getMaxStackSize()) {
                         var7.grow(var4.getCount());
                         var4.setCount(0);
                         break;
@@ -190,8 +198,10 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
 
    private int getAmountOfFreeSlotsInInventory() {
       int var1 = 0;
+      Iterator var2 = this.inventory.items.iterator();
 
-      for(ItemStack var3 : this.inventory.items) {
+      while(var2.hasNext()) {
+         ItemStack var3 = (ItemStack)var2.next();
          if (var3.isEmpty()) {
             ++var1;
          }

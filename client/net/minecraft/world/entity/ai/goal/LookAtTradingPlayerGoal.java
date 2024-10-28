@@ -11,7 +11,6 @@ public class LookAtTradingPlayerGoal extends LookAtPlayerGoal {
       this.villager = var1;
    }
 
-   @Override
    public boolean canUse() {
       if (this.villager.isTrading()) {
          this.lookAt = this.villager.getTradingPlayer();

@@ -1,8 +1,9 @@
 package net.minecraft.world.item;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,26 +18,30 @@ public class SuspiciousStewItem extends Item {
       super(var1);
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       if (var4.isCreative()) {
          ArrayList var5 = new ArrayList();
-         SuspiciousStewEffects var6 = var1.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY);
+         SuspiciousStewEffects var6 = (SuspiciousStewEffects)var1.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY);
+         Iterator var7 = var6.effects().iterator();
 
-         for(SuspiciousStewEffects.Entry var8 : var6.effects()) {
+         while(var7.hasNext()) {
+            SuspiciousStewEffects.Entry var8 = (SuspiciousStewEffects.Entry)var7.next();
             var5.add(var8.createEffectInstance());
          }
 
-         PotionContents.addPotionTooltip(var5, var3::add, 1.0F, var2 == null ? 20.0F : var2.tickRateManager().tickrate());
+         Objects.requireNonNull(var3);
+         PotionContents.addPotionTooltip(var5, var3::add, 1.0F, var2.tickRate());
       }
+
    }
 
-   @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      SuspiciousStewEffects var4 = var1.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY);
+      SuspiciousStewEffects var4 = (SuspiciousStewEffects)var1.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY);
+      Iterator var5 = var4.effects().iterator();
 
-      for(SuspiciousStewEffects.Entry var6 : var4.effects()) {
+      while(var5.hasNext()) {
+         SuspiciousStewEffects.Entry var6 = (SuspiciousStewEffects.Entry)var5.next();
          var3.addEffect(var6.createEffectInstance());
       }
 

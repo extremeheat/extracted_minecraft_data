@@ -10,7 +10,7 @@ public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemModel<Sno
    private static final ResourceLocation SNOW_GOLEM_LOCATION = new ResourceLocation("textures/entity/snow_golem.png");
 
    public SnowGolemRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SnowGolemModel<>(var1.bakeLayer(ModelLayers.SNOW_GOLEM)), 0.5F);
+      super(var1, new SnowGolemModel(var1.bakeLayer(ModelLayers.SNOW_GOLEM)), 0.5F);
       this.addLayer(new SnowGolemHeadLayer(this, var1.getBlockRenderDispatcher(), var1.getItemRenderer()));
    }
 

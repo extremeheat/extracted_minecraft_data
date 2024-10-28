@@ -25,7 +25,7 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
    private final String name;
 
    public static ProcessorMailbox<Runnable> create(Executor var0, String var1) {
-      return new ProcessorMailbox<>(new StrictQueue.QueueStrictQueue<>(new ConcurrentLinkedQueue<>()), var0, var1);
+      return new ProcessorMailbox(new StrictQueue.QueueStrictQueue(new ConcurrentLinkedQueue()), var0, var1);
    }
 
    public ProcessorMailbox(StrictQueue<? super T, ? extends Runnable> var1, Executor var2, String var3) {
@@ -53,6 +53,7 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       do {
          var1 = this.status.get();
       } while(!this.status.compareAndSet(var1, var1 & -3));
+
    }
 
    private boolean canBeScheduled() {
@@ -63,12 +64,12 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       }
    }
 
-   @Override
    public void close() {
       int var1;
       do {
          var1 = this.status.get();
       } while(!this.status.compareAndSet(var1, var1 | 1));
+
    }
 
    private boolean shouldProcess() {
@@ -79,7 +80,7 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       if (!this.shouldProcess()) {
          return false;
       } else {
-         Runnable var1 = this.queue.pop();
+         Runnable var1 = (Runnable)this.queue.pop();
          if (var1 == null) {
             return false;
          } else {
@@ -89,28 +90,32 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       }
    }
 
-   @Override
    public void run() {
       try {
-         this.pollUntil(var0 -> var0 == 0);
+         this.pollUntil((var0) -> {
+            return var0 == 0;
+         });
       } finally {
          this.setAsIdle();
          this.registerForExecution();
       }
+
    }
 
    public void runAll() {
       try {
-         this.pollUntil(var0 -> true);
+         this.pollUntil((var0) -> {
+            return true;
+         });
       } finally {
          this.setAsIdle();
          this.registerForExecution();
       }
+
    }
 
-   @Override
    public void tell(T var1) {
-      this.queue.push((T)var1);
+      this.queue.push(var1);
       this.registerForExecution();
    }
 
@@ -126,13 +131,12 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
             }
          }
       }
+
    }
 
    private int pollUntil(Int2BooleanFunction var1) {
-      int var2 = 0;
-
-      while(var1.get(var2) && this.pollTask()) {
-         ++var2;
+      int var2;
+      for(var2 = 0; var1.get(var2) && this.pollTask(); ++var2) {
       }
 
       return var2;
@@ -146,17 +150,15 @@ public class ProcessorMailbox<T> implements ProfilerMeasured, ProcessorHandle<T>
       return this.shouldProcess() && !this.queue.isEmpty();
    }
 
-   @Override
    public String toString() {
-      return this.name + " " + this.status.get() + " " + this.queue.isEmpty();
+      String var10000 = this.name;
+      return var10000 + " " + this.status.get() + " " + this.queue.isEmpty();
    }
 
-   @Override
    public String name() {
       return this.name;
    }
 
-   @Override
    public List<MetricSampler> profiledMetrics() {
       return ImmutableList.of(MetricSampler.create(this.name + "-queue-size", MetricCategory.MAIL_BOXES, this::size));
    }

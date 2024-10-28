@@ -7,4 +7,9 @@ public enum PathComputationType {
 
    private PathComputationType() {
    }
+
+   // $FF: synthetic method
+   private static PathComputationType[] $values() {
+      return new PathComputationType[]{LAND, WATER, AIR};
+   }
 }

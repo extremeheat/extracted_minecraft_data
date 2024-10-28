@@ -2,6 +2,8 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.client.model.CatModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.CatCollarLayer;
@@ -14,7 +16,7 @@ import net.minecraft.world.phys.AABB;
 
 public class CatRenderer extends MobRenderer<Cat, CatModel<Cat>> {
    public CatRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CatModel<>(var1.bakeLayer(ModelLayers.CAT)), 0.4F);
+      super(var1, new CatModel(var1.bakeLayer(ModelLayers.CAT)), 0.4F);
       this.addLayer(new CatCollarLayer(this, var1.getModelSet()));
    }
 
@@ -34,13 +36,17 @@ public class CatRenderer extends MobRenderer<Cat, CatModel<Cat>> {
          var2.translate(0.4F * var7, 0.15F * var7, 0.1F * var7);
          var2.mulPose(Axis.ZP.rotationDegrees(Mth.rotLerp(var7, 0.0F, 90.0F)));
          BlockPos var8 = var1.blockPosition();
+         List var9 = var1.level().getEntitiesOfClass(Player.class, (new AABB(var8)).inflate(2.0, 2.0, 2.0));
+         Iterator var10 = var9.iterator();
 
-         for(Player var11 : var1.level().getEntitiesOfClass(Player.class, new AABB(var8).inflate(2.0, 2.0, 2.0))) {
+         while(var10.hasNext()) {
+            Player var11 = (Player)var10.next();
             if (var11.isSleeping()) {
                var2.translate(0.15F * var7, 0.0F, 0.0F);
                break;
             }
          }
       }
+
    }
 }

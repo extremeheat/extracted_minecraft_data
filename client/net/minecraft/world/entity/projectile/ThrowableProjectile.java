@@ -28,7 +28,6 @@ public abstract class ThrowableProjectile extends Projectile {
       this.setOwner(var2);
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       double var3 = this.getBoundingBox().getSize() * 4.0;
       if (Double.isNaN(var3)) {
@@ -39,7 +38,6 @@ public abstract class ThrowableProjectile extends Projectile {
       return var1 < var3 * var3;
    }
 
-   @Override
    public void tick() {
       super.tick();
       HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
@@ -61,7 +59,7 @@ public abstract class ThrowableProjectile extends Projectile {
       }
 
       if (var1.getType() != HitResult.Type.MISS && !var2) {
-         this.onHit(var1);
+         this.hitOrDeflect(var1);
       }
 
       this.checkInsideBlocks();
@@ -87,7 +85,6 @@ public abstract class ThrowableProjectile extends Projectile {
       this.setPos(var14, var6, var8);
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.03;
    }

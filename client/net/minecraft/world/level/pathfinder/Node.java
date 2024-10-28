@@ -20,10 +20,11 @@ public class Node {
    public boolean closed;
    public float walkedDistance;
    public float costMalus;
-   public PathType type = PathType.BLOCKED;
+   public PathType type;
 
    public Node(int var1, int var2, int var3) {
       super();
+      this.type = PathType.BLOCKED;
       this.x = var1;
       this.y = var2;
       this.z = var3;
@@ -45,7 +46,7 @@ public class Node {
    }
 
    public static int createHash(int var0, int var1, int var2) {
-      return var1 & 0xFF | (var0 & 32767) << 8 | (var2 & 32767) << 24 | (var0 < 0 ? -2147483648 : 0) | (var2 < 0 ? 32768 : 0);
+      return var1 & 255 | (var0 & 32767) << 8 | (var2 & 32767) << 24 | (var0 < 0 ? -2147483648 : 0) | (var2 < 0 ? '\u8000' : 0);
    }
 
    public float distanceTo(Node var1) {
@@ -104,17 +105,14 @@ public class Node {
       return new Vec3((double)this.x, (double)this.y, (double)this.z);
    }
 
-   @Override
    public boolean equals(Object var1) {
-      if (!(var1 instanceof Node)) {
+      if (!(var1 instanceof Node var2)) {
          return false;
       } else {
-         Node var2 = (Node)var1;
          return this.hash == var2.hash && this.x == var2.x && this.y == var2.y && this.z == var2.z;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.hash;
    }
@@ -123,7 +121,6 @@ public class Node {
       return this.heapIdx >= 0;
    }
 
-   @Override
    public String toString() {
       return "Node{x=" + this.x + ", y=" + this.y + ", z=" + this.z + "}";
    }
@@ -149,7 +146,7 @@ public class Node {
       var1.walkedDistance = var0.readFloat();
       var1.costMalus = var0.readFloat();
       var1.closed = var0.readBoolean();
-      var1.type = var0.readEnum(PathType.class);
+      var1.type = (PathType)var0.readEnum(PathType.class);
       var1.f = var0.readFloat();
    }
 }

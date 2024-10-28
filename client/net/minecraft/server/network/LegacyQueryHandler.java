@@ -33,9 +33,10 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
 
             SocketAddress var5 = var1.channel().remoteAddress();
             int var6 = var3.readableBytes();
+            String var7;
             if (var6 == 0) {
                LOGGER.debug("Ping: (<1.3.x) from {}", var5);
-               String var7 = createVersion0Response(this.server);
+               var7 = createVersion0Response(this.server);
                sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var7));
             } else {
                if (var3.readUnsignedByte() != 1) {
@@ -52,20 +53,22 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
                   LOGGER.debug("Ping: (1.4-1.5.x) from {}", var5);
                }
 
-               String var13 = createVersion1Response(this.server);
-               sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var13));
+               var7 = createVersion1Response(this.server);
+               sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var7));
             }
 
             var3.release();
             var4 = false;
          } catch (RuntimeException var11) {
          }
+
       } finally {
          if (var4) {
             var3.resetReaderIndex();
             var1.channel().pipeline().remove(this);
             var1.fireChannelRead(var2);
          }
+
       }
    }
 
@@ -100,15 +103,7 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
    }
 
    private static String createVersion1Response(ServerInfo var0) {
-      return String.format(
-         Locale.ROOT,
-         "\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d",
-         127,
-         var0.getServerVersion(),
-         var0.getMotd(),
-         var0.getPlayerCount(),
-         var0.getMaxPlayers()
-      );
+      return String.format(Locale.ROOT, "\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, var0.getServerVersion(), var0.getMotd(), var0.getPlayerCount(), var0.getMaxPlayers());
    }
 
    private static void sendFlushAndClose(ChannelHandlerContext var0, ByteBuf var1) {

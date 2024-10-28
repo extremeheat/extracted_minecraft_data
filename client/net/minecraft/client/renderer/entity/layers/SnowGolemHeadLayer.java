@@ -33,7 +33,7 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolem, SnowGolemModel<Sn
          boolean var11 = Minecraft.getInstance().shouldEntityAppearGlowing(var4) && var4.isInvisible();
          if (!var4.isInvisible() || var11) {
             var1.pushPose();
-            this.getParentModel().getHead().translateAndRotate(var1);
+            ((SnowGolemModel)this.getParentModel()).getHead().translateAndRotate(var1);
             float var12 = 0.625F;
             var1.translate(0.0F, -0.34375F, 0.0F);
             var1.mulPose(Axis.YP.rotationDegrees(180.0F));
@@ -44,23 +44,9 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolem, SnowGolemModel<Sn
                BakedModel var15 = this.blockRenderer.getBlockModel(var14);
                int var16 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
                var1.translate(-0.5F, -0.5F, -0.5F);
-               this.blockRenderer
-                  .getModelRenderer()
-                  .renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var14, var15, 0.0F, 0.0F, 0.0F, var3, var16);
+               this.blockRenderer.getModelRenderer().renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var14, var15, 0.0F, 0.0F, 0.0F, var3, var16);
             } else {
-               this.itemRenderer
-                  .renderStatic(
-                     var4,
-                     var13,
-                     ItemDisplayContext.HEAD,
-                     false,
-                     var1,
-                     var2,
-                     var4.level(),
-                     var3,
-                     LivingEntityRenderer.getOverlayCoords(var4, 0.0F),
-                     var4.getId()
-                  );
+               this.itemRenderer.renderStatic(var4, var13, ItemDisplayContext.HEAD, false, var1, var2, var4.level(), var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), var4.getId());
             }
 
             var1.popPose();

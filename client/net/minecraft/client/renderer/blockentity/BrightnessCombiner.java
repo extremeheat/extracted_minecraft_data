@@ -12,7 +12,7 @@ public class BrightnessCombiner<S extends BlockEntity> implements DoubleBlockCom
    }
 
    public Int2IntFunction acceptDouble(S var1, S var2) {
-      return var2x -> {
+      return (var2x) -> {
          int var3 = LevelRenderer.getLightColor(var1.getLevel(), var1.getBlockPos());
          int var4 = LevelRenderer.getLightColor(var2.getLevel(), var2.getBlockPos());
          int var5 = LightTexture.block(var3);
@@ -24,10 +24,19 @@ public class BrightnessCombiner<S extends BlockEntity> implements DoubleBlockCom
    }
 
    public Int2IntFunction acceptSingle(S var1) {
-      return var0 -> var0;
+      return (var0) -> {
+         return var0;
+      };
    }
 
    public Int2IntFunction acceptNone() {
-      return var0 -> var0;
+      return (var0) -> {
+         return var0;
+      };
+   }
+
+   // $FF: synthetic method
+   public Object acceptNone() {
+      return this.acceptNone();
    }
 }

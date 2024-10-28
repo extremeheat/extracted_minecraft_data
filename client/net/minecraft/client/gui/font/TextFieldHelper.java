@@ -31,7 +31,9 @@ public class TextFieldHelper {
    }
 
    public static Supplier<String> createClipboardGetter(Minecraft var0) {
-      return () -> getClipboardContents(var0);
+      return () -> {
+         return getClipboardContents(var0);
+      };
    }
 
    public static String getClipboardContents(Minecraft var0) {
@@ -39,7 +41,9 @@ public class TextFieldHelper {
    }
 
    public static Consumer<String> createClipboardSetter(Minecraft var0) {
-      return var1 -> setClipboardContents(var0, var1);
+      return (var1) -> {
+         setClipboardContents(var0, var1);
+      };
    }
 
    public static void setClipboardContents(Minecraft var0, String var1) {
@@ -48,7 +52,7 @@ public class TextFieldHelper {
 
    public boolean charTyped(char var1) {
       if (StringUtil.isAllowedChatCharacter(var1)) {
-         this.insertText(this.getMessageFn.get(), Character.toString(var1));
+         this.insertText((String)this.getMessageFn.get(), Character.toString(var1));
       }
 
       return true;
@@ -68,7 +72,7 @@ public class TextFieldHelper {
          this.cut();
          return true;
       } else {
-         TextFieldHelper.CursorStep var2 = Screen.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
+         CursorStep var2 = Screen.hasControlDown() ? TextFieldHelper.CursorStep.WORD : TextFieldHelper.CursorStep.CHARACTER;
          if (var1 == 259) {
             this.removeFromCursor(-1, var2);
             return true;
@@ -103,7 +107,7 @@ public class TextFieldHelper {
    }
 
    private int clampToMsgLength(int var1) {
-      return Mth.clamp(var1, 0, this.getMessageFn.get().length());
+      return Mth.clamp(var1, 0, ((String)this.getMessageFn.get()).length());
    }
 
    private void insertText(String var1, String var2) {
@@ -112,31 +116,31 @@ public class TextFieldHelper {
       }
 
       this.cursorPos = Mth.clamp(this.cursorPos, 0, var1.length());
-      String var3 = new StringBuilder(var1).insert(this.cursorPos, var2).toString();
+      String var3 = (new StringBuilder(var1)).insert(this.cursorPos, var2).toString();
       if (this.stringValidator.test(var3)) {
          this.setMessageFn.accept(var3);
          this.selectionPos = this.cursorPos = Math.min(var3.length(), this.cursorPos + var2.length());
       }
+
    }
 
    public void insertText(String var1) {
-      this.insertText(this.getMessageFn.get(), var1);
+      this.insertText((String)this.getMessageFn.get(), var1);
    }
 
    private void resetSelectionIfNeeded(boolean var1) {
       if (!var1) {
          this.selectionPos = this.cursorPos;
       }
+
    }
 
-   public void moveBy(int var1, boolean var2, TextFieldHelper.CursorStep var3) {
-      switch(var3) {
-         case CHARACTER:
-            this.moveByChars(var1, var2);
-            break;
-         case WORD:
-            this.moveByWords(var1, var2);
+   public void moveBy(int var1, boolean var2, CursorStep var3) {
+      switch (var3.ordinal()) {
+         case 0 -> this.moveByChars(var1, var2);
+         case 1 -> this.moveByWords(var1, var2);
       }
+
    }
 
    public void moveByChars(int var1) {
@@ -144,7 +148,7 @@ public class TextFieldHelper {
    }
 
    public void moveByChars(int var1, boolean var2) {
-      this.cursorPos = Util.offsetByCodepoints(this.getMessageFn.get(), this.cursorPos, var1);
+      this.cursorPos = Util.offsetByCodepoints((String)this.getMessageFn.get(), this.cursorPos, var1);
       this.resetSelectionIfNeeded(var2);
    }
 
@@ -153,27 +157,25 @@ public class TextFieldHelper {
    }
 
    public void moveByWords(int var1, boolean var2) {
-      this.cursorPos = StringSplitter.getWordPosition(this.getMessageFn.get(), var1, this.cursorPos, true);
+      this.cursorPos = StringSplitter.getWordPosition((String)this.getMessageFn.get(), var1, this.cursorPos, true);
       this.resetSelectionIfNeeded(var2);
    }
 
-   public void removeFromCursor(int var1, TextFieldHelper.CursorStep var2) {
-      switch(var2) {
-         case CHARACTER:
-            this.removeCharsFromCursor(var1);
-            break;
-         case WORD:
-            this.removeWordsFromCursor(var1);
+   public void removeFromCursor(int var1, CursorStep var2) {
+      switch (var2.ordinal()) {
+         case 0 -> this.removeCharsFromCursor(var1);
+         case 1 -> this.removeWordsFromCursor(var1);
       }
+
    }
 
    public void removeWordsFromCursor(int var1) {
-      int var2 = StringSplitter.getWordPosition(this.getMessageFn.get(), var1, this.cursorPos, true);
+      int var2 = StringSplitter.getWordPosition((String)this.getMessageFn.get(), var1, this.cursorPos, true);
       this.removeCharsFromCursor(var2 - this.cursorPos);
    }
 
    public void removeCharsFromCursor(int var1) {
-      String var2 = this.getMessageFn.get();
+      String var2 = (String)this.getMessageFn.get();
       if (!var2.isEmpty()) {
          String var3;
          if (this.selectionPos != this.cursorPos) {
@@ -182,7 +184,7 @@ public class TextFieldHelper {
             int var4 = Util.offsetByCodepoints(var2, this.cursorPos, var1);
             int var5 = Math.min(var4, this.cursorPos);
             int var6 = Math.max(var4, this.cursorPos);
-            var3 = new StringBuilder(var2).delete(var5, var6).toString();
+            var3 = (new StringBuilder(var2)).delete(var5, var6).toString();
             if (var1 < 0) {
                this.selectionPos = this.cursorPos = var5;
             }
@@ -190,26 +192,27 @@ public class TextFieldHelper {
 
          this.setMessageFn.accept(var3);
       }
+
    }
 
    public void cut() {
-      String var1 = this.getMessageFn.get();
+      String var1 = (String)this.getMessageFn.get();
       this.setClipboardFn.accept(this.getSelected(var1));
       this.setMessageFn.accept(this.deleteSelection(var1));
    }
 
    public void paste() {
-      this.insertText(this.getMessageFn.get(), this.getClipboardFn.get());
+      this.insertText((String)this.getMessageFn.get(), (String)this.getClipboardFn.get());
       this.selectionPos = this.cursorPos;
    }
 
    public void copy() {
-      this.setClipboardFn.accept(this.getSelected(this.getMessageFn.get()));
+      this.setClipboardFn.accept(this.getSelected((String)this.getMessageFn.get()));
    }
 
    public void selectAll() {
       this.selectionPos = 0;
-      this.cursorPos = this.getMessageFn.get().length();
+      this.cursorPos = ((String)this.getMessageFn.get()).length();
    }
 
    private String getSelected(String var1) {
@@ -224,7 +227,8 @@ public class TextFieldHelper {
       } else {
          int var2 = Math.min(this.cursorPos, this.selectionPos);
          int var3 = Math.max(this.cursorPos, this.selectionPos);
-         String var4 = var1.substring(0, var2) + var1.substring(var3);
+         String var10000 = var1.substring(0, var2);
+         String var4 = var10000 + var1.substring(var3);
          this.selectionPos = this.cursorPos = var2;
          return var4;
       }
@@ -244,7 +248,7 @@ public class TextFieldHelper {
    }
 
    public void setCursorToEnd(boolean var1) {
-      this.cursorPos = this.getMessageFn.get().length();
+      this.cursorPos = ((String)this.getMessageFn.get()).length();
       this.resetSelectionIfNeeded(var1);
    }
 
@@ -270,7 +274,7 @@ public class TextFieldHelper {
    }
 
    public void setSelectionRange(int var1, int var2) {
-      int var3 = this.getMessageFn.get().length();
+      int var3 = ((String)this.getMessageFn.get()).length();
       this.cursorPos = Mth.clamp(var1, 0, var3);
       this.selectionPos = Mth.clamp(var2, 0, var3);
    }
@@ -284,6 +288,11 @@ public class TextFieldHelper {
       WORD;
 
       private CursorStep() {
+      }
+
+      // $FF: synthetic method
+      private static CursorStep[] $values() {
+         return new CursorStep[]{CHARACTER, WORD};
       }
    }
 }

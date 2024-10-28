@@ -24,32 +24,33 @@ public class DispenserMenu extends AbstractContainerMenu {
       this.dispenser = var3;
       var3.startOpen(var2.player);
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 3; ++var5) {
+      int var4;
+      int var5;
+      for(var4 = 0; var4 < 3; ++var4) {
+         for(var5 = 0; var5 < 3; ++var5) {
             this.addSlot(new Slot(var3, var5 + var4 * 3, 62 + var5 * 18, 17 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 3; ++var6) {
-         for(int var8 = 0; var8 < 9; ++var8) {
-            this.addSlot(new Slot(var2, var8 + var6 * 9 + 9, 8 + var8 * 18, 84 + var6 * 18));
+      for(var4 = 0; var4 < 3; ++var4) {
+         for(var5 = 0; var5 < 9; ++var5) {
+            this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
+      for(var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var2, var4, 8 + var4 * 18, 142));
       }
+
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.dispenser.stillValid(var1);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -77,7 +78,6 @@ public class DispenserMenu extends AbstractContainerMenu {
       return var3;
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
       this.dispenser.stopOpen(var1);

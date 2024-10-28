@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.AquaticFeatures;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
@@ -55,52 +56,18 @@ public class AquaticPlacements {
       Holder.Reference var7 = var1.getOrThrow(AquaticFeatures.SEA_PICKLE);
       Holder.Reference var8 = var1.getOrThrow(AquaticFeatures.KELP);
       Holder.Reference var9 = var1.getOrThrow(AquaticFeatures.WARM_OCEAN_VEGETATION);
-      PlacementUtils.register(var0, SEAGRASS_WARM, var2, seagrassPlacement(80));
-      PlacementUtils.register(var0, SEAGRASS_NORMAL, var2, seagrassPlacement(48));
-      PlacementUtils.register(var0, SEAGRASS_COLD, var2, seagrassPlacement(32));
-      PlacementUtils.register(var0, SEAGRASS_RIVER, var3, seagrassPlacement(48));
-      PlacementUtils.register(var0, SEAGRASS_SWAMP, var4, seagrassPlacement(64));
-      PlacementUtils.register(var0, SEAGRASS_DEEP_WARM, var5, seagrassPlacement(80));
-      PlacementUtils.register(var0, SEAGRASS_DEEP, var5, seagrassPlacement(48));
-      PlacementUtils.register(var0, SEAGRASS_DEEP_COLD, var5, seagrassPlacement(40));
-      PlacementUtils.register(
-         var0,
-         SEAGRASS_SIMPLE,
-         var6,
-         CarvingMaskPlacement.forStep(GenerationStep.Carving.LIQUID),
-         RarityFilter.onAverageOnceEvery(10),
-         BlockPredicateFilter.forPredicate(
-            BlockPredicate.allOf(
-               BlockPredicate.matchesBlocks(Direction.DOWN.getNormal(), Blocks.STONE),
-               BlockPredicate.matchesBlocks(BlockPos.ZERO, Blocks.WATER),
-               BlockPredicate.matchesBlocks(Direction.UP.getNormal(), Blocks.WATER)
-            )
-         ),
-         BiomeFilter.biome()
-      );
-      PlacementUtils.register(
-         var0, SEA_PICKLE, var7, RarityFilter.onAverageOnceEvery(16), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()
-      );
-      PlacementUtils.register(
-         var0,
-         KELP_COLD,
-         var8,
-         NoiseBasedCountPlacement.of(120, 80.0, 0.0),
-         InSquarePlacement.spread(),
-         PlacementUtils.HEIGHTMAP_TOP_SOLID,
-         BiomeFilter.biome()
-      );
-      PlacementUtils.register(
-         var0, KELP_WARM, var8, NoiseBasedCountPlacement.of(80, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()
-      );
-      PlacementUtils.register(
-         var0,
-         WARM_OCEAN_VEGETATION,
-         var9,
-         NoiseBasedCountPlacement.of(20, 400.0, 0.0),
-         InSquarePlacement.spread(),
-         PlacementUtils.HEIGHTMAP_TOP_SOLID,
-         BiomeFilter.biome()
-      );
+      PlacementUtils.register(var0, SEAGRASS_WARM, var2, (List)seagrassPlacement(80));
+      PlacementUtils.register(var0, SEAGRASS_NORMAL, var2, (List)seagrassPlacement(48));
+      PlacementUtils.register(var0, SEAGRASS_COLD, var2, (List)seagrassPlacement(32));
+      PlacementUtils.register(var0, SEAGRASS_RIVER, var3, (List)seagrassPlacement(48));
+      PlacementUtils.register(var0, SEAGRASS_SWAMP, var4, (List)seagrassPlacement(64));
+      PlacementUtils.register(var0, SEAGRASS_DEEP_WARM, var5, (List)seagrassPlacement(80));
+      PlacementUtils.register(var0, SEAGRASS_DEEP, var5, (List)seagrassPlacement(48));
+      PlacementUtils.register(var0, SEAGRASS_DEEP_COLD, var5, (List)seagrassPlacement(40));
+      PlacementUtils.register(var0, SEAGRASS_SIMPLE, var6, (PlacementModifier[])(CarvingMaskPlacement.forStep(GenerationStep.Carving.LIQUID), RarityFilter.onAverageOnceEvery(10), BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.matchesBlocks(Direction.DOWN.getNormal(), Blocks.STONE), BlockPredicate.matchesBlocks(BlockPos.ZERO, (Block[])(Blocks.WATER)), BlockPredicate.matchesBlocks(Direction.UP.getNormal(), Blocks.WATER))), BiomeFilter.biome()));
+      PlacementUtils.register(var0, SEA_PICKLE, var7, (PlacementModifier[])(RarityFilter.onAverageOnceEvery(16), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()));
+      PlacementUtils.register(var0, KELP_COLD, var8, (PlacementModifier[])(NoiseBasedCountPlacement.of(120, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()));
+      PlacementUtils.register(var0, KELP_WARM, var8, (PlacementModifier[])(NoiseBasedCountPlacement.of(80, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()));
+      PlacementUtils.register(var0, WARM_OCEAN_VEGETATION, var9, (PlacementModifier[])(NoiseBasedCountPlacement.of(20, 400.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()));
    }
 }

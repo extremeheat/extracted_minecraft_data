@@ -51,9 +51,7 @@ public class Armadillo extends Animal {
    public static final int SCARE_CHECK_INTERVAL = 80;
    private static final double SCARE_DISTANCE_HORIZONTAL = 7.0;
    private static final double SCARE_DISTANCE_VERTICAL = 2.0;
-   private static final EntityDataAccessor<Armadillo.ArmadilloState> ARMADILLO_STATE = SynchedEntityData.defineId(
-      Armadillo.class, EntityDataSerializers.ARMADILLO_STATE
-   );
+   private static final EntityDataAccessor<ArmadilloState> ARMADILLO_STATE;
    private long inStateTicks = 0L;
    public final AnimationState rollOutAnimationState = new AnimationState();
    public final AnimationState rollUpAnimationState = new AnimationState();
@@ -67,22 +65,15 @@ public class Armadillo extends Animal {
       this.scuteTime = this.pickNextScuteDropTime();
    }
 
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
    @Nullable
-   @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.ARMADILLO.create(var1);
+      return (AgeableMob)EntityType.ARMADILLO.create(var1);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 12.0).add(Attributes.MOVEMENT_SPEED, 0.14);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(ARMADILLO_STATE, Armadillo.ArmadilloState.IDLE);
@@ -100,21 +91,19 @@ public class Armadillo extends Animal {
       return this.getState() == Armadillo.ArmadilloState.ROLLING && this.inStateTicks > (long)Armadillo.ArmadilloState.ROLLING.animationDuration();
    }
 
-   public Armadillo.ArmadilloState getState() {
-      return this.entityData.get(ARMADILLO_STATE);
+   public ArmadilloState getState() {
+      return (ArmadilloState)this.entityData.get(ARMADILLO_STATE);
    }
 
-   @Override
    protected void sendDebugPackets() {
       super.sendDebugPackets();
       DebugPackets.sendEntityBrain(this);
    }
 
-   public void switchToState(Armadillo.ArmadilloState var1) {
+   public void switchToState(ArmadilloState var1) {
       this.entityData.set(ARMADILLO_STATE, var1);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (ARMADILLO_STATE.equals(var1)) {
          this.inStateTicks = 0L;
@@ -123,17 +112,14 @@ public class Armadillo extends Animal {
       super.onSyncedDataUpdated(var1);
    }
 
-   @Override
    protected Brain.Provider<Armadillo> brainProvider() {
       return ArmadilloAi.brainProvider();
    }
 
-   @Override
    protected Brain<?> makeBrain(Dynamic<?> var1) {
       return ArmadilloAi.makeBrain(this.brainProvider().makeBrain(var1));
    }
 
-   @Override
    protected void customServerAiStep() {
       this.level().getProfiler().push("armadilloBrain");
       this.brain.tick((ServerLevel)this.level(), this);
@@ -155,7 +141,6 @@ public class Armadillo extends Animal {
       return this.random.nextInt(20 * TimeUtil.SECONDS_PER_MINUTE * 5) + 20 * TimeUtil.SECONDS_PER_MINUTE * 5;
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.level().isClientSide()) {
@@ -169,29 +154,23 @@ public class Armadillo extends Animal {
       ++this.inStateTicks;
    }
 
-   @Override
    public float getAgeScale() {
       return this.isBaby() ? 0.6F : 1.0F;
    }
 
    private void setupAnimationStates() {
-      switch(this.getState()) {
-         case IDLE:
+      switch (this.getState().ordinal()) {
+         case 0:
             this.rollOutAnimationState.stop();
             this.rollUpAnimationState.stop();
             this.peekAnimationState.stop();
             break;
-         case UNROLLING:
-            this.rollOutAnimationState.startIfStopped(this.tickCount);
-            this.rollUpAnimationState.stop();
-            this.peekAnimationState.stop();
-            break;
-         case ROLLING:
+         case 1:
             this.rollOutAnimationState.stop();
             this.rollUpAnimationState.startIfStopped(this.tickCount);
             this.peekAnimationState.stop();
             break;
-         case SCARED:
+         case 2:
             this.rollOutAnimationState.stop();
             this.rollUpAnimationState.stop();
             if (this.peekReceivedClient) {
@@ -205,10 +184,15 @@ public class Armadillo extends Animal {
             } else {
                this.peekAnimationState.startIfStopped(this.tickCount);
             }
+            break;
+         case 3:
+            this.rollOutAnimationState.startIfStopped(this.tickCount);
+            this.rollUpAnimationState.stop();
+            this.peekAnimationState.stop();
       }
+
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 64 && this.level().isClientSide) {
          this.peekReceivedClient = true;
@@ -216,9 +200,9 @@ public class Armadillo extends Animal {
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
-   @Override
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.ARMADILLO_FOOD);
    }
@@ -227,8 +211,6 @@ public class Armadillo extends Animal {
       return var1.getBlockState(var3.below()).is(BlockTags.ARMADILLO_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean isScaredBy(LivingEntity var1) {
       if (!this.getBoundingBox().inflate(7.0, 2.0, 7.0).intersects(var1.getBoundingBox())) {
          return false;
@@ -236,7 +218,8 @@ public class Armadillo extends Animal {
          return true;
       } else if (this.getLastHurtByMob() == var1) {
          return true;
-      } else if (var1 instanceof Player var2) {
+      } else if (var1 instanceof Player) {
+         Player var2 = (Player)var1;
          if (var2.isSpectator()) {
             return false;
          } else {
@@ -247,20 +230,19 @@ public class Armadillo extends Animal {
       }
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putString("state", this.getState().getSerializedName());
       var1.putInt("scute_time", this.scuteTime);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.switchToState(Armadillo.ArmadilloState.fromName(var1.getString("state")));
       if (var1.contains("scute_time")) {
          this.scuteTime = var1.getInt("scute_time");
       }
+
    }
 
    public void rollUp() {
@@ -281,7 +263,6 @@ public class Armadillo extends Animal {
       }
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isScared()) {
          var2 = (var2 - 1.0F) / 2.0F;
@@ -290,7 +271,6 @@ public class Armadillo extends Animal {
       return super.hurt(var1, var2);
    }
 
-   @Override
    protected void actuallyHurt(DamageSource var1, float var2) {
       super.actuallyHurt(var1, var2);
       if (!this.isNoAi()) {
@@ -302,6 +282,7 @@ public class Armadillo extends Animal {
          } else if (this.shouldPanic()) {
             this.rollOut();
          }
+
       }
    }
 
@@ -309,7 +290,6 @@ public class Armadillo extends Animal {
       return this.isOnFire() || this.isFreezing();
    }
 
-   @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BRUSH) && this.brushOffScute()) {
@@ -320,7 +300,6 @@ public class Armadillo extends Animal {
       }
    }
 
-   @Override
    public void ageUp(int var1, boolean var2) {
       if (this.isBaby() && var2) {
          this.makeSound(SoundEvents.ARMADILLO_EAT);
@@ -344,90 +323,79 @@ public class Armadillo extends Animal {
       return !this.isPanicking() && !this.isInLiquid() && !this.isLeashed() && !this.isPassenger() && !this.isVehicle();
    }
 
-   @Override
    public void setInLove(@Nullable Player var1) {
       super.setInLove(var1);
       this.makeSound(SoundEvents.ARMADILLO_EAT);
    }
 
-   @Override
    public boolean canFallInLove() {
       return super.canFallInLove() && !this.isScared();
    }
 
-   @Override
    public SoundEvent getEatingSound(ItemStack var1) {
       return SoundEvents.ARMADILLO_EAT;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return this.isScared() ? null : SoundEvents.ARMADILLO_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.ARMADILLO_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return this.isScared() ? SoundEvents.ARMADILLO_HURT_REDUCED : SoundEvents.ARMADILLO_HURT;
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.ARMADILLO_STEP, 0.15F, 1.0F);
    }
 
-   @Override
    public int getMaxHeadYRot() {
       return this.isScared() ? 0 : 32;
    }
 
-   @Override
    protected BodyRotationControl createBodyControl() {
       return new BodyRotationControl(this) {
-         @Override
          public void clientTick() {
             if (!Armadillo.this.isScared()) {
                super.clientTick();
             }
+
          }
       };
    }
 
+   static {
+      ARMADILLO_STATE = SynchedEntityData.defineId(Armadillo.class, EntityDataSerializers.ARMADILLO_STATE);
+   }
+
    public static enum ArmadilloState implements StringRepresentable {
       IDLE("idle", false, 0, 0) {
-         @Override
          public boolean shouldHideInShell(long var1) {
             return false;
          }
       },
       ROLLING("rolling", true, 10, 1) {
-         @Override
          public boolean shouldHideInShell(long var1) {
             return var1 > 5L;
          }
       },
       SCARED("scared", true, 50, 2) {
-         @Override
          public boolean shouldHideInShell(long var1) {
             return true;
          }
       },
       UNROLLING("unrolling", true, 30, 3) {
-         @Override
          public boolean shouldHideInShell(long var1) {
             return var1 < 26L;
          }
       };
 
-      private static final StringRepresentable.EnumCodec<Armadillo.ArmadilloState> CODEC = StringRepresentable.fromEnum(Armadillo.ArmadilloState::values);
-      private static final IntFunction<Armadillo.ArmadilloState> BY_ID = ByIdMap.continuous(
-         Armadillo.ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO
-      );
-      public static final StreamCodec<ByteBuf, Armadillo.ArmadilloState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Armadillo.ArmadilloState::id);
+      private static final StringRepresentable.EnumCodec<ArmadilloState> CODEC = StringRepresentable.fromEnum(ArmadilloState::values);
+      private static final IntFunction<ArmadilloState> BY_ID = ByIdMap.continuous(ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, ArmadilloState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ArmadilloState::id);
       private final String name;
       private final boolean isThreatened;
       private final int animationDuration;
@@ -440,11 +408,10 @@ public class Armadillo extends Animal {
          this.id = var6;
       }
 
-      public static Armadillo.ArmadilloState fromName(String var0) {
-         return CODEC.byName(var0, IDLE);
+      public static ArmadilloState fromName(String var0) {
+         return (ArmadilloState)CODEC.byName(var0, IDLE);
       }
 
-      @Override
       public String getSerializedName() {
          return this.name;
       }
@@ -461,6 +428,11 @@ public class Armadillo extends Animal {
 
       public int animationDuration() {
          return this.animationDuration;
+      }
+
+      // $FF: synthetic method
+      private static ArmadilloState[] $values() {
+         return new ArmadilloState[]{IDLE, ROLLING, SCARED, UNROLLING};
       }
    }
 }

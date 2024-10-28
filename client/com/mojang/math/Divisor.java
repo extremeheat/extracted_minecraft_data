@@ -21,6 +21,7 @@ public class Divisor implements IntIterator {
          this.quotient = 0;
          this.mod = 0;
       }
+
    }
 
    public boolean hasNext() {
@@ -45,6 +46,8 @@ public class Divisor implements IntIterator {
 
    @VisibleForTesting
    public static Iterable<Integer> asIterable(int var0, int var1) {
-      return () -> new Divisor(var0, var1);
+      return () -> {
+         return new Divisor(var0, var1);
+      };
    }
 }

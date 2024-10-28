@@ -8,7 +8,6 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
       super(var1, var2, var3);
    }
 
-   @Override
    protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
       if (!var4 || var3 < this.levelCount - 2) {
          for(int var5 = -1; var5 <= 1; ++var5) {
@@ -21,10 +20,10 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
                }
             }
          }
+
       }
    }
 
-   @Override
    protected int getComputedLevel(long var1, long var3, int var5) {
       int var6 = var5;
 
@@ -53,7 +52,6 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
       return var6;
    }
 
-   @Override
    protected int computeLevelFromNeighbor(long var1, long var3, int var5) {
       return this.isSource(var1) ? this.getLevelFromSource(var3) : var5 + 1;
    }

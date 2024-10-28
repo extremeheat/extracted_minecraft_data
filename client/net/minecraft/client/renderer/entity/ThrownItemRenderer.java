@@ -28,26 +28,22 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
       this(var1, 1.0F, false);
    }
 
-   @Override
    protected int getBlockLightLevel(T var1, BlockPos var2) {
-      return this.fullBright ? 15 : super.getBlockLightLevel((T)var1, var2);
+      return this.fullBright ? 15 : super.getBlockLightLevel(var1, var2);
    }
 
-   @Override
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       if (var1.tickCount >= 2 || !(this.entityRenderDispatcher.camera.getEntity().distanceToSqr(var1) < 12.25)) {
          var4.pushPose();
          var4.scale(this.scale, this.scale, this.scale);
          var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
          var4.mulPose(Axis.YP.rotationDegrees(180.0F));
-         this.itemRenderer
-            .renderStatic(((ItemSupplier)var1).getItem(), ItemDisplayContext.GROUND, var6, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
+         this.itemRenderer.renderStatic(((ItemSupplier)var1).getItem(), ItemDisplayContext.GROUND, var6, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
          var4.popPose();
-         super.render((T)var1, var2, var3, var4, var5, var6);
+         super.render(var1, var2, var3, var4, var5, var6);
       }
    }
 
-   @Override
    public ResourceLocation getTextureLocation(Entity var1) {
       return TextureAtlas.LOCATION_BLOCKS;
    }

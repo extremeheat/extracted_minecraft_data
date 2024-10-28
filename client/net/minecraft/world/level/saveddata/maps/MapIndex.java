@@ -3,7 +3,7 @@ package net.minecraft.world.level.saveddata.maps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import java.util.Iterator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -14,7 +14,7 @@ public class MapIndex extends SavedData {
    private final Object2IntMap<String> usedAuxIds = new Object2IntOpenHashMap();
 
    public static SavedData.Factory<MapIndex> factory() {
-      return new SavedData.Factory<>(MapIndex::new, MapIndex::load, DataFixTypes.SAVED_DATA_MAP_INDEX);
+      return new SavedData.Factory(MapIndex::new, MapIndex::load, DataFixTypes.SAVED_DATA_MAP_INDEX);
    }
 
    public MapIndex() {
@@ -24,8 +24,10 @@ public class MapIndex extends SavedData {
 
    public static MapIndex load(CompoundTag var0, HolderLookup.Provider var1) {
       MapIndex var2 = new MapIndex();
+      Iterator var3 = var0.getAllKeys().iterator();
 
-      for(String var4 : var0.getAllKeys()) {
+      while(var3.hasNext()) {
+         String var4 = (String)var3.next();
          if (var0.contains(var4, 99)) {
             var2.usedAuxIds.put(var4, var0.getInt(var4));
          }
@@ -34,12 +36,11 @@ public class MapIndex extends SavedData {
       return var2;
    }
 
-   @Override
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       ObjectIterator var3 = this.usedAuxIds.object2IntEntrySet().iterator();
 
       while(var3.hasNext()) {
-         Entry var4 = (Entry)var3.next();
+         Object2IntMap.Entry var4 = (Object2IntMap.Entry)var3.next();
          var1.putInt((String)var4.getKey(), var4.getIntValue());
       }
 

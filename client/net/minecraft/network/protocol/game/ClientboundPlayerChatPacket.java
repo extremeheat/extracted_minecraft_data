@@ -14,37 +14,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundPlayerChatPacket(
-   UUID b, int c, @Nullable MessageSignature d, SignedMessageBody.Packed e, @Nullable Component f, FilterMask g, ChatType.Bound h
-) implements Packet<ClientGamePacketListener> {
-   private final UUID sender;
-   private final int index;
-   @Nullable
-   private final MessageSignature signature;
-   private final SignedMessageBody.Packed body;
-   @Nullable
-   private final Component unsignedContent;
-   private final FilterMask filterMask;
-   private final ChatType.Bound chatType;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlayerChatPacket::write, ClientboundPlayerChatPacket::new
-   );
+public record ClientboundPlayerChatPacket(UUID sender, int index, @Nullable MessageSignature signature, SignedMessageBody.Packed body, @Nullable Component unsignedContent, FilterMask filterMask, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC = Packet.codec(ClientboundPlayerChatPacket::write, ClientboundPlayerChatPacket::new);
 
    private ClientboundPlayerChatPacket(RegistryFriendlyByteBuf var1) {
-      this(
-         var1.readUUID(),
-         var1.readVarInt(),
-         var1.readNullable(MessageSignature::read),
-         new SignedMessageBody.Packed(var1),
-         FriendlyByteBuf.readNullable(var1, ComponentSerialization.TRUSTED_STREAM_CODEC),
-         FilterMask.read(var1),
-         (ChatType.Bound)ChatType.Bound.STREAM_CODEC.decode(var1)
-      );
+      this(var1.readUUID(), var1.readVarInt(), (MessageSignature)var1.readNullable(MessageSignature::read), new SignedMessageBody.Packed(var1), (Component)FriendlyByteBuf.readNullable(var1, ComponentSerialization.TRUSTED_STREAM_CODEC), FilterMask.read(var1), (ChatType.Bound)ChatType.Bound.STREAM_CODEC.decode(var1));
    }
 
-   public ClientboundPlayerChatPacket(
-      UUID var1, int var2, @Nullable MessageSignature var3, SignedMessageBody.Packed var4, @Nullable Component var5, FilterMask var6, ChatType.Bound var7
-   ) {
+   public ClientboundPlayerChatPacket(UUID var1, int var2, @Nullable MessageSignature var3, SignedMessageBody.Packed var4, @Nullable Component var5, FilterMask var6, ChatType.Bound var7) {
       super();
       this.sender = var1;
       this.index = var2;
@@ -65,7 +42,6 @@ public record ClientboundPlayerChatPacket(
       ChatType.Bound.STREAM_CODEC.encode(var1, this.chatType);
    }
 
-   @Override
    public PacketType<ClientboundPlayerChatPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_CHAT;
    }
@@ -74,8 +50,37 @@ public record ClientboundPlayerChatPacket(
       var1.handlePlayerChat(this);
    }
 
-   @Override
    public boolean isSkippable() {
       return true;
+   }
+
+   public UUID sender() {
+      return this.sender;
+   }
+
+   public int index() {
+      return this.index;
+   }
+
+   @Nullable
+   public MessageSignature signature() {
+      return this.signature;
+   }
+
+   public SignedMessageBody.Packed body() {
+      return this.body;
+   }
+
+   @Nullable
+   public Component unsignedContent() {
+      return this.unsignedContent;
+   }
+
+   public FilterMask filterMask() {
+      return this.filterMask;
+   }
+
+   public ChatType.Bound chatType() {
+      return this.chatType;
    }
 }

@@ -14,20 +14,18 @@ public class FloatGoal extends Goal {
       var1.getNavigation().setCanFloat(true);
    }
 
-   @Override
    public boolean canUse() {
       return this.mob.isInWater() && this.mob.getFluidHeight(FluidTags.WATER) > this.mob.getFluidJumpThreshold() || this.mob.isInLava();
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   @Override
    public void tick() {
       if (this.mob.getRandom().nextFloat() < 0.8F) {
          this.mob.getJumpControl().jump();
       }
+
    }
 }

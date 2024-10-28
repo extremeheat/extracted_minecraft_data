@@ -20,4 +20,9 @@ public enum RecipeCategory {
    public String getFolderName() {
       return this.recipeFolderName;
    }
+
+   // $FF: synthetic method
+   private static RecipeCategory[] $values() {
+      return new RecipeCategory[]{BUILDING_BLOCKS, DECORATIONS, REDSTONE, TRANSPORTATION, TOOLS, COMBAT, FOOD, BREWING, MISC};
+   }
 }

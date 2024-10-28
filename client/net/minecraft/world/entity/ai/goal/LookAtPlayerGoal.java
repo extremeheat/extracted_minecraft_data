@@ -15,7 +15,7 @@ public class LookAtPlayerGoal extends Goal {
    @Nullable
    protected Entity lookAt;
    protected final float lookDistance;
-   protected int lookTime;
+   private int lookTime;
    protected final float probability;
    private final boolean onlyHorizontal;
    protected final Class<? extends LivingEntity> lookAtType;
@@ -38,13 +38,15 @@ public class LookAtPlayerGoal extends Goal {
       this.onlyHorizontal = var5;
       this.setFlags(EnumSet.of(Goal.Flag.LOOK));
       if (var2 == Player.class) {
-         this.lookAtContext = TargetingConditions.forNonCombat().range((double)var3).selector(var1x -> EntitySelector.notRiding(var1).test(var1x));
+         this.lookAtContext = TargetingConditions.forNonCombat().range((double)var3).selector((var1x) -> {
+            return EntitySelector.notRiding(var1).test(var1x);
+         });
       } else {
          this.lookAtContext = TargetingConditions.forNonCombat().range((double)var3);
       }
+
    }
 
-   @Override
    public boolean canUse() {
       if (this.mob.getRandom().nextFloat() >= this.probability) {
          return false;
@@ -56,27 +58,15 @@ public class LookAtPlayerGoal extends Goal {
          if (this.lookAtType == Player.class) {
             this.lookAt = this.mob.level().getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
          } else {
-            this.lookAt = this.mob
-               .level()
-               .getNearestEntity(
-                  this.mob
-                     .level()
-                     .getEntitiesOfClass(
-                        this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), var0 -> true
-                     ),
-                  this.lookAtContext,
-                  this.mob,
-                  this.mob.getX(),
-                  this.mob.getEyeY(),
-                  this.mob.getZ()
-               );
+            this.lookAt = this.mob.level().getNearestEntity(this.mob.level().getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), (var0) -> {
+               return true;
+            }), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
          }
 
          return this.lookAt != null;
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       if (!this.lookAt.isAlive()) {
          return false;
@@ -87,17 +77,14 @@ public class LookAtPlayerGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.lookTime = this.adjustedTickDelay(40 + this.mob.getRandom().nextInt(40));
    }
 
-   @Override
    public void stop() {
       this.lookAt = null;
    }
 
-   @Override
    public void tick() {
       if (this.lookAt.isAlive()) {
          double var1 = this.onlyHorizontal ? this.mob.getEyeY() : this.lookAt.getEyeY();

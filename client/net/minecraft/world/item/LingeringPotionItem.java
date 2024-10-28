@@ -1,7 +1,7 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -17,24 +17,14 @@ public class LingeringPotionItem extends ThrowablePotionItem {
       super(var1);
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      PotionContents var5 = var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
-      var5.addPotionTooltip(var3::add, 0.25F, var2 == null ? 20.0F : var2.tickRateManager().tickrate());
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      PotionContents var5 = (PotionContents)var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+      Objects.requireNonNull(var3);
+      var5.addPotionTooltip(var3::add, 0.25F, var2.tickRate());
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      var1.playSound(
-         null,
-         var2.getX(),
-         var2.getY(),
-         var2.getZ(),
-         SoundEvents.LINGERING_POTION_THROW,
-         SoundSource.NEUTRAL,
-         0.5F,
-         0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
-      );
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.LINGERING_POTION_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       return super.use(var1, var2, var3);
    }
 }

@@ -24,16 +24,7 @@ public class LevelVersion {
       int var1 = var0.get("version").asInt(0);
       long var2 = var0.get("LastPlayed").asLong(0L);
       OptionalDynamic var4 = var0.get("Version");
-      return var4.result().isPresent()
-         ? new LevelVersion(
-            var1,
-            var2,
-            var4.get("Name").asString(SharedConstants.getCurrentVersion().getName()),
-            var4.get("Id").asInt(SharedConstants.getCurrentVersion().getDataVersion().getVersion()),
-            var4.get("Series").asString(DataVersion.MAIN_SERIES),
-            var4.get("Snapshot").asBoolean(!SharedConstants.getCurrentVersion().isStable())
-         )
-         : new LevelVersion(var1, var2, "", 0, DataVersion.MAIN_SERIES, false);
+      return var4.result().isPresent() ? new LevelVersion(var1, var2, var4.get("Name").asString(SharedConstants.getCurrentVersion().getName()), var4.get("Id").asInt(SharedConstants.getCurrentVersion().getDataVersion().getVersion()), var4.get("Series").asString(DataVersion.MAIN_SERIES), var4.get("Snapshot").asBoolean(!SharedConstants.getCurrentVersion().isStable())) : new LevelVersion(var1, var2, "", 0, DataVersion.MAIN_SERIES, false);
    }
 
    public int levelDataVersion() {

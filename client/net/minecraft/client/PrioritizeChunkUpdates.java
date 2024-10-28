@@ -9,9 +9,7 @@ public enum PrioritizeChunkUpdates implements OptionEnum {
    PLAYER_AFFECTED(1, "options.prioritizeChunkUpdates.byPlayer"),
    NEARBY(2, "options.prioritizeChunkUpdates.nearby");
 
-   private static final IntFunction<PrioritizeChunkUpdates> BY_ID = ByIdMap.continuous(
-      PrioritizeChunkUpdates::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP
-   );
+   private static final IntFunction<PrioritizeChunkUpdates> BY_ID = ByIdMap.continuous(PrioritizeChunkUpdates::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 
@@ -20,17 +18,20 @@ public enum PrioritizeChunkUpdates implements OptionEnum {
       this.key = var4;
    }
 
-   @Override
    public int getId() {
       return this.id;
    }
 
-   @Override
    public String getKey() {
       return this.key;
    }
 
    public static PrioritizeChunkUpdates byId(int var0) {
-      return BY_ID.apply(var0);
+      return (PrioritizeChunkUpdates)BY_ID.apply(var0);
+   }
+
+   // $FF: synthetic method
+   private static PrioritizeChunkUpdates[] $values() {
+      return new PrioritizeChunkUpdates[]{NONE, PLAYER_AFFECTED, NEARBY};
    }
 }

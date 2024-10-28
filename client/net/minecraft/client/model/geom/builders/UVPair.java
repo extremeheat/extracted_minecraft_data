@@ -18,7 +18,6 @@ public class UVPair {
       return this.v;
    }
 
-   @Override
    public String toString() {
       return "(" + this.u + "," + this.v + ")";
    }

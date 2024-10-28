@@ -14,7 +14,6 @@ public class BuddingAmethystBlock extends AmethystBlock {
    public static final int GROWTH_CHANCE = 5;
    private static final Direction[] DIRECTIONS = Direction.values();
 
-   @Override
    public MapCodec<BuddingAmethystBlock> codec() {
       return CODEC;
    }
@@ -23,7 +22,6 @@ public class BuddingAmethystBlock extends AmethystBlock {
       super(var1);
    }
 
-   @Override
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(5) == 0) {
          Direction var5 = DIRECTIONS[var4.nextInt(DIRECTIONS.length)];
@@ -41,11 +39,10 @@ public class BuddingAmethystBlock extends AmethystBlock {
          }
 
          if (var8 != null) {
-            BlockState var9 = var8.defaultBlockState()
-               .setValue(AmethystClusterBlock.FACING, var5)
-               .setValue(AmethystClusterBlock.WATERLOGGED, Boolean.valueOf(var7.getFluidState().getType() == Fluids.WATER));
+            BlockState var9 = (BlockState)((BlockState)var8.defaultBlockState().setValue(AmethystClusterBlock.FACING, var5)).setValue(AmethystClusterBlock.WATERLOGGED, var7.getFluidState().getType() == Fluids.WATER);
             var2.setBlockAndUpdate(var6, var9);
          }
+
       }
    }
 

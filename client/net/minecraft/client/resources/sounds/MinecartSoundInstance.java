@@ -25,17 +25,14 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
       this.z = (double)((float)var1.getZ());
    }
 
-   @Override
    public boolean canPlaySound() {
       return !this.minecart.isSilent();
    }
 
-   @Override
    public boolean canStartSilent() {
       return true;
    }
 
-   @Override
    public void tick() {
       if (this.minecart.isRemoved()) {
          this.stop();
@@ -51,6 +48,7 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
             this.pitch = 0.0F;
             this.volume = 0.0F;
          }
+
       }
    }
 }

@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.component.MapPostProcessing;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
@@ -26,20 +25,8 @@ public class CartographyTableMenu extends AbstractContainerMenu {
    private static final int USE_ROW_SLOT_END = 39;
    private final ContainerLevelAccess access;
    long lastSoundTime;
-   public final Container container = new SimpleContainer(2) {
-      @Override
-      public void setChanged() {
-         CartographyTableMenu.this.slotsChanged(this);
-         super.setChanged();
-      }
-   };
-   private final ResultContainer resultContainer = new ResultContainer() {
-      @Override
-      public void setChanged() {
-         CartographyTableMenu.this.slotsChanged(this);
-         super.setChanged();
-      }
-   };
+   public final Container container;
+   private final ResultContainer resultContainer;
 
    public CartographyTableMenu(int var1, Inventory var2) {
       this(var1, var2, ContainerLevelAccess.NULL);
@@ -47,58 +34,67 @@ public class CartographyTableMenu extends AbstractContainerMenu {
 
    public CartographyTableMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
       super(MenuType.CARTOGRAPHY_TABLE, var1);
+      this.container = new SimpleContainer(2) {
+         public void setChanged() {
+            CartographyTableMenu.this.slotsChanged(this);
+            super.setChanged();
+         }
+      };
+      this.resultContainer = new ResultContainer() {
+         public void setChanged() {
+            CartographyTableMenu.this.slotsChanged(this);
+            super.setChanged();
+         }
+      };
       this.access = var3;
-      this.addSlot(new Slot(this.container, 0, 15, 15) {
-         @Override
+      this.addSlot(new Slot(this, this.container, 0, 15, 15) {
          public boolean mayPlace(ItemStack var1) {
             return var1.is(Items.FILLED_MAP);
          }
       });
-      this.addSlot(new Slot(this.container, 1, 15, 52) {
-         @Override
+      this.addSlot(new Slot(this, this.container, 1, 15, 52) {
          public boolean mayPlace(ItemStack var1) {
             return var1.is(Items.PAPER) || var1.is(Items.MAP) || var1.is(Items.GLASS_PANE);
          }
       });
       this.addSlot(new Slot(this.resultContainer, 2, 145, 39) {
-         @Override
          public boolean mayPlace(ItemStack var1) {
             return false;
          }
 
-         @Override
          public void onTake(Player var1, ItemStack var2) {
-            CartographyTableMenu.this.slots.get(0).remove(1);
-            CartographyTableMenu.this.slots.get(1).remove(1);
+            ((Slot)CartographyTableMenu.this.slots.get(0)).remove(1);
+            ((Slot)CartographyTableMenu.this.slots.get(1)).remove(1);
             var2.getItem().onCraftedBy(var2, var1.level(), var1);
             var3.execute((var1x, var2x) -> {
-               long var3xx = var1x.getGameTime();
-               if (CartographyTableMenu.this.lastSoundTime != var3xx) {
-                  var1x.playSound(null, var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  CartographyTableMenu.this.lastSoundTime = var3xx;
+               long var3x = var1x.getGameTime();
+               if (CartographyTableMenu.this.lastSoundTime != var3x) {
+                  var1x.playSound((Player)null, (BlockPos)var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  CartographyTableMenu.this.lastSoundTime = var3x;
                }
+
             });
             super.onTake(var1, var2);
          }
       });
 
-      for(int var4 = 0; var4 < 3; ++var4) {
+      int var4;
+      for(var4 = 0; var4 < 3; ++var4) {
          for(int var5 = 0; var5 < 9; ++var5) {
             this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
-         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
+      for(var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var2, var4, 8 + var4 * 18, 142));
       }
+
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return stillValid(this.access, var1, Blocks.CARTOGRAPHY_TABLE);
    }
 
-   @Override
    public void slotsChanged(Container var1) {
       ItemStack var2 = this.container.getItem(0);
       ItemStack var3 = this.container.getItem(1);
@@ -110,6 +106,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
       } else {
          this.resultContainer.removeItemNoUpdate(2);
       }
+
    }
 
    private void setupResultSlot(ItemStack var1, ItemStack var2, ItemStack var3) {
@@ -140,19 +137,18 @@ public class CartographyTableMenu extends AbstractContainerMenu {
                this.resultContainer.setItem(2, var7);
                this.broadcastChanges();
             }
+
          }
       });
    }
 
-   @Override
    public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
       return var2.container != this.resultContainer && super.canTakeItemForPickAll(var1, var2);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -199,10 +195,11 @@ public class CartographyTableMenu extends AbstractContainerMenu {
       return var3;
    }
 
-   @Override
    public void removed(Player var1) {
       super.removed(var1);
       this.resultContainer.removeItemNoUpdate(2);
-      this.access.execute((var2, var3) -> this.clearContainer(var1, this.container));
+      this.access.execute((var2, var3) -> {
+         this.clearContainer(var1, this.container);
+      });
    }
 }

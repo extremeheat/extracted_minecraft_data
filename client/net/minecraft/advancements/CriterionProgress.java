@@ -34,9 +34,9 @@ public class CriterionProgress {
       return this.obtained;
    }
 
-   @Override
    public String toString() {
-      return "CriterionProgress{obtained=" + (this.obtained == null ? "false" : this.obtained) + "}";
+      Object var10000 = this.obtained == null ? "false" : this.obtained;
+      return "CriterionProgress{obtained=" + String.valueOf(var10000) + "}";
    }
 
    public void serializeToNetwork(FriendlyByteBuf var1) {
@@ -45,7 +45,7 @@ public class CriterionProgress {
 
    public static CriterionProgress fromNetwork(FriendlyByteBuf var0) {
       CriterionProgress var1 = new CriterionProgress();
-      var1.obtained = var0.readNullable(FriendlyByteBuf::readInstant);
+      var1.obtained = (Instant)var0.readNullable(FriendlyByteBuf::readInstant);
       return var1;
    }
 }

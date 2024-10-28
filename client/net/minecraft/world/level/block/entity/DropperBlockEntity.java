@@ -9,7 +9,6 @@ public class DropperBlockEntity extends DispenserBlockEntity {
       super(BlockEntityType.DROPPER, var1, var2);
    }
 
-   @Override
    protected Component getDefaultName() {
       return Component.translatable("container.dropper");
    }

@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetCarriedItemPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetCarriedItemPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetCarriedItemPacket::write, ClientboundSetCarriedItemPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetCarriedItemPacket> STREAM_CODEC = Packet.codec(ClientboundSetCarriedItemPacket::write, ClientboundSetCarriedItemPacket::new);
    private final int slot;
 
    public ClientboundSetCarriedItemPacket(int var1) {
@@ -25,7 +23,6 @@ public class ClientboundSetCarriedItemPacket implements Packet<ClientGamePacketL
       var1.writeByte(this.slot);
    }
 
-   @Override
    public PacketType<ClientboundSetCarriedItemPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CARRIED_ITEM;
    }

@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -8,9 +8,11 @@ public interface StructurePlacementType<SP extends StructurePlacement> {
    StructurePlacementType<RandomSpreadStructurePlacement> RANDOM_SPREAD = register("random_spread", RandomSpreadStructurePlacement.CODEC);
    StructurePlacementType<ConcentricRingsStructurePlacement> CONCENTRIC_RINGS = register("concentric_rings", ConcentricRingsStructurePlacement.CODEC);
 
-   Codec<SP> codec();
+   MapCodec<SP> codec();
 
-   private static <SP extends StructurePlacement> StructurePlacementType<SP> register(String var0, Codec<SP> var1) {
-      return Registry.register(BuiltInRegistries.STRUCTURE_PLACEMENT, var0, () -> var1);
+   private static <SP extends StructurePlacement> StructurePlacementType<SP> register(String var0, MapCodec<SP> var1) {
+      return (StructurePlacementType)Registry.register(BuiltInRegistries.STRUCTURE_PLACEMENT, (String)var0, () -> {
+         return var1;
+      });
    }
 }

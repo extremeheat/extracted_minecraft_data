@@ -12,7 +12,6 @@ public class BelowOrAboveWidgetTooltipPositioner implements ClientTooltipPositio
       this.screenRectangle = var1;
    }
 
-   @Override
    public Vector2ic positionTooltip(int var1, int var2, int var3, int var4, int var5, int var6) {
       Vector2i var7 = new Vector2i();
       var7.x = this.screenRectangle.left() + 3;

@@ -32,13 +32,13 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    Optional<TagKey<T>> unwrapKey();
 
+   /** @deprecated */
    @Deprecated
    @VisibleForTesting
-   static <T> HolderSet.Named<T> emptyNamed(HolderOwner<T> var0, TagKey<T> var1) {
-      return new HolderSet.Named<T>(var0, var1) {
-         @Override
+   static <T> Named<T> emptyNamed(HolderOwner<T> var0, TagKey<T> var1) {
+      return new Named<T>(var0, var1) {
          protected List<Holder<T>> contents() {
-            throw new UnsupportedOperationException("Tag " + this.key() + " can't be dereferenced during construction");
+            throw new UnsupportedOperationException("Tag " + String.valueOf(this.key()) + " can't be dereferenced during construction");
          }
       };
    }
@@ -48,25 +48,25 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    }
 
    @SafeVarargs
-   static <T> HolderSet.Direct<T> direct(Holder<T>... var0) {
-      return new HolderSet.Direct<>(List.of(var0));
+   static <T> Direct<T> direct(Holder<T>... var0) {
+      return new Direct(List.of(var0));
    }
 
-   static <T> HolderSet.Direct<T> direct(List<? extends Holder<T>> var0) {
-      return new HolderSet.Direct<>(List.copyOf(var0));
+   static <T> Direct<T> direct(List<? extends Holder<T>> var0) {
+      return new Direct(List.copyOf(var0));
    }
 
    @SafeVarargs
-   static <E, T> HolderSet.Direct<T> direct(Function<E, Holder<T>> var0, E... var1) {
+   static <E, T> Direct<T> direct(Function<E, Holder<T>> var0, E... var1) {
       return direct(Stream.of(var1).map(var0).toList());
    }
 
-   static <E, T> HolderSet.Direct<T> direct(Function<E, Holder<T>> var0, Collection<E> var1) {
+   static <E, T> Direct<T> direct(Function<E, Holder<T>> var0, Collection<E> var1) {
       return direct(var1.stream().map(var0).toList());
    }
 
-   public static final class Direct<T> extends HolderSet.ListBacked<T> {
-      static final HolderSet.Direct<?> EMPTY = new HolderSet.Direct(List.of());
+   public static final class Direct<T> extends ListBacked<T> {
+      static final Direct<?> EMPTY = new Direct(List.of());
       private final List<Holder<T>> contents;
       @Nullable
       private Set<Holder<T>> contentsSet;
@@ -76,22 +76,18 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          this.contents = var1;
       }
 
-      @Override
       protected List<Holder<T>> contents() {
          return this.contents;
       }
 
-      @Override
       public Either<TagKey<T>, List<Holder<T>>> unwrap() {
          return Either.right(this.contents);
       }
 
-      @Override
       public Optional<TagKey<T>> unwrapKey() {
          return Optional.empty();
       }
 
-      @Override
       public boolean contains(Holder<T> var1) {
          if (this.contentsSet == null) {
             this.contentsSet = Set.copyOf(this.contents);
@@ -100,74 +96,34 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return this.contentsSet.contains(var1);
       }
 
-      @Override
       public String toString() {
-         return "DirectSet[" + this.contents + "]";
+         return "DirectSet[" + String.valueOf(this.contents) + "]";
       }
 
-      @Override
       public boolean equals(Object var1) {
          if (this == var1) {
             return true;
          } else {
-            if (var1 instanceof HolderSet.Direct var2 && this.contents.equals(var2.contents)) {
-               return true;
+            boolean var10000;
+            if (var1 instanceof Direct) {
+               Direct var2 = (Direct)var1;
+               if (this.contents.equals(var2.contents)) {
+                  var10000 = true;
+                  return var10000;
+               }
             }
 
-            return false;
+            var10000 = false;
+            return var10000;
          }
       }
 
-      @Override
       public int hashCode() {
          return this.contents.hashCode();
       }
    }
 
-   public abstract static class ListBacked<T> implements HolderSet<T> {
-      public ListBacked() {
-         super();
-      }
-
-      protected abstract List<Holder<T>> contents();
-
-      @Override
-      public int size() {
-         return this.contents().size();
-      }
-
-      @Override
-      public Spliterator<Holder<T>> spliterator() {
-         return this.contents().spliterator();
-      }
-
-      @Override
-      public Iterator<Holder<T>> iterator() {
-         return this.contents().iterator();
-      }
-
-      @Override
-      public Stream<Holder<T>> stream() {
-         return this.contents().stream();
-      }
-
-      @Override
-      public Optional<Holder<T>> getRandomElement(RandomSource var1) {
-         return Util.getRandomSafe(this.contents(), var1);
-      }
-
-      @Override
-      public Holder<T> get(int var1) {
-         return this.contents().get(var1);
-      }
-
-      @Override
-      public boolean canSerializeIn(HolderOwner<T> var1) {
-         return true;
-      }
-   }
-
-   public static class Named<T> extends HolderSet.ListBacked<T> {
+   public static class Named<T> extends ListBacked<T> {
       private final HolderOwner<T> owner;
       private final TagKey<T> key;
       private List<Holder<T>> contents = List.of();
@@ -186,34 +142,65 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return this.key;
       }
 
-      @Override
       protected List<Holder<T>> contents() {
          return this.contents;
       }
 
-      @Override
       public Either<TagKey<T>, List<Holder<T>>> unwrap() {
          return Either.left(this.key);
       }
 
-      @Override
       public Optional<TagKey<T>> unwrapKey() {
-         return Optional.of((T)this.key);
+         return Optional.of(this.key);
       }
 
-      @Override
       public boolean contains(Holder<T> var1) {
          return var1.is(this.key);
       }
 
-      @Override
       public String toString() {
-         return "NamedSet(" + this.key + ")[" + this.contents + "]";
+         String var10000 = String.valueOf(this.key);
+         return "NamedSet(" + var10000 + ")[" + String.valueOf(this.contents) + "]";
       }
 
-      @Override
       public boolean canSerializeIn(HolderOwner<T> var1) {
          return this.owner.canSerializeIn(var1);
+      }
+   }
+
+   public abstract static class ListBacked<T> implements HolderSet<T> {
+      public ListBacked() {
+         super();
+      }
+
+      protected abstract List<Holder<T>> contents();
+
+      public int size() {
+         return this.contents().size();
+      }
+
+      public Spliterator<Holder<T>> spliterator() {
+         return this.contents().spliterator();
+      }
+
+      public Iterator<Holder<T>> iterator() {
+         return this.contents().iterator();
+      }
+
+      public Stream<Holder<T>> stream() {
+         return this.contents().stream();
+      }
+
+      public Optional<Holder<T>> getRandomElement(RandomSource var1) {
+         return Util.getRandomSafe(this.contents(), var1);
+      }
+
+      public Holder<T> get(int var1) {
+         return (Holder)this.contents().get(var1);
+      }
+
+      public boolean canSerializeIn(HolderOwner<T> var1) {
+         return true;
       }
    }
 }

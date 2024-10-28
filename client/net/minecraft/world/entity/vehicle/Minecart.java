@@ -17,7 +17,6 @@ public class Minecart extends AbstractMinecart {
       super(EntityType.MINECART, var1, var2, var4, var6);
    }
 
-   @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
       if (var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
@@ -30,12 +29,10 @@ public class Minecart extends AbstractMinecart {
       }
    }
 
-   @Override
    protected Item getDropItem() {
       return Items.MINECART;
    }
 
-   @Override
    public void activateMinecart(int var1, int var2, int var3, boolean var4) {
       if (var4) {
          if (this.isVehicle()) {
@@ -49,9 +46,9 @@ public class Minecart extends AbstractMinecart {
             this.markHurt();
          }
       }
+
    }
 
-   @Override
    public AbstractMinecart.Type getMinecartType() {
       return AbstractMinecart.Type.RIDEABLE;
    }

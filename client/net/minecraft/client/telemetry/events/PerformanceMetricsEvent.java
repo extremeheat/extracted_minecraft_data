@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
-import net.minecraft.client.telemetry.TelemetryPropertyMap;
 
 public final class PerformanceMetricsEvent extends AggregatedTelemetryEvent {
    private static final long DEDICATED_MEMORY_KB = toKilobytes(Runtime.getRuntime().maxMemory());
@@ -18,11 +17,11 @@ public final class PerformanceMetricsEvent extends AggregatedTelemetryEvent {
       super();
    }
 
-   @Override
    public void tick(TelemetryEventSender var1) {
       if (Minecraft.getInstance().telemetryOptInExtra()) {
          super.tick(var1);
       }
+
    }
 
    private void resetValues() {
@@ -31,7 +30,6 @@ public final class PerformanceMetricsEvent extends AggregatedTelemetryEvent {
       this.usedMemorySamples.clear();
    }
 
-   @Override
    public void takeSample() {
       this.fpsSamples.add((long)Minecraft.getInstance().getFps());
       this.takeUsedMemorySample();
@@ -45,9 +43,8 @@ public final class PerformanceMetricsEvent extends AggregatedTelemetryEvent {
       this.usedMemorySamples.add(toKilobytes(var5));
    }
 
-   @Override
    public void sendEvent(TelemetryEventSender var1) {
-      var1.send(TelemetryEventType.PERFORMANCE_METRICS, var1x -> {
+      var1.send(TelemetryEventType.PERFORMANCE_METRICS, (var1x) -> {
          var1x.put(TelemetryProperty.FRAME_RATE_SAMPLES, new LongArrayList(this.fpsSamples));
          var1x.put(TelemetryProperty.RENDER_TIME_SAMPLES, new LongArrayList(this.frameTimeSamples));
          var1x.put(TelemetryProperty.USED_MEMORY_SAMPLES, new LongArrayList(this.usedMemorySamples));

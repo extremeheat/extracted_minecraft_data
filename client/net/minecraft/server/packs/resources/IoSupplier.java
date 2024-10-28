@@ -10,11 +10,15 @@ import java.util.zip.ZipFile;
 @FunctionalInterface
 public interface IoSupplier<T> {
    static IoSupplier<InputStream> create(Path var0) {
-      return () -> Files.newInputStream(var0);
+      return () -> {
+         return Files.newInputStream(var0);
+      };
    }
 
    static IoSupplier<InputStream> create(ZipFile var0, ZipEntry var1) {
-      return () -> var0.getInputStream(var1);
+      return () -> {
+         return var0.getInputStream(var1);
+      };
    }
 
    T get() throws IOException;

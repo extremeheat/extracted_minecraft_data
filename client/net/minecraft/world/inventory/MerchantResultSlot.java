@@ -19,12 +19,10 @@ public class MerchantResultSlot extends Slot {
       this.slots = var3;
    }
 
-   @Override
    public boolean mayPlace(ItemStack var1) {
       return false;
    }
 
-   @Override
    public ItemStack remove(int var1) {
       if (this.hasItem()) {
          this.removeCount += Math.min(var1, this.getItem().getCount());
@@ -33,7 +31,6 @@ public class MerchantResultSlot extends Slot {
       return super.remove(var1);
    }
 
-   @Override
    protected void onQuickCraft(ItemStack var1, int var2) {
       this.removeCount += var2;
       this.checkTakeAchievements(var1);
@@ -44,7 +41,6 @@ public class MerchantResultSlot extends Slot {
       this.removeCount = 0;
    }
 
-   @Override
    public void onTake(Player var1, ItemStack var2) {
       this.checkTakeAchievements(var2);
       MerchantOffer var3 = this.slots.getActiveOffer();
@@ -60,5 +56,6 @@ public class MerchantResultSlot extends Slot {
 
          this.merchant.overrideXp(this.merchant.getVillagerXp() + var3.getXp());
       }
+
    }
 }

@@ -11,7 +11,7 @@ public interface GameEventListener {
 
    boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4);
 
-   default GameEventListener.DeliveryMode getDeliveryMode() {
+   default DeliveryMode getDeliveryMode() {
       return GameEventListener.DeliveryMode.UNSPECIFIED;
    }
 
@@ -20,6 +20,11 @@ public interface GameEventListener {
       BY_DISTANCE;
 
       private DeliveryMode() {
+      }
+
+      // $FF: synthetic method
+      private static DeliveryMode[] $values() {
+         return new DeliveryMode[]{UNSPECIFIED, BY_DISTANCE};
       }
    }
 

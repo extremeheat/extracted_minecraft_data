@@ -72,11 +72,22 @@ public enum OctahedralGroup implements StringRepresentable {
    private final boolean invertY;
    private final boolean invertZ;
    private final SymmetricGroup3 permutation;
-   private static final OctahedralGroup[][] cayleyTable = Util.make(new OctahedralGroup[values().length][values().length], var0 -> {
-      Map var1 = Arrays.stream(values()).collect(Collectors.toMap(var0x -> Pair.of(var0x.permutation, var0x.packInversions()), var0x -> var0x));
+   private static final OctahedralGroup[][] cayleyTable = (OctahedralGroup[][])Util.make(new OctahedralGroup[values().length][values().length], (var0) -> {
+      Map var1 = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0x) -> {
+         return Pair.of(var0x.permutation, var0x.packInversions());
+      }, (var0x) -> {
+         return var0x;
+      }));
+      OctahedralGroup[] var2 = values();
+      int var3 = var2.length;
 
-      for(OctahedralGroup var5 : values()) {
-         for(OctahedralGroup var9 : values()) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         OctahedralGroup var5 = var2[var4];
+         OctahedralGroup[] var6 = values();
+         int var7 = var6.length;
+
+         for(int var8 = 0; var8 < var7; ++var8) {
+            OctahedralGroup var9 = var6[var8];
             BooleanList var10 = var5.packInversions();
             BooleanList var11 = var9.packInversions();
             SymmetricGroup3 var12 = var9.permutation.compose(var5.permutation);
@@ -89,10 +100,15 @@ public enum OctahedralGroup implements StringRepresentable {
             var0[var5.ordinal()][var9.ordinal()] = (OctahedralGroup)var1.get(Pair.of(var12, var13));
          }
       }
+
    });
-   private static final OctahedralGroup[] inverseTable = Arrays.stream(values())
-      .map(var0 -> Arrays.stream(values()).filter(var1 -> var0.compose(var1) == IDENTITY).findAny().get())
-      .toArray(var0 -> new OctahedralGroup[var0]);
+   private static final OctahedralGroup[] inverseTable = (OctahedralGroup[])Arrays.stream(values()).map((var0) -> {
+      return (OctahedralGroup)Arrays.stream(values()).filter((var1) -> {
+         return var0.compose(var1) == IDENTITY;
+      }).findAny().get();
+   }).toArray((var0) -> {
+      return new OctahedralGroup[var0];
+   });
 
    private OctahedralGroup(String var3, SymmetricGroup3 var4, boolean var5, boolean var6, boolean var7) {
       this.name = var3;
@@ -100,7 +116,7 @@ public enum OctahedralGroup implements StringRepresentable {
       this.invertY = var6;
       this.invertZ = var7;
       this.permutation = var4;
-      this.transformation = new Matrix3f().scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
+      this.transformation = (new Matrix3f()).scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
       this.transformation.mul(var4.transformation());
    }
 
@@ -120,12 +136,10 @@ public enum OctahedralGroup implements StringRepresentable {
       return new Matrix3f(this.transformation);
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
@@ -134,8 +148,11 @@ public enum OctahedralGroup implements StringRepresentable {
       if (this.rotatedDirections == null) {
          this.rotatedDirections = Maps.newEnumMap(Direction.class);
          Direction.Axis[] var2 = Direction.Axis.values();
+         Direction[] var3 = Direction.values();
+         int var4 = var3.length;
 
-         for(Direction var6 : Direction.values()) {
+         for(int var5 = 0; var5 < var4; ++var5) {
+            Direction var6 = var3[var5];
             Direction.Axis var7 = var6.getAxis();
             Direction.AxisDirection var8 = var6.getAxisDirection();
             Direction.Axis var9 = var2[this.permutation.permutation(var7.ordinal())];
@@ -145,11 +162,11 @@ public enum OctahedralGroup implements StringRepresentable {
          }
       }
 
-      return this.rotatedDirections.get(var1);
+      return (Direction)this.rotatedDirections.get(var1);
    }
 
    public boolean inverts(Direction.Axis var1) {
-      switch(var1) {
+      switch (var1) {
          case X:
             return this.invertX;
          case Y:
@@ -162,5 +179,10 @@ public enum OctahedralGroup implements StringRepresentable {
 
    public FrontAndTop rotate(FrontAndTop var1) {
       return FrontAndTop.fromFrontAndTop(this.rotate(var1.front()), this.rotate(var1.top()));
+   }
+
+   // $FF: synthetic method
+   private static OctahedralGroup[] $values() {
+      return new OctahedralGroup[]{IDENTITY, ROT_180_FACE_XY, ROT_180_FACE_XZ, ROT_180_FACE_YZ, ROT_120_NNN, ROT_120_NNP, ROT_120_NPN, ROT_120_NPP, ROT_120_PNN, ROT_120_PNP, ROT_120_PPN, ROT_120_PPP, ROT_180_EDGE_XY_NEG, ROT_180_EDGE_XY_POS, ROT_180_EDGE_XZ_NEG, ROT_180_EDGE_XZ_POS, ROT_180_EDGE_YZ_NEG, ROT_180_EDGE_YZ_POS, ROT_90_X_NEG, ROT_90_X_POS, ROT_90_Y_NEG, ROT_90_Y_POS, ROT_90_Z_NEG, ROT_90_Z_POS, INVERSION, INVERT_X, INVERT_Y, INVERT_Z, ROT_60_REF_NNN, ROT_60_REF_NNP, ROT_60_REF_NPN, ROT_60_REF_NPP, ROT_60_REF_PNN, ROT_60_REF_PNP, ROT_60_REF_PPN, ROT_60_REF_PPP, SWAP_XY, SWAP_YZ, SWAP_XZ, SWAP_NEG_XY, SWAP_NEG_YZ, SWAP_NEG_XZ, ROT_90_REF_X_NEG, ROT_90_REF_X_POS, ROT_90_REF_Y_NEG, ROT_90_REF_Y_POS, ROT_90_REF_Z_NEG, ROT_90_REF_Z_POS};
    }
 }

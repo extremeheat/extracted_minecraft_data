@@ -25,8 +25,12 @@ public interface PacketListener {
 
    default void fillCrashReport(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Connection");
-      var2.setDetail("Protocol", () -> this.protocol().id());
-      var2.setDetail("Flow", () -> this.flow().toString());
+      var2.setDetail("Protocol", () -> {
+         return this.protocol().id();
+      });
+      var2.setDetail("Flow", () -> {
+         return this.flow().toString();
+      });
       this.fillListenerSpecificCrashDetails(var2);
    }
 

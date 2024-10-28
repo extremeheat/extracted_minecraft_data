@@ -13,7 +13,7 @@ import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 
 public class ParserUtils {
-   private static final Field JSON_READER_POS = Util.make(() -> {
+   private static final Field JSON_READER_POS = (Field)Util.make(() -> {
       try {
          Field var0 = JsonReader.class.getDeclaredField("pos");
          var0.setAccessible(true);
@@ -22,7 +22,7 @@ public class ParserUtils {
          throw new IllegalStateException("Couldn't get field 'pos' for JsonReader", var1);
       }
    });
-   private static final Field JSON_READER_LINESTART = Util.make(() -> {
+   private static final Field JSON_READER_LINESTART = (Field)Util.make(() -> {
       try {
          Field var0 = JsonReader.class.getDeclaredField("lineStart");
          var0.setAccessible(true);
@@ -51,14 +51,14 @@ public class ParserUtils {
       Object var5;
       try {
          JsonElement var4 = Streams.parse(var3);
-         var5 = Util.getOrThrow(var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4), JsonParseException::new);
+         var5 = var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4).getOrThrow(JsonParseException::new);
       } catch (StackOverflowError var9) {
          throw new JsonParseException(var9);
       } finally {
          var1.setCursor(var1.getCursor() + getPos(var3));
       }
 
-      return (T)var5;
+      return var5;
    }
 
    public static String readWhile(StringReader var0, CharPredicate var1) {

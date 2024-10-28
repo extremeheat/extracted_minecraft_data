@@ -67,15 +67,17 @@ public class ArmorDyeRecipe extends CustomRecipe {
          }
       }
 
-      return !var4.isEmpty() && !var3.isEmpty() ? DyedItemColor.applyDyes(var4, var3) : ItemStack.EMPTY;
+      if (!var4.isEmpty() && !var3.isEmpty()) {
+         return DyedItemColor.applyDyes(var4, var3);
+      } else {
+         return ItemStack.EMPTY;
+      }
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.ARMOR_DYE;
    }

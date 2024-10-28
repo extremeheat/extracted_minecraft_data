@@ -9,7 +9,7 @@ public abstract class StoredUserEntry<T> {
 
    public StoredUserEntry(@Nullable T var1) {
       super();
-      this.user = (T)var1;
+      this.user = var1;
    }
 
    @Nullable

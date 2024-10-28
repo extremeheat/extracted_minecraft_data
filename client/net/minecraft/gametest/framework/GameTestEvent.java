@@ -14,7 +14,7 @@ class GameTestEvent {
    }
 
    static GameTestEvent create(Runnable var0) {
-      return new GameTestEvent(null, var0);
+      return new GameTestEvent((Long)null, var0);
    }
 
    static GameTestEvent create(long var0, Runnable var2) {

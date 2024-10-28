@@ -26,19 +26,19 @@ public class BottleItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      List var4 = var1.getEntitiesOfClass(
-         AreaEffectCloud.class, var2.getBoundingBox().inflate(2.0), var0 -> var0 != null && var0.isAlive() && var0.getOwner() instanceof EnderDragon
-      );
+      List var4 = var1.getEntitiesOfClass(AreaEffectCloud.class, var2.getBoundingBox().inflate(2.0), (var0) -> {
+         return var0 != null && var0.isAlive() && var0.getOwner() instanceof EnderDragon;
+      });
       ItemStack var5 = var2.getItemInHand(var3);
       if (!var4.isEmpty()) {
          AreaEffectCloud var8 = (AreaEffectCloud)var4.get(0);
          var8.setRadius(var8.getRadius() - 0.5F);
-         var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
          var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var2.position());
-         if (var2 instanceof ServerPlayer var9) {
-            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger((ServerPlayer)var9, var5, var8);
+         if (var2 instanceof ServerPlayer) {
+            ServerPlayer var9 = (ServerPlayer)var2;
+            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(var9, var5, var8);
          }
 
          return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(var5, var2, new ItemStack(Items.DRAGON_BREATH)), var1.isClientSide());
@@ -56,9 +56,7 @@ public class BottleItem extends Item {
                if (var1.getFluidState(var7).is(FluidTags.WATER)) {
                   var1.playSound(var2, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
                   var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var7);
-                  return InteractionResultHolder.sidedSuccess(
-                     this.turnBottleIntoItem(var5, var2, PotionContents.createItemStack(Items.POTION, Potions.WATER)), var1.isClientSide()
-                  );
+                  return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(var5, var2, PotionContents.createItemStack(Items.POTION, Potions.WATER)), var1.isClientSide());
                }
             }
 

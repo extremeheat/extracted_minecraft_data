@@ -10,22 +10,27 @@ public class ServerOpList extends StoredUserList<GameProfile, ServerOpListEntry>
       super(var1);
    }
 
-   @Override
    protected StoredUserEntry<GameProfile> createEntry(JsonObject var1) {
       return new ServerOpListEntry(var1);
    }
 
-   @Override
    public String[] getUserList() {
-      return this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray(var0 -> new String[var0]);
+      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray((var0) -> {
+         return new String[var0];
+      });
    }
 
    public boolean canBypassPlayerLimit(GameProfile var1) {
-      ServerOpListEntry var2 = this.get(var1);
+      ServerOpListEntry var2 = (ServerOpListEntry)this.get(var1);
       return var2 != null ? var2.getBypassesPlayerLimit() : false;
    }
 
    protected String getKeyForUser(GameProfile var1) {
       return var1.getId().toString();
+   }
+
+   // $FF: synthetic method
+   protected String getKeyForUser(Object var1) {
+      return this.getKeyForUser((GameProfile)var1);
    }
 }

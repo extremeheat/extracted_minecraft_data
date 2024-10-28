@@ -18,12 +18,10 @@ public class EntityBoundSoundInstance extends AbstractTickableSoundInstance {
       this.z = (double)((float)this.entity.getZ());
    }
 
-   @Override
    public boolean canPlaySound() {
       return !this.entity.isSilent();
    }
 
-   @Override
    public void tick() {
       if (this.entity.isRemoved()) {
          this.stop();

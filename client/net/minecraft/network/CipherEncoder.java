@@ -16,4 +16,9 @@ public class CipherEncoder extends MessageToByteEncoder<ByteBuf> {
    protected void encode(ChannelHandlerContext var1, ByteBuf var2, ByteBuf var3) throws Exception {
       this.cipher.encipher(var2, var3);
    }
+
+   // $FF: synthetic method
+   protected void encode(ChannelHandlerContext var1, Object var2, ByteBuf var3) throws Exception {
+      this.encode(var1, (ByteBuf)var2, var3);
+   }
 }

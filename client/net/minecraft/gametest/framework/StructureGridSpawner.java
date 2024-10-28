@@ -21,7 +21,6 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
       this.firstTestNorthWestCorner = var1;
    }
 
-   @Override
    public Optional<GameTestInfo> spawnStructure(GameTestInfo var1) {
       BlockPos var2 = new BlockPos(this.nextTestNorthWestCorner);
       var1.setNorthWestCorner(var2);

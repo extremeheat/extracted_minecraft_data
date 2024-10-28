@@ -16,22 +16,18 @@ public class TransparentBlock extends HalfTransparentBlock {
       super(var1);
    }
 
-   @Override
    protected MapCodec<? extends TransparentBlock> codec() {
       return CODEC;
    }
 
-   @Override
    protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
 
-   @Override
    protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 1.0F;
    }
 
-   @Override
    protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return true;
    }

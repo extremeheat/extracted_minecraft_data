@@ -10,12 +10,10 @@ public class StonecutterRecipe extends SingleItemRecipe {
       super(RecipeType.STONECUTTING, RecipeSerializer.STONECUTTER, var1, var2, var3);
    }
 
-   @Override
    public boolean matches(Container var1, Level var2) {
       return this.ingredient.test(var1.getItem(0));
    }
 
-   @Override
    public ItemStack getToastSymbol() {
       return new ItemStack(Blocks.STONECUTTER);
    }

@@ -15,32 +15,33 @@ import net.minecraft.network.chat.PlayerChatMessage;
 
 public class ChatReportContextBuilder {
    final int leadingCount;
-   private final List<ChatReportContextBuilder.Collector> activeCollectors = new ArrayList<>();
+   private final List<Collector> activeCollectors = new ArrayList();
 
    public ChatReportContextBuilder(int var1) {
       super();
       this.leadingCount = var1;
    }
 
-   public void collectAllContext(ChatLog var1, IntCollection var2, ChatReportContextBuilder.Handler var3) {
+   public void collectAllContext(ChatLog var1, IntCollection var2, Handler var3) {
       IntRBTreeSet var4 = new IntRBTreeSet(var2);
 
       for(int var5 = var4.lastInt(); var5 >= var1.start() && (this.isActive() || !var4.isEmpty()); --var5) {
          LoggedChatEvent var7 = var1.lookup(var5);
          if (var7 instanceof LoggedChatMessage.Player var6) {
-            boolean var8 = this.acceptContext(((LoggedChatMessage.Player)var6).message());
+            boolean var8 = this.acceptContext(var6.message());
             if (var4.remove(var5)) {
-               this.trackContext(((LoggedChatMessage.Player)var6).message());
-               var3.accept(var5, (LoggedChatMessage.Player)var6);
+               this.trackContext(var6.message());
+               var3.accept(var5, var6);
             } else if (var8) {
-               var3.accept(var5, (LoggedChatMessage.Player)var6);
+               var3.accept(var5, var6);
             }
          }
       }
+
    }
 
    public void trackContext(PlayerChatMessage var1) {
-      this.activeCollectors.add(new ChatReportContextBuilder.Collector(var1));
+      this.activeCollectors.add(new Collector(var1));
    }
 
    public boolean acceptContext(PlayerChatMessage var1) {
@@ -48,7 +49,7 @@ public class ChatReportContextBuilder {
       Iterator var3 = this.activeCollectors.iterator();
 
       while(var3.hasNext()) {
-         ChatReportContextBuilder.Collector var4 = (ChatReportContextBuilder.Collector)var3.next();
+         Collector var4 = (Collector)var3.next();
          if (var4.accept(var1)) {
             var2 = true;
             if (var4.isComplete()) {
@@ -64,7 +65,11 @@ public class ChatReportContextBuilder {
       return !this.activeCollectors.isEmpty();
    }
 
-   class Collector {
+   public interface Handler {
+      void accept(int var1, LoggedChatMessage.Player var2);
+   }
+
+   private class Collector {
       private final Set<MessageSignature> lastSeenSignatures;
       private PlayerChatMessage lastChainMessage;
       private boolean collectingChain = true;
@@ -101,9 +106,5 @@ public class ChatReportContextBuilder {
       boolean isComplete() {
          return this.count >= ChatReportContextBuilder.this.leadingCount || !this.collectingChain && this.lastSeenSignatures.isEmpty();
       }
-   }
-
-   public interface Handler {
-      void accept(int var1, LoggedChatMessage.Player var2);
    }
 }

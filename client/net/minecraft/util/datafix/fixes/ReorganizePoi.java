@@ -7,9 +7,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,7 +22,11 @@ public class ReorganizePoi extends DataFix {
       if (!Objects.equals(var1, this.getInputSchema().getType(References.POI_CHUNK))) {
          throw new IllegalStateException("Poi type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere("POI reorganization", var1, var0 -> var0x -> var0x.mapSecond(ReorganizePoi::cap));
+         return this.fixTypeEverywhere("POI reorganization", var1, (var0) -> {
+            return (var0x) -> {
+               return var0x.mapSecond(ReorganizePoi::cap);
+            };
+         });
       }
    }
 

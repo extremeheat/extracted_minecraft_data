@@ -8,7 +8,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 public class EquipableCarvedPumpkinBlock extends CarvedPumpkinBlock implements Equipable {
    public static final MapCodec<EquipableCarvedPumpkinBlock> CODEC = simpleCodec(EquipableCarvedPumpkinBlock::new);
 
-   @Override
    public MapCodec<EquipableCarvedPumpkinBlock> codec() {
       return CODEC;
    }
@@ -17,7 +16,6 @@ public class EquipableCarvedPumpkinBlock extends CarvedPumpkinBlock implements E
       super(var1);
    }
 
-   @Override
    public EquipmentSlot getEquipmentSlot() {
       return EquipmentSlot.HEAD;
    }

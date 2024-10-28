@@ -27,34 +27,31 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class JukeboxBlock extends BaseEntityBlock {
    public static final MapCodec<JukeboxBlock> CODEC = simpleCodec(JukeboxBlock::new);
-   public static final BooleanProperty HAS_RECORD = BlockStateProperties.HAS_RECORD;
+   public static final BooleanProperty HAS_RECORD;
 
-   @Override
    public MapCodec<JukeboxBlock> codec() {
       return CODEC;
    }
 
    protected JukeboxBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(HAS_RECORD, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(HAS_RECORD, false));
    }
 
-   @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       super.setPlacedBy(var1, var2, var3, var4, var5);
-      CustomData var6 = var5.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+      CustomData var6 = (CustomData)var5.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
       if (var6.contains("RecordItem")) {
-         var1.setBlock(var2, var3.setValue(HAS_RECORD, Boolean.valueOf(true)), 2);
+         var1.setBlock(var2, (BlockState)var3.setValue(HAS_RECORD, true), 2);
       }
+
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var1.getValue(HAS_RECORD)) {
+      if ((Boolean)var1.getValue(HAS_RECORD)) {
          BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof JukeboxBlockEntity var6) {
+         if (var7 instanceof JukeboxBlockEntity) {
+            JukeboxBlockEntity var6 = (JukeboxBlockEntity)var7;
             var6.popOutRecord();
             return InteractionResult.sidedSuccess(var2.isClientSide);
          }
@@ -63,13 +60,11 @@ public class JukeboxBlock extends BaseEntityBlock {
       return InteractionResult.PASS;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof JukeboxBlockEntity var6) {
+         if (var7 instanceof JukeboxBlockEntity) {
+            JukeboxBlockEntity var6 = (JukeboxBlockEntity)var7;
             var6.popOutRecord();
          }
 
@@ -77,34 +72,29 @@ public class JukeboxBlock extends BaseEntityBlock {
       }
    }
 
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new JukeboxBlockEntity(var1, var2);
    }
 
-   @Override
    public boolean isSignalSource(BlockState var1) {
       return true;
    }
 
-   @Override
    public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var5 && var5.isRecordPlaying()) {
-         return 15;
+      if (var6 instanceof JukeboxBlockEntity var5) {
+         if (var5.isRecordPlaying()) {
+            return 15;
+         }
       }
 
       return 0;
    }
 
-   @Override
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof JukeboxBlockEntity var4) {
@@ -117,19 +107,20 @@ public class JukeboxBlock extends BaseEntityBlock {
       return 0;
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(HAS_RECORD);
    }
 
    @Nullable
-   @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var2.getValue(HAS_RECORD) ? createTickerHelper(var3, BlockEntityType.JUKEBOX, JukeboxBlockEntity::playRecordTick) : null;
+      return (Boolean)var2.getValue(HAS_RECORD) ? createTickerHelper(var3, BlockEntityType.JUKEBOX, JukeboxBlockEntity::playRecordTick) : null;
+   }
+
+   static {
+      HAS_RECORD = BlockStateProperties.HAS_RECORD;
    }
 }

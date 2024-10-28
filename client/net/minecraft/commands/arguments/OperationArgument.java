@@ -16,11 +16,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.ScoreAccess;
 
-public class OperationArgument implements ArgumentType<OperationArgument.Operation> {
+public class OperationArgument implements ArgumentType<Operation> {
    private static final Collection<String> EXAMPLES = Arrays.asList("=", ">", "<");
-   private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION = new SimpleCommandExceptionType(
-      Component.translatable("arguments.operation.invalid")
-   );
+   private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION = new SimpleCommandExceptionType(Component.translatable("arguments.operation.invalid"));
    private static final SimpleCommandExceptionType ERROR_DIVIDE_BY_ZERO = new SimpleCommandExceptionType(Component.translatable("arguments.operation.div0"));
 
    public OperationArgument() {
@@ -31,11 +29,11 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
       return new OperationArgument();
    }
 
-   public static OperationArgument.Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) {
-      return (OperationArgument.Operation)var0.getArgument(var1, OperationArgument.Operation.class);
+   public static Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) {
+      return (Operation)var0.getArgument(var1, Operation.class);
    }
 
-   public OperationArgument.Operation parse(StringReader var1) throws CommandSyntaxException {
+   public Operation parse(StringReader var1) throws CommandSyntaxException {
       if (!var1.canRead()) {
          throw ERROR_INVALID_OPERATION.createWithContext(var1);
       } else {
@@ -57,38 +55,52 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
       return EXAMPLES;
    }
 
-   private static OperationArgument.Operation getOperation(String var0) throws CommandSyntaxException {
-      return (OperationArgument.Operation)(var0.equals("><") ? (var0x, var1) -> {
+   private static Operation getOperation(String var0) throws CommandSyntaxException {
+      return (Operation)(var0.equals("><") ? (var0x, var1) -> {
          int var2 = var0x.get();
          var0x.set(var1.get());
          var1.set(var2);
       } : getSimpleOperation(var0));
    }
 
-   private static OperationArgument.SimpleOperation getSimpleOperation(String var0) throws CommandSyntaxException {
-      return switch(var0) {
-         case "=" -> (var0x, var1) -> var1;
-         case "+=" -> Integer::sum;
-         case "-=" -> (var0x, var1) -> var0x - var1;
-         case "*=" -> (var0x, var1) -> var0x * var1;
-         case "/=" -> (var0x, var1) -> {
-         if (var1 == 0) {
-            throw ERROR_DIVIDE_BY_ZERO.create();
-         } else {
-            return Mth.floorDiv(var0x, var1);
-         }
-      };
-         case "%=" -> (var0x, var1) -> {
-         if (var1 == 0) {
-            throw ERROR_DIVIDE_BY_ZERO.create();
-         } else {
-            return Mth.positiveModulo(var0x, var1);
-         }
-      };
-         case "<" -> Math::min;
-         case ">" -> Math::max;
+   private static SimpleOperation getSimpleOperation(String var0) throws CommandSyntaxException {
+      SimpleOperation var10000;
+      switch (var0) {
+         case "=" -> var10000 = (var0x, var1) -> {
+   return var1;
+};
+         case "+=" -> var10000 = Integer::sum;
+         case "-=" -> var10000 = (var0x, var1) -> {
+   return var0x - var1;
+};
+         case "*=" -> var10000 = (var0x, var1) -> {
+   return var0x * var1;
+};
+         case "/=" -> var10000 = (var0x, var1) -> {
+   if (var1 == 0) {
+      throw ERROR_DIVIDE_BY_ZERO.create();
+   } else {
+      return Mth.floorDiv(var0x, var1);
+   }
+};
+         case "%=" -> var10000 = (var0x, var1) -> {
+   if (var1 == 0) {
+      throw ERROR_DIVIDE_BY_ZERO.create();
+   } else {
+      return Mth.positiveModulo(var0x, var1);
+   }
+};
+         case "<" -> var10000 = Math::min;
+         case ">" -> var10000 = Math::max;
          default -> throw ERROR_INVALID_OPERATION.create();
-      };
+      }
+
+      return var10000;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 
    @FunctionalInterface
@@ -97,10 +109,9 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
    }
 
    @FunctionalInterface
-   interface SimpleOperation extends OperationArgument.Operation {
+   interface SimpleOperation extends Operation {
       int apply(int var1, int var2) throws CommandSyntaxException;
 
-      @Override
       default void apply(ScoreAccess var1, ScoreAccess var2) throws CommandSyntaxException {
          var1.set(this.apply(var1.get(), var2.get()));
       }

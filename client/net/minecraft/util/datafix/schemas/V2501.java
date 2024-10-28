@@ -13,13 +13,9 @@ public class V2501 extends NamespacedSchema {
    }
 
    private static void registerFurnace(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(
-         var1,
-         var2,
-         () -> DSL.optionalFields(
-               "Items", DSL.list(References.ITEM_STACK.in(var0)), "RecipesUsed", DSL.compoundList(References.RECIPE.in(var0), DSL.constType(DSL.intType()))
-            )
-      );
+      var0.register(var1, var2, () -> {
+         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0)), "RecipesUsed", DSL.compoundList(References.RECIPE.in(var0), DSL.constType(DSL.intType())));
+      });
    }
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {

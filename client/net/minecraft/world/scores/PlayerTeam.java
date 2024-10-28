@@ -19,18 +19,26 @@ public class PlayerTeam extends Team {
    private final String name;
    private final Set<String> players = Sets.newHashSet();
    private Component displayName;
-   private Component playerPrefix = CommonComponents.EMPTY;
-   private Component playerSuffix = CommonComponents.EMPTY;
-   private boolean allowFriendlyFire = true;
-   private boolean seeFriendlyInvisibles = true;
-   private Team.Visibility nameTagVisibility = Team.Visibility.ALWAYS;
-   private Team.Visibility deathMessageVisibility = Team.Visibility.ALWAYS;
-   private ChatFormatting color = ChatFormatting.RESET;
-   private Team.CollisionRule collisionRule = Team.CollisionRule.ALWAYS;
+   private Component playerPrefix;
+   private Component playerSuffix;
+   private boolean allowFriendlyFire;
+   private boolean seeFriendlyInvisibles;
+   private Team.Visibility nameTagVisibility;
+   private Team.Visibility deathMessageVisibility;
+   private ChatFormatting color;
+   private Team.CollisionRule collisionRule;
    private final Style displayNameStyle;
 
    public PlayerTeam(Scoreboard var1, String var2) {
       super();
+      this.playerPrefix = CommonComponents.EMPTY;
+      this.playerSuffix = CommonComponents.EMPTY;
+      this.allowFriendlyFire = true;
+      this.seeFriendlyInvisibles = true;
+      this.nameTagVisibility = Team.Visibility.ALWAYS;
+      this.deathMessageVisibility = Team.Visibility.ALWAYS;
+      this.color = ChatFormatting.RESET;
+      this.collisionRule = Team.CollisionRule.ALWAYS;
       this.scoreboard = var1;
       this.name = var2;
       this.displayName = Component.literal(var2);
@@ -41,7 +49,6 @@ public class PlayerTeam extends Team {
       return this.scoreboard;
    }
 
-   @Override
    public String getName() {
       return this.name;
    }
@@ -87,12 +94,10 @@ public class PlayerTeam extends Team {
       return this.playerSuffix;
    }
 
-   @Override
    public Collection<String> getPlayers() {
       return this.players;
    }
 
-   @Override
    public MutableComponent getFormattedName(Component var1) {
       MutableComponent var2 = Component.empty().append(this.playerPrefix).append(var1).append(this.playerSuffix);
       ChatFormatting var3 = this.getColor();
@@ -107,7 +112,6 @@ public class PlayerTeam extends Team {
       return var0 == null ? var1.copy() : var0.getFormattedName(var1);
    }
 
-   @Override
    public boolean isAllowFriendlyFire() {
       return this.allowFriendlyFire;
    }
@@ -117,7 +121,6 @@ public class PlayerTeam extends Team {
       this.scoreboard.onTeamChanged(this);
    }
 
-   @Override
    public boolean canSeeFriendlyInvisibles() {
       return this.seeFriendlyInvisibles;
    }
@@ -127,12 +130,10 @@ public class PlayerTeam extends Team {
       this.scoreboard.onTeamChanged(this);
    }
 
-   @Override
    public Team.Visibility getNameTagVisibility() {
       return this.nameTagVisibility;
    }
 
-   @Override
    public Team.Visibility getDeathMessageVisibility() {
       return this.deathMessageVisibility;
    }
@@ -147,7 +148,6 @@ public class PlayerTeam extends Team {
       this.scoreboard.onTeamChanged(this);
    }
 
-   @Override
    public Team.CollisionRule getCollisionRule() {
       return this.collisionRule;
    }
@@ -180,7 +180,6 @@ public class PlayerTeam extends Team {
       this.scoreboard.onTeamChanged(this);
    }
 
-   @Override
    public ChatFormatting getColor() {
       return this.color;
    }

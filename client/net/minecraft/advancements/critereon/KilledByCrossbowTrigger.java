@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,47 +13,38 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCrossbowTrigger.TriggerInstance> {
+public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public KilledByCrossbowTrigger() {
       super();
    }
 
-   @Override
-   public Codec<KilledByCrossbowTrigger.TriggerInstance> codec() {
+   public Codec<TriggerInstance> codec() {
       return KilledByCrossbowTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, Collection<Entity> var2) {
       ArrayList var3 = Lists.newArrayList();
       HashSet var4 = Sets.newHashSet();
+      Iterator var5 = var2.iterator();
 
-      for(Entity var6 : var2) {
+      while(var5.hasNext()) {
+         Entity var6 = (Entity)var5.next();
          var4.add(var6.getType());
          var3.add(EntityPredicate.createContext(var1, var6));
       }
 
-      this.trigger(var1, var2x -> var2x.matches(var3, var4.size()));
+      this.trigger(var1, (var2x) -> {
+         return var2x.matches(var3, var4.size());
+      });
    }
 
-   public static record TriggerInstance(Optional<ContextAwarePredicate> b, List<ContextAwarePredicate> c, MinMaxBounds.Ints d)
-      implements SimpleCriterionTrigger.SimpleInstance {
-      private final Optional<ContextAwarePredicate> player;
-      private final List<ContextAwarePredicate> victims;
-      private final MinMaxBounds.Ints uniqueEntityTypes;
-      public static final Codec<KilledByCrossbowTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(KilledByCrossbowTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC.listOf(), "victims", List.of())
-                     .forGetter(KilledByCrossbowTrigger.TriggerInstance::victims),
-                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "unique_entity_types", MinMaxBounds.Ints.ANY)
-                     .forGetter(KilledByCrossbowTrigger.TriggerInstance::uniqueEntityTypes)
-               )
-               .apply(var0, KilledByCrossbowTrigger.TriggerInstance::new)
-      );
+   public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims, MinMaxBounds.Ints uniqueEntityTypes) implements SimpleCriterionTrigger.SimpleInstance {
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes)).apply(var0, TriggerInstance::new);
+      });
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2, MinMaxBounds.Ints var3) {
          super();
@@ -63,20 +53,21 @@ public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCros
          this.uniqueEntityTypes = var3;
       }
 
-      public static Criterion<KilledByCrossbowTrigger.TriggerInstance> crossbowKilled(EntityPredicate.Builder... var0) {
-         return CriteriaTriggers.KILLED_BY_CROSSBOW
-            .createCriterion(new KilledByCrossbowTrigger.TriggerInstance(Optional.empty(), EntityPredicate.wrap(var0), MinMaxBounds.Ints.ANY));
+      public static Criterion<TriggerInstance> crossbowKilled(EntityPredicate.Builder... var0) {
+         return CriteriaTriggers.KILLED_BY_CROSSBOW.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(var0), MinMaxBounds.Ints.ANY));
       }
 
-      public static Criterion<KilledByCrossbowTrigger.TriggerInstance> crossbowKilled(MinMaxBounds.Ints var0) {
-         return CriteriaTriggers.KILLED_BY_CROSSBOW.createCriterion(new KilledByCrossbowTrigger.TriggerInstance(Optional.empty(), List.of(), var0));
+      public static Criterion<TriggerInstance> crossbowKilled(MinMaxBounds.Ints var0) {
+         return CriteriaTriggers.KILLED_BY_CROSSBOW.createCriterion(new TriggerInstance(Optional.empty(), List.of(), var0));
       }
 
       public boolean matches(Collection<LootContext> var1, int var2) {
          if (!this.victims.isEmpty()) {
             ArrayList var3 = Lists.newArrayList(var1);
+            Iterator var4 = this.victims.iterator();
 
-            for(ContextAwarePredicate var5 : this.victims) {
+            while(var4.hasNext()) {
+               ContextAwarePredicate var5 = (ContextAwarePredicate)var4.next();
                boolean var6 = false;
                Iterator var7 = var3.iterator();
 
@@ -98,10 +89,21 @@ public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCros
          return this.uniqueEntityTypes.matches(var2);
       }
 
-      @Override
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntities(this.victims, ".victims");
+      }
+
+      public Optional<ContextAwarePredicate> player() {
+         return this.player;
+      }
+
+      public List<ContextAwarePredicate> victims() {
+         return this.victims;
+      }
+
+      public MinMaxBounds.Ints uniqueEntityTypes() {
+         return this.uniqueEntityTypes;
       }
    }
 }

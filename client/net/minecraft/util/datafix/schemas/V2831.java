@@ -14,15 +14,8 @@ public class V2831 extends NamespacedSchema {
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
-      var1.registerType(
-         true,
-         References.UNTAGGED_SPAWNER,
-         () -> DSL.optionalFields(
-               "SpawnPotentials",
-               DSL.list(DSL.fields("data", DSL.fields("entity", References.ENTITY_TREE.in(var1)))),
-               "SpawnData",
-               DSL.fields("entity", References.ENTITY_TREE.in(var1))
-            )
-      );
+      var1.registerType(true, References.UNTAGGED_SPAWNER, () -> {
+         return DSL.optionalFields("SpawnPotentials", DSL.list(DSL.fields("data", DSL.fields("entity", References.ENTITY_TREE.in(var1)))), "SpawnData", DSL.fields("entity", References.ENTITY_TREE.in(var1)));
+      });
    }
 }

@@ -12,13 +12,16 @@ public enum PistonType implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static PistonType[] $values() {
+      return new PistonType[]{DEFAULT, STICKY};
    }
 }

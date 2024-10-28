@@ -23,38 +23,36 @@ public class RegionFileVersion {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Int2ObjectMap<RegionFileVersion> VERSIONS = new Int2ObjectOpenHashMap();
    private static final Object2ObjectMap<String, RegionFileVersion> VERSIONS_BY_NAME = new Object2ObjectOpenHashMap();
-   public static final RegionFileVersion VERSION_GZIP = register(
-      new RegionFileVersion(
-         1, null, var0 -> new FastBufferedInputStream(new GZIPInputStream(var0)), var0 -> new BufferedOutputStream(new GZIPOutputStream(var0))
-      )
-   );
-   public static final RegionFileVersion VERSION_DEFLATE = register(
-      new RegionFileVersion(
-         2, "deflate", var0 -> new FastBufferedInputStream(new InflaterInputStream(var0)), var0 -> new BufferedOutputStream(new DeflaterOutputStream(var0))
-      )
-   );
+   public static final RegionFileVersion VERSION_GZIP = register(new RegionFileVersion(1, (String)null, (var0) -> {
+      return new FastBufferedInputStream(new GZIPInputStream(var0));
+   }, (var0) -> {
+      return new BufferedOutputStream(new GZIPOutputStream(var0));
+   }));
+   public static final RegionFileVersion VERSION_DEFLATE = register(new RegionFileVersion(2, "deflate", (var0) -> {
+      return new FastBufferedInputStream(new InflaterInputStream(var0));
+   }, (var0) -> {
+      return new BufferedOutputStream(new DeflaterOutputStream(var0));
+   }));
    public static final RegionFileVersion VERSION_NONE = register(new RegionFileVersion(3, "none", FastBufferedInputStream::new, BufferedOutputStream::new));
-   public static final RegionFileVersion VERSION_LZ4 = register(
-      new RegionFileVersion(
-         4, "lz4", var0 -> new FastBufferedInputStream(new LZ4BlockInputStream(var0)), var0 -> new BufferedOutputStream(new LZ4BlockOutputStream(var0))
-      )
-   );
-   public static final RegionFileVersion VERSION_CUSTOM = register(new RegionFileVersion(127, null, var0 -> {
+   public static final RegionFileVersion VERSION_LZ4 = register(new RegionFileVersion(4, "lz4", (var0) -> {
+      return new FastBufferedInputStream(new LZ4BlockInputStream(var0));
+   }, (var0) -> {
+      return new BufferedOutputStream(new LZ4BlockOutputStream(var0));
+   }));
+   public static final RegionFileVersion VERSION_CUSTOM = register(new RegionFileVersion(127, (String)null, (var0) -> {
       throw new UnsupportedOperationException();
-   }, var0 -> {
+   }, (var0) -> {
       throw new UnsupportedOperationException();
    }));
-   public static final RegionFileVersion DEFAULT = VERSION_DEFLATE;
-   private static volatile RegionFileVersion selected = DEFAULT;
+   public static final RegionFileVersion DEFAULT;
+   private static volatile RegionFileVersion selected;
    private final int id;
    @Nullable
    private final String optionName;
-   private final RegionFileVersion.StreamWrapper<InputStream> inputWrapper;
-   private final RegionFileVersion.StreamWrapper<OutputStream> outputWrapper;
+   private final StreamWrapper<InputStream> inputWrapper;
+   private final StreamWrapper<OutputStream> outputWrapper;
 
-   private RegionFileVersion(
-      int var1, @Nullable String var2, RegionFileVersion.StreamWrapper<InputStream> var3, RegionFileVersion.StreamWrapper<OutputStream> var4
-   ) {
+   private RegionFileVersion(int var1, @Nullable String var2, StreamWrapper<InputStream> var3, StreamWrapper<OutputStream> var4) {
       super();
       this.id = var1;
       this.optionName = var2;
@@ -81,10 +79,9 @@ public class RegionFileVersion {
       if (var1 != null) {
          selected = var1;
       } else {
-         LOGGER.error(
-            "Invalid `region-file-compression` value `{}` in server.properties. Please use one of: {}", var0, String.join(", ", VERSIONS_BY_NAME.keySet())
-         );
+         LOGGER.error("Invalid `region-file-compression` value `{}` in server.properties. Please use one of: {}", var0, String.join(", ", VERSIONS_BY_NAME.keySet()));
       }
+
    }
 
    public static RegionFileVersion getSelected() {
@@ -100,11 +97,16 @@ public class RegionFileVersion {
    }
 
    public OutputStream wrap(OutputStream var1) throws IOException {
-      return this.outputWrapper.wrap(var1);
+      return (OutputStream)this.outputWrapper.wrap(var1);
    }
 
    public InputStream wrap(InputStream var1) throws IOException {
-      return this.inputWrapper.wrap(var1);
+      return (InputStream)this.inputWrapper.wrap(var1);
+   }
+
+   static {
+      DEFAULT = VERSION_DEFLATE;
+      selected = DEFAULT;
    }
 
    @FunctionalInterface

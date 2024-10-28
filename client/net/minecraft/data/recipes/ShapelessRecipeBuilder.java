@@ -23,7 +23,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    private final Item result;
    private final int count;
    private final NonNullList<Ingredient> ingredients = NonNullList.create();
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
+   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
    @Nullable
    private String group;
 
@@ -47,7 +47,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    }
 
    public ShapelessRecipeBuilder requires(ItemLike var1) {
-      return this.requires(var1, 1);
+      return this.requires((ItemLike)var1, 1);
    }
 
    public ShapelessRecipeBuilder requires(ItemLike var1, int var2) {
@@ -59,7 +59,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    }
 
    public ShapelessRecipeBuilder requires(Ingredient var1) {
-      return this.requires(var1, 1);
+      return this.requires((Ingredient)var1, 1);
    }
 
    public ShapelessRecipeBuilder requires(Ingredient var1, int var2) {
@@ -80,31 +80,33 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
       return this;
    }
 
-   @Override
    public Item getResult() {
       return this.result;
    }
 
-   @Override
    public void save(RecipeOutput var1, ResourceLocation var2) {
       this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement()
-         .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
-         .rewards(AdvancementRewards.Builder.recipe(var2))
-         .requirements(AdvancementRequirements.Strategy.OR);
-      this.criteria.forEach(var3::addCriterion);
-      ShapelessRecipe var4 = new ShapelessRecipe(
-         Objects.requireNonNullElse(this.group, ""),
-         RecipeBuilder.determineBookCategory(this.category),
-         new ItemStack(this.result, this.count),
-         this.ingredients
-      );
+      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
+      Map var10000 = this.criteria;
+      Objects.requireNonNull(var3);
+      var10000.forEach(var3::addCriterion);
+      ShapelessRecipe var4 = new ShapelessRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), new ItemStack(this.result, this.count), this.ingredients);
       var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1));
       }
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder group(@Nullable String var1) {
+      return this.group(var1);
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder unlockedBy(String var1, Criterion var2) {
+      return this.unlockedBy(var1, var2);
    }
 }

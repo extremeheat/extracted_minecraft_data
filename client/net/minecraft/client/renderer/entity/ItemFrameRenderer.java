@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
@@ -42,14 +43,14 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
    }
 
    protected int getBlockLightLevel(T var1, BlockPos var2) {
-      return var1.getType() == EntityType.GLOW_ITEM_FRAME ? Math.max(5, super.getBlockLightLevel((T)var1, var2)) : super.getBlockLightLevel((T)var1, var2);
+      return var1.getType() == EntityType.GLOW_ITEM_FRAME ? Math.max(5, super.getBlockLightLevel(var1, var2)) : super.getBlockLightLevel(var1, var2);
    }
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      super.render((T)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
       var4.pushPose();
       Direction var7 = var1.getDirection();
-      Vec3 var8 = this.getRenderOffset((T)var1, var3);
+      Vec3 var8 = this.getRenderOffset(var1, var3);
       var4.translate(-var8.x(), -var8.y(), -var8.z());
       double var9 = 0.46875;
       var4.translate((double)var7.getStepX() * 0.46875, (double)var7.getStepY() * 0.46875, (double)var7.getStepZ() * 0.46875);
@@ -59,12 +60,10 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
       ItemStack var12 = var1.getItem();
       if (!var11) {
          ModelManager var13 = this.blockRenderer.getBlockModelShaper().getModelManager();
-         ModelResourceLocation var14 = this.getFrameModelResourceLoc((T)var1, var12);
+         ModelResourceLocation var14 = this.getFrameModelResourceLoc(var1, var12);
          var4.pushPose();
          var4.translate(-0.5F, -0.5F, -0.5F);
-         this.blockRenderer
-            .getModelRenderer()
-            .renderModel(var4.last(), var5.getBuffer(Sheets.solidBlockSheet()), null, var13.getModel(var14), 1.0F, 1.0F, 1.0F, var6, OverlayTexture.NO_OVERLAY);
+         this.blockRenderer.getModelRenderer().renderModel(var4.last(), var5.getBuffer(Sheets.solidBlockSheet()), (BlockState)null, var13.getModel(var14), 1.0F, 1.0F, 1.0F, var6, OverlayTexture.NO_OVERLAY);
          var4.popPose();
       }
 
@@ -86,11 +85,11 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
             MapItemSavedData var16 = MapItem.getSavedData(var18, var1.level());
             var4.translate(0.0F, 0.0F, -1.0F);
             if (var16 != null) {
-               int var17 = this.getLightVal((T)var1, 15728850, var6);
+               int var17 = this.getLightVal(var1, 15728850, var6);
                Minecraft.getInstance().gameRenderer.getMapRenderer().render(var4, var5, var18, var16, true, var17);
             }
          } else {
-            int var20 = this.getLightVal((T)var1, 15728880, var6);
+            int var20 = this.getLightVal(var1, 15728880, var6);
             var4.scale(0.5F, 0.5F, 0.5F);
             this.itemRenderer.renderStatic(var12, ItemDisplayContext.FIXED, var20, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
          }
@@ -121,10 +120,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
    }
 
    protected boolean shouldShowName(T var1) {
-      if (Minecraft.renderNames()
-         && !var1.getItem().isEmpty()
-         && var1.getItem().has(DataComponents.CUSTOM_NAME)
-         && this.entityRenderDispatcher.crosshairPickEntity == var1) {
+      if (Minecraft.renderNames() && !var1.getItem().isEmpty() && var1.getItem().has(DataComponents.CUSTOM_NAME) && this.entityRenderDispatcher.crosshairPickEntity == var1) {
          double var2 = this.entityRenderDispatcher.distanceToSqr(var1);
          float var4 = var1.isDiscrete() ? 32.0F : 64.0F;
          return var2 < (double)(var4 * var4);
@@ -134,6 +130,6 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
    }
 
    protected void renderNameTag(T var1, Component var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
-      super.renderNameTag((T)var1, var1.getItem().getHoverName(), var3, var4, var5, var6);
+      super.renderNameTag(var1, var1.getItem().getHoverName(), var3, var4, var5, var6);
    }
 }

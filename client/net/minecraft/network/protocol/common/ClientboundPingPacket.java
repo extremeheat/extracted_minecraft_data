@@ -23,7 +23,6 @@ public class ClientboundPingPacket implements Packet<ClientCommonPacketListener>
       var1.writeInt(this.id);
    }
 
-   @Override
    public PacketType<ClientboundPingPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_PING;
    }

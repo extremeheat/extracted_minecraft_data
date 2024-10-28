@@ -38,11 +38,22 @@ public interface RecipeBuilder {
    }
 
    static CraftingBookCategory determineBookCategory(RecipeCategory var0) {
-      return switch(var0) {
-         case BUILDING_BLOCKS -> CraftingBookCategory.BUILDING;
-         case TOOLS, COMBAT -> CraftingBookCategory.EQUIPMENT;
-         case REDSTONE -> CraftingBookCategory.REDSTONE;
-         default -> CraftingBookCategory.MISC;
-      };
+      CraftingBookCategory var10000;
+      switch (var0) {
+         case BUILDING_BLOCKS:
+            var10000 = CraftingBookCategory.BUILDING;
+            break;
+         case TOOLS:
+         case COMBAT:
+            var10000 = CraftingBookCategory.EQUIPMENT;
+            break;
+         case REDSTONE:
+            var10000 = CraftingBookCategory.REDSTONE;
+            break;
+         default:
+            var10000 = CraftingBookCategory.MISC;
+      }
+
+      return var10000;
    }
 }

@@ -14,34 +14,16 @@ import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 
-public record WorldCreationContext(
-   WorldOptions a, Registry<LevelStem> b, WorldDimensions c, LayeredRegistryAccess<RegistryLayer> d, ReloadableServerResources e, WorldDataConfiguration f
-) {
-   private final WorldOptions options;
-   private final Registry<LevelStem> datapackDimensions;
-   private final WorldDimensions selectedDimensions;
-   private final LayeredRegistryAccess<RegistryLayer> worldgenRegistries;
-   private final ReloadableServerResources dataPackResources;
-   private final WorldDataConfiguration dataConfiguration;
-
+public record WorldCreationContext(WorldOptions options, Registry<LevelStem> datapackDimensions, WorldDimensions selectedDimensions, LayeredRegistryAccess<RegistryLayer> worldgenRegistries, ReloadableServerResources dataPackResources, WorldDataConfiguration dataConfiguration) {
    public WorldCreationContext(WorldGenSettings var1, LayeredRegistryAccess<RegistryLayer> var2, ReloadableServerResources var3, WorldDataConfiguration var4) {
       this(var1.options(), var1.dimensions(), var2, var3, var4);
    }
 
-   public WorldCreationContext(
-      WorldOptions var1, WorldDimensions var2, LayeredRegistryAccess<RegistryLayer> var3, ReloadableServerResources var4, WorldDataConfiguration var5
-   ) {
-      this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).registryOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS), var4, var5);
+   public WorldCreationContext(WorldOptions var1, WorldDimensions var2, LayeredRegistryAccess<RegistryLayer> var3, ReloadableServerResources var4, WorldDataConfiguration var5) {
+      this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).registryOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS, (RegistryAccess.Frozen[])()), var4, var5);
    }
 
-   public WorldCreationContext(
-      WorldOptions var1,
-      Registry<LevelStem> var2,
-      WorldDimensions var3,
-      LayeredRegistryAccess<RegistryLayer> var4,
-      ReloadableServerResources var5,
-      WorldDataConfiguration var6
-   ) {
+   public WorldCreationContext(WorldOptions var1, Registry<LevelStem> var2, WorldDimensions var3, LayeredRegistryAccess<RegistryLayer> var4, ReloadableServerResources var5, WorldDataConfiguration var6) {
       super();
       this.options = var1;
       this.datapackDimensions = var2;
@@ -55,31 +37,46 @@ public record WorldCreationContext(
       return new WorldCreationContext(var1, this.datapackDimensions, var2, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration);
    }
 
-   public WorldCreationContext withOptions(WorldCreationContext.OptionsModifier var1) {
-      return new WorldCreationContext(
-         var1.apply(this.options), this.datapackDimensions, this.selectedDimensions, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration
-      );
+   public WorldCreationContext withOptions(OptionsModifier var1) {
+      return new WorldCreationContext((WorldOptions)var1.apply(this.options), this.datapackDimensions, this.selectedDimensions, this.worldgenRegistries, this.dataPackResources, this.dataConfiguration);
    }
 
-   public WorldCreationContext withDimensions(WorldCreationContext.DimensionsUpdater var1) {
-      return new WorldCreationContext(
-         this.options,
-         this.datapackDimensions,
-         var1.apply(this.worldgenLoadContext(), this.selectedDimensions),
-         this.worldgenRegistries,
-         this.dataPackResources,
-         this.dataConfiguration
-      );
+   public WorldCreationContext withDimensions(DimensionsUpdater var1) {
+      return new WorldCreationContext(this.options, this.datapackDimensions, (WorldDimensions)var1.apply(this.worldgenLoadContext(), this.selectedDimensions), this.worldgenRegistries, this.dataPackResources, this.dataConfiguration);
    }
 
    public RegistryAccess.Frozen worldgenLoadContext() {
       return this.worldgenRegistries.compositeAccess();
    }
 
-   @FunctionalInterface
-   public interface DimensionsUpdater extends BiFunction<RegistryAccess.Frozen, WorldDimensions, WorldDimensions> {
+   public WorldOptions options() {
+      return this.options;
+   }
+
+   public Registry<LevelStem> datapackDimensions() {
+      return this.datapackDimensions;
+   }
+
+   public WorldDimensions selectedDimensions() {
+      return this.selectedDimensions;
+   }
+
+   public LayeredRegistryAccess<RegistryLayer> worldgenRegistries() {
+      return this.worldgenRegistries;
+   }
+
+   public ReloadableServerResources dataPackResources() {
+      return this.dataPackResources;
+   }
+
+   public WorldDataConfiguration dataConfiguration() {
+      return this.dataConfiguration;
    }
 
    public interface OptionsModifier extends UnaryOperator<WorldOptions> {
+   }
+
+   @FunctionalInterface
+   public interface DimensionsUpdater extends BiFunction<RegistryAccess.Frozen, WorldDimensions, WorldDimensions> {
    }
 }

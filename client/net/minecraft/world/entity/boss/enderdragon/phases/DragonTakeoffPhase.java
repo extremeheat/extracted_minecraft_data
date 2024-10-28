@@ -2,9 +2,11 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
+import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -19,12 +21,9 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
       super(var1);
    }
 
-   @Override
    public void doServerTick() {
       if (!this.firstTick && this.currentPath != null) {
-         BlockPos var1 = this.dragon
-            .level()
-            .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         BlockPos var1 = this.dragon.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
          if (!var1.closerToCenterThan(this.dragon.position(), 10.0)) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
          }
@@ -32,9 +31,9 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
          this.firstTick = false;
          this.findNewTarget();
       }
+
    }
 
-   @Override
    public void begin() {
       this.firstTick = true;
       this.currentPath = null;
@@ -56,7 +55,7 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
          var3 += 12;
       }
 
-      this.currentPath = this.dragon.findPath(var1, var3, null);
+      this.currentPath = this.dragon.findPath(var1, var3, (Node)null);
       this.navigateToNextPathNode();
    }
 
@@ -69,21 +68,20 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
 
             double var2;
             do {
-               var2 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-            } while(var2 < (double)var1.getY());
+               var2 = (double)((float)((Vec3i)var1).getY() + this.dragon.getRandom().nextFloat() * 20.0F);
+            } while(var2 < (double)((Vec3i)var1).getY());
 
-            this.targetLocation = new Vec3((double)var1.getX(), var2, (double)var1.getZ());
+            this.targetLocation = new Vec3((double)((Vec3i)var1).getX(), var2, (double)((Vec3i)var1).getZ());
          }
       }
+
    }
 
    @Nullable
-   @Override
    public Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 
-   @Override
    public EnderDragonPhase<DragonTakeoffPhase> getPhase() {
       return EnderDragonPhase.TAKEOFF;
    }

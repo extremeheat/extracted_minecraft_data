@@ -5,7 +5,6 @@ import net.minecraft.network.protocol.common.ClientCommonPacketListener;
 import net.minecraft.network.protocol.ping.ClientPongPacketListener;
 
 public interface ClientGamePacketListener extends ClientPongPacketListener, ClientCommonPacketListener {
-   @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
    }
@@ -23,8 +22,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleAwardStats(ClientboundAwardStatsPacket var1);
 
    void handleAddOrRemoveRecipes(ClientboundRecipePacket var1);
-
-   void handleAddSubGrid(ClientboundAddSubGridPacket var1);
 
    void handleBlockDestruction(ClientboundBlockDestructionPacket var1);
 
@@ -123,8 +120,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleSetTime(ClientboundSetTimePacket var1);
 
    void handleSoundEvent(ClientboundSoundPacket var1);
-
-   void handleSoundSequenceEvent(ClientboundSoundSequencePacket var1);
 
    void handleSoundEntityEvent(ClientboundSoundEntityPacket var1);
 
@@ -229,4 +224,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleChunkBatchFinished(ClientboundChunkBatchFinishedPacket var1);
 
    void handleDebugSample(ClientboundDebugSamplePacket var1);
+
+   void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1);
 }

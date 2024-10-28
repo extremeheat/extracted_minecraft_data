@@ -11,22 +11,18 @@ public class WorldGenTickAccess<T> implements LevelTickAccess<T> {
       this.containerGetter = var1;
    }
 
-   @Override
    public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.containerGetter.apply(var1).hasScheduledTick(var1, (T)var2);
+      return ((TickContainerAccess)this.containerGetter.apply(var1)).hasScheduledTick(var1, var2);
    }
 
-   @Override
    public void schedule(ScheduledTick<T> var1) {
-      this.containerGetter.apply(var1.pos()).schedule(var1);
+      ((TickContainerAccess)this.containerGetter.apply(var1.pos())).schedule(var1);
    }
 
-   @Override
    public boolean willTickThisTick(BlockPos var1, T var2) {
       return false;
    }
 
-   @Override
    public int count() {
       return 0;
    }

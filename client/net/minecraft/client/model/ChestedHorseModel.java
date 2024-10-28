@@ -8,13 +8,16 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public class ChestedHorseModel<T extends AbstractChestedHorse> extends HorseModel<T> {
-   private final ModelPart leftChest = this.body.getChild("left_chest");
-   private final ModelPart rightChest = this.body.getChild("right_chest");
+   private final ModelPart leftChest;
+   private final ModelPart rightChest;
 
    public ChestedHorseModel(ModelPart var1) {
       super(var1);
+      this.leftChest = this.body.getChild("left_chest");
+      this.rightChest = this.body.getChild("right_chest");
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -32,7 +35,7 @@ public class ChestedHorseModel<T extends AbstractChestedHorse> extends HorseMode
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((T)var1, var2, var3, var4, var5, var6);
+      super.setupAnim((AbstractHorse)var1, var2, var3, var4, var5, var6);
       if (var1.hasChest()) {
          this.leftChest.visible = true;
          this.rightChest.visible = true;
@@ -40,5 +43,6 @@ public class ChestedHorseModel<T extends AbstractChestedHorse> extends HorseMode
          this.leftChest.visible = false;
          this.rightChest.visible = false;
       }
+
    }
 }

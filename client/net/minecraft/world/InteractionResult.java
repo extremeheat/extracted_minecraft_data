@@ -25,4 +25,9 @@ public enum InteractionResult {
    public static InteractionResult sidedSuccess(boolean var0) {
       return var0 ? SUCCESS : CONSUME;
    }
+
+   // $FF: synthetic method
+   private static InteractionResult[] $values() {
+      return new InteractionResult[]{SUCCESS, CONSUME, CONSUME_PARTIAL, PASS, FAIL};
+   }
 }

@@ -29,7 +29,7 @@ public class RealmsWorldSlotButton extends Button {
    static final Component MINIGAME = Component.translatable("mco.worldSlot.minigame");
    private final int slotIndex;
    @Nullable
-   private RealmsWorldSlotButton.State state;
+   private State state;
 
    public RealmsWorldSlotButton(int var1, int var2, int var3, int var4, int var5, Button.OnPress var6) {
       super(var1, var2, var3, var4, CommonComponents.EMPTY, var6, DEFAULT_NARRATION);
@@ -37,21 +37,24 @@ public class RealmsWorldSlotButton extends Button {
    }
 
    @Nullable
-   public RealmsWorldSlotButton.State getState() {
+   public State getState() {
       return this.state;
    }
 
    public void setServerData(RealmsServer var1) {
-      this.state = new RealmsWorldSlotButton.State(var1, this.slotIndex);
+      this.state = new State(var1, this.slotIndex);
       this.setTooltipAndNarration(this.state, var1.minigameName);
    }
 
-   private void setTooltipAndNarration(RealmsWorldSlotButton.State var1, @Nullable String var2) {
-      Component var3 = switch(var1.action) {
-         case JOIN -> SLOT_ACTIVE_TOOLTIP;
-         case SWITCH_SLOT -> var1.minigame ? SWITCH_TO_MINIGAME_SLOT_TOOLTIP : SWITCH_TO_WORLD_SLOT_TOOLTIP;
-         default -> null;
-      };
+   private void setTooltipAndNarration(State var1, @Nullable String var2) {
+      Component var10000;
+      switch (var1.action.ordinal()) {
+         case 1 -> var10000 = var1.minigame ? SWITCH_TO_MINIGAME_SLOT_TOOLTIP : SWITCH_TO_WORLD_SLOT_TOOLTIP;
+         case 2 -> var10000 = SLOT_ACTIVE_TOOLTIP;
+         default -> var10000 = null;
+      }
+
+      Component var3 = var10000;
       if (var3 != null) {
          this.setTooltip(Tooltip.create(var3));
       }
@@ -64,7 +67,7 @@ public class RealmsWorldSlotButton extends Button {
       this.setMessage(var4);
    }
 
-   static RealmsWorldSlotButton.Action getAction(RealmsServer var0, boolean var1, boolean var2) {
+   static Action getAction(RealmsServer var0, boolean var1, boolean var2) {
       if (var1 && !var0.expired && var0.state != RealmsServer.State.UNINITIALIZED) {
          return RealmsWorldSlotButton.Action.JOIN;
       } else {
@@ -72,7 +75,6 @@ public class RealmsWorldSlotButton extends Button {
       }
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.state != null) {
          int var5 = this.getX();
@@ -118,19 +120,8 @@ public class RealmsWorldSlotButton extends Button {
          }
 
          Font var10 = Minecraft.getInstance().font;
-         var1.drawCenteredString(var10, this.state.slotName, var5 + 40, var6 + 66, -1);
-         var1.drawCenteredString(
-            var10, RealmsMainScreen.getVersionComponent(this.state.slotVersion, this.state.compatibility.isCompatible()), var5 + 40, var6 + 80 + 2, -1
-         );
-      }
-   }
-
-   public static enum Action {
-      NOTHING,
-      SWITCH_SLOT,
-      JOIN;
-
-      private Action() {
+         var1.drawCenteredString(var10, (String)this.state.slotName, var5 + 40, var6 + 66, -1);
+         var1.drawCenteredString(var10, (Component)RealmsMainScreen.getVersionComponent(this.state.slotVersion, this.state.compatibility.isCompatible()), var5 + 40, var6 + 80 + 2, -1);
       }
    }
 
@@ -144,7 +135,7 @@ public class RealmsWorldSlotButton extends Button {
       final String image;
       public final boolean empty;
       public final boolean minigame;
-      public final RealmsWorldSlotButton.Action action;
+      public final Action action;
 
       public State(RealmsServer var1, int var2) {
          super();
@@ -158,7 +149,7 @@ public class RealmsWorldSlotButton extends Button {
             this.slotVersion = "";
             this.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
          } else {
-            RealmsWorldOptions var3 = var1.slots.get(var2);
+            RealmsWorldOptions var3 = (RealmsWorldOptions)var1.slots.get(var2);
             this.isCurrentlyActiveSlot = var1.activeSlot == var2 && var1.worldType != RealmsServer.WorldType.MINIGAME;
             this.slotName = var3.getSlotName(var2);
             this.imageId = var3.templateId;
@@ -169,6 +160,20 @@ public class RealmsWorldSlotButton extends Button {
          }
 
          this.action = RealmsWorldSlotButton.getAction(var1, this.isCurrentlyActiveSlot, this.minigame);
+      }
+   }
+
+   public static enum Action {
+      NOTHING,
+      SWITCH_SLOT,
+      JOIN;
+
+      private Action() {
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{NOTHING, SWITCH_SLOT, JOIN};
       }
    }
 }

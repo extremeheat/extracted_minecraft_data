@@ -1,5 +1,6 @@
 package net.minecraft.client.tutorial;
 
+import java.util.Iterator;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
@@ -24,7 +25,6 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
       this.tutorial = var1;
    }
 
-   @Override
    public void tick() {
       ++this.timeWaiting;
       if (!this.tutorial.isSurvival()) {
@@ -49,31 +49,37 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
             this.toast = new TutorialToast(TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
             this.tutorial.getMinecraft().getToasts().addToast(this.toast);
          }
+
       }
    }
 
-   @Override
    public void clear() {
       if (this.toast != null) {
          this.toast.hide();
          this.toast = null;
       }
+
    }
 
-   @Override
    public void onGetItem(ItemStack var1) {
       if (var1.is(ItemTags.PLANKS)) {
          this.tutorial.setStep(TutorialSteps.NONE);
       }
+
    }
 
    public static boolean hasCraftedPlanksPreviously(LocalPlayer var0, TagKey<Item> var1) {
-      for(Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
-         if (var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) > 0) {
-            return true;
-         }
-      }
+      Iterator var2 = BuiltInRegistries.ITEM.getTagOrEmpty(var1).iterator();
 
-      return false;
+      Holder var3;
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+
+         var3 = (Holder)var2.next();
+      } while(var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) <= 0);
+
+      return true;
    }
 }

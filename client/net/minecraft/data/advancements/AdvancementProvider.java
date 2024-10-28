@@ -3,11 +3,11 @@ package net.minecraft.data.advancements;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -25,29 +25,31 @@ public class AdvancementProvider implements DataProvider {
       this.registries = var2;
    }
 
-   @Override
    public CompletableFuture<?> run(CachedOutput var1) {
-      return this.registries.thenCompose(var2 -> {
+      return this.registries.thenCompose((var2) -> {
          HashSet var3 = new HashSet();
          ArrayList var4 = new ArrayList();
-         Consumer var5 = var5x -> {
+         Consumer var5 = (var5x) -> {
             if (!var3.add(var5x.id())) {
-               throw new IllegalStateException("Duplicate advancement " + var5x.id());
+               throw new IllegalStateException("Duplicate advancement " + String.valueOf(var5x.id()));
             } else {
                Path var6 = this.pathProvider.json(var5x.id());
                var4.add(DataProvider.saveStable(var1, var2, Advancement.CODEC, var5x.value(), var6));
             }
          };
+         Iterator var6 = this.subProviders.iterator();
 
-         for(AdvancementSubProvider var7 : this.subProviders) {
+         while(var6.hasNext()) {
+            AdvancementSubProvider var7 = (AdvancementSubProvider)var6.next();
             var7.generate(var2, var5);
          }
 
-         return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));
+         return CompletableFuture.allOf((CompletableFuture[])var4.toArray((var0) -> {
+            return new CompletableFuture[var0];
+         }));
       });
    }
 
-   @Override
    public final String getName() {
       return "Advancements";
    }

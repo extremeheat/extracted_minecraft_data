@@ -4,12 +4,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record RecipeHolder<T extends Recipe<?>>(ResourceLocation b, T c) {
-   private final ResourceLocation id;
-   private final T value;
-   public static final StreamCodec<RegistryFriendlyByteBuf, RecipeHolder<?>> STREAM_CODEC = StreamCodec.composite(
-      ResourceLocation.STREAM_CODEC, RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new
-   );
+public record RecipeHolder<T extends Recipe<?>>(ResourceLocation id, T value) {
+   public static final StreamCodec<RegistryFriendlyByteBuf, RecipeHolder<?>> STREAM_CODEC;
 
    public RecipeHolder(ResourceLocation var1, T var2) {
       super();
@@ -21,11 +17,17 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation b, T c) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof RecipeHolder var2 && this.id.equals(var2.id)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof RecipeHolder) {
+            RecipeHolder var2 = (RecipeHolder)var1;
+            if (this.id.equals(var2.id)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
@@ -35,5 +37,17 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation b, T c) {
 
    public String toString() {
       return this.id.toString();
+   }
+
+   public ResourceLocation id() {
+      return this.id;
+   }
+
+   public T value() {
+      return this.value;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new);
    }
 }

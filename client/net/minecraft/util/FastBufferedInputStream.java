@@ -20,7 +20,6 @@ public class FastBufferedInputStream extends InputStream {
       this.buffer = new byte[var2];
    }
 
-   @Override
    public int read() throws IOException {
       if (this.position >= this.limit) {
          this.fill();
@@ -32,7 +31,6 @@ public class FastBufferedInputStream extends InputStream {
       return Byte.toUnsignedInt(this.buffer[this.position++]);
    }
 
-   @Override
    public int read(byte[] var1, int var2, int var3) throws IOException {
       int var4 = this.bytesInBuffer();
       if (var4 <= 0) {
@@ -56,7 +54,6 @@ public class FastBufferedInputStream extends InputStream {
       return var3;
    }
 
-   @Override
    public long skip(long var1) throws IOException {
       if (var1 <= 0L) {
          return 0L;
@@ -75,12 +72,10 @@ public class FastBufferedInputStream extends InputStream {
       }
    }
 
-   @Override
    public int available() throws IOException {
       return this.bytesInBuffer() + this.in.available();
    }
 
-   @Override
    public void close() throws IOException {
       this.in.close();
    }
@@ -96,5 +91,6 @@ public class FastBufferedInputStream extends InputStream {
       if (var1 > 0) {
          this.limit = var1;
       }
+
    }
 }

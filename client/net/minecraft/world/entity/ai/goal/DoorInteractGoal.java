@@ -11,7 +11,7 @@ import net.minecraft.world.level.pathfinder.Path;
 
 public abstract class DoorInteractGoal extends Goal {
    protected Mob mob;
-   protected BlockPos doorPos = BlockPos.ZERO;
+   protected BlockPos doorPos;
    protected boolean hasDoor;
    private boolean passed;
    private float doorOpenDirX;
@@ -19,6 +19,7 @@ public abstract class DoorInteractGoal extends Goal {
 
    public DoorInteractGoal(Mob var1) {
       super();
+      this.doorPos = BlockPos.ZERO;
       this.mob = var1;
       if (!GoalUtils.hasGroundPathNavigation(var1)) {
          throw new IllegalArgumentException("Unsupported mob type for DoorInteractGoal");
@@ -34,7 +35,7 @@ public abstract class DoorInteractGoal extends Goal {
             this.hasDoor = false;
             return false;
          } else {
-            return var1.getValue(DoorBlock.OPEN);
+            return (Boolean)var1.getValue(DoorBlock.OPEN);
          }
       }
    }
@@ -46,9 +47,9 @@ public abstract class DoorInteractGoal extends Goal {
             ((DoorBlock)var2.getBlock()).setOpen(this.mob, this.mob.level(), var2, this.doorPos, var1);
          }
       }
+
    }
 
-   @Override
    public boolean canUse() {
       if (!GoalUtils.hasGroundPathNavigation(this.mob)) {
          return false;
@@ -78,24 +79,20 @@ public abstract class DoorInteractGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.passed;
    }
 
-   @Override
    public void start() {
       this.passed = false;
       this.doorOpenDirX = (float)((double)this.doorPos.getX() + 0.5 - this.mob.getX());
       this.doorOpenDirZ = (float)((double)this.doorPos.getZ() + 0.5 - this.mob.getZ());
    }
 
-   @Override
    public boolean requiresUpdateEveryTick() {
       return true;
    }
 
-   @Override
    public void tick() {
       float var1 = (float)((double)this.doorPos.getX() + 0.5 - this.mob.getX());
       float var2 = (float)((double)this.doorPos.getZ() + 0.5 - this.mob.getZ());
@@ -103,5 +100,6 @@ public abstract class DoorInteractGoal extends Goal {
       if (var3 < 0.0F) {
          this.passed = true;
       }
+
    }
 }

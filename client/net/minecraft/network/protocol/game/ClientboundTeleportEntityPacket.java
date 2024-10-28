@@ -8,9 +8,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundTeleportEntityPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTeleportEntityPacket> STREAM_CODEC = Packet.codec(
-      ClientboundTeleportEntityPacket::write, ClientboundTeleportEntityPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundTeleportEntityPacket> STREAM_CODEC = Packet.codec(ClientboundTeleportEntityPacket::write, ClientboundTeleportEntityPacket::new);
    private final int id;
    private final double x;
    private final double y;
@@ -52,7 +50,6 @@ public class ClientboundTeleportEntityPacket implements Packet<ClientGamePacketL
       var1.writeBoolean(this.onGround);
    }
 
-   @Override
    public PacketType<ClientboundTeleportEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TELEPORT_ENTITY;
    }

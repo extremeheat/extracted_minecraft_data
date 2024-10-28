@@ -20,4 +20,9 @@ public enum MetricCategory {
    public String getDescription() {
       return this.description;
    }
+
+   // $FF: synthetic method
+   private static MetricCategory[] $values() {
+      return new MetricCategory[]{PATH_FINDING, EVENT_LOOPS, MAIL_BOXES, TICK_LOOP, JVM, CHUNK_RENDERING, CHUNK_RENDERING_DISPATCHING, CPU, GPU};
+   }
 }

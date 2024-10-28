@@ -43,13 +43,12 @@ public interface RandomizableContainer extends Container {
    @Nullable
    Level getLevel();
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    static void setBlockEntityLootTable(BlockGetter var0, RandomSource var1, BlockPos var2, ResourceKey<LootTable> var3) {
       BlockEntity var4 = var0.getBlockEntity(var2);
       if (var4 instanceof RandomizableContainer var5) {
          var5.setLootTable(var3, var1.nextLong());
       }
+
    }
 
    default boolean tryLoadLootTable(CompoundTag var1) {
@@ -92,13 +91,14 @@ public interface RandomizableContainer extends Container {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, var4);
          }
 
-         this.setLootTable(null);
-         LootParams.Builder var6 = new LootParams.Builder((ServerLevel)var2).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3));
+         this.setLootTable((ResourceKey)null);
+         LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)var2)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3));
          if (var1 != null) {
             var6.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
          }
 
          var5.fill(this, var6.create(LootContextParamSets.CHEST), this.getLootTableSeed());
       }
+
    }
 }

@@ -53,8 +53,12 @@ public class LookControl implements Control {
 
       if (this.lookAtCooldown > 0) {
          --this.lookAtCooldown;
-         this.getYRotD().ifPresent(var1 -> this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, var1, this.yMaxRotSpeed));
-         this.getXRotD().ifPresent(var1 -> this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var1, this.xMaxRotAngle)));
+         this.getYRotD().ifPresent((var1) -> {
+            this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, var1, this.yMaxRotSpeed);
+         });
+         this.getXRotD().ifPresent((var1) -> {
+            this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var1, this.xMaxRotAngle));
+         });
       } else {
          this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, this.mob.yBodyRot, 10.0F);
       }
@@ -66,6 +70,7 @@ public class LookControl implements Control {
       if (!this.mob.getNavigation().isDone()) {
          this.mob.yHeadRot = Mth.rotateIfNecessary(this.mob.yHeadRot, this.mob.yBodyRot, (float)this.mob.getMaxHeadYRot());
       }
+
    }
 
    protected boolean resetXRotOnTick() {
@@ -93,17 +98,13 @@ public class LookControl implements Control {
       double var3 = this.wantedY - this.mob.getEyeY();
       double var5 = this.wantedZ - this.mob.getZ();
       double var7 = Math.sqrt(var1 * var1 + var5 * var5);
-      return !(Math.abs(var3) > 9.999999747378752E-6) && !(Math.abs(var7) > 9.999999747378752E-6)
-         ? Optional.empty()
-         : Optional.of((float)(-(Mth.atan2(var3, var7) * 57.2957763671875)));
+      return !(Math.abs(var3) > 9.999999747378752E-6) && !(Math.abs(var7) > 9.999999747378752E-6) ? Optional.empty() : Optional.of((float)(-(Mth.atan2(var3, var7) * 57.2957763671875)));
    }
 
    protected Optional<Float> getYRotD() {
       double var1 = this.wantedX - this.mob.getX();
       double var3 = this.wantedZ - this.mob.getZ();
-      return !(Math.abs(var3) > 9.999999747378752E-6) && !(Math.abs(var1) > 9.999999747378752E-6)
-         ? Optional.empty()
-         : Optional.of((float)(Mth.atan2(var3, var1) * 57.2957763671875) - 90.0F);
+      return !(Math.abs(var3) > 9.999999747378752E-6) && !(Math.abs(var1) > 9.999999747378752E-6) ? Optional.empty() : Optional.of((float)(Mth.atan2(var3, var1) * 57.2957763671875) - 90.0F);
    }
 
    protected float rotateTowards(float var1, float var2, float var3) {

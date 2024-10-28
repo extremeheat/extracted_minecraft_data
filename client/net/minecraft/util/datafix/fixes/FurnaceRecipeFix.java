@@ -35,14 +35,15 @@ public class FurnaceRecipeFix extends DataFix {
       Type var8 = this.getOutputSchema().getChoiceType(References.BLOCK_ENTITY, "minecraft:smoker");
       Type var9 = this.getInputSchema().getType(References.BLOCK_ENTITY);
       Type var10 = this.getOutputSchema().getType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhereTyped(
-         "FurnaceRecipesFix",
-         var9,
-         var10,
-         var9x -> var9x.updateTyped(var3, var6, var3xx -> this.updateFurnaceContents(var1, var2, var3xx))
-               .updateTyped(var4, var7, var3xx -> this.updateFurnaceContents(var1, var2, var3xx))
-               .updateTyped(var5, var8, var3xx -> this.updateFurnaceContents(var1, var2, var3xx))
-      );
+      return this.fixTypeEverywhereTyped("FurnaceRecipesFix", var9, var10, (var9x) -> {
+         return var9x.updateTyped(var3, var6, (var3x) -> {
+            return this.updateFurnaceContents(var1, var2, var3x);
+         }).updateTyped(var4, var7, (var3x) -> {
+            return this.updateFurnaceContents(var1, var2, var3x);
+         }).updateTyped(var5, var8, (var3x) -> {
+            return this.updateFurnaceContents(var1, var2, var3x);
+         });
+      });
    }
 
    private <R> Typed<?> updateFurnaceContents(Type<R> var1, Type<Pair<Either<Pair<List<Pair<R, Integer>>, Dynamic<?>>, Unit>, Dynamic<?>>> var2, Typed<?> var3) {
@@ -57,9 +58,11 @@ public class FurnaceRecipeFix extends DataFix {
          Optional var10 = var4.get(var8).result();
          int var11 = var4.get(var9).asInt(0);
          if (var11 > 0) {
-            var10.ifPresent(var3x -> {
-               Optional var4xx = var1.read(var3x).result();
-               var4xx.ifPresent(var2xx -> var6.add(Pair.of(var2xx.getFirst(), var11)));
+            var10.ifPresent((var3x) -> {
+               Optional var4 = var1.read(var3x).result();
+               var4.ifPresent((var2) -> {
+                  var6.add(Pair.of(var2.getFirst(), var11));
+               });
             });
          }
 

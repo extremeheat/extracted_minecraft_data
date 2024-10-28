@@ -16,7 +16,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 
@@ -33,43 +32,31 @@ public class MagmaCube extends Slime {
       return var1.getDifficulty() != Difficulty.PEACEFUL;
    }
 
-   @Override
-   public boolean checkSpawnObstruction(LevelReader var1) {
-      return var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox());
-   }
-
-   @Override
    public void setSize(int var1, boolean var2) {
       super.setSize(var1, var2);
       this.getAttribute(Attributes.ARMOR).setBaseValue((double)(var1 * 3));
    }
 
-   @Override
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   @Override
    protected ParticleOptions getParticleType() {
       return ParticleTypes.FLAME;
    }
 
-   @Override
    public boolean isOnFire() {
       return false;
    }
 
-   @Override
    protected int getJumpDelay() {
       return super.getJumpDelay() * 4;
    }
 
-   @Override
    protected void decreaseSquish() {
       this.targetSquish *= 0.9F;
    }
 
-   @Override
    protected void jumpFromGround() {
       Vec3 var1 = this.getDeltaMovement();
       float var2 = (float)this.getSize() * 0.1F;
@@ -77,7 +64,6 @@ public class MagmaCube extends Slime {
       this.hasImpulse = true;
    }
 
-   @Override
    protected void jumpInLiquid(TagKey<Fluid> var1) {
       if (var1 == FluidTags.LAVA) {
          Vec3 var2 = this.getDeltaMovement();
@@ -86,34 +72,29 @@ public class MagmaCube extends Slime {
       } else {
          super.jumpInLiquid(var1);
       }
+
    }
 
-   @Override
    protected boolean isDealsDamage() {
       return this.isEffectiveAi();
    }
 
-   @Override
    protected float getAttackDamage() {
       return super.getAttackDamage() + 2.0F;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return this.isTiny() ? SoundEvents.MAGMA_CUBE_HURT_SMALL : SoundEvents.MAGMA_CUBE_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return this.isTiny() ? SoundEvents.MAGMA_CUBE_DEATH_SMALL : SoundEvents.MAGMA_CUBE_DEATH;
    }
 
-   @Override
    protected SoundEvent getSquishSound() {
       return this.isTiny() ? SoundEvents.MAGMA_CUBE_SQUISH_SMALL : SoundEvents.MAGMA_CUBE_SQUISH;
    }
 
-   @Override
    protected SoundEvent getJumpSound() {
       return SoundEvents.MAGMA_CUBE_JUMP;
    }

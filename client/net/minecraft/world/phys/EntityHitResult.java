@@ -18,7 +18,6 @@ public class EntityHitResult extends HitResult {
       return this.entity;
    }
 
-   @Override
    public HitResult.Type getType() {
       return HitResult.Type.ENTITY;
    }

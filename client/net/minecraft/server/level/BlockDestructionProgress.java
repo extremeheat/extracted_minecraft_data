@@ -42,7 +42,6 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
       return this.updatedRenderTick;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -54,12 +53,16 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
       }
    }
 
-   @Override
    public int hashCode() {
       return Integer.hashCode(this.id);
    }
 
    public int compareTo(BlockDestructionProgress var1) {
       return this.progress != var1.progress ? Integer.compare(this.progress, var1.progress) : Integer.compare(this.id, var1.id);
+   }
+
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((BlockDestructionProgress)var1);
    }
 }

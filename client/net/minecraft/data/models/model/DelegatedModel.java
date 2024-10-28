@@ -18,4 +18,9 @@ public class DelegatedModel implements Supplier<JsonElement> {
       var1.addProperty("parent", this.parent.toString());
       return var1;
    }
+
+   // $FF: synthetic method
+   public Object get() {
+      return this.get();
+   }
 }

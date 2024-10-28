@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -21,13 +22,15 @@ import org.slf4j.Logger;
 
 public class Heightmap {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final Predicate<BlockState> NOT_AIR = var0 -> !var0.isAir();
+   static final Predicate<BlockState> NOT_AIR = (var0) -> {
+      return !var0.isAir();
+   };
    static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = BlockBehaviour.BlockStateBase::blocksMotion;
    private final BitStorage data;
    private final Predicate<BlockState> isOpaque;
    private final ChunkAccess chunk;
 
-   public Heightmap(ChunkAccess var1, Heightmap.Types var2) {
+   public Heightmap(ChunkAccess var1, Types var2) {
       super();
       this.isOpaque = var2.isOpaque();
       this.chunk = var1;
@@ -35,7 +38,7 @@ public class Heightmap {
       this.data = new SimpleBitStorage(var3, 256);
    }
 
-   public static void primeHeightmaps(ChunkAccess var0, Set<Heightmap.Types> var1) {
+   public static void primeHeightmaps(ChunkAccess var0, Set<Types> var1) {
       int var2 = var1.size();
       ObjectArrayList var3 = new ObjectArrayList(var2);
       ObjectListIterator var4 = var3.iterator();
@@ -44,7 +47,10 @@ public class Heightmap {
 
       for(int var7 = 0; var7 < 16; ++var7) {
          for(int var8 = 0; var8 < 16; ++var8) {
-            for(Heightmap.Types var10 : var1) {
+            Iterator var9 = var1.iterator();
+
+            while(var9.hasNext()) {
+               Types var10 = (Types)var9.next();
                var3.add(var0.getOrCreateHeightmapUnprimed(var10));
             }
 
@@ -69,6 +75,7 @@ public class Heightmap {
             }
          }
       }
+
    }
 
    public boolean update(int var1, int var2, int var3, BlockState var4) {
@@ -116,12 +123,14 @@ public class Heightmap {
       this.data.set(getIndex(var1, var2), var3 - this.chunk.getMinBuildHeight());
    }
 
-   public void setRawData(ChunkAccess var1, Heightmap.Types var2, long[] var3) {
+   public void setRawData(ChunkAccess var1, Types var2, long[] var3) {
       long[] var4 = this.data.getRaw();
       if (var4.length == var3.length) {
          System.arraycopy(var3, 0, var4, 0, var3.length);
       } else {
-         LOGGER.warn("Ignoring heightmap data for chunk " + var1.getPos() + ", size does not match; expected: " + var4.length + ", got: " + var3.length);
+         Logger var10000 = LOGGER;
+         String var10001 = String.valueOf(var1.getPos());
+         var10000.warn("Ignoring heightmap data for chunk " + var10001 + ", size does not match; expected: " + var4.length + ", got: " + var3.length);
          primeHeightmaps(var1, EnumSet.of(var2));
       }
    }
@@ -139,19 +148,19 @@ public class Heightmap {
       WORLD_SURFACE("WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
       OCEAN_FLOOR_WG("OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
       OCEAN_FLOOR("OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
-      MOTION_BLOCKING("MOTION_BLOCKING", Heightmap.Usage.CLIENT, var0 -> var0.blocksMotion() || !var0.getFluidState().isEmpty()),
-      MOTION_BLOCKING_NO_LEAVES(
-         "MOTION_BLOCKING_NO_LEAVES",
-         Heightmap.Usage.LIVE_WORLD,
-         var0 -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock)
-      );
+      MOTION_BLOCKING("MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> {
+         return var0.blocksMotion() || !var0.getFluidState().isEmpty();
+      }),
+      MOTION_BLOCKING_NO_LEAVES("MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.LIVE_WORLD, (var0) -> {
+         return (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock);
+      });
 
-      public static final Codec<Heightmap.Types> CODEC = StringRepresentable.fromEnum(Heightmap.Types::values);
+      public static final Codec<Types> CODEC = StringRepresentable.fromEnum(Types::values);
       private final String serializationKey;
-      private final Heightmap.Usage usage;
+      private final Usage usage;
       private final Predicate<BlockState> isOpaque;
 
-      private Types(String var3, Heightmap.Usage var4, Predicate<BlockState> var5) {
+      private Types(String var3, Usage var4, Predicate var5) {
          this.serializationKey = var3;
          this.usage = var4;
          this.isOpaque = var5;
@@ -173,9 +182,13 @@ public class Heightmap {
          return this.isOpaque;
       }
 
-      @Override
       public String getSerializedName() {
          return this.serializationKey;
+      }
+
+      // $FF: synthetic method
+      private static Types[] $values() {
+         return new Types[]{WORLD_SURFACE_WG, WORLD_SURFACE, OCEAN_FLOOR_WG, OCEAN_FLOOR, MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES};
       }
    }
 
@@ -185,6 +198,11 @@ public class Heightmap {
       CLIENT;
 
       private Usage() {
+      }
+
+      // $FF: synthetic method
+      private static Usage[] $values() {
+         return new Usage[]{WORLDGEN, LIVE_WORLD, CLIENT};
       }
    }
 }

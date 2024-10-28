@@ -13,15 +13,17 @@ public class DirectionProperty extends EnumProperty<Direction> {
    }
 
    public static DirectionProperty create(String var0) {
-      return create(var0, var0x -> true);
+      return create(var0, (var0x) -> {
+         return true;
+      });
    }
 
    public static DirectionProperty create(String var0, Predicate<Direction> var1) {
-      return create(var0, Arrays.stream(Direction.values()).filter(var1).collect(Collectors.toList()));
+      return create(var0, (Collection)Arrays.stream(Direction.values()).filter(var1).collect(Collectors.toList()));
    }
 
    public static DirectionProperty create(String var0, Direction... var1) {
-      return create(var0, Lists.newArrayList(var1));
+      return create(var0, (Collection)Lists.newArrayList(var1));
    }
 
    public static DirectionProperty create(String var0, Collection<Direction> var1) {

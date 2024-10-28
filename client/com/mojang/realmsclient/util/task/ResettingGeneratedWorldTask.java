@@ -13,7 +13,6 @@ public class ResettingGeneratedWorldTask extends ResettingWorldTask {
       this.generationInfo = var1;
    }
 
-   @Override
    protected void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException {
       var1.resetWorldWithSeed(var2, this.generationInfo);
    }

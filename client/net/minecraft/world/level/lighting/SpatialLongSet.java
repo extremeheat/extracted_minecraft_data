@@ -7,11 +7,11 @@ import java.util.NoSuchElementException;
 import net.minecraft.util.Mth;
 
 public class SpatialLongSet extends LongLinkedOpenHashSet {
-   private final SpatialLongSet.InternalMap map;
+   private final InternalMap map;
 
    public SpatialLongSet(int var1, float var2) {
       super(var1, var2);
-      this.map = new SpatialLongSet.InternalMap(var1 / 64, var2);
+      this.map = new InternalMap(var1 / 64, var2);
    }
 
    public boolean add(long var1) {
@@ -37,11 +37,11 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
    protected static class InternalMap extends Long2LongLinkedOpenHashMap {
       private static final int X_BITS = Mth.log2(60000000);
       private static final int Z_BITS = Mth.log2(60000000);
-      private static final int Y_BITS = 64 - X_BITS - Z_BITS;
+      private static final int Y_BITS;
       private static final int Y_OFFSET = 0;
-      private static final int Z_OFFSET = Y_BITS;
-      private static final int X_OFFSET = Y_BITS + Z_BITS;
-      private static final long OUTER_MASK = 3L << X_OFFSET | 3L | 3L << Z_OFFSET;
+      private static final int Z_OFFSET;
+      private static final int X_OFFSET;
+      private static final long OUTER_MASK;
       private int lastPos = -1;
       private long lastOuterKey;
       private final int minSize;
@@ -65,7 +65,8 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
       static long getFullKey(long var0, int var2) {
          var0 |= (long)(var2 >>> 4 & 3) << X_OFFSET;
          var0 |= (long)(var2 >>> 2 & 3) << Z_OFFSET;
-         return var0 | (long)(var2 >>> 0 & 3) << 0;
+         var0 |= (long)(var2 >>> 0 & 3) << 0;
+         return var0;
       }
 
       public boolean addBit(long var1) {
@@ -105,7 +106,9 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
             this.first = this.last = var8;
             this.link[var8] = -1L;
          } else {
-            this.link[this.last] ^= (this.link[this.last] ^ (long)var8 & 4294967295L) & 4294967295L;
+            long[] var10000 = this.link;
+            int var10001 = this.last;
+            var10000[var10001] ^= (this.link[this.last] ^ (long)var8 & 4294967295L) & 4294967295L;
             this.link[var8] = ((long)this.last & 4294967295L) << 32 | 4294967295L;
             this.last = var8;
          }
@@ -119,7 +122,8 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
 
       private boolean replaceBit(int var1, long var2) {
          boolean var4 = (this.value[var1] & var2) != 0L;
-         this.value[var1] |= var2;
+         long[] var10000 = this.value;
+         var10000[var1] |= var2;
          return var4;
       }
 
@@ -153,7 +157,9 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          if ((this.value[this.n] & var1) == 0L) {
             return false;
          } else {
-            this.value[this.n] &= ~var1;
+            long[] var10000 = this.value;
+            int var10001 = this.n;
+            var10000[var10001] &= ~var1;
             if (this.value[this.n] != 0L) {
                return true;
             } else {
@@ -173,7 +179,8 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          if ((this.value[var1] & var2) == 0L) {
             return false;
          } else {
-            this.value[var1] &= ~var2;
+            long[] var10000 = this.value;
+            var10000[var1] &= ~var2;
             if (this.value[var1] != 0L) {
                return true;
             } else {
@@ -197,7 +204,8 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
             int var1 = this.first;
             long var2 = this.key[var1];
             int var4 = Long.numberOfTrailingZeros(this.value[var1]);
-            this.value[var1] &= ~(1L << var4);
+            long[] var10000 = this.value;
+            var10000[var1] &= ~(1L << var4);
             if (this.value[var1] == 0L) {
                this.removeFirstLong();
                this.lastPos = -1;
@@ -211,6 +219,14 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          if (var1 > this.minSize) {
             super.rehash(var1);
          }
+
+      }
+
+      static {
+         Y_BITS = 64 - X_BITS - Z_BITS;
+         Z_OFFSET = Y_BITS;
+         X_OFFSET = Y_BITS + Z_BITS;
+         OUTER_MASK = 3L << X_OFFSET | 3L | 3L << Z_OFFSET;
       }
    }
 }

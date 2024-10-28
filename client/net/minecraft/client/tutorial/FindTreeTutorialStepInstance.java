@@ -1,5 +1,6 @@
 package net.minecraft.client.tutorial;
 
+import java.util.Iterator;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -28,7 +29,6 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
       this.tutorial = var1;
    }
 
-   @Override
    public void tick() {
       ++this.timeWaiting;
       if (!this.tutorial.isSurvival()) {
@@ -46,18 +46,18 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
             this.toast = new TutorialToast(TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
             this.tutorial.getMinecraft().getToasts().addToast(this.toast);
          }
+
       }
    }
 
-   @Override
    public void clear() {
       if (this.toast != null) {
          this.toast.hide();
          this.toast = null;
       }
+
    }
 
-   @Override
    public void onLookAt(ClientLevel var1, HitResult var2) {
       if (var2.getType() == HitResult.Type.BLOCK) {
          BlockState var3 = var1.getBlockState(((BlockHitResult)var2).getBlockPos());
@@ -65,27 +65,35 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
             this.tutorial.setStep(TutorialSteps.PUNCH_TREE);
          }
       }
+
    }
 
-   @Override
    public void onGetItem(ItemStack var1) {
       if (var1.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL)) {
          this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
       }
+
    }
 
    private static boolean hasCollectedTreeItems(LocalPlayer var0) {
-      return var0.getInventory().hasAnyMatching(var0x -> var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL));
+      return var0.getInventory().hasAnyMatching((var0x) -> {
+         return var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
+      });
    }
 
    public static boolean hasPunchedTreesPreviously(LocalPlayer var0) {
-      for(Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
-         Block var3 = (Block)var2.value();
-         if (var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) > 0) {
-            return true;
-         }
-      }
+      Iterator var1 = BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL).iterator();
 
-      return false;
+      Block var3;
+      do {
+         if (!var1.hasNext()) {
+            return false;
+         }
+
+         Holder var2 = (Holder)var1.next();
+         var3 = (Block)var2.value();
+      } while(var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) <= 0);
+
+      return true;
    }
 }

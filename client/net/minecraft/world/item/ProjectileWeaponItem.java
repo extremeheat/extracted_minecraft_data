@@ -17,9 +17,10 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
 public abstract class ProjectileWeaponItem extends Item {
-   public static final Predicate<ItemStack> ARROW_ONLY = var0 -> var0.is(ItemTags.ARROWS);
-   public static final Predicate<ItemStack> ARROW_OR_FIREWORK = ARROW_ONLY.or(var0 -> var0.is(Items.FIREWORK_ROCKET));
-   public static final Predicate<ItemStack> POISONOUS_POTATO = var0 -> var0.is(Items.POISONOUS_POTATO);
+   public static final Predicate<ItemStack> ARROW_ONLY = (var0) -> {
+      return var0.is(ItemTags.ARROWS);
+   };
+   public static final Predicate<ItemStack> ARROW_OR_FIREWORK;
 
    public ProjectileWeaponItem(Item.Properties var1) {
       super(var1);
@@ -39,24 +40,13 @@ public abstract class ProjectileWeaponItem extends Item {
       }
    }
 
-   @Override
    public int getEnchantmentValue() {
       return 1;
    }
 
    public abstract int getDefaultProjectileRange();
 
-   protected void shoot(
-      Level var1,
-      LivingEntity var2,
-      InteractionHand var3,
-      ItemStack var4,
-      List<ItemStack> var5,
-      float var6,
-      float var7,
-      boolean var8,
-      @Nullable LivingEntity var9
-   ) {
+   protected void shoot(Level var1, LivingEntity var2, InteractionHand var3, ItemStack var4, List<ItemStack> var5, float var6, float var7, boolean var8, @Nullable LivingEntity var9) {
       float var10 = 10.0F;
       float var11 = var5.size() == 1 ? 0.0F : 20.0F / (float)(var5.size() - 1);
       float var12 = (float)((var5.size() - 1) % 2) * var11 / 2.0F;
@@ -73,6 +63,7 @@ public abstract class ProjectileWeaponItem extends Item {
             var1.addFreshEntity(var17);
          }
       }
+
    }
 
    protected int getDurabilityUse(ItemStack var1) {
@@ -83,7 +74,14 @@ public abstract class ProjectileWeaponItem extends Item {
 
    protected Projectile createProjectile(Level var1, LivingEntity var2, ItemStack var3, ItemStack var4, boolean var5) {
       Item var8 = var4.getItem();
-      ArrowItem var6 = var8 instanceof ArrowItem var7 ? var7 : (ArrowItem)Items.ARROW;
+      ArrowItem var10000;
+      if (var8 instanceof ArrowItem var7) {
+         var10000 = var7;
+      } else {
+         var10000 = (ArrowItem)Items.ARROW;
+      }
+
+      ArrowItem var6 = var10000;
       AbstractArrow var11 = var6.createArrow(var1, var4, var2);
       if (var5) {
          var11.setCritArrow(true);
@@ -132,21 +130,27 @@ public abstract class ProjectileWeaponItem extends Item {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected static ItemStack useAmmo(ItemStack var0, ItemStack var1, LivingEntity var2, boolean var3) {
       boolean var4 = !var3 && !hasInfiniteArrows(var0, var1, var2.hasInfiniteMaterials());
+      ItemStack var5;
       if (!var4) {
-         ItemStack var7 = var1.copyWithCount(1);
-         var7.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
-         return var7;
+         var5 = var1.copyWithCount(1);
+         var5.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+         return var5;
       } else {
-         ItemStack var5 = var1.split(1);
-         if (var1.isEmpty() && var2 instanceof Player var6) {
+         var5 = var1.split(1);
+         if (var1.isEmpty() && var2 instanceof Player) {
+            Player var6 = (Player)var2;
             var6.getInventory().removeItem(var1);
          }
 
          return var5;
       }
+   }
+
+   static {
+      ARROW_OR_FIREWORK = ARROW_ONLY.or((var0) -> {
+         return var0.is(Items.FIREWORK_ROCKET);
+      });
    }
 }

@@ -38,7 +38,7 @@ public interface HoglinBase {
          double var10 = var1.getZ() - var0.getZ();
          float var12 = (float)(var0.level().random.nextInt(21) - 10);
          double var13 = var6 * (double)(var0.level().random.nextFloat() * 0.5F + 0.2F);
-         Vec3 var15 = new Vec3(var8, 0.0, var10).normalize().scale(var13).yRot(var12);
+         Vec3 var15 = (new Vec3(var8, 0.0, var10)).normalize().scale(var13).yRot(var12);
          double var16 = var6 * (double)var0.level().random.nextFloat() * 0.5;
          var1.push(var15.x, var16, var15.z);
          var1.hurtMarked = true;

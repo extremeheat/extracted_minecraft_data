@@ -75,14 +75,15 @@ public class DripstoneUtils {
       if (var1 >= 1) {
          var3.accept(createPointedDripstone(var0, var2 ? DripstoneThickness.TIP_MERGE : DripstoneThickness.TIP));
       }
+
    }
 
    protected static void growPointedDripstone(LevelAccessor var0, BlockPos var1, Direction var2, int var3, boolean var4) {
       if (isDripstoneBase(var0.getBlockState(var1.relative(var2.getOpposite())))) {
          BlockPos.MutableBlockPos var5 = var1.mutable();
-         buildBaseToTipColumn(var2, var3, var4, var3x -> {
+         buildBaseToTipColumn(var2, var3, var4, (var3x) -> {
             if (var3x.is(Blocks.POINTED_DRIPSTONE)) {
-               var3x = var3x.setValue(PointedDripstoneBlock.WATERLOGGED, Boolean.valueOf(var0.isWaterAt(var5)));
+               var3x = (BlockState)var3x.setValue(PointedDripstoneBlock.WATERLOGGED, var0.isWaterAt(var5));
             }
 
             var0.setBlock(var5, var3x, 2);
@@ -102,7 +103,7 @@ public class DripstoneUtils {
    }
 
    private static BlockState createPointedDripstone(Direction var0, DripstoneThickness var1) {
-      return Blocks.POINTED_DRIPSTONE.defaultBlockState().setValue(PointedDripstoneBlock.TIP_DIRECTION, var0).setValue(PointedDripstoneBlock.THICKNESS, var1);
+      return (BlockState)((BlockState)Blocks.POINTED_DRIPSTONE.defaultBlockState().setValue(PointedDripstoneBlock.TIP_DIRECTION, var0)).setValue(PointedDripstoneBlock.THICKNESS, var1);
    }
 
    public static boolean isDripstoneBaseOrLava(BlockState var0) {

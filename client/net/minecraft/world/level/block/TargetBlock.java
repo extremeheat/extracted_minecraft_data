@@ -25,28 +25,27 @@ import net.minecraft.world.phys.Vec3;
 
 public class TargetBlock extends Block {
    public static final MapCodec<TargetBlock> CODEC = simpleCodec(TargetBlock::new);
-   private static final IntegerProperty OUTPUT_POWER = BlockStateProperties.POWER;
+   private static final IntegerProperty OUTPUT_POWER;
    private static final int ACTIVATION_TICKS_ARROWS = 20;
    private static final int ACTIVATION_TICKS_OTHER = 8;
 
-   @Override
    public MapCodec<TargetBlock> codec() {
       return CODEC;
    }
 
    public TargetBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(OUTPUT_POWER, Integer.valueOf(0)));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(OUTPUT_POWER, 0));
    }
 
-   @Override
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       int var5 = updateRedstoneOutput(var1, var2, var3, var4);
       Entity var6 = var4.getOwner();
       if (var6 instanceof ServerPlayer var7) {
-         ((ServerPlayer)var7).awardStat(Stats.TARGET_HIT);
-         CriteriaTriggers.TARGET_BLOCK_HIT.trigger((ServerPlayer)var7, var4, var3.getLocation(), var5);
+         var7.awardStat(Stats.TARGET_HIT);
+         CriteriaTriggers.TARGET_BLOCK_HIT.trigger(var7, var4, var3.getLocation(), var5);
       }
+
    }
 
    private static int updateRedstoneOutput(LevelAccessor var0, BlockState var1, BlockHitResult var2, Entity var3) {
@@ -78,38 +77,39 @@ public class TargetBlock extends Block {
    }
 
    private static void setOutputPower(LevelAccessor var0, BlockState var1, int var2, BlockPos var3, int var4) {
-      var0.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(var2)), 3);
+      var0.setBlock(var3, (BlockState)var1.setValue(OUTPUT_POWER, var2), 3);
       var0.scheduleTick(var3, var1.getBlock(), var4);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(OUTPUT_POWER) != 0) {
-         var2.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(0)), 3);
+      if ((Integer)var1.getValue(OUTPUT_POWER) != 0) {
+         var2.setBlock(var3, (BlockState)var1.setValue(OUTPUT_POWER, 0), 3);
       }
+
    }
 
-   @Override
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var1.getValue(OUTPUT_POWER);
+      return (Integer)var1.getValue(OUTPUT_POWER);
    }
 
-   @Override
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(OUTPUT_POWER);
    }
 
-   @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var2.isClientSide() && !var1.is(var4.getBlock())) {
-         if (var1.getValue(OUTPUT_POWER) > 0 && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
-            var2.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(0)), 18);
+         if ((Integer)var1.getValue(OUTPUT_POWER) > 0 && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
+            var2.setBlock(var3, (BlockState)var1.setValue(OUTPUT_POWER, 0), 18);
          }
+
       }
+   }
+
+   static {
+      OUTPUT_POWER = BlockStateProperties.POWER;
    }
 }

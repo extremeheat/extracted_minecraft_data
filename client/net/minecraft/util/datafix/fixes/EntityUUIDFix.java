@@ -4,10 +4,10 @@ import com.google.common.collect.Sets;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -26,31 +26,33 @@ public class EntityUUIDFix extends AbstractUUIDFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("EntityUUIDFixes", this.getInputSchema().getType(this.typeReference), var1 -> {
+      return this.fixTypeEverywhereTyped("EntityUUIDFixes", this.getInputSchema().getType(this.typeReference), (var1) -> {
          var1 = var1.update(DSL.remainderFinder(), EntityUUIDFix::updateEntityUUID);
 
-         for(String var3 : ABSTRACT_HORSES) {
-            var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner);
+         Iterator var2;
+         String var3;
+         for(var2 = ABSTRACT_HORSES.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner)) {
+            var3 = (String)var2.next();
          }
 
-         for(String var18 : TAMEABLE_ANIMALS) {
-            var1 = this.updateNamedChoice(var1, var18, EntityUUIDFix::updateAnimalOwner);
+         for(var2 = TAMEABLE_ANIMALS.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner)) {
+            var3 = (String)var2.next();
          }
 
-         for(String var19 : ANIMALS) {
-            var1 = this.updateNamedChoice(var1, var19, EntityUUIDFix::updateAnimal);
+         for(var2 = ANIMALS.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimal)) {
+            var3 = (String)var2.next();
          }
 
-         for(String var20 : MOBS) {
-            var1 = this.updateNamedChoice(var1, var20, EntityUUIDFix::updateMob);
+         for(var2 = MOBS.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateMob)) {
+            var3 = (String)var2.next();
          }
 
-         for(String var21 : LIVING_ENTITIES) {
-            var1 = this.updateNamedChoice(var1, var21, EntityUUIDFix::updateLivingEntity);
+         for(var2 = LIVING_ENTITIES.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateLivingEntity)) {
+            var3 = (String)var2.next();
          }
 
-         for(String var22 : PROJECTILES) {
-            var1 = this.updateNamedChoice(var1, var22, EntityUUIDFix::updateProjectile);
+         for(var2 = PROJECTILES.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateProjectile)) {
+            var3 = (String)var2.next();
          }
 
          var1 = this.updateNamedChoice(var1, "minecraft:bee", EntityUUIDFix::updateHurtBy);
@@ -61,95 +63,100 @@ public class EntityUUIDFix extends AbstractUUIDFix {
          var1 = this.updateNamedChoice(var1, "minecraft:area_effect_cloud", EntityUUIDFix::updateAreaEffectCloud);
          var1 = this.updateNamedChoice(var1, "minecraft:zombie_villager", EntityUUIDFix::updateZombieVillager);
          var1 = this.updateNamedChoice(var1, "minecraft:evoker_fangs", EntityUUIDFix::updateEvokerFangs);
-         return this.updateNamedChoice(var1, "minecraft:piglin", EntityUUIDFix::updatePiglin);
+         var1 = this.updateNamedChoice(var1, "minecraft:piglin", EntityUUIDFix::updatePiglin);
+         return var1;
       });
    }
 
    private static Dynamic<?> updatePiglin(Dynamic<?> var0) {
-      return var0.update(
-         "Brain",
-         var0x -> var0x.update(
-               "memories", var0xx -> var0xx.update("minecraft:angry_at", var0xxx -> (Dynamic)replaceUUIDString(var0xxx, "value", "value").orElseGet(() -> {
-                        LOGGER.warn("angry_at has no value.");
-                        return var0xxx;
-                     }))
-            )
-      );
+      return var0.update("Brain", (var0x) -> {
+         return var0x.update("memories", (var0) -> {
+            return var0.update("minecraft:angry_at", (var0x) -> {
+               return (Dynamic)replaceUUIDString(var0x, "value", "value").orElseGet(() -> {
+                  LOGGER.warn("angry_at has no value.");
+                  return var0x;
+               });
+            });
+         });
+      });
    }
 
    private static Dynamic<?> updateEvokerFangs(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
+      return (Dynamic)replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
    }
 
    private static Dynamic<?> updateZombieVillager(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "ConversionPlayer", "ConversionPlayer").orElse(var0);
+      return (Dynamic)replaceUUIDLeastMost(var0, "ConversionPlayer", "ConversionPlayer").orElse(var0);
    }
 
    private static Dynamic<?> updateAreaEffectCloud(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
+      return (Dynamic)replaceUUIDLeastMost(var0, "OwnerUUID", "Owner").orElse(var0);
    }
 
    private static Dynamic<?> updateShulkerBullet(Dynamic<?> var0) {
       var0 = (Dynamic)replaceUUIDMLTag(var0, "Owner", "Owner").orElse(var0);
-      return (Dynamic<?>)replaceUUIDMLTag(var0, "Target", "Target").orElse(var0);
+      return (Dynamic)replaceUUIDMLTag(var0, "Target", "Target").orElse(var0);
    }
 
    private static Dynamic<?> updateItem(Dynamic<?> var0) {
       var0 = (Dynamic)replaceUUIDMLTag(var0, "Owner", "Owner").orElse(var0);
-      return (Dynamic<?>)replaceUUIDMLTag(var0, "Thrower", "Thrower").orElse(var0);
+      return (Dynamic)replaceUUIDMLTag(var0, "Thrower", "Thrower").orElse(var0);
    }
 
    private static Dynamic<?> updateFox(Dynamic<?> var0) {
-      Optional var1 = var0.get("TrustedUUIDs")
-         .result()
-         .map(var1x -> var0.createList(var1x.asStream().map(var0xx -> (Dynamic)createUUIDFromML(var0xx).orElseGet(() -> {
-                  LOGGER.warn("Trusted contained invalid data.");
-                  return var0xx;
-               }))));
-      return (Dynamic<?>)DataFixUtils.orElse(var1.map(var1x -> var0.remove("TrustedUUIDs").set("Trusted", var1x)), var0);
+      Optional var1 = var0.get("TrustedUUIDs").result().map((var1x) -> {
+         return var0.createList(var1x.asStream().map((var0x) -> {
+            return (Dynamic)createUUIDFromML(var0x).orElseGet(() -> {
+               LOGGER.warn("Trusted contained invalid data.");
+               return var0x;
+            });
+         }));
+      });
+      return (Dynamic)DataFixUtils.orElse(var1.map((var1x) -> {
+         return var0.remove("TrustedUUIDs").set("Trusted", var1x);
+      }), var0);
    }
 
    private static Dynamic<?> updateHurtBy(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDString(var0, "HurtBy", "HurtBy").orElse(var0);
+      return (Dynamic)replaceUUIDString(var0, "HurtBy", "HurtBy").orElse(var0);
    }
 
    private static Dynamic<?> updateAnimalOwner(Dynamic<?> var0) {
       Dynamic var1 = updateAnimal(var0);
-      return (Dynamic<?>)replaceUUIDString(var1, "OwnerUUID", "Owner").orElse(var1);
+      return (Dynamic)replaceUUIDString(var1, "OwnerUUID", "Owner").orElse(var1);
    }
 
    private static Dynamic<?> updateAnimal(Dynamic<?> var0) {
       Dynamic var1 = updateMob(var0);
-      return (Dynamic<?>)replaceUUIDLeastMost(var1, "LoveCause", "LoveCause").orElse(var1);
+      return (Dynamic)replaceUUIDLeastMost(var1, "LoveCause", "LoveCause").orElse(var1);
    }
 
    private static Dynamic<?> updateMob(Dynamic<?> var0) {
-      return updateLivingEntity(var0).update("Leash", var0x -> (Dynamic)replaceUUIDLeastMost(var0x, "UUID", "UUID").orElse(var0x));
+      return updateLivingEntity(var0).update("Leash", (var0x) -> {
+         return (Dynamic)replaceUUIDLeastMost(var0x, "UUID", "UUID").orElse(var0x);
+      });
    }
 
    public static Dynamic<?> updateLivingEntity(Dynamic<?> var0) {
-      return var0.update(
-         "Attributes",
-         var1 -> var0.createList(
-               var1.asStream()
-                  .map(
-                     var0xx -> var0xx.update(
-                           "Modifiers",
-                           var1x -> var0xx.createList(
-                                 var1x.asStream().map(var0xxxx -> (Dynamic)replaceUUIDLeastMost(var0xxxx, "UUID", "UUID").orElse(var0xxxx))
-                              )
-                        )
-                  )
-            )
-      );
+      return var0.update("Attributes", (var1) -> {
+         return var0.createList(var1.asStream().map((var0x) -> {
+            return var0x.update("Modifiers", (var1) -> {
+               return var0x.createList(var1.asStream().map((var0) -> {
+                  return (Dynamic)replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0);
+               }));
+            });
+         }));
+      });
    }
 
    private static Dynamic<?> updateProjectile(Dynamic<?> var0) {
-      return (Dynamic<?>)DataFixUtils.orElse(var0.get("OwnerUUID").result().map(var1 -> var0.remove("OwnerUUID").set("Owner", var1)), var0);
+      return (Dynamic)DataFixUtils.orElse(var0.get("OwnerUUID").result().map((var1) -> {
+         return var0.remove("OwnerUUID").set("Owner", var1);
+      }), var0);
    }
 
    public static Dynamic<?> updateEntityUUID(Dynamic<?> var0) {
-      return (Dynamic<?>)replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0);
+      return (Dynamic)replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0);
    }
 
    static {

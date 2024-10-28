@@ -11,8 +11,8 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.CrashReport;
@@ -41,17 +41,20 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
    public void bindForSetup(ResourceLocation var1) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this._bind(var1));
+         RenderSystem.recordRenderCall(() -> {
+            this._bind(var1);
+         });
       } else {
          this._bind(var1);
       }
+
    }
 
    private void _bind(ResourceLocation var1) {
-      Object var2 = this.byPath.get(var1);
+      Object var2 = (AbstractTexture)this.byPath.get(var1);
       if (var2 == null) {
          var2 = new SimpleTexture(var1);
-         this.register(var1, (AbstractTexture)var2);
+         this.register((ResourceLocation)var1, (AbstractTexture)var2);
       }
 
       ((AbstractTexture)var2).bind();
@@ -59,7 +62,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
    public void register(ResourceLocation var1, AbstractTexture var2) {
       var2 = this.loadTexture(var1, var2);
-      AbstractTexture var3 = this.byPath.put(var1, var2);
+      AbstractTexture var3 = (AbstractTexture)this.byPath.put(var1, var2);
       if (var3 != var2) {
          if (var3 != null && var3 != MissingTextureAtlasSprite.getTexture()) {
             this.safeClose(var1, var3);
@@ -69,6 +72,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
             this.tickableTextures.add((Tickable)var2);
          }
       }
+
    }
 
    private void safeClose(ResourceLocation var1, AbstractTexture var2) {
@@ -98,28 +102,30 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       } catch (Throwable var7) {
          CrashReport var4 = CrashReport.forThrowable(var7, "Registering texture");
          CrashReportCategory var5 = var4.addCategory("Resource location being registered");
-         var5.setDetail("Resource location", var1);
-         var5.setDetail("Texture object class", () -> var2.getClass().getName());
+         var5.setDetail("Resource location", (Object)var1);
+         var5.setDetail("Texture object class", () -> {
+            return var2.getClass().getName();
+         });
          throw new ReportedException(var4);
       }
    }
 
    public AbstractTexture getTexture(ResourceLocation var1) {
-      Object var2 = this.byPath.get(var1);
+      Object var2 = (AbstractTexture)this.byPath.get(var1);
       if (var2 == null) {
          var2 = new SimpleTexture(var1);
-         this.register(var1, (AbstractTexture)var2);
+         this.register((ResourceLocation)var1, (AbstractTexture)var2);
       }
 
       return (AbstractTexture)var2;
    }
 
    public AbstractTexture getTexture(ResourceLocation var1, AbstractTexture var2) {
-      return this.byPath.getOrDefault(var1, var2);
+      return (AbstractTexture)this.byPath.getOrDefault(var1, var2);
    }
 
    public ResourceLocation register(String var1, DynamicTexture var2) {
-      Integer var3 = this.prefixRegister.get(var1);
+      Integer var3 = (Integer)this.prefixRegister.get(var1);
       if (var3 == null) {
          var3 = 1;
       } else {
@@ -128,7 +134,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
       this.prefixRegister.put(var1, var3);
       ResourceLocation var4 = new ResourceLocation(String.format(Locale.ROOT, "dynamic/%s_%d", var1, var3));
-      this.register(var4, var2);
+      this.register((ResourceLocation)var4, (AbstractTexture)var2);
       return var4;
    }
 
@@ -136,31 +142,39 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       if (!this.byPath.containsKey(var1)) {
          PreloadedTexture var3 = new PreloadedTexture(this.resourceManager, var1, var2);
          this.byPath.put(var1, var3);
-         return var3.getFuture().thenRunAsync(() -> this.register(var1, var3), TextureManager::execute);
+         return var3.getFuture().thenRunAsync(() -> {
+            this.register((ResourceLocation)var1, (AbstractTexture)var3);
+         }, TextureManager::execute);
       } else {
-         return CompletableFuture.completedFuture(null);
+         return CompletableFuture.completedFuture((Object)null);
       }
    }
 
    private static void execute(Runnable var0) {
-      Minecraft.getInstance().execute(() -> RenderSystem.recordRenderCall(var0::run));
+      Minecraft.getInstance().execute(() -> {
+         Objects.requireNonNull(var0);
+         RenderSystem.recordRenderCall(var0::run);
+      });
    }
 
-   @Override
    public void tick() {
-      for(Tickable var2 : this.tickableTextures) {
+      Iterator var1 = this.tickableTextures.iterator();
+
+      while(var1.hasNext()) {
+         Tickable var2 = (Tickable)var1.next();
          var2.tick();
       }
+
    }
 
    public void release(ResourceLocation var1) {
-      AbstractTexture var2 = this.byPath.remove(var1);
+      AbstractTexture var2 = (AbstractTexture)this.byPath.remove(var1);
       if (var2 != null) {
          this.safeClose(var1, var2);
       }
+
    }
 
-   @Override
    public void close() {
       this.byPath.forEach(this::safeClose);
       this.byPath.clear();
@@ -168,38 +182,48 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       this.prefixRegister.clear();
    }
 
-   @Override
-   public CompletableFuture<Void> reload(
-      PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
-   ) {
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
       CompletableFuture var7 = new CompletableFuture();
-      TitleScreen.preloadResources(this, var5).thenCompose(var1::wait).thenAcceptAsync(var4x -> {
+      CompletableFuture var10000 = TitleScreen.preloadResources(this, var5);
+      Objects.requireNonNull(var1);
+      var10000.thenCompose(var1::wait).thenAcceptAsync((var4x) -> {
          MissingTextureAtlasSprite.getTexture();
          RealmsPopupScreen.updateCarouselImages(this.resourceManager);
-         Iterator var5xx = this.byPath.entrySet().iterator();
+         Iterator var5 = this.byPath.entrySet().iterator();
 
-         while(var5xx.hasNext()) {
-            Entry var6xx = (Entry)var5xx.next();
-            ResourceLocation var7xx = (ResourceLocation)var6xx.getKey();
-            AbstractTexture var8 = (AbstractTexture)var6xx.getValue();
-            if (var8 == MissingTextureAtlasSprite.getTexture() && !var7xx.equals(MissingTextureAtlasSprite.getLocation())) {
-               var5xx.remove();
-            } else {
-               var8.reset(this, var2, var7xx, var6);
+         while(true) {
+            while(var5.hasNext()) {
+               Map.Entry var6x = (Map.Entry)var5.next();
+               ResourceLocation var7x = (ResourceLocation)var6x.getKey();
+               AbstractTexture var8 = (AbstractTexture)var6x.getValue();
+               if (var8 == MissingTextureAtlasSprite.getTexture() && !var7x.equals(MissingTextureAtlasSprite.getLocation())) {
+                  var5.remove();
+               } else {
+                  var8.reset(this, var2, var7x, var6);
+               }
             }
-         }
 
-         Minecraft.getInstance().tell(() -> var7.complete(null));
-      }, var0 -> RenderSystem.recordRenderCall(var0::run));
+            Minecraft.getInstance().tell(() -> {
+               var7.complete((Object)null);
+            });
+            return;
+         }
+      }, (var0) -> {
+         Objects.requireNonNull(var0);
+         RenderSystem.recordRenderCall(var0::run);
+      });
       return var7;
    }
 
    public void dumpAllSheets(Path var1) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this._dumpAllSheets(var1));
+         RenderSystem.recordRenderCall(() -> {
+            this._dumpAllSheets(var1);
+         });
       } else {
          this._dumpAllSheets(var1);
       }
+
    }
 
    private void _dumpAllSheets(Path var1) {
@@ -211,13 +235,14 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       }
 
       this.byPath.forEach((var1x, var2) -> {
-         if (var2 instanceof Dumpable var3xx) {
+         if (var2 instanceof Dumpable var3) {
             try {
-               var3xx.dumpContents(var1x, var1);
+               var3.dumpContents(var1x, var1);
             } catch (IOException var5) {
                LOGGER.error("Failed to dump texture {}", var1x, var5);
             }
          }
+
       });
    }
 }

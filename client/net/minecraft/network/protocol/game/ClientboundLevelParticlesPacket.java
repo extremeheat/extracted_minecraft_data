@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC = Packet.codec(
-      ClientboundLevelParticlesPacket::write, ClientboundLevelParticlesPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC = Packet.codec(ClientboundLevelParticlesPacket::write, ClientboundLevelParticlesPacket::new);
    private final double x;
    private final double y;
    private final double z;
@@ -22,9 +20,7 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
    private final boolean overrideLimiter;
    private final ParticleOptions particle;
 
-   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(
-      T var1, boolean var2, double var3, double var5, double var7, float var9, float var10, float var11, float var12, int var13
-   ) {
+   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(T var1, boolean var2, double var3, double var5, double var7, float var9, float var10, float var11, float var12, int var13) {
       super();
       this.particle = var1;
       this.overrideLimiter = var2;
@@ -49,7 +45,7 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       this.zDist = var1.readFloat();
       this.maxSpeed = var1.readFloat();
       this.count = var1.readInt();
-      this.particle = ParticleTypes.STREAM_CODEC.decode(var1);
+      this.particle = (ParticleOptions)ParticleTypes.STREAM_CODEC.decode(var1);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -65,7 +61,6 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       ParticleTypes.STREAM_CODEC.encode(var1, this.particle);
    }
 
-   @Override
    public PacketType<ClientboundLevelParticlesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_LEVEL_PARTICLES;
    }

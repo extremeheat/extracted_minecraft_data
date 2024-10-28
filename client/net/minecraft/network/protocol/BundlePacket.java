@@ -14,6 +14,5 @@ public abstract class BundlePacket<T extends PacketListener> implements Packet<T
       return this.packets;
    }
 
-   @Override
    public abstract PacketType<? extends BundlePacket<T>> type();
 }

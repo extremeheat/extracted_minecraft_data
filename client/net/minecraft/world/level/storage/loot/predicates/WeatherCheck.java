@@ -1,23 +1,16 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public record WeatherCheck(Optional<Boolean> b, Optional<Boolean> c) implements LootItemCondition {
-   private final Optional<Boolean> isRaining;
-   private final Optional<Boolean> isThundering;
-   public static final Codec<WeatherCheck> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "raining").forGetter(WeatherCheck::isRaining),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "thundering").forGetter(WeatherCheck::isThundering)
-            )
-            .apply(var0, WeatherCheck::new)
-   );
+public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThundering) implements LootItemCondition {
+   public static final MapCodec<WeatherCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(var0, WeatherCheck::new);
+   });
 
    public WeatherCheck(Optional<Boolean> var1, Optional<Boolean> var2) {
       super();
@@ -25,22 +18,34 @@ public record WeatherCheck(Optional<Boolean> b, Optional<Boolean> c) implements 
       this.isThundering = var2;
    }
 
-   @Override
    public LootItemConditionType getType() {
       return LootItemConditions.WEATHER_CHECK;
    }
 
    public boolean test(LootContext var1) {
       ServerLevel var2 = var1.getLevel();
-      if (this.isRaining.isPresent() && this.isRaining.get() != var2.isRaining()) {
+      if (this.isRaining.isPresent() && (Boolean)this.isRaining.get() != var2.isRaining()) {
          return false;
       } else {
-         return !this.isThundering.isPresent() || this.isThundering.get() == var2.isThundering();
+         return !this.isThundering.isPresent() || (Boolean)this.isThundering.get() == var2.isThundering();
       }
    }
 
-   public static WeatherCheck.Builder weather() {
-      return new WeatherCheck.Builder();
+   public static Builder weather() {
+      return new Builder();
+   }
+
+   public Optional<Boolean> isRaining() {
+      return this.isRaining;
+   }
+
+   public Optional<Boolean> isThundering() {
+      return this.isThundering;
+   }
+
+   // $FF: synthetic method
+   public boolean test(Object var1) {
+      return this.test((LootContext)var1);
    }
 
    public static class Builder implements LootItemCondition.Builder {
@@ -51,18 +56,23 @@ public record WeatherCheck(Optional<Boolean> b, Optional<Boolean> c) implements 
          super();
       }
 
-      public WeatherCheck.Builder setRaining(boolean var1) {
+      public Builder setRaining(boolean var1) {
          this.isRaining = Optional.of(var1);
          return this;
       }
 
-      public WeatherCheck.Builder setThundering(boolean var1) {
+      public Builder setThundering(boolean var1) {
          this.isThundering = Optional.of(var1);
          return this;
       }
 
       public WeatherCheck build() {
          return new WeatherCheck(this.isRaining, this.isThundering);
+      }
+
+      // $FF: synthetic method
+      public LootItemCondition build() {
+         return this.build();
       }
    }
 }

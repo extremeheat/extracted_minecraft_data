@@ -12,23 +12,19 @@ public class OpenDoorGoal extends DoorInteractGoal {
       this.closeDoor = var2;
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.closeDoor && this.forgetTime > 0 && super.canContinueToUse();
    }
 
-   @Override
    public void start() {
       this.forgetTime = 20;
       this.setOpen(true);
    }
 
-   @Override
    public void stop() {
       this.setOpen(false);
    }
 
-   @Override
    public void tick() {
       --this.forgetTime;
       super.tick();

@@ -19,7 +19,6 @@ public class ScaffoldingBlockItem extends BlockItem {
    }
 
    @Nullable
-   @Override
    public BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       Level var3 = var1.getLevel();
@@ -66,7 +65,6 @@ public class ScaffoldingBlockItem extends BlockItem {
       }
    }
 
-   @Override
    protected boolean mustSurvive() {
       return false;
    }

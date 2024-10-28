@@ -10,6 +10,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -39,7 +40,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
       var4.pushPose();
       ItemStack var7 = var1.getItem();
       this.random.setSeed((long)getSeedForItemStack(var7));
-      BakedModel var8 = this.itemRenderer.getModel(var7, var1.level(), null, var1.getId());
+      BakedModel var8 = this.itemRenderer.getModel(var7, var1.level(), (LivingEntity)null, var1.getId());
       boolean var9 = var8.isGui3d();
       float var10 = 0.25F;
       float var11 = Mth.sin(((float)var1.getAge() + var3) / 10.0F + var1.bobOffs) * 0.1F + 0.1F;
@@ -69,24 +70,22 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
       }
    }
 
-   public static void renderMultipleFromCount(
-      ItemRenderer var0, PoseStack var1, MultiBufferSource var2, int var3, ItemStack var4, RandomSource var5, Level var6
-   ) {
-      BakedModel var7 = var0.getModel(var4, var6, null, 0);
+   public static void renderMultipleFromCount(ItemRenderer var0, PoseStack var1, MultiBufferSource var2, int var3, ItemStack var4, RandomSource var5, Level var6) {
+      BakedModel var7 = var0.getModel(var4, var6, (LivingEntity)null, 0);
       renderMultipleFromCount(var0, var1, var2, var3, var4, var7, var7.isGui3d(), var5);
    }
 
-   public static void renderMultipleFromCount(
-      ItemRenderer var0, PoseStack var1, MultiBufferSource var2, int var3, ItemStack var4, BakedModel var5, boolean var6, RandomSource var7
-   ) {
+   public static void renderMultipleFromCount(ItemRenderer var0, PoseStack var1, MultiBufferSource var2, int var3, ItemStack var4, BakedModel var5, boolean var6, RandomSource var7) {
       int var8 = getRenderedAmount(var4.getCount());
       float var9 = var5.getTransforms().ground.scale.x();
       float var10 = var5.getTransforms().ground.scale.y();
       float var11 = var5.getTransforms().ground.scale.z();
+      float var13;
+      float var14;
       if (!var6) {
          float var12 = -0.0F * (float)(var8 - 1) * 0.5F * var9;
-         float var13 = -0.0F * (float)(var8 - 1) * 0.5F * var10;
-         float var14 = -0.09375F * (float)(var8 - 1) * 0.5F * var11;
+         var13 = -0.0F * (float)(var8 - 1) * 0.5F * var10;
+         var14 = -0.09375F * (float)(var8 - 1) * 0.5F * var11;
          var1.translate(var12, var13, var14);
       }
 
@@ -94,14 +93,14 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
          var1.pushPose();
          if (var16 > 0) {
             if (var6) {
-               float var17 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var19 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               var13 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               var14 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F;
                float var15 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var1.translate(var17, var19, var15);
+               var1.translate(var13, var14, var15);
             } else {
-               float var18 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               float var20 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var1.translate(var18, var20, 0.0F);
+               var13 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               var14 = (var7.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               var1.translate(var13, var14, 0.0F);
             }
          }
 
@@ -111,5 +110,6 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
             var1.translate(0.0F * var9, 0.0F * var10, 0.09375F * var11);
          }
       }
+
    }
 }

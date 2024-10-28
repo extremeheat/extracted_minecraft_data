@@ -1,9 +1,8 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -12,7 +11,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -20,17 +18,15 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetLoreFunction extends LootItemConditionalFunction {
-   public static final Codec<SetLoreFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  ExtraCodecs.sizeLimitedList(ComponentSerialization.CODEC.listOf(), 256).fieldOf("lore").forGetter(var0x -> var0x.lore),
-                  ListOperation.codec(256).forGetter(var0x -> var0x.mode),
-                  ExtraCodecs.strictOptionalField(LootContext.EntityTarget.CODEC, "entity").forGetter(var0x -> var0x.resolutionContext)
-               )
-            )
-            .apply(var0, SetLoreFunction::new)
-   );
+   public static final MapCodec<SetLoreFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return commonFields(var0).and(var0.group(ComponentSerialization.CODEC.sizeLimitedListOf(256).fieldOf("lore").forGetter((var0x) -> {
+         return var0x.lore;
+      }), ListOperation.codec(256).forGetter((var0x) -> {
+         return var0x.mode;
+      }), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> {
+         return var0x.resolutionContext;
+      }))).apply(var0, SetLoreFunction::new);
+   });
    private final List<Component> lore;
    private final ListOperation mode;
    private final Optional<LootContext.EntityTarget> resolutionContext;
@@ -42,19 +38,20 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       this.resolutionContext = var4;
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.SET_LORE;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
-      return this.resolutionContext.<Set<LootContextParam<?>>>map(var0 -> Set.of(var0.getParam())).orElseGet(Set::of);
+      return (Set)this.resolutionContext.map((var0) -> {
+         return Set.of(var0.getParam());
+      }).orElseGet(Set::of);
    }
 
-   @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.LORE, ItemLore.EMPTY, var2x -> new ItemLore(this.updateLore(var2x, var2)));
+      var1.update(DataComponents.LORE, ItemLore.EMPTY, (var2x) -> {
+         return new ItemLore(this.updateLore(var2x, var2));
+      });
       return var1;
    }
 
@@ -62,47 +59,53 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       if (var1 == null && this.lore.isEmpty()) {
          return List.of();
       } else {
-         UnaryOperator var3 = SetNameFunction.createResolver(var2, this.resolutionContext.orElse(null));
+         UnaryOperator var3 = SetNameFunction.createResolver(var2, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null));
          List var4 = this.lore.stream().map(var3).toList();
-         return this.mode.apply(var1.lines(), var4, 256);
+         List var5 = this.mode.apply(var1.lines(), var4, 256);
+         return var5;
       }
    }
 
-   public static SetLoreFunction.Builder setLore() {
-      return new SetLoreFunction.Builder();
+   public static Builder setLore() {
+      return new Builder();
    }
 
-   public static class Builder extends LootItemConditionalFunction.Builder<SetLoreFunction.Builder> {
+   public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private Optional<LootContext.EntityTarget> resolutionContext = Optional.empty();
-      private final com.google.common.collect.ImmutableList.Builder<Component> lore = ImmutableList.builder();
-      private ListOperation mode = ListOperation.Append.INSTANCE;
+      private final ImmutableList.Builder<Component> lore = ImmutableList.builder();
+      private ListOperation mode;
 
       public Builder() {
          super();
+         this.mode = ListOperation.Append.INSTANCE;
       }
 
-      public SetLoreFunction.Builder setMode(ListOperation var1) {
+      public Builder setMode(ListOperation var1) {
          this.mode = var1;
          return this;
       }
 
-      public SetLoreFunction.Builder setResolutionContext(LootContext.EntityTarget var1) {
+      public Builder setResolutionContext(LootContext.EntityTarget var1) {
          this.resolutionContext = Optional.of(var1);
          return this;
       }
 
-      public SetLoreFunction.Builder addLine(Component var1) {
+      public Builder addLine(Component var1) {
          this.lore.add(var1);
          return this;
       }
 
-      protected SetLoreFunction.Builder getThis() {
+      protected Builder getThis() {
          return this;
       }
 
-      @Override
       public LootItemFunction build() {
          return new SetLoreFunction(this.getConditions(), this.lore.build(), this.mode, this.resolutionContext);
+      }
+
+      // $FF: synthetic method
+      protected LootItemConditionalFunction.Builder getThis() {
+         return this.getThis();
       }
    }
 }

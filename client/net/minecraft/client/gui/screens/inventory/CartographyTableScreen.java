@@ -26,27 +26,25 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       this.titleLabelY -= 2;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
       var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      ItemStack var7 = this.menu.getSlot(1).getItem();
+      ItemStack var7 = ((CartographyTableMenu)this.menu).getSlot(1).getItem();
       boolean var8 = var7.is(Items.MAP);
       boolean var9 = var7.is(Items.PAPER);
       boolean var10 = var7.is(Items.GLASS_PANE);
-      ItemStack var11 = this.menu.getSlot(0).getItem();
-      MapId var12 = var11.get(DataComponents.MAP_ID);
+      ItemStack var11 = ((CartographyTableMenu)this.menu).getSlot(0).getItem();
+      MapId var12 = (MapId)var11.get(DataComponents.MAP_ID);
       boolean var14 = false;
       MapItemSavedData var13;
       if (var12 != null) {
-         var13 = MapItem.getSavedData(var12, this.minecraft.level);
+         var13 = MapItem.getSavedData((MapId)var12, this.minecraft.level);
          if (var13 != null) {
             if (var13.locked) {
                var14 = true;
@@ -67,9 +65,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       this.renderResultingMap(var1, var12, var13, var8, var9, var10, var14);
    }
 
-   private void renderResultingMap(
-      GuiGraphics var1, @Nullable MapId var2, @Nullable MapItemSavedData var3, boolean var4, boolean var5, boolean var6, boolean var7
-   ) {
+   private void renderResultingMap(GuiGraphics var1, @Nullable MapId var2, @Nullable MapItemSavedData var3, boolean var4, boolean var5, boolean var6, boolean var7) {
       int var8 = this.leftPos;
       int var9 = this.topPos;
       if (var5 && !var7) {
@@ -94,6 +90,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
          var1.blitSprite(MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
       }
+
    }
 
    private void renderMap(GuiGraphics var1, @Nullable MapId var2, @Nullable MapItemSavedData var3, int var4, int var5, float var6) {
@@ -105,5 +102,6 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
          var1.flush();
          var1.pose().popPose();
       }
+
    }
 }

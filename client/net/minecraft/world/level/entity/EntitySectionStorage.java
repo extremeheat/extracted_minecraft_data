@@ -58,6 +58,7 @@ public class EntitySectionStorage<T extends EntityAccess> {
             }
          }
       }
+
    }
 
    public LongStream getExistingSectionPositionsInChunk(long var1) {
@@ -79,7 +80,10 @@ public class EntitySectionStorage<T extends EntityAccess> {
    }
 
    public Stream<EntitySection<T>> getExistingSectionsInChunk(long var1) {
-      return this.getExistingSectionPositionsInChunk(var1).<EntitySection<T>>mapToObj(this.sections::get).filter(Objects::nonNull);
+      LongStream var10000 = this.getExistingSectionPositionsInChunk(var1);
+      Long2ObjectMap var10001 = this.sections;
+      Objects.requireNonNull(var10001);
+      return var10000.mapToObj(var10001::get).filter(Objects::nonNull);
    }
 
    private static long getChunkKeyFromSectionKey(long var0) {
@@ -87,33 +91,39 @@ public class EntitySectionStorage<T extends EntityAccess> {
    }
 
    public EntitySection<T> getOrCreateSection(long var1) {
-      return (EntitySection<T>)this.sections.computeIfAbsent(var1, this::createSection);
+      return (EntitySection)this.sections.computeIfAbsent(var1, this::createSection);
    }
 
    @Nullable
    public EntitySection<T> getSection(long var1) {
-      return (EntitySection<T>)this.sections.get(var1);
+      return (EntitySection)this.sections.get(var1);
    }
 
    private EntitySection<T> createSection(long var1) {
       long var3 = getChunkKeyFromSectionKey(var1);
       Visibility var5 = (Visibility)this.intialSectionVisibility.get(var3);
       this.sectionIds.add(var1);
-      return new EntitySection<>(this.entityClass, var5);
+      return new EntitySection(this.entityClass, var5);
    }
 
    public LongSet getAllChunksWithExistingSections() {
       LongOpenHashSet var1 = new LongOpenHashSet();
-      this.sections.keySet().forEach(var1x -> var1.add(getChunkKeyFromSectionKey(var1x)));
+      this.sections.keySet().forEach((var1x) -> {
+         var1.add(getChunkKeyFromSectionKey(var1x));
+      });
       return var1;
    }
 
    public void getEntities(AABB var1, AbortableIterationConsumer<T> var2) {
-      this.forEachAccessibleNonEmptySection(var1, var2x -> var2x.getEntities(var1, var2));
+      this.forEachAccessibleNonEmptySection(var1, (var2x) -> {
+         return var2x.getEntities(var1, var2);
+      });
    }
 
    public <U extends T> void getEntities(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<U> var3) {
-      this.forEachAccessibleNonEmptySection(var2, var3x -> var3x.getEntities(var1, var2, var3));
+      this.forEachAccessibleNonEmptySection(var2, (var3x) -> {
+         return var3x.getEntities(var1, var2, var3);
+      });
    }
 
    public void remove(long var1) {

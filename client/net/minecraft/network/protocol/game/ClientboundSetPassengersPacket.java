@@ -8,9 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetPassengersPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetPassengersPacket::write, ClientboundSetPassengersPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetPassengersPacket> STREAM_CODEC = Packet.codec(ClientboundSetPassengersPacket::write, ClientboundSetPassengersPacket::new);
    private final int vehicle;
    private final int[] passengers;
 
@@ -23,6 +21,7 @@ public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketLi
       for(int var3 = 0; var3 < var2.size(); ++var3) {
          this.passengers[var3] = ((Entity)var2.get(var3)).getId();
       }
+
    }
 
    private ClientboundSetPassengersPacket(FriendlyByteBuf var1) {
@@ -36,7 +35,6 @@ public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketLi
       var1.writeVarIntArray(this.passengers);
    }
 
-   @Override
    public PacketType<ClientboundSetPassengersPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_PASSENGERS;
    }

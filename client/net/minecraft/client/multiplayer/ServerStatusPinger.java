@@ -35,6 +35,7 @@ import net.minecraft.network.protocol.status.ClientStatusPacketListener;
 import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
+import net.minecraft.util.debugchart.LocalSampleLogger;
 import org.slf4j.Logger;
 
 public class ServerStatusPinger {
@@ -53,7 +54,7 @@ public class ServerStatusPinger {
          this.onPingFailed(ConnectScreen.UNKNOWN_HOST_MESSAGE, var1);
       } else {
          final InetSocketAddress var6 = (InetSocketAddress)var5.get();
-         final Connection var7 = Connection.connectToServer(var6, false, null);
+         final Connection var7 = Connection.connectToServer(var6, false, (LocalSampleLogger)null);
          this.connections.add(var7);
          var1.motd = Component.translatable("multiplayer.status.pinging");
          var1.playerList = Collections.emptyList();
@@ -62,7 +63,6 @@ public class ServerStatusPinger {
             private boolean receivedPing;
             private long pingStart;
 
-            @Override
             public void handleStatusResponse(ClientboundStatusResponsePacket var1x) {
                if (this.receivedPing) {
                   var7.disconnect(Component.translatable("multiplayer.status.unrequested"));
@@ -70,37 +70,43 @@ public class ServerStatusPinger {
                   this.receivedPing = true;
                   ServerStatus var2x = var1x.status();
                   var1.motd = var2x.description();
-                  var2x.version().ifPresentOrElse(var1xxx -> {
-                     var1.version = Component.literal(var1xxx.name());
-                     var1.protocol = var1xxx.protocol();
+                  var2x.version().ifPresentOrElse((var1xx) -> {
+                     var1.version = Component.literal(var1xx.name());
+                     var1.protocol = var1xx.protocol();
                   }, () -> {
                      var1.version = Component.translatable("multiplayer.status.old");
                      var1.protocol = 0;
                   });
-                  var2x.players().ifPresentOrElse(var1xxx -> {
-                     var1.status = ServerStatusPinger.formatPlayerCount(var1xxx.online(), var1xxx.max());
-                     var1.players = var1xxx;
-                     if (!var1xxx.sample().isEmpty()) {
-                        ArrayList var2xxxx = new ArrayList(var1xxx.sample().size());
+                  var2x.players().ifPresentOrElse((var1xx) -> {
+                     var1.status = ServerStatusPinger.formatPlayerCount(var1xx.online(), var1xx.max());
+                     var1.players = var1xx;
+                     if (!var1xx.sample().isEmpty()) {
+                        ArrayList var2x = new ArrayList(var1xx.sample().size());
+                        Iterator var3x = var1xx.sample().iterator();
 
-                        for(GameProfile var4xx : var1xxx.sample()) {
-                           var2xxxx.add(Component.literal(var4xx.getName()));
+                        while(var3x.hasNext()) {
+                           GameProfile var4x = (GameProfile)var3x.next();
+                           var2x.add(Component.literal(var4x.getName()));
                         }
 
-                        if (var1xxx.sample().size() < var1xxx.online()) {
-                           var2xxxx.add(Component.translatable("multiplayer.status.and_more", var1xxx.online() - var1xxx.sample().size()));
+                        if (var1xx.sample().size() < var1xx.online()) {
+                           var2x.add(Component.translatable("multiplayer.status.and_more", var1xx.online() - var1xx.sample().size()));
                         }
 
-                        var1.playerList = var2xxxx;
+                        var1.playerList = var2x;
                      } else {
                         var1.playerList = List.of();
                      }
-                  }, () -> var1.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY));
-                  var2x.favicon().ifPresent(var2xxx -> {
-                     if (!Arrays.equals(var2xxx.iconBytes(), var1.getIconBytes())) {
-                        var1.setIconBytes(ServerData.validateIcon(var2xxx.iconBytes()));
+
+                  }, () -> {
+                     var1.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY);
+                  });
+                  var2x.favicon().ifPresent((var2xx) -> {
+                     if (!Arrays.equals(var2xx.iconBytes(), var1.getIconBytes())) {
+                        var1.setIconBytes(ServerData.validateIcon(var2xx.iconBytes()));
                         var2.run();
                      }
+
                   });
                   this.pingStart = Util.getMillis();
                   var7.send(new ServerboundPingRequestPacket(this.pingStart));
@@ -108,7 +114,6 @@ public class ServerStatusPinger {
                }
             }
 
-            @Override
             public void handlePongResponse(ClientboundPongResponsePacket var1x) {
                long var2x = this.pingStart;
                long var4x = Util.getMillis();
@@ -117,15 +122,14 @@ public class ServerStatusPinger {
                var3.run();
             }
 
-            @Override
             public void onDisconnect(Component var1x) {
                if (!this.success) {
                   ServerStatusPinger.this.onPingFailed(var1x, var1);
                   ServerStatusPinger.this.pingLegacyServer(var6, var4, var1);
                }
+
             }
 
-            @Override
             public boolean isAcceptingMessages() {
                return var7.isConnected();
             }
@@ -137,6 +141,7 @@ public class ServerStatusPinger {
          } catch (Throwable var10) {
             LOGGER.error("Failed to ping server {}", var4, var10);
          }
+
       }
    }
 
@@ -147,25 +152,22 @@ public class ServerStatusPinger {
    }
 
    void pingLegacyServer(InetSocketAddress var1, final ServerAddress var2, final ServerData var3) {
-      ((Bootstrap)((Bootstrap)((Bootstrap)new Bootstrap().group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get()))
-               .handler(new ChannelInitializer<Channel>() {
-                  protected void initChannel(Channel var1) {
-                     try {
-                        var1.config().setOption(ChannelOption.TCP_NODELAY, true);
-                     } catch (ChannelException var3x) {
-                     }
-         
-                     var1.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(var2, (var1x, var2xx, var3xxx, var4, var5) -> {
-                        var3.setState(ServerData.State.INCOMPATIBLE);
-                        var3.version = Component.literal(var2xx);
-                        var3.motd = Component.literal(var3xxx);
-                        var3.status = ServerStatusPinger.formatPlayerCount(var4, var5);
-                        var3.players = new ServerStatus.Players(var5, var4, List.of());
-                     })});
-                  }
-               }))
-            .channel(NioSocketChannel.class))
-         .connect(var1.getAddress(), var1.getPort());
+      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>(this) {
+         protected void initChannel(Channel var1) {
+            try {
+               var1.config().setOption(ChannelOption.TCP_NODELAY, true);
+            } catch (ChannelException var3x) {
+            }
+
+            var1.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(var2, (var1x, var2x, var3xx, var4, var5) -> {
+               var3.setState(ServerData.State.INCOMPATIBLE);
+               var3.version = Component.literal(var2x);
+               var3.motd = Component.literal(var3xx);
+               var3.status = ServerStatusPinger.formatPlayerCount(var4, var5);
+               var3.players = new ServerStatus.Players(var5, var4, List.of());
+            })});
+         }
+      })).channel(NioSocketChannel.class)).connect(var1.getAddress(), var1.getPort());
    }
 
    public static Component formatPlayerCount(int var0, int var1) {
@@ -187,6 +189,7 @@ public class ServerStatusPinger {
                var3.handleDisconnection();
             }
          }
+
       }
    }
 
@@ -201,6 +204,7 @@ public class ServerStatusPinger {
                var3.disconnect(Component.translatable("multiplayer.status.cancelled"));
             }
          }
+
       }
    }
 }

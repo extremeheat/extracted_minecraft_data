@@ -6,4 +6,9 @@ enum BoatGoals {
 
    private BoatGoals() {
    }
+
+   // $FF: synthetic method
+   private static BoatGoals[] $values() {
+      return new BoatGoals[]{GO_TO_BOAT, GO_IN_BOAT_DIRECTION};
+   }
 }

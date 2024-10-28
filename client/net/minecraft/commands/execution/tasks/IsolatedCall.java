@@ -18,7 +18,6 @@ public class IsolatedCall<T extends ExecutionCommandSource<T>> implements EntryA
       this.output = var2;
    }
 
-   @Override
    public void execute(ExecutionContext<T> var1, Frame var2) {
       int var3 = var2.depth() + 1;
       Frame var4 = new Frame(var3, this.output, var1.frameControlForDepth(var3));

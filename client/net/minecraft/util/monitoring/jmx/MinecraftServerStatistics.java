@@ -16,8 +16,10 @@ import javax.management.AttributeList;
 import javax.management.DynamicMBean;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanConstructorInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanRegistrationException;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
@@ -29,23 +31,18 @@ public final class MinecraftServerStatistics implements DynamicMBean {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final MinecraftServer server;
    private final MBeanInfo mBeanInfo;
-   private final Map<String, MinecraftServerStatistics.AttributeDescription> attributeDescriptionByName = Stream.of(
-         new MinecraftServerStatistics.AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class),
-         new MinecraftServerStatistics.AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)
-      )
-      .collect(Collectors.toMap(var0 -> var0.name, Function.identity()));
+   private final Map<String, AttributeDescription> attributeDescriptionByName;
 
    private MinecraftServerStatistics(MinecraftServer var1) {
       super();
+      this.attributeDescriptionByName = (Map)Stream.of(new AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class), new AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)).collect(Collectors.toMap((var0) -> {
+         return var0.name;
+      }, Function.identity()));
       this.server = var1;
-      MBeanAttributeInfo[] var2 = this.attributeDescriptionByName
-         .values()
-         .stream()
-         .map(MinecraftServerStatistics.AttributeDescription::asMBeanAttributeInfo)
-         .toArray(var0 -> new MBeanAttributeInfo[var0]);
-      this.mBeanInfo = new MBeanInfo(
-         MinecraftServerStatistics.class.getSimpleName(), "metrics for dedicated server", var2, null, null, new MBeanNotificationInfo[0]
-      );
+      MBeanAttributeInfo[] var2 = (MBeanAttributeInfo[])this.attributeDescriptionByName.values().stream().map(AttributeDescription::asMBeanAttributeInfo).toArray((var0) -> {
+         return new MBeanAttributeInfo[var0];
+      });
+      this.mBeanInfo = new MBeanInfo(MinecraftServerStatistics.class.getSimpleName(), "metrics for dedicated server", var2, (MBeanConstructorInfo[])null, (MBeanOperationInfo[])null, new MBeanNotificationInfo[0]);
    }
 
    public static void registerJmxMonitoring(MinecraftServer var0) {
@@ -54,6 +51,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException | MalformedObjectNameException var2) {
          LOGGER.warn("Failed to initialise server as JMX bean", var2);
       }
+
    }
 
    private float getAverageTickTime() {
@@ -65,43 +63,38 @@ public final class MinecraftServerStatistics implements DynamicMBean {
    }
 
    @Nullable
-   @Override
    public Object getAttribute(String var1) {
-      MinecraftServerStatistics.AttributeDescription var2 = this.attributeDescriptionByName.get(var1);
+      AttributeDescription var2 = (AttributeDescription)this.attributeDescriptionByName.get(var1);
       return var2 == null ? null : var2.getter.get();
    }
 
-   @Override
    public void setAttribute(Attribute var1) {
    }
 
-   @Override
    public AttributeList getAttributes(String[] var1) {
-      List var2 = Arrays.stream(var1)
-         .map(this.attributeDescriptionByName::get)
-         .filter(Objects::nonNull)
-         .map(var0 -> new Attribute(var0.name, var0.getter.get()))
-         .collect(Collectors.toList());
+      Stream var10000 = Arrays.stream(var1);
+      Map var10001 = this.attributeDescriptionByName;
+      Objects.requireNonNull(var10001);
+      List var2 = (List)var10000.map(var10001::get).filter(Objects::nonNull).map((var0) -> {
+         return new Attribute(var0.name, var0.getter.get());
+      }).collect(Collectors.toList());
       return new AttributeList(var2);
    }
 
-   @Override
    public AttributeList setAttributes(AttributeList var1) {
       return new AttributeList();
    }
 
    @Nullable
-   @Override
    public Object invoke(String var1, Object[] var2, String[] var3) {
       return null;
    }
 
-   @Override
    public MBeanInfo getMBeanInfo() {
       return this.mBeanInfo;
    }
 
-   static final class AttributeDescription {
+   private static final class AttributeDescription {
       final String name;
       final Supplier<Object> getter;
       private final String description;

@@ -63,35 +63,45 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
    }
 
    protected T computeNext() {
-      while(this.cursor.advance()) {
-         int var1 = this.cursor.nextX();
-         int var2 = this.cursor.nextY();
-         int var3 = this.cursor.nextZ();
-         int var4 = this.cursor.getNextType();
-         if (var4 != 3) {
-            BlockGetter var5 = this.getChunk(var1, var3);
-            if (var5 != null) {
-               this.pos.set(var1, var2, var3);
-               BlockState var6 = var5.getBlockState(this.pos);
-               if ((!this.onlySuffocatingBlocks || var6.isSuffocating(var5, this.pos))
-                  && (var4 != 1 || var6.hasLargeCollisionShape())
-                  && (var4 != 2 || var6.is(Blocks.MOVING_PISTON))) {
-                  VoxelShape var7 = var6.getCollisionShape(this.collisionGetter, this.pos, this.context);
-                  if (var7 == Shapes.block()) {
-                     if (this.box.intersects((double)var1, (double)var2, (double)var3, (double)var1 + 1.0, (double)var2 + 1.0, (double)var3 + 1.0)) {
-                        return this.resultProvider.apply(this.pos, var7.move((double)var1, (double)var2, (double)var3));
-                     }
-                  } else {
-                     VoxelShape var8 = var7.move((double)var1, (double)var2, (double)var3);
-                     if (!var8.isEmpty() && Shapes.joinIsNotEmpty(var8, this.entityShape, BooleanOp.AND)) {
-                        return this.resultProvider.apply(this.pos, var8);
-                     }
-                  }
-               }
+      while(true) {
+         if (this.cursor.advance()) {
+            int var1 = this.cursor.nextX();
+            int var2 = this.cursor.nextY();
+            int var3 = this.cursor.nextZ();
+            int var4 = this.cursor.getNextType();
+            if (var4 == 3) {
+               continue;
             }
-         }
-      }
 
-      return (T)this.endOfData();
+            BlockGetter var5 = this.getChunk(var1, var3);
+            if (var5 == null) {
+               continue;
+            }
+
+            this.pos.set(var1, var2, var3);
+            BlockState var6 = var5.getBlockState(this.pos);
+            if (this.onlySuffocatingBlocks && !var6.isSuffocating(var5, this.pos) || var4 == 1 && !var6.hasLargeCollisionShape() || var4 == 2 && !var6.is(Blocks.MOVING_PISTON)) {
+               continue;
+            }
+
+            VoxelShape var7 = var6.getCollisionShape(this.collisionGetter, this.pos, this.context);
+            if (var7 == Shapes.block()) {
+               if (!this.box.intersects((double)var1, (double)var2, (double)var3, (double)var1 + 1.0, (double)var2 + 1.0, (double)var3 + 1.0)) {
+                  continue;
+               }
+
+               return this.resultProvider.apply(this.pos, var7.move((double)var1, (double)var2, (double)var3));
+            }
+
+            VoxelShape var8 = var7.move((double)var1, (double)var2, (double)var3);
+            if (var8.isEmpty() || !Shapes.joinIsNotEmpty(var8, this.entityShape, BooleanOp.AND)) {
+               continue;
+            }
+
+            return this.resultProvider.apply(this.pos, var8);
+         }
+
+         return this.endOfData();
+      }
    }
 }

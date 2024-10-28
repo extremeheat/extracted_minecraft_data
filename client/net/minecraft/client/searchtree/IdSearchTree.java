@@ -20,7 +20,6 @@ public class IdSearchTree<T> implements RefreshableSearchTree<T> {
       this.resourceLocationSearchTree = ResourceLocationSearchTree.create(var2, var1);
    }
 
-   @Override
    public List<T> search(String var1) {
       int var2 = var1.indexOf(58);
       return var2 == -1 ? this.searchPlainText(var1) : this.searchResourceLocation(var1.substring(0, var2).trim(), var1.substring(var2 + 1).trim());
@@ -33,6 +32,6 @@ public class IdSearchTree<T> implements RefreshableSearchTree<T> {
    protected List<T> searchResourceLocation(String var1, String var2) {
       List var3 = this.resourceLocationSearchTree.searchNamespace(var1);
       List var4 = this.resourceLocationSearchTree.searchPath(var2);
-      return ImmutableList.copyOf(new IntersectionIterator<T>(var3.iterator(), var4.iterator(), this.additionOrder));
+      return ImmutableList.copyOf(new IntersectionIterator(var3.iterator(), var4.iterator(), this.additionOrder));
    }
 }

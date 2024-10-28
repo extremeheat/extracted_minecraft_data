@@ -14,8 +14,12 @@ public enum CookingBookCategory implements StringRepresentable {
       this.name = var3;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static CookingBookCategory[] $values() {
+      return new CookingBookCategory[]{FOOD, BLOCKS, MISC};
    }
 }

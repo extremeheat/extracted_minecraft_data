@@ -47,6 +47,7 @@ public class ScreenEffectRenderer {
             renderFire(var0, var1);
          }
       }
+
    }
 
    @Nullable

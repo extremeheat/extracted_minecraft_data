@@ -14,7 +14,6 @@ public class DeadBushBlock extends BushBlock {
    protected static final float AABB_OFFSET = 6.0F;
    protected static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 13.0, 14.0);
 
-   @Override
    public MapCodec<DeadBushBlock> codec() {
       return CODEC;
    }
@@ -23,12 +22,10 @@ public class DeadBushBlock extends BushBlock {
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.is(BlockTags.DEAD_BUSH_MAY_PLACE_ON);
    }

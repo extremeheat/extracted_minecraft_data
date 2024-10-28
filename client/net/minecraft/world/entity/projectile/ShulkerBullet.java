@@ -61,12 +61,10 @@ public class ShulkerBullet extends Projectile {
       this.selectNextMoveDirection(var4);
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.finalTarget != null) {
@@ -83,7 +81,6 @@ public class ShulkerBullet extends Projectile {
       var1.putDouble("TZD", this.targetDeltaZ);
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.flightSteps = var1.getInt("Steps");
@@ -97,9 +94,9 @@ public class ShulkerBullet extends Projectile {
       if (var1.hasUUID("Target")) {
          this.targetId = var1.getUUID("Target");
       }
+
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
@@ -186,21 +183,20 @@ public class ShulkerBullet extends Projectile {
       this.flightSteps = 10 + this.random.nextInt(5) * 10;
    }
 
-   @Override
    public void checkDespawn() {
       if (this.level().getDifficulty() == Difficulty.PEACEFUL) {
          this.discard();
       }
+
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.04;
    }
 
-   @Override
    public void tick() {
       super.tick();
+      Vec3 var1;
       if (!this.level().isClientSide) {
          if (this.finalTarget == null && this.targetId != null) {
             this.finalTarget = ((ServerLevel)this.level()).getEntity(this.targetId);
@@ -215,22 +211,22 @@ public class ShulkerBullet extends Projectile {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
             this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
-            Vec3 var1 = this.getDeltaMovement();
+            var1 = this.getDeltaMovement();
             this.setDeltaMovement(var1.add((this.targetDeltaX - var1.x) * 0.2, (this.targetDeltaY - var1.y) * 0.2, (this.targetDeltaZ - var1.z) * 0.2));
          }
 
          HitResult var5 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
          if (var5.getType() != HitResult.Type.MISS) {
-            this.onHit(var5);
+            this.hitOrDeflect(var5);
          }
       }
 
       this.checkInsideBlocks();
-      Vec3 var6 = this.getDeltaMovement();
-      this.setPos(this.getX() + var6.x, this.getY() + var6.y, this.getZ() + var6.z);
+      var1 = this.getDeltaMovement();
+      this.setPos(this.getX() + var1.x, this.getY() + var1.y, this.getZ() + var1.z);
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level().isClientSide) {
-         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
+         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var1.x, this.getY() - var1.y + 0.15, this.getZ() - var1.z, 0.0, 0.0, 0.0);
       } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
             --this.flightSteps;
@@ -246,39 +242,31 @@ public class ShulkerBullet extends Projectile {
                this.selectNextMoveDirection(var3);
             } else {
                BlockPos var4 = this.finalTarget.blockPosition();
-               if (var3 == Direction.Axis.X && var2.getX() == var4.getX()
-                  || var3 == Direction.Axis.Z && var2.getZ() == var4.getZ()
-                  || var3 == Direction.Axis.Y && var2.getY() == var4.getY()) {
+               if (var3 == Direction.Axis.X && var2.getX() == var4.getX() || var3 == Direction.Axis.Z && var2.getZ() == var4.getZ() || var3 == Direction.Axis.Y && var2.getY() == var4.getY()) {
                   this.selectNextMoveDirection(var3);
                }
             }
          }
       }
+
    }
 
-   @Override
    protected boolean canHitEntity(Entity var1) {
       return super.canHitEntity(var1) && !var1.noPhysics;
    }
 
-   @Override
    public boolean isOnFire() {
       return false;
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       return var1 < 16384.0;
    }
 
-   @Override
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       Entity var2 = var1.getEntity();
@@ -287,13 +275,14 @@ public class ShulkerBullet extends Projectile {
       boolean var5 = var2.hurt(this.damageSources().mobProjectile(this, var4), 4.0F);
       if (var5) {
          this.doEnchantDamageEffects(var4, var2);
-         if (var2 instanceof LivingEntity var6) {
+         if (var2 instanceof LivingEntity) {
+            LivingEntity var6 = (LivingEntity)var2;
             var6.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 200), (Entity)MoreObjects.firstNonNull(var3, this));
          }
       }
+
    }
 
-   @Override
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
       ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
@@ -302,21 +291,18 @@ public class ShulkerBullet extends Projectile {
 
    private void destroy() {
       this.discard();
-      this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of(this));
+      this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of((Entity)this));
    }
 
-   @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       this.destroy();
    }
 
-   @Override
    public boolean isPickable() {
       return true;
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (!this.level().isClientSide) {
          this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
@@ -327,7 +313,6 @@ public class ShulkerBullet extends Projectile {
       return true;
    }
 
-   @Override
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
       double var2 = var1.getXa();

@@ -16,4 +16,9 @@ public enum MobEffectCategory {
    public ChatFormatting getTooltipFormatting() {
       return this.tooltipFormatting;
    }
+
+   // $FF: synthetic method
+   private static MobEffectCategory[] $values() {
+      return new MobEffectCategory[]{BENEFICIAL, HARMFUL, NEUTRAL};
+   }
 }

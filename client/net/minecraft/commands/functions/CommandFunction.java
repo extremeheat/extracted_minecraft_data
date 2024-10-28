@@ -33,21 +33,25 @@ public interface CommandFunction<T> {
          int var6 = var5 + 1;
          String var7 = ((String)var3.get(var5)).trim();
          String var8;
+         String var10;
          if (shouldConcatenateNextLine(var7)) {
             StringBuilder var9 = new StringBuilder(var7);
 
-            do {
-               if (++var5 == var3.size()) {
+            while(true) {
+               ++var5;
+               if (var5 == var3.size()) {
                   throw new IllegalArgumentException("Line continuation at end of file");
                }
 
                var9.deleteCharAt(var9.length() - 1);
-               String var10 = ((String)var3.get(var5)).trim();
+               var10 = ((String)var3.get(var5)).trim();
                var9.append(var10);
                checkCommandLineLength(var9);
-            } while(shouldConcatenateNextLine(var9));
-
-            var8 = var9.toString();
+               if (!shouldConcatenateNextLine(var9)) {
+                  var8 = var9.toString();
+                  break;
+               }
+            }
          } else {
             var8 = var7;
          }
@@ -58,22 +62,18 @@ public interface CommandFunction<T> {
             if (var12.peek() == '/') {
                var12.skip();
                if (var12.peek() == '/') {
-                  throw new IllegalArgumentException(
-                     "Unknown or invalid command '" + var8 + "' on line " + var6 + " (if you intended to make a comment, use '#' not '//')"
-                  );
+                  throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (if you intended to make a comment, use '#' not '//')");
                }
 
-               String var13 = var12.readUnquotedString();
-               throw new IllegalArgumentException(
-                  "Unknown or invalid command '" + var8 + "' on line " + var6 + " (did you mean '" + var13 + "'? Do not use a preceding forwards slash.)"
-               );
+               var10 = var12.readUnquotedString();
+               throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (did you mean '" + var10 + "'? Do not use a preceding forwards slash.)");
             }
 
             if (var12.peek() == '$') {
-               var4.addMacro(var8.substring(1), var6, (T)var2);
+               var4.addMacro(var8.substring(1), var6, var2);
             } else {
                try {
-                  var4.addCommand(parseCommand(var1, (T)var2, var12));
+                  var4.addCommand(parseCommand(var1, var2, var12));
                } catch (CommandSyntaxException var11) {
                   throw new IllegalArgumentException("Whilst parsing command on line " + var6 + ": " + var11.getMessage());
                }
@@ -87,7 +87,8 @@ public interface CommandFunction<T> {
    static void checkCommandLineLength(CharSequence var0) {
       if (var0.length() > 2000000) {
          CharSequence var1 = var0.subSequence(0, Math.min(512, 2000000));
-         throw new IllegalStateException("Command too long: " + var0.length() + " characters, contents: " + var1 + "...");
+         int var10002 = var0.length();
+         throw new IllegalStateException("Command too long: " + var10002 + " characters, contents: " + String.valueOf(var1) + "...");
       }
    }
 
@@ -98,7 +99,7 @@ public interface CommandFunction<T> {
       if (var4.isEmpty()) {
          throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var3.getReader());
       } else {
-         return new BuildContexts.Unbound<>(var2.getString(), (ContextChain<T>)var4.get());
+         return new BuildContexts.Unbound(var2.getString(), (ContextChain)var4.get());
       }
    }
 }

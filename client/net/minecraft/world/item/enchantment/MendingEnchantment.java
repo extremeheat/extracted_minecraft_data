@@ -5,7 +5,6 @@ public class MendingEnchantment extends Enchantment {
       super(var1);
    }
 
-   @Override
    public boolean isTreasureOnly() {
       return true;
    }

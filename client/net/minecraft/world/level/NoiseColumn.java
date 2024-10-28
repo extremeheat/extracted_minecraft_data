@@ -14,13 +14,11 @@ public final class NoiseColumn implements BlockColumn {
       this.column = var2;
    }
 
-   @Override
    public BlockState getBlock(int var1) {
       int var2 = var1 - this.minY;
       return var2 >= 0 && var2 < this.column.length ? this.column[var2] : Blocks.AIR.defaultBlockState();
    }
 
-   @Override
    public void setBlock(int var1, BlockState var2) {
       int var3 = var1 - this.minY;
       if (var3 >= 0 && var3 < this.column.length) {

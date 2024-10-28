@@ -17,36 +17,31 @@ public class ReceivingLevelScreen extends Screen {
       this.createdAt = System.currentTimeMillis();
    }
 
-   @Override
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   @Override
    protected boolean shouldNarrateNavigation() {
       return false;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, DOWNLOADING_TERRAIN_TEXT, this.width / 2, this.height / 2 - 50, 16777215);
    }
 
-   @Override
    public void tick() {
       if (this.levelReceived.getAsBoolean() || System.currentTimeMillis() > this.createdAt + 30000L) {
          this.onClose();
       }
+
    }
 
-   @Override
    public void onClose() {
-      this.minecraft.getNarrator().sayNow(Component.translatable("narrator.ready_to_play"));
+      this.minecraft.getNarrator().sayNow((Component)Component.translatable("narrator.ready_to_play"));
       super.onClose();
    }
 
-   @Override
    public boolean isPauseScreen() {
       return false;
    }

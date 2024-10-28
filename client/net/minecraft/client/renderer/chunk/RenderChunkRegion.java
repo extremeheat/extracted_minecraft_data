@@ -26,55 +26,42 @@ public class RenderChunkRegion implements BlockAndTintGetter {
       this.chunks = var4;
    }
 
-   @Override
    public BlockState getBlockState(BlockPos var1) {
       int var2 = SectionPos.blockToSectionCoord(var1.getX()) - this.centerX;
       int var3 = SectionPos.blockToSectionCoord(var1.getZ()) - this.centerZ;
       return this.chunks[var2][var3].getBlockState(var1);
    }
 
-   @Override
    public FluidState getFluidState(BlockPos var1) {
       int var2 = SectionPos.blockToSectionCoord(var1.getX()) - this.centerX;
       int var3 = SectionPos.blockToSectionCoord(var1.getZ()) - this.centerZ;
       return this.chunks[var2][var3].getBlockState(var1).getFluidState();
    }
 
-   @Override
    public float getShade(Direction var1, boolean var2) {
       return this.level.getShade(var1, var2);
    }
 
-   @Override
    public LevelLightEngine getLightEngine() {
       return this.level.getLightEngine();
    }
 
    @Nullable
-   @Override
    public BlockEntity getBlockEntity(BlockPos var1) {
       int var2 = SectionPos.blockToSectionCoord(var1.getX()) - this.centerX;
       int var3 = SectionPos.blockToSectionCoord(var1.getZ()) - this.centerZ;
       return this.chunks[var2][var3].getBlockEntity(var1);
    }
 
-   @Override
    public int getBlockTint(BlockPos var1, ColorResolver var2) {
       return this.level.getBlockTint(var1, var2);
    }
 
-   @Override
    public int getMinBuildHeight() {
       return this.level.getMinBuildHeight();
    }
 
-   @Override
    public int getHeight() {
       return this.level.getHeight();
-   }
-
-   @Override
-   public boolean isPotato() {
-      return this.level.isPotato();
    }
 }

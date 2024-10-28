@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
 public class Swim extends Behavior<Mob> {
@@ -29,5 +30,11 @@ public class Swim extends Behavior<Mob> {
       if (var2.getRandom().nextFloat() < this.chance) {
          var2.getJumpControl().jump();
       }
+
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Mob)var2, var3);
    }
 }

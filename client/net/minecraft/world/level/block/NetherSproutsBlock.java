@@ -13,7 +13,6 @@ public class NetherSproutsBlock extends BushBlock {
    public static final MapCodec<NetherSproutsBlock> CODEC = simpleCodec(NetherSproutsBlock::new);
    protected static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 3.0, 14.0);
 
-   @Override
    public MapCodec<NetherSproutsBlock> codec() {
       return CODEC;
    }
@@ -22,12 +21,10 @@ public class NetherSproutsBlock extends BushBlock {
       super(var1);
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.is(BlockTags.NYLIUM) || var1.is(Blocks.SOUL_SOIL) || super.mayPlaceOn(var1, var2, var3);
    }

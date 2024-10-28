@@ -12,7 +12,6 @@ public class EntityRavagerRenameFix extends SimplestEntityRenameFix {
       super("EntityRavagerRenameFix", var1, var2);
    }
 
-   @Override
    protected String rename(String var1) {
       return Objects.equals("minecraft:illager_beast", var1) ? "minecraft:ravager" : var1;
    }

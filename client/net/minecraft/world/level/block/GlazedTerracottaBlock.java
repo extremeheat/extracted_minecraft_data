@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 public class GlazedTerracottaBlock extends HorizontalDirectionalBlock {
    public static final MapCodec<GlazedTerracottaBlock> CODEC = simpleCodec(GlazedTerracottaBlock::new);
 
-   @Override
    public MapCodec<GlazedTerracottaBlock> codec() {
       return CODEC;
    }
@@ -18,13 +17,11 @@ public class GlazedTerracottaBlock extends HorizontalDirectionalBlock {
       super(var1);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 }

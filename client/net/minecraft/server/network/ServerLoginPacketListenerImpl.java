@@ -49,40 +49,40 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    private final byte[] challenge;
    final MinecraftServer server;
    final Connection connection;
-   private volatile ServerLoginPacketListenerImpl.State state = ServerLoginPacketListenerImpl.State.HELLO;
+   private volatile State state;
    private int tick;
    @Nullable
    String requestedUsername;
    @Nullable
    private GameProfile authenticatedProfile;
-   private final String serverId = "";
+   private final String serverId;
    private final boolean transferred;
 
    public ServerLoginPacketListenerImpl(MinecraftServer var1, Connection var2, boolean var3) {
       super();
+      this.state = ServerLoginPacketListenerImpl.State.HELLO;
+      this.serverId = "";
       this.server = var1;
       this.connection = var2;
       this.challenge = Ints.toByteArray(RandomSource.create().nextInt());
       this.transferred = var3;
    }
 
-   @Override
    public void tick() {
       if (this.state == ServerLoginPacketListenerImpl.State.VERIFYING) {
-         this.verifyLoginAndFinishConnectionSetup(Objects.requireNonNull(this.authenticatedProfile));
+         this.verifyLoginAndFinishConnectionSetup((GameProfile)Objects.requireNonNull(this.authenticatedProfile));
       }
 
-      if (this.state == ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT
-         && !this.isPlayerAlreadyInWorld(Objects.requireNonNull(this.authenticatedProfile))) {
+      if (this.state == ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT && !this.isPlayerAlreadyInWorld((GameProfile)Objects.requireNonNull(this.authenticatedProfile))) {
          this.finishLoginAndWaitForClient(this.authenticatedProfile);
       }
 
       if (this.tick++ == 600) {
          this.disconnect(Component.translatable("multiplayer.disconnect.slow_login"));
       }
+
    }
 
-   @Override
    public boolean isAcceptingMessages() {
       return this.connection.isConnected();
    }
@@ -95,13 +95,13 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       } catch (Exception var3) {
          LOGGER.error("Error whilst disconnecting player", var3);
       }
+
    }
 
    private boolean isPlayerAlreadyInWorld(GameProfile var1) {
       return this.server.getPlayerList().getPlayer(var1.getId()) != null;
    }
 
-   @Override
    public void onDisconnect(Component var1) {
       LOGGER.info("{} lost connection: {}", this.getUserName(), var1.getString());
    }
@@ -111,7 +111,6 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       return this.requestedUsername != null ? this.requestedUsername + " (" + var1 + ")" : var1;
    }
 
-   @Override
    public void handleHello(ServerboundHelloPacket var1) {
       Validate.validState(this.state == ServerLoginPacketListenerImpl.State.HELLO, "Unexpected hello packet", new Object[0]);
       Validate.validState(StringUtil.isValidPlayerName(var1.name()), "Invalid characters in username", new Object[0]);
@@ -126,6 +125,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          } else {
             this.startClientVerification(UUIDUtil.createOfflineProfile(this.requestedUsername));
          }
+
       }
    }
 
@@ -141,11 +141,9 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          this.disconnect(var3);
       } else {
          if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
-            this.connection
-               .send(
-                  new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()),
-                  PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true))
-               );
+            this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> {
+               this.connection.setupCompression(this.server.getCompressionThreshold(), true);
+            }));
          }
 
          boolean var4 = var2.disconnectAllPlayersWithProfile(var1);
@@ -155,6 +153,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
             this.finishLoginAndWaitForClient(var1);
          }
       }
+
    }
 
    private void finishLoginAndWaitForClient(GameProfile var1) {
@@ -162,7 +161,6 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       this.connection.send(new ClientboundGameProfilePacket(var1));
    }
 
-   @Override
    public void handleKey(ServerboundKeyPacket var1) {
       Validate.validState(this.state == ServerLoginPacketListenerImpl.State.KEY, "Unexpected key packet", new Object[0]);
 
@@ -176,7 +174,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          SecretKey var4 = var1.getSecretKey(var3);
          Cipher var5 = Crypt.getCipher(2, var4);
          Cipher var6 = Crypt.getCipher(1, var4);
-         var2 = new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), var4)).toString(16);
+         var2 = (new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), var4))).toString(16);
          this.state = ServerLoginPacketListenerImpl.State.AUTHENTICATING;
          this.connection.setEncryptionKey(var5, var6);
       } catch (CryptException var7) {
@@ -184,9 +182,8 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       }
 
       Thread var8 = new Thread("User Authenticator #" + UNIQUE_THREAD_ID.incrementAndGet()) {
-         @Override
          public void run() {
-            String var1 = Objects.requireNonNull(ServerLoginPacketListenerImpl.this.requestedUsername, "Player name not initialized");
+            String var1 = (String)Objects.requireNonNull(ServerLoginPacketListenerImpl.this.requestedUsername, "Player name not initialized");
 
             try {
                ProfileResult var2x = ServerLoginPacketListenerImpl.this.server.getSessionService().hasJoinedServer(var1, var2, this.getAddress());
@@ -210,42 +207,39 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
                   ServerLoginPacketListenerImpl.LOGGER.error("Couldn't verify username because servers are unavailable");
                }
             }
+
          }
 
          @Nullable
          private InetAddress getAddress() {
             SocketAddress var1 = ServerLoginPacketListenerImpl.this.connection.getRemoteAddress();
-            return ServerLoginPacketListenerImpl.this.server.getPreventProxyConnections() && var1 instanceof InetSocketAddress
-               ? ((InetSocketAddress)var1).getAddress()
-               : null;
+            return ServerLoginPacketListenerImpl.this.server.getPreventProxyConnections() && var1 instanceof InetSocketAddress ? ((InetSocketAddress)var1).getAddress() : null;
          }
       };
       var8.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       var8.start();
    }
 
-   @Override
    public void handleCustomQueryPacket(ServerboundCustomQueryAnswerPacket var1) {
       this.disconnect(ServerCommonPacketListenerImpl.DISCONNECT_UNEXPECTED_QUERY);
    }
 
-   @Override
    public void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket var1) {
       Validate.validState(this.state == ServerLoginPacketListenerImpl.State.PROTOCOL_SWITCHING, "Unexpected login acknowledgement packet", new Object[0]);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.CLIENTBOUND);
-      CommonListenerCookie var2 = CommonListenerCookie.createInitial(Objects.requireNonNull(this.authenticatedProfile), this.transferred);
+      CommonListenerCookie var2 = CommonListenerCookie.createInitial((GameProfile)Objects.requireNonNull(this.authenticatedProfile), this.transferred);
       ServerConfigurationPacketListenerImpl var3 = new ServerConfigurationPacketListenerImpl(this.server, this.connection, var2);
       this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, var3);
       var3.startConfiguration();
       this.state = ServerLoginPacketListenerImpl.State.ACCEPTED;
    }
 
-   @Override
    public void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
-      var1.setDetail("Login phase", () -> this.state.toString());
+      var1.setDetail("Login phase", () -> {
+         return this.state.toString();
+      });
    }
 
-   @Override
    public void handleCookieResponse(ServerboundCookieResponsePacket var1) {
       this.disconnect(ServerCommonPacketListenerImpl.DISCONNECT_UNEXPECTED_QUERY);
    }
@@ -261,6 +255,11 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       ACCEPTED;
 
       private State() {
+      }
+
+      // $FF: synthetic method
+      private static State[] $values() {
+         return new State[]{HELLO, KEY, AUTHENTICATING, NEGOTIATING, VERIFYING, WAITING_FOR_DUPE_DISCONNECT, PROTOCOL_SWITCHING, ACCEPTED};
       }
    }
 }

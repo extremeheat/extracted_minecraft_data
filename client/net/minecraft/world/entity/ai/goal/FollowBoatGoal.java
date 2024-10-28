@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -24,12 +25,13 @@ public class FollowBoatGoal extends Goal {
       this.mob = var1;
    }
 
-   @Override
    public boolean canUse() {
       List var1 = this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0));
       boolean var2 = false;
+      Iterator var3 = var1.iterator();
 
-      for(Boat var4 : var1) {
+      while(var3.hasNext()) {
+         Boat var4 = (Boat)var3.next();
          LivingEntity var5 = var4.getControllingPassenger();
          if (var5 instanceof Player && (Mth.abs(((Player)var5).xxa) > 0.0F || Mth.abs(((Player)var5).zza) > 0.0F)) {
             var2 = true;
@@ -40,22 +42,23 @@ public class FollowBoatGoal extends Goal {
       return this.following != null && (Mth.abs(this.following.xxa) > 0.0F || Mth.abs(this.following.zza) > 0.0F) || var2;
    }
 
-   @Override
    public boolean isInterruptable() {
       return true;
    }
 
-   @Override
    public boolean canContinueToUse() {
       return this.following != null && this.following.isPassenger() && (Mth.abs(this.following.xxa) > 0.0F || Mth.abs(this.following.zza) > 0.0F);
    }
 
-   @Override
    public void start() {
-      for(Boat var3 : this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0))) {
+      List var1 = this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0));
+      Iterator var2 = var1.iterator();
+
+      while(var2.hasNext()) {
+         Boat var3 = (Boat)var2.next();
          LivingEntity var5 = var3.getControllingPassenger();
          if (var5 instanceof Player var4) {
-            this.following = (Player)var4;
+            this.following = var4;
             break;
          }
       }
@@ -64,12 +67,10 @@ public class FollowBoatGoal extends Goal {
       this.currentGoal = BoatGoals.GO_TO_BOAT;
    }
 
-   @Override
    public void stop() {
       this.following = null;
    }
 
-   @Override
    public void tick() {
       boolean var1 = Mth.abs(this.following.xxa) > 0.0F || Mth.abs(this.following.zza) > 0.0F;
       float var2 = this.currentGoal == BoatGoals.GO_IN_BOAT_DIRECTION ? (var1 ? 0.01F : 0.0F) : 0.015F;
@@ -86,14 +87,15 @@ public class FollowBoatGoal extends Goal {
                this.currentGoal = BoatGoals.GO_IN_BOAT_DIRECTION;
             }
          } else if (this.currentGoal == BoatGoals.GO_IN_BOAT_DIRECTION) {
-            Direction var6 = this.following.getMotionDirection();
-            BlockPos var4 = this.following.blockPosition().relative(var6, 10);
+            Direction var5 = this.following.getMotionDirection();
+            BlockPos var4 = this.following.blockPosition().relative((Direction)var5, 10);
             this.mob.getNavigation().moveTo((double)var4.getX(), (double)(var4.getY() - 1), (double)var4.getZ(), 1.0);
             if (this.mob.distanceTo(this.following) > 12.0F) {
                this.timeToRecalcPath = 0;
                this.currentGoal = BoatGoals.GO_TO_BOAT;
             }
          }
+
       }
    }
 }

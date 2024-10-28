@@ -21,7 +21,7 @@ public class WolfCollarLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
       if (var4.isTame() && !var4.isInvisible()) {
          float[] var11 = var4.getCollarColor().getTextureDiffuseColors();
          VertexConsumer var12 = var2.getBuffer(RenderType.entityCutoutNoCull(WOLF_COLLAR_LOCATION));
-         this.getParentModel().renderToBuffer(var1, var12, var3, OverlayTexture.NO_OVERLAY, var11[0], var11[1], var11[2], 1.0F);
+         ((WolfModel)this.getParentModel()).renderToBuffer(var1, var12, var3, OverlayTexture.NO_OVERLAY, var11[0], var11[1], var11[2], 1.0F);
       }
    }
 }

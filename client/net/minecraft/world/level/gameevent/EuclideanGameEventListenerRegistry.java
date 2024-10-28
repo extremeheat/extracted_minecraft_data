@@ -20,21 +20,19 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
    private boolean processing;
    private final ServerLevel level;
    private final int sectionY;
-   private final EuclideanGameEventListenerRegistry.OnEmptyAction onEmptyAction;
+   private final OnEmptyAction onEmptyAction;
 
-   public EuclideanGameEventListenerRegistry(ServerLevel var1, int var2, EuclideanGameEventListenerRegistry.OnEmptyAction var3) {
+   public EuclideanGameEventListenerRegistry(ServerLevel var1, int var2, OnEmptyAction var3) {
       super();
       this.level = var1;
       this.sectionY = var2;
       this.onEmptyAction = var3;
    }
 
-   @Override
    public boolean isEmpty() {
       return this.listeners.isEmpty();
    }
 
-   @Override
    public void register(GameEventListener var1) {
       if (this.processing) {
          this.listenersToAdd.add(var1);
@@ -45,7 +43,6 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
       DebugPackets.sendGameEventListenerInfo(this.level, var1);
    }
 
-   @Override
    public void unregister(GameEventListener var1) {
       if (this.processing) {
          this.listenersToRemove.add(var1);
@@ -56,9 +53,9 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
       if (this.listeners.isEmpty()) {
          this.onEmptyAction.apply(this.sectionY);
       }
+
    }
 
-   @Override
    public boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4) {
       this.processing = true;
       boolean var5 = false;

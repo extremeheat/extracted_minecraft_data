@@ -26,20 +26,18 @@ public class PlayerItemInHandLayer<T extends Player, M extends EntityModel<T> & 
       this.itemInHandRenderer = var2;
    }
 
-   @Override
-   protected void renderArmWithItem(
-      LivingEntity var1, ItemStack var2, ItemDisplayContext var3, HumanoidArm var4, PoseStack var5, MultiBufferSource var6, int var7
-   ) {
+   protected void renderArmWithItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, HumanoidArm var4, PoseStack var5, MultiBufferSource var6, int var7) {
       if (var2.is(Items.SPYGLASS) && var1.getUseItem() == var2 && var1.swingTime == 0) {
          this.renderArmWithSpyglass(var1, var2, var4, var5, var6, var7);
       } else {
          super.renderArmWithItem(var1, var2, var3, var4, var5, var6, var7);
       }
+
    }
 
    private void renderArmWithSpyglass(LivingEntity var1, ItemStack var2, HumanoidArm var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
-      ModelPart var7 = this.getParentModel().getHead();
+      ModelPart var7 = ((HeadedModel)this.getParentModel()).getHead();
       float var8 = var7.xRot;
       var7.xRot = Mth.clamp(var7.xRot, -0.5235988F, 1.5707964F);
       var7.translateAndRotate(var4);

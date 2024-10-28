@@ -5,7 +5,6 @@ public class ArrowPiercingEnchantment extends Enchantment {
       super(var1);
    }
 
-   @Override
    public boolean checkCompatibility(Enchantment var1) {
       return super.checkCompatibility(var1) && var1 != Enchantments.MULTISHOT;
    }

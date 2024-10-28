@@ -6,19 +6,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundCustomChatCompletionsPacket(ClientboundCustomChatCompletionsPacket.Action b, List<String> c)
-   implements Packet<ClientGamePacketListener> {
-   private final ClientboundCustomChatCompletionsPacket.Action action;
-   private final List<String> entries;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.codec(
-      ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new
-   );
+public record ClientboundCustomChatCompletionsPacket(Action action, List<String> entries) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.codec(ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new);
 
    private ClientboundCustomChatCompletionsPacket(FriendlyByteBuf var1) {
-      this(var1.readEnum(ClientboundCustomChatCompletionsPacket.Action.class), var1.readList(FriendlyByteBuf::readUtf));
+      this((Action)var1.readEnum(Action.class), var1.readList(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundCustomChatCompletionsPacket(ClientboundCustomChatCompletionsPacket.Action var1, List<String> var2) {
+   public ClientboundCustomChatCompletionsPacket(Action var1, List<String> var2) {
       super();
       this.action = var1;
       this.entries = var2;
@@ -29,7 +24,6 @@ public record ClientboundCustomChatCompletionsPacket(ClientboundCustomChatComple
       var1.writeCollection(this.entries, FriendlyByteBuf::writeUtf);
    }
 
-   @Override
    public PacketType<ClientboundCustomChatCompletionsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CUSTOM_CHAT_COMPLETIONS;
    }
@@ -38,12 +32,25 @@ public record ClientboundCustomChatCompletionsPacket(ClientboundCustomChatComple
       var1.handleCustomChatCompletions(this);
    }
 
+   public Action action() {
+      return this.action;
+   }
+
+   public List<String> entries() {
+      return this.entries;
+   }
+
    public static enum Action {
       ADD,
       REMOVE,
       SET;
 
       private Action() {
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{ADD, REMOVE, SET};
       }
    }
 }

@@ -16,4 +16,9 @@ public enum ConnectionProtocol {
    public String id() {
       return this.id;
    }
+
+   // $FF: synthetic method
+   private static ConnectionProtocol[] $values() {
+      return new ConnectionProtocol[]{HANDSHAKING, PLAY, STATUS, LOGIN, CONFIGURATION};
+   }
 }

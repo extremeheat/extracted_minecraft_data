@@ -4,10 +4,7 @@ import java.util.UUID;
 import net.minecraft.util.Signer;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 
-public record LocalChatSession(UUID a, ProfileKeyPair b) {
-   private final UUID sessionId;
-   private final ProfileKeyPair keyPair;
-
+public record LocalChatSession(UUID sessionId, ProfileKeyPair keyPair) {
    public LocalChatSession(UUID var1, ProfileKeyPair var2) {
       super();
       this.sessionId = var1;
@@ -19,10 +16,18 @@ public record LocalChatSession(UUID a, ProfileKeyPair b) {
    }
 
    public SignedMessageChain.Encoder createMessageEncoder(UUID var1) {
-      return new SignedMessageChain(var1, this.sessionId).encoder(Signer.from(this.keyPair.privateKey(), "SHA256withRSA"));
+      return (new SignedMessageChain(var1, this.sessionId)).encoder(Signer.from(this.keyPair.privateKey(), "SHA256withRSA"));
    }
 
    public RemoteChatSession asRemote() {
       return new RemoteChatSession(this.sessionId, this.keyPair.publicKey());
+   }
+
+   public UUID sessionId() {
+      return this.sessionId;
+   }
+
+   public ProfileKeyPair keyPair() {
+      return this.keyPair;
    }
 }

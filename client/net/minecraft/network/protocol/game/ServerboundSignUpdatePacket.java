@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSignUpdatePacket> STREAM_CODEC = Packet.codec(
-      ServerboundSignUpdatePacket::write, ServerboundSignUpdatePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSignUpdatePacket> STREAM_CODEC = Packet.codec(ServerboundSignUpdatePacket::write, ServerboundSignUpdatePacket::new);
    private static final int MAX_STRING_LENGTH = 384;
    private final BlockPos pos;
    private final String[] lines;
@@ -31,6 +29,7 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       for(int var2 = 0; var2 < 4; ++var2) {
          this.lines[var2] = var1.readUtf(384);
       }
+
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -40,9 +39,9 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       for(int var2 = 0; var2 < 4; ++var2) {
          var1.writeUtf(this.lines[var2]);
       }
+
    }
 
-   @Override
    public PacketType<ServerboundSignUpdatePacket> type() {
       return GamePacketTypes.SERVERBOUND_SIGN_UPDATE;
    }

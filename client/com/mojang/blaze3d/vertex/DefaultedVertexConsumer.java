@@ -11,7 +11,6 @@ public abstract class DefaultedVertexConsumer implements VertexConsumer {
       super();
    }
 
-   @Override
    public void defaultColor(int var1, int var2, int var3, int var4) {
       this.defaultR = var1;
       this.defaultG = var2;
@@ -20,7 +19,6 @@ public abstract class DefaultedVertexConsumer implements VertexConsumer {
       this.defaultColorSet = true;
    }
 
-   @Override
    public void unsetDefaultColor() {
       this.defaultColorSet = false;
    }

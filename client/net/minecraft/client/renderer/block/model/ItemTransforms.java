@@ -20,16 +20,7 @@ public class ItemTransforms {
    public final ItemTransform fixed;
 
    private ItemTransforms() {
-      this(
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM,
-         ItemTransform.NO_TRANSFORM
-      );
+      this(ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM);
    }
 
    public ItemTransforms(ItemTransforms var1) {
@@ -44,16 +35,7 @@ public class ItemTransforms {
       this.fixed = var1.fixed;
    }
 
-   public ItemTransforms(
-      ItemTransform var1,
-      ItemTransform var2,
-      ItemTransform var3,
-      ItemTransform var4,
-      ItemTransform var5,
-      ItemTransform var6,
-      ItemTransform var7,
-      ItemTransform var8
-   ) {
+   public ItemTransforms(ItemTransform var1, ItemTransform var2, ItemTransform var3, ItemTransform var4, ItemTransform var5, ItemTransform var6, ItemTransform var7, ItemTransform var8) {
       super();
       this.thirdPersonLeftHand = var1;
       this.thirdPersonRightHand = var2;
@@ -66,17 +48,20 @@ public class ItemTransforms {
    }
 
    public ItemTransform getTransform(ItemDisplayContext var1) {
-      return switch(var1) {
-         case THIRD_PERSON_LEFT_HAND -> this.thirdPersonLeftHand;
-         case THIRD_PERSON_RIGHT_HAND -> this.thirdPersonRightHand;
-         case FIRST_PERSON_LEFT_HAND -> this.firstPersonLeftHand;
-         case FIRST_PERSON_RIGHT_HAND -> this.firstPersonRightHand;
-         case HEAD -> this.head;
-         case GUI -> this.gui;
-         case GROUND -> this.ground;
-         case FIXED -> this.fixed;
-         default -> ItemTransform.NO_TRANSFORM;
-      };
+      ItemTransform var10000;
+      switch (var1) {
+         case THIRD_PERSON_LEFT_HAND -> var10000 = this.thirdPersonLeftHand;
+         case THIRD_PERSON_RIGHT_HAND -> var10000 = this.thirdPersonRightHand;
+         case FIRST_PERSON_LEFT_HAND -> var10000 = this.firstPersonLeftHand;
+         case FIRST_PERSON_RIGHT_HAND -> var10000 = this.firstPersonRightHand;
+         case HEAD -> var10000 = this.head;
+         case GUI -> var10000 = this.gui;
+         case GROUND -> var10000 = this.ground;
+         case FIXED -> var10000 = this.fixed;
+         default -> var10000 = ItemTransform.NO_TRANSFORM;
+      }
+
+      return var10000;
    }
 
    public boolean hasTransform(ItemDisplayContext var1) {
@@ -112,6 +97,11 @@ public class ItemTransforms {
       private ItemTransform getTransform(JsonDeserializationContext var1, JsonObject var2, ItemDisplayContext var3) {
          String var4 = var3.getSerializedName();
          return var2.has(var4) ? (ItemTransform)var1.deserialize(var2.get(var4), ItemTransform.class) : ItemTransform.NO_TRANSFORM;
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

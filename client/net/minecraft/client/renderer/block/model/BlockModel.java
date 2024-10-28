@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -21,12 +22,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -51,21 +52,13 @@ public class BlockModel implements UnbakedModel {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FaceBakery FACE_BAKERY = new FaceBakery();
    @VisibleForTesting
-   static final Gson GSON = new GsonBuilder()
-      .registerTypeAdapter(BlockModel.class, new BlockModel.Deserializer())
-      .registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer())
-      .registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer())
-      .registerTypeAdapter(BlockFaceUV.class, new BlockFaceUV.Deserializer())
-      .registerTypeAdapter(ItemTransform.class, new ItemTransform.Deserializer())
-      .registerTypeAdapter(ItemTransforms.class, new ItemTransforms.Deserializer())
-      .registerTypeAdapter(ItemOverride.class, new ItemOverride.Deserializer())
-      .create();
+   static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(BlockModel.class, new Deserializer()).registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer()).registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer()).registerTypeAdapter(BlockFaceUV.class, new BlockFaceUV.Deserializer()).registerTypeAdapter(ItemTransform.class, new ItemTransform.Deserializer()).registerTypeAdapter(ItemTransforms.class, new ItemTransforms.Deserializer()).registerTypeAdapter(ItemOverride.class, new ItemOverride.Deserializer()).create();
    private static final char REFERENCE_CHAR = '#';
    public static final String PARTICLE_TEXTURE_REFERENCE = "particle";
    private static final boolean DEFAULT_AMBIENT_OCCLUSION = true;
    private final List<BlockElement> elements;
    @Nullable
-   private final BlockModel.GuiLight guiLight;
+   private final GuiLight guiLight;
    @Nullable
    private final Boolean hasAmbientOcclusion;
    private final ItemTransforms transforms;
@@ -79,22 +72,14 @@ public class BlockModel implements UnbakedModel {
    protected ResourceLocation parentLocation;
 
    public static BlockModel fromStream(Reader var0) {
-      return GsonHelper.fromJson(GSON, var0, BlockModel.class);
+      return (BlockModel)GsonHelper.fromJson(GSON, var0, BlockModel.class);
    }
 
    public static BlockModel fromString(String var0) {
       return fromStream(new StringReader(var0));
    }
 
-   public BlockModel(
-      @Nullable ResourceLocation var1,
-      List<BlockElement> var2,
-      Map<String, Either<Material, String>> var3,
-      @Nullable Boolean var4,
-      @Nullable BlockModel.GuiLight var5,
-      ItemTransforms var6,
-      List<ItemOverride> var7
-   ) {
+   public BlockModel(@Nullable ResourceLocation var1, List<BlockElement> var2, Map<String, Either<Material, String>> var3, @Nullable Boolean var4, @Nullable GuiLight var5, ItemTransforms var6, List<ItemOverride> var7) {
       super();
       this.elements = var2;
       this.hasAmbientOcclusion = var4;
@@ -117,7 +102,7 @@ public class BlockModel implements UnbakedModel {
       }
    }
 
-   public BlockModel.GuiLight getGuiLight() {
+   public GuiLight getGuiLight() {
       if (this.guiLight != null) {
          return this.guiLight;
       } else {
@@ -137,11 +122,12 @@ public class BlockModel implements UnbakedModel {
       return this.overrides.isEmpty() ? ItemOverrides.EMPTY : new ItemOverrides(var1, var2, this.overrides);
    }
 
-   @Override
    public Collection<ResourceLocation> getDependencies() {
       HashSet var1 = Sets.newHashSet();
+      Iterator var2 = this.overrides.iterator();
 
-      for(ItemOverride var3 : this.overrides) {
+      while(var2.hasNext()) {
+         ItemOverride var3 = (ItemOverride)var2.next();
          var1.add(var3.getModel());
       }
 
@@ -152,7 +138,6 @@ public class BlockModel implements UnbakedModel {
       return var1;
    }
 
-   @Override
    public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
       LinkedHashSet var2 = Sets.newLinkedHashSet();
 
@@ -164,10 +149,7 @@ public class BlockModel implements UnbakedModel {
          }
 
          if (var2.contains(var4)) {
-            LOGGER.warn(
-               "Found 'parent' loop while loading model '{}' in chain: {} -> {}",
-               new Object[]{var3, var2.stream().map(Object::toString).collect(Collectors.joining(" -> ")), this.parentLocation}
-            );
+            LOGGER.warn("Found 'parent' loop while loading model '{}' in chain: {} -> {}", new Object[]{var3, var2.stream().map(Object::toString).collect(Collectors.joining(" -> ")), this.parentLocation});
             var4 = null;
          }
 
@@ -183,15 +165,14 @@ public class BlockModel implements UnbakedModel {
          var3.parent = (BlockModel)var4;
       }
 
-      this.overrides.forEach(var2x -> {
-         UnbakedModel var3xx = (UnbakedModel)var1.apply(var2x.getModel());
-         if (!Objects.equals(var3xx, this)) {
-            var3xx.resolveParents(var1);
+      this.overrides.forEach((var2x) -> {
+         UnbakedModel var3 = (UnbakedModel)var1.apply(var2x.getModel());
+         if (!Objects.equals(var3, this)) {
+            var3.resolveParents(var1);
          }
       });
    }
 
-   @Override
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
       return this.bake(var1, this, var2, var3, var4, true);
    }
@@ -201,11 +182,16 @@ public class BlockModel implements UnbakedModel {
       if (this.getRootModel() == ModelBakery.BLOCK_ENTITY_MARKER) {
          return new BuiltInModel(this.getTransforms(), this.getItemOverrides(var1, var2), var7, this.getGuiLight().lightLikeBlock());
       } else {
-         SimpleBakedModel.Builder var8 = new SimpleBakedModel.Builder(this, this.getItemOverrides(var1, var2), var6).particle(var7);
+         SimpleBakedModel.Builder var8 = (new SimpleBakedModel.Builder(this, this.getItemOverrides(var1, var2), var6)).particle(var7);
+         Iterator var9 = this.getElements().iterator();
 
-         for(BlockElement var10 : this.getElements()) {
-            for(Direction var12 : var10.faces.keySet()) {
-               BlockElementFace var13 = var10.faces.get(var12);
+         while(var9.hasNext()) {
+            BlockElement var10 = (BlockElement)var9.next();
+            Iterator var11 = var10.faces.keySet().iterator();
+
+            while(var11.hasNext()) {
+               Direction var12 = (Direction)var11.next();
+               BlockElementFace var13 = (BlockElementFace)var10.faces.get(var12);
                TextureAtlasSprite var14 = (TextureAtlasSprite)var3.apply(this.getMaterial(var13.texture));
                if (var13.cullForDirection == null) {
                   var8.addUnculledFace(bakeFace(var10, var13, var14, var12, var4, var5));
@@ -286,9 +272,42 @@ public class BlockModel implements UnbakedModel {
       return this.parent != null && !this.transforms.hasTransform(var1) ? this.parent.getTransform(var1) : this.transforms.getTransform(var1);
    }
 
-   @Override
    public String toString() {
       return this.name;
+   }
+
+   public static enum GuiLight {
+      FRONT("front"),
+      SIDE("side");
+
+      private final String name;
+
+      private GuiLight(String var3) {
+         this.name = var3;
+      }
+
+      public static GuiLight getByName(String var0) {
+         GuiLight[] var1 = values();
+         int var2 = var1.length;
+
+         for(int var3 = 0; var3 < var2; ++var3) {
+            GuiLight var4 = var1[var3];
+            if (var4.name.equals(var0)) {
+               return var4;
+            }
+         }
+
+         throw new IllegalArgumentException("Invalid gui light: " + var0);
+      }
+
+      public boolean lightLikeBlock() {
+         return this == SIDE;
+      }
+
+      // $FF: synthetic method
+      private static GuiLight[] $values() {
+         return new GuiLight[]{FRONT, SIDE};
+      }
    }
 
    public static class Deserializer implements JsonDeserializer<BlockModel> {
@@ -309,7 +328,7 @@ public class BlockModel implements UnbakedModel {
          }
 
          List var13 = this.getOverrides(var3, var4);
-         BlockModel.GuiLight var11 = null;
+         GuiLight var11 = null;
          if (var4.has("gui_light")) {
             var11 = BlockModel.GuiLight.getByName(GsonHelper.getAsString(var4, "gui_light"));
          }
@@ -321,7 +340,11 @@ public class BlockModel implements UnbakedModel {
       protected List<ItemOverride> getOverrides(JsonDeserializationContext var1, JsonObject var2) {
          ArrayList var3 = Lists.newArrayList();
          if (var2.has("overrides")) {
-            for(JsonElement var6 : GsonHelper.getAsJsonArray(var2, "overrides")) {
+            JsonArray var4 = GsonHelper.getAsJsonArray(var2, "overrides");
+            Iterator var5 = var4.iterator();
+
+            while(var5.hasNext()) {
+               JsonElement var6 = (JsonElement)var5.next();
                var3.add((ItemOverride)var1.deserialize(var6, ItemOverride.class));
             }
          }
@@ -334,8 +357,10 @@ public class BlockModel implements UnbakedModel {
          HashMap var3 = Maps.newHashMap();
          if (var1.has("textures")) {
             JsonObject var4 = GsonHelper.getAsJsonObject(var1, "textures");
+            Iterator var5 = var4.entrySet().iterator();
 
-            for(Entry var6 : var4.entrySet()) {
+            while(var5.hasNext()) {
+               Map.Entry var6 = (Map.Entry)var5.next();
                var3.put((String)var6.getKey(), parseTextureLocationOrReference(var2, ((JsonElement)var6.getValue()).getAsString()));
             }
          }
@@ -368,37 +393,20 @@ public class BlockModel implements UnbakedModel {
       protected List<BlockElement> getElements(JsonDeserializationContext var1, JsonObject var2) {
          ArrayList var3 = Lists.newArrayList();
          if (var2.has("elements")) {
-            for(JsonElement var5 : GsonHelper.getAsJsonArray(var2, "elements")) {
+            Iterator var4 = GsonHelper.getAsJsonArray(var2, "elements").iterator();
+
+            while(var4.hasNext()) {
+               JsonElement var5 = (JsonElement)var4.next();
                var3.add((BlockElement)var1.deserialize(var5, BlockElement.class));
             }
          }
 
          return var3;
       }
-   }
 
-   public static enum GuiLight {
-      FRONT("front"),
-      SIDE("side");
-
-      private final String name;
-
-      private GuiLight(String var3) {
-         this.name = var3;
-      }
-
-      public static BlockModel.GuiLight getByName(String var0) {
-         for(BlockModel.GuiLight var4 : values()) {
-            if (var4.name.equals(var0)) {
-               return var4;
-            }
-         }
-
-         throw new IllegalArgumentException("Invalid gui light: " + var0);
-      }
-
-      public boolean lightLikeBlock() {
-         return this == SIDE;
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 

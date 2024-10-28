@@ -16,17 +16,21 @@ public enum GlyphProviderType implements StringRepresentable {
    private final String name;
    private final MapCodec<? extends GlyphProviderDefinition> codec;
 
-   private GlyphProviderType(String var3, MapCodec<? extends GlyphProviderDefinition> var4) {
+   private GlyphProviderType(String var3, MapCodec var4) {
       this.name = var3;
       this.codec = var4;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    public MapCodec<? extends GlyphProviderDefinition> mapCodec() {
       return this.codec;
+   }
+
+   // $FF: synthetic method
+   private static GlyphProviderType[] $values() {
+      return new GlyphProviderType[]{BITMAP, TTF, SPACE, UNIHEX, REFERENCE};
    }
 }

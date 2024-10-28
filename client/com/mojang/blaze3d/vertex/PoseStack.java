@@ -2,7 +2,6 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.Queues;
 import com.mojang.math.MatrixUtil;
-import java.util.ArrayDeque;
 import java.util.Deque;
 import net.minecraft.Util;
 import org.joml.Matrix3f;
@@ -11,10 +10,10 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class PoseStack {
-   private final Deque<PoseStack.Pose> poseStack = Util.make(Queues.newArrayDeque(), var0 -> {
+   private final Deque<Pose> poseStack = (Deque)Util.make(Queues.newArrayDeque(), (var0) -> {
       Matrix4f var1 = new Matrix4f();
       Matrix3f var2 = new Matrix3f();
-      var0.add(new PoseStack.Pose(var1, var2));
+      var0.add(new Pose(var1, var2));
    });
 
    public PoseStack() {
@@ -26,17 +25,18 @@ public class PoseStack {
    }
 
    public void translate(float var1, float var2, float var3) {
-      PoseStack.Pose var4 = this.poseStack.getLast();
+      Pose var4 = (Pose)this.poseStack.getLast();
       var4.pose.translate(var1, var2, var3);
    }
 
    public void scale(float var1, float var2, float var3) {
-      PoseStack.Pose var4 = this.poseStack.getLast();
+      Pose var4 = (Pose)this.poseStack.getLast();
       var4.pose.scale(var1, var2, var3);
       if (Math.abs(var1) == Math.abs(var2) && Math.abs(var2) == Math.abs(var3)) {
          if (var1 < 0.0F || var2 < 0.0F || var3 < 0.0F) {
             var4.normal.scale(Math.signum(var1), Math.signum(var2), Math.signum(var3));
          }
+
       } else {
          var4.normal.scale(1.0F / var1, 1.0F / var2, 1.0F / var3);
          var4.trustedNormals = false;
@@ -44,27 +44,27 @@ public class PoseStack {
    }
 
    public void mulPose(Quaternionf var1) {
-      PoseStack.Pose var2 = this.poseStack.getLast();
+      Pose var2 = (Pose)this.poseStack.getLast();
       var2.pose.rotate(var1);
       var2.normal.rotate(var1);
    }
 
    public void rotateAround(Quaternionf var1, float var2, float var3, float var4) {
-      PoseStack.Pose var5 = this.poseStack.getLast();
+      Pose var5 = (Pose)this.poseStack.getLast();
       var5.pose.rotateAround(var1, var2, var3, var4);
       var5.normal.rotate(var1);
    }
 
    public void pushPose() {
-      this.poseStack.addLast(new PoseStack.Pose(this.poseStack.getLast()));
+      this.poseStack.addLast(new Pose((Pose)this.poseStack.getLast()));
    }
 
    public void popPose() {
       this.poseStack.removeLast();
    }
 
-   public PoseStack.Pose last() {
-      return this.poseStack.getLast();
+   public Pose last() {
+      return (Pose)this.poseStack.getLast();
    }
 
    public boolean clear() {
@@ -72,14 +72,14 @@ public class PoseStack {
    }
 
    public void setIdentity() {
-      PoseStack.Pose var1 = this.poseStack.getLast();
+      Pose var1 = (Pose)this.poseStack.getLast();
       var1.pose.identity();
       var1.normal.identity();
       var1.trustedNormals = true;
    }
 
    public void mulPose(Matrix4f var1) {
-      PoseStack.Pose var2 = this.poseStack.getLast();
+      Pose var2 = (Pose)this.poseStack.getLast();
       var2.pose.mul(var1);
       if (!MatrixUtil.isPureTranslation(var1)) {
          if (MatrixUtil.isOrthonormal(var1)) {
@@ -88,6 +88,7 @@ public class PoseStack {
             var2.computeNormalMatrix();
          }
       }
+
    }
 
    public static final class Pose {
@@ -101,7 +102,7 @@ public class PoseStack {
          this.normal = var2;
       }
 
-      Pose(PoseStack.Pose var1) {
+      Pose(Pose var1) {
          super();
          this.pose = new Matrix4f(var1.pose);
          this.normal = new Matrix3f(var1.normal);
@@ -130,8 +131,8 @@ public class PoseStack {
          return this.trustedNormals ? var5 : var5.normalize();
       }
 
-      public PoseStack.Pose copy() {
-         return new PoseStack.Pose(this);
+      public Pose copy() {
+         return new Pose(this);
       }
    }
 }

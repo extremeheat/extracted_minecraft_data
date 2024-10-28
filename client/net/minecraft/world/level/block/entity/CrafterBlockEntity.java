@@ -2,6 +2,8 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -29,42 +31,41 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    public static final int SLOT_ENABLED = 0;
    public static final int DATA_TRIGGERED = 9;
    public static final int NUM_DATA = 10;
-   private NonNullList<ItemStack> items = NonNullList.withSize(9, ItemStack.EMPTY);
-   private int craftingTicksRemaining = 0;
-   protected final ContainerData containerData = new ContainerData() {
-      private final int[] slotStates = new int[9];
-      private int triggered = 0;
-
-      @Override
-      public int get(int var1) {
-         return var1 == 9 ? this.triggered : this.slotStates[var1];
-      }
-
-      @Override
-      public void set(int var1, int var2) {
-         if (var1 == 9) {
-            this.triggered = var2;
-         } else {
-            this.slotStates[var1] = var2;
-         }
-      }
-
-      @Override
-      public int getCount() {
-         return 10;
-      }
-   };
+   private NonNullList<ItemStack> items;
+   private int craftingTicksRemaining;
+   protected final ContainerData containerData;
 
    public CrafterBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CRAFTER, var1, var2);
+      this.items = NonNullList.withSize(9, ItemStack.EMPTY);
+      this.craftingTicksRemaining = 0;
+      this.containerData = new ContainerData(this) {
+         private final int[] slotStates = new int[9];
+         private int triggered = 0;
+
+         public int get(int var1) {
+            return var1 == 9 ? this.triggered : this.slotStates[var1];
+         }
+
+         public void set(int var1, int var2) {
+            if (var1 == 9) {
+               this.triggered = var2;
+            } else {
+               this.slotStates[var1] = var2;
+            }
+
+         }
+
+         public int getCount() {
+            return 10;
+         }
+      };
    }
 
-   @Override
    protected Component getDefaultName() {
       return Component.translatable("container.crafter");
    }
 
-   @Override
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
       return new CrafterMenu(var1, var2, this, this.containerData);
    }
@@ -84,12 +85,11 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       }
    }
 
-   @Override
    public boolean canPlaceItem(int var1, ItemStack var2) {
       if (this.containerData.get(var1) == 1) {
          return false;
       } else {
-         ItemStack var3 = this.items.get(var1);
+         ItemStack var3 = (ItemStack)this.items.get(var1);
          int var4 = var3.getCount();
          if (var4 >= var3.getMaxStackSize()) {
             return false;
@@ -114,9 +114,8 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       return false;
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.craftingTicksRemaining = var1.getInt("crafting_ticks_remaining");
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
@@ -129,7 +128,11 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
          this.containerData.set(var4, 0);
       }
 
-      for(int var7 : var3) {
+      int[] var8 = var3;
+      int var5 = var3.length;
+
+      for(int var6 = 0; var6 < var5; ++var6) {
+         int var7 = var8[var6];
          if (this.slotCanBeDisabled(var7)) {
             this.containerData.set(var7, 1);
          }
@@ -138,7 +141,6 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       this.containerData.set(9, var1.getInt("triggered"));
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("crafting_ticks_remaining", this.craftingTicksRemaining);
@@ -150,28 +152,29 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       this.addTriggered(var1);
    }
 
-   @Override
    public int getContainerSize() {
       return 9;
    }
 
-   @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
-            return false;
+      Iterator var1 = this.items.iterator();
+
+      ItemStack var2;
+      do {
+         if (!var1.hasNext()) {
+            return true;
          }
-      }
 
-      return true;
+         var2 = (ItemStack)var1.next();
+      } while(var2.isEmpty());
+
+      return false;
    }
 
-   @Override
    public ItemStack getItem(int var1) {
-      return this.items.get(var1);
+      return (ItemStack)this.items.get(var1);
    }
 
-   @Override
    public void setItem(int var1, ItemStack var2) {
       if (this.isSlotDisabled(var1)) {
          this.setSlotState(var1, true);
@@ -180,36 +183,34 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       super.setItem(var1, var2);
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return Container.stillValidBlockEntity(this, var1);
    }
 
-   @Override
    public NonNullList<ItemStack> getItems() {
       return this.items;
    }
 
-   @Override
    protected void setItems(NonNullList<ItemStack> var1) {
       this.items = var1;
    }
 
-   @Override
    public int getWidth() {
       return 3;
    }
 
-   @Override
    public int getHeight() {
       return 3;
    }
 
-   @Override
    public void fillStackedContents(StackedContents var1) {
-      for(ItemStack var3 : this.items) {
+      Iterator var2 = this.items.iterator();
+
+      while(var2.hasNext()) {
+         ItemStack var3 = (ItemStack)var2.next();
          var1.accountSimpleStack(var3);
       }
+
    }
 
    private void addDisabledSlots(CompoundTag var1) {
@@ -221,7 +222,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
          }
       }
 
-      var1.putIntArray("disabled_slots", var2);
+      var1.putIntArray("disabled_slots", (List)var2);
    }
 
    private void addTriggered(CompoundTag var1) {
@@ -242,8 +243,9 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       if (var4 >= 0) {
          var3.craftingTicksRemaining = var4;
          if (var4 == 0) {
-            var0.setBlock(var1, var2.setValue(CrafterBlock.CRAFTING, Boolean.valueOf(false)), 3);
+            var0.setBlock(var1, (BlockState)var2.setValue(CrafterBlock.CRAFTING, false), 3);
          }
+
       }
    }
 
@@ -265,6 +267,11 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    private boolean slotCanBeDisabled(int var1) {
-      return var1 > -1 && var1 < 9 && this.items.get(var1).isEmpty();
+      return var1 > -1 && var1 < 9 && ((ItemStack)this.items.get(var1)).isEmpty();
+   }
+
+   // $FF: synthetic method
+   public List getItems() {
+      return this.getItems();
    }
 }

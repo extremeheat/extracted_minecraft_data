@@ -13,7 +13,6 @@ public class PoiTypeRemoveFix extends AbstractPoiSectionFix {
       this.typesToKeep = var3.negate();
    }
 
-   @Override
    protected <T> Stream<Dynamic<T>> processRecords(Stream<Dynamic<T>> var1) {
       return var1.filter(this::shouldKeepRecord);
    }

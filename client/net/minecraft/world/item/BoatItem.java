@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class BoatItem extends Item {
-   private static final Predicate<Entity> ENTITY_PREDICATE = EntitySelector.NO_SPECTATORS.and(Entity::isPickable);
+   private static final Predicate<Entity> ENTITY_PREDICATE;
    private final Boat.Type type;
    private final boolean hasChest;
 
@@ -31,20 +32,21 @@ public class BoatItem extends Item {
       this.type = var2;
    }
 
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.ANY);
-      if (var5.getType() == HitResult.Type.MISS) {
+      if (((HitResult)var5).getType() == HitResult.Type.MISS) {
          return InteractionResultHolder.pass(var4);
       } else {
          Vec3 var6 = var2.getViewVector(1.0F);
          double var7 = 5.0;
-         List var9 = var1.getEntities(var2, var2.getBoundingBox().expandTowards(var6.scale(5.0)).inflate(1.0), ENTITY_PREDICATE);
+         List var9 = var1.getEntities((Entity)var2, var2.getBoundingBox().expandTowards(var6.scale(5.0)).inflate(1.0), ENTITY_PREDICATE);
          if (!var9.isEmpty()) {
             Vec3 var10 = var2.getEyePosition();
+            Iterator var11 = var9.iterator();
 
-            for(Entity var12 : var9) {
+            while(var11.hasNext()) {
+               Entity var12 = (Entity)var11.next();
                AABB var13 = var12.getBoundingBox().inflate((double)var12.getPickRadius());
                if (var13.contains(var10)) {
                   return InteractionResultHolder.pass(var4);
@@ -52,7 +54,7 @@ public class BoatItem extends Item {
             }
          }
 
-         if (var5.getType() == HitResult.Type.BLOCK) {
+         if (((HitResult)var5).getType() == HitResult.Type.BLOCK) {
             Boat var14 = this.getBoat(var1, var5, var4, var2);
             var14.setVariant(this.type);
             var14.setYRot(var2.getYRot());
@@ -61,7 +63,7 @@ public class BoatItem extends Item {
             } else {
                if (!var1.isClientSide) {
                   var1.addFreshEntity(var14);
-                  var1.gameEvent(var2, GameEvent.ENTITY_PLACE, var5.getLocation());
+                  var1.gameEvent(var2, GameEvent.ENTITY_PLACE, ((HitResult)var5).getLocation());
                   var4.consume(1, var2);
                }
 
@@ -78,9 +80,13 @@ public class BoatItem extends Item {
       Vec3 var5 = var2.getLocation();
       Object var6 = this.hasChest ? new ChestBoat(var1, var5.x, var5.y, var5.z) : new Boat(var1, var5.x, var5.y, var5.z);
       if (var1 instanceof ServerLevel var7) {
-         EntityType.createDefaultStackConfig((ServerLevel)var7, var3, var4).accept(var6);
+         EntityType.createDefaultStackConfig(var7, var3, var4).accept(var6);
       }
 
       return (Boat)var6;
+   }
+
+   static {
+      ENTITY_PREDICATE = EntitySelector.NO_SPECTATORS.and(Entity::isPickable);
    }
 }

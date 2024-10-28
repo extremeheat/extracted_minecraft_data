@@ -11,13 +11,11 @@ public class RealmsLongRunningMcoTickTaskScreen extends RealmsLongRunningMcoTask
       this.task = var2;
    }
 
-   @Override
    public void tick() {
       super.tick();
       this.task.tick();
    }
 
-   @Override
    protected void cancel() {
       this.task.abortTask();
       super.cancel();

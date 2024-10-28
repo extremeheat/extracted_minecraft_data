@@ -12,12 +12,10 @@ public class SmokingRecipeBookComponent extends AbstractFurnaceRecipeBookCompone
       super();
    }
 
-   @Override
    protected Component getRecipeFilterName() {
       return FILTER_NAME;
    }
 
-   @Override
    protected Set<Item> getFuelItems() {
       return AbstractFurnaceBlockEntity.getFuel().keySet();
    }

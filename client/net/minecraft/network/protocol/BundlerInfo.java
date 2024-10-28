@@ -10,11 +10,8 @@ import net.minecraft.network.PacketListener;
 public interface BundlerInfo {
    int BUNDLE_SIZE_LIMIT = 4096;
 
-   static <T extends PacketListener, P extends BundlePacket<? super T>> BundlerInfo createForPacket(
-      final PacketType<P> var0, final Function<Iterable<Packet<? super T>>, P> var1, final BundleDelimiterPacket<? super T> var2
-   ) {
+   static <T extends PacketListener, P extends BundlePacket<? super T>> BundlerInfo createForPacket(final PacketType<P> var0, final Function<Iterable<Packet<? super T>>, P> var1, final BundleDelimiterPacket<? super T> var2) {
       return new BundlerInfo() {
-         @Override
          public void unbundlePacket(Packet<?> var1x, Consumer<Packet<?>> var2x) {
             if (var1x.type() == var0) {
                BundlePacket var3 = (BundlePacket)var1x;
@@ -24,19 +21,18 @@ public interface BundlerInfo {
             } else {
                var2x.accept(var1x);
             }
+
          }
 
          @Nullable
-         @Override
-         public BundlerInfo.Bundler startPacketBundling(Packet<?> var1x) {
-            return var1x == var2 ? new BundlerInfo.Bundler() {
-               private final List<Packet<? super T>> bundlePackets = new ArrayList<>();
+         public Bundler startPacketBundling(Packet<?> var1x) {
+            return var1x == var2 ? new Bundler() {
+               private final List<Packet<? super T>> bundlePackets = new ArrayList();
 
                @Nullable
-               @Override
                public Packet<?> addPacket(Packet<?> var1x) {
                   if (var1x == var2) {
-                     return (Packet<?>)var1.apply(this.bundlePackets);
+                     return (Packet)var1.apply(this.bundlePackets);
                   } else if (this.bundlePackets.size() >= 4096) {
                      throw new IllegalStateException("Too many packets in a bundle");
                   } else {
@@ -52,7 +48,7 @@ public interface BundlerInfo {
    void unbundlePacket(Packet<?> var1, Consumer<Packet<?>> var2);
 
    @Nullable
-   BundlerInfo.Bundler startPacketBundling(Packet<?> var1);
+   Bundler startPacketBundling(Packet<?> var1);
 
    public interface Bundler {
       @Nullable

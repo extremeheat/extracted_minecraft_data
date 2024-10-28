@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -34,7 +35,7 @@ public class JumpOnBed extends Behavior<Mob> {
 
    protected void start(ServerLevel var1, Mob var2, long var3) {
       super.start(var1, var2, var3);
-      this.getNearestBed(var2).ifPresent(var3x -> {
+      this.getNearestBed(var2).ifPresent((var3x) -> {
          this.targetBed = var3x;
          this.remainingTimeToReachBed = 100;
          this.remainingJumps = 3 + var1.random.nextInt(4);
@@ -52,14 +53,9 @@ public class JumpOnBed extends Behavior<Mob> {
    }
 
    protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {
-      return var2.isBaby()
-         && this.targetBed != null
-         && this.isBed(var1, this.targetBed)
-         && !this.tiredOfWalking(var1, var2)
-         && !this.tiredOfJumping(var1, var2);
+      return var2.isBaby() && this.targetBed != null && this.isBed(var1, this.targetBed) && !this.tiredOfWalking(var1, var2) && !this.tiredOfJumping(var1, var2);
    }
 
-   @Override
    protected boolean timedOut(long var1) {
       return false;
    }
@@ -75,11 +71,12 @@ public class JumpOnBed extends Behavior<Mob> {
             --this.remainingJumps;
             this.remainingCooldownUntilNextJump = 5;
          }
+
       }
    }
 
    private void startWalkingTowardsBed(Mob var1, BlockPos var2) {
-      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var2, this.speedModifier, 0));
+      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, this.speedModifier, 0)));
    }
 
    private boolean nearBed(ServerLevel var1, Mob var2) {
@@ -110,5 +107,20 @@ public class JumpOnBed extends Behavior<Mob> {
 
    private boolean tiredOfJumping(ServerLevel var1, Mob var2) {
       return this.onOrOverBed(var1, var2) && this.remainingJumps <= 0;
+   }
+
+   // $FF: synthetic method
+   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+      return this.canStillUse(var1, (Mob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Mob)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Mob)var2, var3);
    }
 }

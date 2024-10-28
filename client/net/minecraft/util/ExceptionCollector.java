@@ -16,6 +16,7 @@ public class ExceptionCollector<T extends Throwable> {
       } else {
          this.result.addSuppressed(var1);
       }
+
    }
 
    public void throwIfPresent() throws T {

@@ -26,34 +26,33 @@ public interface ResourceManager extends ResourceProvider {
       private Empty() {
       }
 
-      @Override
       public Set<String> getNamespaces() {
          return Set.of();
       }
 
-      @Override
       public Optional<Resource> getResource(ResourceLocation var1) {
          return Optional.empty();
       }
 
-      @Override
       public List<Resource> getResourceStack(ResourceLocation var1) {
          return List.of();
       }
 
-      @Override
       public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
          return Map.of();
       }
 
-      @Override
       public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
          return Map.of();
       }
 
-      @Override
       public Stream<PackResources> listPacks() {
          return Stream.of();
+      }
+
+      // $FF: synthetic method
+      private static Empty[] $values() {
+         return new Empty[]{INSTANCE};
       }
    }
 }

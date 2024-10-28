@@ -64,37 +64,16 @@ public class AbstractUniform {
    public void setMat3x3(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9) {
    }
 
-   public void setMat3x4(
-      float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12
-   ) {
+   public void setMat3x4(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {
    }
 
    public void setMat4x2(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
    }
 
-   public void setMat4x3(
-      float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12
-   ) {
+   public void setMat4x3(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12) {
    }
 
-   public void setMat4x4(
-      float var1,
-      float var2,
-      float var3,
-      float var4,
-      float var5,
-      float var6,
-      float var7,
-      float var8,
-      float var9,
-      float var10,
-      float var11,
-      float var12,
-      float var13,
-      float var14,
-      float var15,
-      float var16
-   ) {
+   public void setMat4x4(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, float var12, float var13, float var14, float var15, float var16) {
    }
 
    public void set(Matrix4f var1) {

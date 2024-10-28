@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,17 +16,20 @@ import javax.annotation.Nullable;
 import net.minecraft.world.level.ChunkPos;
 
 public class ChunkTaskPriorityQueue<T> {
-   public static final int PRIORITY_LEVEL_COUNT = ChunkLevel.MAX_LEVEL + 2;
-   private final List<Long2ObjectLinkedOpenHashMap<List<Optional<T>>>> taskQueue = IntStream.range(0, PRIORITY_LEVEL_COUNT)
-      .mapToObj(var0 -> new Long2ObjectLinkedOpenHashMap())
-      .collect(Collectors.toList());
-   private volatile int firstQueue = PRIORITY_LEVEL_COUNT;
+   public static final int PRIORITY_LEVEL_COUNT;
+   private final List<Long2ObjectLinkedOpenHashMap<List<Optional<T>>>> taskQueue;
+   private volatile int firstQueue;
    private final String name;
-   private final LongSet acquired = new LongOpenHashSet();
+   private final LongSet acquired;
    private final int maxTasks;
 
    public ChunkTaskPriorityQueue(String var1, int var2) {
       super();
+      this.taskQueue = (List)IntStream.range(0, PRIORITY_LEVEL_COUNT).mapToObj((var0) -> {
+         return new Long2ObjectLinkedOpenHashMap();
+      }).collect(Collectors.toList());
+      this.firstQueue = PRIORITY_LEVEL_COUNT;
+      this.acquired = new LongOpenHashSet();
       this.name = var1;
       this.maxTasks = var2;
    }
@@ -41,25 +45,35 @@ public class ChunkTaskPriorityQueue<T> {
          }
 
          if (var5 != null && !var5.isEmpty()) {
-            ((List)((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var3)).computeIfAbsent(var2.toLong(), var0 -> Lists.newArrayList())).addAll(var5);
+            ((List)((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var3)).computeIfAbsent(var2.toLong(), (var0) -> {
+               return Lists.newArrayList();
+            })).addAll(var5);
             this.firstQueue = Math.min(this.firstQueue, var3);
          }
+
       }
    }
 
    protected void submit(Optional<T> var1, long var2, int var4) {
-      ((List)((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var4)).computeIfAbsent(var2, var0 -> Lists.newArrayList())).add(var1);
+      ((List)((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var4)).computeIfAbsent(var2, (var0) -> {
+         return Lists.newArrayList();
+      })).add(var1);
       this.firstQueue = Math.min(this.firstQueue, var4);
    }
 
    protected void release(long var1, boolean var3) {
-      for(Long2ObjectLinkedOpenHashMap var5 : this.taskQueue) {
+      Iterator var4 = this.taskQueue.iterator();
+
+      while(var4.hasNext()) {
+         Long2ObjectLinkedOpenHashMap var5 = (Long2ObjectLinkedOpenHashMap)var4.next();
          List var6 = (List)var5.get(var1);
          if (var6 != null) {
             if (var3) {
                var6.clear();
             } else {
-               var6.removeIf(var0 -> var0.isEmpty());
+               var6.removeIf((var0) -> {
+                  return var0.isEmpty();
+               });
             }
 
             if (var6.isEmpty()) {
@@ -76,7 +90,9 @@ public class ChunkTaskPriorityQueue<T> {
    }
 
    private Runnable acquire(long var1) {
-      return () -> this.acquired.add(var1);
+      return () -> {
+         this.acquired.add(var1);
+      };
    }
 
    @Nullable
@@ -89,13 +105,16 @@ public class ChunkTaskPriorityQueue<T> {
          int var1 = this.firstQueue;
          Long2ObjectLinkedOpenHashMap var2 = (Long2ObjectLinkedOpenHashMap)this.taskQueue.get(var1);
          long var3 = var2.firstLongKey();
-         List var5 = (List)var2.removeFirst();
 
-         while(this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(this.firstQueue)).isEmpty()) {
-            ++this.firstQueue;
+         List var5;
+         for(var5 = (List)var2.removeFirst(); this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.taskQueue.get(this.firstQueue)).isEmpty(); ++this.firstQueue) {
          }
 
-         return var5.stream().map(var3x -> (Either)var3x.map(Either::left).orElseGet(() -> (T)Either.right(this.acquire(var3))));
+         return var5.stream().map((var3x) -> {
+            return (Either)var3x.map(Either::left).orElseGet(() -> {
+               return Either.right(this.acquire(var3));
+            });
+         });
       }
    }
 
@@ -103,7 +122,6 @@ public class ChunkTaskPriorityQueue<T> {
       return this.firstQueue < PRIORITY_LEVEL_COUNT;
    }
 
-   @Override
    public String toString() {
       return this.name + " " + this.firstQueue + "...";
    }
@@ -111,5 +129,9 @@ public class ChunkTaskPriorityQueue<T> {
    @VisibleForTesting
    LongSet getAcquired() {
       return new LongOpenHashSet(this.acquired);
+   }
+
+   static {
+      PRIORITY_LEVEL_COUNT = ChunkLevel.MAX_LEVEL + 2;
    }
 }

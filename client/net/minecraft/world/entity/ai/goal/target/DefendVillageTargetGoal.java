@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,16 +24,19 @@ public class DefendVillageTargetGoal extends TargetGoal {
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
    }
 
-   @Override
    public boolean canUse() {
       AABB var1 = this.golem.getBoundingBox().inflate(10.0, 8.0, 10.0);
       List var2 = this.golem.level().getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
       List var3 = this.golem.level().getNearbyPlayers(this.attackTargeting, this.golem, var1);
+      Iterator var4 = var2.iterator();
 
-      for(LivingEntity var5 : var2) {
+      while(var4.hasNext()) {
+         LivingEntity var5 = (LivingEntity)var4.next();
          Villager var6 = (Villager)var5;
+         Iterator var7 = var3.iterator();
 
-         for(Player var8 : var3) {
+         while(var7.hasNext()) {
+            Player var8 = (Player)var7.next();
             int var9 = var6.getPlayerReputation(var8);
             if (var9 <= -100) {
                this.potentialTarget = var8;
@@ -42,12 +46,13 @@ public class DefendVillageTargetGoal extends TargetGoal {
 
       if (this.potentialTarget == null) {
          return false;
+      } else if (!(this.potentialTarget instanceof Player) || !this.potentialTarget.isSpectator() && !((Player)this.potentialTarget).isCreative()) {
+         return true;
       } else {
-         return !(this.potentialTarget instanceof Player) || !this.potentialTarget.isSpectator() && !((Player)this.potentialTarget).isCreative();
+         return false;
       }
    }
 
-   @Override
    public void start() {
       this.golem.setTarget(this.potentialTarget);
       super.start();

@@ -2,7 +2,6 @@ package net.minecraft.world.level.saveddata.maps;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -15,19 +14,11 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public record MapBanner(BlockPos c, DyeColor d, Optional<Component> e) {
-   private final BlockPos pos;
-   private final DyeColor color;
-   private final Optional<Component> name;
-   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos),
-               DyeColor.CODEC.optionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color),
-               ComponentSerialization.FLAT_CODEC.optionalFieldOf("name").forGetter(MapBanner::name)
-            )
-            .apply(var0, MapBanner::new)
-   );
-   public static final Codec<List<MapBanner>> LIST_CODEC = CODEC.listOf();
+public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) {
+   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.FLAT_CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(var0, MapBanner::new);
+   });
+   public static final Codec<List<MapBanner>> LIST_CODEC;
 
    public MapBanner(BlockPos var1, DyeColor var2, Optional<Component> var3) {
       super();
@@ -36,8 +27,6 @@ public record MapBanner(BlockPos c, DyeColor d, Optional<Component> e) {
       this.name = var3;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public static MapBanner fromWorld(BlockGetter var0, BlockPos var1) {
       BlockEntity var2 = var0.getBlockEntity(var1);
@@ -51,27 +40,48 @@ public record MapBanner(BlockPos c, DyeColor d, Optional<Component> e) {
    }
 
    public Holder<MapDecorationType> getDecoration() {
-      return switch(this.color) {
-         case WHITE -> MapDecorationTypes.WHITE_BANNER;
-         case ORANGE -> MapDecorationTypes.ORANGE_BANNER;
-         case MAGENTA -> MapDecorationTypes.MAGENTA_BANNER;
-         case LIGHT_BLUE -> MapDecorationTypes.LIGHT_BLUE_BANNER;
-         case YELLOW -> MapDecorationTypes.YELLOW_BANNER;
-         case LIME -> MapDecorationTypes.LIME_BANNER;
-         case PINK -> MapDecorationTypes.PINK_BANNER;
-         case GRAY -> MapDecorationTypes.GRAY_BANNER;
-         case LIGHT_GRAY -> MapDecorationTypes.LIGHT_GRAY_BANNER;
-         case CYAN -> MapDecorationTypes.CYAN_BANNER;
-         case PURPLE -> MapDecorationTypes.PURPLE_BANNER;
-         case BLUE -> MapDecorationTypes.BLUE_BANNER;
-         case BROWN -> MapDecorationTypes.BROWN_BANNER;
-         case GREEN -> MapDecorationTypes.GREEN_BANNER;
-         case RED -> MapDecorationTypes.RED_BANNER;
-         case BLACK -> MapDecorationTypes.BLACK_BANNER;
-      };
+      Holder var10000;
+      switch (this.color) {
+         case WHITE -> var10000 = MapDecorationTypes.WHITE_BANNER;
+         case ORANGE -> var10000 = MapDecorationTypes.ORANGE_BANNER;
+         case MAGENTA -> var10000 = MapDecorationTypes.MAGENTA_BANNER;
+         case LIGHT_BLUE -> var10000 = MapDecorationTypes.LIGHT_BLUE_BANNER;
+         case YELLOW -> var10000 = MapDecorationTypes.YELLOW_BANNER;
+         case LIME -> var10000 = MapDecorationTypes.LIME_BANNER;
+         case PINK -> var10000 = MapDecorationTypes.PINK_BANNER;
+         case GRAY -> var10000 = MapDecorationTypes.GRAY_BANNER;
+         case LIGHT_GRAY -> var10000 = MapDecorationTypes.LIGHT_GRAY_BANNER;
+         case CYAN -> var10000 = MapDecorationTypes.CYAN_BANNER;
+         case PURPLE -> var10000 = MapDecorationTypes.PURPLE_BANNER;
+         case BLUE -> var10000 = MapDecorationTypes.BLUE_BANNER;
+         case BROWN -> var10000 = MapDecorationTypes.BROWN_BANNER;
+         case GREEN -> var10000 = MapDecorationTypes.GREEN_BANNER;
+         case RED -> var10000 = MapDecorationTypes.RED_BANNER;
+         case BLACK -> var10000 = MapDecorationTypes.BLACK_BANNER;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public String getId() {
-      return "banner-" + this.pos.getX() + "," + this.pos.getY() + "," + this.pos.getZ();
+      int var10000 = this.pos.getX();
+      return "banner-" + var10000 + "," + this.pos.getY() + "," + this.pos.getZ();
+   }
+
+   public BlockPos pos() {
+      return this.pos;
+   }
+
+   public DyeColor color() {
+      return this.color;
+   }
+
+   public Optional<Component> name() {
+      return this.name;
+   }
+
+   static {
+      LIST_CODEC = CODEC.listOf();
    }
 }

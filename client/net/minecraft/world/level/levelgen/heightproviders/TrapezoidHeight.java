@@ -2,8 +2,8 @@ package net.minecraft.world.level.levelgen.heightproviders;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
@@ -11,14 +11,15 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class TrapezoidHeight extends HeightProvider {
-   public static final Codec<TrapezoidHeight> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter(var0x -> var0x.minInclusive),
-               VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter(var0x -> var0x.maxInclusive),
-               Codec.INT.optionalFieldOf("plateau", 0).forGetter(var0x -> var0x.plateau)
-            )
-            .apply(var0, TrapezoidHeight::new)
-   );
+   public static final MapCodec<TrapezoidHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> {
+         return var0x.minInclusive;
+      }), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> {
+         return var0x.maxInclusive;
+      }), Codec.INT.optionalFieldOf("plateau", 0).forGetter((var0x) -> {
+         return var0x.plateau;
+      })).apply(var0, TrapezoidHeight::new);
+   });
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;
@@ -39,7 +40,6 @@ public class TrapezoidHeight extends HeightProvider {
       return of(var0, var1, 0);
    }
 
-   @Override
    public int sample(RandomSource var1, WorldGenerationContext var2) {
       int var3 = this.minInclusive.resolveY(var2);
       int var4 = this.maxInclusive.resolveY(var2);
@@ -58,15 +58,17 @@ public class TrapezoidHeight extends HeightProvider {
       }
    }
 
-   @Override
    public HeightProviderType<?> getType() {
       return HeightProviderType.TRAPEZOID;
    }
 
-   @Override
    public String toString() {
-      return this.plateau == 0
-         ? "triangle (" + this.minInclusive + "-" + this.maxInclusive + ")"
-         : "trapezoid(" + this.plateau + ") in [" + this.minInclusive + "-" + this.maxInclusive + "]";
+      if (this.plateau == 0) {
+         String var1 = String.valueOf(this.minInclusive);
+         return "triangle (" + var1 + "-" + String.valueOf(this.maxInclusive) + ")";
+      } else {
+         int var10000 = this.plateau;
+         return "trapezoid(" + var10000 + ") in [" + String.valueOf(this.minInclusive) + "-" + String.valueOf(this.maxInclusive) + "]";
+      }
    }
 }

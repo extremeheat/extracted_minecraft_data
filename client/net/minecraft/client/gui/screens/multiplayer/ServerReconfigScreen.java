@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConnectScreen;
@@ -23,30 +23,28 @@ public class ServerReconfigScreen extends Screen {
       this.connection = var2;
    }
 
-   @Override
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   @Override
    protected void init() {
       this.layout.defaultCellSetting().alignHorizontallyCenter().padding(10);
       this.layout.addChild(new StringWidget(this.title, this.font));
-      this.disconnectButton = this.layout
-         .addChild(Button.builder(CommonComponents.GUI_DISCONNECT, var1 -> this.connection.disconnect(ConnectScreen.ABORT_CONNECTION)).build());
+      this.disconnectButton = (Button)this.layout.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (var1) -> {
+         this.connection.disconnect(ConnectScreen.ABORT_CONNECTION);
+      }).build());
       this.disconnectButton.active = false;
       this.layout.arrangeElements();
-      this.layout.visitWidgets(var1 -> {
+      this.layout.visitWidgets((var1) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
       });
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   @Override
    public void tick() {
       super.tick();
       ++this.delayTicker;
@@ -59,5 +57,6 @@ public class ServerReconfigScreen extends Screen {
       } else {
          this.connection.handleDisconnection();
       }
+
    }
 }

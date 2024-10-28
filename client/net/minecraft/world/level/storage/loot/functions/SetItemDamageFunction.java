@@ -2,8 +2,8 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.util.Mth;
@@ -17,16 +17,13 @@ import org.slf4j.Logger;
 
 public class SetItemDamageFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<SetItemDamageFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  NumberProviders.CODEC.fieldOf("damage").forGetter(var0x -> var0x.damage),
-                  Codec.BOOL.fieldOf("add").orElse(false).forGetter(var0x -> var0x.add)
-               )
-            )
-            .apply(var0, SetItemDamageFunction::new)
-   );
+   public static final MapCodec<SetItemDamageFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("damage").forGetter((var0x) -> {
+         return var0x.damage;
+      }), Codec.BOOL.fieldOf("add").orElse(false).forGetter((var0x) -> {
+         return var0x.add;
+      }))).apply(var0, SetItemDamageFunction::new);
+   });
    private final NumberProvider damage;
    private final boolean add;
 
@@ -36,17 +33,14 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
       this.add = var3;
    }
 
-   @Override
    public LootItemFunctionType getType() {
       return LootItemFunctions.SET_DAMAGE;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return this.damage.getReferencedContextParams();
    }
 
-   @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.isDamageableItem()) {
          int var3 = var1.getMaxDamage();
@@ -61,10 +55,14 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> setDamage(NumberProvider var0) {
-      return simpleBuilder(var1 -> new SetItemDamageFunction(var1, var0, false));
+      return simpleBuilder((var1) -> {
+         return new SetItemDamageFunction(var1, var0, false);
+      });
    }
 
    public static LootItemConditionalFunction.Builder<?> setDamage(NumberProvider var0, boolean var1) {
-      return simpleBuilder(var2 -> new SetItemDamageFunction(var2, var0, var1));
+      return simpleBuilder((var2) -> {
+         return new SetItemDamageFunction(var2, var0, var1);
+      });
    }
 }

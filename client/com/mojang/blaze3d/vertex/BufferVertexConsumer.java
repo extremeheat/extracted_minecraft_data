@@ -13,7 +13,6 @@ public interface BufferVertexConsumer extends VertexConsumer {
 
    void putFloat(int var1, float var2);
 
-   @Override
    default VertexConsumer vertex(double var1, double var3, double var5) {
       if (this.currentElement().getUsage() != VertexFormatElement.Usage.POSITION) {
          return this;
@@ -28,7 +27,6 @@ public interface BufferVertexConsumer extends VertexConsumer {
       }
    }
 
-   @Override
    default VertexConsumer color(int var1, int var2, int var3, int var4) {
       VertexFormatElement var5 = this.currentElement();
       if (var5.getUsage() != VertexFormatElement.Usage.COLOR) {
@@ -45,7 +43,6 @@ public interface BufferVertexConsumer extends VertexConsumer {
       }
    }
 
-   @Override
    default VertexConsumer uv(float var1, float var2) {
       VertexFormatElement var3 = this.currentElement();
       if (var3.getUsage() == VertexFormatElement.Usage.UV && var3.getIndex() == 0) {
@@ -62,31 +59,30 @@ public interface BufferVertexConsumer extends VertexConsumer {
       }
    }
 
-   @Override
    default VertexConsumer overlayCoords(int var1, int var2) {
       return this.uvShort((short)var1, (short)var2, 1);
    }
 
-   @Override
    default VertexConsumer uv2(int var1, int var2) {
       return this.uvShort((short)var1, (short)var2, 2);
    }
 
    default VertexConsumer uvShort(short var1, short var2, int var3) {
       VertexFormatElement var4 = this.currentElement();
-      if (var4.getUsage() != VertexFormatElement.Usage.UV || var4.getIndex() != var3) {
-         return this;
-      } else if (var4.getType() == VertexFormatElement.Type.SHORT && var4.getCount() == 2) {
-         this.putShort(0, var1);
-         this.putShort(2, var2);
-         this.nextElement();
-         return this;
+      if (var4.getUsage() == VertexFormatElement.Usage.UV && var4.getIndex() == var3) {
+         if (var4.getType() == VertexFormatElement.Type.SHORT && var4.getCount() == 2) {
+            this.putShort(0, var1);
+            this.putShort(2, var2);
+            this.nextElement();
+            return this;
+         } else {
+            throw new IllegalStateException();
+         }
       } else {
-         throw new IllegalStateException();
+         return this;
       }
    }
 
-   @Override
    default VertexConsumer normal(float var1, float var2, float var3) {
       VertexFormatElement var4 = this.currentElement();
       if (var4.getUsage() != VertexFormatElement.Usage.NORMAL) {
@@ -103,6 +99,6 @@ public interface BufferVertexConsumer extends VertexConsumer {
    }
 
    static byte normalIntValue(float var0) {
-      return (byte)((int)(Mth.clamp(var0, -1.0F, 1.0F) * 127.0F) & 0xFF);
+      return (byte)((int)(Mth.clamp(var0, -1.0F, 1.0F) * 127.0F) & 255);
    }
 }

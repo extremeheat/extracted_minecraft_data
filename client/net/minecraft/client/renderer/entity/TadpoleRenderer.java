@@ -9,7 +9,7 @@ public class TadpoleRenderer extends MobRenderer<Tadpole, TadpoleModel<Tadpole>>
    private static final ResourceLocation TADPOLE_TEXTURE = new ResourceLocation("textures/entity/tadpole/tadpole.png");
 
    public TadpoleRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new TadpoleModel<>(var1.bakeLayer(ModelLayers.TADPOLE)), 0.14F);
+      super(var1, new TadpoleModel(var1.bakeLayer(ModelLayers.TADPOLE)), 0.14F);
    }
 
    public ResourceLocation getTextureLocation(Tadpole var1) {

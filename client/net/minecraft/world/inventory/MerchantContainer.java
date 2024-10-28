@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.trading.MerchantOffers;
 
 public class MerchantContainer implements Container {
    private final Merchant merchant;
-   private final NonNullList<ItemStack> itemStacks = NonNullList.withSize(3, ItemStack.EMPTY);
+   private final NonNullList<ItemStack> itemStacks;
    @Nullable
    private MerchantOffer activeOffer;
    private int selectionHint;
@@ -20,33 +21,35 @@ public class MerchantContainer implements Container {
 
    public MerchantContainer(Merchant var1) {
       super();
+      this.itemStacks = NonNullList.withSize(3, ItemStack.EMPTY);
       this.merchant = var1;
    }
 
-   @Override
    public int getContainerSize() {
       return this.itemStacks.size();
    }
 
-   @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.itemStacks) {
-         if (!var2.isEmpty()) {
-            return false;
+      Iterator var1 = this.itemStacks.iterator();
+
+      ItemStack var2;
+      do {
+         if (!var1.hasNext()) {
+            return true;
          }
-      }
 
-      return true;
+         var2 = (ItemStack)var1.next();
+      } while(var2.isEmpty());
+
+      return false;
    }
 
-   @Override
    public ItemStack getItem(int var1) {
-      return this.itemStacks.get(var1);
+      return (ItemStack)this.itemStacks.get(var1);
    }
 
-   @Override
    public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = this.itemStacks.get(var1);
+      ItemStack var3 = (ItemStack)this.itemStacks.get(var1);
       if (var1 == 2 && !var3.isEmpty()) {
          return ContainerHelper.removeItem(this.itemStacks, var1, var3.getCount());
       } else {
@@ -63,26 +66,23 @@ public class MerchantContainer implements Container {
       return var1 == 0 || var1 == 1;
    }
 
-   @Override
    public ItemStack removeItemNoUpdate(int var1) {
       return ContainerHelper.takeItem(this.itemStacks, var1);
    }
 
-   @Override
    public void setItem(int var1, ItemStack var2) {
       this.itemStacks.set(var1, var2);
       var2.limitSize(this.getMaxStackSize(var2));
       if (this.isPaymentSlot(var1)) {
          this.updateSellItem();
       }
+
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.merchant.getTradingPlayer() == var1;
    }
 
-   @Override
    public void setChanged() {
       this.updateSellItem();
    }
@@ -91,12 +91,12 @@ public class MerchantContainer implements Container {
       this.activeOffer = null;
       ItemStack var1;
       ItemStack var2;
-      if (this.itemStacks.get(0).isEmpty()) {
-         var1 = this.itemStacks.get(1);
+      if (((ItemStack)this.itemStacks.get(0)).isEmpty()) {
+         var1 = (ItemStack)this.itemStacks.get(1);
          var2 = ItemStack.EMPTY;
       } else {
-         var1 = this.itemStacks.get(0);
-         var2 = this.itemStacks.get(1);
+         var1 = (ItemStack)this.itemStacks.get(0);
+         var2 = (ItemStack)this.itemStacks.get(1);
       }
 
       if (var1.isEmpty()) {
@@ -135,7 +135,6 @@ public class MerchantContainer implements Container {
       this.updateSellItem();
    }
 
-   @Override
    public void clearContent() {
       this.itemStacks.clear();
    }

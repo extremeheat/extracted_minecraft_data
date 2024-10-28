@@ -38,6 +38,6 @@ public class RegionBitmap {
 
    @VisibleForTesting
    public IntSet getUsed() {
-      return this.used.stream().collect(IntArraySet::new, IntCollection::add, IntCollection::addAll);
+      return (IntSet)this.used.stream().collect(IntArraySet::new, IntCollection::add, IntCollection::addAll);
    }
 }

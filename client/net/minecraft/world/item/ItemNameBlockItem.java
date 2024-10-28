@@ -7,7 +7,6 @@ public class ItemNameBlockItem extends BlockItem {
       super(var1, var2);
    }
 
-   @Override
    public String getDescriptionId() {
       return this.getOrCreateDescriptionId();
    }

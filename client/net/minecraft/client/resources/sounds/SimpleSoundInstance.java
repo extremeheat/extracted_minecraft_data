@@ -22,49 +22,19 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
    }
 
    public static SimpleSoundInstance forUI(SoundEvent var0, float var1, float var2) {
-      return new SimpleSoundInstance(
-         var0.getLocation(),
-         SoundSource.MASTER,
-         var2,
-         var1,
-         SoundInstance.createUnseededRandom(),
-         false,
-         0,
-         SoundInstance.Attenuation.NONE,
-         0.0,
-         0.0,
-         0.0,
-         true
-      );
+      return new SimpleSoundInstance(var0.getLocation(), SoundSource.MASTER, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forMusic(SoundEvent var0) {
-      return new SimpleSoundInstance(
-         var0.getLocation(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true
-      );
+      return new SimpleSoundInstance(var0.getLocation(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forRecord(SoundEvent var0, Vec3 var1) {
-      return new SimpleSoundInstance(
-         var0, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, var1.x, var1.y, var1.z
-      );
+      return new SimpleSoundInstance(var0, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, var1.x, var1.y, var1.z);
    }
 
    public static SimpleSoundInstance forLocalAmbience(SoundEvent var0, float var1, float var2) {
-      return new SimpleSoundInstance(
-         var0.getLocation(),
-         SoundSource.AMBIENT,
-         var2,
-         var1,
-         SoundInstance.createUnseededRandom(),
-         false,
-         0,
-         SoundInstance.Attenuation.NONE,
-         0.0,
-         0.0,
-         0.0,
-         true
-      );
+      return new SimpleSoundInstance(var0.getLocation(), SoundSource.AMBIENT, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forAmbientAddition(SoundEvent var0) {
@@ -79,36 +49,11 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       this(var1, var2, var3, var4, var5, false, 0, SoundInstance.Attenuation.LINEAR, var6, var8, var10);
    }
 
-   private SimpleSoundInstance(
-      SoundEvent var1,
-      SoundSource var2,
-      float var3,
-      float var4,
-      RandomSource var5,
-      boolean var6,
-      int var7,
-      SoundInstance.Attenuation var8,
-      double var9,
-      double var11,
-      double var13
-   ) {
+   private SimpleSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13) {
       this(var1.getLocation(), var2, var3, var4, var5, var6, var7, var8, var9, var11, var13, false);
    }
 
-   public SimpleSoundInstance(
-      ResourceLocation var1,
-      SoundSource var2,
-      float var3,
-      float var4,
-      RandomSource var5,
-      boolean var6,
-      int var7,
-      SoundInstance.Attenuation var8,
-      double var9,
-      double var11,
-      double var13,
-      boolean var15
-   ) {
+   public SimpleSoundInstance(ResourceLocation var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13, boolean var15) {
       super(var1, var2, var5);
       this.volume = var3;
       this.pitch = var4;

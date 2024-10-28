@@ -28,12 +28,16 @@ public class Slot {
       if (var3 > 0) {
          this.onQuickCraft(var2, var3);
       }
+
    }
 
    protected void onQuickCraft(ItemStack var1, int var2) {
    }
 
    protected void onSwapCraft(int var1) {
+   }
+
+   protected void checkTakeAchievements(ItemStack var1) {
    }
 
    public void onTake(Player var1, ItemStack var2) {
@@ -116,8 +120,10 @@ public class Slot {
 
    public ItemStack safeTake(int var1, int var2, Player var3) {
       Optional var4 = this.tryRemove(var1, var2, var3);
-      var4.ifPresent(var2x -> this.onTake(var3, var2x));
-      return var4.orElse(ItemStack.EMPTY);
+      var4.ifPresent((var2x) -> {
+         this.onTake(var3, var2x);
+      });
+      return (ItemStack)var4.orElse(ItemStack.EMPTY);
    }
 
    public ItemStack safeInsert(ItemStack var1) {

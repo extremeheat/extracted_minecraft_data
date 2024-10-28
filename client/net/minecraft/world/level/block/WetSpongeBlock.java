@@ -7,6 +7,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,7 +15,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class WetSpongeBlock extends Block {
    public static final MapCodec<WetSpongeBlock> CODEC = simpleCodec(WetSpongeBlock::new);
 
-   @Override
    public MapCodec<WetSpongeBlock> codec() {
       return CODEC;
    }
@@ -23,16 +23,15 @@ public class WetSpongeBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var2.dimensionType().ultraWarm()) {
          var2.setBlock(var3, Blocks.SPONGE.defaultBlockState(), 3);
          var2.levelEvent(2009, var3, 0);
-         var2.playSound(null, var3, SoundEvents.WET_SPONGE_DRIES, SoundSource.BLOCKS, 1.0F, (1.0F + var2.getRandom().nextFloat() * 0.2F) * 0.7F);
+         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.WET_SPONGE_DRIES, SoundSource.BLOCKS, 1.0F, (1.0F + var2.getRandom().nextFloat() * 0.2F) * 0.7F);
       }
+
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       Direction var5 = Direction.getRandom(var4);
       if (var5 != Direction.UP) {

@@ -30,55 +30,47 @@ public class WitherSkeleton extends AbstractSkeleton {
       this.setPathfindingMalus(PathType.LAVA, 8.0F);
    }
 
-   @Override
    protected void registerGoals() {
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractPiglin.class, true));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractPiglin.class, true));
       super.registerGoals();
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.WITHER_SKELETON_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.WITHER_SKELETON_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.WITHER_SKELETON_DEATH;
    }
 
-   @Override
    SoundEvent getStepSound() {
       return SoundEvents.WITHER_SKELETON_STEP;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
       Entity var4 = var1.getEntity();
-      if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
-         var5.increaseDroppedSkulls();
-         this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
+      if (var4 instanceof Creeper var5) {
+         if (var5.canDropMobsSkull()) {
+            var5.increaseDroppedSkulls();
+            this.spawnAtLocation(Items.WITHER_SKELETON_SKULL);
+         }
       }
+
    }
 
-   @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
    }
 
-   @Override
    protected void populateDefaultEquipmentEnchantments(RandomSource var1, DifficultyInstance var2) {
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
@@ -86,7 +78,6 @@ public class WitherSkeleton extends AbstractSkeleton {
       return var5;
    }
 
-   @Override
    public boolean doHurtTarget(Entity var1) {
       if (!super.doHurtTarget(var1)) {
          return false;
@@ -99,14 +90,12 @@ public class WitherSkeleton extends AbstractSkeleton {
       }
    }
 
-   @Override
    protected AbstractArrow getArrow(ItemStack var1, float var2) {
       AbstractArrow var3 = super.getArrow(var1, var2);
       var3.igniteForSeconds(100);
       return var3;
    }
 
-   @Override
    public boolean canBeAffected(MobEffectInstance var1) {
       return var1.is(MobEffects.WITHER) ? false : super.canBeAffected(var1);
    }

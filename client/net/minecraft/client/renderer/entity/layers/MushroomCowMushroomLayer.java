@@ -47,7 +47,7 @@ public class MushroomCowMushroomLayer<T extends MushroomCow> extends RenderLayer
             this.renderMushroomBlock(var1, var2, var3, var12, var13, var14, var15);
             var1.popPose();
             var1.pushPose();
-            this.getParentModel().getHead().translateAndRotate(var1);
+            ((CowModel)this.getParentModel()).getHead().translateAndRotate(var1);
             var1.translate(0.0F, -0.7F, -0.2F);
             var1.mulPose(Axis.YP.rotationDegrees(-78.0F));
             var1.scale(-1.0F, -1.0F, 1.0F);
@@ -60,11 +60,10 @@ public class MushroomCowMushroomLayer<T extends MushroomCow> extends RenderLayer
 
    private void renderMushroomBlock(PoseStack var1, MultiBufferSource var2, int var3, boolean var4, BlockState var5, int var6, BakedModel var7) {
       if (var4) {
-         this.blockRenderer
-            .getModelRenderer()
-            .renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var5, var7, 0.0F, 0.0F, 0.0F, var3, var6);
+         this.blockRenderer.getModelRenderer().renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var5, var7, 0.0F, 0.0F, 0.0F, var3, var6);
       } else {
          this.blockRenderer.renderSingleBlock(var5, var1, var2, var3, var6);
       }
+
    }
 }

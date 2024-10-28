@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
+import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 
 public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlockEntity> {
    private static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/end_gateway_beam.png");
@@ -26,25 +27,21 @@ public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlo
          BeaconRenderer.renderBeaconBeam(var3, var4, BEAM_LOCATION, var2, var7, var12, -var10, var10 * 2, var11, 0.15F, 0.175F);
       }
 
-      super.render(var1, var2, var3, var4, var5, var6);
+      super.render((TheEndPortalBlockEntity)var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected float getOffsetUp() {
       return 1.0F;
    }
 
-   @Override
    protected float getOffsetDown() {
       return 0.0F;
    }
 
-   @Override
    protected RenderType renderType() {
       return RenderType.endGateway();
    }
 
-   @Override
    public int getViewDistance() {
       return 256;
    }

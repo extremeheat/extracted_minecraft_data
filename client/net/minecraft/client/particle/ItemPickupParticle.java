@@ -44,12 +44,10 @@ public class ItemPickupParticle extends Particle {
       return (Entity)(!(var1 instanceof ItemEntity) ? var1 : ((ItemEntity)var1).copy());
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.CUSTOM;
    }
 
-   @Override
    public void render(VertexConsumer var1, Camera var2, float var3) {
       float var4 = ((float)this.life + var3) / 3.0F;
       var4 *= var4;
@@ -61,22 +59,10 @@ public class ItemPickupParticle extends Particle {
       double var15 = Mth.lerp((double)var4, this.itemEntity.getZ(), var9);
       MultiBufferSource.BufferSource var17 = this.renderBuffers.bufferSource();
       Vec3 var18 = var2.getPosition();
-      this.entityRenderDispatcher
-         .render(
-            this.itemEntity,
-            var11 - var18.x(),
-            var13 - var18.y(),
-            var15 - var18.z(),
-            this.itemEntity.getYRot(),
-            var3,
-            new PoseStack(),
-            var17,
-            this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var3)
-         );
+      this.entityRenderDispatcher.render(this.itemEntity, var11 - var18.x(), var13 - var18.y(), var15 - var18.z(), this.itemEntity.getYRot(), var3, new PoseStack(), var17, this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var3));
       var17.endBatch();
    }
 
-   @Override
    public void tick() {
       ++this.life;
       if (this.life == 3) {

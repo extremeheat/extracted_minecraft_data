@@ -19,24 +19,20 @@ public class CountDownCooldownTicks extends Behavior<LivingEntity> {
       return var1.getBrain().getMemory(this.cooldownTicks);
    }
 
-   @Override
    protected boolean timedOut(long var1) {
       return false;
    }
 
-   @Override
    protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
       Optional var5 = this.getCooldownTickMemory(var2);
-      return var5.isPresent() && var5.get() > 0;
+      return var5.isPresent() && (Integer)var5.get() > 0;
    }
 
-   @Override
    protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
       Optional var5 = this.getCooldownTickMemory(var2);
-      var2.getBrain().setMemory(this.cooldownTicks, var5.get() - 1);
+      var2.getBrain().setMemory(this.cooldownTicks, (Object)((Integer)var5.get() - 1));
    }
 
-   @Override
    protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
       var2.getBrain().eraseMemory(this.cooldownTicks);
    }

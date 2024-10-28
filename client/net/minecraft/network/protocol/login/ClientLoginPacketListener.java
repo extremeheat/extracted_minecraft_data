@@ -5,7 +5,6 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.cookie.ClientCookiePacketListener;
 
 public interface ClientLoginPacketListener extends ClientCookiePacketListener, ClientboundPacketListener {
-   @Override
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.LOGIN;
    }

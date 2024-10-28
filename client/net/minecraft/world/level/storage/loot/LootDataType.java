@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.DataResult.PartialResult;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Registry;
@@ -17,23 +16,13 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import org.slf4j.Logger;
 
-public record LootDataType<T>(ResourceKey<Registry<T>> d, Codec<T> e, String f, LootDataType.Validator<T> g) {
-   private final ResourceKey<Registry<T>> registryKey;
-   private final Codec<T> codec;
-   private final String directory;
-   private final LootDataType.Validator<T> validator;
+public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, Validator<T> validator) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final LootDataType<LootItemCondition> PREDICATE = new LootDataType<>(
-      Registries.PREDICATE, LootItemConditions.DIRECT_CODEC, "predicates", createSimpleValidator()
-   );
-   public static final LootDataType<LootItemFunction> MODIFIER = new LootDataType<>(
-      Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, "item_modifiers", createSimpleValidator()
-   );
-   public static final LootDataType<LootTable> TABLE = new LootDataType<>(
-      Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, "loot_tables", createLootTableValidator()
-   );
+   public static final LootDataType<LootItemCondition> PREDICATE;
+   public static final LootDataType<LootItemFunction> MODIFIER;
+   public static final LootDataType<LootTable> TABLE;
 
-   public LootDataType(ResourceKey<Registry<T>> var1, Codec<T> var2, String var3, LootDataType.Validator<T> var4) {
+   public LootDataType(ResourceKey<Registry<T>> var1, Codec<T> var2, String var3, Validator<T> var4) {
       super();
       this.registryKey = var1;
       this.codec = var2;
@@ -42,25 +31,53 @@ public record LootDataType<T>(ResourceKey<Registry<T>> d, Codec<T> e, String f, 
    }
 
    public void runValidation(ValidationContext var1, ResourceKey<T> var2, T var3) {
-      this.validator.run(var1, var2, (T)var3);
+      this.validator.run(var1, var2, var3);
    }
 
    public <V> Optional<T> deserialize(ResourceLocation var1, DynamicOps<V> var2, V var3) {
       DataResult var4 = this.codec.parse(var2, var3);
-      var4.error().ifPresent(var2x -> LOGGER.error("Couldn't parse element {}:{} - {}", new Object[]{this.directory, var1, var2x.message()}));
+      var4.error().ifPresent((var2x) -> {
+         LOGGER.error("Couldn't parse element {}:{} - {}", new Object[]{this.directory, var1, var2x.message()});
+      });
       return var4.result();
    }
 
    public static Stream<LootDataType<?>> values() {
-      return Stream.of((T[])(PREDICATE, MODIFIER, TABLE));
+      return Stream.of(PREDICATE, MODIFIER, TABLE);
    }
 
-   private static <T extends LootContextUser> LootDataType.Validator<T> createSimpleValidator() {
-      return (var0, var1, var2) -> var2.validate(var0.enterElement("{" + var1.registry() + "/" + var1.location() + "}", var1));
+   private static <T extends LootContextUser> Validator<T> createSimpleValidator() {
+      return (var0, var1, var2) -> {
+         var2.validate(var0.enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
+      };
    }
 
-   private static LootDataType.Validator<LootTable> createLootTableValidator() {
-      return (var0, var1, var2) -> var2.validate(var0.setParams(var2.getParamSet()).enterElement("{" + var1.registry() + "/" + var1.location() + "}", var1));
+   private static Validator<LootTable> createLootTableValidator() {
+      return (var0, var1, var2) -> {
+         var2.validate(var0.setParams(var2.getParamSet()).enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
+      };
+   }
+
+   public ResourceKey<Registry<T>> registryKey() {
+      return this.registryKey;
+   }
+
+   public Codec<T> codec() {
+      return this.codec;
+   }
+
+   public String directory() {
+      return this.directory;
+   }
+
+   public Validator<T> validator() {
+      return this.validator;
+   }
+
+   static {
+      PREDICATE = new LootDataType(Registries.PREDICATE, LootItemConditions.DIRECT_CODEC, "predicates", createSimpleValidator());
+      MODIFIER = new LootDataType(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, "item_modifiers", createSimpleValidator());
+      TABLE = new LootDataType(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, "loot_tables", createLootTableValidator());
    }
 
    @FunctionalInterface

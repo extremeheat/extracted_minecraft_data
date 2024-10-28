@@ -15,31 +15,12 @@ public class PackOutput {
       return this.outputFolder;
    }
 
-   public Path getOutputFolder(PackOutput.Target var1) {
+   public Path getOutputFolder(Target var1) {
       return this.getOutputFolder().resolve(var1.directory);
    }
 
-   public PackOutput.PathProvider createPathProvider(PackOutput.Target var1, String var2) {
-      return new PackOutput.PathProvider(this, var1, var2);
-   }
-
-   public static class PathProvider {
-      private final Path root;
-      private final String kind;
-
-      PathProvider(PackOutput var1, PackOutput.Target var2, String var3) {
-         super();
-         this.root = var1.getOutputFolder(var2);
-         this.kind = var3;
-      }
-
-      public Path file(ResourceLocation var1, String var2) {
-         return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + "." + var2);
-      }
-
-      public Path json(ResourceLocation var1) {
-         return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + ".json");
-      }
+   public PathProvider createPathProvider(Target var1, String var2) {
+      return new PathProvider(this, var1, var2);
    }
 
    public static enum Target {
@@ -51,6 +32,32 @@ public class PackOutput {
 
       private Target(String var3) {
          this.directory = var3;
+      }
+
+      // $FF: synthetic method
+      private static Target[] $values() {
+         return new Target[]{DATA_PACK, RESOURCE_PACK, REPORTS};
+      }
+   }
+
+   public static class PathProvider {
+      private final Path root;
+      private final String kind;
+
+      PathProvider(PackOutput var1, Target var2, String var3) {
+         super();
+         this.root = var1.getOutputFolder(var2);
+         this.kind = var3;
+      }
+
+      public Path file(ResourceLocation var1, String var2) {
+         Path var10000 = this.root.resolve(var1.getNamespace()).resolve(this.kind);
+         String var10001 = var1.getPath();
+         return var10000.resolve(var10001 + "." + var2);
+      }
+
+      public Path json(ResourceLocation var1) {
+         return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + ".json");
       }
    }
 }

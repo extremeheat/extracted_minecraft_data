@@ -15,14 +15,12 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
       super();
    }
 
-   @Override
    public Set<MemoryModuleType<?>> requires() {
       return ImmutableSet.of(MemoryModuleType.VISIBLE_VILLAGER_BABIES);
    }
 
-   @Override
    protected void doTick(ServerLevel var1, LivingEntity var2) {
-      var2.getBrain().setMemory(MemoryModuleType.VISIBLE_VILLAGER_BABIES, this.getNearestVillagerBabies(var2));
+      var2.getBrain().setMemory(MemoryModuleType.VISIBLE_VILLAGER_BABIES, (Object)this.getNearestVillagerBabies(var2));
    }
 
    private List<LivingEntity> getNearestVillagerBabies(LivingEntity var1) {
@@ -34,6 +32,6 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
    }
 
    private NearestVisibleLivingEntities getVisibleEntities(LivingEntity var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
+      return (NearestVisibleLivingEntities)var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
    }
 }

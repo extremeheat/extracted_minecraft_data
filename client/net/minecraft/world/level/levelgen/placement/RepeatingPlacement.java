@@ -12,8 +12,9 @@ public abstract class RepeatingPlacement extends PlacementModifier {
 
    protected abstract int count(RandomSource var1, BlockPos var2);
 
-   @Override
    public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      return IntStream.range(0, this.count(var2, var3)).mapToObj(var1x -> var3);
+      return IntStream.range(0, this.count(var2, var3)).mapToObj((var1x) -> {
+         return var3;
+      });
    }
 }

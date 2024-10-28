@@ -14,14 +14,10 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
-public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Feature<FC>>(F d, FC e) {
-   private final F feature;
-   private final FC config;
-   public static final Codec<ConfiguredFeature<?, ?>> DIRECT_CODEC = BuiltInRegistries.FEATURE
-      .byNameCodec()
-      .dispatch(var0 -> var0.feature, Feature::configuredCodec);
-   public static final Codec<Holder<ConfiguredFeature<?, ?>>> CODEC = RegistryFileCodec.create(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
-   public static final Codec<HolderSet<ConfiguredFeature<?, ?>>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
+public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Feature<FC>>(F feature, FC config) {
+   public static final Codec<ConfiguredFeature<?, ?>> DIRECT_CODEC;
+   public static final Codec<Holder<ConfiguredFeature<?, ?>>> CODEC;
+   public static final Codec<HolderSet<ConfiguredFeature<?, ?>>> LIST_CODEC;
 
    public ConfiguredFeature(F var1, FC var2) {
       super();
@@ -38,6 +34,23 @@ public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Featu
    }
 
    public String toString() {
-      return "Configured: " + this.feature + ": " + this.config;
+      String var10000 = String.valueOf(this.feature);
+      return "Configured: " + var10000 + ": " + String.valueOf(this.config);
+   }
+
+   public F feature() {
+      return this.feature;
+   }
+
+   public FC config() {
+      return this.config;
+   }
+
+   static {
+      DIRECT_CODEC = BuiltInRegistries.FEATURE.byNameCodec().dispatch((var0) -> {
+         return var0.feature;
+      }, Feature::configuredCodec);
+      CODEC = RegistryFileCodec.create(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
+      LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
    }
 }

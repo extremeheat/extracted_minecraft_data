@@ -6,16 +6,18 @@ import java.util.stream.Collectors;
 
 public class SectionBufferBuilderPack implements AutoCloseable {
    public static final int TOTAL_BUFFERS_SIZE = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::bufferSize).sum();
-   private final Map<RenderType, BufferBuilder> builders = RenderType.chunkBufferLayers()
-      .stream()
-      .collect(Collectors.toMap(var0 -> var0, var0 -> new BufferBuilder(var0.bufferSize())));
+   private final Map<RenderType, BufferBuilder> builders = (Map)RenderType.chunkBufferLayers().stream().collect(Collectors.toMap((var0) -> {
+      return var0;
+   }, (var0) -> {
+      return new BufferBuilder(var0.bufferSize());
+   }));
 
    public SectionBufferBuilderPack() {
       super();
    }
 
    public BufferBuilder builder(RenderType var1) {
-      return this.builders.get(var1);
+      return (BufferBuilder)this.builders.get(var1);
    }
 
    public void clearAll() {
@@ -26,7 +28,6 @@ public class SectionBufferBuilderPack implements AutoCloseable {
       this.builders.values().forEach(BufferBuilder::discard);
    }
 
-   @Override
    public void close() {
       this.builders.values().forEach(BufferBuilder::release);
    }

@@ -12,7 +12,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +20,7 @@ import javax.annotation.Nullable;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemStackTheFlatteningFix extends DataFix {
-   private static final Map<String, String> MAP = (Map<String, String>)DataFixUtils.make(Maps.newHashMap(), var0 -> {
+   private static final Map<String, String> MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (var0) -> {
       var0.put("minecraft:stone.0", "minecraft:stone");
       var0.put("minecraft:stone.1", "minecraft:granite");
       var0.put("minecraft:stone.2", "minecraft:polished_granite");
@@ -343,63 +342,8 @@ public class ItemStackTheFlatteningFix extends DataFix {
       var0.put("minecraft:record_wait.0", "minecraft:music_disc_wait");
       var0.put("minecraft:record_ward.0", "minecraft:music_disc_ward");
    });
-   private static final Set<String> IDS = MAP.keySet().stream().map(var0 -> var0.substring(0, var0.indexOf(46))).collect(Collectors.toSet());
-   private static final Set<String> DAMAGE_IDS = Sets.newHashSet(
-      new String[]{
-         "minecraft:bow",
-         "minecraft:carrot_on_a_stick",
-         "minecraft:chainmail_boots",
-         "minecraft:chainmail_chestplate",
-         "minecraft:chainmail_helmet",
-         "minecraft:chainmail_leggings",
-         "minecraft:diamond_axe",
-         "minecraft:diamond_boots",
-         "minecraft:diamond_chestplate",
-         "minecraft:diamond_helmet",
-         "minecraft:diamond_hoe",
-         "minecraft:diamond_leggings",
-         "minecraft:diamond_pickaxe",
-         "minecraft:diamond_shovel",
-         "minecraft:diamond_sword",
-         "minecraft:elytra",
-         "minecraft:fishing_rod",
-         "minecraft:flint_and_steel",
-         "minecraft:golden_axe",
-         "minecraft:golden_boots",
-         "minecraft:golden_chestplate",
-         "minecraft:golden_helmet",
-         "minecraft:golden_hoe",
-         "minecraft:golden_leggings",
-         "minecraft:golden_pickaxe",
-         "minecraft:golden_shovel",
-         "minecraft:golden_sword",
-         "minecraft:iron_axe",
-         "minecraft:iron_boots",
-         "minecraft:iron_chestplate",
-         "minecraft:iron_helmet",
-         "minecraft:iron_hoe",
-         "minecraft:iron_leggings",
-         "minecraft:iron_pickaxe",
-         "minecraft:iron_shovel",
-         "minecraft:iron_sword",
-         "minecraft:leather_boots",
-         "minecraft:leather_chestplate",
-         "minecraft:leather_helmet",
-         "minecraft:leather_leggings",
-         "minecraft:shears",
-         "minecraft:shield",
-         "minecraft:stone_axe",
-         "minecraft:stone_hoe",
-         "minecraft:stone_pickaxe",
-         "minecraft:stone_shovel",
-         "minecraft:stone_sword",
-         "minecraft:wooden_axe",
-         "minecraft:wooden_hoe",
-         "minecraft:wooden_pickaxe",
-         "minecraft:wooden_shovel",
-         "minecraft:wooden_sword"
-      }
-   );
+   private static final Set<String> IDS;
+   private static final Set<String> DAMAGE_IDS;
 
    public ItemStackTheFlatteningFix(Schema var1, boolean var2) {
       super(var1, var2);
@@ -409,27 +353,28 @@ public class ItemStackTheFlatteningFix extends DataFix {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped("ItemInstanceTheFlatteningFix", var1, var2x -> {
-         Optional var3xx = var2x.getOptional(var2);
-         if (var3xx.isEmpty()) {
+      return this.fixTypeEverywhereTyped("ItemInstanceTheFlatteningFix", var1, (var2x) -> {
+         Optional var3x = var2x.getOptional(var2);
+         if (var3x.isEmpty()) {
             return var2x;
          } else {
             Typed var4 = var2x;
             Dynamic var5 = (Dynamic)var2x.get(DSL.remainderFinder());
             int var6 = var5.get("Damage").asInt(0);
-            String var7 = updateItem((String)((Pair)var3xx.get()).getSecond(), var6);
+            String var7 = updateItem((String)((Pair)var3x.get()).getSecond(), var6);
             if (var7 != null) {
                var4 = var2x.set(var2, Pair.of(References.ITEM_NAME.typeName(), var7));
             }
 
-            if (DAMAGE_IDS.contains(((Pair)var3xx.get()).getSecond())) {
+            if (DAMAGE_IDS.contains(((Pair)var3x.get()).getSecond())) {
                Typed var8 = var2x.getOrCreateTyped(var3);
                Dynamic var9 = (Dynamic)var8.get(DSL.remainderFinder());
                var9 = var9.set("Damage", var9.createInt(var6));
                var4 = var4.set(var3, var8.set(DSL.remainderFinder(), var9));
             }
 
-            return var4.set(DSL.remainderFinder(), var5.remove("Damage"));
+            var4 = var4.set(DSL.remainderFinder(), var5.remove("Damage"));
+            return var4;
          }
       });
    }
@@ -437,10 +382,17 @@ public class ItemStackTheFlatteningFix extends DataFix {
    @Nullable
    public static String updateItem(@Nullable String var0, int var1) {
       if (IDS.contains(var0)) {
-         String var2 = MAP.get(var0 + "." + var1);
-         return var2 == null ? MAP.get(var0 + ".0") : var2;
+         String var2 = (String)MAP.get(var0 + "." + var1);
+         return var2 == null ? (String)MAP.get(var0 + ".0") : var2;
       } else {
          return null;
       }
+   }
+
+   static {
+      IDS = (Set)MAP.keySet().stream().map((var0) -> {
+         return var0.substring(0, var0.indexOf(46));
+      }).collect(Collectors.toSet());
+      DAMAGE_IDS = Sets.newHashSet(new String[]{"minecraft:bow", "minecraft:carrot_on_a_stick", "minecraft:chainmail_boots", "minecraft:chainmail_chestplate", "minecraft:chainmail_helmet", "minecraft:chainmail_leggings", "minecraft:diamond_axe", "minecraft:diamond_boots", "minecraft:diamond_chestplate", "minecraft:diamond_helmet", "minecraft:diamond_hoe", "minecraft:diamond_leggings", "minecraft:diamond_pickaxe", "minecraft:diamond_shovel", "minecraft:diamond_sword", "minecraft:elytra", "minecraft:fishing_rod", "minecraft:flint_and_steel", "minecraft:golden_axe", "minecraft:golden_boots", "minecraft:golden_chestplate", "minecraft:golden_helmet", "minecraft:golden_hoe", "minecraft:golden_leggings", "minecraft:golden_pickaxe", "minecraft:golden_shovel", "minecraft:golden_sword", "minecraft:iron_axe", "minecraft:iron_boots", "minecraft:iron_chestplate", "minecraft:iron_helmet", "minecraft:iron_hoe", "minecraft:iron_leggings", "minecraft:iron_pickaxe", "minecraft:iron_shovel", "minecraft:iron_sword", "minecraft:leather_boots", "minecraft:leather_chestplate", "minecraft:leather_helmet", "minecraft:leather_leggings", "minecraft:shears", "minecraft:shield", "minecraft:stone_axe", "minecraft:stone_hoe", "minecraft:stone_pickaxe", "minecraft:stone_shovel", "minecraft:stone_sword", "minecraft:wooden_axe", "minecraft:wooden_hoe", "minecraft:wooden_pickaxe", "minecraft:wooden_shovel", "minecraft:wooden_sword"});
    }
 }

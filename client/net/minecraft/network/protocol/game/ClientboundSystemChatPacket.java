@@ -8,16 +8,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundSystemChatPacket(Component b, boolean c) implements Packet<ClientGamePacketListener> {
-   private final Component content;
-   private final boolean overlay;
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSystemChatPacket> STREAM_CODEC = StreamCodec.composite(
-      ComponentSerialization.TRUSTED_STREAM_CODEC,
-      ClientboundSystemChatPacket::content,
-      ByteBufCodecs.BOOL,
-      ClientboundSystemChatPacket::overlay,
-      ClientboundSystemChatPacket::new
-   );
+public record ClientboundSystemChatPacket(Component content, boolean overlay) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSystemChatPacket> STREAM_CODEC;
 
    public ClientboundSystemChatPacket(Component var1, boolean var2) {
       super();
@@ -25,7 +17,6 @@ public record ClientboundSystemChatPacket(Component b, boolean c) implements Pac
       this.overlay = var2;
    }
 
-   @Override
    public PacketType<ClientboundSystemChatPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SYSTEM_CHAT;
    }
@@ -34,8 +25,19 @@ public record ClientboundSystemChatPacket(Component b, boolean c) implements Pac
       var1.handleSystemChat(this);
    }
 
-   @Override
    public boolean isSkippable() {
       return true;
+   }
+
+   public Component content() {
+      return this.content;
+   }
+
+   public boolean overlay() {
+      return this.overlay;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundSystemChatPacket::content, ByteBufCodecs.BOOL, ClientboundSystemChatPacket::overlay, ClientboundSystemChatPacket::new);
    }
 }

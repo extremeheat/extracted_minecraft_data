@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
-import net.minecraft.client.telemetry.TelemetryPropertyMap;
 
 public class WorldLoadTimesEvent {
    private final boolean newWorld;
@@ -20,10 +19,11 @@ public class WorldLoadTimesEvent {
 
    public void send(TelemetryEventSender var1) {
       if (this.worldLoadDuration != null) {
-         var1.send(TelemetryEventType.WORLD_LOAD_TIMES, var1x -> {
+         var1.send(TelemetryEventType.WORLD_LOAD_TIMES, (var1x) -> {
             var1x.put(TelemetryProperty.WORLD_LOAD_TIME_MS, (int)this.worldLoadDuration.toMillis());
             var1x.put(TelemetryProperty.NEW_WORLD, this.newWorld);
          });
       }
+
    }
 }

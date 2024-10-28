@@ -14,4 +14,9 @@ public interface VillagerDataHolder extends VariantHolder<VillagerType> {
    default void setVariant(VillagerType var1) {
       this.setVillagerData(this.getVillagerData().setType(var1));
    }
+
+   // $FF: synthetic method
+   default Object getVariant() {
+      return this.getVariant();
+   }
 }

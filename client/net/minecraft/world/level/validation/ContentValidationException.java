@@ -14,15 +14,15 @@ public class ContentValidationException extends Exception {
       this.entries = var2;
    }
 
-   @Override
    public String getMessage() {
       return getMessage(this.directory, this.entries);
    }
 
    public static String getMessage(Path var0, List<ForbiddenSymlinkInfo> var1) {
-      return "Failed to validate '"
-         + var0
-         + "'. Found forbidden symlinks: "
-         + (String)var1.stream().map(var0x -> var0x.link() + "->" + var0x.target()).collect(Collectors.joining(", "));
+      String var10000 = String.valueOf(var0);
+      return "Failed to validate '" + var10000 + "'. Found forbidden symlinks: " + (String)var1.stream().map((var0x) -> {
+         String var10000 = String.valueOf(var0x.link());
+         return var10000 + "->" + String.valueOf(var0x.target());
+      }).collect(Collectors.joining(", "));
    }
 }

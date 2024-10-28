@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -16,14 +15,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public record BlockDataSource(String d, @Nullable Coordinates e) implements DataSource {
-   private final String posPattern;
-   @Nullable
-   private final Coordinates compiledPos;
-   public static final MapCodec<BlockDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new)
-   );
-   public static final DataSource.Type<BlockDataSource> TYPE = new DataSource.Type<>(SUB_CODEC, "block");
+public record BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) implements DataSource {
+   public static final MapCodec<BlockDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new);
+   });
+   public static final DataSource.Type<BlockDataSource> TYPE;
 
    public BlockDataSource(String var1) {
       this(var1, compilePos(var1));
@@ -44,7 +40,6 @@ public record BlockDataSource(String d, @Nullable Coordinates e) implements Data
       }
    }
 
-   @Override
    public Stream<CompoundTag> getData(CommandSourceStack var1) {
       if (this.compiledPos != null) {
          ServerLevel var2 = var1.getLevel();
@@ -60,31 +55,46 @@ public record BlockDataSource(String d, @Nullable Coordinates e) implements Data
       return Stream.empty();
    }
 
-   @Override
    public DataSource.Type<?> type() {
       return TYPE;
    }
 
-   @Override
    public String toString() {
       return "block=" + this.posPattern;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof BlockDataSource var2 && this.posPattern.equals(var2.posPattern)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof BlockDataSource) {
+            BlockDataSource var2 = (BlockDataSource)var1;
+            if (this.posPattern.equals(var2.posPattern)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.posPattern.hashCode();
+   }
+
+   public String posPattern() {
+      return this.posPattern;
+   }
+
+   @Nullable
+   public Coordinates compiledPos() {
+      return this.compiledPos;
+   }
+
+   static {
+      TYPE = new DataSource.Type(SUB_CODEC, "block");
    }
 }

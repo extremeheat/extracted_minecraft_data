@@ -12,7 +12,6 @@ public class StringTag implements Tag {
          return StringTag.valueOf(readAccounted(var1, var2));
       }
 
-      @Override
       public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
          return var2.visit(readAccounted(var1, var3));
       }
@@ -24,24 +23,25 @@ public class StringTag implements Tag {
          return var2;
       }
 
-      @Override
       public void skip(DataInput var1, NbtAccounter var2) throws IOException {
          StringTag.skipString(var1);
       }
 
-      @Override
       public String getName() {
          return "STRING";
       }
 
-      @Override
       public String getPrettyName() {
          return "TAG_String";
       }
 
-      @Override
       public boolean isValue() {
          return true;
+      }
+
+      // $FF: synthetic method
+      public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return this.load(var1, var2);
       }
    };
    private static final StringTag EMPTY = new StringTag("");
@@ -65,27 +65,22 @@ public class StringTag implements Tag {
       return var0.isEmpty() ? EMPTY : new StringTag(var0);
    }
 
-   @Override
    public void write(DataOutput var1) throws IOException {
       var1.writeUTF(this.data);
    }
 
-   @Override
    public int sizeInBytes() {
       return 36 + 2 * this.data.length();
    }
 
-   @Override
    public byte getId() {
       return 8;
    }
 
-   @Override
    public TagType<StringTag> getType() {
       return TYPE;
    }
 
-   @Override
    public String toString() {
       return Tag.super.getAsString();
    }
@@ -94,7 +89,6 @@ public class StringTag implements Tag {
       return this;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -103,17 +97,14 @@ public class StringTag implements Tag {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.data.hashCode();
    }
 
-   @Override
    public String getAsString() {
       return this.data;
    }
 
-   @Override
    public void accept(TagVisitor var1) {
       var1.visitString(this);
    }
@@ -148,8 +139,12 @@ public class StringTag implements Tag {
       return var1.toString();
    }
 
-   @Override
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
       return var1.visit(this.data);
+   }
+
+   // $FF: synthetic method
+   public Tag copy() {
+      return this.copy();
    }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -18,7 +19,6 @@ public class EndCrystalItem extends Item {
       super(var1);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -33,7 +33,7 @@ public class EndCrystalItem extends Item {
             double var6 = (double)var5.getX();
             double var8 = (double)var5.getY();
             double var10 = (double)var5.getZ();
-            List var12 = var2.getEntities(null, new AABB(var6, var8, var10, var6 + 1.0, var8 + 2.0, var10 + 1.0));
+            List var12 = var2.getEntities((Entity)null, new AABB(var6, var8, var10, var6 + 1.0, var8 + 2.0, var10 + 1.0));
             if (!var12.isEmpty()) {
                return InteractionResult.FAIL;
             } else {

@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundAcceptTeleportationPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundAcceptTeleportationPacket> STREAM_CODEC = Packet.codec(
-      ServerboundAcceptTeleportationPacket::write, ServerboundAcceptTeleportationPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundAcceptTeleportationPacket> STREAM_CODEC = Packet.codec(ServerboundAcceptTeleportationPacket::write, ServerboundAcceptTeleportationPacket::new);
    private final int id;
 
    public ServerboundAcceptTeleportationPacket(int var1) {
@@ -25,7 +23,6 @@ public class ServerboundAcceptTeleportationPacket implements Packet<ServerGamePa
       var1.writeVarInt(this.id);
    }
 
-   @Override
    public PacketType<ServerboundAcceptTeleportationPacket> type() {
       return GamePacketTypes.SERVERBOUND_ACCEPT_TELEPORTATION;
    }

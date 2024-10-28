@@ -32,12 +32,10 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       this.xpReward = 5;
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.HOSTILE;
    }
 
-   @Override
    public void aiStep() {
       this.updateSwingTime();
       this.updateNoActionTime();
@@ -49,39 +47,33 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       if (var1 > 0.5F) {
          this.noActionTime += 2;
       }
+
    }
 
-   @Override
    protected boolean shouldDespawnInPeaceful() {
       return true;
    }
 
-   @Override
    protected SoundEvent getSwimSound() {
       return SoundEvents.HOSTILE_SWIM;
    }
 
-   @Override
    protected SoundEvent getSwimSplashSound() {
       return SoundEvents.HOSTILE_SPLASH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.HOSTILE_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.HOSTILE_DEATH;
    }
 
-   @Override
    public LivingEntity.Fallsounds getFallSounds() {
       return new LivingEntity.Fallsounds(SoundEvents.HOSTILE_SMALL_FALL, SoundEvents.HOSTILE_BIG_FALL);
    }
 
-   @Override
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
       return -var2.getPathfindingCostFromLightLevels(var1);
    }
@@ -101,17 +93,11 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       }
    }
 
-   public static boolean checkMonsterSpawnRules(
-      EntityType<? extends Monster> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
-   ) {
-      return var1.getDifficulty() != Difficulty.PEACEFUL
-         && (MobSpawnType.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4))
-         && checkMobSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkMonsterSpawnRules(EntityType<? extends Monster> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+      return var1.getDifficulty() != Difficulty.PEACEFUL && (MobSpawnType.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4)) && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 
-   public static boolean checkAnyLightMonsterSpawnRules(
-      EntityType<? extends Monster> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
-   ) {
+   public static boolean checkAnyLightMonsterSpawnRules(EntityType<? extends Monster> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       return var1.getDifficulty() != Difficulty.PEACEFUL && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 
@@ -119,12 +105,10 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return Mob.createMobAttributes().add(Attributes.ATTACK_DAMAGE);
    }
 
-   @Override
    public boolean shouldDropExperience() {
       return true;
    }
 
-   @Override
    protected boolean shouldDropLoot() {
       return true;
    }
@@ -133,7 +117,6 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return true;
    }
 
-   @Override
    public ItemStack getProjectile(ItemStack var1) {
       if (var1.getItem() instanceof ProjectileWeaponItem) {
          Predicate var2 = ((ProjectileWeaponItem)var1.getItem()).getSupportedHeldProjectiles();

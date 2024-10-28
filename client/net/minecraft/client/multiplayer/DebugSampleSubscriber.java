@@ -16,20 +16,22 @@ public class DebugSampleSubscriber {
       super();
       this.debugScreenOverlay = var2;
       this.connection = var1;
-      this.lastRequested = new EnumMap<>(RemoteDebugSampleType.class);
+      this.lastRequested = new EnumMap(RemoteDebugSampleType.class);
    }
 
    public void tick() {
       if (this.debugScreenOverlay.showFpsCharts()) {
          this.sendSubscriptionRequestIfNeeded(RemoteDebugSampleType.TICK_TIME);
       }
+
    }
 
    private void sendSubscriptionRequestIfNeeded(RemoteDebugSampleType var1) {
       long var2 = Util.getMillis();
-      if (var2 > this.lastRequested.getOrDefault(var1, Long.valueOf(0L)) + 5000L) {
+      if (var2 > (Long)this.lastRequested.getOrDefault(var1, 0L) + 5000L) {
          this.connection.send(new ServerboundDebugSampleSubscriptionPacket(var1));
          this.lastRequested.put(var1, var2);
       }
+
    }
 }

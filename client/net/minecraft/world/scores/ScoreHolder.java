@@ -5,12 +5,10 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 
 public interface ScoreHolder {
    String WILDCARD_NAME = "*";
    ScoreHolder WILDCARD = new ScoreHolder() {
-      @Override
       public String getScoreboardName() {
          return "*";
       }
@@ -25,9 +23,9 @@ public interface ScoreHolder {
 
    default Component getFeedbackDisplayName() {
       Component var1 = this.getDisplayName();
-      return var1 != null
-         ? var1.copy().withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.getScoreboardName()))))
-         : Component.literal(this.getScoreboardName());
+      return var1 != null ? var1.copy().withStyle((var1x) -> {
+         return var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.getScoreboardName())));
+      }) : Component.literal(this.getScoreboardName());
    }
 
    static ScoreHolder forNameOnly(final String var0) {
@@ -36,12 +34,10 @@ public interface ScoreHolder {
       } else {
          final MutableComponent var1 = Component.literal(var0);
          return new ScoreHolder() {
-            @Override
             public String getScoreboardName() {
                return var0;
             }
 
-            @Override
             public Component getFeedbackDisplayName() {
                return var1;
             }
@@ -52,7 +48,6 @@ public interface ScoreHolder {
    static ScoreHolder fromGameProfile(GameProfile var0) {
       final String var1 = var0.getName();
       return new ScoreHolder() {
-         @Override
          public String getScoreboardName() {
             return var1;
          }

@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
@@ -36,17 +37,25 @@ public class ViewArea {
             for(int var4 = 0; var4 < this.sectionGridSizeY; ++var4) {
                for(int var5 = 0; var5 < this.sectionGridSizeZ; ++var5) {
                   int var6 = this.getSectionIndex(var3, var4, var5);
-                  this.sections[var6] = var1.new RenderSection(var6, var3 * 16, this.level.getMinBuildHeight() + var4 * 16, var5 * 16);
+                  SectionRenderDispatcher.RenderSection[] var10000 = this.sections;
+                  Objects.requireNonNull(var1);
+                  var10000[var6] = var1.new RenderSection(var6, var3 * 16, this.level.getMinBuildHeight() + var4 * 16, var5 * 16);
                }
             }
          }
+
       }
    }
 
    public void releaseAllBuffers() {
-      for(SectionRenderDispatcher.RenderSection var4 : this.sections) {
+      SectionRenderDispatcher.RenderSection[] var1 = this.sections;
+      int var2 = var1.length;
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         SectionRenderDispatcher.RenderSection var4 = var1[var3];
          var4.releaseBuffers();
       }
+
    }
 
    private int getSectionIndex(int var1, int var2, int var3) {
@@ -93,6 +102,7 @@ public class ViewArea {
             }
          }
       }
+
    }
 
    public void setDirty(int var1, int var2, int var3, boolean var4) {

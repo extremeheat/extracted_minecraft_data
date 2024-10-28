@@ -15,7 +15,6 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
       this.samples = new long[240][var1];
    }
 
-   @Override
    protected void useSample() {
       int var1 = this.wrapIndex(this.start + this.size);
       System.arraycopy(this.sample, 0, this.samples[var1], 0, this.sample.length);
@@ -24,34 +23,31 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
       } else {
          this.start = this.wrapIndex(this.start + 1);
       }
+
    }
 
-   @Override
    public int capacity() {
       return this.samples.length;
    }
 
-   @Override
    public int size() {
       return this.size;
    }
 
-   @Override
    public long get(int var1) {
       return this.get(var1, 0);
    }
 
-   @Override
    public long get(int var1, int var2) {
       if (var1 >= 0 && var1 < this.size) {
          long[] var3 = this.samples[this.wrapIndex(this.start + var1)];
          if (var2 >= 0 && var2 < var3.length) {
             return var3[var2];
          } else {
-            throw new IndexOutOfBoundsException(var2 + " out of bounds for dimensions " + var3.length);
+            throw new IndexOutOfBoundsException("" + var2 + " out of bounds for dimensions " + var3.length);
          }
       } else {
-         throw new IndexOutOfBoundsException(var1 + " out of bounds for length " + this.size);
+         throw new IndexOutOfBoundsException("" + var1 + " out of bounds for length " + this.size);
       }
    }
 
@@ -59,7 +55,6 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
       return var1 % 240;
    }
 
-   @Override
    public void reset() {
       this.start = 0;
       this.size = 0;

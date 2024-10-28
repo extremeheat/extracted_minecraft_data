@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundBlockEntityTagQueryPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundBlockEntityTagQueryPacket> STREAM_CODEC = Packet.codec(
-      ServerboundBlockEntityTagQueryPacket::write, ServerboundBlockEntityTagQueryPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundBlockEntityTagQueryPacket> STREAM_CODEC = Packet.codec(ServerboundBlockEntityTagQueryPacket::write, ServerboundBlockEntityTagQueryPacket::new);
    private final int transactionId;
    private final BlockPos pos;
 
@@ -30,7 +28,6 @@ public class ServerboundBlockEntityTagQueryPacket implements Packet<ServerGamePa
       var1.writeBlockPos(this.pos);
    }
 
-   @Override
    public PacketType<ServerboundBlockEntityTagQueryPacket> type() {
       return GamePacketTypes.SERVERBOUND_BLOCK_ENTITY_TAG_QUERY;
    }

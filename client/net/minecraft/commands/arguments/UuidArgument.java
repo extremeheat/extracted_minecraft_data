@@ -50,4 +50,9 @@ public class UuidArgument implements ArgumentType<UUID> {
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
 }

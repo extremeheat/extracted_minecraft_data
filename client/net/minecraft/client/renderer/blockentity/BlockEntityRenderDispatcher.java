@@ -35,9 +35,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    private final Supplier<ItemRenderer> itemRenderer;
    private final Supplier<EntityRenderDispatcher> entityRenderer;
 
-   public BlockEntityRenderDispatcher(
-      Font var1, EntityModelSet var2, Supplier<BlockRenderDispatcher> var3, Supplier<ItemRenderer> var4, Supplier<EntityRenderDispatcher> var5
-   ) {
+   public BlockEntityRenderDispatcher(Font var1, EntityModelSet var2, Supplier<BlockRenderDispatcher> var3, Supplier<ItemRenderer> var4, Supplier<EntityRenderDispatcher> var5) {
       super();
       this.itemRenderer = var4;
       this.entityRenderer = var5;
@@ -48,7 +46,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
 
    @Nullable
    public <E extends BlockEntity> BlockEntityRenderer<E> getRenderer(E var1) {
-      return (BlockEntityRenderer<E>)this.renderers.get(var1.getType());
+      return (BlockEntityRenderer)this.renderers.get(var1.getType());
    }
 
    public void prepare(Level var1, Camera var2, HitResult var3) {
@@ -65,7 +63,9 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       if (var5 != null) {
          if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
             if (var5.shouldRender(var1, this.camera.getPosition())) {
-               tryRender(var1, () -> setupAndRender(var5, var1, var2, var3, var4));
+               tryRender(var1, () -> {
+                  setupAndRender(var5, var1, var2, var3, var4);
+               });
             }
          }
       }
@@ -88,7 +88,9 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       if (var6 == null) {
          return true;
       } else {
-         tryRender(var1, () -> var6.render(var1, 0.0F, var2, var3, var4, var5));
+         tryRender(var1, () -> {
+            var6.render(var1, 0.0F, var2, var3, var4, var5);
+         });
          return false;
       }
    }
@@ -109,13 +111,11 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       if (var1 == null) {
          this.camera = null;
       }
+
    }
 
-   @Override
    public void onResourceManagerReload(ResourceManager var1) {
-      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(
-         this, this.blockRenderDispatcher.get(), this.itemRenderer.get(), this.entityRenderer.get(), this.entityModelSet, this.font
-      );
+      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, (BlockRenderDispatcher)this.blockRenderDispatcher.get(), (ItemRenderer)this.itemRenderer.get(), (EntityRenderDispatcher)this.entityRenderer.get(), this.entityModelSet, this.font);
       this.renderers = BlockEntityRenderers.createEntityRenderers(var2);
    }
 }

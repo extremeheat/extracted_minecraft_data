@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemCombinerMenuSlotDefinition {
-   private final List<ItemCombinerMenuSlotDefinition.SlotDefinition> slots;
-   private final ItemCombinerMenuSlotDefinition.SlotDefinition resultSlot;
+   private final List<SlotDefinition> slots;
+   private final SlotDefinition resultSlot;
 
-   ItemCombinerMenuSlotDefinition(List<ItemCombinerMenuSlotDefinition.SlotDefinition> var1, ItemCombinerMenuSlotDefinition.SlotDefinition var2) {
+   ItemCombinerMenuSlotDefinition(List<SlotDefinition> var1, SlotDefinition var2) {
       super();
       if (!var1.isEmpty() && !var2.equals(ItemCombinerMenuSlotDefinition.SlotDefinition.EMPTY)) {
          this.slots = var1;
@@ -20,23 +20,23 @@ public class ItemCombinerMenuSlotDefinition {
       }
    }
 
-   public static ItemCombinerMenuSlotDefinition.Builder create() {
-      return new ItemCombinerMenuSlotDefinition.Builder();
+   public static Builder create() {
+      return new Builder();
    }
 
    public boolean hasSlot(int var1) {
       return this.slots.size() >= var1;
    }
 
-   public ItemCombinerMenuSlotDefinition.SlotDefinition getSlot(int var1) {
-      return (ItemCombinerMenuSlotDefinition.SlotDefinition)this.slots.get(var1);
+   public SlotDefinition getSlot(int var1) {
+      return (SlotDefinition)this.slots.get(var1);
    }
 
-   public ItemCombinerMenuSlotDefinition.SlotDefinition getResultSlot() {
+   public SlotDefinition getResultSlot() {
       return this.resultSlot;
    }
 
-   public List<ItemCombinerMenuSlotDefinition.SlotDefinition> getSlots() {
+   public List<SlotDefinition> getSlots() {
       return this.slots;
    }
 
@@ -49,38 +49,13 @@ public class ItemCombinerMenuSlotDefinition {
    }
 
    public List<Integer> getInputSlotIndexes() {
-      return this.slots.stream().map(ItemCombinerMenuSlotDefinition.SlotDefinition::slotIndex).collect(Collectors.toList());
+      return (List)this.slots.stream().map(SlotDefinition::slotIndex).collect(Collectors.toList());
    }
 
-   public static class Builder {
-      private final List<ItemCombinerMenuSlotDefinition.SlotDefinition> slots = new ArrayList();
-      private ItemCombinerMenuSlotDefinition.SlotDefinition resultSlot = ItemCombinerMenuSlotDefinition.SlotDefinition.EMPTY;
-
-      public Builder() {
-         super();
-      }
-
-      public ItemCombinerMenuSlotDefinition.Builder withSlot(int var1, int var2, int var3, Predicate<ItemStack> var4) {
-         this.slots.add(new ItemCombinerMenuSlotDefinition.SlotDefinition(var1, var2, var3, var4));
-         return this;
-      }
-
-      public ItemCombinerMenuSlotDefinition.Builder withResultSlot(int var1, int var2, int var3) {
-         this.resultSlot = new ItemCombinerMenuSlotDefinition.SlotDefinition(var1, var2, var3, var0 -> false);
-         return this;
-      }
-
-      public ItemCombinerMenuSlotDefinition build() {
-         return new ItemCombinerMenuSlotDefinition(this.slots, this.resultSlot);
-      }
-   }
-
-   public static record SlotDefinition(int a, int b, int c, Predicate<ItemStack> d) {
-      private final int slotIndex;
-      private final int x;
-      private final int y;
-      private final Predicate<ItemStack> mayPlace;
-      static final ItemCombinerMenuSlotDefinition.SlotDefinition EMPTY = new ItemCombinerMenuSlotDefinition.SlotDefinition(0, 0, 0, var0 -> true);
+   public static record SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
+      static final SlotDefinition EMPTY = new SlotDefinition(0, 0, 0, (var0) -> {
+         return true;
+      });
 
       public SlotDefinition(int var1, int var2, int var3, Predicate<ItemStack> var4) {
          super();
@@ -88,6 +63,48 @@ public class ItemCombinerMenuSlotDefinition {
          this.x = var2;
          this.y = var3;
          this.mayPlace = var4;
+      }
+
+      public int slotIndex() {
+         return this.slotIndex;
+      }
+
+      public int x() {
+         return this.x;
+      }
+
+      public int y() {
+         return this.y;
+      }
+
+      public Predicate<ItemStack> mayPlace() {
+         return this.mayPlace;
+      }
+   }
+
+   public static class Builder {
+      private final List<SlotDefinition> slots = new ArrayList();
+      private SlotDefinition resultSlot;
+
+      public Builder() {
+         super();
+         this.resultSlot = ItemCombinerMenuSlotDefinition.SlotDefinition.EMPTY;
+      }
+
+      public Builder withSlot(int var1, int var2, int var3, Predicate<ItemStack> var4) {
+         this.slots.add(new SlotDefinition(var1, var2, var3, var4));
+         return this;
+      }
+
+      public Builder withResultSlot(int var1, int var2, int var3) {
+         this.resultSlot = new SlotDefinition(var1, var2, var3, (var0) -> {
+            return false;
+         });
+         return this;
+      }
+
+      public ItemCombinerMenuSlotDefinition build() {
+         return new ItemCombinerMenuSlotDefinition(this.slots, this.resultSlot);
       }
    }
 }

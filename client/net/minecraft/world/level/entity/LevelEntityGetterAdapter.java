@@ -17,33 +17,27 @@ public class LevelEntityGetterAdapter<T extends EntityAccess> implements LevelEn
    }
 
    @Nullable
-   @Override
    public T get(int var1) {
       return this.visibleEntities.getEntity(var1);
    }
 
    @Nullable
-   @Override
    public T get(UUID var1) {
       return this.visibleEntities.getEntity(var1);
    }
 
-   @Override
    public Iterable<T> getAll() {
       return this.visibleEntities.getAllEntities();
    }
 
-   @Override
    public <U extends T> void get(EntityTypeTest<T, U> var1, AbortableIterationConsumer<U> var2) {
       this.visibleEntities.getEntities(var1, var2);
    }
 
-   @Override
    public void get(AABB var1, Consumer<T> var2) {
       this.sectionStorage.getEntities(var1, AbortableIterationConsumer.forConsumer(var2));
    }
 
-   @Override
    public <U extends T> void get(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<U> var3) {
       this.sectionStorage.getEntities(var1, var2, var3);
    }

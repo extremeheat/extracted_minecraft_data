@@ -2,7 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
+import java.util.Iterator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameModeArgument;
@@ -17,13 +17,11 @@ public class DefaultGameModeCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("defaultgamemode").requires(var0x -> var0x.hasPermission(2)))
-            .then(
-               Commands.argument("gamemode", GameModeArgument.gameMode())
-                  .executes(var0x -> setMode((CommandSourceStack)var0x.getSource(), GameModeArgument.getGameMode(var0x, "gamemode")))
-            )
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("defaultgamemode").requires((var0x) -> {
+         return var0x.hasPermission(2);
+      })).then(Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> {
+         return setMode((CommandSourceStack)var0x.getSource(), GameModeArgument.getGameMode(var0x, "gamemode"));
+      })));
    }
 
    private static int setMode(CommandSourceStack var0, GameType var1) {
@@ -32,14 +30,19 @@ public class DefaultGameModeCommands {
       var3.setDefaultGameType(var1);
       GameType var4 = var3.getForcedGameType();
       if (var4 != null) {
-         for(ServerPlayer var6 : var3.getPlayerList().getPlayers()) {
+         Iterator var5 = var3.getPlayerList().getPlayers().iterator();
+
+         while(var5.hasNext()) {
+            ServerPlayer var6 = (ServerPlayer)var5.next();
             if (var6.setGameMode(var4)) {
                ++var2;
             }
          }
       }
 
-      var0.sendSuccess(() -> Component.translatable("commands.defaultgamemode.success", var1.getLongDisplayName()), true);
+      var0.sendSuccess(() -> {
+         return Component.translatable("commands.defaultgamemode.success", var1.getLongDisplayName());
+      }, true);
       return var2;
    }
 }

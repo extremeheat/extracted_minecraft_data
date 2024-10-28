@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
@@ -16,7 +17,7 @@ import net.minecraft.tags.TagNetworkSerialization;
 
 public class RegistryDataCollector {
    @Nullable
-   private RegistryDataCollector.ContentsCollector contentsCollector;
+   private ContentsCollector contentsCollector;
    @Nullable
    private TagCollector tagCollector;
 
@@ -26,7 +27,7 @@ public class RegistryDataCollector {
 
    public void appendContents(ResourceKey<? extends Registry<?>> var1, List<RegistrySynchronization.PackedRegistryEntry> var2) {
       if (this.contentsCollector == null) {
-         this.contentsCollector = new RegistryDataCollector.ContentsCollector();
+         this.contentsCollector = new ContentsCollector();
       }
 
       this.contentsCollector.append(var1, var2);
@@ -37,7 +38,9 @@ public class RegistryDataCollector {
          this.tagCollector = new TagCollector();
       }
 
-      var1.forEach(this.tagCollector::append);
+      TagCollector var10001 = this.tagCollector;
+      Objects.requireNonNull(var10001);
+      var1.forEach(var10001::append);
    }
 
    public RegistryAccess.Frozen collectGameRegistries(ResourceProvider var1, RegistryAccess var2, boolean var3) {
@@ -46,7 +49,7 @@ public class RegistryDataCollector {
       if (this.contentsCollector != null) {
          RegistryAccess.Frozen var6 = var5.getAccessForLoading(ClientRegistryLayer.REMOTE);
          RegistryAccess.Frozen var7 = this.contentsCollector.loadRegistries(var1, var6).freeze();
-         var4 = var5.replaceFrom(ClientRegistryLayer.REMOTE, var7).compositeAccess();
+         var4 = var5.replaceFrom(ClientRegistryLayer.REMOTE, (RegistryAccess.Frozen[])(var7)).compositeAccess();
       } else {
          var4 = var2;
       }
@@ -58,15 +61,17 @@ public class RegistryDataCollector {
       return ((RegistryAccess)var4).freeze();
    }
 
-   static class ContentsCollector {
-      private final Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> elements = new HashMap<>();
+   private static class ContentsCollector {
+      private final Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> elements = new HashMap();
 
       ContentsCollector() {
          super();
       }
 
       public void append(ResourceKey<? extends Registry<?>> var1, List<RegistrySynchronization.PackedRegistryEntry> var2) {
-         this.elements.computeIfAbsent(var1, var0 -> new ArrayList()).addAll(var2);
+         ((List)this.elements.computeIfAbsent(var1, (var0) -> {
+            return new ArrayList();
+         })).addAll(var2);
       }
 
       public RegistryAccess loadRegistries(ResourceProvider var1, RegistryAccess var2) {

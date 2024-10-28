@@ -29,11 +29,15 @@ public enum Variant implements StringRepresentable {
    }
 
    public static Variant byId(int var0) {
-      return BY_ID.apply(var0);
+      return (Variant)BY_ID.apply(var0);
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   // $FF: synthetic method
+   private static Variant[] $values() {
+      return new Variant[]{WHITE, CREAMY, CHESTNUT, BROWN, BLACK, GRAY, DARK_BROWN};
    }
 }

@@ -52,41 +52,38 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          this.clientSideIllusionOffsets[0][var3] = Vec3.ZERO;
          this.clientSideIllusionOffsets[1][var3] = Vec3.ZERO;
       }
+
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new SpellcasterIllager.SpellcasterCastingSpellGoal());
-      this.goalSelector.addGoal(4, new Illusioner.IllusionerMirrorSpellGoal());
-      this.goalSelector.addGoal(5, new Illusioner.IllusionerBlindnessSpellGoal());
-      this.goalSelector.addGoal(6, new RangedBowAttackGoal<>(this, 0.5, 20, 15.0F));
+      this.goalSelector.addGoal(4, new IllusionerMirrorSpellGoal());
+      this.goalSelector.addGoal(5, new IllusionerBlindnessSpellGoal());
+      this.goalSelector.addGoal(6, new RangedBowAttackGoal(this, 0.5, 20, 15.0F));
       this.goalSelector.addGoal(8, new RandomStrollGoal(this, 0.6));
       this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 3.0F, 1.0F));
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true).setUnseenMemoryTicks(300));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, false).setUnseenMemoryTicks(300));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, false).setUnseenMemoryTicks(300));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
+      this.targetSelector.addGoal(2, (new NearestAttackableTargetGoal(this, Player.class, true)).setUnseenMemoryTicks(300));
+      this.targetSelector.addGoal(3, (new NearestAttackableTargetGoal(this, AbstractVillager.class, false)).setUnseenMemoryTicks(300));
+      this.targetSelector.addGoal(3, (new NearestAttackableTargetGoal(this, IronGolem.class, false)).setUnseenMemoryTicks(300));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FOLLOW_RANGE, 18.0).add(Attributes.MAX_HEALTH, 32.0);
    }
 
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   @Override
    public AABB getBoundingBoxForCulling() {
       return this.getBoundingBox().inflate(3.0, 0.0, 3.0);
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       if (this.level().isClientSide && this.isInvisible()) {
@@ -95,37 +92,36 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
             this.clientSideIllusionTicks = 0;
          }
 
-         if (this.hurtTime == 1 || this.tickCount % 1200 == 0) {
+         if (this.hurtTime != 1 && this.tickCount % 1200 != 0) {
+            if (this.hurtTime == this.hurtDuration - 1) {
+               this.clientSideIllusionTicks = 3;
+
+               for(int var4 = 0; var4 < 4; ++var4) {
+                  this.clientSideIllusionOffsets[0][var4] = this.clientSideIllusionOffsets[1][var4];
+                  this.clientSideIllusionOffsets[1][var4] = new Vec3(0.0, 0.0, 0.0);
+               }
+            }
+         } else {
             this.clientSideIllusionTicks = 3;
-            float var4 = -6.0F;
+            float var1 = -6.0F;
             boolean var2 = true;
 
-            for(int var3 = 0; var3 < 4; ++var3) {
+            int var3;
+            for(var3 = 0; var3 < 4; ++var3) {
                this.clientSideIllusionOffsets[0][var3] = this.clientSideIllusionOffsets[1][var3];
-               this.clientSideIllusionOffsets[1][var3] = new Vec3(
-                  (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5,
-                  (double)Math.max(0, this.random.nextInt(6) - 4),
-                  (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5
-               );
+               this.clientSideIllusionOffsets[1][var3] = new Vec3((double)(-6.0F + (float)this.random.nextInt(13)) * 0.5, (double)Math.max(0, this.random.nextInt(6) - 4), (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5);
             }
 
-            for(int var5 = 0; var5 < 16; ++var5) {
+            for(var3 = 0; var3 < 16; ++var3) {
                this.level().addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5), this.getRandomY(), this.getZ(0.5), 0.0, 0.0, 0.0);
             }
 
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ILLUSIONER_MIRROR_MOVE, this.getSoundSource(), 1.0F, 1.0F, false);
-         } else if (this.hurtTime == this.hurtDuration - 1) {
-            this.clientSideIllusionTicks = 3;
-
-            for(int var1 = 0; var1 < 4; ++var1) {
-               this.clientSideIllusionOffsets[0][var1] = this.clientSideIllusionOffsets[1][var1];
-               this.clientSideIllusionOffsets[1][var1] = new Vec3(0.0, 0.0, 0.0);
-            }
          }
       }
+
    }
 
-   @Override
    public SoundEvent getCelebrateSound() {
       return SoundEvents.ILLUSIONER_AMBIENT;
    }
@@ -146,31 +142,25 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       }
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.ILLUSIONER_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.ILLUSIONER_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.ILLUSIONER_HURT;
    }
 
-   @Override
    protected SoundEvent getCastingSoundEvent() {
       return SoundEvents.ILLUSIONER_CAST_SPELL;
    }
 
-   @Override
    public void applyRaidBuffs(int var1, boolean var2) {
    }
 
-   @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
       ItemStack var3 = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
       AbstractArrow var4 = ProjectileUtil.getMobArrow(this, var3, var2);
@@ -183,7 +173,6 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       this.level().addFreshEntity(var4);
    }
 
-   @Override
    public AbstractIllager.IllagerArmPose getArmPose() {
       if (this.isCastingSpell()) {
          return AbstractIllager.IllagerArmPose.SPELLCASTING;
@@ -192,14 +181,48 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       }
    }
 
-   class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+   class IllusionerMirrorSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+      IllusionerMirrorSpellGoal() {
+         super();
+      }
+
+      public boolean canUse() {
+         if (!super.canUse()) {
+            return false;
+         } else {
+            return !Illusioner.this.hasEffect(MobEffects.INVISIBILITY);
+         }
+      }
+
+      protected int getCastingTime() {
+         return 20;
+      }
+
+      protected int getCastingInterval() {
+         return 340;
+      }
+
+      protected void performSpellCasting() {
+         Illusioner.this.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 1200));
+      }
+
+      @Nullable
+      protected SoundEvent getSpellPrepareSound() {
+         return SoundEvents.ILLUSIONER_PREPARE_MIRROR;
+      }
+
+      protected SpellcasterIllager.IllagerSpell getSpell() {
+         return SpellcasterIllager.IllagerSpell.DISAPPEAR;
+      }
+   }
+
+   private class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
       private int lastTargetId;
 
       IllusionerBlindnessSpellGoal() {
          super();
       }
 
-      @Override
       public boolean canUse() {
          if (!super.canUse()) {
             return false;
@@ -212,79 +235,33 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          }
       }
 
-      @Override
       public void start() {
          super.start();
          LivingEntity var1 = Illusioner.this.getTarget();
          if (var1 != null) {
             this.lastTargetId = var1.getId();
          }
+
       }
 
-      @Override
       protected int getCastingTime() {
          return 20;
       }
 
-      @Override
       protected int getCastingInterval() {
          return 180;
       }
 
-      @Override
       protected void performSpellCasting() {
          Illusioner.this.getTarget().addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 400), Illusioner.this);
       }
 
-      @Override
       protected SoundEvent getSpellPrepareSound() {
          return SoundEvents.ILLUSIONER_PREPARE_BLINDNESS;
       }
 
-      @Override
       protected SpellcasterIllager.IllagerSpell getSpell() {
          return SpellcasterIllager.IllagerSpell.BLINDNESS;
-      }
-   }
-
-   class IllusionerMirrorSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
-      IllusionerMirrorSpellGoal() {
-         super();
-      }
-
-      @Override
-      public boolean canUse() {
-         if (!super.canUse()) {
-            return false;
-         } else {
-            return !Illusioner.this.hasEffect(MobEffects.INVISIBILITY);
-         }
-      }
-
-      @Override
-      protected int getCastingTime() {
-         return 20;
-      }
-
-      @Override
-      protected int getCastingInterval() {
-         return 340;
-      }
-
-      @Override
-      protected void performSpellCasting() {
-         Illusioner.this.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 1200));
-      }
-
-      @Nullable
-      @Override
-      protected SoundEvent getSpellPrepareSound() {
-         return SoundEvents.ILLUSIONER_PREPARE_MIRROR;
-      }
-
-      @Override
-      protected SpellcasterIllager.IllagerSpell getSpell() {
-         return SpellcasterIllager.IllagerSpell.DISAPPEAR;
       }
    }
 }

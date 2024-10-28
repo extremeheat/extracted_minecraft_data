@@ -16,7 +16,7 @@ public class FoxRenderer extends MobRenderer<Fox, FoxModel<Fox>> {
    private static final ResourceLocation SNOW_FOX_SLEEP_TEXTURE = new ResourceLocation("textures/entity/fox/snow_fox_sleep.png");
 
    public FoxRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new FoxModel<>(var1.bakeLayer(ModelLayers.FOX)), 0.4F);
+      super(var1, new FoxModel(var1.bakeLayer(ModelLayers.FOX)), 0.4F);
       this.addLayer(new FoxHeldItemLayer(this, var1.getItemInHandRenderer()));
    }
 
@@ -26,6 +26,7 @@ public class FoxRenderer extends MobRenderer<Fox, FoxModel<Fox>> {
          float var7 = -Mth.lerp(var5, var1.xRotO, var1.getXRot());
          var2.mulPose(Axis.XP.rotationDegrees(var7));
       }
+
    }
 
    public ResourceLocation getTextureLocation(Fox var1) {

@@ -92,18 +92,16 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   @Override
    public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       Level var7 = var1.getLevel();
       boolean var8 = var7 != null;
-      BlockState var9 = var8 ? var1.getBlockState() : Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
-      ChestType var10 = var9.hasProperty(ChestBlock.TYPE) ? var9.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
+      BlockState var9 = var8 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
+      ChestType var10 = var9.hasProperty(ChestBlock.TYPE) ? (ChestType)var9.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
       Block var11 = var9.getBlock();
-      if (var11 instanceof AbstractChestBlock) {
-         AbstractChestBlock var12 = (AbstractChestBlock)var11;
+      if (var11 instanceof AbstractChestBlock var12) {
          boolean var13 = var10 != ChestType.SINGLE;
          var3.pushPose();
-         float var14 = var9.getValue(ChestBlock.FACING).toYRot();
+         float var14 = ((Direction)var9.getValue(ChestBlock.FACING)).toYRot();
          var3.translate(0.5F, 0.5F, 0.5F);
          var3.mulPose(Axis.YP.rotationDegrees(-var14));
          var3.translate(-0.5F, -0.5F, -0.5F);

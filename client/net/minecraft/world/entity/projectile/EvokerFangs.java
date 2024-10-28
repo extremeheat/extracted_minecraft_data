@@ -1,5 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
@@ -19,7 +21,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
    public static final int ATTACK_TRIGGER_TICKS = 14;
    private int warmupDelayTicks;
    private boolean sentSpikeEvent;
-   private int lifeTicks = 22;
+   private int lifeTicks;
    private boolean clientSideAttackStarted;
    @Nullable
    private LivingEntity owner;
@@ -28,6 +30,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
 
    public EvokerFangs(EntityType<? extends EvokerFangs> var1, Level var2) {
       super(var1, var2);
+      this.lifeTicks = 22;
    }
 
    public EvokerFangs(Level var1, double var2, double var4, double var6, float var8, int var9, LivingEntity var10) {
@@ -38,7 +41,6 @@ public class EvokerFangs extends Entity implements TraceableEntity {
       this.setPos(var2, var4, var6);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
@@ -59,23 +61,22 @@ public class EvokerFangs extends Entity implements TraceableEntity {
       return this.owner;
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.warmupDelayTicks = var1.getInt("Warmup");
       if (var1.hasUUID("Owner")) {
          this.ownerUUID = var1.getUUID("Owner");
       }
+
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putInt("Warmup", this.warmupDelayTicks);
       if (this.ownerUUID != null) {
          var1.putUUID("Owner", this.ownerUUID);
       }
+
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.level().isClientSide) {
@@ -95,7 +96,11 @@ public class EvokerFangs extends Entity implements TraceableEntity {
          }
       } else if (--this.warmupDelayTicks < 0) {
          if (this.warmupDelayTicks == -8) {
-            for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(0.2, 0.0, 0.2))) {
+            List var14 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(0.2, 0.0, 0.2));
+            Iterator var15 = var14.iterator();
+
+            while(var15.hasNext()) {
+               LivingEntity var3 = (LivingEntity)var15.next();
                this.dealDamageTo(var3);
             }
          }
@@ -109,6 +114,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
             this.discard();
          }
       }
+
    }
 
    private void dealDamageTo(LivingEntity var1) {
@@ -123,28 +129,19 @@ public class EvokerFangs extends Entity implements TraceableEntity {
 
             var1.hurt(this.damageSources().indirectMagic(this, var2), 6.0F);
          }
+
       }
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       super.handleEntityEvent(var1);
       if (var1 == 4) {
          this.clientSideAttackStarted = true;
          if (!this.isSilent()) {
-            this.level()
-               .playLocalSound(
-                  this.getX(),
-                  this.getY(),
-                  this.getZ(),
-                  SoundEvents.EVOKER_FANGS_ATTACK,
-                  this.getSoundSource(),
-                  1.0F,
-                  this.random.nextFloat() * 0.2F + 0.85F,
-                  false
-               );
+            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.EVOKER_FANGS_ATTACK, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.2F + 0.85F, false);
          }
       }
+
    }
 
    public float getAnimationProgress(float var1) {
@@ -154,5 +151,11 @@ public class EvokerFangs extends Entity implements TraceableEntity {
          int var2 = this.lifeTicks - 2;
          return var2 <= 0 ? 1.0F : 1.0F - ((float)var2 - var1) / 20.0F;
       }
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public Entity getOwner() {
+      return this.getOwner();
    }
 }

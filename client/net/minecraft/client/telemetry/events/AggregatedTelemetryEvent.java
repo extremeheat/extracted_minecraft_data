@@ -34,6 +34,7 @@ public abstract class AggregatedTelemetryEvent {
          this.sendEvent(var1);
          this.sampleCount = 0;
       }
+
    }
 
    public boolean shouldTakeSample() {

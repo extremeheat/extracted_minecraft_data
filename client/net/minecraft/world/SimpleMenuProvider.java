@@ -16,12 +16,10 @@ public final class SimpleMenuProvider implements MenuProvider {
       this.title = var2;
    }
 
-   @Override
    public Component getDisplayName() {
       return this.title;
    }
 
-   @Override
    public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       return this.menuConstructor.createMenu(var1, var2, var3);
    }

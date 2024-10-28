@@ -1,7 +1,7 @@
 package net.minecraft.client.multiplayer.prediction;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class BlockStatePredictionHandler implements AutoCloseable {
-   private final Long2ObjectOpenHashMap<BlockStatePredictionHandler.ServerVerifiedState> serverVerifiedStates = new Long2ObjectOpenHashMap();
+   private final Long2ObjectOpenHashMap<ServerVerifiedState> serverVerifiedStates = new Long2ObjectOpenHashMap();
    private int currentSequenceNr;
    private boolean isPredicting;
 
@@ -19,17 +19,13 @@ public class BlockStatePredictionHandler implements AutoCloseable {
    }
 
    public void retainKnownServerState(BlockPos var1, BlockState var2, LocalPlayer var3) {
-      this.serverVerifiedStates
-         .compute(
-            var1.asLong(),
-            (var3x, var4) -> var4 != null
-                  ? var4.setSequence(this.currentSequenceNr)
-                  : new BlockStatePredictionHandler.ServerVerifiedState(this.currentSequenceNr, var2, var3.position())
-         );
+      this.serverVerifiedStates.compute(var1.asLong(), (var3x, var4) -> {
+         return var4 != null ? var4.setSequence(this.currentSequenceNr) : new ServerVerifiedState(this.currentSequenceNr, var2, var3.position());
+      });
    }
 
    public boolean updateKnownServerState(BlockPos var1, BlockState var2) {
-      BlockStatePredictionHandler.ServerVerifiedState var3 = (BlockStatePredictionHandler.ServerVerifiedState)this.serverVerifiedStates.get(var1.asLong());
+      ServerVerifiedState var3 = (ServerVerifiedState)this.serverVerifiedStates.get(var1.asLong());
       if (var3 == null) {
          return false;
       } else {
@@ -42,14 +38,15 @@ public class BlockStatePredictionHandler implements AutoCloseable {
       ObjectIterator var3 = this.serverVerifiedStates.long2ObjectEntrySet().iterator();
 
       while(var3.hasNext()) {
-         Entry var4 = (Entry)var3.next();
-         BlockStatePredictionHandler.ServerVerifiedState var5 = (BlockStatePredictionHandler.ServerVerifiedState)var4.getValue();
+         Long2ObjectMap.Entry var4 = (Long2ObjectMap.Entry)var3.next();
+         ServerVerifiedState var5 = (ServerVerifiedState)var4.getValue();
          if (var5.sequence <= var1) {
             BlockPos var6 = BlockPos.of(var4.getLongKey());
             var3.remove();
             var2.syncBlockState(var6, var5.blockState, var5.playerPos);
          }
       }
+
    }
 
    public BlockStatePredictionHandler startPredicting() {
@@ -58,7 +55,6 @@ public class BlockStatePredictionHandler implements AutoCloseable {
       return this;
    }
 
-   @Override
    public void close() {
       this.isPredicting = false;
    }
@@ -83,7 +79,7 @@ public class BlockStatePredictionHandler implements AutoCloseable {
          this.playerPos = var3;
       }
 
-      BlockStatePredictionHandler.ServerVerifiedState setSequence(int var1) {
+      ServerVerifiedState setSequence(int var1) {
          this.sequence = var1;
          return this;
       }

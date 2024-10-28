@@ -12,79 +12,81 @@ public class Button extends AbstractButton {
    public static final int BIG_WIDTH = 200;
    public static final int DEFAULT_HEIGHT = 20;
    public static final int DEFAULT_SPACING = 8;
-   protected static final Button.CreateNarration DEFAULT_NARRATION = var0 -> var0.get();
-   protected final Button.OnPress onPress;
-   protected final Button.CreateNarration createNarration;
+   protected static final CreateNarration DEFAULT_NARRATION = (var0) -> {
+      return (MutableComponent)var0.get();
+   };
+   protected final OnPress onPress;
+   protected final CreateNarration createNarration;
 
-   public static Button.Builder builder(Component var0, Button.OnPress var1) {
-      return new Button.Builder(var0, var1);
+   public static Builder builder(Component var0, OnPress var1) {
+      return new Builder(var0, var1);
    }
 
-   protected Button(int var1, int var2, int var3, int var4, Component var5, Button.OnPress var6, Button.CreateNarration var7) {
+   protected Button(int var1, int var2, int var3, int var4, Component var5, OnPress var6, CreateNarration var7) {
       super(var1, var2, var3, var4, var5);
       this.onPress = var6;
       this.createNarration = var7;
    }
 
-   @Override
    public void onPress() {
       this.onPress.onPress(this);
    }
 
-   @Override
    protected MutableComponent createNarrationMessage() {
-      return this.createNarration.createNarrationMessage(() -> super.createNarrationMessage());
+      return this.createNarration.createNarrationMessage(() -> {
+         return super.createNarrationMessage();
+      });
    }
 
-   @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
       this.defaultButtonNarrationText(var1);
    }
 
    public static class Builder {
       private final Component message;
-      private final Button.OnPress onPress;
+      private final OnPress onPress;
       @Nullable
       private Tooltip tooltip;
       private int x;
       private int y;
       private int width = 150;
       private int height = 20;
-      private Button.CreateNarration createNarration = Button.DEFAULT_NARRATION;
+      private CreateNarration createNarration;
 
-      public Builder(Component var1, Button.OnPress var2) {
+      public Builder(Component var1, OnPress var2) {
          super();
+         this.createNarration = Button.DEFAULT_NARRATION;
          this.message = var1;
          this.onPress = var2;
       }
 
-      public Button.Builder pos(int var1, int var2) {
+      public Builder pos(int var1, int var2) {
          this.x = var1;
          this.y = var2;
          return this;
       }
 
-      public Button.Builder width(int var1) {
+      public Builder width(int var1) {
          this.width = var1;
          return this;
       }
 
-      public Button.Builder size(int var1, int var2) {
+      public Builder size(int var1, int var2) {
          this.width = var1;
          this.height = var2;
          return this;
       }
 
-      public Button.Builder bounds(int var1, int var2, int var3, int var4) {
+      public Builder bounds(int var1, int var2, int var3, int var4) {
          return this.pos(var1, var2).size(var3, var4);
       }
 
-      public Button.Builder tooltip(@Nullable Tooltip var1) {
+      public Builder tooltip(@Nullable Tooltip var1) {
          this.tooltip = var1;
          return this;
       }
 
-      public Button.Builder createNarration(Button.CreateNarration var1) {
+      public Builder createNarration(CreateNarration var1) {
          this.createNarration = var1;
          return this;
       }
@@ -96,11 +98,11 @@ public class Button extends AbstractButton {
       }
    }
 
-   public interface CreateNarration {
-      MutableComponent createNarrationMessage(Supplier<MutableComponent> var1);
-   }
-
    public interface OnPress {
       void onPress(Button var1);
+   }
+
+   public interface CreateNarration {
+      MutableComponent createNarrationMessage(Supplier<MutableComponent> var1);
    }
 }

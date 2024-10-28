@@ -21,10 +21,10 @@ class PlayerScores {
    }
 
    public Score getOrCreate(Objective var1, Consumer<Score> var2) {
-      return (Score)this.scores.computeIfAbsent(var1, var1x -> {
-         Score var2xx = new Score();
-         var2.accept(var2xx);
-         return var2xx;
+      return (Score)this.scores.computeIfAbsent(var1, (var1x) -> {
+         Score var2x = new Score();
+         var2.accept(var2x);
+         return var2x;
       });
    }
 
@@ -38,7 +38,9 @@ class PlayerScores {
 
    public Object2IntMap<Objective> listScores() {
       Object2IntOpenHashMap var1 = new Object2IntOpenHashMap();
-      this.scores.forEach((var1x, var2) -> var1.put(var1x, var2.value()));
+      this.scores.forEach((var1x, var2) -> {
+         var1.put(var1x, var2.value());
+      });
       return var1;
    }
 

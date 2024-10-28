@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -47,15 +48,16 @@ public class MultiPart implements UnbakedModel {
 
    public Set<MultiVariant> getMultiVariants() {
       HashSet var1 = Sets.newHashSet();
+      Iterator var2 = this.selectors.iterator();
 
-      for(Selector var3 : this.selectors) {
+      while(var2.hasNext()) {
+         Selector var3 = (Selector)var2.next();
          var1.add(var3.getVariant());
       }
 
       return var1;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -67,27 +69,29 @@ public class MultiPart implements UnbakedModel {
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.definition, this.selectors);
+      return Objects.hash(new Object[]{this.definition, this.selectors});
    }
 
-   @Override
    public Collection<ResourceLocation> getDependencies() {
-      return this.getSelectors().stream().flatMap(var0 -> var0.getVariant().getDependencies().stream()).collect(Collectors.toSet());
+      return (Collection)this.getSelectors().stream().flatMap((var0) -> {
+         return var0.getVariant().getDependencies().stream();
+      }).collect(Collectors.toSet());
    }
 
-   @Override
    public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
-      this.getSelectors().forEach(var1x -> var1x.getVariant().resolveParents(var1));
+      this.getSelectors().forEach((var1x) -> {
+         var1x.getVariant().resolveParents(var1);
+      });
    }
 
    @Nullable
-   @Override
    public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
       MultiPartBakedModel.Builder var5 = new MultiPartBakedModel.Builder();
+      Iterator var6 = this.getSelectors().iterator();
 
-      for(Selector var7 : this.getSelectors()) {
+      while(var6.hasNext()) {
+         Selector var7 = (Selector)var6.next();
          BakedModel var8 = var7.getVariant().bake(var1, var2, var3, var4);
          if (var8 != null) {
             var5.add(var7.getPredicate(this.definition), var8);
@@ -111,12 +115,19 @@ public class MultiPart implements UnbakedModel {
 
       private List<Selector> getSelectors(JsonDeserializationContext var1, JsonArray var2) {
          ArrayList var3 = Lists.newArrayList();
+         Iterator var4 = var2.iterator();
 
-         for(JsonElement var5 : var2) {
+         while(var4.hasNext()) {
+            JsonElement var5 = (JsonElement)var4.next();
             var3.add((Selector)var1.deserialize(var5, Selector.class));
          }
 
          return var3;
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

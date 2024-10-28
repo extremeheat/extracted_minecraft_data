@@ -35,6 +35,7 @@ public class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
 
          this.deflater.reset();
       }
+
    }
 
    public int getThreshold() {
@@ -43,5 +44,10 @@ public class CompressionEncoder extends MessageToByteEncoder<ByteBuf> {
 
    public void setThreshold(int var1) {
       this.threshold = var1;
+   }
+
+   // $FF: synthetic method
+   protected void encode(ChannelHandlerContext var1, Object var2, ByteBuf var3) throws Exception {
+      this.encode(var1, (ByteBuf)var2, var3);
    }
 }

@@ -20,65 +20,59 @@ import net.minecraft.world.level.material.Fluids;
 
 public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<BarrierBlock> CODEC = simpleCodec(BarrierBlock::new);
-   public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+   public static final BooleanProperty WATERLOGGED;
 
-   @Override
    public MapCodec<BarrierBlock> codec() {
       return CODEC;
    }
 
    protected BarrierBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.defaultBlockState().setValue(WATERLOGGED, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)this.defaultBlockState().setValue(WATERLOGGED, false));
    }
 
-   @Override
    protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return true;
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
-   @Override
    protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 1.0F;
    }
 
-   @Override
    protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+      if ((Boolean)var1.getValue(WATERLOGGED)) {
+         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   @Override
    protected FluidState getFluidState(BlockState var1) {
-      return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Nullable
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(WATERLOGGED, Boolean.valueOf(var1.getLevel().getFluidState(var1.getClickedPos()).getType() == Fluids.WATER));
+      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var1.getLevel().getFluidState(var1.getClickedPos()).getType() == Fluids.WATER);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(WATERLOGGED);
    }
 
-   @Override
    public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       return var1 != null && var1.isCreative() ? SimpleWaterloggedBlock.super.pickupBlock(var1, var2, var3, var4) : ItemStack.EMPTY;
    }
 
-   @Override
    public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return var1 != null && var1.isCreative() ? SimpleWaterloggedBlock.super.canPlaceLiquid(var1, var2, var3, var4, var5) : false;
+   }
+
+   static {
+      WATERLOGGED = BlockStateProperties.WATERLOGGED;
    }
 }

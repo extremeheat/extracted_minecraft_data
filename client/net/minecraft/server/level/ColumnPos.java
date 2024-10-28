@@ -3,9 +3,7 @@ package net.minecraft.server.level;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 
-public record ColumnPos(int a, int b) {
-   private final int x;
-   private final int z;
+public record ColumnPos(int x, int z) {
    private static final long COORD_BITS = 32L;
    private static final long COORD_MASK = 4294967295L;
 
@@ -41,5 +39,13 @@ public record ColumnPos(int a, int b) {
 
    public int hashCode() {
       return ChunkPos.hash(this.x, this.z);
+   }
+
+   public int x() {
+      return this.x;
+   }
+
+   public int z() {
+      return this.z;
    }
 }

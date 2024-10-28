@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.util.Iterator;
 import java.util.Set;
 
 public class Ops extends ValueObject {
@@ -22,7 +23,10 @@ public class Ops extends ValueObject {
          JsonObject var4 = var3.getAsJsonObject();
          JsonElement var5 = var4.get("ops");
          if (var5.isJsonArray()) {
-            for(JsonElement var7 : var5.getAsJsonArray()) {
+            Iterator var6 = var5.getAsJsonArray().iterator();
+
+            while(var6.hasNext()) {
+               JsonElement var7 = (JsonElement)var6.next();
                var1.ops.add(var7.getAsString());
             }
          }

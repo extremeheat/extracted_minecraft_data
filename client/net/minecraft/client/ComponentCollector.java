@@ -21,7 +21,7 @@ public class ComponentCollector {
       if (this.parts.isEmpty()) {
          return null;
       } else {
-         return this.parts.size() == 1 ? this.parts.get(0) : FormattedText.composite(this.parts);
+         return this.parts.size() == 1 ? (FormattedText)this.parts.get(0) : FormattedText.composite(this.parts);
       }
    }
 

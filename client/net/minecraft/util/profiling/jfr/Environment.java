@@ -19,4 +19,9 @@ public enum Environment {
    public String getDescription() {
       return this.description;
    }
+
+   // $FF: synthetic method
+   private static Environment[] $values() {
+      return new Environment[]{CLIENT, SERVER};
+   }
 }

@@ -12,6 +12,7 @@ import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
 import org.slf4j.Logger;
@@ -50,10 +51,8 @@ public class ArgumentUtils {
       serializeCap(var0, var1.type(), var1);
    }
 
-   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void serializeCap(
-      JsonObject var0, ArgumentTypeInfo<A, T> var1, ArgumentTypeInfo.Template<A> var2
-   ) {
-      var1.serializeToJson((T)var2, var0);
+   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void serializeCap(JsonObject var0, ArgumentTypeInfo<A, T> var1, ArgumentTypeInfo.Template<A> var2) {
+      var1.serializeToJson(var2, var0);
    }
 
    private static <T extends ArgumentType<?>> void serializeArgumentToJson(JsonObject var0, T var1) {
@@ -65,17 +64,17 @@ public class ArgumentUtils {
       if (var3.size() > 0) {
          var0.add("properties", var3);
       }
+
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static <S> JsonObject serializeNodeToJson(CommandDispatcher<S> var0, CommandNode<S> var1) {
       JsonObject var2 = new JsonObject();
       if (var1 instanceof RootCommandNode) {
          var2.addProperty("type", "root");
       } else if (var1 instanceof LiteralCommandNode) {
          var2.addProperty("type", "literal");
-      } else if (var1 instanceof ArgumentCommandNode var3) {
+      } else if (var1 instanceof ArgumentCommandNode) {
+         ArgumentCommandNode var3 = (ArgumentCommandNode)var1;
          serializeArgumentToJson(var2, var3.getType());
       } else {
          LOGGER.error("Could not serialize node {} ({})!", var1, var1.getClass());
@@ -83,8 +82,10 @@ public class ArgumentUtils {
       }
 
       JsonObject var8 = new JsonObject();
+      Iterator var4 = var1.getChildren().iterator();
 
-      for(CommandNode var5 : var1.getChildren()) {
+      while(var4.hasNext()) {
+         CommandNode var5 = (CommandNode)var4.next();
          var8.add(var5.getName(), serializeNodeToJson(var0, var5));
       }
 
@@ -100,8 +101,10 @@ public class ArgumentUtils {
          Collection var9 = var0.getPath(var1.getRedirect());
          if (!var9.isEmpty()) {
             JsonArray var10 = new JsonArray();
+            Iterator var6 = var9.iterator();
 
-            for(String var7 : var9) {
+            while(var6.hasNext()) {
+               String var7 = (String)var6.next();
                var10.add(var7);
             }
 
@@ -119,19 +122,21 @@ public class ArgumentUtils {
       return var2;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static <T> void findUsedArgumentTypes(CommandNode<T> var0, Set<ArgumentType<?>> var1, Set<CommandNode<T>> var2) {
       if (var2.add(var0)) {
-         if (var0 instanceof ArgumentCommandNode var3) {
+         if (var0 instanceof ArgumentCommandNode) {
+            ArgumentCommandNode var3 = (ArgumentCommandNode)var0;
             var1.add(var3.getType());
          }
 
-         var0.getChildren().forEach(var2x -> findUsedArgumentTypes(var2x, var1, var2));
+         var0.getChildren().forEach((var2x) -> {
+            findUsedArgumentTypes(var2x, var1, var2);
+         });
          CommandNode var4 = var0.getRedirect();
          if (var4 != null) {
             findUsedArgumentTypes(var4, var1, var2);
          }
+
       }
    }
 }

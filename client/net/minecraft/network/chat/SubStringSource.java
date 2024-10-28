@@ -31,12 +31,12 @@ public class SubStringSource {
          return ImmutableList.of();
       } else {
          ArrayList var4 = Lists.newArrayList();
-         Style var5 = this.charStyles.get(var1);
+         Style var5 = (Style)this.charStyles.get(var1);
          int var6 = var1;
 
          for(int var7 = 1; var7 < var2; ++var7) {
             int var8 = var1 + var7;
-            Style var9 = this.charStyles.get(var8);
+            Style var9 = (Style)this.charStyles.get(var8);
             if (!var9.equals(var5)) {
                String var10 = this.plainText.substring(var6, var8);
                var4.add(var3 ? FormattedCharSequence.backward(var10, var5, this.reverseCharModifier) : FormattedCharSequence.forward(var10, var5));
@@ -50,19 +50,23 @@ public class SubStringSource {
             var4.add(var3 ? FormattedCharSequence.backward(var11, var5, this.reverseCharModifier) : FormattedCharSequence.forward(var11, var5));
          }
 
-         return (List<FormattedCharSequence>)(var3 ? Lists.reverse(var4) : var4);
+         return (List)(var3 ? Lists.reverse(var4) : var4);
       }
    }
 
    public static SubStringSource create(FormattedText var0) {
-      return create(var0, var0x -> var0x, var0x -> var0x);
+      return create(var0, (var0x) -> {
+         return var0x;
+      }, (var0x) -> {
+         return var0x;
+      });
    }
 
    public static SubStringSource create(FormattedText var0, Int2IntFunction var1, UnaryOperator<String> var2) {
       StringBuilder var3 = new StringBuilder();
       ArrayList var4 = Lists.newArrayList();
       var0.visit((var2x, var3x) -> {
-         StringDecomposer.iterateFormatted(var3x, var2x, (var2xx, var3xx, var4x) -> {
+         StringDecomposer.iterateFormatted(var3x, var2x, (var2, var3xx, var4x) -> {
             var3.appendCodePoint(var4x);
             int var5 = Character.charCount(var4x);
 
@@ -74,6 +78,6 @@ public class SubStringSource {
          });
          return Optional.empty();
       }, Style.EMPTY);
-      return new SubStringSource(var2.apply(var3.toString()), var4, var1);
+      return new SubStringSource((String)var2.apply(var3.toString()), var4, var1);
    }
 }

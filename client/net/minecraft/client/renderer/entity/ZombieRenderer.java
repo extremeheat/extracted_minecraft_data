@@ -11,6 +11,6 @@ public class ZombieRenderer extends AbstractZombieRenderer<Zombie, ZombieModel<Z
    }
 
    public ZombieRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4) {
-      super(var1, new ZombieModel<>(var1.bakeLayer(var2)), new ZombieModel<>(var1.bakeLayer(var3)), new ZombieModel<>(var1.bakeLayer(var4)));
+      super(var1, new ZombieModel(var1.bakeLayer(var2)), new ZombieModel(var1.bakeLayer(var3)), new ZombieModel(var1.bakeLayer(var4)));
    }
 }

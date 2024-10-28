@@ -10,9 +10,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.block.Block;
 
 public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEventPacket> STREAM_CODEC = Packet.codec(
-      ClientboundBlockEventPacket::write, ClientboundBlockEventPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEventPacket> STREAM_CODEC = Packet.codec(ClientboundBlockEventPacket::write, ClientboundBlockEventPacket::new);
    private final BlockPos pos;
    private final int b0;
    private final int b1;
@@ -31,7 +29,7 @@ public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListe
       this.pos = var1.readBlockPos();
       this.b0 = var1.readUnsignedByte();
       this.b1 = var1.readUnsignedByte();
-      this.block = ByteBufCodecs.registry(Registries.BLOCK).decode(var1);
+      this.block = (Block)ByteBufCodecs.registry(Registries.BLOCK).decode(var1);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -41,7 +39,6 @@ public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListe
       ByteBufCodecs.registry(Registries.BLOCK).encode(var1, this.block);
    }
 
-   @Override
    public PacketType<ClientboundBlockEventPacket> type() {
       return GamePacketTypes.CLIENTBOUND_BLOCK_EVENT;
    }

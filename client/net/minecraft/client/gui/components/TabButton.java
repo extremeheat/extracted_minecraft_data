@@ -11,15 +11,11 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 
 public class TabButton extends AbstractWidget {
-   private static final WidgetSprites SPRITES = new WidgetSprites(
-      new ResourceLocation("widget/tab_selected"),
-      new ResourceLocation("widget/tab"),
-      new ResourceLocation("widget/tab_selected_highlighted"),
-      new ResourceLocation("widget/tab_highlighted")
-   );
+   private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("widget/tab_selected"), new ResourceLocation("widget/tab"), new ResourceLocation("widget/tab_selected_highlighted"), new ResourceLocation("widget/tab_highlighted"));
    private static final int SELECTED_OFFSET = 3;
    private static final int TEXT_MARGIN = 1;
    private static final int UNDERLINE_HEIGHT = 1;
@@ -34,7 +30,6 @@ public class TabButton extends AbstractWidget {
       this.tab = var2;
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       RenderSystem.enableBlend();
       var1.blitSprite(SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
@@ -46,6 +41,7 @@ public class TabButton extends AbstractWidget {
          this.renderMenuBackground(var1, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
          this.renderFocusUnderline(var1, var5, var6);
       }
+
    }
 
    protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
@@ -61,18 +57,16 @@ public class TabButton extends AbstractWidget {
    }
 
    private void renderFocusUnderline(GuiGraphics var1, Font var2, int var3) {
-      int var4 = Math.min(var2.width(this.getMessage()), this.getWidth() - 4);
+      int var4 = Math.min(var2.width((FormattedText)this.getMessage()), this.getWidth() - 4);
       int var5 = this.getX() + (this.getWidth() - var4) / 2;
       int var6 = this.getY() + this.getHeight() - 2;
       var1.fill(var5, var6, var5 + var4, var6 + 1, var3);
    }
 
-   @Override
    protected void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, Component.translatable("gui.narrate.tab", this.tab.getTabTitle()));
+      var1.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.tab", this.tab.getTabTitle()));
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
    }
 

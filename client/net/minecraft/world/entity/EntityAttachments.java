@@ -2,9 +2,9 @@ package net.minecraft.world.entity;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -21,15 +21,17 @@ public class EntityAttachments {
       return builder().build(var0, var1);
    }
 
-   public static EntityAttachments.Builder builder() {
-      return new EntityAttachments.Builder();
+   public static Builder builder() {
+      return new Builder();
    }
 
    public EntityAttachments scale(float var1, float var2, float var3) {
-      EnumMap var4 = new EnumMap<>(EntityAttachment.class);
+      EnumMap var4 = new EnumMap(EntityAttachment.class);
+      Iterator var5 = this.attachments.entrySet().iterator();
 
-      for(Entry var6 : this.attachments.entrySet()) {
-         var4.put((EntityAttachment)var6.getKey(), scalePoints((List<Vec3>)var6.getValue(), var1, var2, var3));
+      while(var5.hasNext()) {
+         Map.Entry var6 = (Map.Entry)var5.next();
+         var4.put((EntityAttachment)var6.getKey(), scalePoints((List)var6.getValue(), var1, var2, var3));
       }
 
       return new EntityAttachments(var4);
@@ -37,8 +39,10 @@ public class EntityAttachments {
 
    private static List<Vec3> scalePoints(List<Vec3> var0, float var1, float var2, float var3) {
       ArrayList var4 = new ArrayList(var0.size());
+      Iterator var5 = var0.iterator();
 
-      for(Vec3 var6 : var0) {
+      while(var5.hasNext()) {
+         Vec3 var6 = (Vec3)var5.next();
          var4.add(var6.multiply((double)var1, (double)var2, (double)var3));
       }
 
@@ -47,23 +51,24 @@ public class EntityAttachments {
 
    @Nullable
    public Vec3 getNullable(EntityAttachment var1, int var2, float var3) {
-      List var4 = this.attachments.get(var1);
+      List var4 = (List)this.attachments.get(var1);
       return var2 >= 0 && var2 < var4.size() ? transformPoint((Vec3)var4.get(var2), var3) : null;
    }
 
    public Vec3 get(EntityAttachment var1, int var2, float var3) {
       Vec3 var4 = this.getNullable(var1, var2, var3);
       if (var4 == null) {
-         throw new IllegalStateException("Had no attachment point of type: " + var1 + " for index: " + var2);
+         String var10002 = String.valueOf(var1);
+         throw new IllegalStateException("Had no attachment point of type: " + var10002 + " for index: " + var2);
       } else {
          return var4;
       }
    }
 
    public Vec3 getClamped(EntityAttachment var1, int var2, float var3) {
-      List var4 = this.attachments.get(var1);
+      List var4 = (List)this.attachments.get(var1);
       if (var4.isEmpty()) {
-         throw new IllegalStateException("Had no attachment points of type: " + var1);
+         throw new IllegalStateException("Had no attachment points of type: " + String.valueOf(var1));
       } else {
          Vec3 var5 = (Vec3)var4.get(Mth.clamp(var2, 0, var4.size() - 1));
          return transformPoint(var5, var3);
@@ -75,26 +80,31 @@ public class EntityAttachments {
    }
 
    public static class Builder {
-      private final Map<EntityAttachment, List<Vec3>> attachments = new EnumMap<>(EntityAttachment.class);
+      private final Map<EntityAttachment, List<Vec3>> attachments = new EnumMap(EntityAttachment.class);
 
       Builder() {
          super();
       }
 
-      public EntityAttachments.Builder attach(EntityAttachment var1, float var2, float var3, float var4) {
+      public Builder attach(EntityAttachment var1, float var2, float var3, float var4) {
          return this.attach(var1, new Vec3((double)var2, (double)var3, (double)var4));
       }
 
-      public EntityAttachments.Builder attach(EntityAttachment var1, Vec3 var2) {
-         this.attachments.computeIfAbsent(var1, var0 -> new ArrayList(1)).add(var2);
+      public Builder attach(EntityAttachment var1, Vec3 var2) {
+         ((List)this.attachments.computeIfAbsent(var1, (var0) -> {
+            return new ArrayList(1);
+         })).add(var2);
          return this;
       }
 
       public EntityAttachments build(float var1, float var2) {
-         EnumMap var3 = new EnumMap<>(EntityAttachment.class);
+         EnumMap var3 = new EnumMap(EntityAttachment.class);
+         EntityAttachment[] var4 = EntityAttachment.values();
+         int var5 = var4.length;
 
-         for(EntityAttachment var7 : EntityAttachment.values()) {
-            List var8 = this.attachments.get(var7);
+         for(int var6 = 0; var6 < var5; ++var6) {
+            EntityAttachment var7 = var4[var6];
+            List var8 = (List)this.attachments.get(var7);
             var3.put(var7, var8 != null ? List.copyOf(var8) : var7.createFallbackPoints(var1, var2));
          }
 

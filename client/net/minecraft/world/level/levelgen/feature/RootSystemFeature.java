@@ -17,7 +17,6 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<RootSystemConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -59,9 +58,7 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
       }
    }
 
-   private static boolean placeDirtAndTree(
-      WorldGenLevel var0, ChunkGenerator var1, RootSystemConfiguration var2, RandomSource var3, BlockPos.MutableBlockPos var4, BlockPos var5
-   ) {
+   private static boolean placeDirtAndTree(WorldGenLevel var0, ChunkGenerator var1, RootSystemConfiguration var2, RandomSource var3, BlockPos.MutableBlockPos var4, BlockPos var5) {
       for(int var6 = 0; var6 < var2.rootColumnMaxHeight; ++var6) {
          var4.move(Direction.UP);
          if (var2.allowedTreePosition.test(var0, var4) && spaceForTree(var0, var2, var4)) {
@@ -88,11 +85,14 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
       for(int var8 = var0.getY(); var8 < var1; ++var8) {
          placeRootedDirt(var2, var3, var4, var5, var6, var7.set(var5, var8, var6));
       }
+
    }
 
    private static void placeRootedDirt(WorldGenLevel var0, RootSystemConfiguration var1, RandomSource var2, int var3, int var4, BlockPos.MutableBlockPos var5) {
       int var6 = var1.rootRadius;
-      Predicate var7 = var1x -> var1x.is(var1.rootReplaceable);
+      Predicate var7 = (var1x) -> {
+         return var1x.is(var1.rootReplaceable);
+      };
 
       for(int var8 = 0; var8 < var1.rootPlacementAttempts; ++var8) {
          var5.setWithOffset(var5, var2.nextInt(var6) - var2.nextInt(var6), 0, var2.nextInt(var6) - var2.nextInt(var6));
@@ -103,6 +103,7 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
          var5.setX(var3);
          var5.setZ(var4);
       }
+
    }
 
    private static void placeRoots(WorldGenLevel var0, RootSystemConfiguration var1, RandomSource var2, BlockPos var3, BlockPos.MutableBlockPos var4) {
@@ -118,5 +119,6 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
             }
          }
       }
+
    }
 }

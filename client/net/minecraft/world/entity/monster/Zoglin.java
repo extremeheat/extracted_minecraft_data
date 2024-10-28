@@ -46,7 +46,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class Zoglin extends Monster implements Enemy, HoglinBase {
-   private static final EntityDataAccessor<Boolean> DATA_BABY_ID = SynchedEntityData.defineId(Zoglin.class, EntityDataSerializers.BOOLEAN);
+   private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    private static final int MAX_HEALTH = 40;
    private static final int ATTACK_KNOCKBACK = 1;
    private static final float KNOCKBACK_RESISTANCE = 0.6F;
@@ -58,33 +58,18 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.3F;
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.4F;
    private int attackAnimationRemainingTicks;
-   protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Zoglin>>> SENSOR_TYPES = ImmutableList.of(
-      SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS
-   );
-   protected static final ImmutableList<? extends MemoryModuleType<?>> MEMORY_TYPES = ImmutableList.of(
-      MemoryModuleType.NEAREST_LIVING_ENTITIES,
-      MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-      MemoryModuleType.NEAREST_VISIBLE_PLAYER,
-      MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER,
-      MemoryModuleType.LOOK_TARGET,
-      MemoryModuleType.WALK_TARGET,
-      MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
-      MemoryModuleType.PATH,
-      MemoryModuleType.ATTACK_TARGET,
-      MemoryModuleType.ATTACK_COOLING_DOWN
-   );
+   protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Zoglin>>> SENSOR_TYPES;
+   protected static final ImmutableList<? extends MemoryModuleType<?>> MEMORY_TYPES;
 
    public Zoglin(EntityType<? extends Zoglin> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 5;
    }
 
-   @Override
    protected Brain.Provider<Zoglin> brainProvider() {
       return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
-   @Override
    protected Brain<?> makeBrain(Dynamic<?> var1) {
       Brain var2 = this.brainProvider().makeBrain(var1);
       initCoreActivity(var2);
@@ -101,40 +86,15 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    }
 
    private static void initIdleActivity(Brain<Zoglin> var0) {
-      var0.addActivity(
-         Activity.IDLE,
-         10,
-         ImmutableList.of(
-            StartAttacking.create(Zoglin::findNearestValidAttackTarget),
-            SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)),
-            new RunOne(
-               ImmutableList.of(
-                  Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)
-               )
-            )
-         )
-      );
+      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create(Zoglin::findNearestValidAttackTarget), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
    private static void initFightActivity(Brain<Zoglin> var0) {
-      var0.addActivityAndRemoveMemoryWhenStopped(
-         Activity.FIGHT,
-         10,
-         ImmutableList.of(
-            SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F),
-            BehaviorBuilder.triggerIf(Zoglin::isAdult, MeleeAttack.create(40)),
-            BehaviorBuilder.triggerIf(Zoglin::isBaby, MeleeAttack.create(15)),
-            StopAttackingIfTargetInvalid.create()
-         ),
-         MemoryModuleType.ATTACK_TARGET
-      );
+      var0.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), BehaviorBuilder.triggerIf(Zoglin::isAdult, MeleeAttack.create(40)), BehaviorBuilder.triggerIf(Zoglin::isBaby, MeleeAttack.create(15)), StopAttackingIfTargetInvalid.create()), MemoryModuleType.ATTACK_TARGET);
    }
 
    private Optional<? extends LivingEntity> findNearestValidAttackTarget() {
-      return this.getBrain()
-         .getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-         .orElse(NearestVisibleLivingEntities.empty())
-         .findClosest(this::isTargetable);
+      return ((NearestVisibleLivingEntities)this.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest(this::isTargetable);
    }
 
    private boolean isTargetable(LivingEntity var1) {
@@ -142,34 +102,27 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       return var2 != EntityType.ZOGLIN && var2 != EntityType.CREEPER && Sensor.isEntityAttackable(this, var1);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_BABY_ID, false);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       super.onSyncedDataUpdated(var1);
       if (DATA_BABY_ID.equals(var1)) {
          this.refreshDimensions();
       }
+
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes()
-         .add(Attributes.MAX_HEALTH, 40.0)
-         .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
-         .add(Attributes.KNOCKBACK_RESISTANCE, 0.6000000238418579)
-         .add(Attributes.ATTACK_KNOCKBACK, 1.0)
-         .add(Attributes.ATTACK_DAMAGE, 6.0);
+      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 40.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.KNOCKBACK_RESISTANCE, 0.6000000238418579).add(Attributes.ATTACK_KNOCKBACK, 1.0).add(Attributes.ATTACK_DAMAGE, 6.0);
    }
 
    public boolean isAdult() {
       return !this.isBaby();
    }
 
-   @Override
    public boolean doHurtTarget(Entity var1) {
       if (!(var1 instanceof LivingEntity)) {
          return false;
@@ -181,26 +134,25 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       }
    }
 
-   @Override
    public boolean canBeLeashed(Player var1) {
       return !this.isLeashed();
    }
 
-   @Override
    protected void blockedByShield(LivingEntity var1) {
       if (!this.isBaby()) {
          HoglinBase.throwTarget(this, var1);
       }
+
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       boolean var3 = super.hurt(var1, var2);
       if (this.level().isClientSide) {
          return false;
-      } else if (var3 && var1.getEntity() instanceof LivingEntity var4) {
-         if (this.canAttack((LivingEntity)var4) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, (LivingEntity)var4, 4.0)) {
-            this.setAttackTarget((LivingEntity)var4);
+      } else if (var3 && var1.getEntity() instanceof LivingEntity) {
+         LivingEntity var4 = (LivingEntity)var1.getEntity();
+         if (this.canAttack(var4) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, var4, 4.0)) {
+            this.setAttackTarget(var4);
          }
 
          return var3;
@@ -214,15 +166,14 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       this.brain.setMemoryWithExpiry(MemoryModuleType.ATTACK_TARGET, var1, 200L);
    }
 
-   @Override
    public Brain<Zoglin> getBrain() {
       return super.getBrain();
    }
 
    protected void updateActivity() {
-      Activity var1 = this.brain.getActiveNonCoreActivity().orElse(null);
+      Activity var1 = (Activity)this.brain.getActiveNonCoreActivity().orElse((Object)null);
       this.brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.IDLE));
-      Activity var2 = this.brain.getActiveNonCoreActivity().orElse(null);
+      Activity var2 = (Activity)this.brain.getActiveNonCoreActivity().orElse((Object)null);
       if (var2 == Activity.FIGHT && var1 != Activity.FIGHT) {
          this.playAngrySound();
       }
@@ -230,7 +181,6 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       this.setAggressive(this.brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
    }
 
-   @Override
    protected void customServerAiStep() {
       this.level().getProfiler().push("zoglinBrain");
       this.getBrain().tick((ServerLevel)this.level(), this);
@@ -238,20 +188,18 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       this.updateActivity();
    }
 
-   @Override
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
       if (!this.level().isClientSide && var1) {
          this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(0.5);
       }
+
    }
 
-   @Override
    public boolean isBaby() {
-      return this.getEntityData().get(DATA_BABY_ID);
+      return (Boolean)this.getEntityData().get(DATA_BABY_ID);
    }
 
-   @Override
    public void aiStep() {
       if (this.attackAnimationRemainingTicks > 0) {
          --this.attackAnimationRemainingTicks;
@@ -260,7 +208,6 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       super.aiStep();
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 4) {
          this.attackAnimationRemainingTicks = 10;
@@ -268,14 +215,13 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
-   @Override
    public int getAttackAnimationRemainingTicks() {
       return this.attackAnimationRemainingTicks;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       if (this.level().isClientSide) {
          return null;
@@ -284,17 +230,14 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       }
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.ZOGLIN_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.ZOGLIN_DEATH;
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.ZOGLIN_STEP, 0.15F, 1.0F);
    }
@@ -303,25 +246,30 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       this.makeSound(SoundEvents.ZOGLIN_ANGRY);
    }
 
-   @Override
    protected void sendDebugPackets() {
       super.sendDebugPackets();
       DebugPackets.sendEntityBrain(this);
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.isBaby()) {
          var1.putBoolean("IsBaby", true);
       }
+
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.getBoolean("IsBaby")) {
          this.setBaby(true);
       }
+
+   }
+
+   static {
+      DATA_BABY_ID = SynchedEntityData.defineId(Zoglin.class, EntityDataSerializers.BOOLEAN);
+      SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS);
+      MEMORY_TYPES = ImmutableList.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN);
    }
 }

@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -18,9 +17,11 @@ public class HeightmapRenamingFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.CHUNK);
       OpticFinder var2 = var1.findField("Level");
-      return this.fixTypeEverywhereTyped(
-         "HeightmapRenamingFix", var1, var2x -> var2x.updateTyped(var2, var1xx -> var1xx.update(DSL.remainderFinder(), this::fix))
-      );
+      return this.fixTypeEverywhereTyped("HeightmapRenamingFix", var1, (var2x) -> {
+         return var2x.updateTyped(var2, (var1) -> {
+            return var1.update(DSL.remainderFinder(), this::fix);
+         });
+      });
    }
 
    private Dynamic<?> fix(Dynamic<?> var1) {

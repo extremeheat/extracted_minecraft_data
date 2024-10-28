@@ -45,7 +45,7 @@ public class Resource {
    }
 
    public InputStream open() throws IOException {
-      return this.streamSupplier.get();
+      return (InputStream)this.streamSupplier.get();
    }
 
    public BufferedReader openAsReader() throws IOException {
@@ -54,7 +54,7 @@ public class Resource {
 
    public ResourceMetadata metadata() throws IOException {
       if (this.cachedMetadata == null) {
-         this.cachedMetadata = this.metadataSupplier.get();
+         this.cachedMetadata = (ResourceMetadata)this.metadataSupplier.get();
       }
 
       return this.cachedMetadata;

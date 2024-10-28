@@ -23,15 +23,16 @@ public class FoxHeldItemLayer extends RenderLayer<Fox, FoxModel<Fox>> {
       boolean var11 = var4.isSleeping();
       boolean var12 = var4.isBaby();
       var1.pushPose();
+      float var13;
       if (var12) {
-         float var13 = 0.75F;
+         var13 = 0.75F;
          var1.scale(0.75F, 0.75F, 0.75F);
          var1.translate(0.0F, 0.5F, 0.209375F);
       }
 
-      var1.translate(this.getParentModel().head.x / 16.0F, this.getParentModel().head.y / 16.0F, this.getParentModel().head.z / 16.0F);
-      float var15 = var4.getHeadRollAngle(var7);
-      var1.mulPose(Axis.ZP.rotation(var15));
+      var1.translate(((FoxModel)this.getParentModel()).head.x / 16.0F, ((FoxModel)this.getParentModel()).head.y / 16.0F, ((FoxModel)this.getParentModel()).head.z / 16.0F);
+      var13 = var4.getHeadRollAngle(var7);
+      var1.mulPose(Axis.ZP.rotation(var13));
       var1.mulPose(Axis.YP.rotationDegrees(var9));
       var1.mulPose(Axis.XP.rotationDegrees(var10));
       if (var4.isBaby()) {

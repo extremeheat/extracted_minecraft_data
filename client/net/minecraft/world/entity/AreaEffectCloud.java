@@ -6,13 +6,13 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.commands.arguments.ParticleArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -24,7 +24,9 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
@@ -33,20 +35,19 @@ import org.slf4j.Logger;
 public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int TIME_BETWEEN_APPLICATIONS = 5;
-   private static final EntityDataAccessor<Float> DATA_RADIUS = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Integer> DATA_COLOR = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Boolean> DATA_WAITING = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.BOOLEAN);
-   private static final EntityDataAccessor<ParticleOptions> DATA_PARTICLE = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.PARTICLE);
+   private static final EntityDataAccessor<Float> DATA_RADIUS;
+   private static final EntityDataAccessor<Boolean> DATA_WAITING;
+   private static final EntityDataAccessor<ParticleOptions> DATA_PARTICLE;
    private static final float MAX_RADIUS = 32.0F;
    private static final float MINIMAL_RADIUS = 0.5F;
    private static final float DEFAULT_RADIUS = 3.0F;
    public static final float DEFAULT_WIDTH = 6.0F;
    public static final float HEIGHT = 0.5F;
-   private PotionContents potionContents = PotionContents.EMPTY;
-   private final Map<Entity, Integer> victims = Maps.newHashMap();
-   private int duration = 600;
-   private int waitTime = 20;
-   private int reapplicationDelay = 20;
+   private PotionContents potionContents;
+   private final Map<Entity, Integer> victims;
+   private int duration;
+   private int waitTime;
+   private int reapplicationDelay;
    private int durationOnUse;
    private float radiusOnUse;
    private float radiusPerTick;
@@ -57,6 +58,11 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    public AreaEffectCloud(EntityType<? extends AreaEffectCloud> var1, Level var2) {
       super(var1, var2);
+      this.potionContents = PotionContents.EMPTY;
+      this.victims = Maps.newHashMap();
+      this.duration = 600;
+      this.waitTime = 20;
+      this.reapplicationDelay = 20;
       this.noPhysics = true;
    }
 
@@ -65,21 +71,19 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.setPos(var2, var4, var6);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_COLOR, 0);
       var1.define(DATA_RADIUS, 3.0F);
       var1.define(DATA_WAITING, false);
-      var1.define(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.0F, 0.0F, 0.0F));
+      var1.define(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, -1));
    }
 
    public void setRadius(float var1) {
       if (!this.level().isClientSide) {
          this.getEntityData().set(DATA_RADIUS, Mth.clamp(var1, 0.0F, 32.0F));
       }
+
    }
 
-   @Override
    public void refreshDimensions() {
       double var1 = this.getX();
       double var3 = this.getY();
@@ -89,7 +93,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    public float getRadius() {
-      return this.getEntityData().get(DATA_RADIUS);
+      return (Float)this.getEntityData().get(DATA_RADIUS);
    }
 
    public void setPotionContents(PotionContents var1) {
@@ -98,19 +102,20 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    private void updateColor() {
-      this.entityData.set(DATA_COLOR, this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor());
+      ParticleOptions var1 = (ParticleOptions)this.entityData.get(DATA_PARTICLE);
+      if (var1 instanceof ColorParticleOption var2) {
+         int var3 = this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor();
+         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(var2.getType(), var3));
+      }
+
    }
 
    public void addEffect(MobEffectInstance var1) {
       this.setPotionContents(this.potionContents.withEffectAdded(var1));
    }
 
-   public int getColor() {
-      return this.getEntityData().get(DATA_COLOR);
-   }
-
    public ParticleOptions getParticle() {
-      return this.getEntityData().get(DATA_PARTICLE);
+      return (ParticleOptions)this.getEntityData().get(DATA_PARTICLE);
    }
 
    public void setParticle(ParticleOptions var1) {
@@ -122,7 +127,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    public boolean isWaiting() {
-      return this.getEntityData().get(DATA_WAITING);
+      return (Boolean)this.getEntityData().get(DATA_WAITING);
    }
 
    public int getDuration() {
@@ -133,7 +138,6 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       this.duration = var1;
    }
 
-   @Override
    public void tick() {
       super.tick();
       boolean var1 = this.isWaiting();
@@ -160,25 +164,17 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             double var9 = this.getX() + (double)(Mth.cos(var7) * var8);
             double var11 = this.getY();
             double var13 = this.getZ() + (double)(Mth.sin(var7) * var8);
-            double var15;
-            double var17;
-            double var19;
             if (var3.getType() == ParticleTypes.ENTITY_EFFECT) {
-               int var21 = var1 && this.random.nextBoolean() ? 16777215 : this.getColor();
-               var15 = (double)((float)(var21 >> 16 & 0xFF) / 255.0F);
-               var17 = (double)((float)(var21 >> 8 & 0xFF) / 255.0F);
-               var19 = (double)((float)(var21 & 0xFF) / 255.0F);
+               if (var1 && this.random.nextBoolean()) {
+                  this.level().addAlwaysVisibleParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, -1), var9, var11, var13, 0.0, 0.0, 0.0);
+               } else {
+                  this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, 0.0, 0.0, 0.0);
+               }
             } else if (var1) {
-               var15 = 0.0;
-               var17 = 0.0;
-               var19 = 0.0;
+               this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, 0.0, 0.0, 0.0);
             } else {
-               var15 = (0.5 - this.random.nextDouble()) * 0.15;
-               var17 = 0.009999999776482582;
-               var19 = (0.5 - this.random.nextDouble()) * 0.15;
+               this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, (0.5 - this.random.nextDouble()) * 0.15, 0.009999999776482582, (0.5 - this.random.nextDouble()) * 0.15);
             }
-
-            this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, var15, var17, var19);
          }
       } else {
          if (this.tickCount >= this.waitTime + this.duration) {
@@ -186,12 +182,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             return;
          }
 
-         boolean var22 = this.tickCount < this.waitTime;
-         if (var1 != var22) {
-            this.setWaiting(var22);
+         boolean var16 = this.tickCount < this.waitTime;
+         if (var1 != var16) {
+            this.setWaiting(var16);
          }
 
-         if (var22) {
+         if (var16) {
             return;
          }
 
@@ -206,57 +202,75 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
          }
 
          if (this.tickCount % 5 == 0) {
-            this.victims.entrySet().removeIf(var1x -> this.tickCount >= var1x.getValue());
+            this.victims.entrySet().removeIf((var1x) -> {
+               return this.tickCount >= (Integer)var1x.getValue();
+            });
             if (!this.potionContents.hasEffects()) {
                this.victims.clear();
             } else {
-               ArrayList var23 = Lists.newArrayList();
+               ArrayList var17 = Lists.newArrayList();
                if (this.potionContents.potion().isPresent()) {
-                  for(MobEffectInstance var26 : this.potionContents.potion().get().value().getEffects()) {
-                     var23.add(
-                        new MobEffectInstance(
-                           var26.getEffect(), var26.mapDuration(var0 -> var0 / 4), var26.getAmplifier(), var26.isAmbient(), var26.isVisible()
-                        )
-                     );
+                  Iterator var18 = ((Potion)((Holder)this.potionContents.potion().get()).value()).getEffects().iterator();
+
+                  while(var18.hasNext()) {
+                     MobEffectInstance var20 = (MobEffectInstance)var18.next();
+                     var17.add(new MobEffectInstance(var20.getEffect(), var20.mapDuration((var0) -> {
+                        return var0 / 4;
+                     }), var20.getAmplifier(), var20.isAmbient(), var20.isVisible()));
                   }
                }
 
-               var23.addAll(this.potionContents.customEffects());
-               List var25 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
-               if (!var25.isEmpty()) {
-                  for(LivingEntity var28 : var25) {
-                     if (!this.victims.containsKey(var28) && var28.isAffectedByPotions()) {
-                        double var29 = var28.getX() - this.getX();
-                        double var10 = var28.getZ() - this.getZ();
-                        double var12 = var29 * var29 + var10 * var10;
-                        if (var12 <= (double)(var2 * var2)) {
-                           this.victims.put(var28, this.tickCount + this.reapplicationDelay);
+               var17.addAll(this.potionContents.customEffects());
+               List var19 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
+               if (!var19.isEmpty()) {
+                  Iterator var21 = var19.iterator();
 
-                           for(MobEffectInstance var30 : var23) {
-                              if (var30.getEffect().value().isInstantenous()) {
-                                 var30.getEffect().value().applyInstantenousEffect(this, this.getOwner(), var28, var30.getAmplifier(), 0.5);
-                              } else {
-                                 var28.addEffect(new MobEffectInstance(var30), this);
-                              }
-                           }
-
-                           if (this.radiusOnUse != 0.0F) {
-                              var2 += this.radiusOnUse;
-                              if (var2 < 0.5F) {
-                                 this.discard();
+                  while(true) {
+                     double var12;
+                     LivingEntity var22;
+                     do {
+                        do {
+                           do {
+                              if (!var21.hasNext()) {
                                  return;
                               }
 
-                              this.setRadius(var2);
-                           }
+                              var22 = (LivingEntity)var21.next();
+                           } while(this.victims.containsKey(var22));
+                        } while(!var22.isAffectedByPotions());
 
-                           if (this.durationOnUse != 0) {
-                              this.duration += this.durationOnUse;
-                              if (this.duration <= 0) {
-                                 this.discard();
-                                 return;
-                              }
-                           }
+                        double var23 = var22.getX() - this.getX();
+                        double var10 = var22.getZ() - this.getZ();
+                        var12 = var23 * var23 + var10 * var10;
+                     } while(!(var12 <= (double)(var2 * var2)));
+
+                     this.victims.put(var22, this.tickCount + this.reapplicationDelay);
+                     Iterator var14 = var17.iterator();
+
+                     while(var14.hasNext()) {
+                        MobEffectInstance var15 = (MobEffectInstance)var14.next();
+                        if (((MobEffect)var15.getEffect().value()).isInstantenous()) {
+                           ((MobEffect)var15.getEffect().value()).applyInstantenousEffect(this, this.getOwner(), var22, var15.getAmplifier(), 0.5);
+                        } else {
+                           var22.addEffect(new MobEffectInstance(var15), this);
+                        }
+                     }
+
+                     if (this.radiusOnUse != 0.0F) {
+                        var2 += this.radiusOnUse;
+                        if (var2 < 0.5F) {
+                           this.discard();
+                           return;
+                        }
+
+                        this.setRadius(var2);
+                     }
+
+                     if (this.durationOnUse != 0) {
+                        this.duration += this.durationOnUse;
+                        if (this.duration <= 0) {
+                           this.discard();
+                           return;
                         }
                      }
                   }
@@ -264,6 +278,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             }
          }
       }
+
    }
 
    public float getRadiusOnUse() {
@@ -315,7 +330,6 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       return this.owner;
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.tickCount = var1.getInt("Age");
       this.duration = var1.getInt("Duration");
@@ -338,14 +352,13 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       }
 
       if (var1.contains("potion_contents")) {
-         PotionContents.CODEC
-            .parse(NbtOps.INSTANCE, var1.get("potion_contents"))
-            .resultOrPartial(var0 -> LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0))
-            .ifPresent(this::setPotionContents);
+         PotionContents.CODEC.parse(NbtOps.INSTANCE, var1.get("potion_contents")).resultOrPartial((var0) -> {
+            LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0);
+         }).ifPresent(this::setPotionContents);
       }
+
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putInt("Age", this.tickCount);
       var1.putInt("Duration", this.duration);
@@ -361,12 +374,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       }
 
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
-         Tag var2 = Util.getOrThrow(PotionContents.CODEC.encodeStart(NbtOps.INSTANCE, this.potionContents), IllegalStateException::new);
+         Tag var2 = (Tag)PotionContents.CODEC.encodeStart(NbtOps.INSTANCE, this.potionContents).getOrThrow();
          var1.put("potion_contents", var2);
       }
+
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       if (DATA_RADIUS.equals(var1)) {
          this.refreshDimensions();
@@ -375,13 +388,23 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       super.onSyncedDataUpdated(var1);
    }
 
-   @Override
    public PushReaction getPistonPushReaction() {
       return PushReaction.IGNORE;
    }
 
-   @Override
    public EntityDimensions getDimensions(Pose var1) {
       return EntityDimensions.scalable(this.getRadius() * 2.0F, 0.5F);
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public Entity getOwner() {
+      return this.getOwner();
+   }
+
+   static {
+      DATA_RADIUS = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.FLOAT);
+      DATA_WAITING = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.BOOLEAN);
+      DATA_PARTICLE = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.PARTICLE);
    }
 }

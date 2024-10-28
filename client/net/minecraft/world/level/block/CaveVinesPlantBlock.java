@@ -19,53 +19,44 @@ import net.minecraft.world.phys.BlockHitResult;
 public class CaveVinesPlantBlock extends GrowingPlantBodyBlock implements BonemealableBlock, CaveVines {
    public static final MapCodec<CaveVinesPlantBlock> CODEC = simpleCodec(CaveVinesPlantBlock::new);
 
-   @Override
    public MapCodec<CaveVinesPlantBlock> codec() {
       return CODEC;
    }
 
    public CaveVinesPlantBlock(BlockBehaviour.Properties var1) {
       super(var1, Direction.DOWN, SHAPE, false);
-      this.registerDefaultState(this.stateDefinition.any().setValue(BERRIES, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(BERRIES, false));
    }
 
-   @Override
    protected GrowingPlantHeadBlock getHeadBlock() {
       return (GrowingPlantHeadBlock)Blocks.CAVE_VINES;
    }
 
-   @Override
    protected BlockState updateHeadAfterConvertedFromBody(BlockState var1, BlockState var2) {
-      return var2.setValue(BERRIES, var1.getValue(BERRIES));
+      return (BlockState)var2.setValue(BERRIES, (Boolean)var1.getValue(BERRIES));
    }
 
-   @Override
    public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(Items.GLOW_BERRIES);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       return CaveVines.use(var4, var1, var2, var3);
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(BERRIES);
    }
 
-   @Override
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return !var3.getValue(BERRIES);
+      return !(Boolean)var3.getValue(BERRIES);
    }
 
-   @Override
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
       return true;
    }
 
-   @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      var1.setBlock(var3, var4.setValue(BERRIES, Boolean.valueOf(true)), 2);
+      var1.setBlock(var3, (BlockState)var4.setValue(BERRIES, true), 2);
    }
 }

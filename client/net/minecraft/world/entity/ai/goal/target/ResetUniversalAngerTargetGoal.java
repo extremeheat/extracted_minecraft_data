@@ -22,27 +22,23 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
       this.alertOthersOfSameType = var2;
    }
 
-   @Override
    public boolean canUse() {
       return this.mob.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER) && this.wasHurtByPlayer();
    }
 
    private boolean wasHurtByPlayer() {
-      return this.mob.getLastHurtByMob() != null
-         && this.mob.getLastHurtByMob().getType() == EntityType.PLAYER
-         && this.mob.getLastHurtByMobTimestamp() > this.lastHurtByPlayerTimestamp;
+      return this.mob.getLastHurtByMob() != null && this.mob.getLastHurtByMob().getType() == EntityType.PLAYER && this.mob.getLastHurtByMobTimestamp() > this.lastHurtByPlayerTimestamp;
    }
 
-   @Override
    public void start() {
       this.lastHurtByPlayerTimestamp = this.mob.getLastHurtByMobTimestamp();
-      this.mob.forgetCurrentTargetAndRefreshUniversalAnger();
+      ((NeutralMob)this.mob).forgetCurrentTargetAndRefreshUniversalAnger();
       if (this.alertOthersOfSameType) {
-         this.getNearbyMobsOfSameType()
-            .stream()
-            .filter(var1 -> var1 != this.mob)
-            .map(var0 -> (NeutralMob)var0)
-            .forEach(NeutralMob::forgetCurrentTargetAndRefreshUniversalAnger);
+         this.getNearbyMobsOfSameType().stream().filter((var1) -> {
+            return var1 != this.mob;
+         }).map((var0) -> {
+            return (NeutralMob)var0;
+         }).forEach(NeutralMob::forgetCurrentTargetAndRefreshUniversalAnger);
       }
 
       super.start();

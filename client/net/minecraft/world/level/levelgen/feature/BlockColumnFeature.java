@@ -11,7 +11,6 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<BlockColumnConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockColumnConfiguration var3 = (BlockColumnConfiguration)var1.config();
@@ -31,7 +30,8 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
          BlockPos.MutableBlockPos var14 = var1.origin().mutable();
          BlockPos.MutableBlockPos var9 = var14.mutable().move(var3.direction());
 
-         for(int var10 = 0; var10 < var7; ++var10) {
+         int var10;
+         for(var10 = 0; var10 < var7; ++var10) {
             if (!var3.allowedPlacement().test(var2, var9)) {
                truncate(var6, var7, var10, var3.prioritizeTip());
                break;
@@ -40,10 +40,10 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
             var9.move(var3.direction());
          }
 
-         for(int var15 = 0; var15 < var5; ++var15) {
-            int var11 = var6[var15];
+         for(var10 = 0; var10 < var5; ++var10) {
+            int var11 = var6[var10];
             if (var11 != 0) {
-               BlockColumnConfiguration.Layer var12 = (BlockColumnConfiguration.Layer)var3.layers().get(var15);
+               BlockColumnConfiguration.Layer var12 = (BlockColumnConfiguration.Layer)var3.layers().get(var10);
 
                for(int var13 = 0; var13 < var11; ++var13) {
                   var2.setBlock(var14, var12.state().getState(var4, var14), 2);
@@ -68,5 +68,6 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
          var4 -= var10;
          var0[var8] -= var10;
       }
+
    }
 }

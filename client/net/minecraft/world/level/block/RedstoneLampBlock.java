@@ -14,47 +14,48 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public class RedstoneLampBlock extends Block {
    public static final MapCodec<RedstoneLampBlock> CODEC = simpleCodec(RedstoneLampBlock::new);
-   public static final BooleanProperty LIT = RedstoneTorchBlock.LIT;
+   public static final BooleanProperty LIT;
 
-   @Override
    public MapCodec<RedstoneLampBlock> codec() {
       return CODEC;
    }
 
    public RedstoneLampBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.defaultBlockState().setValue(LIT, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
    }
 
    @Nullable
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(LIT, Boolean.valueOf(var1.getLevel().hasNeighborSignal(var1.getClickedPos())));
+      return (BlockState)this.defaultBlockState().setValue(LIT, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
    }
 
-   @Override
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
-         boolean var7 = var1.getValue(LIT);
+         boolean var7 = (Boolean)var1.getValue(LIT);
          if (var7 != var2.hasNeighborSignal(var3)) {
             if (var7) {
                var2.scheduleTick(var3, this, 4);
             } else {
-               var2.setBlock(var3, var1.cycle(LIT), 2);
+               var2.setBlock(var3, (BlockState)var1.cycle(LIT), 2);
             }
          }
+
       }
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var1.getValue(LIT) && !var2.hasNeighborSignal(var3)) {
-         var2.setBlock(var3, var1.cycle(LIT), 2);
+      if ((Boolean)var1.getValue(LIT) && !var2.hasNeighborSignal(var3)) {
+         var2.setBlock(var3, (BlockState)var1.cycle(LIT), 2);
       }
+
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(LIT);
+   }
+
+   static {
+      LIT = RedstoneTorchBlock.LIT;
    }
 }

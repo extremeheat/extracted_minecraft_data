@@ -3,7 +3,9 @@ package net.minecraft.world.entity.ai.goal;
 import com.google.common.collect.Sets;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.raid.Raid;
@@ -23,24 +25,14 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
-      return this.mob.getTarget() == null
-         && !this.mob.hasControllingPassenger()
-         && this.mob.hasActiveRaid()
-         && !this.mob.getCurrentRaid().isOver()
-         && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
+      return this.mob.getTarget() == null && !this.mob.hasControllingPassenger() && this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
    }
 
-   @Override
    public boolean canContinueToUse() {
-      return this.mob.hasActiveRaid()
-         && !this.mob.getCurrentRaid().isOver()
-         && this.mob.level() instanceof ServerLevel
-         && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
+      return this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && this.mob.level() instanceof ServerLevel && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
    }
 
-   @Override
    public void tick() {
       if (this.mob.hasActiveRaid()) {
          Raid var1 = this.mob.getCurrentRaid();
@@ -56,19 +48,23 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
             }
          }
       }
+
    }
 
    private void recruitNearby(Raid var1) {
       if (var1.isActive()) {
          HashSet var2 = Sets.newHashSet();
-         List var3 = this.mob
-            .level()
-            .getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), var1x -> !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1));
+         List var3 = this.mob.level().getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (var1x) -> {
+            return !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1);
+         });
          var2.addAll(var3);
+         Iterator var4 = var2.iterator();
 
-         for(Raider var5 : var2) {
-            var1.joinRaid(var1.getGroupsSpawned(), var5, null, true);
+         while(var4.hasNext()) {
+            Raider var5 = (Raider)var4.next();
+            var1.joinRaid(var1.getGroupsSpawned(), var5, (BlockPos)null, true);
          }
       }
+
    }
 }

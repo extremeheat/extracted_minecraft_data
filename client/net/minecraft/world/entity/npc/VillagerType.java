@@ -1,8 +1,9 @@
 package net.minecraft.world.entity.npc;
 
 import com.google.common.collect.Maps;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -20,9 +21,8 @@ public final class VillagerType {
    public static final VillagerType SNOW = register("snow");
    public static final VillagerType SWAMP = register("swamp");
    public static final VillagerType TAIGA = register("taiga");
-   public static final VillagerType POTATO = register("potato");
    private final String name;
-   private static final Map<ResourceKey<Biome>, VillagerType> BY_BIOME = Util.make(Maps.newHashMap(), var0 -> {
+   private static final Map<ResourceKey<Biome>, VillagerType> BY_BIOME = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(Biomes.BADLANDS, DESERT);
       var0.put(Biomes.DESERT, DESERT);
       var0.put(Biomes.ERODED_BADLANDS, DESERT);
@@ -52,11 +52,6 @@ public final class VillagerType {
       var0.put(Biomes.WINDSWEPT_HILLS, TAIGA);
       var0.put(Biomes.TAIGA, TAIGA);
       var0.put(Biomes.WINDSWEPT_FOREST, TAIGA);
-      var0.put(Biomes.ARBORETUM, POTATO);
-      var0.put(Biomes.FIELDS, POTATO);
-      var0.put(Biomes.HASH, POTATO);
-      var0.put(Biomes.CORRUPTION, POTATO);
-      var0.put(Biomes.WASTELAND, POTATO);
    });
 
    private VillagerType(String var1) {
@@ -64,16 +59,18 @@ public final class VillagerType {
       this.name = var1;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }
 
    private static VillagerType register(String var0) {
-      return Registry.register(BuiltInRegistries.VILLAGER_TYPE, new ResourceLocation(var0), new VillagerType(var0));
+      return (VillagerType)Registry.register(BuiltInRegistries.VILLAGER_TYPE, (ResourceLocation)(new ResourceLocation(var0)), new VillagerType(var0));
    }
 
    public static VillagerType byBiome(Holder<Biome> var0) {
-      return var0.unwrapKey().map(BY_BIOME::get).orElse(PLAINS);
+      Optional var10000 = var0.unwrapKey();
+      Map var10001 = BY_BIOME;
+      Objects.requireNonNull(var10001);
+      return (VillagerType)var10000.map(var10001::get).orElse(PLAINS);
    }
 }

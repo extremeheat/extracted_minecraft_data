@@ -2,27 +2,19 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
-public record FluidPredicate(Optional<HolderSet<Fluid>> b, Optional<StatePropertiesPredicate> c) {
-   private final Optional<HolderSet<Fluid>> fluids;
-   private final Optional<StatePropertiesPredicate> properties;
-   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.FLUID), "fluids").forGetter(FluidPredicate::fluids),
-               ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(FluidPredicate::properties)
-            )
-            .apply(var0, FluidPredicate::new)
-   );
+public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePropertiesPredicate> properties) {
+   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)).apply(var0, FluidPredicate::new);
+   });
 
    public FluidPredicate(Optional<HolderSet<Fluid>> var1, Optional<StatePropertiesPredicate> var2) {
       super();
@@ -35,12 +27,20 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> b, Optional<StatePropert
          return false;
       } else {
          FluidState var3 = var1.getFluidState(var2);
-         if (this.fluids.isPresent() && !var3.is(this.fluids.get())) {
+         if (this.fluids.isPresent() && !var3.is((HolderSet)this.fluids.get())) {
             return false;
          } else {
             return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(var3);
          }
       }
+   }
+
+   public Optional<HolderSet<Fluid>> fluids() {
+      return this.fluids;
+   }
+
+   public Optional<StatePropertiesPredicate> properties() {
+      return this.properties;
    }
 
    public static class Builder {
@@ -51,21 +51,21 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> b, Optional<StatePropert
          super();
       }
 
-      public static FluidPredicate.Builder fluid() {
-         return new FluidPredicate.Builder();
+      public static Builder fluid() {
+         return new Builder();
       }
 
-      public FluidPredicate.Builder of(Fluid var1) {
+      public Builder of(Fluid var1) {
          this.fluids = Optional.of(HolderSet.direct(var1.builtInRegistryHolder()));
          return this;
       }
 
-      public FluidPredicate.Builder of(HolderSet<Fluid> var1) {
+      public Builder of(HolderSet<Fluid> var1) {
          this.fluids = Optional.of(var1);
          return this;
       }
 
-      public FluidPredicate.Builder setProperties(StatePropertiesPredicate var1) {
+      public Builder setProperties(StatePropertiesPredicate var1) {
          this.properties = Optional.of(var1);
          return this;
       }

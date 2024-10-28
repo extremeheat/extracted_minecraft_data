@@ -30,12 +30,14 @@ public class VillagerPanicTrigger extends Behavior<Villager> {
 
          var5.setActiveActivityIfPossible(Activity.PANIC);
       }
+
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       if (var3 % 100L == 0L) {
          var2.spawnGolemIfNeeded(var1, var3, 3);
       }
+
    }
 
    public static boolean hasHostile(LivingEntity var0) {
@@ -44,5 +46,10 @@ public class VillagerPanicTrigger extends Behavior<Villager> {
 
    public static boolean isHurt(LivingEntity var0) {
       return var0.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

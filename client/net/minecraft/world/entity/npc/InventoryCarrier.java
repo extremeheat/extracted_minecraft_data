@@ -31,12 +31,14 @@ public interface InventoryCarrier {
             var3.setCount(var7.getCount());
          }
       }
+
    }
 
    default void readInventoryFromTag(CompoundTag var1, HolderLookup.Provider var2) {
       if (var1.contains("Inventory", 9)) {
          this.getInventory().fromTag(var1.getList("Inventory", 10), var2);
       }
+
    }
 
    default void writeInventoryToTag(CompoundTag var1, HolderLookup.Provider var2) {

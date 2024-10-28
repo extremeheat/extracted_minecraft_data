@@ -32,6 +32,7 @@ public class CyclingSlotBackground {
       if (!this.icons.isEmpty() && ++this.tick % 30 == 0) {
          this.iconIndex = (this.iconIndex + 1) % this.icons.size();
       }
+
    }
 
    public void render(AbstractContainerMenu var1, GuiGraphics var2, float var3, int var4, int var5) {
@@ -41,15 +42,15 @@ public class CyclingSlotBackground {
          float var8 = var7 ? this.getIconTransitionTransparency(var3) : 1.0F;
          if (var8 < 1.0F) {
             int var9 = Math.floorMod(this.iconIndex - 1, this.icons.size());
-            this.renderIcon(var6, this.icons.get(var9), 1.0F - var8, var2, var4, var5);
+            this.renderIcon(var6, (ResourceLocation)this.icons.get(var9), 1.0F - var8, var2, var4, var5);
          }
 
-         this.renderIcon(var6, this.icons.get(this.iconIndex), var8, var2, var4, var5);
+         this.renderIcon(var6, (ResourceLocation)this.icons.get(this.iconIndex), var8, var2, var4, var5);
       }
    }
 
    private void renderIcon(Slot var1, ResourceLocation var2, float var3, GuiGraphics var4, int var5, int var6) {
-      TextureAtlasSprite var7 = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(var2);
+      TextureAtlasSprite var7 = (TextureAtlasSprite)Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(var2);
       var4.blit(var5 + var1.x, var6 + var1.y, 0, 16, 16, var7, 1.0F, 1.0F, 1.0F, var3);
    }
 

@@ -11,19 +11,20 @@ public class MultipliedFloats implements SampledFloat {
       this.values = var1;
    }
 
-   @Override
    public float sample(RandomSource var1) {
       float var2 = 1.0F;
+      SampledFloat[] var3 = this.values;
+      int var4 = var3.length;
 
-      for(SampledFloat var6 : this.values) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         SampledFloat var6 = var3[var5];
          var2 *= var6.sample(var1);
       }
 
       return var2;
    }
 
-   @Override
    public String toString() {
-      return "MultipliedFloats" + Arrays.toString((Object[])this.values);
+      return "MultipliedFloats" + Arrays.toString(this.values);
    }
 }

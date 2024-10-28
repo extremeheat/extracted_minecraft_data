@@ -23,9 +23,7 @@ public class RealmsPopupScreen extends RealmsScreen {
    private static final Component CLOSE_TEXT = Component.translatable("mco.selectServer.close");
    private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("popup/background");
    private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = new ResourceLocation("icon/trial_available");
-   private static final WidgetSprites CROSS_BUTTON_SPRITES = new WidgetSprites(
-      new ResourceLocation("widget/cross_button"), new ResourceLocation("widget/cross_button_highlighted")
-   );
+   private static final WidgetSprites CROSS_BUTTON_SPRITES = new WidgetSprites(new ResourceLocation("widget/cross_button"), new ResourceLocation("widget/cross_button_highlighted"));
    private static final int BG_TEXTURE_WIDTH = 236;
    private static final int BG_TEXTURE_HEIGHT = 34;
    private static final int BG_BORDER_SIZE = 6;
@@ -53,29 +51,24 @@ public class RealmsPopupScreen extends RealmsScreen {
    }
 
    public static void updateCarouselImages(ResourceManager var0) {
-      Set var1 = var0.listResources("textures/gui/images", var0x -> var0x.getPath().endsWith(".png")).keySet();
-      carouselImages = var1.stream().filter(var0x -> var0x.getNamespace().equals("realms")).toList();
+      Set var1 = var0.listResources("textures/gui/images", (var0x) -> {
+         return var0x.getPath().endsWith(".png");
+      }).keySet();
+      carouselImages = var1.stream().filter((var0x) -> {
+         return var0x.getNamespace().equals("realms");
+      }).toList();
    }
 
-   @Override
    protected void init() {
       this.backgroundScreen.resize(this.minecraft, this.width, this.height);
       if (this.trialAvailable) {
-         this.createTrialButton = this.addRenderableWidget(
-            Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/startjavarealmstrial"))
-               .bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20)
-               .build()
-         );
+         this.createTrialButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/startjavarealmstrial")).bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20).build());
       }
 
-      this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/BuyJavaRealms"))
-            .bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20)
-            .build()
-      );
-      ImageButton var1 = this.addRenderableWidget(
-         new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, var1x -> this.onClose(), CLOSE_TEXT)
-      );
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/BuyJavaRealms")).bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20).build());
+      ImageButton var1 = (ImageButton)this.addRenderableWidget(new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, (var1x) -> {
+         this.onClose();
+      }, CLOSE_TEXT));
       var1.setTooltip(Tooltip.create(CLOSE_TEXT));
       int var2 = 142 - (this.trialAvailable ? 40 : 20);
       FittingMultiLineTextWidget var3 = new FittingMultiLineTextWidget(this.right() - 10 - 100, this.top() + 10, 100, var2, POPUP_TEXT, this.font);
@@ -86,21 +79,21 @@ public class RealmsPopupScreen extends RealmsScreen {
       this.addRenderableWidget(var3);
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (++this.carouselTick > 100) {
          this.carouselTick = 0;
          this.carouselIndex = (this.carouselIndex + 1) % carouselImages.size();
       }
+
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if (this.createTrialButton != null) {
          renderDiamond(var1, this.createTrialButton);
       }
+
    }
 
    public static void renderDiamond(GuiGraphics var0, Button var1) {
@@ -111,7 +104,6 @@ public class RealmsPopupScreen extends RealmsScreen {
       var0.pose().popPose();
    }
 
-   @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
@@ -119,8 +111,9 @@ public class RealmsPopupScreen extends RealmsScreen {
       this.renderTransparentBackground(var1);
       var1.blitSprite(BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
-         var1.blit(carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0, 0.0F, 0.0F, 195, 152, 195, 152);
+         var1.blit((ResourceLocation)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0, 0.0F, 0.0F, 195, 152, 195, 152);
       }
+
    }
 
    private int left() {
@@ -139,7 +132,6 @@ public class RealmsPopupScreen extends RealmsScreen {
       return this.top() + 172;
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.backgroundScreen);
    }

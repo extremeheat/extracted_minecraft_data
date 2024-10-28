@@ -42,6 +42,7 @@ public class ItemBasedSteering {
       if (this.boosting && this.boostTime++ > this.boostTimeTotal()) {
          this.boosting = false;
       }
+
    }
 
    public float boostFactor() {
@@ -49,7 +50,7 @@ public class ItemBasedSteering {
    }
 
    private int boostTimeTotal() {
-      return this.entityData.get(this.boostTimeAccessor);
+      return (Integer)this.entityData.get(this.boostTimeAccessor);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -65,6 +66,6 @@ public class ItemBasedSteering {
    }
 
    public boolean hasSaddle() {
-      return this.entityData.get(this.hasSaddleAccessor);
+      return (Boolean)this.entityData.get(this.hasSaddleAccessor);
    }
 }

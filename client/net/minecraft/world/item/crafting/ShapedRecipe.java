@@ -1,13 +1,12 @@
 package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -32,37 +31,30 @@ public class ShapedRecipe implements CraftingRecipe {
       this(var1, var2, var3, var4, true);
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.SHAPED_RECIPE;
    }
 
-   @Override
    public String getGroup() {
       return this.group;
    }
 
-   @Override
    public CraftingBookCategory category() {
       return this.category;
    }
 
-   @Override
    public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 
-   @Override
    public NonNullList<Ingredient> getIngredients() {
       return this.pattern.ingredients();
    }
 
-   @Override
    public boolean showNotification() {
       return this.showNotification;
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 >= this.pattern.width() && var2 >= this.pattern.height();
    }
@@ -83,46 +75,48 @@ public class ShapedRecipe implements CraftingRecipe {
       return this.pattern.height();
    }
 
-   @Override
    public boolean isIncomplete() {
       NonNullList var1 = this.getIngredients();
-      return var1.isEmpty() || var1.stream().filter(var0 -> !var0.isEmpty()).anyMatch(var0 -> var0.getItems().length == 0);
+      return var1.isEmpty() || var1.stream().filter((var0) -> {
+         return !var0.isEmpty();
+      }).anyMatch((var0) -> {
+         return var0.getItems().length == 0;
+      });
    }
 
    public static class Serializer implements RecipeSerializer<ShapedRecipe> {
-      public static final Codec<ShapedRecipe> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
-                  CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(var0x -> var0x.category),
-                  ShapedRecipePattern.MAP_CODEC.forGetter(var0x -> var0x.pattern),
-                  ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "show_notification", true).forGetter(var0x -> var0x.showNotification)
-               )
-               .apply(var0, ShapedRecipe::new)
-      );
-      public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipe> STREAM_CODEC = StreamCodec.of(
-         ShapedRecipe.Serializer::toNetwork, ShapedRecipe.Serializer::fromNetwork
-      );
+      public static final MapCodec<ShapedRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> {
+            return var0x.group;
+         }), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> {
+            return var0x.category;
+         }), ShapedRecipePattern.MAP_CODEC.forGetter((var0x) -> {
+            return var0x.pattern;
+         }), ItemStack.CODEC.fieldOf("result").forGetter((var0x) -> {
+            return var0x.result;
+         }), Codec.BOOL.optionalFieldOf("show_notification", true).forGetter((var0x) -> {
+            return var0x.showNotification;
+         })).apply(var0, ShapedRecipe::new);
+      });
+      public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipe> STREAM_CODEC = StreamCodec.of(Serializer::toNetwork, Serializer::fromNetwork);
 
       public Serializer() {
          super();
       }
 
-      @Override
-      public Codec<ShapedRecipe> codec() {
+      public MapCodec<ShapedRecipe> codec() {
          return CODEC;
       }
 
-      @Override
       public StreamCodec<RegistryFriendlyByteBuf, ShapedRecipe> streamCodec() {
          return STREAM_CODEC;
       }
 
       private static ShapedRecipe fromNetwork(RegistryFriendlyByteBuf var0) {
          String var1 = var0.readUtf();
-         CraftingBookCategory var2 = var0.readEnum(CraftingBookCategory.class);
+         CraftingBookCategory var2 = (CraftingBookCategory)var0.readEnum(CraftingBookCategory.class);
          ShapedRecipePattern var3 = (ShapedRecipePattern)ShapedRecipePattern.STREAM_CODEC.decode(var0);
-         ItemStack var4 = ItemStack.STREAM_CODEC.decode(var0);
+         ItemStack var4 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
          boolean var5 = var0.readBoolean();
          return new ShapedRecipe(var1, var2, var3, var4, var5);
       }

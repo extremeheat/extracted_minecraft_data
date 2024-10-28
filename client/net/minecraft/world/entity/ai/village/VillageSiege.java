@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.village;
 
 import com.mojang.logging.LogUtils;
+import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -8,6 +9,7 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +21,7 @@ import org.slf4j.Logger;
 public class VillageSiege implements CustomSpawner {
    private static final Logger LOGGER = LogUtils.getLogger();
    private boolean hasSetupSiege;
-   private VillageSiege.State siegeState = VillageSiege.State.SIEGE_DONE;
+   private State siegeState;
    private int zombiesToSpawn;
    private int nextSpawnTime;
    private int spawnX;
@@ -28,9 +30,9 @@ public class VillageSiege implements CustomSpawner {
 
    public VillageSiege() {
       super();
+      this.siegeState = VillageSiege.State.SIEGE_DONE;
    }
 
-   @Override
    public int tick(ServerLevel var1, boolean var2, boolean var3) {
       if (!var1.isDay() && var2) {
          float var4 = var1.getTimeOfDay(0.0F);
@@ -72,7 +74,10 @@ public class VillageSiege implements CustomSpawner {
    }
 
    private boolean tryToSetupSiege(ServerLevel var1) {
-      for(Player var3 : var1.players()) {
+      Iterator var2 = var1.players().iterator();
+
+      while(var2.hasNext()) {
+         Player var3 = (Player)var2.next();
          if (!var3.isSpectator()) {
             BlockPos var4 = var3.blockPosition();
             if (var1.isVillage(var4) && !var1.getBiome(var4).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
@@ -102,7 +107,7 @@ public class VillageSiege implements CustomSpawner {
          Zombie var3;
          try {
             var3 = new Zombie(var1);
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, (SpawnGroupData)null);
          } catch (Exception var5) {
             LOGGER.warn("Failed to create zombie for village siege at {}", var2, var5);
             return;
@@ -128,12 +133,17 @@ public class VillageSiege implements CustomSpawner {
       return null;
    }
 
-   static enum State {
+   private static enum State {
       SIEGE_CAN_ACTIVATE,
       SIEGE_TONIGHT,
       SIEGE_DONE;
 
       private State() {
+      }
+
+      // $FF: synthetic method
+      private static State[] $values() {
+         return new State[]{SIEGE_CAN_ACTIVATE, SIEGE_TONIGHT, SIEGE_DONE};
       }
    }
 }

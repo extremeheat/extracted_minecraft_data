@@ -23,22 +23,18 @@ public final class SubShape extends DiscreteVoxelShape {
       this.endZ = var7;
    }
 
-   @Override
    public boolean isFull(int var1, int var2, int var3) {
       return this.parent.isFull(this.startX + var1, this.startY + var2, this.startZ + var3);
    }
 
-   @Override
    public void fill(int var1, int var2, int var3) {
       this.parent.fill(this.startX + var1, this.startY + var2, this.startZ + var3);
    }
 
-   @Override
    public int firstFull(Direction.Axis var1) {
       return this.clampToShape(var1, this.parent.firstFull(var1));
    }
 
-   @Override
    public int lastFull(Direction.Axis var1) {
       return this.clampToShape(var1, this.parent.lastFull(var1));
    }

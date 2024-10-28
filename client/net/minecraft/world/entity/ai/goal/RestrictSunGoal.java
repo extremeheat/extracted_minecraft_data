@@ -13,20 +13,18 @@ public class RestrictSunGoal extends Goal {
       this.mob = var1;
    }
 
-   @Override
    public boolean canUse() {
       return this.mob.level().isDay() && this.mob.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && GoalUtils.hasGroundPathNavigation(this.mob);
    }
 
-   @Override
    public void start() {
       ((GroundPathNavigation)this.mob.getNavigation()).setAvoidSun(true);
    }
 
-   @Override
    public void stop() {
       if (GoalUtils.hasGroundPathNavigation(this.mob)) {
          ((GroundPathNavigation)this.mob.getNavigation()).setAvoidSun(false);
       }
+
    }
 }

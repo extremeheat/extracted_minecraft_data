@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.server.Bootstrap;
@@ -24,24 +25,35 @@ public class SummaryReporter {
    public void recordingStopped(@Nullable Path var1) {
       if (var1 != null) {
          this.onDeregistration.run();
-         infoWithFallback(() -> "Dumped flight recorder profiling to " + var1);
+         infoWithFallback(() -> {
+            return "Dumped flight recorder profiling to " + String.valueOf(var1);
+         });
 
          JfrStatsResult var2;
          try {
             var2 = JfrStatsParser.parse(var1);
          } catch (Throwable var5) {
-            warnWithFallback(() -> "Failed to parse JFR recording", var5);
+            warnWithFallback(() -> {
+               return "Failed to parse JFR recording";
+            }, var5);
             return;
          }
 
          try {
+            Objects.requireNonNull(var2);
             infoWithFallback(var2::asJson);
-            Path var3 = var1.resolveSibling("jfr-report-" + StringUtils.substringBefore(var1.getFileName().toString(), ".jfr") + ".json");
+            String var10001 = var1.getFileName().toString();
+            Path var3 = var1.resolveSibling("jfr-report-" + StringUtils.substringBefore(var10001, ".jfr") + ".json");
             Files.writeString(var3, var2.asJson(), StandardOpenOption.CREATE);
-            infoWithFallback(() -> "Dumped recording summary to " + var3);
+            infoWithFallback(() -> {
+               return "Dumped recording summary to " + String.valueOf(var3);
+            });
          } catch (Throwable var4) {
-            warnWithFallback(() -> "Failed to output JFR report", var4);
+            warnWithFallback(() -> {
+               return "Failed to output JFR report";
+            }, var4);
          }
+
       }
    }
 
@@ -51,6 +63,7 @@ public class SummaryReporter {
       } else {
          Bootstrap.realStdoutPrintln((String)var0.get());
       }
+
    }
 
    private static void warnWithFallback(Supplier<String> var0, Throwable var1) {
@@ -60,5 +73,6 @@ public class SummaryReporter {
          Bootstrap.realStdoutPrintln((String)var0.get());
          var1.printStackTrace(Bootstrap.STDOUT);
       }
+
    }
 }

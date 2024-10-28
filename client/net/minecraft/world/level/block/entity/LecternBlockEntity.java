@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -34,22 +35,18 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    public static final int SLOT_BOOK = 0;
    public static final int NUM_SLOTS = 1;
    private final Container bookAccess = new Container() {
-      @Override
       public int getContainerSize() {
          return 1;
       }
 
-      @Override
       public boolean isEmpty() {
          return LecternBlockEntity.this.book.isEmpty();
       }
 
-      @Override
       public ItemStack getItem(int var1) {
          return var1 == 0 ? LecternBlockEntity.this.book : ItemStack.EMPTY;
       }
 
-      @Override
       public ItemStack removeItem(int var1, int var2) {
          if (var1 == 0) {
             ItemStack var3 = LecternBlockEntity.this.book.split(var2);
@@ -63,7 +60,6 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          }
       }
 
-      @Override
       public ItemStack removeItemNoUpdate(int var1) {
          if (var1 == 0) {
             ItemStack var2 = LecternBlockEntity.this.book;
@@ -75,58 +71,51 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          }
       }
 
-      @Override
       public void setItem(int var1, ItemStack var2) {
       }
 
-      @Override
       public int getMaxStackSize() {
          return 1;
       }
 
-      @Override
       public void setChanged() {
          LecternBlockEntity.this.setChanged();
       }
 
-      @Override
       public boolean stillValid(Player var1) {
          return Container.stillValidBlockEntity(LecternBlockEntity.this, var1) && LecternBlockEntity.this.hasBook();
       }
 
-      @Override
       public boolean canPlaceItem(int var1, ItemStack var2) {
          return false;
       }
 
-      @Override
       public void clearContent() {
       }
    };
    private final ContainerData dataAccess = new ContainerData() {
-      @Override
       public int get(int var1) {
          return var1 == 0 ? LecternBlockEntity.this.page : 0;
       }
 
-      @Override
       public void set(int var1, int var2) {
          if (var1 == 0) {
             LecternBlockEntity.this.setPage(var2);
          }
+
       }
 
-      @Override
       public int getCount() {
          return 1;
       }
    };
-   ItemStack book = ItemStack.EMPTY;
+   ItemStack book;
    int page;
    private int pageCount;
 
    public LecternBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.LECTERN, var1, var2);
+      this.book = ItemStack.EMPTY;
    }
 
    public ItemStack getBook() {
@@ -138,13 +127,13 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    public void setBook(ItemStack var1) {
-      this.setBook(var1, null);
+      this.setBook(var1, (Player)null);
    }
 
    void onBookItemRemove() {
       this.page = 0;
       this.pageCount = 0;
-      LecternBlock.resetBookState(null, this.getLevel(), this.getBlockPos(), this.getBlockState(), false);
+      LecternBlock.resetBookState((Entity)null, this.getLevel(), this.getBlockPos(), this.getBlockState(), false);
    }
 
    public void setBook(ItemStack var1, @Nullable Player var2) {
@@ -161,6 +150,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          this.setChanged();
          LecternBlock.signalPageChange(this.getLevel(), this.getBlockPos(), this.getBlockState());
       }
+
    }
 
    public int getPage() {
@@ -195,16 +185,14 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       return new CommandSourceStack(CommandSource.NULL, var4, Vec2.ZERO, (ServerLevel)this.level, 2, var2, (Component)var3, this.level.getServer(), var1);
    }
 
-   @Override
    public boolean onlyOpCanSetNbt() {
       return true;
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("Book", 10)) {
-         this.book = this.resolveBook(ItemStack.parse(var2, var1.getCompound("Book")).orElse(ItemStack.EMPTY), null);
+         this.book = this.resolveBook((ItemStack)ItemStack.parse(var2, var1.getCompound("Book")).orElse(ItemStack.EMPTY), (Player)null);
       } else {
          this.book = ItemStack.EMPTY;
       }
@@ -213,36 +201,33 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       this.page = Mth.clamp(var1.getInt("Page"), 0, this.pageCount - 1);
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.getBook().isEmpty()) {
          var1.put("Book", this.getBook().save(var2));
          var1.putInt("Page", this.page);
       }
+
    }
 
-   @Override
    public void clearContent() {
       this.setBook(ItemStack.EMPTY);
    }
 
-   @Override
    public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
       return new LecternMenu(var1, this.bookAccess, this.dataAccess);
    }
 
-   @Override
    public Component getDisplayName() {
       return Component.translatable("container.lectern");
    }
 
    private static int getPageCount(ItemStack var0) {
-      WrittenBookContent var1 = var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      WrittenBookContent var1 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
       if (var1 != null) {
          return var1.pages().size();
       } else {
-         WritableBookContent var2 = var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
+         WritableBookContent var2 = (WritableBookContent)var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
          return var2 != null ? var2.pages().size() : 0;
       }
    }

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -11,6 +12,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.RecipeBook;
@@ -18,12 +20,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
-   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(
-      new ResourceLocation("recipe_book/page_forward"), new ResourceLocation("recipe_book/page_forward_highlighted")
-   );
-   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(
-      new ResourceLocation("recipe_book/page_backward"), new ResourceLocation("recipe_book/page_backward_highlighted")
-   );
+   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/page_forward"), new ResourceLocation("recipe_book/page_forward_highlighted"));
+   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/page_backward"), new ResourceLocation("recipe_book/page_backward_highlighted"));
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
    @Nullable
    private RecipeButton hoveredButton;
@@ -47,6 +45,7 @@ public class RecipeBookPage {
       for(int var1 = 0; var1 < 20; ++var1) {
          this.buttons.add(new RecipeButton());
       }
+
    }
 
    public void init(Minecraft var1, int var2, int var3) {
@@ -54,7 +53,7 @@ public class RecipeBookPage {
       this.recipeBook = var1.player.getRecipeBook();
 
       for(int var4 = 0; var4 < this.buttons.size(); ++var4) {
-         this.buttons.get(var4).setPosition(var2 + 11 + 25 * (var4 % 5), var3 + 31 + 25 * (var4 / 5));
+         ((RecipeButton)this.buttons.get(var4)).setPosition(var2 + 11 + 25 * (var4 % 5), var3 + 31 + 25 * (var4 / 5));
       }
 
       this.forwardButton = new StateSwitchingButton(var2 + 93, var3 + 137, 12, 17, false);
@@ -82,9 +81,9 @@ public class RecipeBookPage {
       int var1 = 20 * this.currentPage;
 
       for(int var2 = 0; var2 < this.buttons.size(); ++var2) {
-         RecipeButton var3 = this.buttons.get(var2);
+         RecipeButton var3 = (RecipeButton)this.buttons.get(var2);
          if (var1 + var2 < this.recipeCollections.size()) {
-            RecipeCollection var4 = this.recipeCollections.get(var1 + var2);
+            RecipeCollection var4 = (RecipeCollection)this.recipeCollections.get(var1 + var2);
             var3.init(var4, this);
             var3.visible = true;
          } else {
@@ -103,13 +102,15 @@ public class RecipeBookPage {
    public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
       if (this.totalPages > 1) {
          MutableComponent var7 = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
-         int var8 = this.minecraft.font.width(var7);
-         var1.drawString(this.minecraft.font, var7, var2 - var8 / 2 + 73, var3 + 141, -1, false);
+         int var8 = this.minecraft.font.width((FormattedText)var7);
+         var1.drawString(this.minecraft.font, (Component)var7, var2 - var8 / 2 + 73, var3 + 141, -1, false);
       }
 
       this.hoveredButton = null;
+      Iterator var9 = this.buttons.iterator();
 
-      for(RecipeButton var10 : this.buttons) {
+      while(var9.hasNext()) {
+         RecipeButton var10 = (RecipeButton)var9.next();
          var10.render(var1, var4, var5, var6);
          if (var10.visible && var10.isHoveredOrFocused()) {
             this.hoveredButton = var10;
@@ -125,6 +126,7 @@ public class RecipeBookPage {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          var1.renderComponentTooltip(this.minecraft.font, this.hoveredButton.getTooltipText(), var2, var3);
       }
+
    }
 
    @Nullable
@@ -162,28 +164,36 @@ public class RecipeBookPage {
          this.updateButtonsForPage();
          return true;
       } else {
-         for(RecipeButton var11 : this.buttons) {
-            if (var11.mouseClicked(var1, var3, var5)) {
-               if (var5 == 0) {
-                  this.lastClickedRecipe = var11.getRecipe();
-                  this.lastClickedRecipeCollection = var11.getCollection();
-               } else if (var5 == 1 && !this.overlay.isVisible() && !var11.isOnlyOption()) {
-                  this.overlay
-                     .init(this.minecraft, var11.getCollection(), var11.getX(), var11.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var11.getWidth());
-               }
+         Iterator var10 = this.buttons.iterator();
 
-               return true;
+         RecipeButton var11;
+         do {
+            if (!var10.hasNext()) {
+               return false;
             }
+
+            var11 = (RecipeButton)var10.next();
+         } while(!var11.mouseClicked(var1, var3, var5));
+
+         if (var5 == 0) {
+            this.lastClickedRecipe = var11.getRecipe();
+            this.lastClickedRecipeCollection = var11.getCollection();
+         } else if (var5 == 1 && !this.overlay.isVisible() && !var11.isOnlyOption()) {
+            this.overlay.init(this.minecraft, var11.getCollection(), var11.getX(), var11.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var11.getWidth());
          }
 
-         return false;
+         return true;
       }
    }
 
    public void recipesShown(List<RecipeHolder<?>> var1) {
-      for(RecipeShownListener var3 : this.showListeners) {
+      Iterator var2 = this.showListeners.iterator();
+
+      while(var2.hasNext()) {
+         RecipeShownListener var3 = (RecipeShownListener)var2.next();
          var3.recipesShown(var1);
       }
+
    }
 
    public Minecraft getMinecraft() {

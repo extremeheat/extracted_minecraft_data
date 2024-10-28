@@ -1,6 +1,7 @@
 package net.minecraft.data.recipes;
 
 import java.util.function.Function;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Recipe;
@@ -22,6 +23,6 @@ public class SpecialRecipeBuilder {
    }
 
    public void save(RecipeOutput var1, ResourceLocation var2) {
-      var1.accept(var2, this.factory.apply(CraftingBookCategory.MISC), null);
+      var1.accept(var2, (Recipe)this.factory.apply(CraftingBookCategory.MISC), (AdvancementHolder)null);
    }
 }

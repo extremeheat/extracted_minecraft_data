@@ -21,19 +21,19 @@ public class NearestHealableRaiderTargetGoal<T extends LivingEntity> extends Nea
       --this.cooldown;
    }
 
-   @Override
    public boolean canUse() {
-      if (this.cooldown > 0 || !this.mob.getRandom().nextBoolean()) {
-         return false;
-      } else if (!((Raider)this.mob).hasActiveRaid()) {
-         return false;
+      if (this.cooldown <= 0 && this.mob.getRandom().nextBoolean()) {
+         if (!((Raider)this.mob).hasActiveRaid()) {
+            return false;
+         } else {
+            this.findTarget();
+            return this.target != null;
+         }
       } else {
-         this.findTarget();
-         return this.target != null;
+         return false;
       }
    }
 
-   @Override
    public void start() {
       this.cooldown = reducedTickDelay(200);
       super.start();

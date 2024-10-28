@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -17,10 +18,10 @@ public class ServerPackManager {
    final PackLoadFeedback packLoadFeedback;
    private final PackReloadConfig reloadConfig;
    private final Runnable updateRequest;
-   private ServerPackManager.PackPromptStatus packPromptStatus;
-   final List<ServerPackManager.ServerPackData> packs = new ArrayList<>();
+   private PackPromptStatus packPromptStatus;
+   final List<ServerPackData> packs = new ArrayList();
 
-   public ServerPackManager(PackDownloader var1, PackLoadFeedback var2, PackReloadConfig var3, Runnable var4, ServerPackManager.PackPromptStatus var5) {
+   public ServerPackManager(PackDownloader var1, PackLoadFeedback var2, PackReloadConfig var3, Runnable var4, PackPromptStatus var5) {
       super();
       this.downloader = var1;
       this.packLoadFeedback = var2;
@@ -34,18 +35,22 @@ public class ServerPackManager {
    }
 
    private void markExistingPacksAsRemoved(UUID var1) {
-      for(ServerPackManager.ServerPackData var3 : this.packs) {
+      Iterator var2 = this.packs.iterator();
+
+      while(var2.hasNext()) {
+         ServerPackData var3 = (ServerPackData)var2.next();
          if (var3.id.equals(var1)) {
             var3.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.SERVER_REPLACED);
          }
       }
+
    }
 
    public void pushPack(UUID var1, URL var2, @Nullable HashCode var3) {
       if (this.packPromptStatus == ServerPackManager.PackPromptStatus.DECLINED) {
          this.packLoadFeedback.reportFinalResult(var1, PackLoadFeedback.FinalResult.DECLINED);
       } else {
-         this.pushNewPack(var1, new ServerPackManager.ServerPackData(var1, var2, var3));
+         this.pushNewPack(var1, new ServerPackData(var1, var2, var3));
       }
    }
 
@@ -57,17 +62,17 @@ public class ServerPackManager {
          try {
             var3 = var2.toUri().toURL();
          } catch (MalformedURLException var5) {
-            throw new IllegalStateException("Can't convert path to URL " + var2, var5);
+            throw new IllegalStateException("Can't convert path to URL " + String.valueOf(var2), var5);
          }
 
-         ServerPackManager.ServerPackData var4 = new ServerPackManager.ServerPackData(var1, var3, null);
+         ServerPackData var4 = new ServerPackData(var1, var3, (HashCode)null);
          var4.downloadStatus = ServerPackManager.PackDownloadStatus.DONE;
          var4.path = var2;
          this.pushNewPack(var1, var4);
       }
    }
 
-   private void pushNewPack(UUID var1, ServerPackManager.ServerPackData var2) {
+   private void pushNewPack(UUID var1, ServerPackData var2) {
       this.markExistingPacksAsRemoved(var1);
       this.packs.add(var2);
       if (this.packPromptStatus == ServerPackManager.PackPromptStatus.ALLOWED) {
@@ -77,32 +82,41 @@ public class ServerPackManager {
       this.registerForUpdate();
    }
 
-   private void acceptPack(ServerPackManager.ServerPackData var1) {
+   private void acceptPack(ServerPackData var1) {
       this.packLoadFeedback.reportUpdate(var1.id, PackLoadFeedback.Update.ACCEPTED);
       var1.promptAccepted = true;
    }
 
    @Nullable
-   private ServerPackManager.ServerPackData findPackInfo(UUID var1) {
-      for(ServerPackManager.ServerPackData var3 : this.packs) {
-         if (!var3.isRemoved() && var3.id.equals(var1)) {
-            return var3;
-         }
-      }
+   private ServerPackData findPackInfo(UUID var1) {
+      Iterator var2 = this.packs.iterator();
 
-      return null;
+      ServerPackData var3;
+      do {
+         if (!var2.hasNext()) {
+            return null;
+         }
+
+         var3 = (ServerPackData)var2.next();
+      } while(var3.isRemoved() || !var3.id.equals(var1));
+
+      return var3;
    }
 
    public void popPack(UUID var1) {
-      ServerPackManager.ServerPackData var2 = this.findPackInfo(var1);
+      ServerPackData var2 = this.findPackInfo(var1);
       if (var2 != null) {
          var2.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.SERVER_REMOVED);
          this.registerForUpdate();
       }
+
    }
 
    public void popAll() {
-      for(ServerPackManager.ServerPackData var2 : this.packs) {
+      Iterator var1 = this.packs.iterator();
+
+      while(var1.hasNext()) {
+         ServerPackData var2 = (ServerPackData)var1.next();
          var2.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.SERVER_REMOVED);
       }
 
@@ -111,8 +125,10 @@ public class ServerPackManager {
 
    public void allowServerPacks() {
       this.packPromptStatus = ServerPackManager.PackPromptStatus.ALLOWED;
+      Iterator var1 = this.packs.iterator();
 
-      for(ServerPackManager.ServerPackData var2 : this.packs) {
+      while(var1.hasNext()) {
+         ServerPackData var2 = (ServerPackData)var1.next();
          if (!var2.promptAccepted && !var2.isRemoved()) {
             this.acceptPack(var2);
          }
@@ -123,8 +139,10 @@ public class ServerPackManager {
 
    public void rejectServerPacks() {
       this.packPromptStatus = ServerPackManager.PackPromptStatus.DECLINED;
+      Iterator var1 = this.packs.iterator();
 
-      for(ServerPackManager.ServerPackData var2 : this.packs) {
+      while(var1.hasNext()) {
+         ServerPackData var2 = (ServerPackData)var1.next();
          if (!var2.promptAccepted) {
             var2.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.DECLINED);
          }
@@ -147,7 +165,7 @@ public class ServerPackManager {
    }
 
    private void cleanupRemovedPacks() {
-      this.packs.removeIf(var1 -> {
+      this.packs.removeIf((var1) -> {
          if (var1.activationStatus != ServerPackManager.ActivationStatus.INACTIVE) {
             return false;
          } else if (var1.removalReason != null) {
@@ -163,9 +181,14 @@ public class ServerPackManager {
       });
    }
 
-   private void onDownload(Collection<ServerPackManager.ServerPackData> var1, DownloadQueue.BatchResult var2) {
+   private void onDownload(Collection<ServerPackData> var1, DownloadQueue.BatchResult var2) {
+      Iterator var3;
+      ServerPackData var4;
       if (!var2.failed().isEmpty()) {
-         for(ServerPackManager.ServerPackData var4 : this.packs) {
+         var3 = this.packs.iterator();
+
+         while(var3.hasNext()) {
+            var4 = (ServerPackData)var3.next();
             if (var4.activationStatus != ServerPackManager.ActivationStatus.ACTIVE) {
                if (var2.failed().contains(var4.id)) {
                   var4.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.DOWNLOAD_FAILED);
@@ -176,13 +199,16 @@ public class ServerPackManager {
          }
       }
 
-      for(ServerPackManager.ServerPackData var7 : var1) {
-         Path var5 = var2.downloaded().get(var7.id);
+      var3 = var1.iterator();
+
+      while(var3.hasNext()) {
+         var4 = (ServerPackData)var3.next();
+         Path var5 = (Path)var2.downloaded().get(var4.id);
          if (var5 != null) {
-            var7.downloadStatus = ServerPackManager.PackDownloadStatus.DONE;
-            var7.path = var5;
-            if (!var7.isRemoved()) {
-               this.packLoadFeedback.reportUpdate(var7.id, PackLoadFeedback.Update.DOWNLOADED);
+            var4.downloadStatus = ServerPackManager.PackDownloadStatus.DONE;
+            var4.path = var5;
+            if (!var4.isRemoved()) {
+               this.packLoadFeedback.reportUpdate(var4.id, PackLoadFeedback.Update.DOWNLOADED);
             }
          }
       }
@@ -193,8 +219,10 @@ public class ServerPackManager {
    private boolean updateDownloads() {
       ArrayList var1 = new ArrayList();
       boolean var2 = false;
+      Iterator var3 = this.packs.iterator();
 
-      for(ServerPackManager.ServerPackData var4 : this.packs) {
+      while(var3.hasNext()) {
+         ServerPackData var4 = (ServerPackData)var3.next();
          if (!var4.isRemoved() && var4.promptAccepted) {
             if (var4.downloadStatus != ServerPackManager.PackDownloadStatus.DONE) {
                var2 = true;
@@ -209,12 +237,16 @@ public class ServerPackManager {
 
       if (!var1.isEmpty()) {
          HashMap var6 = new HashMap();
+         Iterator var7 = var1.iterator();
 
-         for(ServerPackManager.ServerPackData var5 : var1) {
+         while(var7.hasNext()) {
+            ServerPackData var5 = (ServerPackData)var7.next();
             var6.put(var5.id, new DownloadQueue.DownloadRequest(var5.url, var5.hash));
          }
 
-         this.downloader.download(var6, var2x -> this.onDownload(var1, var2x));
+         this.downloader.download(var6, (var2x) -> {
+            this.onDownload(var1, var2x);
+         });
       }
 
       return var2;
@@ -224,8 +256,11 @@ public class ServerPackManager {
       boolean var1 = false;
       final ArrayList var2 = new ArrayList();
       final ArrayList var3 = new ArrayList();
+      Iterator var4 = this.packs.iterator();
 
-      for(ServerPackManager.ServerPackData var5 : this.packs) {
+      ServerPackData var5;
+      while(var4.hasNext()) {
+         var5 = (ServerPackData)var4.next();
          if (var5.activationStatus == ServerPackManager.ActivationStatus.PENDING) {
             return;
          }
@@ -247,76 +282,151 @@ public class ServerPackManager {
       }
 
       if (var1) {
-         for(ServerPackManager.ServerPackData var9 : var2) {
-            if (var9.activationStatus != ServerPackManager.ActivationStatus.ACTIVE) {
-               var9.activationStatus = ServerPackManager.ActivationStatus.PENDING;
+         var4 = var2.iterator();
+
+         while(var4.hasNext()) {
+            var5 = (ServerPackData)var4.next();
+            if (var5.activationStatus != ServerPackManager.ActivationStatus.ACTIVE) {
+               var5.activationStatus = ServerPackManager.ActivationStatus.PENDING;
             }
          }
 
-         for(ServerPackManager.ServerPackData var10 : var3) {
-            var10.activationStatus = ServerPackManager.ActivationStatus.PENDING;
+         for(var4 = var3.iterator(); var4.hasNext(); var5.activationStatus = ServerPackManager.ActivationStatus.PENDING) {
+            var5 = (ServerPackData)var4.next();
          }
 
          this.reloadConfig.scheduleReload(new PackReloadConfig.Callbacks() {
-            @Override
             public void onSuccess() {
-               for(ServerPackManager.ServerPackData var2x : var2) {
+               Iterator var1 = var2.iterator();
+
+               ServerPackData var2x;
+               while(var1.hasNext()) {
+                  var2x = (ServerPackData)var1.next();
                   var2x.activationStatus = ServerPackManager.ActivationStatus.ACTIVE;
                   if (var2x.removalReason == null) {
                      ServerPackManager.this.packLoadFeedback.reportFinalResult(var2x.id, PackLoadFeedback.FinalResult.APPLIED);
                   }
                }
 
-               for(ServerPackManager.ServerPackData var4 : var3) {
-                  var4.activationStatus = ServerPackManager.ActivationStatus.INACTIVE;
+               for(var1 = var3.iterator(); var1.hasNext(); var2x.activationStatus = ServerPackManager.ActivationStatus.INACTIVE) {
+                  var2x = (ServerPackData)var1.next();
                }
 
                ServerPackManager.this.registerForUpdate();
             }
 
-            @Override
             public void onFailure(boolean var1) {
+               Iterator var2x;
+               ServerPackData var3x;
                if (!var1) {
                   var2.clear();
+                  var2x = ServerPackManager.this.packs.iterator();
 
-                  for(ServerPackManager.ServerPackData var3x : ServerPackManager.this.packs) {
-                     switch(var3x.activationStatus) {
-                        case ACTIVE:
-                           var2.add(var3x);
+                  while(var2x.hasNext()) {
+                     var3x = (ServerPackData)var2x.next();
+                     switch (var3x.activationStatus.ordinal()) {
+                        case 0:
+                           var3x.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.DISCARDED);
                            break;
-                        case PENDING:
+                        case 1:
                            var3x.activationStatus = ServerPackManager.ActivationStatus.INACTIVE;
                            var3x.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.ACTIVATION_FAILED);
                            break;
-                        case INACTIVE:
-                           var3x.setRemovalReasonIfNotSet(ServerPackManager.RemovalReason.DISCARDED);
+                        case 2:
+                           var2.add(var3x);
                      }
                   }
 
                   ServerPackManager.this.registerForUpdate();
                } else {
-                  for(ServerPackManager.ServerPackData var5 : ServerPackManager.this.packs) {
-                     if (var5.activationStatus == ServerPackManager.ActivationStatus.PENDING) {
-                        var5.activationStatus = ServerPackManager.ActivationStatus.INACTIVE;
+                  var2x = ServerPackManager.this.packs.iterator();
+
+                  while(var2x.hasNext()) {
+                     var3x = (ServerPackData)var2x.next();
+                     if (var3x.activationStatus == ServerPackManager.ActivationStatus.PENDING) {
+                        var3x.activationStatus = ServerPackManager.ActivationStatus.INACTIVE;
                      }
                   }
                }
+
             }
 
-            @Override
             public List<PackReloadConfig.IdAndPath> packsToLoad() {
-               return var2.stream().map(var0 -> new PackReloadConfig.IdAndPath(var0.id, var0.path)).toList();
+               return var2.stream().map((var0) -> {
+                  return new PackReloadConfig.IdAndPath(var0.id, var0.path);
+               }).toList();
             }
          });
       }
+
    }
 
-   static enum ActivationStatus {
-      INACTIVE,
+   public static enum PackPromptStatus {
       PENDING,
-      ACTIVE;
+      ALLOWED,
+      DECLINED;
 
-      private ActivationStatus() {
+      private PackPromptStatus() {
+      }
+
+      // $FF: synthetic method
+      private static PackPromptStatus[] $values() {
+         return new PackPromptStatus[]{PENDING, ALLOWED, DECLINED};
+      }
+   }
+
+   private static class ServerPackData {
+      final UUID id;
+      final URL url;
+      @Nullable
+      final HashCode hash;
+      @Nullable
+      Path path;
+      @Nullable
+      RemovalReason removalReason;
+      PackDownloadStatus downloadStatus;
+      ActivationStatus activationStatus;
+      boolean promptAccepted;
+
+      ServerPackData(UUID var1, URL var2, @Nullable HashCode var3) {
+         super();
+         this.downloadStatus = ServerPackManager.PackDownloadStatus.REQUESTED;
+         this.activationStatus = ServerPackManager.ActivationStatus.INACTIVE;
+         this.id = var1;
+         this.url = var2;
+         this.hash = var3;
+      }
+
+      public void setRemovalReasonIfNotSet(RemovalReason var1) {
+         if (this.removalReason == null) {
+            this.removalReason = var1;
+         }
+
+      }
+
+      public boolean isRemoved() {
+         return this.removalReason != null;
+      }
+   }
+
+   static enum RemovalReason {
+      DOWNLOAD_FAILED(PackLoadFeedback.FinalResult.DOWNLOAD_FAILED),
+      ACTIVATION_FAILED(PackLoadFeedback.FinalResult.ACTIVATION_FAILED),
+      DECLINED(PackLoadFeedback.FinalResult.DECLINED),
+      DISCARDED(PackLoadFeedback.FinalResult.DISCARDED),
+      SERVER_REMOVED((PackLoadFeedback.FinalResult)null),
+      SERVER_REPLACED((PackLoadFeedback.FinalResult)null);
+
+      @Nullable
+      final PackLoadFeedback.FinalResult serverResponse;
+
+      private RemovalReason(@Nullable PackLoadFeedback.FinalResult var3) {
+         this.serverResponse = var3;
+      }
+
+      // $FF: synthetic method
+      private static RemovalReason[] $values() {
+         return new RemovalReason[]{DOWNLOAD_FAILED, ACTIVATION_FAILED, DECLINED, DISCARDED, SERVER_REMOVED, SERVER_REPLACED};
       }
    }
 
@@ -327,61 +437,24 @@ public class ServerPackManager {
 
       private PackDownloadStatus() {
       }
+
+      // $FF: synthetic method
+      private static PackDownloadStatus[] $values() {
+         return new PackDownloadStatus[]{REQUESTED, PENDING, DONE};
+      }
    }
 
-   public static enum PackPromptStatus {
+   private static enum ActivationStatus {
+      INACTIVE,
       PENDING,
-      ALLOWED,
-      DECLINED;
+      ACTIVE;
 
-      private PackPromptStatus() {
-      }
-   }
-
-   static enum RemovalReason {
-      DOWNLOAD_FAILED(PackLoadFeedback.FinalResult.DOWNLOAD_FAILED),
-      ACTIVATION_FAILED(PackLoadFeedback.FinalResult.ACTIVATION_FAILED),
-      DECLINED(PackLoadFeedback.FinalResult.DECLINED),
-      DISCARDED(PackLoadFeedback.FinalResult.DISCARDED),
-      SERVER_REMOVED(null),
-      SERVER_REPLACED(null);
-
-      @Nullable
-      final PackLoadFeedback.FinalResult serverResponse;
-
-      private RemovalReason(@Nullable PackLoadFeedback.FinalResult var3) {
-         this.serverResponse = var3;
-      }
-   }
-
-   static class ServerPackData {
-      final UUID id;
-      final URL url;
-      @Nullable
-      final HashCode hash;
-      @Nullable
-      Path path;
-      @Nullable
-      ServerPackManager.RemovalReason removalReason;
-      ServerPackManager.PackDownloadStatus downloadStatus = ServerPackManager.PackDownloadStatus.REQUESTED;
-      ServerPackManager.ActivationStatus activationStatus = ServerPackManager.ActivationStatus.INACTIVE;
-      boolean promptAccepted;
-
-      ServerPackData(UUID var1, URL var2, @Nullable HashCode var3) {
-         super();
-         this.id = var1;
-         this.url = var2;
-         this.hash = var3;
+      private ActivationStatus() {
       }
 
-      public void setRemovalReasonIfNotSet(ServerPackManager.RemovalReason var1) {
-         if (this.removalReason == null) {
-            this.removalReason = var1;
-         }
-      }
-
-      public boolean isRemoved() {
-         return this.removalReason != null;
+      // $FF: synthetic method
+      private static ActivationStatus[] $values() {
+         return new ActivationStatus[]{INACTIVE, PENDING, ACTIVE};
       }
    }
 }

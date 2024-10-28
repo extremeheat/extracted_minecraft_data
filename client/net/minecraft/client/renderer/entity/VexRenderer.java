@@ -13,7 +13,7 @@ public class VexRenderer extends MobRenderer<Vex, VexModel> {
 
    public VexRenderer(EntityRendererProvider.Context var1) {
       super(var1, new VexModel(var1.bakeLayer(ModelLayers.VEX)), 0.3F);
-      this.addLayer(new ItemInHandLayer<>(this, var1.getItemInHandRenderer()));
+      this.addLayer(new ItemInHandLayer(this, var1.getItemInHandRenderer()));
    }
 
    protected int getBlockLightLevel(Vex var1, BlockPos var2) {

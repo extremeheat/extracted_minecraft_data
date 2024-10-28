@@ -1,7 +1,7 @@
 package net.minecraft.world.item;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,25 +20,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class ShovelItem extends DiggerItem {
-   protected static final Map<Block, BlockState> FLATTENABLES = Maps.newHashMap(
-      new Builder()
-         .put(Blocks.GRASS_BLOCK, Blocks.DIRT_PATH.defaultBlockState())
-         .put(Blocks.DIRT, Blocks.DIRT_PATH.defaultBlockState())
-         .put(Blocks.TERREDEPOMME, Blocks.POISON_PATH.defaultBlockState())
-         .put(Blocks.PODZOL, Blocks.DIRT_PATH.defaultBlockState())
-         .put(Blocks.COARSE_DIRT, Blocks.DIRT_PATH.defaultBlockState())
-         .put(Blocks.MYCELIUM, Blocks.DIRT_PATH.defaultBlockState())
-         .put(Blocks.ROOTED_DIRT, Blocks.DIRT_PATH.defaultBlockState())
-         .put(Blocks.PEELGRASS_BLOCK, Blocks.POISON_PATH.defaultBlockState())
-         .put(Blocks.CORRUPTED_PEELGRASS_BLOCK, Blocks.POISON_PATH.defaultBlockState())
-         .build()
-   );
+   protected static final Map<Block, BlockState> FLATTENABLES;
 
    public ShovelItem(Tier var1, Item.Properties var2) {
       super(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
@@ -47,18 +34,18 @@ public class ShovelItem extends DiggerItem {
          return InteractionResult.PASS;
       } else {
          Player var5 = var1.getPlayer();
-         BlockState var6 = FLATTENABLES.get(var4.getBlock());
+         BlockState var6 = (BlockState)FLATTENABLES.get(var4.getBlock());
          BlockState var7 = null;
          if (var6 != null && var2.getBlockState(var3.above()).isAir()) {
             var2.playSound(var5, var3, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
             var7 = var6;
-         } else if (var4.getBlock() instanceof CampfireBlock && var4.getValue(CampfireBlock.LIT)) {
+         } else if (var4.getBlock() instanceof CampfireBlock && (Boolean)var4.getValue(CampfireBlock.LIT)) {
             if (!var2.isClientSide()) {
-               var2.levelEvent(null, 1009, var3, 0);
+               var2.levelEvent((Player)null, 1009, var3, 0);
             }
 
             CampfireBlock.dowse(var1.getPlayer(), var2, var3, var4);
-            var7 = var4.setValue(CampfireBlock.LIT, Boolean.valueOf(false));
+            var7 = (BlockState)var4.setValue(CampfireBlock.LIT, false);
          }
 
          if (var7 != null) {
@@ -75,5 +62,9 @@ public class ShovelItem extends DiggerItem {
             return InteractionResult.PASS;
          }
       }
+   }
+
+   static {
+      FLATTENABLES = Maps.newHashMap((new ImmutableMap.Builder()).put(Blocks.GRASS_BLOCK, Blocks.DIRT_PATH.defaultBlockState()).put(Blocks.DIRT, Blocks.DIRT_PATH.defaultBlockState()).put(Blocks.PODZOL, Blocks.DIRT_PATH.defaultBlockState()).put(Blocks.COARSE_DIRT, Blocks.DIRT_PATH.defaultBlockState()).put(Blocks.MYCELIUM, Blocks.DIRT_PATH.defaultBlockState()).put(Blocks.ROOTED_DIRT, Blocks.DIRT_PATH.defaultBlockState()).build());
    }
 }

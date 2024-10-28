@@ -2,6 +2,7 @@ package net.minecraft.world.level.entity;
 
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.stream.Stream;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.ClassInstanceMultiMap;
@@ -17,11 +18,11 @@ public class EntitySection<T extends EntityAccess> {
    public EntitySection(Class<T> var1, Visibility var2) {
       super();
       this.chunkStatus = var2;
-      this.storage = new ClassInstanceMultiMap<>(var1);
+      this.storage = new ClassInstanceMultiMap(var1);
    }
 
    public void add(T var1) {
-      this.storage.add((T)var1);
+      this.storage.add(var1);
    }
 
    public boolean remove(T var1) {
@@ -29,13 +30,18 @@ public class EntitySection<T extends EntityAccess> {
    }
 
    public AbortableIterationConsumer.Continuation getEntities(AABB var1, AbortableIterationConsumer<T> var2) {
-      for(EntityAccess var4 : this.storage) {
-         if (var4.getBoundingBox().intersects(var1) && var2.accept(var4).shouldAbort()) {
-            return AbortableIterationConsumer.Continuation.ABORT;
-         }
-      }
+      Iterator var3 = this.storage.iterator();
 
-      return AbortableIterationConsumer.Continuation.CONTINUE;
+      EntityAccess var4;
+      do {
+         if (!var3.hasNext()) {
+            return AbortableIterationConsumer.Continuation.CONTINUE;
+         }
+
+         var4 = (EntityAccess)var3.next();
+      } while(!var4.getBoundingBox().intersects(var1) || !var2.accept(var4).shouldAbort());
+
+      return AbortableIterationConsumer.Continuation.ABORT;
    }
 
    public <U extends T> AbortableIterationConsumer.Continuation getEntities(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<? super U> var3) {
@@ -43,14 +49,20 @@ public class EntitySection<T extends EntityAccess> {
       if (var4.isEmpty()) {
          return AbortableIterationConsumer.Continuation.CONTINUE;
       } else {
-         for(EntityAccess var6 : var4) {
-            EntityAccess var7 = (EntityAccess)var1.tryCast(var6);
-            if (var7 != null && var6.getBoundingBox().intersects(var2) && var3.accept(var7).shouldAbort()) {
-               return AbortableIterationConsumer.Continuation.ABORT;
-            }
-         }
+         Iterator var5 = var4.iterator();
 
-         return AbortableIterationConsumer.Continuation.CONTINUE;
+         EntityAccess var6;
+         EntityAccess var7;
+         do {
+            if (!var5.hasNext()) {
+               return AbortableIterationConsumer.Continuation.CONTINUE;
+            }
+
+            var6 = (EntityAccess)var5.next();
+            var7 = (EntityAccess)var1.tryCast(var6);
+         } while(var7 == null || !var6.getBoundingBox().intersects(var2) || !var3.accept(var7).shouldAbort());
+
+         return AbortableIterationConsumer.Continuation.ABORT;
       }
    }
 

@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 
 public class FutureChain implements TaskChainer, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private CompletableFuture<?> head = CompletableFuture.completedFuture(null);
+   private CompletableFuture<?> head = CompletableFuture.completedFuture((Object)null);
    private final Executor executor;
    private volatile boolean closed;
 
@@ -19,19 +19,21 @@ public class FutureChain implements TaskChainer, AutoCloseable {
       this.executor = var1;
    }
 
-   @Override
    public <T> void append(CompletableFuture<T> var1, Consumer<T> var2) {
-      this.head = this.head.<T, Object>thenCombine(var1, (var0, var1x) -> var1x).thenAcceptAsync(var2x -> {
+      this.head = this.head.thenCombine(var1, (var0, var1x) -> {
+         return var1x;
+      }).thenAcceptAsync((var2x) -> {
          if (!this.closed) {
             var2.accept(var2x);
          }
-      }, this.executor).exceptionally(var0 -> {
-         if (var0 instanceof CompletionException var1xx) {
-            var0 = var1xx.getCause();
+
+      }, this.executor).exceptionally((var0) -> {
+         if (var0 instanceof CompletionException var1) {
+            var0 = var1.getCause();
          }
 
-         if (var0 instanceof CancellationException var2xx) {
-            throw var2xx;
+         if (var0 instanceof CancellationException var2) {
+            throw var2;
          } else {
             LOGGER.error("Chain link failed, continuing to next one", var0);
             return null;
@@ -39,7 +41,6 @@ public class FutureChain implements TaskChainer, AutoCloseable {
       });
    }
 
-   @Override
    public void close() {
       this.closed = true;
    }

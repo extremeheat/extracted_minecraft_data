@@ -14,15 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class ClientboundBlockEntityDataPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEntityDataPacket> STREAM_CODEC = StreamCodec.composite(
-      BlockPos.STREAM_CODEC,
-      ClientboundBlockEntityDataPacket::getPos,
-      ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE),
-      ClientboundBlockEntityDataPacket::getType,
-      ByteBufCodecs.TRUSTED_COMPOUND_TAG,
-      ClientboundBlockEntityDataPacket::getTag,
-      ClientboundBlockEntityDataPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEntityDataPacket> STREAM_CODEC;
    private final BlockPos pos;
    private final BlockEntityType<?> type;
    private final CompoundTag tag;
@@ -43,7 +35,6 @@ public class ClientboundBlockEntityDataPacket implements Packet<ClientGamePacket
       this.tag = var3;
    }
 
-   @Override
    public PacketType<ClientboundBlockEntityDataPacket> type() {
       return GamePacketTypes.CLIENTBOUND_BLOCK_ENTITY_DATA;
    }
@@ -62,5 +53,9 @@ public class ClientboundBlockEntityDataPacket implements Packet<ClientGamePacket
 
    public CompoundTag getTag() {
       return this.tag;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ClientboundBlockEntityDataPacket::getPos, ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE), ClientboundBlockEntityDataPacket::getType, ByteBufCodecs.TRUSTED_COMPOUND_TAG, ClientboundBlockEntityDataPacket::getTag, ClientboundBlockEntityDataPacket::new);
    }
 }

@@ -4,6 +4,7 @@ import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -25,16 +26,13 @@ public class FaviconTexture implements AutoCloseable {
    }
 
    public static FaviconTexture forWorld(TextureManager var0, String var1) {
-      return new FaviconTexture(
-         var0,
-         new ResourceLocation(
-            "minecraft", "worlds/" + Util.sanitizeName(var1, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var1) + "/icon"
-         )
-      );
+      String var10006 = Util.sanitizeName(var1, ResourceLocation::validPathChar);
+      return new FaviconTexture(var0, new ResourceLocation("minecraft", "worlds/" + var10006 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var1)) + "/icon"));
    }
 
    public static FaviconTexture forServer(TextureManager var0, String var1) {
-      return new FaviconTexture(var0, new ResourceLocation("minecraft", "servers/" + Hashing.sha1().hashUnencodedChars(var1) + "/icon"));
+      String var10006 = String.valueOf(Hashing.sha1().hashUnencodedChars(var1));
+      return new FaviconTexture(var0, new ResourceLocation("minecraft", "servers/" + var10006 + "/icon"));
    }
 
    public void upload(NativeImage var1) {
@@ -48,7 +46,7 @@ public class FaviconTexture implements AutoCloseable {
                this.texture.upload();
             }
 
-            this.textureManager.register(this.textureLocation, this.texture);
+            this.textureManager.register((ResourceLocation)this.textureLocation, (AbstractTexture)this.texture);
          } catch (Throwable var3) {
             var1.close();
             this.clear();
@@ -56,7 +54,8 @@ public class FaviconTexture implements AutoCloseable {
          }
       } else {
          var1.close();
-         throw new IllegalArgumentException("Icon must be 64x64, but was " + var1.getWidth() + "x" + var1.getHeight());
+         int var10002 = var1.getWidth();
+         throw new IllegalArgumentException("Icon must be 64x64, but was " + var10002 + "x" + var1.getHeight());
       }
    }
 
@@ -67,13 +66,13 @@ public class FaviconTexture implements AutoCloseable {
          this.texture.close();
          this.texture = null;
       }
+
    }
 
    public ResourceLocation textureLocation() {
       return this.texture != null ? this.textureLocation : MISSING_LOCATION;
    }
 
-   @Override
    public void close() {
       this.clear();
       this.closed = true;

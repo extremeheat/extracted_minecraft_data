@@ -23,10 +23,10 @@ public enum ChatTrustLevel implements StringRepresentable {
    }
 
    public static ChatTrustLevel evaluate(PlayerChatMessage var0, Component var1, Instant var2) {
-      if (!var0.hasSignature() || var0.hasExpiredClient(var2)) {
-         return NOT_SECURE;
-      } else {
+      if (var0.hasSignature() && !var0.hasExpiredClient(var2)) {
          return isModified(var0, var1) ? MODIFIED : SECURE;
+      } else {
+         return NOT_SECURE;
       }
    }
 
@@ -40,7 +40,9 @@ public enum ChatTrustLevel implements StringRepresentable {
    }
 
    private static boolean containsModifiedStyle(Component var0) {
-      return var0.<Boolean>visit((var0x, var1) -> isModifiedStyle(var0x) ? Optional.of(true) : Optional.empty(), Style.EMPTY).orElse(false);
+      return (Boolean)var0.visit((var0x, var1) -> {
+         return isModifiedStyle(var0x) ? Optional.of(true) : Optional.empty();
+      }, Style.EMPTY).orElse(false);
    }
 
    private static boolean isModifiedStyle(Style var0) {
@@ -53,15 +55,22 @@ public enum ChatTrustLevel implements StringRepresentable {
 
    @Nullable
    public GuiMessageTag createTag(PlayerChatMessage var1) {
-      return switch(this) {
-         case MODIFIED -> GuiMessageTag.chatModified(var1.signedContent());
-         case NOT_SECURE -> GuiMessageTag.chatNotSecure();
-         default -> null;
-      };
+      GuiMessageTag var10000;
+      switch (this.ordinal()) {
+         case 1 -> var10000 = GuiMessageTag.chatModified(var1.signedContent());
+         case 2 -> var10000 = GuiMessageTag.chatNotSecure();
+         default -> var10000 = null;
+      }
+
+      return var10000;
    }
 
-   @Override
    public String getSerializedName() {
       return this.serializedName;
+   }
+
+   // $FF: synthetic method
+   private static ChatTrustLevel[] $values() {
+      return new ChatTrustLevel[]{SECURE, MODIFIED, NOT_SECURE};
    }
 }

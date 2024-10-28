@@ -11,19 +11,34 @@ import net.minecraft.client.resources.IndexedAssetSource;
 import net.minecraft.util.StringUtil;
 
 public class GameConfig {
-   public final GameConfig.UserData user;
+   public final UserData user;
    public final DisplayData display;
-   public final GameConfig.FolderData location;
-   public final GameConfig.GameData game;
-   public final GameConfig.QuickPlayData quickPlay;
+   public final FolderData location;
+   public final GameData game;
+   public final QuickPlayData quickPlay;
 
-   public GameConfig(GameConfig.UserData var1, DisplayData var2, GameConfig.FolderData var3, GameConfig.GameData var4, GameConfig.QuickPlayData var5) {
+   public GameConfig(UserData var1, DisplayData var2, FolderData var3, GameData var4, QuickPlayData var5) {
       super();
       this.user = var1;
       this.display = var2;
       this.location = var3;
       this.game = var4;
       this.quickPlay = var5;
+   }
+
+   public static class UserData {
+      public final User user;
+      public final PropertyMap userProperties;
+      public final PropertyMap profileProperties;
+      public final Proxy proxy;
+
+      public UserData(User var1, PropertyMap var2, PropertyMap var3, Proxy var4) {
+         super();
+         this.user = var1;
+         this.userProperties = var2;
+         this.profileProperties = var3;
+         this.proxy = var4;
+      }
    }
 
    public static class FolderData {
@@ -63,16 +78,7 @@ public class GameConfig {
       }
    }
 
-   public static record QuickPlayData(@Nullable String a, @Nullable String b, @Nullable String c, @Nullable String d) {
-      @Nullable
-      private final String path;
-      @Nullable
-      private final String singleplayer;
-      @Nullable
-      private final String multiplayer;
-      @Nullable
-      private final String realms;
-
+   public static record QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
       public QuickPlayData(@Nullable String var1, @Nullable String var2, @Nullable String var3, @Nullable String var4) {
          super();
          this.path = var1;
@@ -84,20 +90,25 @@ public class GameConfig {
       public boolean isEnabled() {
          return !StringUtil.isBlank(this.singleplayer) || !StringUtil.isBlank(this.multiplayer) || !StringUtil.isBlank(this.realms);
       }
-   }
 
-   public static class UserData {
-      public final User user;
-      public final PropertyMap userProperties;
-      public final PropertyMap profileProperties;
-      public final Proxy proxy;
+      @Nullable
+      public String path() {
+         return this.path;
+      }
 
-      public UserData(User var1, PropertyMap var2, PropertyMap var3, Proxy var4) {
-         super();
-         this.user = var1;
-         this.userProperties = var2;
-         this.profileProperties = var3;
-         this.proxy = var4;
+      @Nullable
+      public String singleplayer() {
+         return this.singleplayer;
+      }
+
+      @Nullable
+      public String multiplayer() {
+         return this.multiplayer;
+      }
+
+      @Nullable
+      public String realms() {
+         return this.realms;
       }
    }
 }

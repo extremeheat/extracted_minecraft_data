@@ -19,7 +19,6 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -47,9 +46,12 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
          var4.setWithOffset(var3, var2.nextInt(6) - var2.nextInt(6), var2.nextInt(2) - var2.nextInt(5), var2.nextInt(6) - var2.nextInt(6));
          if (var1.isEmptyBlock(var4)) {
             int var7 = 0;
+            Direction[] var8 = DIRECTIONS;
+            int var9 = var8.length;
 
-            for(Direction var11 : DIRECTIONS) {
-               BlockState var12 = var1.getBlockState(var5.setWithOffset(var4, var11));
+            for(int var10 = 0; var10 < var9; ++var10) {
+               Direction var11 = var8[var10];
+               BlockState var12 = var1.getBlockState(var5.setWithOffset(var4, (Direction)var11));
                if (var12.is(Blocks.NETHERRACK) || var12.is(Blocks.NETHER_WART_BLOCK)) {
                   ++var7;
                }
@@ -64,6 +66,7 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
             }
          }
       }
+
    }
 
    private void placeRoofWeepingVines(LevelAccessor var1, RandomSource var2, BlockPos var3) {
@@ -89,15 +92,14 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
             }
          }
       }
+
    }
 
    public static void placeWeepingVinesColumn(LevelAccessor var0, RandomSource var1, BlockPos.MutableBlockPos var2, int var3, int var4, int var5) {
       for(int var6 = 0; var6 <= var3; ++var6) {
          if (var0.isEmptyBlock(var2)) {
             if (var6 == var3 || !var0.isEmptyBlock(var2.below())) {
-               var0.setBlock(
-                  var2, Blocks.WEEPING_VINES.defaultBlockState().setValue(GrowingPlantHeadBlock.AGE, Integer.valueOf(Mth.nextInt(var1, var4, var5))), 2
-               );
+               var0.setBlock(var2, (BlockState)Blocks.WEEPING_VINES.defaultBlockState().setValue(GrowingPlantHeadBlock.AGE, Mth.nextInt(var1, var4, var5)), 2);
                break;
             }
 
@@ -106,5 +108,6 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
 
          var2.move(Direction.DOWN);
       }
+
    }
 }

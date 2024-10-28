@@ -10,14 +10,14 @@ import net.minecraft.world.flag.FeatureFlagSet;
 public interface CommandBuildContext extends HolderLookup.Provider {
    static CommandBuildContext simple(final HolderLookup.Provider var0, final FeatureFlagSet var1) {
       return new CommandBuildContext() {
-         @Override
          public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
             return var0.listRegistries();
          }
 
-         @Override
          public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1x) {
-            return var0.lookup(var1x).map(var1xxx -> var1xxx.filterFeatures(var1));
+            return var0.lookup(var1x).map((var1xx) -> {
+               return var1xx.filterFeatures(var1);
+            });
          }
       };
    }

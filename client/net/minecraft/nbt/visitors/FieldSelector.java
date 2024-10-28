@@ -3,11 +3,7 @@ package net.minecraft.nbt.visitors;
 import java.util.List;
 import net.minecraft.nbt.TagType;
 
-public record FieldSelector(List<String> a, TagType<?> b, String c) {
-   private final List<String> path;
-   private final TagType<?> type;
-   private final String name;
-
+public record FieldSelector(List<String> path, TagType<?> type, String name) {
    public FieldSelector(TagType<?> var1, String var2) {
       this(List.of(), var1, var2);
    }
@@ -25,5 +21,17 @@ public record FieldSelector(List<String> a, TagType<?> b, String c) {
       this.path = var1;
       this.type = var2;
       this.name = var3;
+   }
+
+   public List<String> path() {
+      return this.path;
+   }
+
+   public TagType<?> type() {
+      return this.type;
+   }
+
+   public String name() {
+      return this.name;
    }
 }

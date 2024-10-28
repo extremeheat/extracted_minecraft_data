@@ -6,13 +6,7 @@ import net.minecraft.server.level.ColumnPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
-public record ChunkGenStat(Duration a, ChunkPos b, ColumnPos c, ChunkStatus d, String e) implements TimedStat {
-   private final Duration duration;
-   private final ChunkPos chunkPos;
-   private final ColumnPos worldPos;
-   private final ChunkStatus status;
-   private final String level;
-
+public record ChunkGenStat(Duration duration, ChunkPos chunkPos, ColumnPos worldPos, ChunkStatus status, String level) implements TimedStat {
    public ChunkGenStat(Duration var1, ChunkPos var2, ColumnPos var3, ChunkStatus var4, String var5) {
       super();
       this.duration = var1;
@@ -23,12 +17,26 @@ public record ChunkGenStat(Duration a, ChunkPos b, ColumnPos c, ChunkStatus d, S
    }
 
    public static ChunkGenStat from(RecordedEvent var0) {
-      return new ChunkGenStat(
-         var0.getDuration(),
-         new ChunkPos(var0.getInt("chunkPosX"), var0.getInt("chunkPosX")),
-         new ColumnPos(var0.getInt("worldPosX"), var0.getInt("worldPosZ")),
-         ChunkStatus.byName(var0.getString("status")),
-         var0.getString("level")
-      );
+      return new ChunkGenStat(var0.getDuration(), new ChunkPos(var0.getInt("chunkPosX"), var0.getInt("chunkPosX")), new ColumnPos(var0.getInt("worldPosX"), var0.getInt("worldPosZ")), ChunkStatus.byName(var0.getString("status")), var0.getString("level"));
+   }
+
+   public Duration duration() {
+      return this.duration;
+   }
+
+   public ChunkPos chunkPos() {
+      return this.chunkPos;
+   }
+
+   public ColumnPos worldPos() {
+      return this.worldPos;
+   }
+
+   public ChunkStatus status() {
+      return this.status;
+   }
+
+   public String level() {
+      return this.level;
    }
 }

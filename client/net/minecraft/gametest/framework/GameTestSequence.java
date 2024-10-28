@@ -3,6 +3,7 @@ package net.minecraft.gametest.framework;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class GameTestSequence {
@@ -32,7 +33,9 @@ public class GameTestSequence {
    }
 
    public GameTestSequence thenExecute(Runnable var1) {
-      this.events.add(GameTestEvent.create(() -> this.executeWithoutFail(var1)));
+      this.events.add(GameTestEvent.create(() -> {
+         this.executeWithoutFail(var1);
+      }));
       return this;
    }
 
@@ -58,16 +61,23 @@ public class GameTestSequence {
    }
 
    public void thenSucceed() {
-      this.events.add(GameTestEvent.create(this.parent::succeed));
+      List var10000 = this.events;
+      GameTestInfo var10001 = this.parent;
+      Objects.requireNonNull(var10001);
+      var10000.add(GameTestEvent.create(var10001::succeed));
    }
 
    public void thenFail(Supplier<Exception> var1) {
-      this.events.add(GameTestEvent.create(() -> this.parent.fail((Throwable)var1.get())));
+      this.events.add(GameTestEvent.create(() -> {
+         this.parent.fail((Throwable)var1.get());
+      }));
    }
 
-   public GameTestSequence.Condition thenTrigger() {
-      GameTestSequence.Condition var1 = new GameTestSequence.Condition();
-      this.events.add(GameTestEvent.create(() -> var1.trigger(this.parent.getTick())));
+   public Condition thenTrigger() {
+      Condition var1 = new Condition();
+      this.events.add(GameTestEvent.create(() -> {
+         var1.trigger(this.parent.getTick());
+      }));
       return var1;
    }
 
@@ -76,6 +86,7 @@ public class GameTestSequence {
          this.tick(var1);
       } catch (GameTestAssertException var4) {
       }
+
    }
 
    public void tickAndFailIfNotComplete(long var1) {
@@ -84,6 +95,7 @@ public class GameTestSequence {
       } catch (GameTestAssertException var4) {
          this.parent.fail(var4);
       }
+
    }
 
    private void executeWithoutFail(Runnable var1) {
@@ -92,6 +104,7 @@ public class GameTestSequence {
       } catch (GameTestAssertException var3) {
          this.parent.fail(var3);
       }
+
    }
 
    private void tick(long var1) {
@@ -105,11 +118,13 @@ public class GameTestSequence {
          long var7 = this.lastTick;
          this.lastTick = var1;
          if (var4.expectedDelay != null && var4.expectedDelay != var5) {
-            this.parent
-               .fail(new GameTestAssertException("Succeeded in invalid tick: expected " + (var7 + var4.expectedDelay) + ", but current tick is " + var1));
+            GameTestInfo var10000 = this.parent;
+            long var10003 = var7 + var4.expectedDelay;
+            var10000.fail(new GameTestAssertException("Succeeded in invalid tick: expected " + var10003 + ", but current tick is " + var1));
             break;
          }
       }
+
    }
 
    public class Condition {

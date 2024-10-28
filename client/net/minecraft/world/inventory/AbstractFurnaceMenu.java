@@ -34,9 +34,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
       this(var1, var2, var3, var4, var5, new SimpleContainer(3), new SimpleContainerData(4));
    }
 
-   protected AbstractFurnaceMenu(
-      MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, RecipeBookType var3, int var4, Inventory var5, Container var6, ContainerData var7
-   ) {
+   protected AbstractFurnaceMenu(MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, RecipeBookType var3, int var4, Inventory var5, Container var6, ContainerData var7) {
       super(var1, var4);
       this.recipeType = var2;
       this.recipeBookType = var3;
@@ -49,66 +47,59 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
       this.addSlot(new FurnaceFuelSlot(this, var6, 1, 56, 53));
       this.addSlot(new FurnaceResultSlot(var5.player, var6, 2, 116, 35));
 
-      for(int var8 = 0; var8 < 3; ++var8) {
+      int var8;
+      for(var8 = 0; var8 < 3; ++var8) {
          for(int var9 = 0; var9 < 9; ++var9) {
             this.addSlot(new Slot(var5, var9 + var8 * 9 + 9, 8 + var9 * 18, 84 + var8 * 18));
          }
       }
 
-      for(int var10 = 0; var10 < 9; ++var10) {
-         this.addSlot(new Slot(var5, var10, 8 + var10 * 18, 142));
+      for(var8 = 0; var8 < 9; ++var8) {
+         this.addSlot(new Slot(var5, var8, 8 + var8 * 18, 142));
       }
 
       this.addDataSlots(var7);
    }
 
-   @Override
    public void fillCraftSlotsStackedContents(StackedContents var1) {
       if (this.container instanceof StackedContentsCompatible) {
          ((StackedContentsCompatible)this.container).fillStackedContents(var1);
       }
+
    }
 
-   @Override
    public void clearCraftingContent() {
       this.getSlot(0).set(ItemStack.EMPTY);
       this.getSlot(2).set(ItemStack.EMPTY);
    }
 
-   @Override
    public boolean recipeMatches(RecipeHolder<? extends Recipe<Container>> var1) {
       return var1.value().matches(this.container, this.level);
    }
 
-   @Override
    public int getResultSlotIndex() {
       return 2;
    }
 
-   @Override
    public int getGridWidth() {
       return 1;
    }
 
-   @Override
    public int getGridHeight() {
       return 1;
    }
 
-   @Override
    public int getSize() {
       return 3;
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.container.stillValid(var1);
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -155,7 +146,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
    }
 
    protected boolean canSmelt(ItemStack var1) {
-      return this.level.getRecipeManager().getRecipeFor(this.recipeType, new SimpleContainer(var1), this.level).isPresent();
+      return this.level.getRecipeManager().getRecipeFor(this.recipeType, new SimpleContainer(new ItemStack[]{var1}), this.level).isPresent();
    }
 
    protected boolean isFuel(ItemStack var1) {
@@ -181,12 +172,10 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
       return this.data.get(0) > 0;
    }
 
-   @Override
    public RecipeBookType getRecipeBookType() {
       return this.recipeBookType;
    }
 
-   @Override
    public boolean shouldMoveToInventory(int var1) {
       return var1 != 1;
    }

@@ -10,9 +10,8 @@ public class DefaultTooltipPositioner implements ClientTooltipPositioner {
       super();
    }
 
-   @Override
    public Vector2ic positionTooltip(int var1, int var2, int var3, int var4, int var5, int var6) {
-      Vector2i var7 = new Vector2i(var3, var4).add(12, -12);
+      Vector2i var7 = (new Vector2i(var3, var4)).add(12, -12);
       this.positionTooltip(var1, var2, var7, var5, var6);
       return var7;
    }
@@ -26,5 +25,6 @@ public class DefaultTooltipPositioner implements ClientTooltipPositioner {
       if (var3.y + var6 > var2) {
          var3.y = var2 - var6;
       }
+
    }
 }

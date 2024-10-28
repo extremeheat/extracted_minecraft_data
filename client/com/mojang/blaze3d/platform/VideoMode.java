@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWVidMode.Buffer;
 
 public final class VideoMode {
    private final int width;
@@ -28,7 +27,7 @@ public final class VideoMode {
       this.refreshRate = var6;
    }
 
-   public VideoMode(Buffer var1) {
+   public VideoMode(GLFWVidMode.Buffer var1) {
       super();
       this.width = var1.width();
       this.height = var1.height();
@@ -72,29 +71,21 @@ public final class VideoMode {
       return this.refreshRate;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else if (var1 != null && this.getClass() == var1.getClass()) {
          VideoMode var2 = (VideoMode)var1;
-         return this.width == var2.width
-            && this.height == var2.height
-            && this.redBits == var2.redBits
-            && this.greenBits == var2.greenBits
-            && this.blueBits == var2.blueBits
-            && this.refreshRate == var2.refreshRate;
+         return this.width == var2.width && this.height == var2.height && this.redBits == var2.redBits && this.greenBits == var2.greenBits && this.blueBits == var2.blueBits && this.refreshRate == var2.refreshRate;
       } else {
          return false;
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.width, this.height, this.redBits, this.greenBits, this.blueBits, this.refreshRate);
+      return Objects.hash(new Object[]{this.width, this.height, this.redBits, this.greenBits, this.blueBits, this.refreshRate});
    }
 
-   @Override
    public String toString() {
       return String.format(Locale.ROOT, "%sx%s@%s (%sbit)", this.width, this.height, this.refreshRate, this.redBits + this.greenBits + this.blueBits);
    }

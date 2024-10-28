@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import joptsimple.AbstractOptionSpec;
@@ -179,86 +178,62 @@ public class Main {
          WorldStem var33;
          try {
             WorldLoader.InitConfig var34 = loadOrCreateConfig(var21.getProperties(), var43, var31, var44);
-            var33 = Util.<WorldStem>blockUntilDone(
-                  var6x -> WorldLoader.load(
-                        var34,
-                        var5xx -> {
-                           Registry var6xxx = var5xx.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
-                           if (var43 != null) {
-                              LevelDataAndDimensions var12xx = LevelStorageSource.getLevelDataAndDimensions(
-                                 var43, var5xx.dataConfiguration(), var6xxx, var5xx.datapackWorldgen()
-                              );
-                              return new WorldLoader.DataLoadOutput<>(var12xx.worldData(), var12xx.dimensions().dimensionsRegistryAccess());
-                           } else {
-                              LOGGER.info("No existing world data, creating new world");
-                              LevelSettings var7xx;
-                              WorldOptions var8xx;
-                              WorldDimensions var9xx;
-                              if (var18.has(var4)) {
-                                 var7xx = MinecraftServer.DEMO_SETTINGS;
-                                 var8xx = WorldOptions.DEMO_OPTIONS;
-                                 var9xx = WorldPresets.createNormalWorldDimensions(var5xx.datapackWorldgen());
-                              } else {
-                                 DedicatedServerProperties var10xx = var21.getProperties();
-                                 var7xx = new LevelSettings(
-                                    var10xx.levelName,
-                                    var10xx.gamemode,
-                                    var10xx.hardcore,
-                                    var10xx.difficulty,
-                                    false,
-                                    new GameRules(),
-                                    var5xx.dataConfiguration()
-                                 );
-                                 var8xx = var18.has(var5) ? var10xx.worldOptions.withBonusChest(true) : var10xx.worldOptions;
-                                 var9xx = var10xx.createDimensions(var5xx.datapackWorldgen());
-                              }
-         
-                              WorldDimensions.Complete var13xx = var9xx.bake(var6xxx);
-                              Lifecycle var11xx = var13xx.lifecycle().add(var5xx.datapackWorldgen().allRegistriesLifecycle());
-                              return new WorldLoader.DataLoadOutput<>(
-                                 new PrimaryLevelData(var7xx, var8xx, var13xx.specialWorldProperty(), var11xx), var13xx.dimensionsRegistryAccess()
-                              );
-                           }
-                        },
-                        WorldStem::new,
-                        Util.backgroundExecutor(),
-                        var6x
-                     )
-               )
-               .get();
+            var33 = (WorldStem)Util.blockUntilDone((var6x) -> {
+               return WorldLoader.load(var34, (var5x) -> {
+                  Registry var6 = var5x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+                  if (var43 != null) {
+                     LevelDataAndDimensions var13 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
+                     return new WorldLoader.DataLoadOutput(var13.worldData(), var13.dimensions().dimensionsRegistryAccess());
+                  } else {
+                     LOGGER.info("No existing world data, creating new world");
+                     LevelSettings var7;
+                     WorldOptions var8;
+                     WorldDimensions var9;
+                     if (var18.has(var4)) {
+                        var7 = MinecraftServer.DEMO_SETTINGS;
+                        var8 = WorldOptions.DEMO_OPTIONS;
+                        var9 = WorldPresets.createNormalWorldDimensions(var5x.datapackWorldgen());
+                     } else {
+                        DedicatedServerProperties var10 = var21.getProperties();
+                        var7 = new LevelSettings(var10.levelName, var10.gamemode, var10.hardcore, var10.difficulty, false, new GameRules(), var5x.dataConfiguration());
+                        var8 = var18.has(var5) ? var10.worldOptions.withBonusChest(true) : var10.worldOptions;
+                        var9 = var10.createDimensions(var5x.datapackWorldgen());
+                     }
+
+                     WorldDimensions.Complete var12 = var9.bake(var6);
+                     Lifecycle var11 = var12.lifecycle().add(var5x.datapackWorldgen().allRegistriesLifecycle());
+                     return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var7, var8, var12.specialWorldProperty(), var11), var12.dimensionsRegistryAccess());
+                  }
+               }, WorldStem::new, Util.backgroundExecutor(), var6x);
+            }).get();
          } catch (Exception var39) {
-            LOGGER.warn(
-               "Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var39
-            );
+            LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var39);
             return;
          }
 
          RegistryAccess.Frozen var45 = var33.registries().compositeAccess();
          boolean var35 = var18.has(var8);
          if (var18.has(var6) || var35) {
-            forceUpgrade(var28, DataFixers.getDataFixer(), var18.has(var7), () -> true, var45, var35);
+            forceUpgrade(var28, DataFixers.getDataFixer(), var18.has(var7), () -> {
+               return true;
+            }, var45, var35);
          }
 
          WorldData var36 = var33.worldData();
          var28.saveDataTag(var45, var36);
-         final DedicatedServer var37 = MinecraftServer.spin(
-            var11x -> {
-               DedicatedServer var12xx = new DedicatedServer(
-                  var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25, LoggerChunkProgressListener::createFromGameruleRadius
-               );
-               var12xx.setPort(var18.valueOf(var13));
-               var12xx.setDemo(var18.has(var4));
-               var12xx.setId((String)var18.valueOf(var14));
-               boolean var13xx = !var18.has(var2) && !var18.valuesOf(var17).contains("nogui");
-               if (var13xx && !GraphicsEnvironment.isHeadless()) {
-                  var12xx.showGui();
-               }
-   
-               return var12xx;
+         final DedicatedServer var37 = (DedicatedServer)MinecraftServer.spin((var11x) -> {
+            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25, LoggerChunkProgressListener::createFromGameruleRadius);
+            var12.setPort((Integer)var18.valueOf(var13));
+            var12.setDemo(var18.has(var4));
+            var12.setId((String)var18.valueOf(var14));
+            boolean var13x = !var18.has(var2) && !var18.valuesOf(var17).contains("nogui");
+            if (var13x && !GraphicsEnvironment.isHeadless()) {
+               var12.showGui();
             }
-         );
+
+            return var12;
+         });
          Thread var38 = new Thread("Server Shutdown Thread") {
-            @Override
             public void run() {
                var37.halt(true);
             }
@@ -268,6 +243,7 @@ public class Main {
       } catch (Exception var42) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var42);
       }
+
    }
 
    private static void writePidFile(Path var0) {
@@ -295,9 +271,7 @@ public class Main {
       return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissionLevel);
    }
 
-   private static void forceUpgrade(
-      LevelStorageSource.LevelStorageAccess var0, DataFixer var1, boolean var2, BooleanSupplier var3, RegistryAccess var4, boolean var5
-   ) {
+   private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, DataFixer var1, boolean var2, BooleanSupplier var3, RegistryAccess var4, boolean var5) {
       LOGGER.info("Forcing world upgrade!");
       WorldUpgrader var6 = new WorldUpgrader(var0, var1, var4, var2, var5);
       Component var7 = null;
@@ -324,5 +298,6 @@ public class Main {
             }
          }
       }
+
    }
 }

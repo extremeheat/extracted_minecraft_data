@@ -7,4 +7,9 @@ public enum RenderShape {
 
    private RenderShape() {
    }
+
+   // $FF: synthetic method
+   private static RenderShape[] $values() {
+      return new RenderShape[]{INVISIBLE, ENTITYBLOCK_ANIMATED, MODEL};
+   }
 }

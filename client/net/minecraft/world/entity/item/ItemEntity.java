@@ -1,5 +1,7 @@
 package net.minecraft.world.entity.item;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -18,7 +20,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
@@ -29,12 +30,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.LubricationComponent;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemEntity extends Entity implements TraceableEntity {
-   private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
+   private static final EntityDataAccessor<ItemStack> DATA_ITEM;
    private static final float FLOAT_HEIGHT = 0.1F;
    public static final float EYE_HEIGHT = 0.2125F;
    private static final int LIFETIME = 6000;
@@ -42,7 +42,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private static final int INFINITE_LIFETIME = -32768;
    private int age;
    private int pickupDelay;
-   private int health = 5;
+   private int health;
    @Nullable
    private UUID thrower;
    @Nullable
@@ -53,6 +53,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    public ItemEntity(EntityType<? extends ItemEntity> var1, Level var2) {
       super(var1, var2);
+      this.health = 5;
       this.bobOffs = this.random.nextFloat() * 3.1415927F * 2.0F;
       this.setYRot(this.random.nextFloat() * 360.0F);
    }
@@ -70,28 +71,26 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    private ItemEntity(ItemEntity var1) {
       super(var1.getType(), var1.level());
+      this.health = 5;
       this.setItem(var1.getItem().copy());
       this.copyPosition(var1);
       this.age = var1.age;
       this.bobOffs = var1.bobOffs;
    }
 
-   @Override
    public boolean dampensVibrations() {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
-   @Override
    public Entity getOwner() {
       if (this.cachedThrower != null && !this.cachedThrower.isRemoved()) {
          return this.cachedThrower;
       } else {
          if (this.thrower != null) {
             Level var2 = this.level();
-            if (var2 instanceof ServerLevel var1) {
+            if (var2 instanceof ServerLevel) {
+               ServerLevel var1 = (ServerLevel)var2;
                this.cachedThrower = var1.getEntity(this.thrower);
                return this.cachedThrower;
             }
@@ -101,32 +100,26 @@ public class ItemEntity extends Entity implements TraceableEntity {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof ItemEntity var2) {
          this.cachedThrower = var2.cachedThrower;
       }
+
    }
 
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.NONE;
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_ITEM, ItemStack.EMPTY);
    }
 
-   @Override
    protected double getDefaultGravity() {
       return 0.04;
    }
 
-   @Override
    public void tick() {
       if (this.getItem().isEmpty()) {
          this.discard();
@@ -162,26 +155,20 @@ public class ItemEntity extends Entity implements TraceableEntity {
             float var2 = 0.98F;
             if (this.onGround()) {
                var2 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
-               LubricationComponent var3 = this.getItem().get(DataComponents.LUBRICATION);
-               if (var3 != null) {
-                  var2 = var3.applyToFriction(var2);
-               }
             }
 
             this.setDeltaMovement(this.getDeltaMovement().multiply((double)var2, 0.98, (double)var2));
             if (this.onGround()) {
-               Vec3 var7 = this.getDeltaMovement();
-               if (var7.y < 0.0) {
-                  this.setDeltaMovement(var7.multiply(1.0, -0.5, 1.0));
+               Vec3 var3 = this.getDeltaMovement();
+               if (var3.y < 0.0) {
+                  this.setDeltaMovement(var3.multiply(1.0, -0.5, 1.0));
                }
             }
          }
 
-         boolean var6 = Mth.floor(this.xo) != Mth.floor(this.getX())
-            || Mth.floor(this.yo) != Mth.floor(this.getY())
-            || Mth.floor(this.zo) != Mth.floor(this.getZ());
-         int var8 = var6 ? 2 : 40;
-         if (this.tickCount % var8 == 0 && !this.level().isClientSide && this.isMergable()) {
+         boolean var6 = Mth.floor(this.xo) != Mth.floor(this.getX()) || Mth.floor(this.yo) != Mth.floor(this.getY()) || Mth.floor(this.zo) != Mth.floor(this.getZ());
+         int var7 = var6 ? 2 : 40;
+         if (this.tickCount % var7 == 0 && !this.level().isClientSide && this.isMergable()) {
             this.mergeWithNeighbours();
          }
 
@@ -200,10 +187,10 @@ public class ItemEntity extends Entity implements TraceableEntity {
          if (!this.level().isClientSide && this.age >= 6000) {
             this.discard();
          }
+
       }
    }
 
-   @Override
    protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
       return this.getOnPos(0.999999F);
    }
@@ -216,19 +203,17 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private void setUnderLavaMovement() {
       Vec3 var1 = this.getDeltaMovement();
       this.setDeltaMovement(var1.x * 0.949999988079071, var1.y + (double)(var1.y < 0.05999999865889549 ? 5.0E-4F : 0.0F), var1.z * 0.949999988079071);
-      if (this.getItem().is(Items.HOT_POTATO)) {
-         this.setDeltaMovement(
-            var1.x + ((double)this.random.nextFloat() - 0.5) * 0.21,
-            var1.y + (double)this.random.nextFloat() * 0.1337,
-            var1.z + ((double)this.random.nextFloat() - 0.5) * 0.21
-         );
-      }
    }
 
    private void mergeWithNeighbours() {
       if (this.isMergable()) {
-         for(ItemEntity var3 : this.level()
-            .getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5, 0.0, 0.5), var1 -> var1 != this && var1.isMergable())) {
+         List var1 = this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5, 0.0, 0.5), (var1x) -> {
+            return var1x != this && var1x.isMergable();
+         });
+         Iterator var2 = var1.iterator();
+
+         while(var2.hasNext()) {
+            ItemEntity var3 = (ItemEntity)var2.next();
             if (var3.isMergable()) {
                this.tryToMerge(var3);
                if (this.isRemoved()) {
@@ -236,6 +221,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
                }
             }
          }
+
       }
    }
 
@@ -253,6 +239,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
          } else {
             merge(var1, var3, this, var2);
          }
+
       }
    }
 
@@ -279,50 +266,35 @@ public class ItemEntity extends Entity implements TraceableEntity {
       if (var3.isEmpty()) {
          var2.discard();
       }
+
    }
 
-   @Override
    public boolean fireImmune() {
       return this.getItem().has(DataComponents.FIRE_RESISTANT) || super.fireImmune();
    }
 
-   @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
+      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
+         return false;
+      } else if (!this.getItem().canBeHurtBy(var1)) {
+         return false;
+      } else if (this.level().isClientSide) {
+         return true;
       } else {
-         ItemStack var3 = this.getItem();
-         if (!var3.isEmpty() && var3.is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
-            return false;
-         } else if (!var3.canBeHurtBy(var1)) {
-            return false;
-         } else if (this.level().isClientSide) {
-            return true;
-         } else if (var3.is(ItemTags.HEATABLE_POTATOS) && var1.is(DamageTypes.LAVA)) {
-            this.setItem(var3.transmuteCopy(Items.HOT_POTATO, 1));
-
-            for(int var4 = 0; var4 < var3.getCount() - 1; ++var4) {
-               ItemEntity var5 = new ItemEntity(this);
-               var5.getItem().setCount(1);
-               this.level().addFreshEntity(var5);
-            }
-
-            return true;
-         } else {
-            this.markHurt();
-            this.health = (int)((float)this.health - var2);
-            this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-            if (this.health <= 0) {
-               var3.onDestroyed(this);
-               this.discard();
-            }
-
-            return true;
+         this.markHurt();
+         this.health = (int)((float)this.health - var2);
+         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+         if (this.health <= 0) {
+            this.getItem().onDestroyed(this);
+            this.discard();
          }
+
+         return true;
       }
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
@@ -338,9 +310,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
       if (!this.getItem().isEmpty()) {
          var1.put("Item", this.getItem().save(this.registryAccess()));
       }
+
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       this.health = var1.getShort("Health");
       this.age = var1.getShort("Age");
@@ -359,7 +331,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
       if (var1.contains("Item", 10)) {
          CompoundTag var2 = var1.getCompound("Item");
-         this.setItem(ItemStack.parse(this.registryAccess(), var2).orElse(ItemStack.EMPTY));
+         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var2).orElse(ItemStack.EMPTY));
       } else {
          this.setItem(ItemStack.EMPTY);
       }
@@ -367,9 +339,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
       if (this.getItem().isEmpty()) {
          this.discard();
       }
+
    }
 
-   @Override
    public void playerTouch(Player var1) {
       if (!this.level().isClientSide) {
          ItemStack var2 = this.getItem();
@@ -385,45 +357,43 @@ public class ItemEntity extends Entity implements TraceableEntity {
             var1.awardStat(Stats.ITEM_PICKED_UP.get(var3), var4);
             var1.onItemPickup(this);
          }
+
       }
    }
 
-   @Override
    public Component getName() {
       Component var1 = this.getCustomName();
       return (Component)(var1 != null ? var1 : Component.translatable(this.getItem().getDescriptionId()));
    }
 
-   @Override
    public boolean isAttackable() {
       return false;
    }
 
    @Nullable
-   @Override
-   public Entity changeDimension(ServerLevel var1, boolean var2) {
-      Entity var3 = super.changeDimension(var1, var2);
-      if (!this.level().isClientSide && var3 instanceof ItemEntity) {
-         ((ItemEntity)var3).mergeWithNeighbours();
+   public Entity changeDimension(ServerLevel var1) {
+      Entity var2 = super.changeDimension(var1);
+      if (!this.level().isClientSide && var2 instanceof ItemEntity) {
+         ((ItemEntity)var2).mergeWithNeighbours();
       }
 
-      return var3;
+      return var2;
    }
 
    public ItemStack getItem() {
-      return this.getEntityData().get(DATA_ITEM);
+      return (ItemStack)this.getEntityData().get(DATA_ITEM);
    }
 
    public void setItem(ItemStack var1) {
       this.getEntityData().set(DATA_ITEM, var1);
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       super.onSyncedDataUpdated(var1);
       if (DATA_ITEM.equals(var1)) {
          this.getItem().setEntityRepresentation(this);
       }
+
    }
 
    public void setTarget(@Nullable UUID var1) {
@@ -480,29 +450,28 @@ public class ItemEntity extends Entity implements TraceableEntity {
       return new ItemEntity(this);
    }
 
-   @Override
    public SoundSource getSoundSource() {
       return SoundSource.AMBIENT;
    }
 
-   @Override
    public float getVisualRotationYInDegrees() {
       return 180.0F - this.getSpin(0.5F) / 6.2831855F * 360.0F;
    }
 
-   @Override
    public SlotAccess getSlot(int var1) {
       return var1 == 0 ? new SlotAccess() {
-         @Override
          public ItemStack get() {
             return ItemEntity.this.getItem();
          }
 
-         @Override
          public boolean set(ItemStack var1) {
             ItemEntity.this.setItem(var1);
             return true;
          }
       } : super.getSlot(var1);
+   }
+
+   static {
+      DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
    }
 }

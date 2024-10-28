@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
@@ -23,7 +24,6 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<DripstoneClusterConfiguration> var1) {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
@@ -50,18 +50,7 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
       }
    }
 
-   private void placeColumn(
-      WorldGenLevel var1,
-      RandomSource var2,
-      BlockPos var3,
-      int var4,
-      int var5,
-      float var6,
-      double var7,
-      int var9,
-      float var10,
-      DripstoneClusterConfiguration var11
-   ) {
+   private void placeColumn(WorldGenLevel var1, RandomSource var2, BlockPos var3, int var4, int var5, float var6, double var7, int var9, float var10, DripstoneClusterConfiguration var11) {
       Optional var12 = Column.scan(var1, var3, var11.floorToCeilingSearchRange, DripstoneUtils::isEmptyOrWater, DripstoneUtils::isNeitherEmptyNorWater);
       if (!var12.isEmpty()) {
          OptionalInt var13 = ((Column)var12.get()).getCeiling();
@@ -80,8 +69,9 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
             OptionalInt var30 = var16.getFloor();
             boolean var19 = var2.nextDouble() < var7;
             int var18;
+            int var20;
             if (var13.isPresent() && var19 && !this.isLava(var1, var3.atY(var13.getAsInt()))) {
-               int var20 = var11.dripstoneBlockLayerThickness.sample(var2);
+               var20 = var11.dripstoneBlockLayerThickness.sample(var2);
                this.replaceBlocksWithDripstoneBlocks(var1, var3.atY(var13.getAsInt()), var20, Direction.UP);
                int var21;
                if (var30.isPresent()) {
@@ -95,46 +85,44 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
                var18 = 0;
             }
 
-            boolean var32 = var2.nextDouble() < var7;
-            int var31;
-            if (var30.isPresent() && var32 && !this.isLava(var1, var3.atY(var30.getAsInt()))) {
-               int var22 = var11.dripstoneBlockLayerThickness.sample(var2);
+            boolean var31 = var2.nextDouble() < var7;
+            int var22;
+            if (var30.isPresent() && var31 && !this.isLava(var1, var3.atY(var30.getAsInt()))) {
+               var22 = var11.dripstoneBlockLayerThickness.sample(var2);
                this.replaceBlocksWithDripstoneBlocks(var1, var3.atY(var30.getAsInt()), var22, Direction.DOWN);
                if (var13.isPresent()) {
-                  var31 = Math.max(
-                     0, var18 + Mth.randomBetweenInclusive(var2, -var11.maxStalagmiteStalactiteHeightDiff, var11.maxStalagmiteStalactiteHeightDiff)
-                  );
+                  var20 = Math.max(0, var18 + Mth.randomBetweenInclusive(var2, -var11.maxStalagmiteStalactiteHeightDiff, var11.maxStalagmiteStalactiteHeightDiff));
                } else {
-                  var31 = this.getDripstoneHeight(var2, var4, var5, var10, var9, var11);
+                  var20 = this.getDripstoneHeight(var2, var4, var5, var10, var9, var11);
                }
             } else {
-               var31 = 0;
+               var20 = 0;
             }
 
             int var23;
-            int var33;
-            if (var13.isPresent() && var30.isPresent() && var13.getAsInt() - var18 <= var30.getAsInt() + var31) {
+            if (var13.isPresent() && var30.isPresent() && var13.getAsInt() - var18 <= var30.getAsInt() + var20) {
                int var24 = var30.getAsInt();
                int var25 = var13.getAsInt();
                int var26 = Math.max(var25 - var18, var24 + 1);
-               int var27 = Math.min(var24 + var31, var25 - 1);
+               int var27 = Math.min(var24 + var20, var25 - 1);
                int var28 = Mth.randomBetweenInclusive(var2, var26, var27 + 1);
                int var29 = var28 - 1;
-               var33 = var25 - var28;
+               var22 = var25 - var28;
                var23 = var29 - var24;
             } else {
-               var33 = var18;
-               var23 = var31;
+               var22 = var18;
+               var23 = var20;
             }
 
-            boolean var34 = var2.nextBoolean() && var33 > 0 && var23 > 0 && var16.getHeight().isPresent() && var33 + var23 == var16.getHeight().getAsInt();
+            boolean var32 = var2.nextBoolean() && var22 > 0 && var23 > 0 && var16.getHeight().isPresent() && var22 + var23 == var16.getHeight().getAsInt();
             if (var13.isPresent()) {
-               DripstoneUtils.growPointedDripstone(var1, var3.atY(var13.getAsInt() - 1), Direction.DOWN, var33, var34);
+               DripstoneUtils.growPointedDripstone(var1, var3.atY(var13.getAsInt() - 1), Direction.DOWN, var22, var32);
             }
 
             if (var30.isPresent()) {
-               DripstoneUtils.growPointedDripstone(var1, var3.atY(var30.getAsInt() + 1), Direction.UP, var23, var34);
+               DripstoneUtils.growPointedDripstone(var1, var3.atY(var30.getAsInt() + 1), Direction.UP, var23, var32);
             }
+
          }
       }
    }
@@ -159,13 +147,18 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
          if (var1.getBlockState(var2.above()).getFluidState().is(FluidTags.WATER)) {
             return false;
          } else {
-            for(Direction var5 : Direction.Plane.HORIZONTAL) {
-               if (!this.canBeAdjacentToWater(var1, var2.relative(var5))) {
-                  return false;
-               }
-            }
+            Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-            return this.canBeAdjacentToWater(var1, var2.below());
+            Direction var5;
+            do {
+               if (!var4.hasNext()) {
+                  return this.canBeAdjacentToWater(var1, var2.below());
+               }
+
+               var5 = (Direction)var4.next();
+            } while(this.canBeAdjacentToWater(var1, var2.relative(var5)));
+
+            return false;
          }
       } else {
          return false;
@@ -187,15 +180,14 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
 
          var5.move(var4);
       }
+
    }
 
    private double getChanceOfStalagmiteOrStalactite(int var1, int var2, int var3, int var4, DripstoneClusterConfiguration var5) {
       int var6 = var1 - Math.abs(var3);
       int var7 = var2 - Math.abs(var4);
       int var8 = Math.min(var6, var7);
-      return (double)Mth.clampedMap(
-         (float)var8, 0.0F, (float)var5.maxDistanceFromEdgeAffectingChanceOfDripstoneColumn, var5.chanceOfDripstoneColumnAtMaxDistanceFromCenter, 1.0F
-      );
+      return (double)Mth.clampedMap((float)var8, 0.0F, (float)var5.maxDistanceFromEdgeAffectingChanceOfDripstoneColumn, var5.chanceOfDripstoneColumnAtMaxDistanceFromCenter, 1.0F);
    }
 
    private static float randomBetweenBiased(RandomSource var0, float var1, float var2, float var3, float var4) {

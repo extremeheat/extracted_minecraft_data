@@ -25,11 +25,14 @@ public class KeyBindsScreen extends OptionsSubScreen {
       super(var1, var2, TITLE);
    }
 
-   @Override
    protected void init() {
-      this.keyBindsList = this.addRenderableWidget(new KeyBindsList(this, this.minecraft));
-      this.resetButton = Button.builder(Component.translatable("controls.resetAll"), var1 -> {
-         for(KeyMapping var5 : this.options.keyMappings) {
+      this.keyBindsList = (KeyBindsList)this.addRenderableWidget(new KeyBindsList(this, this.minecraft));
+      this.resetButton = Button.builder(Component.translatable("controls.resetAll"), (var1) -> {
+         KeyMapping[] var2 = this.options.keyMappings;
+         int var3 = var2.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            KeyMapping var5 = var2[var4];
             var5.setKey(var5.getDefaultKey());
          }
 
@@ -38,20 +41,19 @@ public class KeyBindsScreen extends OptionsSubScreen {
       super.init();
    }
 
-   @Override
    protected void addFooter() {
-      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var1.addChild(this.resetButton);
-      var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+         this.onClose();
+      }).build());
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
       this.keyBindsList.updateSize(this.width, this.layout);
    }
 
-   @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.selectedKey != null) {
          this.options.setKey(this.selectedKey, InputConstants.Type.MOUSE.getOrCreate(var5));
@@ -63,7 +65,6 @@ public class KeyBindsScreen extends OptionsSubScreen {
       }
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (this.selectedKey != null) {
          if (var1 == 256) {
@@ -81,12 +82,14 @@ public class KeyBindsScreen extends OptionsSubScreen {
       }
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       boolean var5 = false;
+      KeyMapping[] var6 = this.options.keyMappings;
+      int var7 = var6.length;
 
-      for(KeyMapping var9 : this.options.keyMappings) {
+      for(int var8 = 0; var8 < var7; ++var8) {
+         KeyMapping var9 = var6[var8];
          if (!var9.isDefault()) {
             var5 = true;
             break;

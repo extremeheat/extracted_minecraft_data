@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -40,14 +41,28 @@ public class LookAndFollowTradingPlayerSink extends Behavior<Villager> {
       this.followPlayer(var2);
    }
 
-   @Override
    protected boolean timedOut(long var1) {
       return false;
    }
 
    private void followPlayer(Villager var1) {
       Brain var2 = var1.getBrain();
-      var2.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var1.getTradingPlayer(), false), this.speedModifier, 2));
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var1.getTradingPlayer(), true));
+      var2.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new EntityTracker(var1.getTradingPlayer(), false), this.speedModifier, 2)));
+      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1.getTradingPlayer(), true)));
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      this.start(var1, (Villager)var2, var3);
    }
 }

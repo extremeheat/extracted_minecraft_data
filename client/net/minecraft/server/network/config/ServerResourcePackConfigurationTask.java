@@ -16,16 +16,10 @@ public class ServerResourcePackConfigurationTask implements ConfigurationTask {
       this.info = var1;
    }
 
-   @Override
    public void start(Consumer<Packet<?>> var1) {
-      var1.accept(
-         new ClientboundResourcePackPushPacket(
-            this.info.id(), this.info.url(), this.info.hash(), this.info.isRequired(), Optional.ofNullable(this.info.prompt())
-         )
-      );
+      var1.accept(new ClientboundResourcePackPushPacket(this.info.id(), this.info.url(), this.info.hash(), this.info.isRequired(), Optional.ofNullable(this.info.prompt())));
    }
 
-   @Override
    public ConfigurationTask.Type type() {
       return TYPE;
    }

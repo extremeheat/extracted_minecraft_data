@@ -12,19 +12,17 @@ public class GuardianAttackSoundInstance extends AbstractTickableSoundInstance {
    private final Guardian guardian;
 
    public GuardianAttackSoundInstance(Guardian var1) {
-      super(var1.isToxic() ? SoundEvents.TOXIFIN_ATTACK : SoundEvents.GUARDIAN_ATTACK, SoundSource.HOSTILE, SoundInstance.createUnseededRandom());
+      super(SoundEvents.GUARDIAN_ATTACK, SoundSource.HOSTILE, SoundInstance.createUnseededRandom());
       this.guardian = var1;
       this.attenuation = SoundInstance.Attenuation.NONE;
       this.looping = true;
       this.delay = 0;
    }
 
-   @Override
    public boolean canPlaySound() {
       return !this.guardian.isSilent();
    }
 
-   @Override
    public void tick() {
       if (!this.guardian.isRemoved() && this.guardian.getTarget() == null) {
          this.x = (double)((float)this.guardian.getX());

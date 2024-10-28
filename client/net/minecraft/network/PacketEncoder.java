@@ -29,7 +29,7 @@ public class PacketEncoder<T extends PacketListener> extends MessageToByteEncode
          this.protocolInfo.codec().encode(var3, var2);
          int var6 = var3.writerIndex() - var5;
          if (var6 > 8388608) {
-            throw new IllegalArgumentException("Packet too big (is " + var6 + ", should be less than 8388608): " + var2);
+            throw new IllegalArgumentException("Packet too big (is " + var6 + ", should be less than 8388608): " + String.valueOf(var2));
          }
 
          JvmProfiler.INSTANCE.onPacketSent(this.protocolInfo.id(), var4, var1.channel().remoteAddress(), var6);
@@ -43,5 +43,11 @@ public class PacketEncoder<T extends PacketListener> extends MessageToByteEncode
       } finally {
          ProtocolSwapHandler.handleOutboundTerminalPacket(var1, var2);
       }
+
+   }
+
+   // $FF: synthetic method
+   protected void encode(ChannelHandlerContext var1, Object var2, ByteBuf var3) throws Exception {
+      this.encode(var1, (Packet)var2, var3);
    }
 }

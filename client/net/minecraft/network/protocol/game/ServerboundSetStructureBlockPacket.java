@@ -13,9 +13,7 @@ import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.properties.StructureMode;
 
 public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSetStructureBlockPacket> STREAM_CODEC = Packet.codec(
-      ServerboundSetStructureBlockPacket::write, ServerboundSetStructureBlockPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetStructureBlockPacket> STREAM_CODEC = Packet.codec(ServerboundSetStructureBlockPacket::write, ServerboundSetStructureBlockPacket::new);
    private static final int FLAG_IGNORE_ENTITIES = 1;
    private static final int FLAG_SHOW_AIR = 2;
    private static final int FLAG_SHOW_BOUNDING_BOX = 4;
@@ -34,22 +32,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
    private final float integrity;
    private final long seed;
 
-   public ServerboundSetStructureBlockPacket(
-      BlockPos var1,
-      StructureBlockEntity.UpdateType var2,
-      StructureMode var3,
-      String var4,
-      BlockPos var5,
-      Vec3i var6,
-      Mirror var7,
-      Rotation var8,
-      String var9,
-      boolean var10,
-      boolean var11,
-      boolean var12,
-      float var13,
-      long var14
-   ) {
+   public ServerboundSetStructureBlockPacket(BlockPos var1, StructureBlockEntity.UpdateType var2, StructureMode var3, String var4, BlockPos var5, Vec3i var6, Mirror var7, Rotation var8, String var9, boolean var10, boolean var11, boolean var12, float var13, long var14) {
       super();
       this.pos = var1;
       this.updateType = var2;
@@ -70,15 +53,15 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
    private ServerboundSetStructureBlockPacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
-      this.updateType = var1.readEnum(StructureBlockEntity.UpdateType.class);
-      this.mode = var1.readEnum(StructureMode.class);
+      this.updateType = (StructureBlockEntity.UpdateType)var1.readEnum(StructureBlockEntity.UpdateType.class);
+      this.mode = (StructureMode)var1.readEnum(StructureMode.class);
       this.name = var1.readUtf();
       boolean var2 = true;
       this.offset = new BlockPos(Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48));
       boolean var3 = true;
       this.size = new Vec3i(Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48));
-      this.mirror = var1.readEnum(Mirror.class);
-      this.rotation = var1.readEnum(Rotation.class);
+      this.mirror = (Mirror)var1.readEnum(Mirror.class);
+      this.rotation = (Rotation)var1.readEnum(Rotation.class);
       this.data = var1.readUtf(128);
       this.integrity = Mth.clamp(var1.readFloat(), 0.0F, 1.0F);
       this.seed = var1.readVarLong();
@@ -120,7 +103,6 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       var1.writeByte(var2);
    }
 
-   @Override
    public PacketType<ServerboundSetStructureBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_STRUCTURE_BLOCK;
    }

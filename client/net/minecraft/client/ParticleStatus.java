@@ -18,17 +18,20 @@ public enum ParticleStatus implements OptionEnum {
       this.key = var4;
    }
 
-   @Override
    public String getKey() {
       return this.key;
    }
 
-   @Override
    public int getId() {
       return this.id;
    }
 
    public static ParticleStatus byId(int var0) {
-      return BY_ID.apply(var0);
+      return (ParticleStatus)BY_ID.apply(var0);
+   }
+
+   // $FF: synthetic method
+   private static ParticleStatus[] $values() {
+      return new ParticleStatus[]{ALL, DECREASED, MINIMAL};
    }
 }

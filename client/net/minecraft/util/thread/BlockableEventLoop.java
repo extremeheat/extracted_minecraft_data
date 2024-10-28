@@ -47,13 +47,12 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       return this.pendingRunnables.size();
    }
 
-   @Override
    public String name() {
       return this.name;
    }
 
    public <V> CompletableFuture<V> submit(Supplier<V> var1) {
-      return this.scheduleExecutables() ? CompletableFuture.supplyAsync(var1, this) : CompletableFuture.completedFuture((V)var1.get());
+      return this.scheduleExecutables() ? CompletableFuture.supplyAsync(var1, this) : CompletableFuture.completedFuture(var1.get());
    }
 
    private CompletableFuture<Void> submitAsync(Runnable var1) {
@@ -69,7 +68,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
          return this.submitAsync(var1);
       } else {
          var1.run();
-         return CompletableFuture.completedFuture(null);
+         return CompletableFuture.completedFuture((Object)null);
       }
    }
 
@@ -79,20 +78,21 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       } else {
          var1.run();
       }
+
    }
 
    public void tell(R var1) {
-      this.pendingRunnables.add((R)var1);
+      this.pendingRunnables.add(var1);
       LockSupport.unpark(this.getRunningThread());
    }
 
-   @Override
    public void execute(Runnable var1) {
       if (this.scheduleExecutables()) {
          this.tell(this.wrapRunnable(var1));
       } else {
          var1.run();
       }
+
    }
 
    public void executeIfPossible(Runnable var1) {
@@ -106,16 +106,17 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    protected void runAllTasks() {
       while(this.pollTask()) {
       }
+
    }
 
    public boolean pollTask() {
-      Runnable var1 = this.pendingRunnables.peek();
+      Runnable var1 = (Runnable)this.pendingRunnables.peek();
       if (var1 == null) {
          return false;
-      } else if (this.blockingCount == 0 && !this.shouldRun((R)var1)) {
+      } else if (this.blockingCount == 0 && !this.shouldRun(var1)) {
          return false;
       } else {
-         this.doRunTask(this.pendingRunnables.remove());
+         this.doRunTask((Runnable)this.pendingRunnables.remove());
          return true;
       }
    }
@@ -132,6 +133,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       } finally {
          --this.blockingCount;
       }
+
    }
 
    public void waitForTasks() {
@@ -144,11 +146,16 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
          var1.run();
       } catch (Exception var3) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var3);
+         throw var3;
       }
    }
 
-   @Override
    public List<MetricSampler> profiledMetrics() {
       return ImmutableList.of(MetricSampler.create(this.name + "-pending-tasks", MetricCategory.EVENT_LOOPS, this::getPendingTasksCount));
+   }
+
+   // $FF: synthetic method
+   public void tell(Object var1) {
+      this.tell((Runnable)var1);
    }
 }

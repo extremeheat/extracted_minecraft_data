@@ -12,7 +12,7 @@ public class PistonMath {
       double var4 = var2 * (double)var1.getAxisDirection().getStep();
       double var6 = Math.min(var4, 0.0);
       double var8 = Math.max(var4, 0.0);
-      switch(var1) {
+      switch (var1) {
          case WEST:
             return new AABB(var0.minX + var6, var0.minY, var0.minZ, var0.minX + var8, var0.maxY, var0.maxZ);
          case EAST:

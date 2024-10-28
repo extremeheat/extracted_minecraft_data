@@ -13,7 +13,6 @@ public class EnderEyesLayer<T extends LivingEntity> extends EyesLayer<T, Enderma
       super(var1);
    }
 
-   @Override
    public RenderType renderType() {
       return ENDERMAN_EYES;
    }

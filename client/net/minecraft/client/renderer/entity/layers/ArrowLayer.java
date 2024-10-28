@@ -20,12 +20,10 @@ public class ArrowLayer<T extends LivingEntity, M extends PlayerModel<T>> extend
       this.dispatcher = var1.getEntityRenderDispatcher();
    }
 
-   @Override
    protected int numStuck(T var1) {
       return var1.getArrowCount();
    }
 
-   @Override
    protected void renderStuckItem(PoseStack var1, MultiBufferSource var2, int var3, Entity var4, float var5, float var6, float var7, float var8) {
       float var9 = Mth.sqrt(var5 * var5 + var7 * var7);
       Arrow var10 = new Arrow(var4.level(), var4.getX(), var4.getY(), var4.getZ(), ItemStack.EMPTY);

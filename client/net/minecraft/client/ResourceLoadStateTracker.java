@@ -14,29 +14,29 @@ import org.slf4j.Logger;
 public class ResourceLoadStateTracker {
    private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
-   private ResourceLoadStateTracker.ReloadState reloadState;
+   private ReloadState reloadState;
    private int reloadCount;
 
    public ResourceLoadStateTracker() {
       super();
    }
 
-   public void startReload(ResourceLoadStateTracker.ReloadReason var1, List<PackResources> var2) {
+   public void startReload(ReloadReason var1, List<PackResources> var2) {
       ++this.reloadCount;
       if (this.reloadState != null && !this.reloadState.finished) {
          LOGGER.warn("Reload already ongoing, replacing");
       }
 
-      this.reloadState = new ResourceLoadStateTracker.ReloadState(var1, var2.stream().map(PackResources::packId).collect(ImmutableList.toImmutableList()));
+      this.reloadState = new ReloadState(var1, (List)var2.stream().map(PackResources::packId).collect(ImmutableList.toImmutableList()));
    }
 
    public void startRecovery(Throwable var1) {
       if (this.reloadState == null) {
          LOGGER.warn("Trying to signal reload recovery, but nothing was started");
-         this.reloadState = new ResourceLoadStateTracker.ReloadState(ResourceLoadStateTracker.ReloadReason.UNKNOWN, ImmutableList.of());
+         this.reloadState = new ReloadState(ResourceLoadStateTracker.ReloadReason.UNKNOWN, ImmutableList.of());
       }
 
-      this.reloadState.recoveryReloadInfo = new ResourceLoadStateTracker.RecoveryInfo(var1);
+      this.reloadState.recoveryReloadInfo = new RecoveryInfo(var1);
    }
 
    public void finishReload() {
@@ -45,31 +45,41 @@ public class ResourceLoadStateTracker {
       } else {
          this.reloadState.finished = true;
       }
+
    }
 
    public void fillCrashReport(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Last reload");
-      var2.setDetail("Reload number", this.reloadCount);
+      var2.setDetail("Reload number", (Object)this.reloadCount);
       if (this.reloadState != null) {
          this.reloadState.fillCrashInfo(var2);
       }
+
    }
 
-   static class RecoveryInfo {
-      private final Throwable error;
+   static class ReloadState {
+      private final ReloadReason reloadReason;
+      private final List<String> packs;
+      @Nullable
+      RecoveryInfo recoveryReloadInfo;
+      boolean finished;
 
-      RecoveryInfo(Throwable var1) {
+      ReloadState(ReloadReason var1, List<String> var2) {
          super();
-         this.error = var1;
+         this.reloadReason = var1;
+         this.packs = var2;
       }
 
       public void fillCrashInfo(CrashReportCategory var1) {
-         var1.setDetail("Recovery", "Yes");
-         var1.setDetail("Recovery reason", () -> {
-            StringWriter var1xx = new StringWriter();
-            this.error.printStackTrace(new PrintWriter(var1xx));
-            return var1xx.toString();
+         var1.setDetail("Reload reason", (Object)this.reloadReason.name);
+         var1.setDetail("Finished", (Object)(this.finished ? "Yes" : "No"));
+         var1.setDetail("Packs", () -> {
+            return String.join(", ", this.packs);
          });
+         if (this.recoveryReloadInfo != null) {
+            this.recoveryReloadInfo.fillCrashInfo(var1);
+         }
+
       }
    }
 
@@ -83,28 +93,28 @@ public class ResourceLoadStateTracker {
       private ReloadReason(String var3) {
          this.name = var3;
       }
+
+      // $FF: synthetic method
+      private static ReloadReason[] $values() {
+         return new ReloadReason[]{INITIAL, MANUAL, UNKNOWN};
+      }
    }
 
-   static class ReloadState {
-      private final ResourceLoadStateTracker.ReloadReason reloadReason;
-      private final List<String> packs;
-      @Nullable
-      ResourceLoadStateTracker.RecoveryInfo recoveryReloadInfo;
-      boolean finished;
+   private static class RecoveryInfo {
+      private final Throwable error;
 
-      ReloadState(ResourceLoadStateTracker.ReloadReason var1, List<String> var2) {
+      RecoveryInfo(Throwable var1) {
          super();
-         this.reloadReason = var1;
-         this.packs = var2;
+         this.error = var1;
       }
 
       public void fillCrashInfo(CrashReportCategory var1) {
-         var1.setDetail("Reload reason", this.reloadReason.name);
-         var1.setDetail("Finished", this.finished ? "Yes" : "No");
-         var1.setDetail("Packs", () -> String.join(", ", this.packs));
-         if (this.recoveryReloadInfo != null) {
-            this.recoveryReloadInfo.fillCrashInfo(var1);
-         }
+         var1.setDetail("Recovery", (Object)"Yes");
+         var1.setDetail("Recovery reason", () -> {
+            StringWriter var1 = new StringWriter();
+            this.error.printStackTrace(new PrintWriter(var1));
+            return var1.toString();
+         });
       }
    }
 }

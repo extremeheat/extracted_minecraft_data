@@ -13,7 +13,6 @@ public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
       super(var1);
    }
 
-   @Override
    protected void makeCap(LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6) {
       for(int var7 = var4 - 3; var7 <= var4; ++var7) {
          int var8 = var7 < var4 ? var6.foliageRadius : var6.foliageRadius - 1;
@@ -31,16 +30,8 @@ public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
                   var5.setWithOffset(var3, var10, var7, var11);
                   if (!var1.getBlockState(var5).isSolidRender(var1, var5)) {
                      BlockState var18 = var6.capProvider.getState(var2, var3);
-                     if (var18.hasProperty(HugeMushroomBlock.WEST)
-                        && var18.hasProperty(HugeMushroomBlock.EAST)
-                        && var18.hasProperty(HugeMushroomBlock.NORTH)
-                        && var18.hasProperty(HugeMushroomBlock.SOUTH)
-                        && var18.hasProperty(HugeMushroomBlock.UP)) {
-                        var18 = var18.setValue(HugeMushroomBlock.UP, Boolean.valueOf(var7 >= var4 - 1))
-                           .setValue(HugeMushroomBlock.WEST, Boolean.valueOf(var10 < -var9))
-                           .setValue(HugeMushroomBlock.EAST, Boolean.valueOf(var10 > var9))
-                           .setValue(HugeMushroomBlock.NORTH, Boolean.valueOf(var11 < -var9))
-                           .setValue(HugeMushroomBlock.SOUTH, Boolean.valueOf(var11 > var9));
+                     if (var18.hasProperty(HugeMushroomBlock.WEST) && var18.hasProperty(HugeMushroomBlock.EAST) && var18.hasProperty(HugeMushroomBlock.NORTH) && var18.hasProperty(HugeMushroomBlock.SOUTH) && var18.hasProperty(HugeMushroomBlock.UP)) {
+                        var18 = (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var18.setValue(HugeMushroomBlock.UP, var7 >= var4 - 1)).setValue(HugeMushroomBlock.WEST, var10 < -var9)).setValue(HugeMushroomBlock.EAST, var10 > var9)).setValue(HugeMushroomBlock.NORTH, var11 < -var9)).setValue(HugeMushroomBlock.SOUTH, var11 > var9);
                      }
 
                      this.setBlock(var1, var5, var18);
@@ -49,9 +40,9 @@ public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
             }
          }
       }
+
    }
 
-   @Override
    protected int getTreeRadiusForHeight(int var1, int var2, int var3, int var4) {
       int var5 = 0;
       if (var4 < var2 && var4 >= var2 - 3) {

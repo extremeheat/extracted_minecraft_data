@@ -10,7 +10,6 @@ public class FillLayerFeature extends Feature<LayerConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<LayerConfiguration> var1) {
       BlockPos var2 = var1.origin();
       LayerConfiguration var3 = (LayerConfiguration)var1.config();

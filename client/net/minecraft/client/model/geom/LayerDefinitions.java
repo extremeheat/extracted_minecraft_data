@@ -1,7 +1,6 @@
 package net.minecraft.client.model.geom;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,7 +10,6 @@ import net.minecraft.client.model.ArmorStandArmorModel;
 import net.minecraft.client.model.ArmorStandModel;
 import net.minecraft.client.model.AxolotlModel;
 import net.minecraft.client.model.BatModel;
-import net.minecraft.client.model.BatatoModel;
 import net.minecraft.client.model.BeeModel;
 import net.minecraft.client.model.BlazeModel;
 import net.minecraft.client.model.BoatModel;
@@ -47,7 +45,6 @@ import net.minecraft.client.model.LavaSlimeModel;
 import net.minecraft.client.model.LeashKnotModel;
 import net.minecraft.client.model.LlamaModel;
 import net.minecraft.client.model.LlamaSpitModel;
-import net.minecraft.client.model.MegaSpudModel;
 import net.minecraft.client.model.MinecartModel;
 import net.minecraft.client.model.OcelotModel;
 import net.minecraft.client.model.PandaModel;
@@ -120,7 +117,7 @@ public class LayerDefinitions {
    }
 
    public static Map<ModelLayerLocation, LayerDefinition> createRoots() {
-      Builder var0 = ImmutableMap.builder();
+      ImmutableMap.Builder var0 = ImmutableMap.builder();
       LayerDefinition var1 = LayerDefinition.create(HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F), 64, 64);
       LayerDefinition var2 = LayerDefinition.create(HumanoidArmorModel.createBodyLayer(OUTER_ARMOR_DEFORMATION), 64, 32);
       LayerDefinition var3 = LayerDefinition.create(HumanoidArmorModel.createBodyLayer(new CubeDeformation(1.02F)), 64, 32);
@@ -148,7 +145,6 @@ public class LayerDefinitions {
       var0.put(ModelLayers.AXOLOTL, AxolotlModel.createBodyLayer());
       var0.put(ModelLayers.BANNER, BannerRenderer.createBodyLayer());
       var0.put(ModelLayers.BAT, BatModel.createBodyLayer());
-      var0.put(ModelLayers.BATATO, BatatoModel.createBodyLayer());
       var0.put(ModelLayers.BED_FOOT, BedRenderer.createFootLayer());
       var0.put(ModelLayers.BED_HEAD, BedRenderer.createHeadLayer());
       var0.put(ModelLayers.BEE, BeeModel.createBodyLayer());
@@ -188,10 +184,8 @@ public class LayerDefinitions {
       var0.put(ModelLayers.DROWNED_INNER_ARMOR, var4);
       var0.put(ModelLayers.DROWNED_OUTER_ARMOR, var4);
       var0.put(ModelLayers.DROWNED_OUTER_LAYER, DrownedModel.createBodyLayer(new CubeDeformation(0.25F)));
-      var0.put(ModelLayers.ELDER_GUARDIAN, GuardianModel.createBodyLayer(false));
-      var0.put(ModelLayers.ELDER_GUARDIAN_SLAB, GuardianModel.createBodyLayer(true));
+      var0.put(ModelLayers.ELDER_GUARDIAN, GuardianModel.createBodyLayer());
       var0.put(ModelLayers.ELYTRA, ElytraModel.createLayer());
-      var0.put(ModelLayers.POISONOUS_POLYTRA, ElytraModel.createLayer());
       var0.put(ModelLayers.ENDERMAN, EndermanModel.createBodyLayer());
       var0.put(ModelLayers.ENDERMITE, EndermiteModel.createBodyLayer());
       var0.put(ModelLayers.ENDER_DRAGON, EnderDragonRenderer.createBodyLayer());
@@ -207,8 +201,7 @@ public class LayerDefinitions {
       var0.put(ModelLayers.GIANT_OUTER_ARMOR, var2);
       var0.put(ModelLayers.GLOW_SQUID, SquidModel.createBodyLayer());
       var0.put(ModelLayers.GOAT, GoatModel.createBodyLayer());
-      var0.put(ModelLayers.GUARDIAN, GuardianModel.createBodyLayer(false));
-      var0.put(ModelLayers.GUARDIAN_SLAB, GuardianModel.createBodyLayer(true));
+      var0.put(ModelLayers.GUARDIAN, GuardianModel.createBodyLayer());
       var0.put(ModelLayers.HOGLIN, var16);
       var0.put(ModelLayers.HOPPER_MINECART, var5);
       var0.put(ModelLayers.HORSE, var7);
@@ -268,8 +261,6 @@ public class LayerDefinitions {
       var0.put(ModelLayers.SKELETON_SKULL, var6);
       var0.put(ModelLayers.SLIME, SlimeModel.createInnerBodyLayer());
       var0.put(ModelLayers.SLIME_OUTER, SlimeModel.createOuterBodyLayer());
-      var0.put(ModelLayers.MEGA_SPUD, MegaSpudModel.createInnerBodyLayer());
-      var0.put(ModelLayers.MEGA_SPUD_OUTER, MegaSpudModel.createOuterBodyLayer());
       var0.put(ModelLayers.SNIFFER, SnifferModel.createBodyLayer());
       var0.put(ModelLayers.SNOW_GOLEM, SnowGolemModel.createBodyLayer());
       var0.put(ModelLayers.SPAWNER_MINECART, var5);
@@ -322,8 +313,11 @@ public class LayerDefinitions {
       LayerDefinition var21 = ChestBoatModel.createBodyModel();
       LayerDefinition var22 = RaftModel.createBodyModel();
       LayerDefinition var23 = ChestRaftModel.createBodyModel();
+      Boat.Type[] var24 = Boat.Type.values();
+      int var25 = var24.length;
 
-      for(Boat.Type var27 : Boat.Type.values()) {
+      for(int var26 = 0; var26 < var25; ++var26) {
+         Boat.Type var27 = var24[var26];
          if (var27 == Boat.Type.BAMBOO) {
             var0.put(ModelLayers.createBoatModelName(var27), var22);
             var0.put(ModelLayers.createChestBoatModelName(var27), var23);
@@ -334,13 +328,19 @@ public class LayerDefinitions {
       }
 
       LayerDefinition var28 = SignRenderer.createSignLayer();
-      WoodType.values().forEach(var2x -> var0.put(ModelLayers.createSignModelName(var2x), var28));
+      WoodType.values().forEach((var2x) -> {
+         var0.put(ModelLayers.createSignModelName(var2x), var28);
+      });
       LayerDefinition var29 = HangingSignRenderer.createHangingSignLayer();
-      WoodType.values().forEach(var2x -> var0.put(ModelLayers.createHangingSignModelName(var2x), var29));
+      WoodType.values().forEach((var2x) -> {
+         var0.put(ModelLayers.createHangingSignModelName(var2x), var29);
+      });
       ImmutableMap var30 = var0.build();
-      List var31 = ModelLayers.getKnownLocations().filter(var1x -> !var30.containsKey(var1x)).collect(Collectors.toList());
+      List var31 = (List)ModelLayers.getKnownLocations().filter((var1x) -> {
+         return !var30.containsKey(var1x);
+      }).collect(Collectors.toList());
       if (!var31.isEmpty()) {
-         throw new IllegalStateException("Missing layer definitions: " + var31);
+         throw new IllegalStateException("Missing layer definitions: " + String.valueOf(var31));
       } else {
          return var30;
       }

@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class FlyTowardsPositionParticle extends TextureSheetParticle {
@@ -16,9 +17,7 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
       this(var1, var2, var4, var6, var8, var10, var12, false, Particle.LifetimeAlpha.ALWAYS_OPAQUE);
    }
 
-   FlyTowardsPositionParticle(
-      ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14, Particle.LifetimeAlpha var15
-   ) {
+   FlyTowardsPositionParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14, Particle.LifetimeAlpha var15) {
       super(var1, var2, var4, var6);
       this.isGlowing = var14;
       this.lifetimeAlpha = var15;
@@ -44,18 +43,15 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
       this.lifetime = (int)(Math.random() * 10.0) + 30;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return this.lifetimeAlpha.isOpaque() ? ParticleRenderType.PARTICLE_SHEET_OPAQUE : ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
    }
 
-   @Override
    public void move(double var1, double var3, double var5) {
       this.setBoundingBox(this.getBoundingBox().move(var1, var3, var5));
       this.setLocationFromBoundingbox();
    }
 
-   @Override
    public int getLightColor(float var1) {
       if (this.isGlowing) {
          return 240;
@@ -64,8 +60,8 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
          float var3 = (float)this.age / (float)this.lifetime;
          var3 *= var3;
          var3 *= var3;
-         int var4 = var2 & 0xFF;
-         int var5 = var2 >> 16 & 0xFF;
+         int var4 = var2 & 255;
+         int var5 = var2 >> 16 & 255;
          var5 += (int)(var3 * 15.0F * 16.0F);
          if (var5 > 240) {
             var5 = 240;
@@ -75,7 +71,6 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
       }
    }
 
-   @Override
    public void tick() {
       this.xo = this.x;
       this.yo = this.y;
@@ -94,24 +89,29 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
       }
    }
 
-   @Override
    public void render(VertexConsumer var1, Camera var2, float var3) {
       this.setAlpha(this.lifetimeAlpha.currentAlphaForAge(this.age, this.lifetime, var3));
       super.render(var1, var2, var3);
    }
 
-   public static class EnchantProvider implements ParticleProvider<SimpleParticleType> {
+   public static class VaultConnectionProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public EnchantProvider(SpriteSet var1) {
+      public VaultConnectionProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13);
+         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13, true, new Particle.LifetimeAlpha(0.0F, 0.6F, 0.25F, 1.0F));
+         var15.scale(1.5F);
          var15.pickSprite(this.sprite);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 
@@ -128,23 +128,30 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
          var15.pickSprite(this.sprite);
          return var15;
       }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
    }
 
-   public static class VaultConnectionProvider implements ParticleProvider<SimpleParticleType> {
+   public static class EnchantProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public VaultConnectionProvider(SpriteSet var1) {
+      public EnchantProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(
-            var2, var3, var5, var7, var9, var11, var13, true, new Particle.LifetimeAlpha(0.0F, 0.6F, 0.25F, 1.0F)
-         );
-         var15.scale(1.5F);
+         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

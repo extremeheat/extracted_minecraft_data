@@ -5,11 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public record AnimationDefinition(float a, boolean b, Map<String, List<AnimationChannel>> c) {
-   private final float lengthInSeconds;
-   private final boolean looping;
-   private final Map<String, List<AnimationChannel>> boneAnimations;
-
+public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
    public AnimationDefinition(float var1, boolean var2, Map<String, List<AnimationChannel>> var3) {
       super();
       this.lengthInSeconds = var1;
@@ -17,13 +13,25 @@ public record AnimationDefinition(float a, boolean b, Map<String, List<Animation
       this.boneAnimations = var3;
    }
 
+   public float lengthInSeconds() {
+      return this.lengthInSeconds;
+   }
+
+   public boolean looping() {
+      return this.looping;
+   }
+
+   public Map<String, List<AnimationChannel>> boneAnimations() {
+      return this.boneAnimations;
+   }
+
    public static class Builder {
       private final float length;
       private final Map<String, List<AnimationChannel>> animationByBone = Maps.newHashMap();
       private boolean looping;
 
-      public static AnimationDefinition.Builder withLength(float var0) {
-         return new AnimationDefinition.Builder(var0);
+      public static Builder withLength(float var0) {
+         return new Builder(var0);
       }
 
       private Builder(float var1) {
@@ -31,13 +39,15 @@ public record AnimationDefinition(float a, boolean b, Map<String, List<Animation
          this.length = var1;
       }
 
-      public AnimationDefinition.Builder looping() {
+      public Builder looping() {
          this.looping = true;
          return this;
       }
 
-      public AnimationDefinition.Builder addAnimation(String var1, AnimationChannel var2) {
-         this.animationByBone.computeIfAbsent(var1, var0 -> new ArrayList()).add(var2);
+      public Builder addAnimation(String var1, AnimationChannel var2) {
+         ((List)this.animationByBone.computeIfAbsent(var1, (var0) -> {
+            return new ArrayList();
+         })).add(var2);
          return this;
       }
 

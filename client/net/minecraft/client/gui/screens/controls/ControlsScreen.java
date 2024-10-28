@@ -23,24 +23,22 @@ public class ControlsScreen extends OptionsSubScreen {
       super(var1, var2, TITLE);
    }
 
-   @Override
    protected void init() {
-      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
-      this.list
-         .addSmall(
-            Button.builder(Component.translatable("options.mouse_settings"), var1 -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options)))
-               .build(),
-            Button.builder(Component.translatable("controls.keybinds"), var1 -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options))).build()
-         );
+      this.list = (OptionsList)this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
+      this.list.addSmall(Button.builder(Component.translatable("options.mouse_settings"), (var1) -> {
+         this.minecraft.setScreen(new MouseSettingsScreen(this, this.options));
+      }).build(), Button.builder(Component.translatable("controls.keybinds"), (var1) -> {
+         this.minecraft.setScreen(new KeyBindsScreen(this, this.options));
+      }).build());
       this.list.addSmall(options(this.options));
       super.init();
    }
 
-   @Override
    protected void repositionElements() {
       super.repositionElements();
       if (this.list != null) {
          this.list.updateSize(this.width, this.layout);
       }
+
    }
 }

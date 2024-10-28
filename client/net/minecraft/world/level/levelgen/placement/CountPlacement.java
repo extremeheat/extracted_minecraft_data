@@ -1,13 +1,15 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 
 public class CountPlacement extends RepeatingPlacement {
-   public static final Codec<CountPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountPlacement::new, var0 -> var0.count).codec();
+   public static final MapCodec<CountPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountPlacement::new, (var0) -> {
+      return var0.count;
+   });
    private final IntProvider count;
 
    private CountPlacement(IntProvider var1) {
@@ -23,12 +25,10 @@ public class CountPlacement extends RepeatingPlacement {
       return of(ConstantInt.of(var0));
    }
 
-   @Override
    protected int count(RandomSource var1, BlockPos var2) {
       return this.count.sample(var1);
    }
 
-   @Override
    public PlacementModifierType<?> type() {
       return PlacementModifierType.COUNT;
    }

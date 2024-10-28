@@ -20,7 +20,7 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
    protected TargetingConditions targetConditions;
 
    public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3) {
-      this(var1, var2, 10, var3, false, null);
+      this(var1, var2, 10, var3, false, (Predicate)null);
    }
 
    public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3, Predicate<LivingEntity> var4) {
@@ -28,7 +28,7 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
    }
 
    public NearestAttackableTargetGoal(Mob var1, Class<T> var2, boolean var3, boolean var4) {
-      this(var1, var2, 10, var3, var4, null);
+      this(var1, var2, 10, var3, var4, (Predicate)null);
    }
 
    public NearestAttackableTargetGoal(Mob var1, Class<T> var2, int var3, boolean var4, boolean var5, @Nullable Predicate<LivingEntity> var6) {
@@ -39,7 +39,6 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
       this.targetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(var6);
    }
 
-   @Override
    public boolean canUse() {
       if (this.randomInterval > 0 && this.mob.getRandom().nextInt(this.randomInterval) != 0) {
          return false;
@@ -55,22 +54,15 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
 
    protected void findTarget() {
       if (this.targetType != Player.class && this.targetType != ServerPlayer.class) {
-         this.target = this.mob
-            .level()
-            .getNearestEntity(
-               this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), var0 -> true),
-               this.targetConditions,
-               this.mob,
-               this.mob.getX(),
-               this.mob.getEyeY(),
-               this.mob.getZ()
-            );
+         this.target = this.mob.level().getNearestEntity(this.mob.level().getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), (var0) -> {
+            return true;
+         }), this.targetConditions, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
       } else {
          this.target = this.mob.level().getNearestPlayer(this.targetConditions, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
       }
+
    }
 
-   @Override
    public void start() {
       this.mob.setTarget(this.target);
       super.start();

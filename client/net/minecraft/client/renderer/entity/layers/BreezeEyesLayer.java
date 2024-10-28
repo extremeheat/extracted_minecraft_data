@@ -20,7 +20,7 @@ public class BreezeEyesLayer extends RenderLayer<Breeze, BreezeModel<Breeze>> {
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, Breeze var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       VertexConsumer var11 = var2.getBuffer(BREEZE_EYES);
-      BreezeModel var12 = this.getParentModel();
+      BreezeModel var12 = (BreezeModel)this.getParentModel();
       BreezeRenderer.enable(var12, var12.head(), var12.eyes()).renderToBuffer(var1, var11, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
    }
 }

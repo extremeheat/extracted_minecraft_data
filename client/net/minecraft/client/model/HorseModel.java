@@ -69,130 +69,67 @@ public class HorseModel<T extends AbstractHorse> extends AgeableListModel<T> {
    public static MeshDefinition createBodyMesh(CubeDeformation var0) {
       MeshDefinition var1 = new MeshDefinition();
       PartDefinition var2 = var1.getRoot();
-      PartDefinition var3 = var2.addOrReplaceChild(
-         "body",
-         CubeListBuilder.create().texOffs(0, 32).addBox(-5.0F, -8.0F, -17.0F, 10.0F, 10.0F, 22.0F, new CubeDeformation(0.05F)),
-         PartPose.offset(0.0F, 11.0F, 5.0F)
-      );
-      PartDefinition var4 = var2.addOrReplaceChild(
-         "head_parts",
-         CubeListBuilder.create().texOffs(0, 35).addBox(-2.05F, -6.0F, -2.0F, 4.0F, 12.0F, 7.0F),
-         PartPose.offsetAndRotation(0.0F, 4.0F, -12.0F, 0.5235988F, 0.0F, 0.0F)
-      );
-      PartDefinition var5 = var4.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(0, 13).addBox(-3.0F, -11.0F, -2.0F, 6.0F, 5.0F, 7.0F, var0), PartPose.ZERO
-      );
+      PartDefinition var3 = var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 32).addBox(-5.0F, -8.0F, -17.0F, 10.0F, 10.0F, 22.0F, new CubeDeformation(0.05F)), PartPose.offset(0.0F, 11.0F, 5.0F));
+      PartDefinition var4 = var2.addOrReplaceChild("head_parts", CubeListBuilder.create().texOffs(0, 35).addBox(-2.05F, -6.0F, -2.0F, 4.0F, 12.0F, 7.0F), PartPose.offsetAndRotation(0.0F, 4.0F, -12.0F, 0.5235988F, 0.0F, 0.0F));
+      PartDefinition var5 = var4.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 13).addBox(-3.0F, -11.0F, -2.0F, 6.0F, 5.0F, 7.0F, var0), PartPose.ZERO);
       var4.addOrReplaceChild("mane", CubeListBuilder.create().texOffs(56, 36).addBox(-1.0F, -11.0F, 5.01F, 2.0F, 16.0F, 2.0F, var0), PartPose.ZERO);
       var4.addOrReplaceChild("upper_mouth", CubeListBuilder.create().texOffs(0, 25).addBox(-2.0F, -11.0F, -7.0F, 4.0F, 5.0F, 5.0F, var0), PartPose.ZERO);
-      var2.addOrReplaceChild(
-         "left_hind_leg",
-         CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var0),
-         PartPose.offset(4.0F, 14.0F, 7.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_hind_leg", CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(-4.0F, 14.0F, 7.0F)
-      );
-      var2.addOrReplaceChild(
-         "left_front_leg",
-         CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var0),
-         PartPose.offset(4.0F, 14.0F, -12.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_front_leg",
-         CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var0),
-         PartPose.offset(-4.0F, 14.0F, -12.0F)
-      );
+      var2.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(4.0F, 14.0F, 7.0F));
+      var2.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(-4.0F, 14.0F, 7.0F));
+      var2.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(4.0F, 14.0F, -12.0F));
+      var2.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(-4.0F, 14.0F, -12.0F));
       CubeDeformation var6 = var0.extend(0.0F, 5.5F, 0.0F);
-      var2.addOrReplaceChild(
-         "left_hind_baby_leg",
-         CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var6),
-         PartPose.offset(4.0F, 14.0F, 7.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_hind_baby_leg",
-         CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var6),
-         PartPose.offset(-4.0F, 14.0F, 7.0F)
-      );
-      var2.addOrReplaceChild(
-         "left_front_baby_leg",
-         CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var6),
-         PartPose.offset(4.0F, 14.0F, -12.0F)
-      );
-      var2.addOrReplaceChild(
-         "right_front_baby_leg",
-         CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var6),
-         PartPose.offset(-4.0F, 14.0F, -12.0F)
-      );
-      var3.addOrReplaceChild(
-         "tail",
-         CubeListBuilder.create().texOffs(42, 36).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 14.0F, 4.0F, var0),
-         PartPose.offsetAndRotation(0.0F, -5.0F, 2.0F, 0.5235988F, 0.0F, 0.0F)
-      );
-      var3.addOrReplaceChild(
-         "saddle", CubeListBuilder.create().texOffs(26, 0).addBox(-5.0F, -8.0F, -9.0F, 10.0F, 9.0F, 9.0F, new CubeDeformation(0.5F)), PartPose.ZERO
-      );
+      var2.addOrReplaceChild("left_hind_baby_leg", CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var6), PartPose.offset(4.0F, 14.0F, 7.0F));
+      var2.addOrReplaceChild("right_hind_baby_leg", CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.0F, 4.0F, 11.0F, 4.0F, var6), PartPose.offset(-4.0F, 14.0F, 7.0F));
+      var2.addOrReplaceChild("left_front_baby_leg", CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var6), PartPose.offset(4.0F, 14.0F, -12.0F));
+      var2.addOrReplaceChild("right_front_baby_leg", CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var6), PartPose.offset(-4.0F, 14.0F, -12.0F));
+      var3.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(42, 36).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 14.0F, 4.0F, var0), PartPose.offsetAndRotation(0.0F, -5.0F, 2.0F, 0.5235988F, 0.0F, 0.0F));
+      var3.addOrReplaceChild("saddle", CubeListBuilder.create().texOffs(26, 0).addBox(-5.0F, -8.0F, -9.0F, 10.0F, 9.0F, 9.0F, new CubeDeformation(0.5F)), PartPose.ZERO);
       var4.addOrReplaceChild("left_saddle_mouth", CubeListBuilder.create().texOffs(29, 5).addBox(2.0F, -9.0F, -6.0F, 1.0F, 2.0F, 2.0F, var0), PartPose.ZERO);
       var4.addOrReplaceChild("right_saddle_mouth", CubeListBuilder.create().texOffs(29, 5).addBox(-3.0F, -9.0F, -6.0F, 1.0F, 2.0F, 2.0F, var0), PartPose.ZERO);
-      var4.addOrReplaceChild(
-         "left_saddle_line", CubeListBuilder.create().texOffs(32, 2).addBox(3.1F, -6.0F, -8.0F, 0.0F, 3.0F, 16.0F), PartPose.rotation(-0.5235988F, 0.0F, 0.0F)
-      );
-      var4.addOrReplaceChild(
-         "right_saddle_line",
-         CubeListBuilder.create().texOffs(32, 2).addBox(-3.1F, -6.0F, -8.0F, 0.0F, 3.0F, 16.0F),
-         PartPose.rotation(-0.5235988F, 0.0F, 0.0F)
-      );
-      var4.addOrReplaceChild(
-         "head_saddle", CubeListBuilder.create().texOffs(1, 1).addBox(-3.0F, -11.0F, -1.9F, 6.0F, 5.0F, 6.0F, new CubeDeformation(0.22F)), PartPose.ZERO
-      );
-      var4.addOrReplaceChild(
-         "mouth_saddle_wrap", CubeListBuilder.create().texOffs(19, 0).addBox(-2.0F, -11.0F, -4.0F, 4.0F, 5.0F, 2.0F, new CubeDeformation(0.2F)), PartPose.ZERO
-      );
-      var5.addOrReplaceChild(
-         "left_ear", CubeListBuilder.create().texOffs(19, 16).addBox(0.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO
-      );
-      var5.addOrReplaceChild(
-         "right_ear", CubeListBuilder.create().texOffs(19, 16).addBox(-2.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO
-      );
+      var4.addOrReplaceChild("left_saddle_line", CubeListBuilder.create().texOffs(32, 2).addBox(3.1F, -6.0F, -8.0F, 0.0F, 3.0F, 16.0F), PartPose.rotation(-0.5235988F, 0.0F, 0.0F));
+      var4.addOrReplaceChild("right_saddle_line", CubeListBuilder.create().texOffs(32, 2).addBox(-3.1F, -6.0F, -8.0F, 0.0F, 3.0F, 16.0F), PartPose.rotation(-0.5235988F, 0.0F, 0.0F));
+      var4.addOrReplaceChild("head_saddle", CubeListBuilder.create().texOffs(1, 1).addBox(-3.0F, -11.0F, -1.9F, 6.0F, 5.0F, 6.0F, new CubeDeformation(0.22F)), PartPose.ZERO);
+      var4.addOrReplaceChild("mouth_saddle_wrap", CubeListBuilder.create().texOffs(19, 0).addBox(-2.0F, -11.0F, -4.0F, 4.0F, 5.0F, 2.0F, new CubeDeformation(0.2F)), PartPose.ZERO);
+      var5.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(19, 16).addBox(0.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO);
+      var5.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(19, 16).addBox(-2.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO);
       return var1;
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       boolean var7 = var1.isSaddled();
       boolean var8 = var1.isVehicle();
+      ModelPart[] var9 = this.saddleParts;
+      int var10 = var9.length;
 
-      for(ModelPart var12 : this.saddleParts) {
+      int var11;
+      ModelPart var12;
+      for(var11 = 0; var11 < var10; ++var11) {
+         var12 = var9[var11];
          var12.visible = var7;
       }
 
-      for(ModelPart var16 : this.ridingParts) {
-         var16.visible = var8 && var7;
+      var9 = this.ridingParts;
+      var10 = var9.length;
+
+      for(var11 = 0; var11 < var10; ++var11) {
+         var12 = var9[var11];
+         var12.visible = var8 && var7;
       }
 
       this.body.y = 11.0F;
    }
 
-   @Override
    public Iterable<ModelPart> headParts() {
       return ImmutableList.of(this.headParts);
    }
 
-   @Override
    protected Iterable<ModelPart> bodyParts() {
-      return ImmutableList.of(
-         this.body,
-         this.rightHindLeg,
-         this.leftHindLeg,
-         this.rightFrontLeg,
-         this.leftFrontLeg,
-         this.rightHindBabyLeg,
-         this.leftHindBabyLeg,
-         this.rightFrontBabyLeg,
-         this.leftFrontBabyLeg
-      );
+      return ImmutableList.of(this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.rightHindBabyLeg, this.leftHindBabyLeg, this.rightFrontBabyLeg, this.leftFrontBabyLeg);
    }
 
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      super.prepareMobModel((T)var1, var2, var3, var4);
+      super.prepareMobModel(var1, var2, var3, var4);
       float var5 = Mth.rotLerp(var4, var1.yBodyRotO, var1.yBodyRot);
       float var6 = Mth.rotLerp(var4, var1.yHeadRotO, var1.yHeadRot);
       float var7 = Mth.lerp(var4, var1.xRotO, var1.getXRot());

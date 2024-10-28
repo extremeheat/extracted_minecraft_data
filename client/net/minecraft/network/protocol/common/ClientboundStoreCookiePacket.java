@@ -8,17 +8,13 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
-public record ClientboundStoreCookiePacket(ResourceLocation c, byte[] d) implements Packet<ClientCommonPacketListener> {
-   private final ResourceLocation key;
-   private final byte[] payload;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundStoreCookiePacket> STREAM_CODEC = Packet.codec(
-      ClientboundStoreCookiePacket::write, ClientboundStoreCookiePacket::new
-   );
+public record ClientboundStoreCookiePacket(ResourceLocation key, byte[] payload) implements Packet<ClientCommonPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundStoreCookiePacket> STREAM_CODEC = Packet.codec(ClientboundStoreCookiePacket::write, ClientboundStoreCookiePacket::new);
    private static final int MAX_PAYLOAD_SIZE = 5120;
    public static final StreamCodec<ByteBuf, byte[]> PAYLOAD_STREAM_CODEC = ByteBufCodecs.byteArray(5120);
 
    private ClientboundStoreCookiePacket(FriendlyByteBuf var1) {
-      this(var1.readResourceLocation(), PAYLOAD_STREAM_CODEC.decode(var1));
+      this(var1.readResourceLocation(), (byte[])PAYLOAD_STREAM_CODEC.decode(var1));
    }
 
    public ClientboundStoreCookiePacket(ResourceLocation var1, byte[] var2) {
@@ -32,12 +28,19 @@ public record ClientboundStoreCookiePacket(ResourceLocation c, byte[] d) impleme
       PAYLOAD_STREAM_CODEC.encode(var1, this.payload);
    }
 
-   @Override
    public PacketType<ClientboundStoreCookiePacket> type() {
       return CommonPacketTypes.CLIENTBOUND_STORE_COOKIE;
    }
 
    public void handle(ClientCommonPacketListener var1) {
       var1.handleStoreCookie(this);
+   }
+
+   public ResourceLocation key() {
+      return this.key;
+   }
+
+   public byte[] payload() {
+      return this.payload;
    }
 }

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,30 +19,27 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       super(var1, var2, var3);
    }
 
-   @Override
    protected void init() {
       super.init();
-      this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
+      this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
-   @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(BREWING_STAND_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      int var7 = this.menu.getFuel();
+      int var7 = ((BrewingStandMenu)this.menu).getFuel();
       int var8 = Mth.clamp((18 * var7 + 20 - 1) / 20, 0, 18);
       if (var8 > 0) {
          var1.blitSprite(FUEL_LENGTH_SPRITE, 18, 4, 0, 0, var5 + 60, var6 + 44, var8, 4);
       }
 
-      int var9 = this.menu.getBrewingTicks();
+      int var9 = ((BrewingStandMenu)this.menu).getBrewingTicks();
       if (var9 > 0) {
          int var10 = (int)(28.0F * (1.0F - (float)var9 / 400.0F));
          if (var10 > 0) {
@@ -53,5 +51,6 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
             var1.blitSprite(BUBBLES_SPRITE, 12, 29, 0, 29 - var10, var5 + 63, var6 + 14 + 29 - var10, 12, var10);
          }
       }
+
    }
 }

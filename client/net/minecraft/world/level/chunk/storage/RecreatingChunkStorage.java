@@ -18,18 +18,17 @@ public class RecreatingChunkStorage extends ChunkStorage {
       this.writeWorker = new IOWorker(var3, var4, var6);
    }
 
-   @Override
    public CompletableFuture<Void> write(ChunkPos var1, CompoundTag var2) {
       this.handleLegacyStructureIndex(var1);
       return this.writeWorker.store(var1, var2);
    }
 
-   @Override
    public void close() throws IOException {
       super.close();
       this.writeWorker.close();
       if (this.writeFolder.toFile().exists()) {
          FileUtils.deleteDirectory(this.writeFolder.toFile());
       }
+
    }
 }

@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
@@ -18,9 +17,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundExplodePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundExplodePacket> STREAM_CODEC = Packet.codec(
-      ClientboundExplodePacket::write, ClientboundExplodePacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundExplodePacket> STREAM_CODEC = Packet.codec(ClientboundExplodePacket::write, ClientboundExplodePacket::new);
    private final double x;
    private final double y;
    private final double z;
@@ -34,18 +31,7 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
    private final Explosion.BlockInteraction blockInteraction;
    private final Holder<SoundEvent> explosionSound;
 
-   public ClientboundExplodePacket(
-      double var1,
-      double var3,
-      double var5,
-      float var7,
-      List<BlockPos> var8,
-      @Nullable Vec3 var9,
-      Explosion.BlockInteraction var10,
-      ParticleOptions var11,
-      ParticleOptions var12,
-      Holder<SoundEvent> var13
-   ) {
+   public ClientboundExplodePacket(double var1, double var3, double var5, float var7, List<BlockPos> var8, @Nullable Vec3 var9, Explosion.BlockInteraction var10, ParticleOptions var11, ParticleOptions var12, Holder<SoundEvent> var13) {
       super();
       this.x = var1;
       this.y = var3;
@@ -77,19 +63,19 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       int var2 = Mth.floor(this.x);
       int var3 = Mth.floor(this.y);
       int var4 = Mth.floor(this.z);
-      this.toBlow = var1.readList(var3x -> {
-         int var4xx = var3x.readByte() + var2;
+      this.toBlow = var1.readList((var3x) -> {
+         int var4x = var3x.readByte() + var2;
          int var5 = var3x.readByte() + var3;
          int var6 = var3x.readByte() + var4;
-         return new BlockPos(var4xx, var5, var6);
+         return new BlockPos(var4x, var5, var6);
       });
       this.knockbackX = var1.readFloat();
       this.knockbackY = var1.readFloat();
       this.knockbackZ = var1.readFloat();
-      this.blockInteraction = var1.readEnum(Explosion.BlockInteraction.class);
-      this.smallExplosionParticles = ParticleTypes.STREAM_CODEC.decode(var1);
-      this.largeExplosionParticles = ParticleTypes.STREAM_CODEC.decode(var1);
-      this.explosionSound = SoundEvent.STREAM_CODEC.decode(var1);
+      this.blockInteraction = (Explosion.BlockInteraction)var1.readEnum(Explosion.BlockInteraction.class);
+      this.smallExplosionParticles = (ParticleOptions)ParticleTypes.STREAM_CODEC.decode(var1);
+      this.largeExplosionParticles = (ParticleOptions)ParticleTypes.STREAM_CODEC.decode(var1);
+      this.explosionSound = (Holder)SoundEvent.STREAM_CODEC.decode(var1);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
@@ -117,7 +103,6 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       SoundEvent.STREAM_CODEC.encode(var1, this.explosionSound);
    }
 
-   @Override
    public PacketType<ClientboundExplodePacket> type() {
       return GamePacketTypes.CLIENTBOUND_EXPLODE;
    }

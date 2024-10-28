@@ -13,7 +13,7 @@ public class BuiltInMetadata {
    }
 
    public <T> T get(MetadataSectionSerializer<T> var1) {
-      return (T)this.values.get(var1);
+      return this.values.get(var1);
    }
 
    public static BuiltInMetadata of() {

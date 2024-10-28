@@ -15,7 +15,6 @@ public class KelpFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
-   @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       int var2 = 0;
       WorldGenLevel var3 = var1.level();
@@ -31,7 +30,7 @@ public class KelpFeature extends Feature<NoneFeatureConfiguration> {
          for(int var11 = 0; var11 <= var10; ++var11) {
             if (var3.getBlockState(var7).is(Blocks.WATER) && var3.getBlockState(var7.above()).is(Blocks.WATER) && var9.canSurvive(var3, var7)) {
                if (var11 == var10) {
-                  var3.setBlock(var7, var8.setValue(KelpBlock.AGE, Integer.valueOf(var5.nextInt(4) + 20)), 2);
+                  var3.setBlock(var7, (BlockState)var8.setValue(KelpBlock.AGE, var5.nextInt(4) + 20), 2);
                   ++var2;
                } else {
                   var3.setBlock(var7, var9, 2);
@@ -39,7 +38,7 @@ public class KelpFeature extends Feature<NoneFeatureConfiguration> {
             } else if (var11 > 0) {
                BlockPos var12 = var7.below();
                if (var8.canSurvive(var3, var12) && !var3.getBlockState(var12.below()).is(Blocks.KELP)) {
-                  var3.setBlock(var12, var8.setValue(KelpBlock.AGE, Integer.valueOf(var5.nextInt(4) + 20)), 2);
+                  var3.setBlock(var12, (BlockState)var8.setValue(KelpBlock.AGE, var5.nextInt(4) + 20), 2);
                   ++var2;
                }
                break;

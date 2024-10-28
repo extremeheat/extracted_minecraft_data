@@ -34,19 +34,17 @@ public class CreateSnapshotRealmTask extends LongRunningTask {
       this.realmsMainScreen = var1;
    }
 
-   @Override
    public void run() {
       RealmsClient var1 = RealmsClient.create();
 
       try {
          RealmsServer var2 = var1.createSnapshotRealm(this.parentId);
          this.creationTask = new RealmCreationTask(var2.id, this.name, this.description);
-         this.generateWorldTask = new ResettingGeneratedWorldTask(
-            this.generationInfo,
-            var2.id,
-            RealmsResetWorldScreen.CREATE_WORLD_RESET_TASK_TITLE,
-            () -> Minecraft.getInstance().execute(() -> RealmsMainScreen.play(var2, this.realmsMainScreen, true))
-         );
+         this.generateWorldTask = new ResettingGeneratedWorldTask(this.generationInfo, var2.id, RealmsResetWorldScreen.CREATE_WORLD_RESET_TASK_TITLE, () -> {
+            Minecraft.getInstance().execute(() -> {
+               RealmsMainScreen.play(var2, this.realmsMainScreen, true);
+            });
+         });
          if (this.aborted()) {
             return;
          }
@@ -64,14 +62,13 @@ public class CreateSnapshotRealmTask extends LongRunningTask {
          LOGGER.error("Couldn't create snapshot world", var4);
          this.error(var4);
       }
+
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }
 
-   @Override
    public void abortTask() {
       super.abortTask();
       if (this.creationTask != null) {
@@ -81,5 +78,6 @@ public class CreateSnapshotRealmTask extends LongRunningTask {
       if (this.generateWorldTask != null) {
          this.generateWorldTask.abortTask();
       }
+
    }
 }

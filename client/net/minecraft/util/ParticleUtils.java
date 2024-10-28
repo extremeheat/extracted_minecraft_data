@@ -3,7 +3,9 @@ package net.minecraft.util;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.Level;
@@ -17,19 +19,25 @@ public class ParticleUtils {
    }
 
    public static void spawnParticlesOnBlockFaces(Level var0, BlockPos var1, ParticleOptions var2, IntProvider var3) {
-      for(Direction var7 : Direction.values()) {
-         spawnParticlesOnBlockFace(var0, var1, var2, var3, var7, () -> getRandomSpeedRanges(var0.random), 0.55);
+      Direction[] var4 = Direction.values();
+      int var5 = var4.length;
+
+      for(int var6 = 0; var6 < var5; ++var6) {
+         Direction var7 = var4[var6];
+         spawnParticlesOnBlockFace(var0, var1, var2, var3, var7, () -> {
+            return getRandomSpeedRanges(var0.random);
+         }, 0.55);
       }
+
    }
 
-   public static void spawnParticlesOnBlockFace(
-      Level var0, BlockPos var1, ParticleOptions var2, IntProvider var3, Direction var4, Supplier<Vec3> var5, double var6
-   ) {
+   public static void spawnParticlesOnBlockFace(Level var0, BlockPos var1, ParticleOptions var2, IntProvider var3, Direction var4, Supplier<Vec3> var5, double var6) {
       int var8 = var3.sample(var0.random);
 
       for(int var9 = 0; var9 < var8; ++var9) {
          spawnParticleOnFace(var0, var1, var4, var2, (Vec3)var5.get(), var6);
       }
+
    }
 
    private static Vec3 getRandomSpeedRanges(RandomSource var0) {
@@ -52,6 +60,7 @@ public class ParticleUtils {
          double var23 = var10 ? Mth.nextDouble(var1.random, -1.0, 1.0) : 0.0;
          var1.addParticle(var5, var13, var15, var17, var19, var21, var23);
       }
+
    }
 
    public static void spawnParticleOnFace(Level var0, BlockPos var1, Direction var2, ParticleOptions var3, Vec3 var4, double var5) {
@@ -97,5 +106,39 @@ public class ParticleUtils {
             var0.addParticle(var8, var19, var21, var23, var11, var13, var15);
          }
       }
+
+   }
+
+   public static void spawnSmashAttackParticles(LevelAccessor var0, BlockPos var1, int var2) {
+      Vec3 var3 = var1.getCenter().add(0.0, 0.5, 0.0);
+      BlockParticleOption var4 = new BlockParticleOption(ParticleTypes.DUST_PILLAR, var0.getBlockState(var1));
+
+      double var16;
+      int var5;
+      double var6;
+      double var8;
+      double var10;
+      double var12;
+      double var14;
+      for(var5 = 0; (float)var5 < (float)var2 / 3.0F; ++var5) {
+         var6 = var3.x + var0.getRandom().nextGaussian() / 2.0;
+         var8 = var3.y;
+         var10 = var3.z + var0.getRandom().nextGaussian() / 2.0;
+         var12 = var0.getRandom().nextGaussian() * 0.20000000298023224;
+         var14 = var0.getRandom().nextGaussian() * 0.20000000298023224;
+         var16 = var0.getRandom().nextGaussian() * 0.20000000298023224;
+         var0.addParticle(var4, var6, var8, var10, var12, var14, var16);
+      }
+
+      for(var5 = 0; (float)var5 < (float)var2 / 1.5F; ++var5) {
+         var6 = var3.x + 3.5 * Math.cos((double)var5) + var0.getRandom().nextGaussian() / 2.0;
+         var8 = var3.y;
+         var10 = var3.z + 3.5 * Math.sin((double)var5) + var0.getRandom().nextGaussian() / 2.0;
+         var12 = var0.getRandom().nextGaussian() * 0.05000000074505806;
+         var14 = var0.getRandom().nextGaussian() * 0.05000000074505806;
+         var16 = var0.getRandom().nextGaussian() * 0.05000000074505806;
+         var0.addParticle(var4, var6, var8, var10, var12, var14, var16);
+      }
+
    }
 }

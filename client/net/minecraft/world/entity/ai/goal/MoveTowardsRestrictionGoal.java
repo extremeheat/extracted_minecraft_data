@@ -19,7 +19,6 @@ public class MoveTowardsRestrictionGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (this.mob.isWithinRestriction()) {
          return false;
@@ -36,12 +35,10 @@ public class MoveTowardsRestrictionGoal extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.mob.getNavigation().isDone();
    }
 
-   @Override
    public void start() {
       this.mob.getNavigation().moveTo(this.wantedX, this.wantedY, this.wantedZ, this.speedModifier);
    }

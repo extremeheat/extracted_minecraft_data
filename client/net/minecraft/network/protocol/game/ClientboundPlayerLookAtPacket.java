@@ -11,9 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerLookAtPacket> STREAM_CODEC = Packet.codec(
-      ClientboundPlayerLookAtPacket::write, ClientboundPlayerLookAtPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerLookAtPacket> STREAM_CODEC = Packet.codec(ClientboundPlayerLookAtPacket::write, ClientboundPlayerLookAtPacket::new);
    private final double x;
    private final double y;
    private final double z;
@@ -47,18 +45,19 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
 
    private ClientboundPlayerLookAtPacket(FriendlyByteBuf var1) {
       super();
-      this.fromAnchor = var1.readEnum(EntityAnchorArgument.Anchor.class);
+      this.fromAnchor = (EntityAnchorArgument.Anchor)var1.readEnum(EntityAnchorArgument.Anchor.class);
       this.x = var1.readDouble();
       this.y = var1.readDouble();
       this.z = var1.readDouble();
       this.atEntity = var1.readBoolean();
       if (this.atEntity) {
          this.entity = var1.readVarInt();
-         this.toAnchor = var1.readEnum(EntityAnchorArgument.Anchor.class);
+         this.toAnchor = (EntityAnchorArgument.Anchor)var1.readEnum(EntityAnchorArgument.Anchor.class);
       } else {
          this.entity = 0;
          this.toAnchor = null;
       }
+
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -71,9 +70,9 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
          var1.writeVarInt(this.entity);
          var1.writeEnum(this.toAnchor);
       }
+
    }
 
-   @Override
    public PacketType<ClientboundPlayerLookAtPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_LOOK_AT;
    }

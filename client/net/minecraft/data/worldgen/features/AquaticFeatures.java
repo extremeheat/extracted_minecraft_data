@@ -36,17 +36,6 @@ public class AquaticFeatures {
       FeatureUtils.register(var0, SEA_PICKLE, Feature.SEA_PICKLE, new CountConfiguration(20));
       FeatureUtils.register(var0, SEAGRASS_SIMPLE, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.SEAGRASS)));
       FeatureUtils.register(var0, KELP, Feature.KELP);
-      FeatureUtils.register(
-         var0,
-         WARM_OCEAN_VEGETATION,
-         Feature.SIMPLE_RANDOM_SELECTOR,
-         new SimpleRandomFeatureConfiguration(
-            HolderSet.direct(
-               PlacementUtils.inlinePlaced(Feature.CORAL_TREE, FeatureConfiguration.NONE),
-               PlacementUtils.inlinePlaced(Feature.CORAL_CLAW, FeatureConfiguration.NONE),
-               PlacementUtils.inlinePlaced(Feature.CORAL_MUSHROOM, FeatureConfiguration.NONE)
-            )
-         )
-      );
+      FeatureUtils.register(var0, WARM_OCEAN_VEGETATION, Feature.SIMPLE_RANDOM_SELECTOR, new SimpleRandomFeatureConfiguration(HolderSet.direct(PlacementUtils.inlinePlaced(Feature.CORAL_TREE, FeatureConfiguration.NONE), PlacementUtils.inlinePlaced(Feature.CORAL_CLAW, FeatureConfiguration.NONE), PlacementUtils.inlinePlaced(Feature.CORAL_MUSHROOM, FeatureConfiguration.NONE))));
    }
 }

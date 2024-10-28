@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -16,9 +15,11 @@ public class BlendingDataRemoveFromNetherEndFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.CHUNK);
-      return this.fixTypeEverywhereTyped(
-         "BlendingDataRemoveFromNetherEndFix", var1, var0 -> var0.update(DSL.remainderFinder(), var0x -> updateChunkTag(var0x, var0x.get("__context")))
-      );
+      return this.fixTypeEverywhereTyped("BlendingDataRemoveFromNetherEndFix", var1, (var0) -> {
+         return var0.update(DSL.remainderFinder(), (var0x) -> {
+            return updateChunkTag(var0x, var0x.get("__context"));
+         });
+      });
    }
 
    private static Dynamic<?> updateChunkTag(Dynamic<?> var0, OptionalDynamic<?> var1) {

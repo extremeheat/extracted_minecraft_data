@@ -26,10 +26,10 @@ public class CommonPacketTypes {
    }
 
    private static <T extends Packet<ClientCommonPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<>(PacketFlow.CLIENTBOUND, new ResourceLocation(var0));
+      return new PacketType(PacketFlow.CLIENTBOUND, new ResourceLocation(var0));
    }
 
    private static <T extends Packet<ServerCommonPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<>(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
+      return new PacketType(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
    }
 }

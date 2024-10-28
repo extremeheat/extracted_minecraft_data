@@ -22,12 +22,16 @@ public enum DamageEffects implements StringRepresentable {
       this.sound = var4;
    }
 
-   @Override
    public String getSerializedName() {
       return this.id;
    }
 
    public SoundEvent sound() {
       return this.sound;
+   }
+
+   // $FF: synthetic method
+   private static DamageEffects[] $values() {
+      return new DamageEffects[]{HURT, THORNS, DROWNING, BURNING, POKING, FREEZING};
    }
 }

@@ -16,9 +16,8 @@ public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
       super(BlockEntityType.CALIBRATED_SCULK_SENSOR, var1, var2);
    }
 
-   @Override
    public VibrationSystem.User createVibrationUser() {
-      return new CalibratedSculkSensorBlockEntity.VibrationUser(this.getBlockPos());
+      return new VibrationUser(this.getBlockPos());
    }
 
    protected class VibrationUser extends SculkSensorBlockEntity.VibrationUser {
@@ -26,19 +25,17 @@ public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
          super(var2);
       }
 
-      @Override
       public int getListenerRadius() {
          return 16;
       }
 
-      @Override
       public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable GameEvent.Context var4) {
          int var5 = this.getBackSignal(var1, this.blockPos, CalibratedSculkSensorBlockEntity.this.getBlockState());
          return var5 != 0 && VibrationSystem.getGameEventFrequency(var3) != var5 ? false : super.canReceiveVibration(var1, var2, var3, var4);
       }
 
       private int getBackSignal(Level var1, BlockPos var2, BlockState var3) {
-         Direction var4 = var3.getValue(CalibratedSculkSensorBlock.FACING).getOpposite();
+         Direction var4 = ((Direction)var3.getValue(CalibratedSculkSensorBlock.FACING)).getOpposite();
          return var1.getSignal(var2.relative(var4), var4);
       }
    }

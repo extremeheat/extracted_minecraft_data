@@ -6,14 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.numbers.NumberFormat;
 
-public record PlayerScoreEntry(String a, int b, @Nullable Component c, @Nullable NumberFormat d) {
-   private final String owner;
-   private final int value;
-   @Nullable
-   private final Component display;
-   @Nullable
-   private final NumberFormat numberFormatOverride;
-
+public record PlayerScoreEntry(String owner, int value, @Nullable Component display, @Nullable NumberFormat numberFormatOverride) {
    public PlayerScoreEntry(String var1, int var2, @Nullable Component var3, @Nullable NumberFormat var4) {
       super();
       this.owner = var1;
@@ -31,6 +24,24 @@ public record PlayerScoreEntry(String a, int b, @Nullable Component c, @Nullable
    }
 
    public MutableComponent formatValue(NumberFormat var1) {
-      return Objects.requireNonNullElse(this.numberFormatOverride, var1).format(this.value);
+      return ((NumberFormat)Objects.requireNonNullElse(this.numberFormatOverride, var1)).format(this.value);
+   }
+
+   public String owner() {
+      return this.owner;
+   }
+
+   public int value() {
+      return this.value;
+   }
+
+   @Nullable
+   public Component display() {
+      return this.display;
+   }
+
+   @Nullable
+   public NumberFormat numberFormatOverride() {
+      return this.numberFormatOverride;
    }
 }

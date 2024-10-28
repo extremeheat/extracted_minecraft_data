@@ -34,12 +34,15 @@ public enum ChatFormatting implements StringRepresentable {
    STRIKETHROUGH("STRIKETHROUGH", 'm', true),
    UNDERLINE("UNDERLINE", 'n', true),
    ITALIC("ITALIC", 'o', true),
-   RESET("RESET", 'r', -1, null);
+   RESET("RESET", 'r', -1, (Integer)null);
 
    public static final Codec<ChatFormatting> CODEC = StringRepresentable.fromEnum(ChatFormatting::values);
    public static final char PREFIX_CODE = '\u00a7';
-   private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = Arrays.stream(values())
-      .collect(Collectors.toMap(var0 -> cleanName(var0.name), var0 -> var0));
+   private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
+      return cleanName(var0.name);
+   }, (var0) -> {
+      return var0;
+   }));
    private static final Pattern STRIP_FORMATTING_PATTERN = Pattern.compile("(?i)\u00a7[0-9A-FK-OR]");
    private final String name;
    private final char code;
@@ -58,7 +61,7 @@ public enum ChatFormatting implements StringRepresentable {
    }
 
    private ChatFormatting(String var3, char var4, boolean var5) {
-      this(var3, var4, var5, -1, null);
+      this(var3, var4, var5, -1, (Integer)null);
    }
 
    private ChatFormatting(String var3, char var4, boolean var5, int var6, @Nullable Integer var7) {
@@ -67,7 +70,7 @@ public enum ChatFormatting implements StringRepresentable {
       this.isFormat = var5;
       this.id = var6;
       this.color = var7;
-      this.toString = "\u00a7" + var4;
+      this.toString = "\u00a7" + String.valueOf(var4);
    }
 
    public char getChar() {
@@ -95,7 +98,6 @@ public enum ChatFormatting implements StringRepresentable {
       return this.name().toLowerCase(Locale.ROOT);
    }
 
-   @Override
    public String toString() {
       return this.toString;
    }
@@ -107,7 +109,7 @@ public enum ChatFormatting implements StringRepresentable {
 
    @Nullable
    public static ChatFormatting getByName(@Nullable String var0) {
-      return var0 == null ? null : FORMATTING_BY_NAME.get(cleanName(var0));
+      return var0 == null ? null : (ChatFormatting)FORMATTING_BY_NAME.get(cleanName(var0));
    }
 
    @Nullable
@@ -115,7 +117,11 @@ public enum ChatFormatting implements StringRepresentable {
       if (var0 < 0) {
          return RESET;
       } else {
-         for(ChatFormatting var4 : values()) {
+         ChatFormatting[] var1 = values();
+         int var2 = var1.length;
+
+         for(int var3 = 0; var3 < var2; ++var3) {
+            ChatFormatting var4 = var1[var3];
             if (var4.getId() == var0) {
                return var4;
             }
@@ -128,8 +134,11 @@ public enum ChatFormatting implements StringRepresentable {
    @Nullable
    public static ChatFormatting getByCode(char var0) {
       char var1 = Character.toLowerCase(var0);
+      ChatFormatting[] var2 = values();
+      int var3 = var2.length;
 
-      for(ChatFormatting var5 : values()) {
+      for(int var4 = 0; var4 < var3; ++var4) {
+         ChatFormatting var5 = var2[var4];
          if (var5.code == var1) {
             return var5;
          }
@@ -140,8 +149,11 @@ public enum ChatFormatting implements StringRepresentable {
 
    public static Collection<String> getNames(boolean var0, boolean var1) {
       ArrayList var2 = Lists.newArrayList();
+      ChatFormatting[] var3 = values();
+      int var4 = var3.length;
 
-      for(ChatFormatting var6 : values()) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         ChatFormatting var6 = var3[var5];
          if ((!var6.isColor() || var0) && (!var6.isFormat() || var1)) {
             var2.add(var6.getName());
          }
@@ -150,8 +162,12 @@ public enum ChatFormatting implements StringRepresentable {
       return var2;
    }
 
-   @Override
    public String getSerializedName() {
       return this.getName();
+   }
+
+   // $FF: synthetic method
+   private static ChatFormatting[] $values() {
+      return new ChatFormatting[]{BLACK, DARK_BLUE, DARK_GREEN, DARK_AQUA, DARK_RED, DARK_PURPLE, GOLD, GRAY, DARK_GRAY, BLUE, GREEN, AQUA, RED, LIGHT_PURPLE, YELLOW, WHITE, OBFUSCATED, BOLD, STRIKETHROUGH, UNDERLINE, ITALIC, RESET};
    }
 }

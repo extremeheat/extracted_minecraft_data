@@ -12,12 +12,8 @@ import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.GsonHelper;
 
-public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
-   @Nullable
-   private final Float min;
-   @Nullable
-   private final Float max;
-   public static final WrappedMinMaxBounds ANY = new WrappedMinMaxBounds(null, null);
+public record WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
+   public static final WrappedMinMaxBounds ANY = new WrappedMinMaxBounds((Float)null, (Float)null);
    public static final SimpleCommandExceptionType ERROR_INTS_ONLY = new SimpleCommandExceptionType(Component.translatable("argument.range.ints"));
 
    public WrappedMinMaxBounds(@Nullable Float var1, @Nullable Float var2) {
@@ -35,11 +31,11 @@ public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
    }
 
    public static WrappedMinMaxBounds atLeast(float var0) {
-      return new WrappedMinMaxBounds(var0, null);
+      return new WrappedMinMaxBounds(var0, (Float)null);
    }
 
    public static WrappedMinMaxBounds atMost(float var0) {
-      return new WrappedMinMaxBounds(null, var0);
+      return new WrappedMinMaxBounds((Float)null, var0);
    }
 
    public boolean matches(float var1) {
@@ -82,21 +78,25 @@ public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
    }
 
    public static WrappedMinMaxBounds fromJson(@Nullable JsonElement var0) {
-      if (var0 == null || var0.isJsonNull()) {
-         return ANY;
-      } else if (GsonHelper.isNumberValue(var0)) {
-         float var4 = GsonHelper.convertToFloat(var0, "value");
-         return new WrappedMinMaxBounds(var4, var4);
+      if (var0 != null && !var0.isJsonNull()) {
+         if (GsonHelper.isNumberValue(var0)) {
+            float var4 = GsonHelper.convertToFloat(var0, "value");
+            return new WrappedMinMaxBounds(var4, var4);
+         } else {
+            JsonObject var1 = GsonHelper.convertToJsonObject(var0, "value");
+            Float var2 = var1.has("min") ? GsonHelper.getAsFloat(var1, "min") : null;
+            Float var3 = var1.has("max") ? GsonHelper.getAsFloat(var1, "max") : null;
+            return new WrappedMinMaxBounds(var2, var3);
+         }
       } else {
-         JsonObject var1 = GsonHelper.convertToJsonObject(var0, "value");
-         Float var2 = var1.has("min") ? GsonHelper.getAsFloat(var1, "min") : null;
-         Float var3 = var1.has("max") ? GsonHelper.getAsFloat(var1, "max") : null;
-         return new WrappedMinMaxBounds(var2, var3);
+         return ANY;
       }
    }
 
    public static WrappedMinMaxBounds fromReader(StringReader var0, boolean var1) throws CommandSyntaxException {
-      return fromReader(var0, var1, var0x -> var0x);
+      return fromReader(var0, var1, (var0x) -> {
+         return var0x;
+      });
    }
 
    public static WrappedMinMaxBounds fromReader(StringReader var0, boolean var1, Function<Float, Float> var2) throws CommandSyntaxException {
@@ -172,5 +172,15 @@ public record WrappedMinMaxBounds(@Nullable Float c, @Nullable Float d) {
    @Nullable
    private static Float optionallyFormat(@Nullable Float var0, Function<Float, Float> var1) {
       return var0 == null ? null : (Float)var1.apply(var0);
+   }
+
+   @Nullable
+   public Float min() {
+      return this.min;
+   }
+
+   @Nullable
+   public Float max() {
+      return this.max;
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.text2speech.Narrator;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -41,26 +41,28 @@ public class AccessibilityOnboardingScreen extends Screen {
       this.narratorAvailable = Minecraft.getInstance().getNarrator().isActive();
    }
 
-   @Override
    public void init() {
-      LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical());
+      LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
       var1.defaultCellSetting().alignHorizontallyCenter().padding(4);
-      this.textWidget = var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), var0 -> var0.padding(8));
+      this.textWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), (Consumer)((var0) -> {
+         var0.padding(8);
+      }));
       this.narrationButton = this.options.narrator().createButton(this.options);
       this.narrationButton.active = this.narratorAvailable;
       var1.addChild(this.narrationButton);
-      var1.addChild(CommonButtons.accessibility(150, var1x -> this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), false));
-      var1.addChild(
-         CommonButtons.language(
-            150, var1x -> this.closeAndSetScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), false
-         )
-      );
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_CONTINUE, var1x -> this.onClose()).build());
+      var1.addChild(CommonButtons.accessibility(150, (var1x) -> {
+         this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options));
+      }, false));
+      var1.addChild(CommonButtons.language(150, (var1x) -> {
+         this.closeAndSetScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager()));
+      }, false));
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_CONTINUE, (var1x) -> {
+         this.onClose();
+      }).build());
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       if (this.textWidget != null) {
          this.textWidget.containWithin(this.width);
@@ -69,26 +71,27 @@ public class AccessibilityOnboardingScreen extends Screen {
       this.layout.arrangeElements();
    }
 
-   @Override
    protected void setInitialFocus() {
       if (this.narratorAvailable && this.narrationButton != null) {
          this.setInitialFocus(this.narrationButton);
       } else {
          super.setInitialFocus();
       }
+
    }
 
    private int initTitleYPos() {
       return 90;
    }
 
-   @Override
    public void onClose() {
       this.close(this.onClose);
    }
 
    private void closeAndSetScreen(Screen var1) {
-      this.close(() -> this.minecraft.setScreen(var1));
+      this.close(() -> {
+         this.minecraft.setScreen(var1);
+      });
    }
 
    private void close(Runnable var1) {
@@ -98,14 +101,12 @@ public class AccessibilityOnboardingScreen extends Screen {
       var1.run();
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.handleInitialNarrationDelay();
       this.logoRenderer.renderLogo(var1, this.width, 1.0F);
    }
 
-   @Override
    protected void renderPanorama(GuiGraphics var1, float var2) {
       PANORAMA.render(var1, this.width, this.height, 1.0F, 0.0F);
    }
@@ -119,5 +120,6 @@ public class AccessibilityOnboardingScreen extends Screen {
             this.hasNarrated = true;
          }
       }
+
    }
 }

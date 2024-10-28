@@ -34,7 +34,7 @@ public class Material {
    }
 
    public TextureAtlasSprite sprite() {
-      return Minecraft.getInstance().getTextureAtlas(this.atlasLocation()).apply(this.texture());
+      return (TextureAtlasSprite)Minecraft.getInstance().getTextureAtlas(this.atlasLocation()).apply(this.texture());
    }
 
    public RenderType renderType(Function<ResourceLocation, RenderType> var1) {
@@ -53,7 +53,6 @@ public class Material {
       return this.sprite().wrap(ItemRenderer.getFoilBufferDirect(var1, this.renderType(var2), true, var3));
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -65,13 +64,12 @@ public class Material {
       }
    }
 
-   @Override
    public int hashCode() {
-      return Objects.hash(this.atlasLocation, this.texture);
+      return Objects.hash(new Object[]{this.atlasLocation, this.texture});
    }
 
-   @Override
    public String toString() {
-      return "Material{atlasLocation=" + this.atlasLocation + ", texture=" + this.texture + "}";
+      String var10000 = String.valueOf(this.atlasLocation);
+      return "Material{atlasLocation=" + var10000 + ", texture=" + String.valueOf(this.texture) + "}";
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collection;
+import java.util.Iterator;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -23,15 +24,17 @@ public class RaidDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.raidCenters = var1;
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       BlockPos var9 = this.getCamera().getBlockPosition();
+      Iterator var10 = this.raidCenters.iterator();
 
-      for(BlockPos var11 : this.raidCenters) {
+      while(var10.hasNext()) {
+         BlockPos var11 = (BlockPos)var10.next();
          if (var9.closerThan(var11, 160.0)) {
             highlightRaidCenter(var1, var2, var11);
          }
       }
+
    }
 
    private static void highlightRaidCenter(PoseStack var0, MultiBufferSource var1, BlockPos var2) {

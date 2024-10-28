@@ -19,55 +19,44 @@ public class ClientSideMerchant implements Merchant {
       this.source = var1;
    }
 
-   @Override
    public Player getTradingPlayer() {
       return this.source;
    }
 
-   @Override
    public void setTradingPlayer(@Nullable Player var1) {
    }
 
-   @Override
    public MerchantOffers getOffers() {
       return this.offers;
    }
 
-   @Override
    public void overrideOffers(MerchantOffers var1) {
       this.offers = var1;
    }
 
-   @Override
    public void notifyTrade(MerchantOffer var1) {
       var1.increaseUses();
    }
 
-   @Override
    public void notifyTradeUpdated(ItemStack var1) {
    }
 
-   @Override
    public boolean isClientSide() {
       return this.source.level().isClientSide;
    }
 
-   @Override
    public int getVillagerXp() {
       return this.xp;
    }
 
-   @Override
    public void overrideXp(int var1) {
       this.xp = var1;
    }
 
-   @Override
    public boolean showProgressBar() {
       return true;
    }
 
-   @Override
    public SoundEvent getNotifyTradeSound() {
       return SoundEvents.VILLAGER_YES;
    }

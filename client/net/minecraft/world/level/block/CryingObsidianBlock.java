@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class CryingObsidianBlock extends Block {
    public static final MapCodec<CryingObsidianBlock> CODEC = simpleCodec(CryingObsidianBlock::new);
 
-   @Override
    public MapCodec<CryingObsidianBlock> codec() {
       return CODEC;
    }
@@ -21,7 +20,6 @@ public class CryingObsidianBlock extends Block {
       super(var1);
    }
 
-   @Override
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(5) == 0) {
          Direction var5 = Direction.getRandom(var4);
@@ -32,9 +30,7 @@ public class CryingObsidianBlock extends Block {
                double var8 = var5.getStepX() == 0 ? var4.nextDouble() : 0.5 + (double)var5.getStepX() * 0.6;
                double var10 = var5.getStepY() == 0 ? var4.nextDouble() : 0.5 + (double)var5.getStepY() * 0.6;
                double var12 = var5.getStepZ() == 0 ? var4.nextDouble() : 0.5 + (double)var5.getStepZ() * 0.6;
-               var2.addParticle(
-                  ParticleTypes.DRIPPING_OBSIDIAN_TEAR, (double)var3.getX() + var8, (double)var3.getY() + var10, (double)var3.getZ() + var12, 0.0, 0.0, 0.0
-               );
+               var2.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, (double)var3.getX() + var8, (double)var3.getY() + var10, (double)var3.getZ() + var12, 0.0, 0.0, 0.0);
             }
          }
       }

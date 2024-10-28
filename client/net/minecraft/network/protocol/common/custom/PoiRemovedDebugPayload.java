@@ -4,11 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
-public record PoiRemovedDebugPayload(BlockPos c) implements CustomPacketPayload {
-   private final BlockPos pos;
-   public static final StreamCodec<FriendlyByteBuf, PoiRemovedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      PoiRemovedDebugPayload::write, PoiRemovedDebugPayload::new
-   );
+public record PoiRemovedDebugPayload(BlockPos pos) implements CustomPacketPayload {
+   public static final StreamCodec<FriendlyByteBuf, PoiRemovedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(PoiRemovedDebugPayload::write, PoiRemovedDebugPayload::new);
    public static final CustomPacketPayload.Type<PoiRemovedDebugPayload> TYPE = CustomPacketPayload.createType("debug/poi_removed");
 
    private PoiRemovedDebugPayload(FriendlyByteBuf var1) {
@@ -24,8 +21,11 @@ public record PoiRemovedDebugPayload(BlockPos c) implements CustomPacketPayload 
       var1.writeBlockPos(this.pos);
    }
 
-   @Override
    public CustomPacketPayload.Type<PoiRemovedDebugPayload> type() {
       return TYPE;
+   }
+
+   public BlockPos pos() {
+      return this.pos;
    }
 }

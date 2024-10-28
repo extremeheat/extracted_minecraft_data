@@ -20,7 +20,7 @@ public class DecoratedPotRecipe extends CustomRecipe {
       } else {
          for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
             ItemStack var4 = var1.getItem(var3);
-            switch(var3) {
+            switch (var3) {
                case 1:
                case 3:
                case 5:
@@ -48,12 +48,10 @@ public class DecoratedPotRecipe extends CustomRecipe {
       return DecoratedPotBlockEntity.createDecoratedPotItem(var3);
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 == 3 && var2 == 3;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.DECORATED_POT_RECIPE;
    }

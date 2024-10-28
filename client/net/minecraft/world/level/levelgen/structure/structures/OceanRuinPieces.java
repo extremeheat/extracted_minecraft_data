@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -54,114 +56,44 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public class OceanRuinPieces {
-   static final StructureProcessor WARM_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(
-      Blocks.SAND, Blocks.SUSPICIOUS_SAND, BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY
-   );
-   static final StructureProcessor COLD_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(
-      Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY
-   );
-   private static final ResourceLocation[] WARM_RUINS = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/warm_1"),
-      new ResourceLocation("underwater_ruin/warm_2"),
-      new ResourceLocation("underwater_ruin/warm_3"),
-      new ResourceLocation("underwater_ruin/warm_4"),
-      new ResourceLocation("underwater_ruin/warm_5"),
-      new ResourceLocation("underwater_ruin/warm_6"),
-      new ResourceLocation("underwater_ruin/warm_7"),
-      new ResourceLocation("underwater_ruin/warm_8")
-   };
-   private static final ResourceLocation[] RUINS_BRICK = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/brick_1"),
-      new ResourceLocation("underwater_ruin/brick_2"),
-      new ResourceLocation("underwater_ruin/brick_3"),
-      new ResourceLocation("underwater_ruin/brick_4"),
-      new ResourceLocation("underwater_ruin/brick_5"),
-      new ResourceLocation("underwater_ruin/brick_6"),
-      new ResourceLocation("underwater_ruin/brick_7"),
-      new ResourceLocation("underwater_ruin/brick_8")
-   };
-   private static final ResourceLocation[] RUINS_CRACKED = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/cracked_1"),
-      new ResourceLocation("underwater_ruin/cracked_2"),
-      new ResourceLocation("underwater_ruin/cracked_3"),
-      new ResourceLocation("underwater_ruin/cracked_4"),
-      new ResourceLocation("underwater_ruin/cracked_5"),
-      new ResourceLocation("underwater_ruin/cracked_6"),
-      new ResourceLocation("underwater_ruin/cracked_7"),
-      new ResourceLocation("underwater_ruin/cracked_8")
-   };
-   private static final ResourceLocation[] RUINS_MOSSY = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/mossy_1"),
-      new ResourceLocation("underwater_ruin/mossy_2"),
-      new ResourceLocation("underwater_ruin/mossy_3"),
-      new ResourceLocation("underwater_ruin/mossy_4"),
-      new ResourceLocation("underwater_ruin/mossy_5"),
-      new ResourceLocation("underwater_ruin/mossy_6"),
-      new ResourceLocation("underwater_ruin/mossy_7"),
-      new ResourceLocation("underwater_ruin/mossy_8")
-   };
-   private static final ResourceLocation[] BIG_RUINS_BRICK = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/big_brick_1"),
-      new ResourceLocation("underwater_ruin/big_brick_2"),
-      new ResourceLocation("underwater_ruin/big_brick_3"),
-      new ResourceLocation("underwater_ruin/big_brick_8")
-   };
-   private static final ResourceLocation[] BIG_RUINS_MOSSY = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/big_mossy_1"),
-      new ResourceLocation("underwater_ruin/big_mossy_2"),
-      new ResourceLocation("underwater_ruin/big_mossy_3"),
-      new ResourceLocation("underwater_ruin/big_mossy_8")
-   };
-   private static final ResourceLocation[] BIG_RUINS_CRACKED = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/big_cracked_1"),
-      new ResourceLocation("underwater_ruin/big_cracked_2"),
-      new ResourceLocation("underwater_ruin/big_cracked_3"),
-      new ResourceLocation("underwater_ruin/big_cracked_8")
-   };
-   private static final ResourceLocation[] BIG_WARM_RUINS = new ResourceLocation[]{
-      new ResourceLocation("underwater_ruin/big_warm_4"),
-      new ResourceLocation("underwater_ruin/big_warm_5"),
-      new ResourceLocation("underwater_ruin/big_warm_6"),
-      new ResourceLocation("underwater_ruin/big_warm_7")
-   };
+   static final StructureProcessor WARM_SUSPICIOUS_BLOCK_PROCESSOR;
+   static final StructureProcessor COLD_SUSPICIOUS_BLOCK_PROCESSOR;
+   private static final ResourceLocation[] WARM_RUINS;
+   private static final ResourceLocation[] RUINS_BRICK;
+   private static final ResourceLocation[] RUINS_CRACKED;
+   private static final ResourceLocation[] RUINS_MOSSY;
+   private static final ResourceLocation[] BIG_RUINS_BRICK;
+   private static final ResourceLocation[] BIG_RUINS_MOSSY;
+   private static final ResourceLocation[] BIG_RUINS_CRACKED;
+   private static final ResourceLocation[] BIG_WARM_RUINS;
 
    public OceanRuinPieces() {
       super();
    }
 
    private static StructureProcessor archyRuleProcessor(Block var0, Block var1, ResourceKey<LootTable> var2) {
-      return new CappedProcessor(
-         new RuleProcessor(
-            List.of(
-               new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, PosAlwaysTrueTest.INSTANCE, var1.defaultBlockState(), new AppendLoot(var2))
-            )
-         ),
-         ConstantInt.of(5)
-      );
+      return new CappedProcessor(new RuleProcessor(List.of(new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, PosAlwaysTrueTest.INSTANCE, var1.defaultBlockState(), new AppendLoot(var2)))), ConstantInt.of(5));
    }
 
    private static ResourceLocation getSmallWarmRuin(RandomSource var0) {
-      return Util.getRandom(WARM_RUINS, var0);
+      return (ResourceLocation)Util.getRandom((Object[])WARM_RUINS, var0);
    }
 
    private static ResourceLocation getBigWarmRuin(RandomSource var0) {
-      return Util.getRandom(BIG_WARM_RUINS, var0);
+      return (ResourceLocation)Util.getRandom((Object[])BIG_WARM_RUINS, var0);
    }
 
-   public static void addPieces(
-      StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, OceanRuinStructure var5
-   ) {
+   public static void addPieces(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, OceanRuinStructure var5) {
       boolean var6 = var4.nextFloat() <= var5.largeProbability;
       float var7 = var6 ? 0.9F : 0.8F;
       addPiece(var0, var1, var2, var3, var4, var5, var6, var7);
       if (var6 && var4.nextFloat() <= var5.clusterProbability) {
          addClusterRuins(var0, var4, var2, var1, var5, var3);
       }
+
    }
 
-   private static void addClusterRuins(
-      StructureTemplateManager var0, RandomSource var1, Rotation var2, BlockPos var3, OceanRuinStructure var4, StructurePieceAccessor var5
-   ) {
+   private static void addClusterRuins(StructureTemplateManager var0, RandomSource var1, Rotation var2, BlockPos var3, OceanRuinStructure var4, StructurePieceAccessor var5) {
       BlockPos var6 = new BlockPos(var3.getX(), 90, var3.getZ());
       BlockPos var7 = StructureTemplate.transform(new BlockPos(15, 0, 15), Mirror.NONE, var2, BlockPos.ZERO).offset(var6);
       BoundingBox var8 = BoundingBox.fromCorners(var6, var7);
@@ -181,6 +113,7 @@ public class OceanRuinPieces {
             }
          }
       }
+
    }
 
    private static List<BlockPos> allPositions(RandomSource var0, BlockPos var1) {
@@ -196,31 +129,36 @@ public class OceanRuinPieces {
       return var2;
    }
 
-   private static void addPiece(
-      StructureTemplateManager var0,
-      BlockPos var1,
-      Rotation var2,
-      StructurePieceAccessor var3,
-      RandomSource var4,
-      OceanRuinStructure var5,
-      boolean var6,
-      float var7
-   ) {
-      switch(var5.biomeTemp) {
+   private static void addPiece(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, OceanRuinStructure var5, boolean var6, float var7) {
+      switch (var5.biomeTemp) {
          case WARM:
          default:
             ResourceLocation var8 = var6 ? getBigWarmRuin(var4) : getSmallWarmRuin(var4);
-            var3.addPiece(new OceanRuinPieces.OceanRuinPiece(var0, var8, var1, var2, var7, var5.biomeTemp, var6));
+            var3.addPiece(new OceanRuinPiece(var0, var8, var1, var2, var7, var5.biomeTemp, var6));
             break;
          case COLD:
             ResourceLocation[] var9 = var6 ? BIG_RUINS_BRICK : RUINS_BRICK;
             ResourceLocation[] var10 = var6 ? BIG_RUINS_CRACKED : RUINS_CRACKED;
             ResourceLocation[] var11 = var6 ? BIG_RUINS_MOSSY : RUINS_MOSSY;
             int var12 = var4.nextInt(var9.length);
-            var3.addPiece(new OceanRuinPieces.OceanRuinPiece(var0, var9[var12], var1, var2, var7, var5.biomeTemp, var6));
-            var3.addPiece(new OceanRuinPieces.OceanRuinPiece(var0, var10[var12], var1, var2, 0.7F, var5.biomeTemp, var6));
-            var3.addPiece(new OceanRuinPieces.OceanRuinPiece(var0, var11[var12], var1, var2, 0.5F, var5.biomeTemp, var6));
+            var3.addPiece(new OceanRuinPiece(var0, var9[var12], var1, var2, var7, var5.biomeTemp, var6));
+            var3.addPiece(new OceanRuinPiece(var0, var10[var12], var1, var2, 0.7F, var5.biomeTemp, var6));
+            var3.addPiece(new OceanRuinPiece(var0, var11[var12], var1, var2, 0.5F, var5.biomeTemp, var6));
       }
+
+   }
+
+   static {
+      WARM_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(Blocks.SAND, Blocks.SUSPICIOUS_SAND, BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY);
+      COLD_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY);
+      WARM_RUINS = new ResourceLocation[]{new ResourceLocation("underwater_ruin/warm_1"), new ResourceLocation("underwater_ruin/warm_2"), new ResourceLocation("underwater_ruin/warm_3"), new ResourceLocation("underwater_ruin/warm_4"), new ResourceLocation("underwater_ruin/warm_5"), new ResourceLocation("underwater_ruin/warm_6"), new ResourceLocation("underwater_ruin/warm_7"), new ResourceLocation("underwater_ruin/warm_8")};
+      RUINS_BRICK = new ResourceLocation[]{new ResourceLocation("underwater_ruin/brick_1"), new ResourceLocation("underwater_ruin/brick_2"), new ResourceLocation("underwater_ruin/brick_3"), new ResourceLocation("underwater_ruin/brick_4"), new ResourceLocation("underwater_ruin/brick_5"), new ResourceLocation("underwater_ruin/brick_6"), new ResourceLocation("underwater_ruin/brick_7"), new ResourceLocation("underwater_ruin/brick_8")};
+      RUINS_CRACKED = new ResourceLocation[]{new ResourceLocation("underwater_ruin/cracked_1"), new ResourceLocation("underwater_ruin/cracked_2"), new ResourceLocation("underwater_ruin/cracked_3"), new ResourceLocation("underwater_ruin/cracked_4"), new ResourceLocation("underwater_ruin/cracked_5"), new ResourceLocation("underwater_ruin/cracked_6"), new ResourceLocation("underwater_ruin/cracked_7"), new ResourceLocation("underwater_ruin/cracked_8")};
+      RUINS_MOSSY = new ResourceLocation[]{new ResourceLocation("underwater_ruin/mossy_1"), new ResourceLocation("underwater_ruin/mossy_2"), new ResourceLocation("underwater_ruin/mossy_3"), new ResourceLocation("underwater_ruin/mossy_4"), new ResourceLocation("underwater_ruin/mossy_5"), new ResourceLocation("underwater_ruin/mossy_6"), new ResourceLocation("underwater_ruin/mossy_7"), new ResourceLocation("underwater_ruin/mossy_8")};
+      BIG_RUINS_BRICK = new ResourceLocation[]{new ResourceLocation("underwater_ruin/big_brick_1"), new ResourceLocation("underwater_ruin/big_brick_2"), new ResourceLocation("underwater_ruin/big_brick_3"), new ResourceLocation("underwater_ruin/big_brick_8")};
+      BIG_RUINS_MOSSY = new ResourceLocation[]{new ResourceLocation("underwater_ruin/big_mossy_1"), new ResourceLocation("underwater_ruin/big_mossy_2"), new ResourceLocation("underwater_ruin/big_mossy_3"), new ResourceLocation("underwater_ruin/big_mossy_8")};
+      BIG_RUINS_CRACKED = new ResourceLocation[]{new ResourceLocation("underwater_ruin/big_cracked_1"), new ResourceLocation("underwater_ruin/big_cracked_2"), new ResourceLocation("underwater_ruin/big_cracked_3"), new ResourceLocation("underwater_ruin/big_cracked_8")};
+      BIG_WARM_RUINS = new ResourceLocation[]{new ResourceLocation("underwater_ruin/big_warm_4"), new ResourceLocation("underwater_ruin/big_warm_5"), new ResourceLocation("underwater_ruin/big_warm_6"), new ResourceLocation("underwater_ruin/big_warm_7")};
    }
 
    public static class OceanRuinPiece extends TemplateStructurePiece {
@@ -228,9 +166,7 @@ public class OceanRuinPieces {
       private final float integrity;
       private final boolean isLarge;
 
-      public OceanRuinPiece(
-         StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4, float var5, OceanRuinStructure.Type var6, boolean var7
-      ) {
+      public OceanRuinPiece(StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4, float var5, OceanRuinStructure.Type var6, boolean var7) {
          super(StructurePieceType.OCEAN_RUIN, 0, var1, var2, var2.toString(), makeSettings(var4, var5, var6), var3);
          this.integrity = var5;
          this.biomeType = var6;
@@ -238,33 +174,27 @@ public class OceanRuinPieces {
       }
 
       private OceanRuinPiece(StructureTemplateManager var1, CompoundTag var2, Rotation var3, float var4, OceanRuinStructure.Type var5, boolean var6) {
-         super(StructurePieceType.OCEAN_RUIN, var2, var1, var3x -> makeSettings(var3, var4, var5));
+         super(StructurePieceType.OCEAN_RUIN, var2, var1, (var3x) -> {
+            return makeSettings(var3, var4, var5);
+         });
          this.integrity = var4;
          this.biomeType = var5;
          this.isLarge = var6;
       }
 
       private static StructurePlaceSettings makeSettings(Rotation var0, float var1, OceanRuinStructure.Type var2) {
-         StructureProcessor var3 = var2 == OceanRuinStructure.Type.COLD
-            ? OceanRuinPieces.COLD_SUSPICIOUS_BLOCK_PROCESSOR
-            : OceanRuinPieces.WARM_SUSPICIOUS_BLOCK_PROCESSOR;
-         return new StructurePlaceSettings()
-            .setRotation(var0)
-            .setMirror(Mirror.NONE)
-            .addProcessor(new BlockRotProcessor(var1))
-            .addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR)
-            .addProcessor(var3);
+         StructureProcessor var3 = var2 == OceanRuinStructure.Type.COLD ? OceanRuinPieces.COLD_SUSPICIOUS_BLOCK_PROCESSOR : OceanRuinPieces.WARM_SUSPICIOUS_BLOCK_PROCESSOR;
+         return (new StructurePlaceSettings()).setRotation(var0).setMirror(Mirror.NONE).addProcessor(new BlockRotProcessor(var1)).addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR).addProcessor(var3);
       }
 
-      public static OceanRuinPieces.OceanRuinPiece create(StructureTemplateManager var0, CompoundTag var1) {
+      public static OceanRuinPiece create(StructureTemplateManager var0, CompoundTag var1) {
          Rotation var2 = Rotation.valueOf(var1.getString("Rot"));
          float var3 = var1.getFloat("Integrity");
          OceanRuinStructure.Type var4 = OceanRuinStructure.Type.valueOf(var1.getString("BiomeType"));
          boolean var5 = var1.getBoolean("IsLarge");
-         return new OceanRuinPieces.OceanRuinPiece(var0, var1, var2, var3, var4, var5);
+         return new OceanRuinPiece(var0, var1, var2, var3, var4, var5);
       }
 
-      @Override
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
          var2.putString("Rot", this.placeSettings.getRotation().name());
@@ -273,23 +203,19 @@ public class OceanRuinPieces {
          var2.putBoolean("IsLarge", this.isLarge);
       }
 
-      @Override
       protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, RandomSource var4, BoundingBox var5) {
          if ("chest".equals(var1)) {
-            var3.setBlock(
-               var2, Blocks.CHEST.defaultBlockState().setValue(ChestBlock.WATERLOGGED, Boolean.valueOf(var3.getFluidState(var2).is(FluidTags.WATER))), 2
-            );
+            var3.setBlock(var2, (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.WATERLOGGED, var3.getFluidState(var2).is(FluidTags.WATER)), 2);
             BlockEntity var6 = var3.getBlockEntity(var2);
             if (var6 instanceof ChestBlockEntity) {
-               ((ChestBlockEntity)var6)
-                  .setLootTable(this.isLarge ? BuiltInLootTables.UNDERWATER_RUIN_BIG : BuiltInLootTables.UNDERWATER_RUIN_SMALL, var4.nextLong());
+               ((ChestBlockEntity)var6).setLootTable(this.isLarge ? BuiltInLootTables.UNDERWATER_RUIN_BIG : BuiltInLootTables.UNDERWATER_RUIN_SMALL, var4.nextLong());
             }
          } else if ("drowned".equals(var1)) {
-            Drowned var7 = EntityType.DROWNED.create(var3.getLevel());
+            Drowned var7 = (Drowned)EntityType.DROWNED.create(var3.getLevel());
             if (var7 != null) {
                var7.setPersistenceRequired();
                var7.moveTo(var2, 0.0F, 0.0F);
-               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null);
+               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, (SpawnGroupData)null);
                var3.addFreshEntityWithPassengers(var7);
                if (var2.getY() > var3.getSeaLevel()) {
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
@@ -298,19 +224,13 @@ public class OceanRuinPieces {
                }
             }
          }
+
       }
 
-      @Override
       public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.templatePosition.getX(), this.templatePosition.getZ());
          this.templatePosition = new BlockPos(this.templatePosition.getX(), var8, this.templatePosition.getZ());
-         BlockPos var9 = StructureTemplate.transform(
-               new BlockPos(this.template.getSize().getX() - 1, 0, this.template.getSize().getZ() - 1),
-               Mirror.NONE,
-               this.placeSettings.getRotation(),
-               BlockPos.ZERO
-            )
-            .offset(this.templatePosition);
+         BlockPos var9 = StructureTemplate.transform(new BlockPos(this.template.getSize().getX() - 1, 0, this.template.getSize().getZ() - 1), Mirror.NONE, this.placeSettings.getRotation(), BlockPos.ZERO).offset(this.templatePosition);
          this.templatePosition = new BlockPos(this.templatePosition.getX(), this.getHeight(this.templatePosition, var1, var9), this.templatePosition.getZ());
          super.postProcess(var1, var2, var3, var4, var5, var6, var7);
       }
@@ -320,19 +240,19 @@ public class OceanRuinPieces {
          int var5 = 512;
          int var6 = var4 - 1;
          int var7 = 0;
+         Iterator var8 = BlockPos.betweenClosed(var1, var3).iterator();
 
-         for(BlockPos var9 : BlockPos.betweenClosed(var1, var3)) {
+         while(var8.hasNext()) {
+            BlockPos var9 = (BlockPos)var8.next();
             int var10 = var9.getX();
             int var11 = var9.getZ();
             int var12 = var1.getY() - 1;
             BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos(var10, var12, var11);
             BlockState var14 = var2.getBlockState(var13);
 
-            for(FluidState var15 = var2.getFluidState(var13);
-               (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinBuildHeight() + 1;
-               var15 = var2.getFluidState(var13)
-            ) {
-               var13.set(var10, --var12, var11);
+            for(FluidState var15 = var2.getFluidState(var13); (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinBuildHeight() + 1; var15 = var2.getFluidState(var13)) {
+               --var12;
+               var13.set(var10, var12, var11);
                var14 = var2.getBlockState(var13);
             }
 

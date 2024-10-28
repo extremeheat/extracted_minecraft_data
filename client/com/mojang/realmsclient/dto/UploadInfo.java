@@ -34,13 +34,13 @@ public class UploadInfo extends ValueObject {
       try {
          JsonParser var1 = new JsonParser();
          JsonObject var2 = var1.parse(var0).getAsJsonObject();
-         String var3 = JsonUtils.getStringOr("uploadEndpoint", var2, null);
+         String var3 = JsonUtils.getStringOr("uploadEndpoint", var2, (String)null);
          if (var3 != null) {
             int var4 = JsonUtils.getIntOr("port", var2, -1);
             URI var5 = assembleUri(var3, var4);
             if (var5 != null) {
                boolean var6 = JsonUtils.getBooleanOr("worldClosed", var2, false);
-               String var7 = JsonUtils.getStringOr("token", var2, null);
+               String var7 = JsonUtils.getStringOr("token", var2, (String)null);
                return new UploadInfo(var6, var7, var5);
             }
          }
@@ -60,9 +60,7 @@ public class UploadInfo extends ValueObject {
       try {
          URI var4 = new URI(var3);
          int var5 = selectPortOrDefault(var1, var4.getPort());
-         return var5 != var4.getPort()
-            ? new URI(var4.getScheme(), var4.getUserInfo(), var4.getHost(), var5, var4.getPath(), var4.getQuery(), var4.getFragment())
-            : var4;
+         return var5 != var4.getPort() ? new URI(var4.getScheme(), var4.getUserInfo(), var4.getHost(), var5, var4.getPath(), var4.getQuery(), var4.getFragment()) : var4;
       } catch (URISyntaxException var6) {
          LOGGER.warn("Failed to parse URI {}", var3, var6);
          return null;

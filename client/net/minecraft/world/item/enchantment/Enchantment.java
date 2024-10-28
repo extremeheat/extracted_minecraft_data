@@ -18,49 +18,56 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public class Enchantment {
-   private final Enchantment.EnchantmentDefinition definition;
+public class Enchantment implements FeatureElement {
+   private final EnchantmentDefinition definition;
    @Nullable
    protected String descriptionId;
-   private final Holder.Reference<Enchantment> builtInRegistryHolder = BuiltInRegistries.ENCHANTMENT.createIntrusiveHolder(this);
+   private final Holder.Reference<Enchantment> builtInRegistryHolder;
 
-   public static Enchantment.Cost constantCost(int var0) {
-      return new Enchantment.Cost(var0, 0);
+   public static Cost constantCost(int var0) {
+      return new Cost(var0, 0);
    }
 
-   public static Enchantment.Cost dynamicCost(int var0, int var1) {
-      return new Enchantment.Cost(var0, var1);
+   public static Cost dynamicCost(int var0, int var1) {
+      return new Cost(var0, var1);
    }
 
-   public static Enchantment.EnchantmentDefinition definition(
-      TagKey<Item> var0, TagKey<Item> var1, int var2, int var3, Enchantment.Cost var4, Enchantment.Cost var5, int var6, EquipmentSlot... var7
-   ) {
-      return new Enchantment.EnchantmentDefinition(var0, Optional.of(var1), var2, var3, var4, var5, var6, var7);
+   public static EnchantmentDefinition definition(TagKey<Item> var0, TagKey<Item> var1, int var2, int var3, Cost var4, Cost var5, int var6, EquipmentSlot... var7) {
+      return new EnchantmentDefinition(var0, Optional.of(var1), var2, var3, var4, var5, var6, FeatureFlags.DEFAULT_FLAGS, var7);
    }
 
-   public static Enchantment.EnchantmentDefinition definition(
-      TagKey<Item> var0, int var1, int var2, Enchantment.Cost var3, Enchantment.Cost var4, int var5, EquipmentSlot... var6
-   ) {
-      return new Enchantment.EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, var6);
+   public static EnchantmentDefinition definition(TagKey<Item> var0, int var1, int var2, Cost var3, Cost var4, int var5, EquipmentSlot... var6) {
+      return new EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, FeatureFlags.DEFAULT_FLAGS, var6);
+   }
+
+   public static EnchantmentDefinition definition(TagKey<Item> var0, int var1, int var2, Cost var3, Cost var4, int var5, FeatureFlagSet var6, EquipmentSlot... var7) {
+      return new EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, var6, var7);
    }
 
    @Nullable
    public static Enchantment byId(int var0) {
-      return BuiltInRegistries.ENCHANTMENT.byId(var0);
+      return (Enchantment)BuiltInRegistries.ENCHANTMENT.byId(var0);
    }
 
-   public Enchantment(Enchantment.EnchantmentDefinition var1) {
+   public Enchantment(EnchantmentDefinition var1) {
       super();
+      this.builtInRegistryHolder = BuiltInRegistries.ENCHANTMENT.createIntrusiveHolder(this);
       this.definition = var1;
    }
 
    public Map<EquipmentSlot, ItemStack> getSlotItems(LivingEntity var1) {
       EnumMap var2 = Maps.newEnumMap(EquipmentSlot.class);
+      EquipmentSlot[] var3 = this.definition.slots();
+      int var4 = var3.length;
 
-      for(EquipmentSlot var6 : this.definition.slots()) {
+      for(int var5 = 0; var5 < var4; ++var5) {
+         EquipmentSlot var6 = var3[var5];
          ItemStack var7 = var1.getItemBySlot(var6);
          if (!var7.isEmpty()) {
             var2.put(var6, var7);
@@ -75,7 +82,7 @@ public class Enchantment {
    }
 
    public final boolean isPrimaryItem(ItemStack var1) {
-      return this.definition.primaryItems.isEmpty() || var1.is((TagKey<Item>)this.definition.primaryItems.get());
+      return this.definition.primaryItems.isEmpty() || var1.is((TagKey)this.definition.primaryItems.get());
    }
 
    public final int getWeight() {
@@ -139,7 +146,7 @@ public class Enchantment {
       }
 
       if (var1 != 1 || this.getMaxLevel() != 1) {
-         var2.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + var1));
+         var2.append(CommonComponents.SPACE).append((Component)Component.translatable("enchantment.level." + var1));
       }
 
       return var2;
@@ -153,6 +160,9 @@ public class Enchantment {
    }
 
    public void doPostHurt(LivingEntity var1, Entity var2, int var3) {
+   }
+
+   public void doPostItemStackHurt(LivingEntity var1, Entity var2, int var3) {
    }
 
    public boolean isTreasureOnly() {
@@ -171,15 +181,17 @@ public class Enchantment {
       return true;
    }
 
+   /** @deprecated */
    @Deprecated
    public Holder.Reference<Enchantment> builtInRegistryHolder() {
       return this.builtInRegistryHolder;
    }
 
-   public static record Cost(int a, int b) {
-      private final int base;
-      private final int perLevel;
+   public FeatureFlagSet requiredFeatures() {
+      return this.definition.requiredFeatures();
+   }
 
+   public static record Cost(int base, int perLevel) {
       public Cost(int var1, int var2) {
          super();
          this.base = var1;
@@ -189,23 +201,20 @@ public class Enchantment {
       public int calculate(int var1) {
          return this.base + this.perLevel * (var1 - 1);
       }
+
+      public int base() {
+         return this.base;
+      }
+
+      public int perLevel() {
+         return this.perLevel;
+      }
    }
 
-   public static record EnchantmentDefinition(
-      TagKey<Item> a, Optional<TagKey<Item>> b, int c, int d, Enchantment.Cost e, Enchantment.Cost f, int g, EquipmentSlot[] h
-   ) {
-      private final TagKey<Item> supportedItems;
+   public static record EnchantmentDefinition(TagKey<Item> supportedItems, Optional<TagKey<Item>> primaryItems, int weight, int maxLevel, Cost minCost, Cost maxCost, int anvilCost, FeatureFlagSet requiredFeatures, EquipmentSlot[] slots) {
       final Optional<TagKey<Item>> primaryItems;
-      private final int weight;
-      private final int maxLevel;
-      private final Enchantment.Cost minCost;
-      private final Enchantment.Cost maxCost;
-      private final int anvilCost;
-      private final EquipmentSlot[] slots;
 
-      public EnchantmentDefinition(
-         TagKey<Item> var1, Optional<TagKey<Item>> var2, int var3, int var4, Enchantment.Cost var5, Enchantment.Cost var6, int var7, EquipmentSlot[] var8
-      ) {
+      public EnchantmentDefinition(TagKey<Item> var1, Optional<TagKey<Item>> var2, int var3, int var4, Cost var5, Cost var6, int var7, FeatureFlagSet var8, EquipmentSlot[] var9) {
          super();
          this.supportedItems = var1;
          this.primaryItems = var2;
@@ -214,7 +223,44 @@ public class Enchantment {
          this.minCost = var5;
          this.maxCost = var6;
          this.anvilCost = var7;
-         this.slots = var8;
+         this.requiredFeatures = var8;
+         this.slots = var9;
+      }
+
+      public TagKey<Item> supportedItems() {
+         return this.supportedItems;
+      }
+
+      public Optional<TagKey<Item>> primaryItems() {
+         return this.primaryItems;
+      }
+
+      public int weight() {
+         return this.weight;
+      }
+
+      public int maxLevel() {
+         return this.maxLevel;
+      }
+
+      public Cost minCost() {
+         return this.minCost;
+      }
+
+      public Cost maxCost() {
+         return this.maxCost;
+      }
+
+      public int anvilCost() {
+         return this.anvilCost;
+      }
+
+      public FeatureFlagSet requiredFeatures() {
+         return this.requiredFeatures;
+      }
+
+      public EquipmentSlot[] slots() {
+         return this.slots;
       }
    }
 }

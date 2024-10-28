@@ -9,9 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 public class ClientboundSetCameraPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetCameraPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetCameraPacket::write, ClientboundSetCameraPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetCameraPacket> STREAM_CODEC = Packet.codec(ClientboundSetCameraPacket::write, ClientboundSetCameraPacket::new);
    private final int cameraId;
 
    public ClientboundSetCameraPacket(Entity var1) {
@@ -28,7 +26,6 @@ public class ClientboundSetCameraPacket implements Packet<ClientGamePacketListen
       var1.writeVarInt(this.cameraId);
    }
 
-   @Override
    public PacketType<ClientboundSetCameraPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CAMERA;
    }

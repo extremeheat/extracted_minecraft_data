@@ -10,6 +10,7 @@ import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.File;
@@ -18,11 +19,13 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -54,6 +57,7 @@ public class ServerStatsCounter extends StatsCounter {
             LOGGER.error("Couldn't parse statistics file {}", var2, var5);
          }
       }
+
    }
 
    public void save() {
@@ -62,9 +66,9 @@ public class ServerStatsCounter extends StatsCounter {
       } catch (IOException var2) {
          LOGGER.error("Couldn't save stats", var2);
       }
+
    }
 
-   @Override
    public void setValue(Player var1, Stat<?> var2, int var3) {
       super.setValue(var1, var2, var3);
       this.dirty.add(var2);
@@ -80,53 +84,47 @@ public class ServerStatsCounter extends StatsCounter {
       try {
          JsonReader var3 = new JsonReader(new StringReader(var2));
 
-         label47: {
+         label62: {
             try {
                var3.setLenient(false);
                JsonElement var4 = Streams.parse(var3);
-               if (!var4.isJsonNull()) {
-                  CompoundTag var5 = fromJson(var4.getAsJsonObject());
-                  var5 = DataFixTypes.STATS.updateToCurrentVersion(var1, var5, NbtUtils.getDataVersion(var5, 1343));
-                  if (!var5.contains("stats", 10)) {
-                     break label47;
-                  }
+               if (var4.isJsonNull()) {
+                  LOGGER.error("Unable to parse Stat data from {}", this.file);
+                  break label62;
+               }
 
+               CompoundTag var5 = fromJson(var4.getAsJsonObject());
+               var5 = DataFixTypes.STATS.updateToCurrentVersion(var1, var5, NbtUtils.getDataVersion(var5, 1343));
+               if (var5.contains("stats", 10)) {
                   CompoundTag var6 = var5.getCompound("stats");
                   Iterator var7 = var6.getAllKeys().iterator();
 
-                  while(true) {
-                     if (!var7.hasNext()) {
-                        break label47;
-                     }
-
+                  while(var7.hasNext()) {
                      String var8 = (String)var7.next();
                      if (var6.contains(var8, 10)) {
-                        Util.ifElse(
-                           BuiltInRegistries.STAT_TYPE.getOptional(new ResourceLocation(var8)),
-                           var3x -> {
-                              CompoundTag var4xx = var6.getCompound(var8);
-   
-                              for(String var6xx : var4xx.getAllKeys()) {
-                                 if (var4xx.contains(var6xx, 99)) {
-                                    Util.ifElse(
-                                       this.getStat(var3x, var6xx),
-                                       var3xx -> this.stats.put(var3xx, var4x.getInt(var6x)),
-                                       () -> LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, var6x)
-                                    );
-                                 } else {
-                                    LOGGER.warn(
-                                       "Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4xx.get(var6xx), var6xx}
-                                    );
-                                 }
+                        Util.ifElse(BuiltInRegistries.STAT_TYPE.getOptional(new ResourceLocation(var8)), (var3x) -> {
+                           CompoundTag var4 = var6.getCompound(var8);
+                           Iterator var5 = var4.getAllKeys().iterator();
+
+                           while(var5.hasNext()) {
+                              String var6x = (String)var5.next();
+                              if (var4.contains(var6x, 99)) {
+                                 Util.ifElse(this.getStat(var3x, var6x), (var3) -> {
+                                    this.stats.put(var3, var4.getInt(var6x));
+                                 }, () -> {
+                                    LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, var6x);
+                                 });
+                              } else {
+                                 LOGGER.warn("Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4.get(var6x), var6x});
                               }
-                           },
-                           () -> LOGGER.warn("Invalid statistic type in {}: Don't know what {} is", this.file, var8)
-                        );
+                           }
+
+                        }, () -> {
+                           LOGGER.warn("Invalid statistic type in {}: Don't know what {} is", this.file, var8);
+                        });
                      }
                   }
                }
-
-               LOGGER.error("Unable to parse Stat data from {}", this.file);
             } catch (Throwable var10) {
                try {
                   var3.close();
@@ -148,13 +146,20 @@ public class ServerStatsCounter extends StatsCounter {
    }
 
    private <T> Optional<Stat<T>> getStat(StatType<T> var1, String var2) {
-      return Optional.ofNullable(ResourceLocation.tryParse(var2)).flatMap(var1.getRegistry()::getOptional).map(var1::get);
+      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var2));
+      Registry var10001 = var1.getRegistry();
+      Objects.requireNonNull(var10001);
+      var10000 = var10000.flatMap(var10001::getOptional);
+      Objects.requireNonNull(var1);
+      return var10000.map(var1::get);
    }
 
    private static CompoundTag fromJson(JsonObject var0) {
       CompoundTag var1 = new CompoundTag();
+      Iterator var2 = var0.entrySet().iterator();
 
-      for(Entry var3 : var0.entrySet()) {
+      while(var2.hasNext()) {
+         Map.Entry var3 = (Map.Entry)var2.next();
          JsonElement var4 = (JsonElement)var3.getValue();
          if (var4.isJsonObject()) {
             var1.put((String)var3.getKey(), fromJson(var4.getAsJsonObject()));
@@ -174,15 +179,19 @@ public class ServerStatsCounter extends StatsCounter {
       ObjectIterator var2 = this.stats.object2IntEntrySet().iterator();
 
       while(var2.hasNext()) {
-         it.unimi.dsi.fastutil.objects.Object2IntMap.Entry var3 = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry)var2.next();
+         Object2IntMap.Entry var3 = (Object2IntMap.Entry)var2.next();
          Stat var4 = (Stat)var3.getKey();
-         ((JsonObject)var1.computeIfAbsent(var4.getType(), var0 -> new JsonObject())).addProperty(getKey(var4).toString(), var3.getIntValue());
+         ((JsonObject)var1.computeIfAbsent(var4.getType(), (var0) -> {
+            return new JsonObject();
+         })).addProperty(getKey(var4).toString(), var3.getIntValue());
       }
 
       JsonObject var5 = new JsonObject();
+      Iterator var6 = var1.entrySet().iterator();
 
-      for(Entry var8 : var1.entrySet()) {
-         var5.add(BuiltInRegistries.STAT_TYPE.getKey((StatType<?>)var8.getKey()).toString(), (JsonElement)var8.getValue());
+      while(var6.hasNext()) {
+         Map.Entry var8 = (Map.Entry)var6.next();
+         var5.add(BuiltInRegistries.STAT_TYPE.getKey((StatType)var8.getKey()).toString(), (JsonElement)var8.getValue());
       }
 
       JsonObject var7 = new JsonObject();
@@ -201,8 +210,10 @@ public class ServerStatsCounter extends StatsCounter {
 
    public void sendStats(ServerPlayer var1) {
       Object2IntOpenHashMap var2 = new Object2IntOpenHashMap();
+      Iterator var3 = this.getDirty().iterator();
 
-      for(Stat var4 : this.getDirty()) {
+      while(var3.hasNext()) {
+         Stat var4 = (Stat)var3.next();
          var2.put(var4, this.getValue(var4));
       }
 

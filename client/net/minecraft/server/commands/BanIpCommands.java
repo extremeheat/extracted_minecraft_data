@@ -5,9 +5,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -28,23 +29,13 @@ public class BanIpCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(var0x -> var0x.hasPermission(3)))
-            .then(
-               ((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word())
-                     .executes(var0x -> banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), null)))
-                  .then(
-                     Commands.argument("reason", MessageArgument.message())
-                        .executes(
-                           var0x -> banIpOrName(
-                                 (CommandSourceStack)var0x.getSource(),
-                                 StringArgumentType.getString(var0x, "target"),
-                                 MessageArgument.getMessage(var0x, "reason")
-                              )
-                        )
-                  )
-            )
-      );
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires((var0x) -> {
+         return var0x.hasPermission(3);
+      })).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((var0x) -> {
+         return banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), (Component)null);
+      })).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> {
+         return banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), MessageArgument.getMessage(var0x, "reason"));
+      }))));
    }
 
    private static int banIpOrName(CommandSourceStack var0, String var1, @Nullable Component var2) throws CommandSyntaxException {
@@ -66,14 +57,21 @@ public class BanIpCommands {
          throw ERROR_ALREADY_BANNED.create();
       } else {
          List var4 = var0.getServer().getPlayerList().getPlayersWithAddress(var1);
-         IpBanListEntry var5 = new IpBanListEntry(var1, null, var0.getTextName(), null, var2 == null ? null : var2.getString());
+         IpBanListEntry var5 = new IpBanListEntry(var1, (Date)null, var0.getTextName(), (Date)null, var2 == null ? null : var2.getString());
          var3.add(var5);
-         var0.sendSuccess(() -> Component.translatable("commands.banip.success", var1, var5.getReason()), true);
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.banip.success", var1, var5.getReason());
+         }, true);
          if (!var4.isEmpty()) {
-            var0.sendSuccess(() -> Component.translatable("commands.banip.info", var4.size(), EntitySelector.joinNames(var4)), true);
+            var0.sendSuccess(() -> {
+               return Component.translatable("commands.banip.info", var4.size(), EntitySelector.joinNames(var4));
+            }, true);
          }
 
-         for(ServerPlayer var7 : var4) {
+         Iterator var6 = var4.iterator();
+
+         while(var6.hasNext()) {
+            ServerPlayer var7 = (ServerPlayer)var6.next();
             var7.connection.disconnect(Component.translatable("multiplayer.disconnect.ip_banned"));
          }
 

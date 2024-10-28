@@ -8,8 +8,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -23,19 +25,17 @@ public class SkeletonTrapGoal extends Goal {
       this.horse = var1;
    }
 
-   @Override
    public boolean canUse() {
       return this.horse.level().hasNearbyAlivePlayer(this.horse.getX(), this.horse.getY(), this.horse.getZ(), 10.0);
    }
 
-   @Override
    public void tick() {
       ServerLevel var1 = (ServerLevel)this.horse.level();
       DifficultyInstance var2 = var1.getCurrentDifficultyAt(this.horse.blockPosition());
       this.horse.setTrap(false);
       this.horse.setTamed(true);
       this.horse.setAge(0);
-      LightningBolt var3 = EntityType.LIGHTNING_BOLT.create(var1);
+      LightningBolt var3 = (LightningBolt)EntityType.LIGHTNING_BOLT.create(var1);
       if (var3 != null) {
          var3.moveTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var3.setVisualOnly(true);
@@ -56,15 +56,16 @@ public class SkeletonTrapGoal extends Goal {
                   }
                }
             }
+
          }
       }
    }
 
    @Nullable
    private AbstractHorse createHorse(DifficultyInstance var1) {
-      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level());
+      SkeletonHorse var2 = (SkeletonHorse)EntityType.SKELETON_HORSE.create(this.horse.level());
       if (var2 != null) {
-         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null);
+         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, (SpawnGroupData)null);
          var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var2.invulnerableTime = 60;
          var2.setPersistenceRequired();
@@ -77,9 +78,9 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
-      Skeleton var3 = EntityType.SKELETON.create(var2.level());
+      Skeleton var3 = (Skeleton)EntityType.SKELETON.create(var2.level());
       if (var3 != null) {
-         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null);
+         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, (SpawnGroupData)null);
          var3.setPos(var2.getX(), var2.getY(), var2.getZ());
          var3.invulnerableTime = 60;
          var3.setPersistenceRequired();
@@ -87,24 +88,9 @@ public class SkeletonTrapGoal extends Goal {
             var3.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
          }
 
-         var3.setItemSlot(
-            EquipmentSlot.MAINHAND,
-            EnchantmentHelper.enchantItem(
-               var3.getRandom(),
-               this.disenchant(var3.getMainHandItem()),
-               (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)),
-               false
-            )
-         );
-         var3.setItemSlot(
-            EquipmentSlot.HEAD,
-            EnchantmentHelper.enchantItem(
-               var3.getRandom(),
-               this.disenchant(var3.getItemBySlot(EquipmentSlot.HEAD)),
-               (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)),
-               false
-            )
-         );
+         FeatureFlagSet var4 = var2.level().enabledFeatures();
+         var3.setItemSlot(EquipmentSlot.MAINHAND, EnchantmentHelper.enchantItem(var4, var3.getRandom(), this.disenchant(var3.getMainHandItem()), (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)), false));
+         var3.setItemSlot(EquipmentSlot.HEAD, EnchantmentHelper.enchantItem(var4, var3.getRandom(), this.disenchant(var3.getItemBySlot(EquipmentSlot.HEAD)), (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)), false));
       }
 
       return var3;

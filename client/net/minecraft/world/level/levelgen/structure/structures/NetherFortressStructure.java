@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
@@ -15,24 +15,19 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class NetherFortressStructure extends Structure {
-   public static final WeightedRandomList<MobSpawnSettings.SpawnerData> FORTRESS_ENEMIES = WeightedRandomList.create(
-      new MobSpawnSettings.SpawnerData(EntityType.BLAZE, 10, 2, 3),
-      new MobSpawnSettings.SpawnerData(EntityType.ZOMBIFIED_PIGLIN, 5, 4, 4),
-      new MobSpawnSettings.SpawnerData(EntityType.WITHER_SKELETON, 8, 5, 5),
-      new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 2, 5, 5),
-      new MobSpawnSettings.SpawnerData(EntityType.MAGMA_CUBE, 3, 4, 4)
-   );
-   public static final Codec<NetherFortressStructure> CODEC = simpleCodec(NetherFortressStructure::new);
+   public static final WeightedRandomList<MobSpawnSettings.SpawnerData> FORTRESS_ENEMIES;
+   public static final MapCodec<NetherFortressStructure> CODEC;
 
    public NetherFortressStructure(Structure.StructureSettings var1) {
       super(var1);
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       ChunkPos var2 = var1.chunkPos();
       BlockPos var3 = new BlockPos(var2.getMinBlockX(), 64, var2.getMinBlockZ());
-      return Optional.of(new Structure.GenerationStub(var3, (Consumer<StructurePiecesBuilder>)(var1x -> generatePieces(var1x, var1))));
+      return Optional.of(new Structure.GenerationStub(var3, (var1x) -> {
+         generatePieces(var1x, var1);
+      }));
    }
 
    private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {
@@ -50,8 +45,12 @@ public class NetherFortressStructure extends Structure {
       var0.moveInsideHeights(var1.random(), 48, 70);
    }
 
-   @Override
    public StructureType<?> type() {
       return StructureType.FORTRESS;
+   }
+
+   static {
+      FORTRESS_ENEMIES = WeightedRandomList.create((WeightedEntry[])(new MobSpawnSettings.SpawnerData(EntityType.BLAZE, 10, 2, 3), new MobSpawnSettings.SpawnerData(EntityType.ZOMBIFIED_PIGLIN, 5, 4, 4), new MobSpawnSettings.SpawnerData(EntityType.WITHER_SKELETON, 8, 5, 5), new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 2, 5, 5), new MobSpawnSettings.SpawnerData(EntityType.MAGMA_CUBE, 3, 4, 4)));
+      CODEC = simpleCodec(NetherFortressStructure::new);
    }
 }

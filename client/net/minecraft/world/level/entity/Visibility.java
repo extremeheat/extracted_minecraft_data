@@ -30,4 +30,9 @@ public enum Visibility {
          return var0.isOrAfter(FullChunkStatus.FULL) ? TRACKED : HIDDEN;
       }
    }
+
+   // $FF: synthetic method
+   private static Visibility[] $values() {
+      return new Visibility[]{HIDDEN, TRACKED, TICKING};
+   }
 }

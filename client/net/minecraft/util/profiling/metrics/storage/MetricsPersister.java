@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,13 +68,16 @@ public class MetricsPersister {
       if (var1.isEmpty()) {
          throw new IllegalArgumentException("Expected at least one sampler to persist");
       } else {
-         Map var3 = var1.stream().collect(Collectors.groupingBy(MetricSampler::getCategory));
-         var3.forEach((var2x, var3x) -> this.saveCategory(var2x, var3x, var2));
+         Map var3 = (Map)var1.stream().collect(Collectors.groupingBy(MetricSampler::getCategory));
+         var3.forEach((var2x, var3x) -> {
+            this.saveCategory(var2x, var3x, var2);
+         });
       }
    }
 
    private void saveCategory(MetricCategory var1, List<MetricSampler> var2, Path var3) {
-      Path var4 = var3.resolve(Util.sanitizeName(var1.getDescription(), ResourceLocation::validPathChar) + ".csv");
+      String var10001 = var1.getDescription();
+      Path var4 = var3.resolve(Util.sanitizeName(var10001, ResourceLocation::validPathChar) + ".csv");
       BufferedWriter var5 = null;
 
       try {
@@ -81,20 +85,25 @@ public class MetricsPersister {
          var5 = Files.newBufferedWriter(var4, StandardCharsets.UTF_8);
          CsvOutput.Builder var6 = CsvOutput.builder();
          var6.addColumn("@tick");
+         Iterator var7 = var2.iterator();
 
-         for(MetricSampler var8 : var2) {
+         while(var7.hasNext()) {
+            MetricSampler var8 = (MetricSampler)var7.next();
             var6.addColumn(var8.getName());
          }
 
          CsvOutput var20 = var6.build(var5);
-         List var21 = var2.stream().map(MetricSampler::result).collect(Collectors.toList());
+         List var21 = (List)var2.stream().map(MetricSampler::result).collect(Collectors.toList());
          int var9 = var21.stream().mapToInt(MetricSampler.SamplerResult::getFirstTick).summaryStatistics().getMin();
          int var10 = var21.stream().mapToInt(MetricSampler.SamplerResult::getLastTick).summaryStatistics().getMax();
 
          for(int var11 = var9; var11 <= var10; ++var11) {
-            int var12 = var11;
-            Stream var13 = var21.stream().map(var1x -> String.valueOf(var1x.valueAtTick(var12)));
-            Object[] var14 = Stream.concat(Stream.of(String.valueOf(var11)), var13).toArray(var0 -> new String[var0]);
+            Stream var13 = var21.stream().map((var1x) -> {
+               return String.valueOf(var1x.valueAtTick(var11));
+            });
+            Object[] var14 = Stream.concat(Stream.of(String.valueOf(var11)), var13).toArray((var0) -> {
+               return new String[var0];
+            });
             var20.writeRow(var14);
          }
 
@@ -104,20 +113,18 @@ public class MetricsPersister {
       } finally {
          IOUtils.closeQuietly(var5);
       }
+
    }
 
    private void saveDeviations(Map<MetricSampler, List<RecordedDeviation>> var1, Path var2) {
       DateTimeFormatter var3 = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS", Locale.UK).withZone(ZoneId.systemDefault());
-      var1.forEach(
-         (var2x, var3x) -> var3x.forEach(
-               var3xx -> {
-                  String var4 = var3.format(var3xx.timestamp);
-                  Path var5 = var2.resolve(Util.sanitizeName(var2x.getName(), ResourceLocation::validPathChar))
-                     .resolve(String.format(Locale.ROOT, "%d@%s.txt", var3xx.tick, var4));
-                  var3xx.profilerResultAtTick.saveResults(var5);
-               }
-            )
-      );
+      var1.forEach((var2x, var3x) -> {
+         var3x.forEach((var3xx) -> {
+            String var4 = var3.format(var3xx.timestamp);
+            Path var5 = var2.resolve(Util.sanitizeName(var2x.getName(), ResourceLocation::validPathChar)).resolve(String.format(Locale.ROOT, "%d@%s.txt", var3xx.tick, var4));
+            var3xx.profilerResultAtTick.saveResults(var5);
+         });
+      });
    }
 
    private void saveProfilingTaskExecutionResult(ProfileResults var1, Path var2) {

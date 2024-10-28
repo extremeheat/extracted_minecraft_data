@@ -16,16 +16,14 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContainer {
-   @Override
    default boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return var5 == Fluids.WATER;
    }
 
-   @Override
    default boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
-      if (!var3.getValue(BlockStateProperties.WATERLOGGED) && var4.getType() == Fluids.WATER) {
+      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.getType() == Fluids.WATER) {
          if (!var1.isClientSide()) {
-            var1.setBlock(var2, var3.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(true)), 3);
+            var1.setBlock(var2, (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, true), 3);
             var1.scheduleTick(var2, var4.getType(), var4.getType().getTickDelay(var1));
          }
 
@@ -35,10 +33,9 @@ public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContain
       }
    }
 
-   @Override
    default ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
-      if (var4.getValue(BlockStateProperties.WATERLOGGED)) {
-         var2.setBlock(var3, var4.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(false)), 3);
+      if ((Boolean)var4.getValue(BlockStateProperties.WATERLOGGED)) {
+         var2.setBlock(var3, (BlockState)var4.setValue(BlockStateProperties.WATERLOGGED, false), 3);
          if (!var4.canSurvive(var2, var3)) {
             var2.destroyBlock(var3, true);
          }
@@ -49,7 +46,6 @@ public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContain
       }
    }
 
-   @Override
    default Optional<SoundEvent> getPickupSound() {
       return Fluids.WATER.getPickupSound();
    }

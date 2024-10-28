@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
@@ -12,15 +12,16 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class IglooStructure extends Structure {
-   public static final Codec<IglooStructure> CODEC = simpleCodec(IglooStructure::new);
+   public static final MapCodec<IglooStructure> CODEC = simpleCodec(IglooStructure::new);
 
    public IglooStructure(Structure.StructureSettings var1) {
       super(var1);
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, var2 -> this.generatePieces(var2, var1));
+      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> {
+         this.generatePieces(var2, var1);
+      });
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {
@@ -31,7 +32,6 @@ public class IglooStructure extends Structure {
       IglooPieces.addPieces(var2.structureTemplateManager(), var5, var6, var1, var4);
    }
 
-   @Override
    public StructureType<?> type() {
       return StructureType.IGLOO;
    }

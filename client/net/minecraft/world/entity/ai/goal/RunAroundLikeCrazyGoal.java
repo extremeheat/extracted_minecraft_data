@@ -21,7 +21,6 @@ public class RunAroundLikeCrazyGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (!this.horse.isTamed() && this.horse.isVehicle()) {
          Vec3 var1 = DefaultRandomPos.getPos(this.horse, 5, 4);
@@ -38,17 +37,14 @@ public class RunAroundLikeCrazyGoal extends Goal {
       }
    }
 
-   @Override
    public void start() {
       this.horse.getNavigation().moveTo(this.posX, this.posY, this.posZ, this.speedModifier);
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.horse.isTamed() && !this.horse.getNavigation().isDone() && this.horse.isVehicle();
    }
 
-   @Override
    public void tick() {
       if (!this.horse.isTamed() && this.horse.getRandom().nextInt(this.adjustedTickDelay(50)) == 0) {
          Entity var1 = this.horse.getFirstPassenger();
@@ -56,11 +52,12 @@ public class RunAroundLikeCrazyGoal extends Goal {
             return;
          }
 
-         if (var1 instanceof Player var2) {
+         if (var1 instanceof Player) {
+            Player var2 = (Player)var1;
             int var3 = this.horse.getTemper();
             int var4 = this.horse.getMaxTemper();
             if (var4 > 0 && this.horse.getRandom().nextInt(var4) < var3) {
-               this.horse.tameWithName((Player)var2);
+               this.horse.tameWithName(var2);
                return;
             }
 
@@ -71,5 +68,6 @@ public class RunAroundLikeCrazyGoal extends Goal {
          this.horse.makeMad();
          this.horse.level().broadcastEntityEvent(this.horse, (byte)6);
       }
+
    }
 }

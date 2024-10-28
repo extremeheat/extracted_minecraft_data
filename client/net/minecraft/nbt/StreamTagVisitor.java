@@ -1,39 +1,39 @@
 package net.minecraft.nbt;
 
 public interface StreamTagVisitor {
-   StreamTagVisitor.ValueResult visitEnd();
+   ValueResult visitEnd();
 
-   StreamTagVisitor.ValueResult visit(String var1);
+   ValueResult visit(String var1);
 
-   StreamTagVisitor.ValueResult visit(byte var1);
+   ValueResult visit(byte var1);
 
-   StreamTagVisitor.ValueResult visit(short var1);
+   ValueResult visit(short var1);
 
-   StreamTagVisitor.ValueResult visit(int var1);
+   ValueResult visit(int var1);
 
-   StreamTagVisitor.ValueResult visit(long var1);
+   ValueResult visit(long var1);
 
-   StreamTagVisitor.ValueResult visit(float var1);
+   ValueResult visit(float var1);
 
-   StreamTagVisitor.ValueResult visit(double var1);
+   ValueResult visit(double var1);
 
-   StreamTagVisitor.ValueResult visit(byte[] var1);
+   ValueResult visit(byte[] var1);
 
-   StreamTagVisitor.ValueResult visit(int[] var1);
+   ValueResult visit(int[] var1);
 
-   StreamTagVisitor.ValueResult visit(long[] var1);
+   ValueResult visit(long[] var1);
 
-   StreamTagVisitor.ValueResult visitList(TagType<?> var1, int var2);
+   ValueResult visitList(TagType<?> var1, int var2);
 
-   StreamTagVisitor.EntryResult visitEntry(TagType<?> var1);
+   EntryResult visitEntry(TagType<?> var1);
 
-   StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2);
+   EntryResult visitEntry(TagType<?> var1, String var2);
 
-   StreamTagVisitor.EntryResult visitElement(TagType<?> var1, int var2);
+   EntryResult visitElement(TagType<?> var1, int var2);
 
-   StreamTagVisitor.ValueResult visitContainerEnd();
+   ValueResult visitContainerEnd();
 
-   StreamTagVisitor.ValueResult visitRootEntry(TagType<?> var1);
+   ValueResult visitRootEntry(TagType<?> var1);
 
    public static enum EntryResult {
       ENTER,
@@ -43,6 +43,11 @@ public interface StreamTagVisitor {
 
       private EntryResult() {
       }
+
+      // $FF: synthetic method
+      private static EntryResult[] $values() {
+         return new EntryResult[]{ENTER, SKIP, BREAK, HALT};
+      }
    }
 
    public static enum ValueResult {
@@ -51,6 +56,11 @@ public interface StreamTagVisitor {
       HALT;
 
       private ValueResult() {
+      }
+
+      // $FF: synthetic method
+      private static ValueResult[] $values() {
+         return new ValueResult[]{CONTINUE, BREAK, HALT};
       }
    }
 }

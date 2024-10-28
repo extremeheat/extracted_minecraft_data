@@ -6,16 +6,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundResetScorePacket(String b, @Nullable String c) implements Packet<ClientGamePacketListener> {
-   private final String owner;
-   @Nullable
-   private final String objectiveName;
-   public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.codec(
-      ClientboundResetScorePacket::write, ClientboundResetScorePacket::new
-   );
+public record ClientboundResetScorePacket(String owner, @Nullable String objectiveName) implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.codec(ClientboundResetScorePacket::write, ClientboundResetScorePacket::new);
 
    private ClientboundResetScorePacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(), var1.readNullable(FriendlyByteBuf::readUtf));
+      this(var1.readUtf(), (String)var1.readNullable(FriendlyByteBuf::readUtf));
    }
 
    public ClientboundResetScorePacket(String var1, @Nullable String var2) {
@@ -29,12 +24,20 @@ public record ClientboundResetScorePacket(String b, @Nullable String c) implemen
       var1.writeNullable(this.objectiveName, FriendlyByteBuf::writeUtf);
    }
 
-   @Override
    public PacketType<ClientboundResetScorePacket> type() {
       return GamePacketTypes.CLIENTBOUND_RESET_SCORE;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleResetScore(this);
+   }
+
+   public String owner() {
+      return this.owner;
+   }
+
+   @Nullable
+   public String objectiveName() {
+      return this.objectiveName;
    }
 }

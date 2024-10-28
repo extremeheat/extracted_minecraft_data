@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
@@ -25,33 +26,33 @@ public class TransientCraftingContainer implements CraftingContainer {
       this.height = var3;
    }
 
-   @Override
    public int getContainerSize() {
       return this.items.size();
    }
 
-   @Override
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
-            return false;
+      Iterator var1 = this.items.iterator();
+
+      ItemStack var2;
+      do {
+         if (!var1.hasNext()) {
+            return true;
          }
-      }
 
-      return true;
+         var2 = (ItemStack)var1.next();
+      } while(var2.isEmpty());
+
+      return false;
    }
 
-   @Override
    public ItemStack getItem(int var1) {
-      return var1 >= this.getContainerSize() ? ItemStack.EMPTY : this.items.get(var1);
+      return var1 >= this.getContainerSize() ? ItemStack.EMPTY : (ItemStack)this.items.get(var1);
    }
 
-   @Override
    public ItemStack removeItemNoUpdate(int var1) {
       return ContainerHelper.takeItem(this.items, var1);
    }
 
-   @Override
    public ItemStack removeItem(int var1, int var2) {
       ItemStack var3 = ContainerHelper.removeItem(this.items, var1, var2);
       if (!var3.isEmpty()) {
@@ -61,45 +62,41 @@ public class TransientCraftingContainer implements CraftingContainer {
       return var3;
    }
 
-   @Override
    public void setItem(int var1, ItemStack var2) {
       this.items.set(var1, var2);
       this.menu.slotsChanged(this);
    }
 
-   @Override
    public void setChanged() {
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return true;
    }
 
-   @Override
    public void clearContent() {
       this.items.clear();
    }
 
-   @Override
    public int getHeight() {
       return this.height;
    }
 
-   @Override
    public int getWidth() {
       return this.width;
    }
 
-   @Override
    public List<ItemStack> getItems() {
       return List.copyOf(this.items);
    }
 
-   @Override
    public void fillStackedContents(StackedContents var1) {
-      for(ItemStack var3 : this.items) {
+      Iterator var2 = this.items.iterator();
+
+      while(var2.hasNext()) {
+         ItemStack var3 = (ItemStack)var2.next();
          var1.accountSimpleStack(var3);
       }
+
    }
 }

@@ -17,7 +17,7 @@ public abstract class HitResult {
       return var2 * var2 + var4 * var4 + var6 * var6;
    }
 
-   public abstract HitResult.Type getType();
+   public abstract Type getType();
 
    public Vec3 getLocation() {
       return this.location;
@@ -29,6 +29,11 @@ public abstract class HitResult {
       ENTITY;
 
       private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{MISS, BLOCK, ENTITY};
       }
    }
 }

@@ -16,40 +16,34 @@ public abstract class AbstractLayout implements Layout {
       this.height = var4;
    }
 
-   @Override
    public void setX(int var1) {
-      this.visitChildren(var2 -> {
+      this.visitChildren((var2) -> {
          int var3 = var2.getX() + (var1 - this.getX());
          var2.setX(var3);
       });
       this.x = var1;
    }
 
-   @Override
    public void setY(int var1) {
-      this.visitChildren(var2 -> {
+      this.visitChildren((var2) -> {
          int var3 = var2.getY() + (var1 - this.getY());
          var2.setY(var3);
       });
       this.y = var1;
    }
 
-   @Override
    public int getX() {
       return this.x;
    }
 
-   @Override
    public int getY() {
       return this.y;
    }
 
-   @Override
    public int getWidth() {
       return this.width;
    }
 
-   @Override
    public int getHeight() {
       return this.height;
    }

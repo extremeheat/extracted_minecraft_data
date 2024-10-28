@@ -1,21 +1,20 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeightedStateProvider extends BlockStateProvider {
-   public static final Codec<WeightedStateProvider> CODEC = SimpleWeightedRandomList.wrappedCodec(BlockState.CODEC)
-      .comapFlatMap(WeightedStateProvider::create, var0 -> var0.weightedList)
-      .fieldOf("entries")
-      .codec();
+   public static final MapCodec<WeightedStateProvider> CODEC;
    private final SimpleWeightedRandomList<BlockState> weightedList;
 
    private static DataResult<WeightedStateProvider> create(SimpleWeightedRandomList<BlockState> var0) {
-      return var0.isEmpty() ? DataResult.error(() -> "WeightedStateProvider with no states") : DataResult.success(new WeightedStateProvider(var0));
+      return var0.isEmpty() ? DataResult.error(() -> {
+         return "WeightedStateProvider with no states";
+      }) : DataResult.success(new WeightedStateProvider(var0));
    }
 
    public WeightedStateProvider(SimpleWeightedRandomList<BlockState> var1) {
@@ -27,13 +26,17 @@ public class WeightedStateProvider extends BlockStateProvider {
       this(var1.build());
    }
 
-   @Override
    protected BlockStateProviderType<?> type() {
       return BlockStateProviderType.WEIGHTED_STATE_PROVIDER;
    }
 
-   @Override
    public BlockState getState(RandomSource var1, BlockPos var2) {
-      return this.weightedList.getRandomValue(var1).orElseThrow(IllegalStateException::new);
+      return (BlockState)this.weightedList.getRandomValue(var1).orElseThrow(IllegalStateException::new);
+   }
+
+   static {
+      CODEC = SimpleWeightedRandomList.wrappedCodec(BlockState.CODEC).comapFlatMap(WeightedStateProvider::create, (var0) -> {
+         return var0.weightedList;
+      }).fieldOf("entries");
    }
 }

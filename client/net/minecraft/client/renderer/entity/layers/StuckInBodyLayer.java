@@ -20,12 +20,12 @@ public abstract class StuckInBodyLayer<T extends LivingEntity, M extends PlayerM
    protected abstract void renderStuckItem(PoseStack var1, MultiBufferSource var2, int var3, Entity var4, float var5, float var6, float var7, float var8);
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      int var11 = this.numStuck((T)var4);
+      int var11 = this.numStuck(var4);
       RandomSource var12 = RandomSource.create((long)var4.getId());
       if (var11 > 0) {
          for(int var13 = 0; var13 < var11; ++var13) {
             var1.pushPose();
-            ModelPart var14 = this.getParentModel().getRandomModelPart(var12);
+            ModelPart var14 = ((PlayerModel)this.getParentModel()).getRandomModelPart(var12);
             ModelPart.Cube var15 = var14.getRandomCube(var12);
             var14.translateAndRotate(var1);
             float var16 = var12.nextFloat();
@@ -41,6 +41,7 @@ public abstract class StuckInBodyLayer<T extends LivingEntity, M extends PlayerM
             this.renderStuckItem(var1, var2, var3, var4, var16, var17, var18, var7);
             var1.popPose();
          }
+
       }
    }
 }

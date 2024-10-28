@@ -25,12 +25,16 @@ public enum CraftingBookCategory implements StringRepresentable {
       this.id = var4;
    }
 
-   @Override
    public String getSerializedName() {
       return this.name;
    }
 
    private int id() {
       return this.id;
+   }
+
+   // $FF: synthetic method
+   private static CraftingBookCategory[] $values() {
+      return new CraftingBookCategory[]{BUILDING, REDSTONE, EQUIPMENT, MISC};
    }
 }

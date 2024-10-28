@@ -13,17 +13,20 @@ public class SingleTickProfiler {
    private final long saveThreshold;
    private int tick;
    private final File location;
-   private ProfileCollector profiler = InactiveProfiler.INSTANCE;
+   private ProfileCollector profiler;
 
    public SingleTickProfiler(LongSupplier var1, String var2, long var3) {
       super();
+      this.profiler = InactiveProfiler.INSTANCE;
       this.realTime = var1;
       this.location = new File("debug", var2);
       this.saveThreshold = var3;
    }
 
    public ProfilerFiller startTick() {
-      this.profiler = new ActiveProfiler(this.realTime, () -> this.tick, false);
+      this.profiler = new ActiveProfiler(this.realTime, () -> {
+         return this.tick;
+      }, false);
       ++this.tick;
       return this.profiler;
    }
@@ -37,6 +40,7 @@ public class SingleTickProfiler {
             var1.saveResults(var2.toPath());
             LOGGER.info("Recorded long tick -- wrote info to: {}", var2.getAbsolutePath());
          }
+
       }
    }
 

@@ -1,25 +1,19 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
-public record TimeCheck(Optional<Long> b, IntRange c) implements LootItemCondition {
-   private final Optional<Long> period;
-   private final IntRange value;
-   public static final Codec<TimeCheck> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(Codec.LONG, "period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)
-            )
-            .apply(var0, TimeCheck::new)
-   );
+public record TimeCheck(Optional<Long> period, IntRange value) implements LootItemCondition {
+   public static final MapCodec<TimeCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(var0, TimeCheck::new);
+   });
 
    public TimeCheck(Optional<Long> var1, IntRange var2) {
       super();
@@ -27,12 +21,10 @@ public record TimeCheck(Optional<Long> b, IntRange c) implements LootItemConditi
       this.value = var2;
    }
 
-   @Override
    public LootItemConditionType getType() {
       return LootItemConditions.TIME_CHECK;
    }
 
-   @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return this.value.getReferencedContextParams();
    }
@@ -41,14 +33,27 @@ public record TimeCheck(Optional<Long> b, IntRange c) implements LootItemConditi
       ServerLevel var2 = var1.getLevel();
       long var3 = var2.getDayTime();
       if (this.period.isPresent()) {
-         var3 %= this.period.get();
+         var3 %= (Long)this.period.get();
       }
 
       return this.value.test(var1, (int)var3);
    }
 
-   public static TimeCheck.Builder time(IntRange var0) {
-      return new TimeCheck.Builder(var0);
+   public static Builder time(IntRange var0) {
+      return new Builder(var0);
+   }
+
+   public Optional<Long> period() {
+      return this.period;
+   }
+
+   public IntRange value() {
+      return this.value;
+   }
+
+   // $FF: synthetic method
+   public boolean test(Object var1) {
+      return this.test((LootContext)var1);
    }
 
    public static class Builder implements LootItemCondition.Builder {
@@ -60,13 +65,18 @@ public record TimeCheck(Optional<Long> b, IntRange c) implements LootItemConditi
          this.value = var1;
       }
 
-      public TimeCheck.Builder setPeriod(long var1) {
+      public Builder setPeriod(long var1) {
          this.period = Optional.of(var1);
          return this;
       }
 
       public TimeCheck build() {
          return new TimeCheck(this.period, this.value);
+      }
+
+      // $FF: synthetic method
+      public LootItemCondition build() {
+         return this.build();
       }
    }
 }

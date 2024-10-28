@@ -17,52 +17,23 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 @FunctionalInterface
 public interface PieceGeneratorSupplier<C extends FeatureConfiguration> {
-   Optional<PieceGenerator<C>> createGenerator(PieceGeneratorSupplier.Context<C> var1);
+   Optional<PieceGenerator<C>> createGenerator(Context<C> var1);
 
-   static <C extends FeatureConfiguration> PieceGeneratorSupplier<C> simple(Predicate<PieceGeneratorSupplier.Context<C>> var0, PieceGenerator<C> var1) {
+   static <C extends FeatureConfiguration> PieceGeneratorSupplier<C> simple(Predicate<Context<C>> var0, PieceGenerator<C> var1) {
       Optional var2 = Optional.of(var1);
-      return var2x -> var0.test(var2x) ? var2 : Optional.empty();
+      return (var2x) -> {
+         return var0.test(var2x) ? var2 : Optional.empty();
+      };
    }
 
-   static <C extends FeatureConfiguration> Predicate<PieceGeneratorSupplier.Context<C>> checkForBiomeOnTop(Heightmap.Types var0) {
-      return var1 -> var1.validBiomeOnTop(var0);
+   static <C extends FeatureConfiguration> Predicate<Context<C>> checkForBiomeOnTop(Heightmap.Types var0) {
+      return (var1) -> {
+         return var1.validBiomeOnTop(var0);
+      };
    }
 
-   public static record Context<C extends FeatureConfiguration>(
-      ChunkGenerator a,
-      BiomeSource b,
-      RandomState c,
-      long d,
-      ChunkPos e,
-      C f,
-      LevelHeightAccessor g,
-      Predicate<Holder<Biome>> h,
-      StructureTemplateManager i,
-      RegistryAccess j
-   ) {
-      private final ChunkGenerator chunkGenerator;
-      private final BiomeSource biomeSource;
-      private final RandomState randomState;
-      private final long seed;
-      private final ChunkPos chunkPos;
-      private final C config;
-      private final LevelHeightAccessor heightAccessor;
-      private final Predicate<Holder<Biome>> validBiome;
-      private final StructureTemplateManager structureTemplateManager;
-      private final RegistryAccess registryAccess;
-
-      public Context(
-         ChunkGenerator var1,
-         BiomeSource var2,
-         RandomState var3,
-         long var4,
-         ChunkPos var6,
-         C var7,
-         LevelHeightAccessor var8,
-         Predicate<Holder<Biome>> var9,
-         StructureTemplateManager var10,
-         RegistryAccess var11
-      ) {
+   public static record Context<C extends FeatureConfiguration>(ChunkGenerator chunkGenerator, BiomeSource biomeSource, RandomState randomState, long seed, ChunkPos chunkPos, C config, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome, StructureTemplateManager structureTemplateManager, RegistryAccess registryAccess) {
+      public Context(ChunkGenerator var1, BiomeSource var2, RandomState var3, long var4, ChunkPos var6, C var7, LevelHeightAccessor var8, Predicate<Holder<Biome>> var9, StructureTemplateManager var10, RegistryAccess var11) {
          super();
          this.chunkGenerator = var1;
          this.biomeSource = var2;
@@ -80,10 +51,48 @@ public interface PieceGeneratorSupplier<C extends FeatureConfiguration> {
          int var2 = this.chunkPos.getMiddleBlockX();
          int var3 = this.chunkPos.getMiddleBlockZ();
          int var4 = this.chunkGenerator.getFirstOccupiedHeight(var2, var3, var1, this.heightAccessor, this.randomState);
-         Holder var5 = this.chunkGenerator
-            .getBiomeSource()
-            .getNoiseBiome(QuartPos.fromBlock(var2), QuartPos.fromBlock(var4), QuartPos.fromBlock(var3), this.randomState.sampler());
+         Holder var5 = this.chunkGenerator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(var2), QuartPos.fromBlock(var4), QuartPos.fromBlock(var3), this.randomState.sampler());
          return this.validBiome.test(var5);
+      }
+
+      public ChunkGenerator chunkGenerator() {
+         return this.chunkGenerator;
+      }
+
+      public BiomeSource biomeSource() {
+         return this.biomeSource;
+      }
+
+      public RandomState randomState() {
+         return this.randomState;
+      }
+
+      public long seed() {
+         return this.seed;
+      }
+
+      public ChunkPos chunkPos() {
+         return this.chunkPos;
+      }
+
+      public C config() {
+         return this.config;
+      }
+
+      public LevelHeightAccessor heightAccessor() {
+         return this.heightAccessor;
+      }
+
+      public Predicate<Holder<Biome>> validBiome() {
+         return this.validBiome;
+      }
+
+      public StructureTemplateManager structureTemplateManager() {
+         return this.structureTemplateManager;
+      }
+
+      public RegistryAccess registryAccess() {
+         return this.registryAccess;
       }
    }
 }

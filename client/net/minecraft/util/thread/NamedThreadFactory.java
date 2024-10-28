@@ -18,7 +18,6 @@ public class NamedThreadFactory implements ThreadFactory {
       this.namePrefix = var1 + "-";
    }
 
-   @Override
    public Thread newThread(Runnable var1) {
       Thread var2 = new Thread(this.group, var1, this.namePrefix + this.threadNumber.getAndIncrement(), 0L);
       var2.setUncaughtExceptionHandler((var1x, var2x) -> {

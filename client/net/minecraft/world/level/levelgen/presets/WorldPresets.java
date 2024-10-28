@@ -43,7 +43,7 @@ public class WorldPresets {
    }
 
    public static void bootstrap(BootstrapContext<WorldPreset> var0) {
-      new WorldPresets.Bootstrap(var0).bootstrap();
+      (new Bootstrap(var0)).bootstrap();
    }
 
    private static ResourceKey<WorldPreset> register(String var0) {
@@ -51,7 +51,7 @@ public class WorldPresets {
    }
 
    public static Optional<ResourceKey<WorldPreset>> fromSettings(WorldDimensions var0) {
-      return var0.get(LevelStem.OVERWORLD).flatMap(var0x -> {
+      return var0.get(LevelStem.OVERWORLD).flatMap((var0x) -> {
          ChunkGenerator var1 = var0x.generator();
          if (var1 instanceof FlatLevelSource) {
             return Optional.of(FLAT);
@@ -62,14 +62,14 @@ public class WorldPresets {
    }
 
    public static WorldDimensions createNormalWorldDimensions(RegistryAccess var0) {
-      return var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value().createWorldDimensions();
+      return ((WorldPreset)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value()).createWorldDimensions();
    }
 
    public static LevelStem getNormalOverworld(RegistryAccess var0) {
-      return (LevelStem)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value().overworld().orElseThrow();
+      return (LevelStem)((WorldPreset)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value()).overworld().orElseThrow();
    }
 
-   static class Bootstrap {
+   private static class Bootstrap {
       private final BootstrapContext<WorldPreset> context;
       private final HolderGetter<NoiseGeneratorSettings> noiseSettings;
       private final HolderGetter<Biome> biomes;
@@ -79,7 +79,6 @@ public class WorldPresets {
       private final Holder<DimensionType> overworldDimensionType;
       private final LevelStem netherStem;
       private final LevelStem endStem;
-      private final LevelStem potatoStem;
 
       Bootstrap(BootstrapContext<WorldPreset> var1) {
          super();
@@ -98,10 +97,6 @@ public class WorldPresets {
          Holder.Reference var6 = var2.getOrThrow(BuiltinDimensionTypes.END);
          Holder.Reference var7 = this.noiseSettings.getOrThrow(NoiseGeneratorSettings.END);
          this.endStem = new LevelStem(var6, new NoiseBasedChunkGenerator(TheEndBiomeSource.create(this.biomes), var7));
-         Holder.Reference var8 = var2.getOrThrow(BuiltinDimensionTypes.POTATO);
-         Holder.Reference var9 = this.noiseSettings.getOrThrow(NoiseGeneratorSettings.POTATO);
-         Holder.Reference var10 = this.multiNoiseBiomeSourceParameterLists.getOrThrow(MultiNoiseBiomeSourceParameterLists.POTATO);
-         this.potatoStem = new LevelStem(var8, new NoiseBasedChunkGenerator(MultiNoiseBiomeSource.createFromPreset(var10), var9));
       }
 
       private LevelStem makeOverworld(ChunkGenerator var1) {
@@ -113,9 +108,7 @@ public class WorldPresets {
       }
 
       private WorldPreset createPresetWithCustomOverworld(LevelStem var1) {
-         return new WorldPreset(
-            Map.of(LevelStem.OVERWORLD, var1, LevelStem.NETHER, this.netherStem, LevelStem.END, this.endStem, LevelStem.POTATO, this.potatoStem)
-         );
+         return new WorldPreset(Map.of(LevelStem.OVERWORLD, var1, LevelStem.NETHER, this.netherStem, LevelStem.END, this.endStem));
       }
 
       private void registerCustomOverworldPreset(ResourceKey<WorldPreset> var1, LevelStem var2) {
@@ -137,10 +130,7 @@ public class WorldPresets {
          Holder.Reference var2 = this.noiseSettings.getOrThrow(NoiseGeneratorSettings.OVERWORLD);
          Holder.Reference var3 = this.biomes.getOrThrow(Biomes.PLAINS);
          this.registerCustomOverworldPreset(WorldPresets.SINGLE_BIOME_SURFACE, this.makeNoiseBasedOverworld(new FixedBiomeSource(var3), var2));
-         this.registerCustomOverworldPreset(
-            WorldPresets.FLAT,
-            this.makeOverworld(new FlatLevelSource(FlatLevelGeneratorSettings.getDefault(this.biomes, this.structureSets, this.placedFeatures)))
-         );
+         this.registerCustomOverworldPreset(WorldPresets.FLAT, this.makeOverworld(new FlatLevelSource(FlatLevelGeneratorSettings.getDefault(this.biomes, this.structureSets, this.placedFeatures))));
          this.registerCustomOverworldPreset(WorldPresets.DEBUG, this.makeOverworld(new DebugLevelSource(var3)));
       }
    }

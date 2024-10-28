@@ -26,6 +26,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
    @Nullable
    ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4);
 
+   /** @deprecated */
    @Deprecated
    boolean hasChunk(int var1, int var2);
 
@@ -49,12 +50,10 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return this.hasChunksAt(var2, var4, var6, var3, var5, var7) ? this.getBlockStates(var1) : Stream.empty();
    }
 
-   @Override
    default int getBlockTint(BlockPos var1, ColorResolver var2) {
-      return var2.getColor(this.getBiome(var1).value(), (double)var1.getX(), (double)var1.getZ());
+      return var2.getColor((Biome)this.getBiome(var1).value(), (double)var1.getX(), (double)var1.getZ());
    }
 
-   @Override
    default Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
       ChunkAccess var4 = this.getChunk(QuartPos.toSection(var1), QuartPos.toSection(var3), ChunkStatus.BIOMES, false);
       return var4 != null ? var4.getNoiseBiome(var1, var2, var3) : this.getUncachedNoiseBiome(var1, var2, var3);
@@ -64,17 +63,16 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
 
    boolean isClientSide();
 
+   /** @deprecated */
    @Deprecated
    int getSeaLevel();
 
    DimensionType dimensionType();
 
-   @Override
    default int getMinBuildHeight() {
       return this.dimensionType().minY();
    }
 
-   @Override
    default int getHeight() {
       return this.dimensionType().height();
    }
@@ -95,9 +93,9 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
          if (!this.canSeeSky(var2)) {
             return false;
          } else {
-            for(BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
-               BlockState var3 = this.getBlockState(var4);
-               if (var3.getLightBlock(this, var4) > 0 && !var3.liquid()) {
+            for(var2 = var2.below(); var2.getY() > var1.getY(); var2 = var2.below()) {
+               BlockState var3 = this.getBlockState(var2);
+               if (var3.getLightBlock(this, var2) > 0 && !var3.liquid()) {
                   return false;
                }
             }
@@ -111,6 +109,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return this.getLightLevelDependentMagicValue(var1) - 0.5F;
    }
 
+   /** @deprecated */
    @Deprecated
    default float getLightLevelDependentMagicValue(BlockPos var1) {
       float var2 = (float)this.getMaxLocalRawBrightness(var1) / 15.0F;
@@ -131,7 +130,6 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
    }
 
    @Nullable
-   @Override
    default BlockGetter getChunkForCollisions(int var1, int var2) {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY, false);
    }
@@ -171,26 +169,31 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return var1.getX() >= -30000000 && var1.getZ() >= -30000000 && var1.getX() < 30000000 && var1.getZ() < 30000000 ? this.getRawBrightness(var1, var2) : 15;
    }
 
+   /** @deprecated */
    @Deprecated
    default boolean hasChunkAt(int var1, int var2) {
       return this.hasChunk(SectionPos.blockToSectionCoord(var1), SectionPos.blockToSectionCoord(var2));
    }
 
+   /** @deprecated */
    @Deprecated
    default boolean hasChunkAt(BlockPos var1) {
       return this.hasChunkAt(var1.getX(), var1.getZ());
    }
 
+   /** @deprecated */
    @Deprecated
    default boolean hasChunksAt(BlockPos var1, BlockPos var2) {
       return this.hasChunksAt(var1.getX(), var1.getY(), var1.getZ(), var2.getX(), var2.getY(), var2.getZ());
    }
 
+   /** @deprecated */
    @Deprecated
    default boolean hasChunksAt(int var1, int var2, int var3, int var4, int var5, int var6) {
       return var5 >= this.getMinBuildHeight() && var2 < this.getMaxBuildHeight() ? this.hasChunksAt(var1, var3, var4, var6) : false;
    }
 
+   /** @deprecated */
    @Deprecated
    default boolean hasChunksAt(int var1, int var2, int var3, int var4) {
       int var5 = SectionPos.blockToSectionCoord(var1);

@@ -26,20 +26,18 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public class BarrelBlock extends BaseEntityBlock {
    public static final MapCodec<BarrelBlock> CODEC = simpleCodec(BarrelBlock::new);
-   public static final DirectionProperty FACING = BlockStateProperties.FACING;
-   public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+   public static final DirectionProperty FACING;
+   public static final BooleanProperty OPEN;
 
-   @Override
    public MapCodec<BarrelBlock> codec() {
       return CODEC;
    }
 
    public BarrelBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, Boolean.valueOf(false)));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(OPEN, false));
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -55,58 +53,54 @@ public class BarrelBlock extends BaseEntityBlock {
       }
    }
 
-   @Override
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       Containers.dropContentsOnDestroy(var1, var4, var2, var3);
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
-   @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof BarrelBlockEntity) {
          ((BarrelBlockEntity)var5).recheckOpen();
       }
+
    }
 
    @Nullable
-   @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BarrelBlockEntity(var1, var2);
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
-   @Override
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
-   @Override
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
-   @Override
    protected BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
+      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, OPEN);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
+   }
+
+   static {
+      FACING = BlockStateProperties.FACING;
+      OPEN = BlockStateProperties.OPEN;
    }
 }

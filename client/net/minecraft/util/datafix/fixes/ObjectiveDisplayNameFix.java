@@ -3,10 +3,8 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.util.datafix.ComponentDataFixUtils;
 
 public class ObjectiveDisplayNameFix extends DataFix {
@@ -16,10 +14,10 @@ public class ObjectiveDisplayNameFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.OBJECTIVE);
-      return this.fixTypeEverywhereTyped(
-         "ObjectiveDisplayNameFix",
-         var1,
-         var0 -> var0.update(DSL.remainderFinder(), var0x -> var0x.update("DisplayName", ComponentDataFixUtils::wrapLiteralStringAsComponent))
-      );
+      return this.fixTypeEverywhereTyped("ObjectiveDisplayNameFix", var1, (var0) -> {
+         return var0.update(DSL.remainderFinder(), (var0x) -> {
+            return var0x.update("DisplayName", ComponentDataFixUtils::wrapLiteralStringAsComponent);
+         });
+      });
    }
 }

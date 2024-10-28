@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerInputPacket> STREAM_CODEC = Packet.codec(
-      ServerboundPlayerInputPacket::write, ServerboundPlayerInputPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerInputPacket> STREAM_CODEC = Packet.codec(ServerboundPlayerInputPacket::write, ServerboundPlayerInputPacket::new);
    private static final int FLAG_JUMPING = 1;
    private static final int FLAG_SHIFT_KEY_DOWN = 2;
    private final float xxa;
@@ -48,7 +46,6 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       var1.writeByte(var2);
    }
 
-   @Override
    public PacketType<ServerboundPlayerInputPacket> type() {
       return GamePacketTypes.SERVERBOUND_PLAYER_INPUT;
    }

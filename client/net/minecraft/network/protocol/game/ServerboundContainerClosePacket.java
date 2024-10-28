@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundContainerClosePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundContainerClosePacket> STREAM_CODEC = Packet.codec(
-      ServerboundContainerClosePacket::write, ServerboundContainerClosePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundContainerClosePacket> STREAM_CODEC = Packet.codec(ServerboundContainerClosePacket::write, ServerboundContainerClosePacket::new);
    private final int containerId;
 
    public ServerboundContainerClosePacket(int var1) {
@@ -25,7 +23,6 @@ public class ServerboundContainerClosePacket implements Packet<ServerGamePacketL
       var1.writeByte(this.containerId);
    }
 
-   @Override
    public PacketType<ServerboundContainerClosePacket> type() {
       return GamePacketTypes.SERVERBOUND_CONTAINER_CLOSE;
    }

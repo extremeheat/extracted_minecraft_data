@@ -16,7 +16,7 @@ import net.minecraft.network.chat.ThrowingComponent;
 
 public interface AbuseReportSender {
    static AbuseReportSender create(ReportEnvironment var0, UserApiService var1) {
-      return new AbuseReportSender.Services(var0, var1);
+      return new Services(var0, var1);
    }
 
    CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3);
@@ -27,15 +27,7 @@ public interface AbuseReportSender {
       return AbuseReportLimits.DEFAULTS;
    }
 
-   public static class SendException extends ThrowingComponent {
-      public SendException(Component var1, Throwable var2) {
-         super(var1, var2);
-      }
-   }
-
-   public static record Services(ReportEnvironment a, UserApiService b) implements AbuseReportSender {
-      private final ReportEnvironment environment;
-      private final UserApiService userApiService;
+   public static record Services(ReportEnvironment environment, UserApiService userApiService) implements AbuseReportSender {
       private static final Component SERVICE_UNAVAILABLE_TEXT = Component.translatable("gui.abuseReport.send.service_unavailable");
       private static final Component HTTP_ERROR_TEXT = Component.translatable("gui.abuseReport.send.http_error");
       private static final Component JSON_ERROR_TEXT = Component.translatable("gui.abuseReport.send.json_error");
@@ -46,30 +38,24 @@ public interface AbuseReportSender {
          this.userApiService = var2;
       }
 
-      @Override
       public CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3) {
-         return CompletableFuture.supplyAsync(
-            () -> {
-               AbuseReportRequest var4 = new AbuseReportRequest(
-                  1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName()
-               );
-   
-               try {
-                  this.userApiService.reportAbuse(var4);
-                  return Unit.INSTANCE;
-               } catch (MinecraftClientHttpException var7) {
-                  Component var9 = this.getHttpErrorDescription(var7);
-                  throw new CompletionException(new AbuseReportSender.SendException(var9, var7));
-               } catch (MinecraftClientException var8) {
-                  Component var6 = this.getErrorDescription(var8);
-                  throw new CompletionException(new AbuseReportSender.SendException(var6, var8));
-               }
-            },
-            Util.ioPool()
-         );
+         return CompletableFuture.supplyAsync(() -> {
+            AbuseReportRequest var4 = new AbuseReportRequest(1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName());
+
+            Component var6;
+            try {
+               this.userApiService.reportAbuse(var4);
+               return Unit.INSTANCE;
+            } catch (MinecraftClientHttpException var7) {
+               var6 = this.getHttpErrorDescription(var7);
+               throw new CompletionException(new SendException(var6, var7));
+            } catch (MinecraftClientException var8) {
+               var6 = this.getErrorDescription(var8);
+               throw new CompletionException(new SendException(var6, var8));
+            }
+         }, Util.ioPool());
       }
 
-      @Override
       public boolean isEnabled() {
          return this.userApiService.canSendReports();
       }
@@ -79,17 +65,33 @@ public interface AbuseReportSender {
       }
 
       private Component getErrorDescription(MinecraftClientException var1) {
-         return switch(var1.getType()) {
-            case SERVICE_UNAVAILABLE -> SERVICE_UNAVAILABLE_TEXT;
-            case HTTP_ERROR -> HTTP_ERROR_TEXT;
-            case JSON_ERROR -> JSON_ERROR_TEXT;
-            default -> throw new IncompatibleClassChangeError();
-         };
+         Component var10000;
+         switch (var1.getType()) {
+            case SERVICE_UNAVAILABLE -> var10000 = SERVICE_UNAVAILABLE_TEXT;
+            case HTTP_ERROR -> var10000 = HTTP_ERROR_TEXT;
+            case JSON_ERROR -> var10000 = JSON_ERROR_TEXT;
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       }
 
-      @Override
       public AbuseReportLimits reportLimits() {
          return this.userApiService.getAbuseReportLimits();
+      }
+
+      public ReportEnvironment environment() {
+         return this.environment;
+      }
+
+      public UserApiService userApiService() {
+         return this.userApiService;
+      }
+   }
+
+   public static class SendException extends ThrowingComponent {
+      public SendException(Component var1, Throwable var2) {
+         super(var1, var2);
       }
    }
 }

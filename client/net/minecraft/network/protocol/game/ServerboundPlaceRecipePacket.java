@@ -8,9 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class ServerboundPlaceRecipePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPlaceRecipePacket> STREAM_CODEC = Packet.codec(
-      ServerboundPlaceRecipePacket::write, ServerboundPlaceRecipePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlaceRecipePacket> STREAM_CODEC = Packet.codec(ServerboundPlaceRecipePacket::write, ServerboundPlaceRecipePacket::new);
    private final int containerId;
    private final ResourceLocation recipe;
    private final boolean shiftDown;
@@ -35,7 +33,6 @@ public class ServerboundPlaceRecipePacket implements Packet<ServerGamePacketList
       var1.writeBoolean(this.shiftDown);
    }
 
-   @Override
    public PacketType<ServerboundPlaceRecipePacket> type() {
       return GamePacketTypes.SERVERBOUND_PLACE_RECIPE;
    }

@@ -10,11 +10,13 @@ public class BreakDoorGoal extends DoorInteractGoal {
    private static final int DEFAULT_DOOR_BREAK_TIME = 240;
    private final Predicate<Difficulty> validDifficulties;
    protected int breakTime;
-   protected int lastBreakProgress = -1;
-   protected int doorBreakTime = -1;
+   protected int lastBreakProgress;
+   protected int doorBreakTime;
 
    public BreakDoorGoal(Mob var1, Predicate<Difficulty> var2) {
       super(var1);
+      this.lastBreakProgress = -1;
+      this.doorBreakTime = -1;
       this.validDifficulties = var2;
    }
 
@@ -27,7 +29,6 @@ public class BreakDoorGoal extends DoorInteractGoal {
       return Math.max(240, this.doorBreakTime);
    }
 
-   @Override
    public boolean canUse() {
       if (!super.canUse()) {
          return false;
@@ -38,27 +39,20 @@ public class BreakDoorGoal extends DoorInteractGoal {
       }
    }
 
-   @Override
    public void start() {
       super.start();
       this.breakTime = 0;
    }
 
-   @Override
    public boolean canContinueToUse() {
-      return this.breakTime <= this.getDoorBreakTime()
-         && !this.isOpen()
-         && this.doorPos.closerToCenterThan(this.mob.position(), 2.0)
-         && this.isValidDifficulty(this.mob.level().getDifficulty());
+      return this.breakTime <= this.getDoorBreakTime() && !this.isOpen() && this.doorPos.closerToCenterThan(this.mob.position(), 2.0) && this.isValidDifficulty(this.mob.level().getDifficulty());
    }
 
-   @Override
    public void stop() {
       super.stop();
       this.mob.level().destroyBlockProgress(this.mob.getId(), this.doorPos, -1);
    }
 
-   @Override
    public void tick() {
       super.tick();
       if (this.mob.getRandom().nextInt(20) == 0) {
@@ -80,6 +74,7 @@ public class BreakDoorGoal extends DoorInteractGoal {
          this.mob.level().levelEvent(1021, this.doorPos, 0);
          this.mob.level().levelEvent(2001, this.doorPos, Block.getId(this.mob.level().getBlockState(this.doorPos)));
       }
+
    }
 
    private boolean isValidDifficulty(Difficulty var1) {

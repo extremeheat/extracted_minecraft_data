@@ -7,9 +7,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
@@ -39,30 +39,35 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       this.entityDeserializerQueue = ProcessorMailbox.create(var3, "entity-deserializer");
    }
 
-   @Override
    public CompletableFuture<ChunkEntities<Entity>> loadEntities(ChunkPos var1) {
-      return this.emptyChunks.contains(var1.toLong())
-         ? CompletableFuture.completedFuture(emptyChunk(var1))
-         : this.simpleRegionStorage.read(var1).thenApplyAsync(var2 -> {
+      if (this.emptyChunks.contains(var1.toLong())) {
+         return CompletableFuture.completedFuture(emptyChunk(var1));
+      } else {
+         CompletableFuture var10000 = this.simpleRegionStorage.read(var1);
+         Function var10001 = (var2) -> {
             if (var2.isEmpty()) {
                this.emptyChunks.add(var1.toLong());
                return emptyChunk(var1);
             } else {
                try {
-                  ChunkPos var3 = readChunkPos(var2.get());
+                  ChunkPos var3 = readChunkPos((CompoundTag)var2.get());
                   if (!Objects.equals(var1, var3)) {
                      LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{var1, var1, var3});
                   }
                } catch (Exception var6) {
                   LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
                }
-   
-               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag(var2.get(), -1);
+
+               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)((CompoundTag)var2.get()), -1);
                ListTag var4 = var7.getList("Entities", 10);
-               List var5 = EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());
-               return new ChunkEntities<>(var1, var5);
+               List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());
+               return new ChunkEntities(var1, var5);
             }
-         }, this.entityDeserializerQueue::tell);
+         };
+         ProcessorMailbox var10002 = this.entityDeserializerQueue;
+         Objects.requireNonNull(var10002);
+         return var10000.thenApplyAsync(var10001, var10002::tell);
+      }
    }
 
    private static ChunkPos readChunkPos(CompoundTag var0) {
@@ -75,28 +80,29 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    }
 
    private static ChunkEntities<Entity> emptyChunk(ChunkPos var0) {
-      return new ChunkEntities<>(var0, ImmutableList.of());
+      return new ChunkEntities(var0, ImmutableList.of());
    }
 
-   @Override
    public void storeEntities(ChunkEntities<Entity> var1) {
       ChunkPos var2 = var1.getPos();
       if (var1.isEmpty()) {
          if (this.emptyChunks.add(var2.toLong())) {
-            this.simpleRegionStorage.write(var2, null);
+            this.simpleRegionStorage.write(var2, (CompoundTag)null);
          }
+
       } else {
          ListTag var3 = new ListTag();
-         var1.getEntities().forEach(var1x -> {
-            CompoundTag var2xx = new CompoundTag();
-            if (var1x.save(var2xx)) {
-               var3.add(var2xx);
+         var1.getEntities().forEach((var1x) -> {
+            CompoundTag var2 = new CompoundTag();
+            if (var1x.save(var2)) {
+               var3.add(var2);
             }
+
          });
          CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());
          var4.put("Entities", var3);
          writeChunkPos(var4, var2);
-         this.simpleRegionStorage.write(var2, var4).exceptionally(var1x -> {
+         this.simpleRegionStorage.write(var2, var4).exceptionally((var1x) -> {
             LOGGER.error("Failed to store chunk {}", var2, var1x);
             return null;
          });
@@ -104,13 +110,11 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       }
    }
 
-   @Override
    public void flush(boolean var1) {
       this.simpleRegionStorage.synchronize(var1).join();
       this.entityDeserializerQueue.runAll();
    }
 
-   @Override
    public void close() throws IOException {
       this.simpleRegionStorage.close();
    }

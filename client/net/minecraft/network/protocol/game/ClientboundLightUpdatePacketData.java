@@ -41,6 +41,7 @@ public class ClientboundLightUpdatePacketData {
             this.prepareSectionData(var1, var2, LightLayer.BLOCK, var5, this.blockYMask, this.emptyBlockYMask, this.blockUpdates);
          }
       }
+
    }
 
    public ClientboundLightUpdatePacketData(FriendlyByteBuf var1, int var2, int var3) {
@@ -72,6 +73,7 @@ public class ClientboundLightUpdatePacketData {
             var7.add(var8.copy().getData());
          }
       }
+
    }
 
    public BitSet getSkyYMask() {

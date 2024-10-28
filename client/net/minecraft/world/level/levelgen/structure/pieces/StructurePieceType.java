@@ -84,21 +84,20 @@ public interface StructurePieceType {
    StructurePiece load(StructurePieceSerializationContext var1, CompoundTag var2);
 
    private static StructurePieceType setFullContextPieceId(StructurePieceType var0, String var1) {
-      return Registry.register(BuiltInRegistries.STRUCTURE_PIECE, var1.toLowerCase(Locale.ROOT), var0);
+      return (StructurePieceType)Registry.register(BuiltInRegistries.STRUCTURE_PIECE, (String)var1.toLowerCase(Locale.ROOT), var0);
    }
 
-   private static StructurePieceType setPieceId(StructurePieceType.ContextlessType var0, String var1) {
+   private static StructurePieceType setPieceId(ContextlessType var0, String var1) {
       return setFullContextPieceId(var0, var1);
    }
 
-   private static StructurePieceType setTemplatePieceId(StructurePieceType.StructureTemplateType var0, String var1) {
+   private static StructurePieceType setTemplatePieceId(StructureTemplateType var0, String var1) {
       return setFullContextPieceId(var0, var1);
    }
 
    public interface ContextlessType extends StructurePieceType {
       StructurePiece load(CompoundTag var1);
 
-      @Override
       default StructurePiece load(StructurePieceSerializationContext var1, CompoundTag var2) {
          return this.load(var2);
       }
@@ -107,7 +106,6 @@ public interface StructurePieceType {
    public interface StructureTemplateType extends StructurePieceType {
       StructurePiece load(StructureTemplateManager var1, CompoundTag var2);
 
-      @Override
       default StructurePiece load(StructurePieceSerializationContext var1, CompoundTag var2) {
          return this.load(var1.structureTemplateManager(), var2);
       }

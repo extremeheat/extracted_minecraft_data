@@ -28,7 +28,6 @@ public class HoneyBlock extends HalfTransparentBlock {
    private static final int SLIDE_ADVANCEMENT_CHECK_INTERVAL = 20;
    protected static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
 
-   @Override
    public MapCodec<HoneyBlock> codec() {
       return CODEC;
    }
@@ -41,12 +40,10 @@ public class HoneyBlock extends HalfTransparentBlock {
       return var0 instanceof LivingEntity || var0 instanceof AbstractMinecart || var0 instanceof PrimedTnt || var0 instanceof Boat;
    }
 
-   @Override
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
       var4.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
       if (!var1.isClientSide) {
@@ -56,9 +53,9 @@ public class HoneyBlock extends HalfTransparentBlock {
       if (var4.causeFallDamage(var5, 0.2F, var1.damageSources().fall())) {
          var4.playSound(this.soundType.getFallSound(), this.soundType.getVolume() * 0.5F, this.soundType.getPitch() * 0.75F);
       }
+
    }
 
-   @Override
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (this.isSlidingDown(var3, var4)) {
          this.maybeDoSlideAchievement(var4, var3);
@@ -88,6 +85,7 @@ public class HoneyBlock extends HalfTransparentBlock {
       if (var1 instanceof ServerPlayer && var1.level().getGameTime() % 20L == 0L) {
          CriteriaTriggers.HONEY_BLOCK_SLIDE.trigger((ServerPlayer)var1, var1.level().getBlockState(var2));
       }
+
    }
 
    private void doSlideMovement(Entity var1) {
@@ -112,6 +110,7 @@ public class HoneyBlock extends HalfTransparentBlock {
             var1.broadcastEntityEvent(var2, (byte)53);
          }
       }
+
    }
 
    public static void showSlideParticles(Entity var0) {
@@ -129,6 +128,7 @@ public class HoneyBlock extends HalfTransparentBlock {
          for(int var3 = 0; var3 < var1; ++var3) {
             var0.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var2), var0.getX(), var0.getY(), var0.getZ(), 0.0, 0.0, 0.0);
          }
+
       }
    }
 }

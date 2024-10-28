@@ -2,10 +2,7 @@ package net.minecraft.client.gui.navigation;
 
 import javax.annotation.Nullable;
 
-public record ScreenRectangle(ScreenPosition a, int b, int c) {
-   private final ScreenPosition position;
-   private final int width;
-   private final int height;
+public record ScreenRectangle(ScreenPosition position, int width, int height) {
    private static final ScreenRectangle EMPTY = new ScreenRectangle(0, 0, 0, 0);
 
    public ScreenRectangle(int var1, int var2, int var3, int var4) {
@@ -24,10 +21,14 @@ public record ScreenRectangle(ScreenPosition a, int b, int c) {
    }
 
    public static ScreenRectangle of(ScreenAxis var0, int var1, int var2, int var3, int var4) {
-      return switch(var0) {
-         case HORIZONTAL -> new ScreenRectangle(var1, var2, var3, var4);
-         case VERTICAL -> new ScreenRectangle(var2, var1, var4, var3);
-      };
+      ScreenRectangle var10000;
+      switch (var0) {
+         case HORIZONTAL -> var10000 = new ScreenRectangle(var1, var2, var3, var4);
+         case VERTICAL -> var10000 = new ScreenRectangle(var2, var1, var4, var3);
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public ScreenRectangle step(ScreenDirection var1) {
@@ -35,10 +36,14 @@ public record ScreenRectangle(ScreenPosition a, int b, int c) {
    }
 
    public int getLength(ScreenAxis var1) {
-      return switch(var1) {
-         case HORIZONTAL -> this.width;
-         case VERTICAL -> this.height;
-      };
+      int var10000;
+      switch (var1) {
+         case HORIZONTAL -> var10000 = this.width;
+         case VERTICAL -> var10000 = this.height;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
    public int getBoundInDirection(ScreenDirection var1) {
@@ -97,5 +102,17 @@ public record ScreenRectangle(ScreenPosition a, int b, int c) {
 
    public boolean containsPoint(int var1, int var2) {
       return var1 >= this.left() && var1 < this.right() && var2 >= this.top() && var2 < this.bottom();
+   }
+
+   public ScreenPosition position() {
+      return this.position;
+   }
+
+   public int width() {
+      return this.width;
+   }
+
+   public int height() {
+      return this.height;
    }
 }

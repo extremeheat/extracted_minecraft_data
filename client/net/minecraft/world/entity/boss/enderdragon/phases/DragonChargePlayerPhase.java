@@ -17,7 +17,6 @@ public class DragonChargePlayerPhase extends AbstractDragonPhaseInstance {
       super(var1);
    }
 
-   @Override
    public void doServerTick() {
       if (this.targetLocation == null) {
          LOGGER.warn("Aborting charge player as no target was set.");
@@ -29,10 +28,10 @@ public class DragonChargePlayerPhase extends AbstractDragonPhaseInstance {
          if (var1 < 100.0 || var1 > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
             ++this.timeSinceCharge;
          }
+
       }
    }
 
-   @Override
    public void begin() {
       this.targetLocation = null;
       this.timeSinceCharge = 0;
@@ -42,18 +41,15 @@ public class DragonChargePlayerPhase extends AbstractDragonPhaseInstance {
       this.targetLocation = var1;
    }
 
-   @Override
    public float getFlySpeed() {
       return 3.0F;
    }
 
    @Nullable
-   @Override
    public Vec3 getFlyTargetLocation() {
       return this.targetLocation;
    }
 
-   @Override
    public EnderDragonPhase<DragonChargePlayerPhase> getPhase() {
       return EnderDragonPhase.CHARGING_PLAYER;
    }

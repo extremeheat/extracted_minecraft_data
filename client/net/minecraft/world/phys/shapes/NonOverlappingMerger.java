@@ -15,28 +15,29 @@ public class NonOverlappingMerger extends AbstractDoubleList implements IndexMer
       this.swap = var3;
    }
 
-   @Override
    public int size() {
       return this.lower.size() + this.upper.size();
    }
 
-   @Override
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
-      return this.swap ? this.forNonSwappedIndexes((var1x, var2, var3) -> var1.merge(var2, var1x, var3)) : this.forNonSwappedIndexes(var1);
+      return this.swap ? this.forNonSwappedIndexes((var1x, var2, var3) -> {
+         return var1.merge(var2, var1x, var3);
+      }) : this.forNonSwappedIndexes(var1);
    }
 
    private boolean forNonSwappedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.lower.size();
 
-      for(int var3 = 0; var3 < var2; ++var3) {
+      int var3;
+      for(var3 = 0; var3 < var2; ++var3) {
          if (!var1.merge(var3, -1, var3)) {
             return false;
          }
       }
 
-      int var5 = this.upper.size() - 1;
+      var3 = this.upper.size() - 1;
 
-      for(int var4 = 0; var4 < var5; ++var4) {
+      for(int var4 = 0; var4 < var3; ++var4) {
          if (!var1.merge(var2 - 1, var4, var2 + var4)) {
             return false;
          }
@@ -49,7 +50,6 @@ public class NonOverlappingMerger extends AbstractDoubleList implements IndexMer
       return var1 < this.lower.size() ? this.lower.getDouble(var1) : this.upper.getDouble(var1 - this.lower.size());
    }
 
-   @Override
    public DoubleList getList() {
       return this;
    }

@@ -44,7 +44,7 @@ import net.minecraft.world.phys.Vec3;
 public class Vex extends Monster implements TraceableEntity {
    public static final float FLAP_DEGREES_PER_TICK = 45.836624F;
    public static final int TICKS_PER_FLAP = Mth.ceil(3.9269907F);
-   protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(Vex.class, EntityDataSerializers.BYTE);
+   protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    private static final int FLAG_IS_CHARGING = 1;
    @Nullable
    Mob owner;
@@ -55,22 +55,19 @@ public class Vex extends Monster implements TraceableEntity {
 
    public Vex(EntityType<? extends Vex> var1, Level var2) {
       super(var1, var2);
-      this.moveControl = new Vex.VexMoveControl(this);
+      this.moveControl = new VexMoveControl(this);
       this.xpReward = 3;
    }
 
-   @Override
    public boolean isFlapping() {
       return this.tickCount % TICKS_PER_FLAP == 0;
    }
 
-   @Override
    public void move(MoverType var1, Vec3 var2) {
       super.move(var1, var2);
       this.checkInsideBlocks();
    }
 
-   @Override
    public void tick() {
       this.noPhysics = true;
       super.tick();
@@ -80,32 +77,30 @@ public class Vex extends Monster implements TraceableEntity {
          this.limitedLifeTicks = 20;
          this.hurt(this.damageSources().starve(), 1.0F);
       }
+
    }
 
-   @Override
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(4, new Vex.VexChargeAttackGoal());
-      this.goalSelector.addGoal(8, new Vex.VexRandomMoveGoal());
+      this.goalSelector.addGoal(4, new VexChargeAttackGoal());
+      this.goalSelector.addGoal(8, new VexRandomMoveGoal());
       this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 3.0F, 1.0F));
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
-      this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
-      this.targetSelector.addGoal(2, new Vex.VexCopyOwnerTargetGoal(this));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, true));
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
+      this.targetSelector.addGoal(2, new VexCopyOwnerTargetGoal(this));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, true));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 14.0).add(Attributes.ATTACK_DAMAGE, 4.0);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("BoundX")) {
@@ -115,19 +110,17 @@ public class Vex extends Monster implements TraceableEntity {
       if (var1.contains("LifeTicks")) {
          this.setLimitedLife(var1.getInt("LifeTicks"));
       }
+
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof Vex var2) {
          this.owner = var2.getOwner();
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.boundOrigin != null) {
@@ -139,6 +132,7 @@ public class Vex extends Monster implements TraceableEntity {
       if (this.hasLimitedLife) {
          var1.putInt("LifeTicks", this.limitedLifeTicks);
       }
+
    }
 
    @Nullable
@@ -156,19 +150,19 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    private boolean getVexFlag(int var1) {
-      byte var2 = this.entityData.get(DATA_FLAGS_ID);
+      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       return (var2 & var1) != 0;
    }
 
    private void setVexFlag(int var1, boolean var2) {
-      int var3 = this.entityData.get(DATA_FLAGS_ID);
+      int var3 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       if (var2) {
          var3 |= var1;
       } else {
          var3 &= ~var1;
       }
 
-      this.entityData.set(DATA_FLAGS_ID, (byte)(var3 & 0xFF));
+      this.entityData.set(DATA_FLAGS_ID, (byte)(var3 & 255));
    }
 
    public boolean isCharging() {
@@ -188,28 +182,23 @@ public class Vex extends Monster implements TraceableEntity {
       this.limitedLifeTicks = var1;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.VEX_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.VEX_DEATH;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.VEX_HURT;
    }
 
-   @Override
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
    @Nullable
-   @Override
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
@@ -217,90 +206,19 @@ public class Vex extends Monster implements TraceableEntity {
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
-   @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
       this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
    }
 
-   class VexChargeAttackGoal extends Goal {
-      public VexChargeAttackGoal() {
-         super();
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      }
-
-      @Override
-      public boolean canUse() {
-         LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
-            return Vex.this.distanceToSqr(var1) > 4.0;
-         } else {
-            return false;
-         }
-      }
-
-      @Override
-      public boolean canContinueToUse() {
-         return Vex.this.getMoveControl().hasWanted() && Vex.this.isCharging() && Vex.this.getTarget() != null && Vex.this.getTarget().isAlive();
-      }
-
-      @Override
-      public void start() {
-         LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null) {
-            Vec3 var2 = var1.getEyePosition();
-            Vex.this.moveControl.setWantedPosition(var2.x, var2.y, var2.z, 1.0);
-         }
-
-         Vex.this.setIsCharging(true);
-         Vex.this.playSound(SoundEvents.VEX_CHARGE, 1.0F, 1.0F);
-      }
-
-      @Override
-      public void stop() {
-         Vex.this.setIsCharging(false);
-      }
-
-      @Override
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      @Override
-      public void tick() {
-         LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null) {
-            if (Vex.this.getBoundingBox().intersects(var1.getBoundingBox())) {
-               Vex.this.doHurtTarget(var1);
-               Vex.this.setIsCharging(false);
-            } else {
-               double var2 = Vex.this.distanceToSqr(var1);
-               if (var2 < 9.0) {
-                  Vec3 var4 = var1.getEyePosition();
-                  Vex.this.moveControl.setWantedPosition(var4.x, var4.y, var4.z, 1.0);
-               }
-            }
-         }
-      }
+   // $FF: synthetic method
+   @Nullable
+   public Entity getOwner() {
+      return this.getOwner();
    }
 
-   class VexCopyOwnerTargetGoal extends TargetGoal {
-      private final TargetingConditions copyOwnerTargeting = TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
-
-      public VexCopyOwnerTargetGoal(PathfinderMob var2) {
-         super(var2, false);
-      }
-
-      @Override
-      public boolean canUse() {
-         return Vex.this.owner != null && Vex.this.owner.getTarget() != null && this.canAttack(Vex.this.owner.getTarget(), this.copyOwnerTargeting);
-      }
-
-      @Override
-      public void start() {
-         Vex.this.setTarget(Vex.this.owner.getTarget());
-         super.start();
-      }
+   static {
+      DATA_FLAGS_ID = SynchedEntityData.defineId(Vex.class, EntityDataSerializers.BYTE);
    }
 
    class VexMoveControl extends MoveControl {
@@ -308,7 +226,6 @@ public class Vex extends Monster implements TraceableEntity {
          super(var2);
       }
 
-      @Override
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
             Vec3 var1 = new Vec3(this.wantedX - Vex.this.getX(), this.wantedY - Vex.this.getY(), this.wantedZ - Vex.this.getZ());
@@ -329,27 +246,81 @@ public class Vex extends Monster implements TraceableEntity {
                   Vex.this.yBodyRot = Vex.this.getYRot();
                }
             }
+
          }
       }
    }
 
-   class VexRandomMoveGoal extends Goal {
+   class VexChargeAttackGoal extends Goal {
+      public VexChargeAttackGoal() {
+         super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+      }
+
+      public boolean canUse() {
+         LivingEntity var1 = Vex.this.getTarget();
+         if (var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
+            return Vex.this.distanceToSqr(var1) > 4.0;
+         } else {
+            return false;
+         }
+      }
+
+      public boolean canContinueToUse() {
+         return Vex.this.getMoveControl().hasWanted() && Vex.this.isCharging() && Vex.this.getTarget() != null && Vex.this.getTarget().isAlive();
+      }
+
+      public void start() {
+         LivingEntity var1 = Vex.this.getTarget();
+         if (var1 != null) {
+            Vec3 var2 = var1.getEyePosition();
+            Vex.this.moveControl.setWantedPosition(var2.x, var2.y, var2.z, 1.0);
+         }
+
+         Vex.this.setIsCharging(true);
+         Vex.this.playSound(SoundEvents.VEX_CHARGE, 1.0F, 1.0F);
+      }
+
+      public void stop() {
+         Vex.this.setIsCharging(false);
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         LivingEntity var1 = Vex.this.getTarget();
+         if (var1 != null) {
+            if (Vex.this.getBoundingBox().intersects(var1.getBoundingBox())) {
+               Vex.this.doHurtTarget(var1);
+               Vex.this.setIsCharging(false);
+            } else {
+               double var2 = Vex.this.distanceToSqr(var1);
+               if (var2 < 9.0) {
+                  Vec3 var4 = var1.getEyePosition();
+                  Vex.this.moveControl.setWantedPosition(var4.x, var4.y, var4.z, 1.0);
+               }
+            }
+
+         }
+      }
+   }
+
+   private class VexRandomMoveGoal extends Goal {
       public VexRandomMoveGoal() {
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
-      @Override
       public boolean canUse() {
          return !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0;
       }
 
-      @Override
       public boolean canContinueToUse() {
          return false;
       }
 
-      @Override
       public void tick() {
          BlockPos var1 = Vex.this.getBoundOrigin();
          if (var1 == null) {
@@ -366,6 +337,24 @@ public class Vex extends Monster implements TraceableEntity {
                break;
             }
          }
+
+      }
+   }
+
+   class VexCopyOwnerTargetGoal extends TargetGoal {
+      private final TargetingConditions copyOwnerTargeting = TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
+
+      public VexCopyOwnerTargetGoal(PathfinderMob var2) {
+         super(var2, false);
+      }
+
+      public boolean canUse() {
+         return Vex.this.owner != null && Vex.this.owner.getTarget() != null && this.canAttack(Vex.this.owner.getTarget(), this.copyOwnerTargeting);
+      }
+
+      public void start() {
+         Vex.this.setTarget(Vex.this.owner.getTarget());
+         super.start();
       }
    }
 }

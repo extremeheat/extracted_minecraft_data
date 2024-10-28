@@ -14,14 +14,14 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 
 public class ComponentRenderUtils {
-   private static final FormattedCharSequence INDENT = FormattedCharSequence.codepoint(32, Style.EMPTY);
+   private static final FormattedCharSequence INDENT;
 
    public ComponentRenderUtils() {
       super();
    }
 
    private static String stripColor(String var0) {
-      return Minecraft.getInstance().options.chatColors().get() ? var0 : ChatFormatting.stripFormatting(var0);
+      return (Boolean)Minecraft.getInstance().options.chatColors().get() ? var0 : ChatFormatting.stripFormatting(var0);
    }
 
    public static List<FormattedCharSequence> wrapComponents(FormattedText var0, int var1, Font var2) {
@@ -32,9 +32,13 @@ public class ComponentRenderUtils {
       }, Style.EMPTY);
       ArrayList var4 = Lists.newArrayList();
       var2.getSplitter().splitLines(var3.getResultOrEmpty(), var1, Style.EMPTY, (var1x, var2x) -> {
-         FormattedCharSequence var3xx = Language.getInstance().getVisualOrder(var1x);
-         var4.add(var2x ? FormattedCharSequence.composite(INDENT, var3xx) : var3xx);
+         FormattedCharSequence var3 = Language.getInstance().getVisualOrder(var1x);
+         var4.add(var2x ? FormattedCharSequence.composite(INDENT, var3) : var3);
       });
       return var4.isEmpty() ? Lists.newArrayList(new FormattedCharSequence[]{FormattedCharSequence.EMPTY}) : var4;
+   }
+
+   static {
+      INDENT = FormattedCharSequence.codepoint(32, Style.EMPTY);
    }
 }

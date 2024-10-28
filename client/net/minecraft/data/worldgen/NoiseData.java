@@ -5,8 +5,9 @@ import net.minecraft.world.level.levelgen.Noises;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public class NoiseData {
+   /** @deprecated */
    @Deprecated
-   public static final NormalNoise.NoiseParameters DEFAULT_SHIFT = new NormalNoise.NoiseParameters(-3, 1.0, 1.0, 1.0, 0.0);
+   public static final NormalNoise.NoiseParameters DEFAULT_SHIFT = new NormalNoise.NoiseParameters(-3, 1.0, new double[]{1.0, 1.0, 0.0});
 
    public NoiseData() {
       super();
@@ -69,23 +70,14 @@ public class NoiseData {
       register(var0, Noises.NETHER_STATE_SELECTOR, -4, 1.0);
    }
 
-   private static void registerBiomeNoises(
-      BootstrapContext<NormalNoise.NoiseParameters> var0,
-      int var1,
-      ResourceKey<NormalNoise.NoiseParameters> var2,
-      ResourceKey<NormalNoise.NoiseParameters> var3,
-      ResourceKey<NormalNoise.NoiseParameters> var4,
-      ResourceKey<NormalNoise.NoiseParameters> var5
-   ) {
+   private static void registerBiomeNoises(BootstrapContext<NormalNoise.NoiseParameters> var0, int var1, ResourceKey<NormalNoise.NoiseParameters> var2, ResourceKey<NormalNoise.NoiseParameters> var3, ResourceKey<NormalNoise.NoiseParameters> var4, ResourceKey<NormalNoise.NoiseParameters> var5) {
       register(var0, var2, -10 + var1, 1.5, 0.0, 1.0, 0.0, 0.0, 0.0);
       register(var0, var3, -8 + var1, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
       register(var0, var4, -9 + var1, 1.0, 1.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0);
       register(var0, var5, -9 + var1, 1.0, 1.0, 0.0, 1.0, 1.0);
    }
 
-   private static void register(
-      BootstrapContext<NormalNoise.NoiseParameters> var0, ResourceKey<NormalNoise.NoiseParameters> var1, int var2, double var3, double... var5
-   ) {
+   private static void register(BootstrapContext<NormalNoise.NoiseParameters> var0, ResourceKey<NormalNoise.NoiseParameters> var1, int var2, double var3, double... var5) {
       var0.register(var1, new NormalNoise.NoiseParameters(var2, var3, var5));
    }
 }

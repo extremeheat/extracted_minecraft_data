@@ -10,7 +10,7 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.CompoundList.CompoundListType;
+import com.mojang.datafixers.types.templates.CompoundList;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
@@ -31,47 +31,14 @@ public class MissingDimensionFix extends DataFix {
       return DSL.and(DSL.optional(DSL.field(var0, var1)), DSL.remainderType());
    }
 
-   protected static <A1, A2> Type<Pair<Either<A1, Unit>, Pair<Either<A2, Unit>, Dynamic<?>>>> optionalFields(
-      String var0, Type<A1> var1, String var2, Type<A2> var3
-   ) {
+   protected static <A1, A2> Type<Pair<Either<A1, Unit>, Pair<Either<A2, Unit>, Dynamic<?>>>> optionalFields(String var0, Type<A1> var1, String var2, Type<A2> var3) {
       return DSL.and(DSL.optional(DSL.field(var0, var1)), DSL.optional(DSL.field(var2, var3)), DSL.remainderType());
    }
 
    protected TypeRewriteRule makeRule() {
       Schema var1 = this.getInputSchema();
-      Type var2 = DSL.taggedChoiceType(
-         "type",
-         DSL.string(),
-         ImmutableMap.of(
-            "minecraft:debug",
-            DSL.remainderType(),
-            "minecraft:flat",
-            flatType(var1),
-            "minecraft:noise",
-            optionalFields(
-               "biome_source",
-               DSL.taggedChoiceType(
-                  "type",
-                  DSL.string(),
-                  ImmutableMap.of(
-                     "minecraft:fixed",
-                     fields("biome", var1.getType(References.BIOME)),
-                     "minecraft:multi_noise",
-                     DSL.list(fields("biome", var1.getType(References.BIOME))),
-                     "minecraft:checkerboard",
-                     fields("biomes", DSL.list(var1.getType(References.BIOME))),
-                     "minecraft:vanilla_layered",
-                     DSL.remainderType(),
-                     "minecraft:the_end",
-                     DSL.remainderType()
-                  )
-               ),
-               "settings",
-               DSL.or(DSL.string(), optionalFields("default_block", var1.getType(References.BLOCK_NAME), "default_fluid", var1.getType(References.BLOCK_NAME)))
-            )
-         )
-      );
-      CompoundListType var3 = DSL.compoundList(NamespacedSchema.namespacedString(), fields("generator", var2));
+      Type var2 = DSL.taggedChoiceType("type", DSL.string(), ImmutableMap.of("minecraft:debug", DSL.remainderType(), "minecraft:flat", flatType(var1), "minecraft:noise", optionalFields("biome_source", DSL.taggedChoiceType("type", DSL.string(), ImmutableMap.of("minecraft:fixed", fields("biome", var1.getType(References.BIOME)), "minecraft:multi_noise", DSL.list(fields("biome", var1.getType(References.BIOME))), "minecraft:checkerboard", fields("biomes", DSL.list(var1.getType(References.BIOME))), "minecraft:vanilla_layered", DSL.remainderType(), "minecraft:the_end", DSL.remainderType())), "settings", DSL.or(DSL.string(), optionalFields("default_block", var1.getType(References.BLOCK_NAME), "default_fluid", var1.getType(References.BLOCK_NAME))))));
+      CompoundList.CompoundListType var3 = DSL.compoundList(NamespacedSchema.namespacedString(), fields("generator", var2));
       Type var4 = DSL.and(var3, DSL.remainderType());
       Type var5 = var1.getType(References.WORLD_GEN_SETTINGS);
       FieldFinder var6 = new FieldFinder("dimensions", var4);
@@ -79,26 +46,26 @@ public class MissingDimensionFix extends DataFix {
          throw new IllegalStateException();
       } else {
          OpticFinder var7 = var3.finder();
-         return this.fixTypeEverywhereTyped("MissingDimensionFix", var5, var4x -> var4x.updateTyped(var6, var4xx -> var4xx.updateTyped(var7, var3xxx -> {
-                  if (!(var3xxx.getValue() instanceof List)) {
+         return this.fixTypeEverywhereTyped("MissingDimensionFix", var5, (var4x) -> {
+            return var4x.updateTyped(var6, (var4) -> {
+               return var4.updateTyped(var7, (var3x) -> {
+                  if (!(var3x.getValue() instanceof List)) {
                      throw new IllegalStateException("List exptected");
-                  } else if (((List)var3xxx.getValue()).isEmpty()) {
-                     Dynamic var4xxxx = (Dynamic)var4x.get(DSL.remainderFinder());
-                     Dynamic var5xx = this.recreateSettings(var4xxxx);
-                     return (Typed)DataFixUtils.orElse(var3.readTyped(var5xx).result().map(Pair::getFirst), var3xxx);
+                  } else if (((List)var3x.getValue()).isEmpty()) {
+                     Dynamic var4 = (Dynamic)var4x.get(DSL.remainderFinder());
+                     Dynamic var5 = this.recreateSettings(var4);
+                     return (Typed)DataFixUtils.orElse(var3.readTyped(var5).result().map(Pair::getFirst), var3x);
                   } else {
-                     return var3xxx;
+                     return var3x;
                   }
-               })));
+               });
+            });
+         });
       }
    }
 
-   protected static Type<? extends Pair<? extends Either<? extends Pair<? extends Either<?, Unit>, ? extends Pair<? extends Either<? extends List<? extends Pair<? extends Either<?, Unit>, Dynamic<?>>>, Unit>, Dynamic<?>>>, Unit>, Dynamic<?>>> flatType(
-      Schema var0
-   ) {
-      return optionalFields(
-         "settings", optionalFields("biome", var0.getType(References.BIOME), "layers", DSL.list(optionalFields("block", var0.getType(References.BLOCK_NAME))))
-      );
+   protected static Type<? extends Pair<? extends Either<? extends Pair<? extends Either<?, Unit>, ? extends Pair<? extends Either<? extends List<? extends Pair<? extends Either<?, Unit>, Dynamic<?>>>, Unit>, Dynamic<?>>>, Unit>, Dynamic<?>>> flatType(Schema var0) {
+      return optionalFields("settings", optionalFields("biome", var0.getType(References.BIOME), "layers", DSL.list(optionalFields("block", var0.getType(References.BLOCK_NAME)))));
    }
 
    private <T> Dynamic<T> recreateSettings(Dynamic<T> var1) {

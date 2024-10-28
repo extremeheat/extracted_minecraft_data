@@ -20,40 +20,40 @@ public class SimpleWeightedRandomList<E> extends WeightedRandomList<WeightedEntr
       super(var1);
    }
 
-   public static <E> SimpleWeightedRandomList.Builder<E> builder() {
-      return new SimpleWeightedRandomList.Builder<>();
+   public static <E> Builder<E> builder() {
+      return new Builder();
    }
 
    public static <E> SimpleWeightedRandomList<E> empty() {
-      return new SimpleWeightedRandomList<>(List.of());
+      return new SimpleWeightedRandomList(List.of());
    }
 
    public static <E> SimpleWeightedRandomList<E> single(E var0) {
-      return new SimpleWeightedRandomList<>(List.of(WeightedEntry.wrap((E)var0, 1)));
+      return new SimpleWeightedRandomList(List.of(WeightedEntry.wrap(var0, 1)));
    }
 
    public Optional<E> getRandomValue(RandomSource var1) {
-      return this.getRandom(var1).map(WeightedEntry.Wrapper::getData);
+      return this.getRandom(var1).map(WeightedEntry.Wrapper::data);
    }
 
    public static class Builder<E> {
-      private final com.google.common.collect.ImmutableList.Builder<WeightedEntry.Wrapper<E>> result = ImmutableList.builder();
+      private final ImmutableList.Builder<WeightedEntry.Wrapper<E>> result = ImmutableList.builder();
 
       public Builder() {
          super();
       }
 
-      public SimpleWeightedRandomList.Builder<E> add(E var1) {
-         return this.add((E)var1, 1);
+      public Builder<E> add(E var1) {
+         return this.add(var1, 1);
       }
 
-      public SimpleWeightedRandomList.Builder<E> add(E var1, int var2) {
+      public Builder<E> add(E var1, int var2) {
          this.result.add(WeightedEntry.wrap(var1, var2));
          return this;
       }
 
       public SimpleWeightedRandomList<E> build() {
-         return new SimpleWeightedRandomList<>(this.result.build());
+         return new SimpleWeightedRandomList(this.result.build());
       }
    }
 }

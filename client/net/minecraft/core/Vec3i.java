@@ -6,27 +6,22 @@ import com.mojang.serialization.DataResult;
 import java.util.stream.IntStream;
 import javax.annotation.concurrent.Immutable;
 import net.minecraft.Util;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 
 @Immutable
 public class Vec3i implements Comparable<Vec3i> {
-   public static final Codec<Vec3i> CODEC = Codec.INT_STREAM
-      .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 3).map(var0x -> new Vec3i(var0x[0], var0x[1], var0x[2])), var0 -> IntStream.of(var0.getX(), var0.getY(), var0.getZ())
-      );
-   public static final Vec3i ZERO = new Vec3i(0, 0, 0);
+   public static final Codec<Vec3i> CODEC;
+   public static final Vec3i ZERO;
    private int x;
    private int y;
    private int z;
 
    public static Codec<Vec3i> offsetCodec(int var0) {
-      return ExtraCodecs.validate(
-         CODEC,
-         var1 -> Math.abs(var1.getX()) < var0 && Math.abs(var1.getY()) < var0 && Math.abs(var1.getZ()) < var0
-               ? DataResult.success(var1)
-               : DataResult.error(() -> "Position out of range, expected at most " + var0 + ": " + var1)
-      );
+      return CODEC.validate((var1) -> {
+         return Math.abs(var1.getX()) < var0 && Math.abs(var1.getY()) < var0 && Math.abs(var1.getZ()) < var0 ? DataResult.success(var1) : DataResult.error(() -> {
+            return "Position out of range, expected at most " + var0 + ": " + String.valueOf(var1);
+         });
+      });
    }
 
    public Vec3i(int var1, int var2, int var3) {
@@ -36,7 +31,6 @@ public class Vec3i implements Comparable<Vec3i> {
       this.z = var3;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -54,7 +48,6 @@ public class Vec3i implements Comparable<Vec3i> {
       }
    }
 
-   @Override
    public int hashCode() {
       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
    }
@@ -163,7 +156,7 @@ public class Vec3i implements Comparable<Vec3i> {
    }
 
    public Vec3i relative(Direction var1) {
-      return this.relative(var1, 1);
+      return this.relative((Direction)var1, 1);
    }
 
    public Vec3i relative(Direction var1, int var2) {
@@ -182,11 +175,7 @@ public class Vec3i implements Comparable<Vec3i> {
    }
 
    public Vec3i cross(Vec3i var1) {
-      return new Vec3i(
-         this.getY() * var1.getZ() - this.getZ() * var1.getY(),
-         this.getZ() * var1.getX() - this.getX() * var1.getZ(),
-         this.getX() * var1.getY() - this.getY() * var1.getX()
-      );
+      return new Vec3i(this.getY() * var1.getZ() - this.getZ() * var1.getY(), this.getZ() * var1.getX() - this.getX() * var1.getZ(), this.getX() * var1.getY() - this.getY() * var1.getX());
    }
 
    public boolean closerThan(Vec3i var1, double var2) {
@@ -230,12 +219,28 @@ public class Vec3i implements Comparable<Vec3i> {
       return var1.choose(this.x, this.y, this.z);
    }
 
-   @Override
    public String toString() {
       return MoreObjects.toStringHelper(this).add("x", this.getX()).add("y", this.getY()).add("z", this.getZ()).toString();
    }
 
    public String toShortString() {
-      return this.getX() + ", " + this.getY() + ", " + this.getZ();
+      int var10000 = this.getX();
+      return "" + var10000 + ", " + this.getY() + ", " + this.getZ();
+   }
+
+   // $FF: synthetic method
+   public int compareTo(Object var1) {
+      return this.compareTo((Vec3i)var1);
+   }
+
+   static {
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
+         return Util.fixedSize((IntStream)var0, 3).map((var0x) -> {
+            return new Vec3i(var0x[0], var0x[1], var0x[2]);
+         });
+      }, (var0) -> {
+         return IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()});
+      });
+      ZERO = new Vec3i(0, 0, 0);
    }
 }

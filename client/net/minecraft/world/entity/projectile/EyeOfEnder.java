@@ -17,7 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeOfEnder extends Entity implements ItemSupplier {
-   private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK = SynchedEntityData.defineId(EyeOfEnder.class, EntityDataSerializers.ITEM_STACK);
+   private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
    private double tx;
    private double ty;
    private double tz;
@@ -39,19 +39,17 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       } else {
          this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
+
    }
 
-   @Override
    public ItemStack getItem() {
-      return this.getEntityData().get(DATA_ITEM_STACK);
+      return (ItemStack)this.getEntityData().get(DATA_ITEM_STACK);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       double var3 = this.getBoundingBox().getSize() * 4.0;
       if (Double.isNaN(var3)) {
@@ -83,7 +81,6 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       this.surviveAfterDeath = this.random.nextInt(5) > 0;
    }
 
-   @Override
    public void lerpMotion(double var1, double var3, double var5) {
       this.setDeltaMovement(var1, var3, var5);
       if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
@@ -93,9 +90,9 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
          this.yRotO = this.getYRot();
          this.xRotO = this.getXRot();
       }
+
    }
 
-   @Override
    public void tick() {
       super.tick();
       Vec3 var1 = this.getDeltaMovement();
@@ -128,16 +125,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
             this.level().addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25, var4 - var1.y * 0.25, var6 - var1.z * 0.25, var1.x, var1.y, var1.z);
          }
       } else {
-         this.level()
-            .addParticle(
-               ParticleTypes.PORTAL,
-               var2 - var1.x * 0.25 + this.random.nextDouble() * 0.6 - 0.3,
-               var4 - var1.y * 0.25 - 0.5,
-               var6 - var1.z * 0.25 + this.random.nextDouble() * 0.6 - 0.3,
-               var1.x,
-               var1.y,
-               var1.z
-            );
+         this.level().addParticle(ParticleTypes.PORTAL, var2 - var1.x * 0.25 + this.random.nextDouble() * 0.6 - 0.3, var4 - var1.y * 0.25 - 0.5, var6 - var1.z * 0.25 + this.random.nextDouble() * 0.6 - 0.3, var1.x, var1.y, var1.z);
       }
 
       if (!this.level().isClientSide) {
@@ -155,33 +143,35 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       } else {
          this.setPosRaw(var2, var4, var6);
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       var1.put("Item", this.getItem().save(this.registryAccess()));
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       if (var1.contains("Item", 10)) {
-         this.setItem(ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
+         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElse(this.getDefaultItem()));
       } else {
          this.setItem(this.getDefaultItem());
       }
+
    }
 
    private ItemStack getDefaultItem() {
       return new ItemStack(Items.ENDER_EYE);
    }
 
-   @Override
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   @Override
    public boolean isAttackable() {
       return false;
+   }
+
+   static {
+      DATA_ITEM_STACK = SynchedEntityData.defineId(EyeOfEnder.class, EntityDataSerializers.ITEM_STACK);
    }
 }

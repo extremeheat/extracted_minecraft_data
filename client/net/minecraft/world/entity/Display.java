@@ -4,8 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
@@ -15,7 +17,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -42,39 +43,22 @@ import org.slf4j.Logger;
 public abstract class Display extends Entity {
    static final Logger LOGGER = LogUtils.getLogger();
    public static final int NO_BRIGHTNESS_OVERRIDE = -1;
-   private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID = SynchedEntityData.defineId(
-      Display.class, EntityDataSerializers.INT
-   );
-   private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID = SynchedEntityData.defineId(
-      Display.class, EntityDataSerializers.INT
-   );
-   private static final EntityDataAccessor<Integer> DATA_POS_ROT_INTERPOLATION_DURATION_ID = SynchedEntityData.defineId(
-      Display.class, EntityDataSerializers.INT
-   );
-   private static final EntityDataAccessor<Vector3f> DATA_TRANSLATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.VECTOR3);
-   private static final EntityDataAccessor<Vector3f> DATA_SCALE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.VECTOR3);
-   private static final EntityDataAccessor<Quaternionf> DATA_LEFT_ROTATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.QUATERNION);
-   private static final EntityDataAccessor<Quaternionf> DATA_RIGHT_ROTATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.QUATERNION);
-   private static final EntityDataAccessor<Byte> DATA_BILLBOARD_RENDER_CONSTRAINTS_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.BYTE);
-   private static final EntityDataAccessor<Integer> DATA_BRIGHTNESS_OVERRIDE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Float> DATA_VIEW_RANGE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Float> DATA_SHADOW_RADIUS_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Float> DATA_SHADOW_STRENGTH_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Float> DATA_WIDTH_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Float> DATA_HEIGHT_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Integer> DATA_GLOW_COLOR_OVERRIDE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
-   private static final IntSet RENDER_STATE_IDS = IntSet.of(
-      new int[]{
-         DATA_TRANSLATION_ID.id(),
-         DATA_SCALE_ID.id(),
-         DATA_LEFT_ROTATION_ID.id(),
-         DATA_RIGHT_ROTATION_ID.id(),
-         DATA_BILLBOARD_RENDER_CONSTRAINTS_ID.id(),
-         DATA_BRIGHTNESS_OVERRIDE_ID.id(),
-         DATA_SHADOW_RADIUS_ID.id(),
-         DATA_SHADOW_STRENGTH_ID.id()
-      }
-   );
+   private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID;
+   private static final EntityDataAccessor<Integer> DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID;
+   private static final EntityDataAccessor<Integer> DATA_POS_ROT_INTERPOLATION_DURATION_ID;
+   private static final EntityDataAccessor<Vector3f> DATA_TRANSLATION_ID;
+   private static final EntityDataAccessor<Vector3f> DATA_SCALE_ID;
+   private static final EntityDataAccessor<Quaternionf> DATA_LEFT_ROTATION_ID;
+   private static final EntityDataAccessor<Quaternionf> DATA_RIGHT_ROTATION_ID;
+   private static final EntityDataAccessor<Byte> DATA_BILLBOARD_RENDER_CONSTRAINTS_ID;
+   private static final EntityDataAccessor<Integer> DATA_BRIGHTNESS_OVERRIDE_ID;
+   private static final EntityDataAccessor<Float> DATA_VIEW_RANGE_ID;
+   private static final EntityDataAccessor<Float> DATA_SHADOW_RADIUS_ID;
+   private static final EntityDataAccessor<Float> DATA_SHADOW_STRENGTH_ID;
+   private static final EntityDataAccessor<Float> DATA_WIDTH_ID;
+   private static final EntityDataAccessor<Float> DATA_HEIGHT_ID;
+   private static final EntityDataAccessor<Integer> DATA_GLOW_COLOR_OVERRIDE_ID;
+   private static final IntSet RENDER_STATE_IDS;
    private static final float INITIAL_SHADOW_RADIUS = 0.0F;
    private static final float INITIAL_SHADOW_STRENGTH = 1.0F;
    private static final int NO_GLOW_COLOR_OVERRIDE = -1;
@@ -98,9 +82,9 @@ public abstract class Display extends Entity {
    private boolean updateStartTick;
    private boolean updateInterpolationDuration;
    @Nullable
-   private Display.RenderState renderState;
+   private RenderState renderState;
    @Nullable
-   private Display.PosRotInterpolationTarget posRotInterpolationTarget;
+   private PosRotInterpolationTarget posRotInterpolationTarget;
 
    public Display(EntityType<?> var1, Level var2) {
       super(var1, var2);
@@ -109,7 +93,6 @@ public abstract class Display extends Entity {
       this.cullingBoundingBox = this.getBoundingBox();
    }
 
-   @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
       super.onSyncedDataUpdated(var1);
       if (DATA_HEIGHT_ID.equals(var1) || DATA_WIDTH_ID.equals(var1)) {
@@ -127,17 +110,17 @@ public abstract class Display extends Entity {
       if (RENDER_STATE_IDS.contains(var1.id())) {
          this.updateRenderState = true;
       }
+
    }
 
    private static Transformation createTransformation(SynchedEntityData var0) {
-      Vector3f var1 = var0.get(DATA_TRANSLATION_ID);
-      Quaternionf var2 = var0.get(DATA_LEFT_ROTATION_ID);
-      Vector3f var3 = var0.get(DATA_SCALE_ID);
-      Quaternionf var4 = var0.get(DATA_RIGHT_ROTATION_ID);
+      Vector3f var1 = (Vector3f)var0.get(DATA_TRANSLATION_ID);
+      Quaternionf var2 = (Quaternionf)var0.get(DATA_LEFT_ROTATION_ID);
+      Vector3f var3 = (Vector3f)var0.get(DATA_SCALE_ID);
+      Quaternionf var4 = (Quaternionf)var0.get(DATA_RIGHT_ROTATION_ID);
       return new Transformation(var1, var2, var3, var4);
    }
 
-   @Override
    public void tick() {
       Entity var1 = this.getVehicle();
       if (var1 != null && var1.isRemoved()) {
@@ -182,11 +165,11 @@ public abstract class Display extends Entity {
             }
          }
       }
+
    }
 
    protected abstract void updateRenderSubState(boolean var1, float var2);
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       var1.define(DATA_POS_ROT_INTERPOLATION_DURATION_ID, 0);
       var1.define(DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID, 0);
@@ -205,35 +188,41 @@ public abstract class Display extends Entity {
       var1.define(DATA_GLOW_COLOR_OVERRIDE_ID, -1);
    }
 
-   @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
+      DataResult var10000;
+      Logger var10002;
       if (var1.contains("transformation")) {
-         Transformation.EXTENDED_CODEC
-            .decode(NbtOps.INSTANCE, var1.get("transformation"))
-            .resultOrPartial(Util.prefix("Display entity", LOGGER::error))
-            .ifPresent(var1x -> this.setTransformation((Transformation)var1x.getFirst()));
+         var10000 = Transformation.EXTENDED_CODEC.decode(NbtOps.INSTANCE, var1.get("transformation"));
+         var10002 = LOGGER;
+         Objects.requireNonNull(var10002);
+         var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((var1x) -> {
+            this.setTransformation((Transformation)var1x.getFirst());
+         });
       }
 
+      int var2;
       if (var1.contains("interpolation_duration", 99)) {
-         int var2 = var1.getInt("interpolation_duration");
+         var2 = var1.getInt("interpolation_duration");
          this.setTransformationInterpolationDuration(var2);
       }
 
       if (var1.contains("start_interpolation", 99)) {
-         int var3 = var1.getInt("start_interpolation");
-         this.setTransformationInterpolationDelay(var3);
+         var2 = var1.getInt("start_interpolation");
+         this.setTransformationInterpolationDelay(var2);
       }
 
       if (var1.contains("teleport_duration", 99)) {
-         int var4 = var1.getInt("teleport_duration");
-         this.setPosRotInterpolationDuration(Mth.clamp(var4, 0, 59));
+         var2 = var1.getInt("teleport_duration");
+         this.setPosRotInterpolationDuration(Mth.clamp(var2, 0, 59));
       }
 
       if (var1.contains("billboard", 8)) {
-         Display.BillboardConstraints.CODEC
-            .decode(NbtOps.INSTANCE, var1.get("billboard"))
-            .resultOrPartial(Util.prefix("Display entity", LOGGER::error))
-            .ifPresent(var1x -> this.setBillboardConstraints((Display.BillboardConstraints)var1x.getFirst()));
+         var10000 = Display.BillboardConstraints.CODEC.decode(NbtOps.INSTANCE, var1.get("billboard"));
+         var10002 = LOGGER;
+         Objects.requireNonNull(var10002);
+         var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((var1x) -> {
+            this.setBillboardConstraints((BillboardConstraints)var1x.getFirst());
+         });
       }
 
       if (var1.contains("view_range", 99)) {
@@ -261,13 +250,16 @@ public abstract class Display extends Entity {
       }
 
       if (var1.contains("brightness", 10)) {
-         Brightness.CODEC
-            .decode(NbtOps.INSTANCE, var1.get("brightness"))
-            .resultOrPartial(Util.prefix("Display entity", LOGGER::error))
-            .ifPresent(var1x -> this.setBrightnessOverride((Brightness)var1x.getFirst()));
+         var10000 = Brightness.CODEC.decode(NbtOps.INSTANCE, var1.get("brightness"));
+         var10002 = LOGGER;
+         Objects.requireNonNull(var10002);
+         var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((var1x) -> {
+            this.setBrightnessOverride((Brightness)var1x.getFirst());
+         });
       } else {
-         this.setBrightnessOverride(null);
+         this.setBrightnessOverride((Brightness)null);
       }
+
    }
 
    private void setTransformation(Transformation var1) {
@@ -277,13 +269,13 @@ public abstract class Display extends Entity {
       this.entityData.set(DATA_RIGHT_ROTATION_ID, var1.getRightRotation());
    }
 
-   @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
-      Transformation.EXTENDED_CODEC
-         .encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData))
-         .result()
-         .ifPresent(var1x -> var1.put("transformation", var1x));
-      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).result().ifPresent(var1x -> var1.put("billboard", var1x));
+      Transformation.EXTENDED_CODEC.encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData)).ifSuccess((var1x) -> {
+         var1.put("transformation", var1x);
+      });
+      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).ifSuccess((var1x) -> {
+         var1.put("billboard", var1x);
+      });
       var1.putInt("interpolation_duration", this.getTransformationInterpolationDuration());
       var1.putInt("teleport_duration", this.getPosRotInterpolationDuration());
       var1.putFloat("view_range", this.getViewRange());
@@ -294,58 +286,52 @@ public abstract class Display extends Entity {
       var1.putInt("glow_color_override", this.getGlowColorOverride());
       Brightness var2 = this.getBrightnessOverride();
       if (var2 != null) {
-         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).result().ifPresent(var1x -> var1.put("brightness", var1x));
+         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).ifSuccess((var1x) -> {
+            var1.put("brightness", var1x);
+         });
       }
+
    }
 
-   @Override
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       int var10 = this.getPosRotInterpolationDuration();
-      this.posRotInterpolationTarget = new Display.PosRotInterpolationTarget(var10, var1, var3, var5, (double)var7, (double)var8);
+      this.posRotInterpolationTarget = new PosRotInterpolationTarget(var10, var1, var3, var5, (double)var7, (double)var8);
    }
 
-   @Override
    public double lerpTargetX() {
       return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetX : this.getX();
    }
 
-   @Override
    public double lerpTargetY() {
       return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetY : this.getY();
    }
 
-   @Override
    public double lerpTargetZ() {
       return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetZ : this.getZ();
    }
 
-   @Override
    public float lerpTargetXRot() {
       return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetXRot : this.getXRot();
    }
 
-   @Override
    public float lerpTargetYRot() {
       return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetYRot : this.getYRot();
    }
 
-   @Override
    public AABB getBoundingBoxForCulling() {
       return this.cullingBoundingBox;
    }
 
-   @Override
    public PushReaction getPistonPushReaction() {
       return PushReaction.IGNORE;
    }
 
-   @Override
    public boolean isIgnoringBlockTriggers() {
       return true;
    }
 
    @Nullable
-   public Display.RenderState renderState() {
+   public RenderState renderState() {
       return this.renderState;
    }
 
@@ -354,7 +340,7 @@ public abstract class Display extends Entity {
    }
 
    private int getTransformationInterpolationDuration() {
-      return this.entityData.get(DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID);
+      return (Integer)this.entityData.get(DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID);
    }
 
    private void setTransformationInterpolationDelay(int var1) {
@@ -362,7 +348,7 @@ public abstract class Display extends Entity {
    }
 
    private int getTransformationInterpolationDelay() {
-      return this.entityData.get(DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID);
+      return (Integer)this.entityData.get(DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID);
    }
 
    private void setPosRotInterpolationDuration(int var1) {
@@ -370,15 +356,15 @@ public abstract class Display extends Entity {
    }
 
    private int getPosRotInterpolationDuration() {
-      return this.entityData.get(DATA_POS_ROT_INTERPOLATION_DURATION_ID);
+      return (Integer)this.entityData.get(DATA_POS_ROT_INTERPOLATION_DURATION_ID);
    }
 
-   private void setBillboardConstraints(Display.BillboardConstraints var1) {
+   private void setBillboardConstraints(BillboardConstraints var1) {
       this.entityData.set(DATA_BILLBOARD_RENDER_CONSTRAINTS_ID, var1.getId());
    }
 
-   private Display.BillboardConstraints getBillboardConstraints() {
-      return Display.BillboardConstraints.BY_ID.apply(this.entityData.get(DATA_BILLBOARD_RENDER_CONSTRAINTS_ID));
+   private BillboardConstraints getBillboardConstraints() {
+      return (BillboardConstraints)Display.BillboardConstraints.BY_ID.apply((Byte)this.entityData.get(DATA_BILLBOARD_RENDER_CONSTRAINTS_ID));
    }
 
    private void setBrightnessOverride(@Nullable Brightness var1) {
@@ -387,12 +373,12 @@ public abstract class Display extends Entity {
 
    @Nullable
    private Brightness getBrightnessOverride() {
-      int var1 = this.entityData.get(DATA_BRIGHTNESS_OVERRIDE_ID);
+      int var1 = (Integer)this.entityData.get(DATA_BRIGHTNESS_OVERRIDE_ID);
       return var1 != -1 ? Brightness.unpack(var1) : null;
    }
 
    private int getPackedBrightnessOverride() {
-      return this.entityData.get(DATA_BRIGHTNESS_OVERRIDE_ID);
+      return (Integer)this.entityData.get(DATA_BRIGHTNESS_OVERRIDE_ID);
    }
 
    private void setViewRange(float var1) {
@@ -400,7 +386,7 @@ public abstract class Display extends Entity {
    }
 
    private float getViewRange() {
-      return this.entityData.get(DATA_VIEW_RANGE_ID);
+      return (Float)this.entityData.get(DATA_VIEW_RANGE_ID);
    }
 
    private void setShadowRadius(float var1) {
@@ -408,7 +394,7 @@ public abstract class Display extends Entity {
    }
 
    private float getShadowRadius() {
-      return this.entityData.get(DATA_SHADOW_RADIUS_ID);
+      return (Float)this.entityData.get(DATA_SHADOW_RADIUS_ID);
    }
 
    private void setShadowStrength(float var1) {
@@ -416,7 +402,7 @@ public abstract class Display extends Entity {
    }
 
    private float getShadowStrength() {
-      return this.entityData.get(DATA_SHADOW_STRENGTH_ID);
+      return (Float)this.entityData.get(DATA_SHADOW_STRENGTH_ID);
    }
 
    private void setWidth(float var1) {
@@ -424,7 +410,7 @@ public abstract class Display extends Entity {
    }
 
    private float getWidth() {
-      return this.entityData.get(DATA_WIDTH_ID);
+      return (Float)this.entityData.get(DATA_WIDTH_ID);
    }
 
    private void setHeight(float var1) {
@@ -432,7 +418,7 @@ public abstract class Display extends Entity {
    }
 
    private int getGlowColorOverride() {
-      return this.entityData.get(DATA_GLOW_COLOR_OVERRIDE_ID);
+      return (Integer)this.entityData.get(DATA_GLOW_COLOR_OVERRIDE_ID);
    }
 
    private void setGlowColorOverride(int var1) {
@@ -453,10 +439,9 @@ public abstract class Display extends Entity {
    }
 
    private float getHeight() {
-      return this.entityData.get(DATA_HEIGHT_ID);
+      return (Float)this.entityData.get(DATA_HEIGHT_ID);
    }
 
-   @Override
    public void setPos(double var1, double var3, double var5) {
       super.setPos(var1, var3, var5);
       this.updateCulling();
@@ -475,323 +460,85 @@ public abstract class Display extends Entity {
       } else {
          this.noCulling = true;
       }
+
    }
 
-   @Override
    public boolean shouldRenderAtSqrDistance(double var1) {
       return var1 < Mth.square((double)this.getViewRange() * 64.0 * getViewScale());
    }
 
-   @Override
    public int getTeamColor() {
       int var1 = this.getGlowColorOverride();
       return var1 != -1 ? var1 : super.getTeamColor();
    }
 
-   private Display.RenderState createFreshRenderState() {
-      return new Display.RenderState(
-         Display.GenericInterpolator.constant(createTransformation(this.entityData)),
-         this.getBillboardConstraints(),
-         this.getPackedBrightnessOverride(),
-         Display.FloatInterpolator.constant(this.getShadowRadius()),
-         Display.FloatInterpolator.constant(this.getShadowStrength()),
-         this.getGlowColorOverride()
-      );
+   private RenderState createFreshRenderState() {
+      return new RenderState(Display.GenericInterpolator.constant(createTransformation(this.entityData)), this.getBillboardConstraints(), this.getPackedBrightnessOverride(), Display.FloatInterpolator.constant(this.getShadowRadius()), Display.FloatInterpolator.constant(this.getShadowStrength()), this.getGlowColorOverride());
    }
 
-   private Display.RenderState createInterpolatedRenderState(Display.RenderState var1, float var2) {
-      Transformation var3 = var1.transformation.get(var2);
+   private RenderState createInterpolatedRenderState(RenderState var1, float var2) {
+      Transformation var3 = (Transformation)var1.transformation.get(var2);
       float var4 = var1.shadowRadius.get(var2);
       float var5 = var1.shadowStrength.get(var2);
-      return new Display.RenderState(
-         new Display.TransformationInterpolator(var3, createTransformation(this.entityData)),
-         this.getBillboardConstraints(),
-         this.getPackedBrightnessOverride(),
-         new Display.LinearFloatInterpolator(var4, this.getShadowRadius()),
-         new Display.LinearFloatInterpolator(var5, this.getShadowStrength()),
-         this.getGlowColorOverride()
-      );
+      return new RenderState(new TransformationInterpolator(var3, createTransformation(this.entityData)), this.getBillboardConstraints(), this.getPackedBrightnessOverride(), new LinearFloatInterpolator(var4, this.getShadowRadius()), new LinearFloatInterpolator(var5, this.getShadowStrength()), this.getGlowColorOverride());
    }
 
-   public static enum BillboardConstraints implements StringRepresentable {
-      FIXED((byte)0, "fixed"),
-      VERTICAL((byte)1, "vertical"),
-      HORIZONTAL((byte)2, "horizontal"),
-      CENTER((byte)3, "center");
-
-      public static final Codec<Display.BillboardConstraints> CODEC = StringRepresentable.fromEnum(Display.BillboardConstraints::values);
-      public static final IntFunction<Display.BillboardConstraints> BY_ID = ByIdMap.continuous(
-         Display.BillboardConstraints::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO
-      );
-      private final byte id;
-      private final String name;
-
-      private BillboardConstraints(byte var3, String var4) {
-         this.name = var4;
-         this.id = var3;
-      }
-
-      @Override
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      byte getId() {
-         return this.id;
-      }
+   static {
+      DATA_TRANSFORMATION_INTERPOLATION_START_DELTA_TICKS_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
+      DATA_TRANSFORMATION_INTERPOLATION_DURATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
+      DATA_POS_ROT_INTERPOLATION_DURATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
+      DATA_TRANSLATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.VECTOR3);
+      DATA_SCALE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.VECTOR3);
+      DATA_LEFT_ROTATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.QUATERNION);
+      DATA_RIGHT_ROTATION_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.QUATERNION);
+      DATA_BILLBOARD_RENDER_CONSTRAINTS_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.BYTE);
+      DATA_BRIGHTNESS_OVERRIDE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
+      DATA_VIEW_RANGE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
+      DATA_SHADOW_RADIUS_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
+      DATA_SHADOW_STRENGTH_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
+      DATA_WIDTH_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
+      DATA_HEIGHT_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.FLOAT);
+      DATA_GLOW_COLOR_OVERRIDE_ID = SynchedEntityData.defineId(Display.class, EntityDataSerializers.INT);
+      RENDER_STATE_IDS = IntSet.of(new int[]{DATA_TRANSLATION_ID.id(), DATA_SCALE_ID.id(), DATA_LEFT_ROTATION_ID.id(), DATA_RIGHT_ROTATION_ID.id(), DATA_BILLBOARD_RENDER_CONSTRAINTS_ID.id(), DATA_BRIGHTNESS_OVERRIDE_ID.id(), DATA_SHADOW_RADIUS_ID.id(), DATA_SHADOW_STRENGTH_ID.id()});
    }
 
-   public static class BlockDisplay extends Display {
-      public static final String TAG_BLOCK_STATE = "block_state";
-      private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID = SynchedEntityData.defineId(
-         Display.BlockDisplay.class, EntityDataSerializers.BLOCK_STATE
-      );
-      @Nullable
-      private Display.BlockDisplay.BlockRenderState blockRenderState;
+   public static record RenderState(GenericInterpolator<Transformation> transformation, BillboardConstraints billboardConstraints, int brightnessOverride, FloatInterpolator shadowRadius, FloatInterpolator shadowStrength, int glowColorOverride) {
+      final GenericInterpolator<Transformation> transformation;
+      final FloatInterpolator shadowRadius;
+      final FloatInterpolator shadowStrength;
 
-      public BlockDisplay(EntityType<?> var1, Level var2) {
-         super(var1, var2);
-      }
-
-      @Override
-      protected void defineSynchedData(SynchedEntityData.Builder var1) {
-         super.defineSynchedData(var1);
-         var1.define(DATA_BLOCK_STATE_ID, Blocks.AIR.defaultBlockState());
-      }
-
-      @Override
-      public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-         super.onSyncedDataUpdated(var1);
-         if (var1.equals(DATA_BLOCK_STATE_ID)) {
-            this.updateRenderState = true;
-         }
-      }
-
-      private BlockState getBlockState() {
-         return this.entityData.get(DATA_BLOCK_STATE_ID);
-      }
-
-      private void setBlockState(BlockState var1) {
-         this.entityData.set(DATA_BLOCK_STATE_ID, var1);
-      }
-
-      @Override
-      protected void readAdditionalSaveData(CompoundTag var1) {
-         super.readAdditionalSaveData(var1);
-         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
-      }
-
-      @Override
-      protected void addAdditionalSaveData(CompoundTag var1) {
-         super.addAdditionalSaveData(var1);
-         var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
-      }
-
-      @Nullable
-      public Display.BlockDisplay.BlockRenderState blockRenderState() {
-         return this.blockRenderState;
-      }
-
-      @Override
-      protected void updateRenderSubState(boolean var1, float var2) {
-         this.blockRenderState = new Display.BlockDisplay.BlockRenderState(this.getBlockState());
-      }
-
-      public static record BlockRenderState(BlockState a) {
-         private final BlockState blockState;
-
-         public BlockRenderState(BlockState var1) {
-            super();
-            this.blockState = var1;
-         }
-      }
-   }
-
-   static record ColorInterpolator(int a, int b) implements Display.IntInterpolator {
-      private final int previous;
-      private final int current;
-
-      ColorInterpolator(int var1, int var2) {
+      public RenderState(GenericInterpolator<Transformation> var1, BillboardConstraints var2, int var3, FloatInterpolator var4, FloatInterpolator var5, int var6) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.transformation = var1;
+         this.billboardConstraints = var2;
+         this.brightnessOverride = var3;
+         this.shadowRadius = var4;
+         this.shadowStrength = var5;
+         this.glowColorOverride = var6;
       }
 
-      @Override
-      public int get(float var1) {
-         return FastColor.ARGB32.lerp(var1, this.previous, this.current);
-      }
-   }
-
-   @FunctionalInterface
-   public interface FloatInterpolator {
-      static Display.FloatInterpolator constant(float var0) {
-         return var1 -> var0;
+      public GenericInterpolator<Transformation> transformation() {
+         return this.transformation;
       }
 
-      float get(float var1);
-   }
-
-   @FunctionalInterface
-   public interface GenericInterpolator<T> {
-      static <T> Display.GenericInterpolator<T> constant(T var0) {
-         return var1 -> (T)var0;
+      public BillboardConstraints billboardConstraints() {
+         return this.billboardConstraints;
       }
 
-      T get(float var1);
-   }
-
-   @FunctionalInterface
-   public interface IntInterpolator {
-      static Display.IntInterpolator constant(int var0) {
-         return var1 -> var0;
+      public int brightnessOverride() {
+         return this.brightnessOverride;
       }
 
-      int get(float var1);
-   }
-
-   public static class ItemDisplay extends Display {
-      private static final String TAG_ITEM = "item";
-      private static final String TAG_ITEM_DISPLAY = "item_display";
-      private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK_ID = SynchedEntityData.defineId(
-         Display.ItemDisplay.class, EntityDataSerializers.ITEM_STACK
-      );
-      private static final EntityDataAccessor<Byte> DATA_ITEM_DISPLAY_ID = SynchedEntityData.defineId(Display.ItemDisplay.class, EntityDataSerializers.BYTE);
-      private final SlotAccess slot = new SlotAccess() {
-         @Override
-         public ItemStack get() {
-            return ItemDisplay.this.getItemStack();
-         }
-
-         @Override
-         public boolean set(ItemStack var1) {
-            ItemDisplay.this.setItemStack(var1);
-            return true;
-         }
-      };
-      @Nullable
-      private Display.ItemDisplay.ItemRenderState itemRenderState;
-
-      public ItemDisplay(EntityType<?> var1, Level var2) {
-         super(var1, var2);
+      public FloatInterpolator shadowRadius() {
+         return this.shadowRadius;
       }
 
-      @Override
-      protected void defineSynchedData(SynchedEntityData.Builder var1) {
-         super.defineSynchedData(var1);
-         var1.define(DATA_ITEM_STACK_ID, ItemStack.EMPTY);
-         var1.define(DATA_ITEM_DISPLAY_ID, ItemDisplayContext.NONE.getId());
+      public FloatInterpolator shadowStrength() {
+         return this.shadowStrength;
       }
 
-      @Override
-      public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-         super.onSyncedDataUpdated(var1);
-         if (DATA_ITEM_STACK_ID.equals(var1) || DATA_ITEM_DISPLAY_ID.equals(var1)) {
-            this.updateRenderState = true;
-         }
-      }
-
-      ItemStack getItemStack() {
-         return this.entityData.get(DATA_ITEM_STACK_ID);
-      }
-
-      void setItemStack(ItemStack var1) {
-         this.entityData.set(DATA_ITEM_STACK_ID, var1);
-      }
-
-      private void setItemTransform(ItemDisplayContext var1) {
-         this.entityData.set(DATA_ITEM_DISPLAY_ID, var1.getId());
-      }
-
-      private ItemDisplayContext getItemTransform() {
-         return ItemDisplayContext.BY_ID.apply(this.entityData.get(DATA_ITEM_DISPLAY_ID));
-      }
-
-      @Override
-      protected void readAdditionalSaveData(CompoundTag var1) {
-         super.readAdditionalSaveData(var1);
-         if (var1.contains("item")) {
-            this.setItemStack(ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(ItemStack.EMPTY));
-         } else {
-            this.setItemStack(ItemStack.EMPTY);
-         }
-
-         if (var1.contains("item_display", 8)) {
-            ItemDisplayContext.CODEC
-               .decode(NbtOps.INSTANCE, var1.get("item_display"))
-               .resultOrPartial(Util.prefix("Display entity", Display.LOGGER::error))
-               .ifPresent(var1x -> this.setItemTransform((ItemDisplayContext)var1x.getFirst()));
-         }
-      }
-
-      @Override
-      protected void addAdditionalSaveData(CompoundTag var1) {
-         super.addAdditionalSaveData(var1);
-         if (!this.getItemStack().isEmpty()) {
-            var1.put("item", this.getItemStack().save(this.registryAccess()));
-         }
-
-         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).result().ifPresent(var1x -> var1.put("item_display", var1x));
-      }
-
-      @Override
-      public SlotAccess getSlot(int var1) {
-         return var1 == 0 ? this.slot : SlotAccess.NULL;
-      }
-
-      @Nullable
-      public Display.ItemDisplay.ItemRenderState itemRenderState() {
-         return this.itemRenderState;
-      }
-
-      @Override
-      protected void updateRenderSubState(boolean var1, float var2) {
-         ItemStack var3 = this.getItemStack();
-         var3.setEntityRepresentation(this);
-         this.itemRenderState = new Display.ItemDisplay.ItemRenderState(var3, this.getItemTransform());
-      }
-
-      public static record ItemRenderState(ItemStack a, ItemDisplayContext b) {
-         private final ItemStack itemStack;
-         private final ItemDisplayContext itemTransform;
-
-         public ItemRenderState(ItemStack var1, ItemDisplayContext var2) {
-            super();
-            this.itemStack = var1;
-            this.itemTransform = var2;
-         }
-      }
-   }
-
-   static record LinearFloatInterpolator(float a, float b) implements Display.FloatInterpolator {
-      private final float previous;
-      private final float current;
-
-      LinearFloatInterpolator(float var1, float var2) {
-         super();
-         this.previous = var1;
-         this.current = var2;
-      }
-
-      @Override
-      public float get(float var1) {
-         return Mth.lerp(var1, this.previous, this.current);
-      }
-   }
-
-   static record LinearIntInterpolator(int a, int b) implements Display.IntInterpolator {
-      private final int previous;
-      private final int current;
-
-      LinearIntInterpolator(int var1, int var2) {
-         super();
-         this.previous = var1;
-         this.current = var2;
-      }
-
-      @Override
-      public int get(float var1) {
-         return Mth.lerpInt(var1, this.previous, this.current);
+      public int glowColorOverride() {
+         return this.glowColorOverride;
       }
    }
 
@@ -823,32 +570,152 @@ public abstract class Display extends Entity {
       }
    }
 
-   public static record RenderState(
-      Display.GenericInterpolator<Transformation> a, Display.BillboardConstraints b, int c, Display.FloatInterpolator d, Display.FloatInterpolator e, int f
-   ) {
-      final Display.GenericInterpolator<Transformation> transformation;
-      private final Display.BillboardConstraints billboardConstraints;
-      private final int brightnessOverride;
-      final Display.FloatInterpolator shadowRadius;
-      final Display.FloatInterpolator shadowStrength;
-      private final int glowColorOverride;
+   public static enum BillboardConstraints implements StringRepresentable {
+      FIXED((byte)0, "fixed"),
+      VERTICAL((byte)1, "vertical"),
+      HORIZONTAL((byte)2, "horizontal"),
+      CENTER((byte)3, "center");
 
-      public RenderState(
-         Display.GenericInterpolator<Transformation> var1,
-         Display.BillboardConstraints var2,
-         int var3,
-         Display.FloatInterpolator var4,
-         Display.FloatInterpolator var5,
-         int var6
-      ) {
-         super();
-         this.transformation = var1;
-         this.billboardConstraints = var2;
-         this.brightnessOverride = var3;
-         this.shadowRadius = var4;
-         this.shadowStrength = var5;
-         this.glowColorOverride = var6;
+      public static final Codec<BillboardConstraints> CODEC = StringRepresentable.fromEnum(BillboardConstraints::values);
+      public static final IntFunction<BillboardConstraints> BY_ID = ByIdMap.continuous(BillboardConstraints::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      private final byte id;
+      private final String name;
+
+      private BillboardConstraints(byte var3, String var4) {
+         this.name = var4;
+         this.id = var3;
       }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      byte getId() {
+         return this.id;
+      }
+
+      // $FF: synthetic method
+      private static BillboardConstraints[] $values() {
+         return new BillboardConstraints[]{FIXED, VERTICAL, HORIZONTAL, CENTER};
+      }
+   }
+
+   @FunctionalInterface
+   public interface GenericInterpolator<T> {
+      static <T> GenericInterpolator<T> constant(T var0) {
+         return (var1) -> {
+            return var0;
+         };
+      }
+
+      T get(float var1);
+   }
+
+   @FunctionalInterface
+   public interface FloatInterpolator {
+      static FloatInterpolator constant(float var0) {
+         return (var1) -> {
+            return var0;
+         };
+      }
+
+      float get(float var1);
+   }
+
+   static record TransformationInterpolator(Transformation previous, Transformation current) implements GenericInterpolator<Transformation> {
+      TransformationInterpolator(Transformation var1, Transformation var2) {
+         super();
+         this.previous = var1;
+         this.current = var2;
+      }
+
+      public Transformation get(float var1) {
+         return (double)var1 >= 1.0 ? this.current : this.previous.slerp(this.current, var1);
+      }
+
+      public Transformation previous() {
+         return this.previous;
+      }
+
+      public Transformation current() {
+         return this.current;
+      }
+
+      // $FF: synthetic method
+      public Object get(float var1) {
+         return this.get(var1);
+      }
+   }
+
+   static record LinearFloatInterpolator(float previous, float current) implements FloatInterpolator {
+      LinearFloatInterpolator(float var1, float var2) {
+         super();
+         this.previous = var1;
+         this.current = var2;
+      }
+
+      public float get(float var1) {
+         return Mth.lerp(var1, this.previous, this.current);
+      }
+
+      public float previous() {
+         return this.previous;
+      }
+
+      public float current() {
+         return this.current;
+      }
+   }
+
+   static record ColorInterpolator(int previous, int current) implements IntInterpolator {
+      ColorInterpolator(int var1, int var2) {
+         super();
+         this.previous = var1;
+         this.current = var2;
+      }
+
+      public int get(float var1) {
+         return FastColor.ARGB32.lerp(var1, this.previous, this.current);
+      }
+
+      public int previous() {
+         return this.previous;
+      }
+
+      public int current() {
+         return this.current;
+      }
+   }
+
+   static record LinearIntInterpolator(int previous, int current) implements IntInterpolator {
+      LinearIntInterpolator(int var1, int var2) {
+         super();
+         this.previous = var1;
+         this.current = var2;
+      }
+
+      public int get(float var1) {
+         return Mth.lerpInt(var1, this.previous, this.current);
+      }
+
+      public int previous() {
+         return this.previous;
+      }
+
+      public int current() {
+         return this.current;
+      }
+   }
+
+   @FunctionalInterface
+   public interface IntInterpolator {
+      static IntInterpolator constant(int var0) {
+         return (var1) -> {
+            return var0;
+         };
+      }
+
+      int get(float var1);
    }
 
    public static class TextDisplay extends Display {
@@ -867,45 +734,40 @@ public abstract class Display extends Entity {
       public static final byte FLAG_ALIGN_RIGHT = 16;
       private static final byte INITIAL_TEXT_OPACITY = -1;
       public static final int INITIAL_BACKGROUND = 1073741824;
-      private static final EntityDataAccessor<Component> DATA_TEXT_ID = SynchedEntityData.defineId(Display.TextDisplay.class, EntityDataSerializers.COMPONENT);
-      private static final EntityDataAccessor<Integer> DATA_LINE_WIDTH_ID = SynchedEntityData.defineId(Display.TextDisplay.class, EntityDataSerializers.INT);
-      private static final EntityDataAccessor<Integer> DATA_BACKGROUND_COLOR_ID = SynchedEntityData.defineId(
-         Display.TextDisplay.class, EntityDataSerializers.INT
-      );
-      private static final EntityDataAccessor<Byte> DATA_TEXT_OPACITY_ID = SynchedEntityData.defineId(Display.TextDisplay.class, EntityDataSerializers.BYTE);
-      private static final EntityDataAccessor<Byte> DATA_STYLE_FLAGS_ID = SynchedEntityData.defineId(Display.TextDisplay.class, EntityDataSerializers.BYTE);
-      private static final IntSet TEXT_RENDER_STATE_IDS = IntSet.of(
-         new int[]{DATA_TEXT_ID.id(), DATA_LINE_WIDTH_ID.id(), DATA_BACKGROUND_COLOR_ID.id(), DATA_TEXT_OPACITY_ID.id(), DATA_STYLE_FLAGS_ID.id()}
-      );
+      private static final EntityDataAccessor<Component> DATA_TEXT_ID;
+      private static final EntityDataAccessor<Integer> DATA_LINE_WIDTH_ID;
+      private static final EntityDataAccessor<Integer> DATA_BACKGROUND_COLOR_ID;
+      private static final EntityDataAccessor<Byte> DATA_TEXT_OPACITY_ID;
+      private static final EntityDataAccessor<Byte> DATA_STYLE_FLAGS_ID;
+      private static final IntSet TEXT_RENDER_STATE_IDS;
       @Nullable
-      private Display.TextDisplay.CachedInfo clientDisplayCache;
+      private CachedInfo clientDisplayCache;
       @Nullable
-      private Display.TextDisplay.TextRenderState textRenderState;
+      private TextRenderState textRenderState;
 
       public TextDisplay(EntityType<?> var1, Level var2) {
          super(var1, var2);
       }
 
-      @Override
       protected void defineSynchedData(SynchedEntityData.Builder var1) {
          super.defineSynchedData(var1);
          var1.define(DATA_TEXT_ID, Component.empty());
          var1.define(DATA_LINE_WIDTH_ID, 200);
          var1.define(DATA_BACKGROUND_COLOR_ID, 1073741824);
-         var1.define(DATA_TEXT_OPACITY_ID, (byte)-1);
+         var1.define(DATA_TEXT_OPACITY_ID, -1);
          var1.define(DATA_STYLE_FLAGS_ID, (byte)0);
       }
 
-      @Override
       public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
          super.onSyncedDataUpdated(var1);
          if (TEXT_RENDER_STATE_IDS.contains(var1.id())) {
             this.updateRenderState = true;
          }
+
       }
 
       private Component getText() {
-         return this.entityData.get(DATA_TEXT_ID);
+         return (Component)this.entityData.get(DATA_TEXT_ID);
       }
 
       private void setText(Component var1) {
@@ -913,7 +775,7 @@ public abstract class Display extends Entity {
       }
 
       private int getLineWidth() {
-         return this.entityData.get(DATA_LINE_WIDTH_ID);
+         return (Integer)this.entityData.get(DATA_LINE_WIDTH_ID);
       }
 
       private void setLineWidth(int var1) {
@@ -921,7 +783,7 @@ public abstract class Display extends Entity {
       }
 
       private byte getTextOpacity() {
-         return this.entityData.get(DATA_TEXT_OPACITY_ID);
+         return (Byte)this.entityData.get(DATA_TEXT_OPACITY_ID);
       }
 
       private void setTextOpacity(byte var1) {
@@ -929,7 +791,7 @@ public abstract class Display extends Entity {
       }
 
       private int getBackgroundColor() {
-         return this.entityData.get(DATA_BACKGROUND_COLOR_ID);
+         return (Integer)this.entityData.get(DATA_BACKGROUND_COLOR_ID);
       }
 
       private void setBackgroundColor(int var1) {
@@ -937,7 +799,7 @@ public abstract class Display extends Entity {
       }
 
       private byte getFlags() {
-         return this.entityData.get(DATA_STYLE_FLAGS_ID);
+         return (Byte)this.entityData.get(DATA_STYLE_FLAGS_ID);
       }
 
       private void setFlags(byte var1) {
@@ -948,7 +810,6 @@ public abstract class Display extends Entity {
          return var1.getBoolean(var2) ? (byte)(var0 | var3) : var0;
       }
 
-      @Override
       protected void readAdditionalSaveData(CompoundTag var1) {
          super.readAdditionalSaveData(var1);
          if (var1.contains("line_width", 99)) {
@@ -966,16 +827,20 @@ public abstract class Display extends Entity {
          byte var2 = loadFlag((byte)0, var1, "shadow", (byte)1);
          var2 = loadFlag(var2, var1, "see_through", (byte)2);
          var2 = loadFlag(var2, var1, "default_background", (byte)4);
-         Optional var3 = Display.TextDisplay.Align.CODEC
-            .decode(NbtOps.INSTANCE, var1.get("alignment"))
-            .resultOrPartial(Util.prefix("Display entity", Display.LOGGER::error))
-            .map(Pair::getFirst);
+         DataResult var10000 = Display.TextDisplay.Align.CODEC.decode(NbtOps.INSTANCE, var1.get("alignment"));
+         Logger var10002 = Display.LOGGER;
+         Objects.requireNonNull(var10002);
+         Optional var3 = var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).map(Pair::getFirst);
          if (var3.isPresent()) {
-            var2 = switch((Display.TextDisplay.Align)var3.get()) {
-               case CENTER -> var2;
-               case LEFT -> (byte)(var2 | 8);
-               case RIGHT -> (byte)(var2 | 16);
-            };
+            byte var9;
+            switch (((Align)var3.get()).ordinal()) {
+               case 0 -> var9 = var2;
+               case 1 -> var9 = (byte)(var2 | 8);
+               case 2 -> var9 = (byte)(var2 | 16);
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            var2 = var9;
          }
 
          this.setFlags(var2);
@@ -983,10 +848,10 @@ public abstract class Display extends Entity {
             String var4 = var1.getString("text");
 
             try {
-               MutableComponent var5 = Component.Serializer.fromJson(var4, this.registryAccess());
+               MutableComponent var5 = Component.Serializer.fromJson((String)var4, this.registryAccess());
                if (var5 != null) {
                   CommandSourceStack var6 = this.createCommandSourceStack().withPermission(2);
-                  MutableComponent var7 = ComponentUtils.updateForEntity(var6, var5, this, 0);
+                  MutableComponent var7 = ComponentUtils.updateForEntity(var6, (Component)var5, this, 0);
                   this.setText(var7);
                } else {
                   this.setText(Component.empty());
@@ -995,13 +860,13 @@ public abstract class Display extends Entity {
                Display.LOGGER.warn("Failed to parse display entity text {}", var4, var8);
             }
          }
+
       }
 
       private static void storeFlag(byte var0, CompoundTag var1, String var2, byte var3) {
          var1.putBoolean(var2, (var0 & var3) != 0);
       }
 
-      @Override
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
          var1.putString("text", Component.Serializer.toJson(this.getText(), this.registryAccess()));
@@ -1012,10 +877,11 @@ public abstract class Display extends Entity {
          storeFlag(var2, var1, "shadow", (byte)1);
          storeFlag(var2, var1, "see_through", (byte)2);
          storeFlag(var2, var1, "default_background", (byte)4);
-         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).result().ifPresent(var1x -> var1.put("alignment", var1x));
+         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).ifSuccess((var1x) -> {
+            var1.put("alignment", var1x);
+         });
       }
 
-      @Override
       protected void updateRenderSubState(boolean var1, float var2) {
          if (var1 && this.textRenderState != null) {
             this.textRenderState = this.createInterpolatedTextRenderState(this.textRenderState, var2);
@@ -1027,45 +893,33 @@ public abstract class Display extends Entity {
       }
 
       @Nullable
-      public Display.TextDisplay.TextRenderState textRenderState() {
+      public TextRenderState textRenderState() {
          return this.textRenderState;
       }
 
-      private Display.TextDisplay.TextRenderState createFreshTextRenderState() {
-         return new Display.TextDisplay.TextRenderState(
-            this.getText(),
-            this.getLineWidth(),
-            Display.IntInterpolator.constant(this.getTextOpacity()),
-            Display.IntInterpolator.constant(this.getBackgroundColor()),
-            this.getFlags()
-         );
+      private TextRenderState createFreshTextRenderState() {
+         return new TextRenderState(this.getText(), this.getLineWidth(), Display.IntInterpolator.constant(this.getTextOpacity()), Display.IntInterpolator.constant(this.getBackgroundColor()), this.getFlags());
       }
 
-      private Display.TextDisplay.TextRenderState createInterpolatedTextRenderState(Display.TextDisplay.TextRenderState var1, float var2) {
+      private TextRenderState createInterpolatedTextRenderState(TextRenderState var1, float var2) {
          int var3 = var1.backgroundColor.get(var2);
          int var4 = var1.textOpacity.get(var2);
-         return new Display.TextDisplay.TextRenderState(
-            this.getText(),
-            this.getLineWidth(),
-            new Display.LinearIntInterpolator(var4, this.getTextOpacity()),
-            new Display.ColorInterpolator(var3, this.getBackgroundColor()),
-            this.getFlags()
-         );
+         return new TextRenderState(this.getText(), this.getLineWidth(), new LinearIntInterpolator(var4, this.getTextOpacity()), new ColorInterpolator(var3, this.getBackgroundColor()), this.getFlags());
       }
 
-      public Display.TextDisplay.CachedInfo cacheDisplay(Display.TextDisplay.LineSplitter var1) {
+      public CachedInfo cacheDisplay(LineSplitter var1) {
          if (this.clientDisplayCache == null) {
             if (this.textRenderState != null) {
                this.clientDisplayCache = var1.split(this.textRenderState.text(), this.textRenderState.lineWidth());
             } else {
-               this.clientDisplayCache = new Display.TextDisplay.CachedInfo(List.of(), 0);
+               this.clientDisplayCache = new CachedInfo(List.of(), 0);
             }
          }
 
          return this.clientDisplayCache;
       }
 
-      public static Display.TextDisplay.Align getAlign(byte var0) {
+      public static Align getAlign(byte var0) {
          if ((var0 & 8) != 0) {
             return Display.TextDisplay.Align.LEFT;
          } else {
@@ -1073,59 +927,42 @@ public abstract class Display extends Entity {
          }
       }
 
+      static {
+         DATA_TEXT_ID = SynchedEntityData.defineId(TextDisplay.class, EntityDataSerializers.COMPONENT);
+         DATA_LINE_WIDTH_ID = SynchedEntityData.defineId(TextDisplay.class, EntityDataSerializers.INT);
+         DATA_BACKGROUND_COLOR_ID = SynchedEntityData.defineId(TextDisplay.class, EntityDataSerializers.INT);
+         DATA_TEXT_OPACITY_ID = SynchedEntityData.defineId(TextDisplay.class, EntityDataSerializers.BYTE);
+         DATA_STYLE_FLAGS_ID = SynchedEntityData.defineId(TextDisplay.class, EntityDataSerializers.BYTE);
+         TEXT_RENDER_STATE_IDS = IntSet.of(new int[]{DATA_TEXT_ID.id(), DATA_LINE_WIDTH_ID.id(), DATA_BACKGROUND_COLOR_ID.id(), DATA_TEXT_OPACITY_ID.id(), DATA_STYLE_FLAGS_ID.id()});
+      }
+
       public static enum Align implements StringRepresentable {
          CENTER("center"),
          LEFT("left"),
          RIGHT("right");
 
-         public static final Codec<Display.TextDisplay.Align> CODEC = StringRepresentable.fromEnum(Display.TextDisplay.Align::values);
+         public static final Codec<Align> CODEC = StringRepresentable.fromEnum(Align::values);
          private final String name;
 
          private Align(String var3) {
             this.name = var3;
          }
 
-         @Override
          public String getSerializedName() {
             return this.name;
          }
-      }
 
-      public static record CachedInfo(List<Display.TextDisplay.CachedLine> a, int b) {
-         private final List<Display.TextDisplay.CachedLine> lines;
-         private final int width;
-
-         public CachedInfo(List<Display.TextDisplay.CachedLine> var1, int var2) {
-            super();
-            this.lines = var1;
-            this.width = var2;
+         // $FF: synthetic method
+         private static Align[] $values() {
+            return new Align[]{CENTER, LEFT, RIGHT};
          }
       }
 
-      public static record CachedLine(FormattedCharSequence a, int b) {
-         private final FormattedCharSequence contents;
-         private final int width;
+      public static record TextRenderState(Component text, int lineWidth, IntInterpolator textOpacity, IntInterpolator backgroundColor, byte flags) {
+         final IntInterpolator textOpacity;
+         final IntInterpolator backgroundColor;
 
-         public CachedLine(FormattedCharSequence var1, int var2) {
-            super();
-            this.contents = var1;
-            this.width = var2;
-         }
-      }
-
-      @FunctionalInterface
-      public interface LineSplitter {
-         Display.TextDisplay.CachedInfo split(Component var1, int var2);
-      }
-
-      public static record TextRenderState(Component a, int b, Display.IntInterpolator c, Display.IntInterpolator d, byte e) {
-         private final Component text;
-         private final int lineWidth;
-         final Display.IntInterpolator textOpacity;
-         final Display.IntInterpolator backgroundColor;
-         private final byte flags;
-
-         public TextRenderState(Component var1, int var2, Display.IntInterpolator var3, Display.IntInterpolator var4, byte var5) {
+         public TextRenderState(Component var1, int var2, IntInterpolator var3, IntInterpolator var4, byte var5) {
             super();
             this.text = var1;
             this.lineWidth = var2;
@@ -1133,21 +970,248 @@ public abstract class Display extends Entity {
             this.backgroundColor = var4;
             this.flags = var5;
          }
+
+         public Component text() {
+            return this.text;
+         }
+
+         public int lineWidth() {
+            return this.lineWidth;
+         }
+
+         public IntInterpolator textOpacity() {
+            return this.textOpacity;
+         }
+
+         public IntInterpolator backgroundColor() {
+            return this.backgroundColor;
+         }
+
+         public byte flags() {
+            return this.flags;
+         }
+      }
+
+      public static record CachedInfo(List<CachedLine> lines, int width) {
+         public CachedInfo(List<CachedLine> var1, int var2) {
+            super();
+            this.lines = var1;
+            this.width = var2;
+         }
+
+         public List<CachedLine> lines() {
+            return this.lines;
+         }
+
+         public int width() {
+            return this.width;
+         }
+      }
+
+      @FunctionalInterface
+      public interface LineSplitter {
+         CachedInfo split(Component var1, int var2);
+      }
+
+      public static record CachedLine(FormattedCharSequence contents, int width) {
+         public CachedLine(FormattedCharSequence var1, int var2) {
+            super();
+            this.contents = var1;
+            this.width = var2;
+         }
+
+         public FormattedCharSequence contents() {
+            return this.contents;
+         }
+
+         public int width() {
+            return this.width;
+         }
       }
    }
 
-   static record TransformationInterpolator(Transformation a, Transformation b) implements Display.GenericInterpolator<Transformation> {
-      private final Transformation previous;
-      private final Transformation current;
+   public static class BlockDisplay extends Display {
+      public static final String TAG_BLOCK_STATE = "block_state";
+      private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID;
+      @Nullable
+      private BlockRenderState blockRenderState;
 
-      TransformationInterpolator(Transformation var1, Transformation var2) {
-         super();
-         this.previous = var1;
-         this.current = var2;
+      public BlockDisplay(EntityType<?> var1, Level var2) {
+         super(var1, var2);
       }
 
-      public Transformation get(float var1) {
-         return (double)var1 >= 1.0 ? this.current : this.previous.slerp(this.current, var1);
+      protected void defineSynchedData(SynchedEntityData.Builder var1) {
+         super.defineSynchedData(var1);
+         var1.define(DATA_BLOCK_STATE_ID, Blocks.AIR.defaultBlockState());
+      }
+
+      public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+         super.onSyncedDataUpdated(var1);
+         if (var1.equals(DATA_BLOCK_STATE_ID)) {
+            this.updateRenderState = true;
+         }
+
+      }
+
+      private BlockState getBlockState() {
+         return (BlockState)this.entityData.get(DATA_BLOCK_STATE_ID);
+      }
+
+      private void setBlockState(BlockState var1) {
+         this.entityData.set(DATA_BLOCK_STATE_ID, var1);
+      }
+
+      protected void readAdditionalSaveData(CompoundTag var1) {
+         super.readAdditionalSaveData(var1);
+         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
+      }
+
+      protected void addAdditionalSaveData(CompoundTag var1) {
+         super.addAdditionalSaveData(var1);
+         var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
+      }
+
+      @Nullable
+      public BlockRenderState blockRenderState() {
+         return this.blockRenderState;
+      }
+
+      protected void updateRenderSubState(boolean var1, float var2) {
+         this.blockRenderState = new BlockRenderState(this.getBlockState());
+      }
+
+      static {
+         DATA_BLOCK_STATE_ID = SynchedEntityData.defineId(BlockDisplay.class, EntityDataSerializers.BLOCK_STATE);
+      }
+
+      public static record BlockRenderState(BlockState blockState) {
+         public BlockRenderState(BlockState var1) {
+            super();
+            this.blockState = var1;
+         }
+
+         public BlockState blockState() {
+            return this.blockState;
+         }
+      }
+   }
+
+   public static class ItemDisplay extends Display {
+      private static final String TAG_ITEM = "item";
+      private static final String TAG_ITEM_DISPLAY = "item_display";
+      private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK_ID;
+      private static final EntityDataAccessor<Byte> DATA_ITEM_DISPLAY_ID;
+      private final SlotAccess slot = new SlotAccess() {
+         public ItemStack get() {
+            return ItemDisplay.this.getItemStack();
+         }
+
+         public boolean set(ItemStack var1) {
+            ItemDisplay.this.setItemStack(var1);
+            return true;
+         }
+      };
+      @Nullable
+      private ItemRenderState itemRenderState;
+
+      public ItemDisplay(EntityType<?> var1, Level var2) {
+         super(var1, var2);
+      }
+
+      protected void defineSynchedData(SynchedEntityData.Builder var1) {
+         super.defineSynchedData(var1);
+         var1.define(DATA_ITEM_STACK_ID, ItemStack.EMPTY);
+         var1.define(DATA_ITEM_DISPLAY_ID, ItemDisplayContext.NONE.getId());
+      }
+
+      public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
+         super.onSyncedDataUpdated(var1);
+         if (DATA_ITEM_STACK_ID.equals(var1) || DATA_ITEM_DISPLAY_ID.equals(var1)) {
+            this.updateRenderState = true;
+         }
+
+      }
+
+      ItemStack getItemStack() {
+         return (ItemStack)this.entityData.get(DATA_ITEM_STACK_ID);
+      }
+
+      void setItemStack(ItemStack var1) {
+         this.entityData.set(DATA_ITEM_STACK_ID, var1);
+      }
+
+      private void setItemTransform(ItemDisplayContext var1) {
+         this.entityData.set(DATA_ITEM_DISPLAY_ID, var1.getId());
+      }
+
+      private ItemDisplayContext getItemTransform() {
+         return (ItemDisplayContext)ItemDisplayContext.BY_ID.apply((Byte)this.entityData.get(DATA_ITEM_DISPLAY_ID));
+      }
+
+      protected void readAdditionalSaveData(CompoundTag var1) {
+         super.readAdditionalSaveData(var1);
+         if (var1.contains("item")) {
+            this.setItemStack((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("item")).orElse(ItemStack.EMPTY));
+         } else {
+            this.setItemStack(ItemStack.EMPTY);
+         }
+
+         if (var1.contains("item_display", 8)) {
+            DataResult var10000 = ItemDisplayContext.CODEC.decode(NbtOps.INSTANCE, var1.get("item_display"));
+            Logger var10002 = Display.LOGGER;
+            Objects.requireNonNull(var10002);
+            var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).ifPresent((var1x) -> {
+               this.setItemTransform((ItemDisplayContext)var1x.getFirst());
+            });
+         }
+
+      }
+
+      protected void addAdditionalSaveData(CompoundTag var1) {
+         super.addAdditionalSaveData(var1);
+         if (!this.getItemStack().isEmpty()) {
+            var1.put("item", this.getItemStack().save(this.registryAccess()));
+         }
+
+         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).ifSuccess((var1x) -> {
+            var1.put("item_display", var1x);
+         });
+      }
+
+      public SlotAccess getSlot(int var1) {
+         return var1 == 0 ? this.slot : SlotAccess.NULL;
+      }
+
+      @Nullable
+      public ItemRenderState itemRenderState() {
+         return this.itemRenderState;
+      }
+
+      protected void updateRenderSubState(boolean var1, float var2) {
+         ItemStack var3 = this.getItemStack();
+         var3.setEntityRepresentation(this);
+         this.itemRenderState = new ItemRenderState(var3, this.getItemTransform());
+      }
+
+      static {
+         DATA_ITEM_STACK_ID = SynchedEntityData.defineId(ItemDisplay.class, EntityDataSerializers.ITEM_STACK);
+         DATA_ITEM_DISPLAY_ID = SynchedEntityData.defineId(ItemDisplay.class, EntityDataSerializers.BYTE);
+      }
+
+      public static record ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
+         public ItemRenderState(ItemStack var1, ItemDisplayContext var2) {
+            super();
+            this.itemStack = var1;
+            this.itemTransform = var2;
+         }
+
+         public ItemStack itemStack() {
+            return this.itemStack;
+         }
+
+         public ItemDisplayContext itemTransform() {
+            return this.itemTransform;
+         }
       }
    }
 }

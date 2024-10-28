@@ -1,9 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.rootplacers;
 
-import com.mojang.datafixers.Products.P3;
+import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -18,20 +17,21 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.material.FluidState;
 
 public abstract class RootPlacer {
-   public static final Codec<RootPlacer> CODEC = BuiltInRegistries.ROOT_PLACER_TYPE.byNameCodec().dispatch(RootPlacer::type, RootPlacerType::codec);
+   public static final Codec<RootPlacer> CODEC;
    protected final IntProvider trunkOffsetY;
    protected final BlockStateProvider rootProvider;
    protected final Optional<AboveRootPlacement> aboveRootPlacement;
 
-   protected static <P extends RootPlacer> P3<Mu<P>, IntProvider, BlockStateProvider, Optional<AboveRootPlacement>> rootPlacerParts(Instance<P> var0) {
-      return var0.group(
-         IntProvider.CODEC.fieldOf("trunk_offset_y").forGetter(var0x -> var0x.trunkOffsetY),
-         BlockStateProvider.CODEC.fieldOf("root_provider").forGetter(var0x -> var0x.rootProvider),
-         AboveRootPlacement.CODEC.optionalFieldOf("above_root_placement").forGetter(var0x -> var0x.aboveRootPlacement)
-      );
+   protected static <P extends RootPlacer> Products.P3<RecordCodecBuilder.Mu<P>, IntProvider, BlockStateProvider, Optional<AboveRootPlacement>> rootPlacerParts(RecordCodecBuilder.Instance<P> var0) {
+      return var0.group(IntProvider.CODEC.fieldOf("trunk_offset_y").forGetter((var0x) -> {
+         return var0x.trunkOffsetY;
+      }), BlockStateProvider.CODEC.fieldOf("root_provider").forGetter((var0x) -> {
+         return var0x.rootProvider;
+      }), AboveRootPlacement.CODEC.optionalFieldOf("above_root_placement").forGetter((var0x) -> {
+         return var0x.aboveRootPlacement;
+      }));
    }
 
    public RootPlacer(IntProvider var1, BlockStateProvider var2, Optional<AboveRootPlacement> var3) {
@@ -43,9 +43,7 @@ public abstract class RootPlacer {
 
    protected abstract RootPlacerType<?> type();
 
-   public abstract boolean placeRoots(
-      LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos var4, BlockPos var5, TreeConfiguration var6
-   );
+   public abstract boolean placeRoots(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos var4, BlockPos var5, TreeConfiguration var6);
 
    protected boolean canPlaceRoot(LevelSimulatedReader var1, BlockPos var2) {
       return TreeFeature.validTreePos(var1, var2);
@@ -61,13 +59,16 @@ public abstract class RootPlacer {
                var2.accept(var7, this.getPotentiallyWaterloggedState(var1, var7, var6.aboveRootProvider().getState(var3, var7)));
             }
          }
+
       }
    }
 
    protected BlockState getPotentiallyWaterloggedState(LevelSimulatedReader var1, BlockPos var2, BlockState var3) {
       if (var3.hasProperty(BlockStateProperties.WATERLOGGED)) {
-         boolean var4 = var1.isFluidAtPosition(var2, var0 -> var0.is(FluidTags.WATER));
-         return var3.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var4));
+         boolean var4 = var1.isFluidAtPosition(var2, (var0) -> {
+            return var0.is(FluidTags.WATER);
+         });
+         return (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, var4);
       } else {
          return var3;
       }
@@ -75,5 +76,9 @@ public abstract class RootPlacer {
 
    public BlockPos getTrunkOrigin(BlockPos var1, RandomSource var2) {
       return var1.above(this.trunkOffsetY.sample(var2));
+   }
+
+   static {
+      CODEC = BuiltInRegistries.ROOT_PLACER_TYPE.byNameCodec().dispatch(RootPlacer::type, RootPlacerType::codec);
    }
 }

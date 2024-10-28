@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -40,10 +41,9 @@ public class PathFinder {
       if (var7 == null) {
          return null;
       } else {
-         Map var8 = var3.stream()
-            .collect(
-               Collectors.toMap(var1x -> this.nodeEvaluator.getTarget((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ()), Function.identity())
-            );
+         Map var8 = (Map)var3.stream().collect(Collectors.toMap((var1x) -> {
+            return this.nodeEvaluator.getTarget((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ());
+         }, Function.identity()));
          Path var9 = this.findPath(var1.getProfiler(), var7, var8, var4, var5, var6);
          this.nodeEvaluator.done();
          return var9;
@@ -66,15 +66,18 @@ public class PathFinder {
       int var11 = (int)((float)this.maxVisitedNodes * var6);
 
       while(!this.openSet.isEmpty()) {
-         if (++var9 >= var11) {
+         ++var9;
+         if (var9 >= var11) {
             break;
          }
 
          Node var12 = this.openSet.pop();
          var12.closed = true;
+         Iterator var13 = var7.iterator();
 
-         for(Target var14 : var7) {
-            if (var12.distanceManhattan(var14) <= (float)var5) {
+         while(var13.hasNext()) {
+            Target var14 = (Target)var13.next();
+            if (var12.distanceManhattan((Node)var14) <= (float)var5) {
                var14.setReached();
                var10.add(var14);
             }
@@ -87,8 +90,8 @@ public class PathFinder {
          if (!(var12.distanceTo(var2) >= var4)) {
             int var19 = this.nodeEvaluator.getNeighbors(this.neighbors, var12);
 
-            for(int var20 = 0; var20 < var19; ++var20) {
-               Node var15 = this.neighbors[var20];
+            for(int var21 = 0; var21 < var19; ++var21) {
+               Node var15 = this.neighbors[var21];
                float var16 = this.distance(var12, var15);
                var15.walkedDistance = var12.walkedDistance + var16;
                float var17 = var12.g + var16 + var15.costMalus;
@@ -107,15 +110,18 @@ public class PathFinder {
          }
       }
 
-      Optional var18 = !var10.isEmpty()
-         ? var10.stream()
-            .map(var2x -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var3.get(var2x), true))
-            .min(Comparator.comparingInt(Path::getNodeCount))
-         : var7.stream()
-            .map(var2x -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var3.get(var2x), false))
-            .min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
+      Optional var18 = !var10.isEmpty() ? var10.stream().map((var2x) -> {
+         return this.reconstructPath(var2x.getBestNode(), (BlockPos)var3.get(var2x), true);
+      }).min(Comparator.comparingInt(Path::getNodeCount)) : var7.stream().map((var2x) -> {
+         return this.reconstructPath(var2x.getBestNode(), (BlockPos)var3.get(var2x), false);
+      }).min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
       var1.pop();
-      return var18.isEmpty() ? null : (Path)var18.get();
+      if (var18.isEmpty()) {
+         return null;
+      } else {
+         Path var20 = (Path)var18.get();
+         return var20;
+      }
    }
 
    protected float distance(Node var1, Node var2) {
@@ -125,10 +131,11 @@ public class PathFinder {
    private float getBestH(Node var1, Set<Target> var2) {
       float var3 = 3.4028235E38F;
 
-      for(Target var5 : var2) {
-         float var6 = var1.distanceTo(var5);
+      float var6;
+      for(Iterator var4 = var2.iterator(); var4.hasNext(); var3 = Math.min(var6, var3)) {
+         Target var5 = (Target)var4.next();
+         var6 = var1.distanceTo((Node)var5);
          var5.updateBest(var6, var1);
-         var3 = Math.min(var6, var3);
       }
 
       return var3;
@@ -145,5 +152,10 @@ public class PathFinder {
       }
 
       return new Path(var4, var2, var3);
+   }
+
+   // $FF: synthetic method
+   private static Node[] lambda$findPath$3(int var0) {
+      return new Node[var0];
    }
 }

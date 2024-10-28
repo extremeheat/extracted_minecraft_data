@@ -11,7 +11,6 @@ public class ToggleKeyMapping extends KeyMapping {
       this.needsToggle = var4;
    }
 
-   @Override
    public void setDown(boolean var1) {
       if (this.needsToggle.getAsBoolean()) {
          if (var1) {
@@ -20,6 +19,7 @@ public class ToggleKeyMapping extends KeyMapping {
       } else {
          super.setDown(var1);
       }
+
    }
 
    protected void reset() {

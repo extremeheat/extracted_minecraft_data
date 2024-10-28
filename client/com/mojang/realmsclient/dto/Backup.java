@@ -6,8 +6,9 @@ import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 import org.slf4j.Logger;
 
 public class Backup extends ValueObject {
@@ -33,8 +34,11 @@ public class Backup extends ValueObject {
          var2.size = JsonUtils.getLongOr("size", var1, 0L);
          if (var1.has("metadata")) {
             JsonObject var3 = var1.getAsJsonObject("metadata");
+            Set var4 = var3.entrySet();
+            Iterator var5 = var4.iterator();
 
-            for(Entry var6 : var3.entrySet()) {
+            while(var5.hasNext()) {
+               Map.Entry var6 = (Map.Entry)var5.next();
                if (!((JsonElement)var6.getValue()).isJsonNull()) {
                   var2.metadata.put((String)var6.getKey(), ((JsonElement)var6.getValue()).getAsString());
                }

@@ -11,9 +11,7 @@ import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
 
 public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandMinecartPacket> STREAM_CODEC = Packet.codec(
-      ServerboundSetCommandMinecartPacket::write, ServerboundSetCommandMinecartPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandMinecartPacket> STREAM_CODEC = Packet.codec(ServerboundSetCommandMinecartPacket::write, ServerboundSetCommandMinecartPacket::new);
    private final int entity;
    private final String command;
    private final boolean trackOutput;
@@ -38,7 +36,6 @@ public class ServerboundSetCommandMinecartPacket implements Packet<ServerGamePac
       var1.writeBoolean(this.trackOutput);
    }
 
-   @Override
    public PacketType<ServerboundSetCommandMinecartPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_COMMAND_MINECART;
    }

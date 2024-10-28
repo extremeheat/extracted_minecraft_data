@@ -29,6 +29,7 @@ public class RecipeBook {
       if (!var1.value().isSpecial()) {
          this.add(var1.id());
       }
+
    }
 
    protected void add(ResourceLocation var1) {

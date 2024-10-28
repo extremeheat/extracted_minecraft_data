@@ -1,5 +1,6 @@
 package net.minecraft.util.random;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.Util;
@@ -13,8 +14,9 @@ public class WeightedRandom {
    public static int getTotalWeight(List<? extends WeightedEntry> var0) {
       long var1 = 0L;
 
-      for(WeightedEntry var4 : var0) {
-         var1 += (long)var4.getWeight().asInt();
+      WeightedEntry var4;
+      for(Iterator var3 = var0.iterator(); var3.hasNext(); var1 += (long)var4.getWeight().asInt()) {
+         var4 = (WeightedEntry)var3.next();
       }
 
       if (var1 > 2147483647L) {
@@ -36,14 +38,19 @@ public class WeightedRandom {
    }
 
    public static <T extends WeightedEntry> Optional<T> getWeightedItem(List<T> var0, int var1) {
-      for(WeightedEntry var3 : var0) {
-         var1 -= var3.getWeight().asInt();
-         if (var1 < 0) {
-            return Optional.of((T)var3);
-         }
-      }
+      Iterator var2 = var0.iterator();
 
-      return Optional.empty();
+      WeightedEntry var3;
+      do {
+         if (!var2.hasNext()) {
+            return Optional.empty();
+         }
+
+         var3 = (WeightedEntry)var2.next();
+         var1 -= var3.getWeight().asInt();
+      } while(var1 >= 0);
+
+      return Optional.of(var3);
    }
 
    public static <T extends WeightedEntry> Optional<T> getRandomItem(RandomSource var0, List<T> var1) {

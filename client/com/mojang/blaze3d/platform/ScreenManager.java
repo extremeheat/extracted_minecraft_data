@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWMonitorCallback;
+import org.lwjgl.glfw.GLFWMonitorCallbackI;
 import org.slf4j.Logger;
 
 public class ScreenManager {
@@ -28,6 +29,7 @@ public class ScreenManager {
             this.monitors.put(var4, var1.createMonitor(var4));
          }
       }
+
    }
 
    private void onMonitorChange(long var1, int var3) {
@@ -39,6 +41,7 @@ public class ScreenManager {
          this.monitors.remove(var1);
          LOGGER.debug("Monitor {} disconnected. Current monitors: {}", var1, this.monitors);
       }
+
    }
 
    @Nullable
@@ -100,9 +103,10 @@ public class ScreenManager {
 
    public void shutdown() {
       RenderSystem.assertOnRenderThread();
-      GLFWMonitorCallback var1 = GLFW.glfwSetMonitorCallback(null);
+      GLFWMonitorCallback var1 = GLFW.glfwSetMonitorCallback((GLFWMonitorCallbackI)null);
       if (var1 != null) {
          var1.free();
       }
+
    }
 }

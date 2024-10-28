@@ -24,7 +24,6 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
       this.tutorial = var1;
    }
 
-   @Override
    public void tick() {
       ++this.timeWaiting;
       if (!this.tutorial.isSurvival()) {
@@ -49,18 +48,18 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
             this.toast = new TutorialToast(TutorialToast.Icons.TREE, TITLE, DESCRIPTION, true);
             this.tutorial.getMinecraft().getToasts().addToast(this.toast);
          }
+
       }
    }
 
-   @Override
    public void clear() {
       if (this.toast != null) {
          this.toast.hide();
          this.toast = null;
       }
+
    }
 
-   @Override
    public void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
       boolean var5 = var3.is(BlockTags.LOGS);
       if (var5 && var4 > 0.0F) {
@@ -76,9 +75,9 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
       } else if (var5) {
          ++this.resetCount;
       }
+
    }
 
-   @Override
    public void onGetItem(ItemStack var1) {
       if (var1.is(ItemTags.LOGS)) {
          this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);

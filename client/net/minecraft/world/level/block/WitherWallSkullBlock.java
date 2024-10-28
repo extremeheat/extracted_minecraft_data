@@ -12,7 +12,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class WitherWallSkullBlock extends WallSkullBlock {
    public static final MapCodec<WitherWallSkullBlock> CODEC = simpleCodec(WitherWallSkullBlock::new);
 
-   @Override
    public MapCodec<WitherWallSkullBlock> codec() {
       return CODEC;
    }
@@ -21,7 +20,6 @@ public class WitherWallSkullBlock extends WallSkullBlock {
       super(SkullBlock.Types.WITHER_SKELETON, var1);
    }
 
-   @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
       WitherSkullBlock.checkSpawn(var1, var2);
    }

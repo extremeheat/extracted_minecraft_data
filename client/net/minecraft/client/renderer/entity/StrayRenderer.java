@@ -11,10 +11,10 @@ public class StrayRenderer extends SkeletonRenderer<Stray> {
 
    public StrayRenderer(EntityRendererProvider.Context var1) {
       super(var1, ModelLayers.STRAY, ModelLayers.STRAY_INNER_ARMOR, ModelLayers.STRAY_OUTER_ARMOR);
-      this.addLayer(new SkeletonClothingLayer<>(this, var1.getModelSet(), ModelLayers.STRAY_OUTER_LAYER, STRAY_CLOTHES_LOCATION));
+      this.addLayer(new SkeletonClothingLayer(this, var1.getModelSet(), ModelLayers.STRAY_OUTER_LAYER, STRAY_CLOTHES_LOCATION));
    }
 
    public ResourceLocation getTextureLocation(Stray var1) {
-      return var1.isPotato() ? SkeletonRenderer.SKELETON_LOCATION : STRAY_SKELETON_LOCATION;
+      return STRAY_SKELETON_LOCATION;
    }
 }

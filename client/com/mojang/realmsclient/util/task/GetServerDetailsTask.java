@@ -40,7 +40,6 @@ public class GetServerDetailsTask extends LongRunningTask {
       this.server = var2;
    }
 
-   @Override
    public void run() {
       RealmsServerAddress var1;
       try {
@@ -49,19 +48,13 @@ public class GetServerDetailsTask extends LongRunningTask {
          LOGGER.info("User aborted connecting to realms");
          return;
       } catch (RealmsServiceException var5) {
-         switch(var5.realmsError.errorCode()) {
+         switch (var5.realmsError.errorCode()) {
             case 6002:
                setScreen(new RealmsTermsScreen(this.lastScreen, this.server));
                return;
             case 6006:
                boolean var3 = Minecraft.getInstance().isLocalPlayer(this.server.ownerUUID);
-               setScreen(
-                  (Screen)(var3
-                     ? new RealmsBrokenWorldScreen(this.lastScreen, this.server.id, this.server.worldType == RealmsServer.WorldType.MINIGAME)
-                     : new RealmsGenericErrorScreen(
-                        Component.translatable("mco.brokenworld.nonowner.title"), Component.translatable("mco.brokenworld.nonowner.error"), this.lastScreen
-                     ))
-               );
+               setScreen((Screen)(var3 ? new RealmsBrokenWorldScreen(this.lastScreen, this.server.id, this.server.worldType == RealmsServer.WorldType.MINIGAME) : new RealmsGenericErrorScreen(Component.translatable("mco.brokenworld.nonowner.title"), Component.translatable("mco.brokenworld.nonowner.error"), this.lastScreen)));
                return;
             default:
                this.error(var5);
@@ -83,20 +76,18 @@ public class GetServerDetailsTask extends LongRunningTask {
    }
 
    private static UUID generatePackId(RealmsServer var0) {
-      return var0.minigameName != null
-         ? UUID.nameUUIDFromBytes(("minigame:" + var0.minigameName).getBytes(StandardCharsets.UTF_8))
-         : UUID.nameUUIDFromBytes(("realms:" + var0.name + ":" + var0.activeSlot).getBytes(StandardCharsets.UTF_8));
+      return var0.minigameName != null ? UUID.nameUUIDFromBytes(("minigame:" + var0.minigameName).getBytes(StandardCharsets.UTF_8)) : UUID.nameUUIDFromBytes(("realms:" + var0.name + ":" + var0.activeSlot).getBytes(StandardCharsets.UTF_8));
    }
 
-   @Override
    public Component getTitle() {
       return TITLE;
    }
 
    private RealmsServerAddress fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
       RealmsClient var1 = RealmsClient.create();
+      int var2 = 0;
 
-      for(int var2 = 0; var2 < 40; ++var2) {
+      while(var2 < 40) {
          if (this.aborted()) {
             throw new CancellationException();
          }
@@ -105,6 +96,7 @@ public class GetServerDetailsTask extends LongRunningTask {
             return var1.join(this.server.id);
          } catch (RetryCallException var4) {
             pause((long)var4.delaySeconds);
+            ++var2;
          }
       }
 
@@ -116,37 +108,34 @@ public class GetServerDetailsTask extends LongRunningTask {
    }
 
    private RealmsLongConfirmationScreen resourcePackDownloadConfirmationScreen(RealmsServerAddress var1, UUID var2, Function<RealmsServerAddress, Screen> var3) {
-      BooleanConsumer var4 = var4x -> {
+      BooleanConsumer var4 = (var4x) -> {
          if (!var4x) {
             setScreen(this.lastScreen);
          } else {
             setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
-            this.scheduleResourcePackDownload(var1, var2).thenRun(() -> setScreen((Screen)var3.apply(var1))).exceptionally(var2xx -> {
+            this.scheduleResourcePackDownload(var1, var2).thenRun(() -> {
+               setScreen((Screen)var3.apply(var1));
+            }).exceptionally((var2x) -> {
                Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
-               LOGGER.error("Failed to download resource pack from {}", var1, var2xx);
+               LOGGER.error("Failed to download resource pack from {}", var1, var2x);
                setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.download.resourcePack.fail"), this.lastScreen));
                return null;
             });
          }
       };
-      return new RealmsLongConfirmationScreen(
-         var4,
-         RealmsLongConfirmationScreen.Type.INFO,
-         Component.translatable("mco.configure.world.resourcepack.question.line1"),
-         Component.translatable("mco.configure.world.resourcepack.question.line2"),
-         true
-      );
+      return new RealmsLongConfirmationScreen(var4, RealmsLongConfirmationScreen.Type.INFO, Component.translatable("mco.configure.world.resourcepack.question.line1"), Component.translatable("mco.configure.world.resourcepack.question.line2"), true);
    }
 
    private CompletableFuture<?> scheduleResourcePackDownload(RealmsServerAddress var1, UUID var2) {
+      CompletableFuture var4;
       try {
          DownloadedPackSource var3 = Minecraft.getInstance().getDownloadedPackSource();
-         CompletableFuture var6 = var3.waitForPackFeedback(var2);
+         var4 = var3.waitForPackFeedback(var2);
          var3.allowServerPacks();
          var3.pushPack(var2, new URL(var1.resourcePackUrl), var1.resourcePackHash);
-         return var6;
+         return var4;
       } catch (Exception var5) {
-         CompletableFuture var4 = new CompletableFuture();
+         var4 = new CompletableFuture();
          var4.completeExceptionally(var5);
          return var4;
       }

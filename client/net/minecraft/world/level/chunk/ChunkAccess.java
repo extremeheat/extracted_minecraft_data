@@ -14,7 +14,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -35,7 +34,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
@@ -68,6 +66,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    private volatile boolean isLightCorrect;
    protected final ChunkPos chunkPos;
    private long inhabitedTime;
+   /** @deprecated */
    @Nullable
    @Deprecated
    private BiomeGenerationSettings carverBiomeSettings;
@@ -84,29 +83,12 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    protected final Map<BlockPos, BlockEntity> blockEntities = new Object2ObjectOpenHashMap();
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
-   private final boolean certainPotato;
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   public ChunkAccess(
-      ChunkPos var1,
-      UpgradeData var2,
-      LevelHeightAccessor var3,
-      Registry<Biome> var4,
-      long var5,
-      @Nullable LevelChunkSection[] var7,
-      @Nullable BlendingData var8
-   ) {
+   public ChunkAccess(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, Registry<Biome> var4, long var5, @Nullable LevelChunkSection[] var7, @Nullable BlendingData var8) {
       super();
       this.chunkPos = var1;
       this.upgradeData = var2;
       this.levelHeightAccessor = var3;
-      if (var3 instanceof Level var9) {
-         this.certainPotato = var9.isPotato();
-      } else {
-         this.certainPotato = false;
-      }
-
       this.sections = new LevelChunkSection[var3.getSectionsCount()];
       this.inhabitedTime = var5;
       this.postProcessing = new ShortList[var3.getSectionsCount()];
@@ -123,17 +105,13 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       replaceMissingSections(var4, this.sections);
    }
 
-   @Override
-   public boolean isPotato() {
-      return this.certainPotato;
-   }
-
    private static void replaceMissingSections(Registry<Biome> var0, LevelChunkSection[] var1) {
       for(int var2 = 0; var2 < var1.length; ++var2) {
          if (var1[var2] == null) {
             var1[var2] = new LevelChunkSection(var0);
          }
       }
+
    }
 
    public GameEventListenerRegistry getListenerRegistry(int var1) {
@@ -160,6 +138,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return -1;
    }
 
+   /** @deprecated */
    @Deprecated(
       forRemoval = true
    )
@@ -182,7 +161,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.getSections()[var1];
    }
 
-   public Collection<Entry<Heightmap.Types, Heightmap>> getHeightmaps() {
+   public Collection<Map.Entry<Heightmap.Types, Heightmap>> getHeightmaps() {
       return Collections.unmodifiableSet(this.heightmaps.entrySet());
    }
 
@@ -191,7 +170,9 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    }
 
    public Heightmap getOrCreateHeightmapUnprimed(Heightmap.Types var1) {
-      return this.heightmaps.computeIfAbsent(var1, var1x -> new Heightmap(this, var1x));
+      return (Heightmap)this.heightmaps.computeIfAbsent(var1, (var1x) -> {
+         return new Heightmap(this, var1x);
+      });
    }
 
    public boolean hasPrimedHeightmap(Heightmap.Types var1) {
@@ -199,14 +180,14 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    }
 
    public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      Heightmap var4 = this.heightmaps.get(var1);
+      Heightmap var4 = (Heightmap)this.heightmaps.get(var1);
       if (var4 == null) {
          if (SharedConstants.IS_RUNNING_IN_IDE && this instanceof LevelChunk) {
-            LOGGER.error("Unprimed heightmap: " + var1 + " " + var2 + " " + var3);
+            LOGGER.error("Unprimed heightmap: " + String.valueOf(var1) + " " + var2 + " " + var3);
          }
 
          Heightmap.primeHeightmaps(this, EnumSet.of(var1));
-         var4 = this.heightmaps.get(var1);
+         var4 = (Heightmap)this.heightmaps.get(var1);
       }
 
       return var4.getFirstAvailable(var2 & 15, var3 & 15) - 1;
@@ -217,12 +198,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    }
 
    @Nullable
-   @Override
    public StructureStart getStartForStructure(Structure var1) {
-      return this.structureStarts.get(var1);
+      return (StructureStart)this.structureStarts.get(var1);
    }
 
-   @Override
    public void setStartForStructure(Structure var1, StructureStart var2) {
       this.structureStarts.put(var1, var2);
       this.unsaved = true;
@@ -238,23 +217,21 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       this.unsaved = true;
    }
 
-   @Override
    public LongSet getReferencesForStructure(Structure var1) {
       return (LongSet)this.structuresRefences.getOrDefault(var1, EMPTY_REFERENCE_SET);
    }
 
-   @Override
    public void addReferenceForStructure(Structure var1, long var2) {
-      ((LongSet)this.structuresRefences.computeIfAbsent(var1, var0 -> new LongOpenHashSet())).add(var2);
+      ((LongSet)this.structuresRefences.computeIfAbsent(var1, (var0) -> {
+         return new LongOpenHashSet();
+      })).add(var2);
       this.unsaved = true;
    }
 
-   @Override
    public Map<Structure, LongSet> getAllReferences() {
       return Collections.unmodifiableMap(this.structuresRefences);
    }
 
-   @Override
    public void setAllReferences(Map<Structure, LongSet> var1) {
       this.structuresRefences.clear();
       this.structuresRefences.putAll(var1);
@@ -320,15 +297,16 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
 
    @Nullable
    public CompoundTag getBlockEntityNbt(BlockPos var1) {
-      return this.pendingBlockEntities.get(var1);
+      return (CompoundTag)this.pendingBlockEntities.get(var1);
    }
 
    @Nullable
    public abstract CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2);
 
-   @Override
    public final void findBlockLightSources(BiConsumer<BlockPos, BlockState> var1) {
-      this.findBlocks(var0 -> var0.getLightEmission() != 0, var1);
+      this.findBlocks((var0) -> {
+         return var0.getLightEmission() != 0;
+      }, var1);
    }
 
    public void findBlocks(Predicate<BlockState> var1, BiConsumer<BlockPos, BlockState> var2) {
@@ -351,13 +329,14 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
             }
          }
       }
+
    }
 
    public abstract TickContainerAccess<Block> getBlockTicks();
 
    public abstract TickContainerAccess<Fluid> getFluidTicks();
 
-   public abstract ChunkAccess.TicksToSave getTicksForSerialization();
+   public abstract TicksToSave getTicksForSerialization();
 
    public UpgradeData getUpgradeData() {
       return this.upgradeData;
@@ -405,12 +384,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       this.setUnsaved(true);
    }
 
-   @Override
    public int getMinBuildHeight() {
       return this.levelHeightAccessor.getMinBuildHeight();
    }
 
-   @Override
    public int getHeight() {
       return this.levelHeightAccessor.getHeight();
    }
@@ -423,6 +400,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.noiseChunk;
    }
 
+   /** @deprecated */
    @Deprecated
    public BiomeGenerationSettings carverBiome(Supplier<BiomeGenerationSettings> var1) {
       if (this.carverBiomeSettings == null) {
@@ -432,7 +410,6 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       return this.carverBiomeSettings;
    }
 
-   @Override
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
       try {
          int var4 = QuartPos.fromBlock(this.getMinBuildHeight());
@@ -443,7 +420,9 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       } catch (Throwable var8) {
          CrashReport var5 = CrashReport.forThrowable(var8, "Getting biome");
          CrashReportCategory var6 = var5.addCategory("Biome being got");
-         var6.setDetail("Location", () -> CrashReportCategory.formatLocation(this, var1, var2, var3));
+         var6.setDetail("Location", () -> {
+            return CrashReportCategory.formatLocation(this, var1, var2, var3);
+         });
          throw new ReportedException(var5);
       }
    }
@@ -459,6 +438,7 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
          int var9 = QuartPos.fromSection(var7);
          var8.fillBiomesFromNoise(var1, var2, var4, var9, var5);
       }
+
    }
 
    public boolean hasAnyStructureReferences() {
@@ -482,19 +462,23 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       this.skyLightSources.fillFrom(this);
    }
 
-   @Override
    public ChunkSkyLightSources getSkyLightSources() {
       return this.skyLightSources;
    }
 
-   public static record TicksToSave(SerializableTickContainer<Block> a, SerializableTickContainer<Fluid> b) {
-      private final SerializableTickContainer<Block> blocks;
-      private final SerializableTickContainer<Fluid> fluids;
-
+   public static record TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
       public TicksToSave(SerializableTickContainer<Block> var1, SerializableTickContainer<Fluid> var2) {
          super();
          this.blocks = var1;
          this.fluids = var2;
+      }
+
+      public SerializableTickContainer<Block> blocks() {
+         return this.blocks;
+      }
+
+      public SerializableTickContainer<Fluid> fluids() {
+         return this.fluids;
       }
    }
 }

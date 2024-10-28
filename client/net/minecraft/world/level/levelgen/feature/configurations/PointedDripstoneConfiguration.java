@@ -2,18 +2,19 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
 public class PointedDripstoneConfiguration implements FeatureConfiguration {
-   public static final Codec<PointedDripstoneConfiguration> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_taller_dripstone").orElse(0.2F).forGetter(var0x -> var0x.chanceOfTallerDripstone),
-               Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_directional_spread").orElse(0.7F).forGetter(var0x -> var0x.chanceOfDirectionalSpread),
-               Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_spread_radius2").orElse(0.5F).forGetter(var0x -> var0x.chanceOfSpreadRadius2),
-               Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_spread_radius3").orElse(0.5F).forGetter(var0x -> var0x.chanceOfSpreadRadius3)
-            )
-            .apply(var0, PointedDripstoneConfiguration::new)
-   );
+   public static final Codec<PointedDripstoneConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
+      return var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_taller_dripstone").orElse(0.2F).forGetter((var0x) -> {
+         return var0x.chanceOfTallerDripstone;
+      }), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_directional_spread").orElse(0.7F).forGetter((var0x) -> {
+         return var0x.chanceOfDirectionalSpread;
+      }), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_spread_radius2").orElse(0.5F).forGetter((var0x) -> {
+         return var0x.chanceOfSpreadRadius2;
+      }), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_spread_radius3").orElse(0.5F).forGetter((var0x) -> {
+         return var0x.chanceOfSpreadRadius3;
+      })).apply(var0, PointedDripstoneConfiguration::new);
+   });
    public final float chanceOfTallerDripstone;
    public final float chanceOfDirectionalSpread;
    public final float chanceOfSpreadRadius2;

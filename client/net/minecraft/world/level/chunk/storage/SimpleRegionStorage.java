@@ -46,7 +46,6 @@ public class SimpleRegionStorage implements AutoCloseable {
       return this.worker.synchronize(var1);
    }
 
-   @Override
    public void close() throws IOException {
       this.worker.close();
    }

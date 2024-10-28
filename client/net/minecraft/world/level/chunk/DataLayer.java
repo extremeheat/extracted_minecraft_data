@@ -101,7 +101,6 @@ public class DataLayer {
       return this.data == null ? new DataLayer(this.defaultValue) : new DataLayer((byte[])this.data.clone());
    }
 
-   @Override
    public String toString() {
       StringBuilder var1 = new StringBuilder();
 
@@ -111,7 +110,7 @@ public class DataLayer {
             var1.append("\n");
          }
 
-         if ((var2 & 0xFF) == 255) {
+         if ((var2 & 255) == 255) {
             var1.append("\n");
          }
       }

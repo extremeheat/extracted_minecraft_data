@@ -14,7 +14,6 @@ public class BlockEntityKeepPacked extends NamedEntityFix {
       return var0.set("keepPacked", var0.createBoolean(true));
    }
 
-   @Override
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), BlockEntityKeepPacked::fixTag);
    }

@@ -9,6 +9,7 @@ public interface ParticleOptions {
 
    String writeToString(HolderLookup.Provider var1);
 
+   /** @deprecated */
    @Deprecated
    public interface Deserializer<T extends ParticleOptions> {
       T fromCommand(ParticleType<T> var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException;

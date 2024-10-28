@@ -16,6 +16,11 @@ public enum ClientRegistryLayer {
    }
 
    public static LayeredRegistryAccess<ClientRegistryLayer> createRegistryAccess() {
-      return new LayeredRegistryAccess<>(VALUES).replaceFrom(STATIC, STATIC_ACCESS);
+      return (new LayeredRegistryAccess(VALUES)).replaceFrom(STATIC, (RegistryAccess.Frozen[])(STATIC_ACCESS));
+   }
+
+   // $FF: synthetic method
+   private static ClientRegistryLayer[] $values() {
+      return new ClientRegistryLayer[]{STATIC, REMOTE};
    }
 }

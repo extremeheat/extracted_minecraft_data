@@ -7,9 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.InteractionHand;
 
 public class ServerboundUseItemPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundUseItemPacket> STREAM_CODEC = Packet.codec(
-      ServerboundUseItemPacket::write, ServerboundUseItemPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ServerboundUseItemPacket> STREAM_CODEC = Packet.codec(ServerboundUseItemPacket::write, ServerboundUseItemPacket::new);
    private final InteractionHand hand;
    private final int sequence;
 
@@ -21,7 +19,7 @@ public class ServerboundUseItemPacket implements Packet<ServerGamePacketListener
 
    private ServerboundUseItemPacket(FriendlyByteBuf var1) {
       super();
-      this.hand = var1.readEnum(InteractionHand.class);
+      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
       this.sequence = var1.readVarInt();
    }
 
@@ -30,7 +28,6 @@ public class ServerboundUseItemPacket implements Packet<ServerGamePacketListener
       var1.writeVarInt(this.sequence);
    }
 
-   @Override
    public PacketType<ServerboundUseItemPacket> type() {
       return GamePacketTypes.SERVERBOUND_USE_ITEM;
    }

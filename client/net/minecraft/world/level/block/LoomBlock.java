@@ -7,7 +7,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.LoomMenu;
@@ -22,7 +21,6 @@ public class LoomBlock extends HorizontalDirectionalBlock {
    public static final MapCodec<LoomBlock> CODEC = simpleCodec(LoomBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.loom");
 
-   @Override
    public MapCodec<LoomBlock> codec() {
       return CODEC;
    }
@@ -31,7 +29,6 @@ public class LoomBlock extends HorizontalDirectionalBlock {
       super(var1);
    }
 
-   @Override
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
@@ -42,17 +39,16 @@ public class LoomBlock extends HorizontalDirectionalBlock {
       }
    }
 
-   @Override
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new LoomMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> {
+         return new LoomMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
+      }, CONTAINER_TITLE);
    }
 
-   @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 
-   @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING);
    }

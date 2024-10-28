@@ -17,7 +17,6 @@ public class LeapAtTargetGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
 
-   @Override
    public boolean canUse() {
       if (this.mob.hasControllingPassenger()) {
          return false;
@@ -27,23 +26,23 @@ public class LeapAtTargetGoal extends Goal {
             return false;
          } else {
             double var1 = this.mob.distanceToSqr(this.target);
-            if (var1 < 4.0 || var1 > 16.0) {
-               return false;
-            } else if (!this.mob.onGround()) {
-               return false;
+            if (!(var1 < 4.0) && !(var1 > 16.0)) {
+               if (!this.mob.onGround()) {
+                  return false;
+               } else {
+                  return this.mob.getRandom().nextInt(reducedTickDelay(5)) == 0;
+               }
             } else {
-               return this.mob.getRandom().nextInt(reducedTickDelay(5)) == 0;
+               return false;
             }
          }
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.mob.onGround();
    }
 
-   @Override
    public void start() {
       Vec3 var1 = this.mob.getDeltaMovement();
       Vec3 var2 = new Vec3(this.target.getX() - this.mob.getX(), 0.0, this.target.getZ() - this.mob.getZ());

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -13,6 +12,7 @@ import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.level.entity.EntityAccess;
 import net.minecraft.world.phys.Vec3;
 
 public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
@@ -26,7 +26,6 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
    }
 
    @Nullable
-   @Override
    protected Vec3 getPosition() {
       float var2 = this.mob.level().random.nextFloat();
       if (this.mob.level().random.nextFloat() < 0.3F) {
@@ -81,7 +80,9 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
    @Nullable
    private SectionPos getRandomVillageSection() {
       ServerLevel var1 = (ServerLevel)this.mob.level();
-      List var2 = SectionPos.cube(SectionPos.of(this.mob), 2).filter(var1x -> var1.sectionsToVillage(var1x) == 0).collect(Collectors.toList());
+      List var2 = (List)SectionPos.cube(SectionPos.of((EntityAccess)this.mob), 2).filter((var1x) -> {
+         return var1.sectionsToVillage(var1x) == 0;
+      }).collect(Collectors.toList());
       return var2.isEmpty() ? null : (SectionPos)var2.get(var1.random.nextInt(var2.size()));
    }
 
@@ -89,7 +90,9 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
    private BlockPos getRandomPoiWithinSection(SectionPos var1) {
       ServerLevel var2 = (ServerLevel)this.mob.level();
       PoiManager var3 = var2.getPoiManager();
-      List var4 = var3.getInRange(var0 -> true, var1.center(), 8, PoiManager.Occupancy.IS_OCCUPIED).map(PoiRecord::getPos).collect(Collectors.toList());
+      List var4 = (List)var3.getInRange((var0) -> {
+         return true;
+      }, var1.center(), 8, PoiManager.Occupancy.IS_OCCUPIED).map(PoiRecord::getPos).collect(Collectors.toList());
       return var4.isEmpty() ? null : (BlockPos)var4.get(var2.random.nextInt(var4.size()));
    }
 

@@ -1,9 +1,11 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.util.Objects;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -12,7 +14,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -51,14 +53,14 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
    private static final int WARDEN_SPAWN_RANGE_Y = 6;
    private static final int DARKNESS_RADIUS = 40;
    private static final int SHRIEKING_TICKS = 90;
-   private static final Int2ObjectMap<SoundEvent> SOUND_BY_LEVEL = Util.make(new Int2ObjectOpenHashMap(), var0 -> {
+   private static final Int2ObjectMap<SoundEvent> SOUND_BY_LEVEL = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(), (var0) -> {
       var0.put(1, SoundEvents.WARDEN_NEARBY_CLOSE);
       var0.put(2, SoundEvents.WARDEN_NEARBY_CLOSER);
       var0.put(3, SoundEvents.WARDEN_NEARBY_CLOSEST);
       var0.put(4, SoundEvents.WARDEN_LISTENING_ANGRY);
    });
    private int warningLevel;
-   private final VibrationSystem.User vibrationUser = new SculkShriekerBlockEntity.VibrationUser();
+   private final VibrationSystem.User vibrationUser = new VibrationUser();
    private VibrationSystem.Data vibrationData = new VibrationSystem.Data();
    private final VibrationSystem.Listener vibrationListener = new VibrationSystem.Listener(this);
 
@@ -66,66 +68,67 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       super(BlockEntityType.SCULK_SHRIEKER, var1, var2);
    }
 
-   @Override
    public VibrationSystem.Data getVibrationData() {
       return this.vibrationData;
    }
 
-   @Override
    public VibrationSystem.User getVibrationUser() {
       return this.vibrationUser;
    }
 
-   @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("warning_level", 99)) {
          this.warningLevel = var1.getInt("warning_level");
       }
 
       if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")))
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(var1x -> this.vibrationData = var1x);
+         DataResult var10000 = VibrationSystem.Data.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")));
+         Logger var10001 = LOGGER;
+         Objects.requireNonNull(var10001);
+         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+            this.vibrationData = var1x;
+         });
       }
+
    }
 
-   @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("warning_level", this.warningLevel);
-      VibrationSystem.Data.CODEC
-         .encodeStart(NbtOps.INSTANCE, this.vibrationData)
-         .resultOrPartial(LOGGER::error)
-         .ifPresent(var1x -> var1.put("listener", var1x));
+      DataResult var10000 = VibrationSystem.Data.CODEC.encodeStart(NbtOps.INSTANCE, this.vibrationData);
+      Logger var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         var1.put("listener", var1x);
+      });
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public static ServerPlayer tryGetPlayer(@Nullable Entity var0) {
-      if (var0 instanceof ServerPlayer) {
-         return (ServerPlayer)var0;
+      if (var0 instanceof ServerPlayer var5) {
+         return var5;
       } else {
          if (var0 != null) {
             LivingEntity var2 = var0.getControllingPassenger();
             if (var2 instanceof ServerPlayer) {
-               return (ServerPlayer)var2;
+               var5 = (ServerPlayer)var2;
+               return var5;
             }
          }
 
+         Entity var3;
          if (var0 instanceof Projectile var1) {
-            Entity var3 = var1.getOwner();
-            if (var3 instanceof ServerPlayer) {
-               return (ServerPlayer)var3;
+            var3 = var1.getOwner();
+            if (var3 instanceof ServerPlayer var6) {
+               return var6;
             }
          }
 
          if (var0 instanceof ItemEntity var4) {
-            Entity var5 = var4.getOwner();
-            if (var5 instanceof ServerPlayer) {
-               return (ServerPlayer)var5;
+            var3 = var4.getOwner();
+            if (var3 instanceof ServerPlayer var6) {
+               return var6;
             }
          }
 
@@ -136,7 +139,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
    public void tryShriek(ServerLevel var1, @Nullable ServerPlayer var2) {
       if (var2 != null) {
          BlockState var3 = this.getBlockState();
-         if (!var3.getValue(SculkShriekerBlock.SHRIEKING)) {
+         if (!(Boolean)var3.getValue(SculkShriekerBlock.SHRIEKING)) {
             this.warningLevel = 0;
             if (!this.canRespond(var1) || this.tryToWarn(var1, var2)) {
                this.shriek(var1, var2);
@@ -147,23 +150,23 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
 
    private boolean tryToWarn(ServerLevel var1, ServerPlayer var2) {
       OptionalInt var3 = WardenSpawnTracker.tryWarn(var1, this.getBlockPos(), var2);
-      var3.ifPresent(var1x -> this.warningLevel = var1x);
+      var3.ifPresent((var1x) -> {
+         this.warningLevel = var1x;
+      });
       return var3.isPresent();
    }
 
    private void shriek(ServerLevel var1, @Nullable Entity var2) {
       BlockPos var3 = this.getBlockPos();
       BlockState var4 = this.getBlockState();
-      var1.setBlock(var3, var4.setValue(SculkShriekerBlock.SHRIEKING, Boolean.valueOf(true)), 2);
+      var1.setBlock(var3, (BlockState)var4.setValue(SculkShriekerBlock.SHRIEKING, true), 2);
       var1.scheduleTick(var3, var4.getBlock(), 90);
       var1.levelEvent(3007, var3, 0);
       var1.gameEvent(GameEvent.SHRIEK, var3, GameEvent.Context.of(var2));
    }
 
    private boolean canRespond(ServerLevel var1) {
-      return this.getBlockState().getValue(SculkShriekerBlock.CAN_SUMMON)
-         && var1.getDifficulty() != Difficulty.PEACEFUL
-         && var1.getGameRules().getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
+      return (Boolean)this.getBlockState().getValue(SculkShriekerBlock.CAN_SUMMON) && var1.getDifficulty() != Difficulty.PEACEFUL && var1.getGameRules().getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
    }
 
    public void tryRespond(ServerLevel var1) {
@@ -172,8 +175,9 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
             this.playWardenReplySound(var1);
          }
 
-         Warden.applyDarknessAround(var1, Vec3.atCenterOf(this.getBlockPos()), null, 40);
+         Warden.applyDarknessAround(var1, Vec3.atCenterOf(this.getBlockPos()), (Entity)null, 40);
       }
+
    }
 
    private void playWardenReplySound(Level var1) {
@@ -183,61 +187,57 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          int var4 = var3.getX() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var5 = var3.getY() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var6 = var3.getZ() + Mth.randomBetweenInclusive(var1.random, -10, 10);
-         var1.playSound(null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
+         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
       }
+
    }
 
    private boolean trySummonWarden(ServerLevel var1) {
-      return this.warningLevel < 4
-         ? false
-         : SpawnUtil.trySpawnMob(EntityType.WARDEN, MobSpawnType.TRIGGERED, var1, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER)
-            .isPresent();
+      return this.warningLevel < 4 ? false : SpawnUtil.trySpawnMob(EntityType.WARDEN, MobSpawnType.TRIGGERED, var1, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER).isPresent();
    }
 
    public VibrationSystem.Listener getListener() {
       return this.vibrationListener;
    }
 
+   // $FF: synthetic method
+   public GameEventListener getListener() {
+      return this.getListener();
+   }
+
    class VibrationUser implements VibrationSystem.User {
       private static final int LISTENER_RADIUS = 8;
-      private final PositionSource positionSource = new BlockPositionSource(SculkShriekerBlockEntity.this.worldPosition);
+      private final PositionSource positionSource;
 
       public VibrationUser() {
          super();
+         this.positionSource = new BlockPositionSource(SculkShriekerBlockEntity.this.worldPosition);
       }
 
-      @Override
       public int getListenerRadius() {
          return 8;
       }
 
-      @Override
       public PositionSource getPositionSource() {
          return this.positionSource;
       }
 
-      @Override
       public TagKey<GameEvent> getListenableEvents() {
          return GameEventTags.SHRIEKER_CAN_LISTEN;
       }
 
-      @Override
       public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4) {
-         return !SculkShriekerBlockEntity.this.getBlockState().getValue(SculkShriekerBlock.SHRIEKING)
-            && SculkShriekerBlockEntity.tryGetPlayer(var4.sourceEntity()) != null;
+         return !(Boolean)SculkShriekerBlockEntity.this.getBlockState().getValue(SculkShriekerBlock.SHRIEKING) && SculkShriekerBlockEntity.tryGetPlayer(var4.sourceEntity()) != null;
       }
 
-      @Override
       public void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
          SculkShriekerBlockEntity.this.tryShriek(var1, SculkShriekerBlockEntity.tryGetPlayer(var5 != null ? var5 : var4));
       }
 
-      @Override
       public void onDataChanged() {
          SculkShriekerBlockEntity.this.setChanged();
       }
 
-      @Override
       public boolean requiresAdjacentChunksToBeTicking() {
          return true;
       }

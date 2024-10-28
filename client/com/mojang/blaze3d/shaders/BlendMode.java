@@ -56,10 +56,10 @@ public class BlendMode {
          } else {
             RenderSystem.blendFunc(this.srcColorFactor, this.dstColorFactor);
          }
+
       }
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -85,7 +85,6 @@ public class BlendMode {
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.srcColorFactor;
       var1 = 31 * var1 + this.srcAlphaFactor;
@@ -93,7 +92,8 @@ public class BlendMode {
       var1 = 31 * var1 + this.dstAlphaFactor;
       var1 = 31 * var1 + this.blendFunc;
       var1 = 31 * var1 + (this.separateBlend ? 1 : 0);
-      return 31 * var1 + (this.opaque ? 1 : 0);
+      var1 = 31 * var1 + (this.opaque ? 1 : 0);
+      return var1;
    }
 
    public boolean isOpaque() {
@@ -113,7 +113,7 @@ public class BlendMode {
       } else if ("min".equals(var1)) {
          return 32775;
       } else {
-         return "max".equals(var1) ? 32776 : 32774;
+         return "max".equals(var1) ? '\u8008' : '\u8006';
       }
    }
 

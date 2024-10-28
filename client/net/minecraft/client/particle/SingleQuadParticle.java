@@ -22,11 +22,10 @@ public abstract class SingleQuadParticle extends Particle {
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.5F) * 2.0F;
    }
 
-   public SingleQuadParticle.FacingCameraMode getFacingCameraMode() {
+   public FacingCameraMode getFacingCameraMode() {
       return SingleQuadParticle.FacingCameraMode.LOOKAT_XYZ;
    }
 
-   @Override
    public void render(VertexConsumer var1, Camera var2, float var3) {
       Vec3 var4 = var2.getPosition();
       float var5 = (float)(Mth.lerp((double)var3, this.xo, this.x) - var4.x());
@@ -37,9 +36,7 @@ public abstract class SingleQuadParticle extends Particle {
          this.rotation.rotateZ(Mth.lerp(var3, this.oRoll, this.roll));
       }
 
-      Vector3f[] var8 = new Vector3f[]{
-         new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
-      };
+      Vector3f[] var8 = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
       float var9 = this.getQuadSize(var3);
 
       for(int var10 = 0; var10 < 4; ++var10) {
@@ -54,33 +51,16 @@ public abstract class SingleQuadParticle extends Particle {
       float var12 = this.getV0();
       float var13 = this.getV1();
       int var14 = this.getLightColor(var3);
-      var1.vertex((double)var8[0].x(), (double)var8[0].y(), (double)var8[0].z())
-         .uv(var16, var13)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var14)
-         .endVertex();
-      var1.vertex((double)var8[1].x(), (double)var8[1].y(), (double)var8[1].z())
-         .uv(var16, var12)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var14)
-         .endVertex();
-      var1.vertex((double)var8[2].x(), (double)var8[2].y(), (double)var8[2].z())
-         .uv(var15, var12)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var14)
-         .endVertex();
-      var1.vertex((double)var8[3].x(), (double)var8[3].y(), (double)var8[3].z())
-         .uv(var15, var13)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var14)
-         .endVertex();
+      var1.vertex((double)var8[0].x(), (double)var8[0].y(), (double)var8[0].z()).uv(var16, var13).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var14).endVertex();
+      var1.vertex((double)var8[1].x(), (double)var8[1].y(), (double)var8[1].z()).uv(var16, var12).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var14).endVertex();
+      var1.vertex((double)var8[2].x(), (double)var8[2].y(), (double)var8[2].z()).uv(var15, var12).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var14).endVertex();
+      var1.vertex((double)var8[3].x(), (double)var8[3].y(), (double)var8[3].z()).uv(var15, var13).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var14).endVertex();
    }
 
    public float getQuadSize(float var1) {
       return this.quadSize;
    }
 
-   @Override
    public Particle scale(float var1) {
       this.quadSize *= var1;
       return super.scale(var1);
@@ -95,8 +75,12 @@ public abstract class SingleQuadParticle extends Particle {
    protected abstract float getV1();
 
    public interface FacingCameraMode {
-      SingleQuadParticle.FacingCameraMode LOOKAT_XYZ = (var0, var1, var2) -> var0.set(var1.rotation());
-      SingleQuadParticle.FacingCameraMode LOOKAT_Y = (var0, var1, var2) -> var0.set(0.0F, var1.rotation().y, 0.0F, var1.rotation().w);
+      FacingCameraMode LOOKAT_XYZ = (var0, var1, var2) -> {
+         var0.set(var1.rotation());
+      };
+      FacingCameraMode LOOKAT_Y = (var0, var1, var2) -> {
+         var0.set(0.0F, var1.rotation().y, 0.0F, var1.rotation().w);
+      };
 
       void setRotation(Quaternionf var1, Camera var2, float var3);
    }

@@ -73,9 +73,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.getRenderer(var1).getPackedLightCoords(var1, var2);
    }
 
-   public EntityRenderDispatcher(
-      Minecraft var1, TextureManager var2, ItemRenderer var3, BlockRenderDispatcher var4, Font var5, Options var6, EntityModelSet var7
-   ) {
+   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemRenderer var3, BlockRenderDispatcher var4, Font var5, Options var6, EntityModelSet var7) {
       super();
       this.textureManager = var2;
       this.itemRenderer = var3;
@@ -86,15 +84,13 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.entityModels = var7;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T extends Entity> EntityRenderer<? super T> getRenderer(T var1) {
       if (var1 instanceof AbstractClientPlayer var2) {
          PlayerSkin.Model var3 = var2.getSkin().model();
-         EntityRenderer var4 = this.playerRenderers.get(var3);
-         return var4 != null ? var4 : this.playerRenderers.get(PlayerSkin.Model.WIDE);
+         EntityRenderer var4 = (EntityRenderer)this.playerRenderers.get(var3);
+         return var4 != null ? var4 : (EntityRenderer)this.playerRenderers.get(PlayerSkin.Model.WIDE);
       } else {
-         return (EntityRenderer<? super T>)this.renderers.get(var1.getType());
+         return (EntityRenderer)this.renderers.get(var1.getType());
       }
    }
 
@@ -126,9 +122,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return var9.shouldRender(var1, var2, var3, var5, var7);
    }
 
-   public <E extends Entity> void render(
-      E var1, double var2, double var4, double var6, float var8, float var9, PoseStack var10, MultiBufferSource var11, int var12
-   ) {
+   public <E extends Entity> void render(E var1, double var2, double var4, double var6, float var8, float var9, PoseStack var10, MultiBufferSource var11, int var12) {
       EntityRenderer var13 = this.getRenderer(var1);
 
       try {
@@ -144,7 +138,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          }
 
          var10.translate(-var14.x(), -var14.y(), -var14.z());
-         if (this.options.entityShadows().get() && this.shouldRenderShadow && !var1.isInvisible()) {
+         if ((Boolean)this.options.entityShadows().get() && this.shouldRenderShadow && !var1.isInvisible()) {
             float var21 = var13.getShadowRadius(var1);
             if (var21 > 0.0F) {
                double var22 = this.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
@@ -165,10 +159,10 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          CrashReportCategory var16 = var15.addCategory("Entity being rendered");
          var1.fillCrashReportCategory(var16);
          CrashReportCategory var17 = var15.addCategory("Renderer details");
-         var17.setDetail("Assigned renderer", var13);
-         var17.setDetail("Location", CrashReportCategory.formatLocation(this.level, var2, var4, var6));
-         var17.setDetail("Rotation", var8);
-         var17.setDetail("Delta", var9);
+         var17.setDetail("Assigned renderer", (Object)var13);
+         var17.setDetail("Location", (Object)CrashReportCategory.formatLocation(this.level, var2, var4, var6));
+         var17.setDetail("Rotation", (Object)var8);
+         var17.setDetail("Delta", (Object)var9);
          throw new ReportedException(var15);
       }
    }
@@ -180,8 +174,11 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          double var5 = -Mth.lerp((double)var3, var2.xOld, var2.getX());
          double var7 = -Mth.lerp((double)var3, var2.yOld, var2.getY());
          double var9 = -Mth.lerp((double)var3, var2.zOld, var2.getZ());
+         EnderDragonPart[] var11 = ((EnderDragon)var2).getSubEntities();
+         int var12 = var11.length;
 
-         for(EnderDragonPart var14 : ((EnderDragon)var2).getSubEntities()) {
+         for(int var13 = 0; var13 < var12; ++var13) {
+            EnderDragonPart var14 = var11[var13];
             var0.pushPose();
             double var15 = var5 + Mth.lerp((double)var3, var14.xOld, var14.getX());
             double var17 = var7 + Mth.lerp((double)var3, var14.yOld, var14.getY());
@@ -194,20 +191,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
       if (var2 instanceof LivingEntity) {
          float var21 = 0.01F;
-         LevelRenderer.renderLineBox(
-            var0,
-            var1,
-            var4.minX,
-            (double)(var2.getEyeHeight() - 0.01F),
-            var4.minZ,
-            var4.maxX,
-            (double)(var2.getEyeHeight() + 0.01F),
-            var4.maxZ,
-            1.0F,
-            0.0F,
-            0.0F,
-            1.0F
-         );
+         LevelRenderer.renderLineBox(var0, var1, var4.minX, (double)(var2.getEyeHeight() - 0.01F), var4.minZ, var4.maxX, (double)(var2.getEyeHeight() + 0.01F), var4.maxZ, 1.0F, 0.0F, 0.0F, 1.0F);
       }
 
       Entity var22 = var2.getVehicle();
@@ -215,29 +199,13 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          float var6 = Math.min(var22.getBbWidth(), var2.getBbWidth()) / 2.0F;
          float var24 = 0.0625F;
          Vec3 var8 = var22.getPassengerRidingPosition(var2).subtract(var2.position());
-         LevelRenderer.renderLineBox(
-            var0,
-            var1,
-            var8.x - (double)var6,
-            var8.y,
-            var8.z - (double)var6,
-            var8.x + (double)var6,
-            var8.y + 0.0625,
-            var8.z + (double)var6,
-            1.0F,
-            1.0F,
-            0.0F,
-            1.0F
-         );
+         LevelRenderer.renderLineBox(var0, var1, var8.x - (double)var6, var8.y, var8.z - (double)var6, var8.x + (double)var6, var8.y + 0.0625, var8.z + (double)var6, 1.0F, 1.0F, 0.0F, 1.0F);
       }
 
       Vec3 var23 = var2.getViewVector(var3);
       PoseStack.Pose var25 = var0.last();
       var1.vertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).color(0, 0, 255, 255).normal(var25, (float)var23.x, (float)var23.y, (float)var23.z).endVertex();
-      var1.vertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0))
-         .color(0, 0, 255, 255)
-         .normal(var25, (float)var23.x, (float)var23.y, (float)var23.z)
-         .endVertex();
+      var1.vertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0)).color(0, 0, 255, 255).normal(var25, (float)var23.x, (float)var23.y, (float)var23.z).endVertex();
    }
 
    private void renderFlame(PoseStack var1, MultiBufferSource var2, Entity var3, Quaternionf var4) {
@@ -312,20 +280,10 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             }
          }
       }
+
    }
 
-   private static void renderBlockShadow(
-      PoseStack.Pose var0,
-      VertexConsumer var1,
-      ChunkAccess var2,
-      LevelReader var3,
-      BlockPos var4,
-      double var5,
-      double var7,
-      double var9,
-      float var11,
-      float var12
-   ) {
+   private static void renderBlockShadow(PoseStack.Pose var0, VertexConsumer var1, ChunkAccess var2, LevelReader var3, BlockPos var4, double var5, double var7, double var9, float var11, float var12) {
       BlockPos var13 = var4.below();
       BlockState var14 = var2.getBlockState(var13);
       if (var14.getRenderShape() != RenderShape.INVISIBLE && var3.getMaxLocalRawBrightness(var4) > 3) {
@@ -359,6 +317,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
                   shadowVertex(var0, var1, var17, var30, var31, var33, var35, var37);
                   shadowVertex(var0, var1, var17, var30, var31, var32, var35, var36);
                }
+
             }
          }
       }
@@ -374,6 +333,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       if (var1 == null) {
          this.camera = null;
       }
+
    }
 
    public double distanceToSqr(Entity var1) {
@@ -392,11 +352,8 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.itemInHandRenderer;
    }
 
-   @Override
    public void onResourceManagerReload(ResourceManager var1) {
-      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(
-         this, this.itemRenderer, this.blockRenderDispatcher, this.itemInHandRenderer, var1, this.entityModels, this.font
-      );
+      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemRenderer, this.blockRenderDispatcher, this.itemInHandRenderer, var1, this.entityModels, this.font);
       this.renderers = EntityRenderers.createEntityRenderers(var2);
       this.playerRenderers = EntityRenderers.createPlayerRenderers(var2);
    }

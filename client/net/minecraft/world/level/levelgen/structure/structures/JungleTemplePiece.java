@@ -34,7 +34,7 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
    private boolean placedHiddenChest;
    private boolean placedTrap1;
    private boolean placedTrap2;
-   private static final JungleTemplePiece.MossStoneSelector STONE_SELECTOR = new JungleTemplePiece.MossStoneSelector();
+   private static final MossStoneSelector STONE_SELECTOR = new MossStoneSelector();
 
    public JungleTemplePiece(RandomSource var1, int var2, int var3) {
       super(StructurePieceType.JUNGLE_PYRAMID_PIECE, var2, 64, var3, 12, 10, 15, getRandomHorizontalDirection(var1));
@@ -48,7 +48,6 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
       this.placedTrap2 = var1.getBoolean("placedTrap2");
    }
 
-   @Override
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
       super.addAdditionalSaveData(var1, var2);
       var2.putBoolean("placedMainChest", this.placedMainChest);
@@ -57,7 +56,6 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
       var2.putBoolean("placedTrap2", this.placedTrap2);
    }
 
-   @Override
    public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
       if (this.updateAverageGroundHeight(var1, var5, 0)) {
          this.generateBox(var1, var5, 0, -4, 0, this.width - 1, 0, this.depth - 1, false, var4, STONE_SELECTOR);
@@ -87,7 +85,8 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 1, 5, 9, var5);
          this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 10, 5, 9, var5);
 
-         for(int var8 = 0; var8 <= 14; var8 += 14) {
+         int var8;
+         for(var8 = 0; var8 <= 14; var8 += 14) {
             this.generateBox(var1, var5, 2, 4, var8, 2, 5, var8, false, var4, STONE_SELECTOR);
             this.generateBox(var1, var5, 4, 4, var8, 4, 5, var8, false, var4, STONE_SELECTOR);
             this.generateBox(var1, var5, 7, 4, var8, 7, 5, var8, false, var4, STONE_SELECTOR);
@@ -96,13 +95,13 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
 
          this.generateBox(var1, var5, 5, 6, 0, 6, 6, 0, false, var4, STONE_SELECTOR);
 
-         for(int var14 = 0; var14 <= 11; var14 += 11) {
+         for(var8 = 0; var8 <= 11; var8 += 11) {
             for(int var9 = 2; var9 <= 12; var9 += 2) {
-               this.generateBox(var1, var5, var14, 4, var9, var14, 5, var9, false, var4, STONE_SELECTOR);
+               this.generateBox(var1, var5, var8, 4, var9, var8, 5, var9, false, var4, STONE_SELECTOR);
             }
 
-            this.generateBox(var1, var5, var14, 6, 5, var14, 6, 5, false, var4, STONE_SELECTOR);
-            this.generateBox(var1, var5, var14, 6, 9, var14, 6, 9, false, var4, STONE_SELECTOR);
+            this.generateBox(var1, var5, var8, 6, 5, var8, 6, 5, false, var4, STONE_SELECTOR);
+            this.generateBox(var1, var5, var8, 6, 9, var8, 6, 9, false, var4, STONE_SELECTOR);
          }
 
          this.generateBox(var1, var5, 2, 7, 2, 2, 9, 2, false, var4, STONE_SELECTOR);
@@ -114,10 +113,10 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.generateBox(var1, var5, 4, 9, 10, 4, 9, 10, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 7, 9, 10, 7, 9, 10, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 5, 9, 7, 6, 9, 7, false, var4, STONE_SELECTOR);
-         BlockState var15 = Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST);
-         BlockState var16 = Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
-         BlockState var10 = Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
-         BlockState var11 = Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+         BlockState var14 = (BlockState)Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST);
+         BlockState var15 = (BlockState)Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
+         BlockState var10 = (BlockState)Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+         BlockState var11 = (BlockState)Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
          this.placeBlock(var1, var11, 5, 9, 6, var5);
          this.placeBlock(var1, var11, 6, 9, 6, var5);
          this.placeBlock(var1, var10, 5, 9, 8, var5);
@@ -136,10 +135,11 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.generateBox(var1, var5, 7, 1, 9, 7, 1, 9, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 1, 10, 7, 2, 10, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 5, 4, 5, 6, 4, 5, false, var4, STONE_SELECTOR);
-         this.placeBlock(var1, var15, 4, 4, 5, var5);
-         this.placeBlock(var1, var16, 7, 4, 5, var5);
+         this.placeBlock(var1, var14, 4, 4, 5, var5);
+         this.placeBlock(var1, var15, 7, 4, 5, var5);
 
-         for(int var12 = 0; var12 < 4; ++var12) {
+         int var12;
+         for(var12 = 0; var12 < 4; ++var12) {
             this.placeBlock(var1, var10, 5, 0 - var12, 6 + var12, var5);
             this.placeBlock(var1, var10, 6, 0 - var12, 6 + var12, var5);
             this.generateAirBox(var1, var5, 5, 0 - var12, 7 + var12, 6, 0 - var12, 9 + var12);
@@ -149,186 +149,53 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.generateAirBox(var1, var5, 1, -3, 1, 3, -1, 13);
          this.generateAirBox(var1, var5, 1, -3, 1, 9, -1, 5);
 
-         for(int var17 = 1; var17 <= 13; var17 += 2) {
-            this.generateBox(var1, var5, 1, -3, var17, 1, -2, var17, false, var4, STONE_SELECTOR);
+         for(var12 = 1; var12 <= 13; var12 += 2) {
+            this.generateBox(var1, var5, 1, -3, var12, 1, -2, var12, false, var4, STONE_SELECTOR);
          }
 
-         for(int var18 = 2; var18 <= 12; var18 += 2) {
-            this.generateBox(var1, var5, 1, -1, var18, 3, -1, var18, false, var4, STONE_SELECTOR);
+         for(var12 = 2; var12 <= 12; var12 += 2) {
+            this.generateBox(var1, var5, 1, -1, var12, 3, -1, var12, false, var4, STONE_SELECTOR);
          }
 
          this.generateBox(var1, var5, 2, -2, 1, 5, -2, 1, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 7, -2, 1, 9, -2, 1, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 6, -3, 1, 6, -3, 1, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 6, -1, 1, 6, -1, 1, false, var4, STONE_SELECTOR);
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE_HOOK
-               .defaultBlockState()
-               .setValue(TripWireHookBlock.FACING, Direction.EAST)
-               .setValue(TripWireHookBlock.ATTACHED, Boolean.valueOf(true)),
-            1,
-            -3,
-            8,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE_HOOK
-               .defaultBlockState()
-               .setValue(TripWireHookBlock.FACING, Direction.WEST)
-               .setValue(TripWireHookBlock.ATTACHED, Boolean.valueOf(true)),
-            4,
-            -3,
-            8,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE
-               .defaultBlockState()
-               .setValue(TripWireBlock.EAST, Boolean.valueOf(true))
-               .setValue(TripWireBlock.WEST, Boolean.valueOf(true))
-               .setValue(TripWireBlock.ATTACHED, Boolean.valueOf(true)),
-            2,
-            -3,
-            8,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE
-               .defaultBlockState()
-               .setValue(TripWireBlock.EAST, Boolean.valueOf(true))
-               .setValue(TripWireBlock.WEST, Boolean.valueOf(true))
-               .setValue(TripWireBlock.ATTACHED, Boolean.valueOf(true)),
-            3,
-            -3,
-            8,
-            var5
-         );
-         BlockState var19 = Blocks.REDSTONE_WIRE
-            .defaultBlockState()
-            .setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)
-            .setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE);
-         this.placeBlock(var1, var19, 5, -3, 7, var5);
-         this.placeBlock(var1, var19, 5, -3, 6, var5);
-         this.placeBlock(var1, var19, 5, -3, 5, var5);
-         this.placeBlock(var1, var19, 5, -3, 4, var5);
-         this.placeBlock(var1, var19, 5, -3, 3, var5);
-         this.placeBlock(var1, var19, 5, -3, 2, var5);
-         this.placeBlock(
-            var1,
-            Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE),
-            5,
-            -3,
-            1,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE),
-            4,
-            -3,
-            1,
-            var5
-         );
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.EAST)).setValue(TripWireHookBlock.ATTACHED, true), 1, -3, 8, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.WEST)).setValue(TripWireHookBlock.ATTACHED, true), 4, -3, 8, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.EAST, true)).setValue(TripWireBlock.WEST, true)).setValue(TripWireBlock.ATTACHED, true), 2, -3, 8, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.EAST, true)).setValue(TripWireBlock.WEST, true)).setValue(TripWireBlock.ATTACHED, true), 3, -3, 8, var5);
+         BlockState var16 = (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE);
+         this.placeBlock(var1, var16, 5, -3, 7, var5);
+         this.placeBlock(var1, var16, 5, -3, 6, var5);
+         this.placeBlock(var1, var16, 5, -3, 5, var5);
+         this.placeBlock(var1, var16, 5, -3, 4, var5);
+         this.placeBlock(var1, var16, 5, -3, 3, var5);
+         this.placeBlock(var1, var16, 5, -3, 2, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 5, -3, 1, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 4, -3, 1, var5);
          this.placeBlock(var1, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3, -3, 1, var5);
          if (!this.placedTrap1) {
             this.placedTrap1 = this.createDispenser(var1, var5, var4, 3, -2, 1, Direction.NORTH, BuiltInLootTables.JUNGLE_TEMPLE_DISPENSER);
          }
 
-         this.placeBlock(var1, Blocks.VINE.defaultBlockState().setValue(VineBlock.SOUTH, Boolean.valueOf(true)), 3, -2, 2, var5);
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE_HOOK
-               .defaultBlockState()
-               .setValue(TripWireHookBlock.FACING, Direction.NORTH)
-               .setValue(TripWireHookBlock.ATTACHED, Boolean.valueOf(true)),
-            7,
-            -3,
-            1,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE_HOOK
-               .defaultBlockState()
-               .setValue(TripWireHookBlock.FACING, Direction.SOUTH)
-               .setValue(TripWireHookBlock.ATTACHED, Boolean.valueOf(true)),
-            7,
-            -3,
-            5,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE
-               .defaultBlockState()
-               .setValue(TripWireBlock.NORTH, Boolean.valueOf(true))
-               .setValue(TripWireBlock.SOUTH, Boolean.valueOf(true))
-               .setValue(TripWireBlock.ATTACHED, Boolean.valueOf(true)),
-            7,
-            -3,
-            2,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE
-               .defaultBlockState()
-               .setValue(TripWireBlock.NORTH, Boolean.valueOf(true))
-               .setValue(TripWireBlock.SOUTH, Boolean.valueOf(true))
-               .setValue(TripWireBlock.ATTACHED, Boolean.valueOf(true)),
-            7,
-            -3,
-            3,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.TRIPWIRE
-               .defaultBlockState()
-               .setValue(TripWireBlock.NORTH, Boolean.valueOf(true))
-               .setValue(TripWireBlock.SOUTH, Boolean.valueOf(true))
-               .setValue(TripWireBlock.ATTACHED, Boolean.valueOf(true)),
-            7,
-            -3,
-            4,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE),
-            8,
-            -3,
-            6,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE),
-            9,
-            -3,
-            6,
-            var5
-         );
-         this.placeBlock(
-            var1,
-            Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.UP),
-            9,
-            -3,
-            5,
-            var5
-         );
+         this.placeBlock(var1, (BlockState)Blocks.VINE.defaultBlockState().setValue(VineBlock.SOUTH, true), 3, -2, 2, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.NORTH)).setValue(TripWireHookBlock.ATTACHED, true), 7, -3, 1, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.TRIPWIRE_HOOK.defaultBlockState().setValue(TripWireHookBlock.FACING, Direction.SOUTH)).setValue(TripWireHookBlock.ATTACHED, true), 7, -3, 5, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.NORTH, true)).setValue(TripWireBlock.SOUTH, true)).setValue(TripWireBlock.ATTACHED, true), 7, -3, 2, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.NORTH, true)).setValue(TripWireBlock.SOUTH, true)).setValue(TripWireBlock.ATTACHED, true), 7, -3, 3, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.TRIPWIRE.defaultBlockState().setValue(TripWireBlock.NORTH, true)).setValue(TripWireBlock.SOUTH, true)).setValue(TripWireBlock.ATTACHED, true), 7, -3, 4, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 8, -3, 6, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE), 9, -3, 6, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.UP), 9, -3, 5, var5);
          this.placeBlock(var1, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 9, -3, 4, var5);
-         this.placeBlock(var1, var19, 9, -2, 4, var5);
+         this.placeBlock(var1, var16, 9, -2, 4, var5);
          if (!this.placedTrap2) {
             this.placedTrap2 = this.createDispenser(var1, var5, var4, 9, -2, 3, Direction.WEST, BuiltInLootTables.JUNGLE_TEMPLE_DISPENSER);
          }
 
-         this.placeBlock(var1, Blocks.VINE.defaultBlockState().setValue(VineBlock.EAST, Boolean.valueOf(true)), 8, -1, 3, var5);
-         this.placeBlock(var1, Blocks.VINE.defaultBlockState().setValue(VineBlock.EAST, Boolean.valueOf(true)), 8, -2, 3, var5);
+         this.placeBlock(var1, (BlockState)Blocks.VINE.defaultBlockState().setValue(VineBlock.EAST, true), 8, -1, 3, var5);
+         this.placeBlock(var1, (BlockState)Blocks.VINE.defaultBlockState().setValue(VineBlock.EAST, true), 8, -2, 3, var5);
          if (!this.placedMainChest) {
             this.placedMainChest = this.createChest(var1, var5, var4, 8, -3, 3, BuiltInLootTables.JUNGLE_TEMPLE);
          }
@@ -347,35 +214,24 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          this.placeBlock(var1, Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 8, -2, 11, var5);
          this.placeBlock(var1, Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 9, -2, 11, var5);
          this.placeBlock(var1, Blocks.CHISELED_STONE_BRICKS.defaultBlockState(), 10, -2, 11, var5);
-         BlockState var13 = Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACING, Direction.NORTH).setValue(LeverBlock.FACE, AttachFace.WALL);
+         BlockState var13 = (BlockState)((BlockState)Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACING, Direction.NORTH)).setValue(LeverBlock.FACE, AttachFace.WALL);
          this.placeBlock(var1, var13, 8, -2, 12, var5);
          this.placeBlock(var1, var13, 9, -2, 12, var5);
          this.placeBlock(var1, var13, 10, -2, 12, var5);
          this.generateBox(var1, var5, 8, -3, 8, 8, -3, 10, false, var4, STONE_SELECTOR);
          this.generateBox(var1, var5, 10, -3, 8, 10, -3, 10, false, var4, STONE_SELECTOR);
          this.placeBlock(var1, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 10, -2, 9, var5);
-         this.placeBlock(var1, var19, 8, -2, 9, var5);
-         this.placeBlock(var1, var19, 8, -2, 10, var5);
-         this.placeBlock(
-            var1,
-            Blocks.REDSTONE_WIRE
-               .defaultBlockState()
-               .setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)
-               .setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE)
-               .setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)
-               .setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE),
-            10,
-            -1,
-            9,
-            var5
-         );
-         this.placeBlock(var1, Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.UP), 9, -2, 8, var5);
-         this.placeBlock(var1, Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.WEST), 10, -2, 8, var5);
-         this.placeBlock(var1, Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.WEST), 10, -1, 8, var5);
-         this.placeBlock(var1, Blocks.REPEATER.defaultBlockState().setValue(RepeaterBlock.FACING, Direction.NORTH), 10, -2, 10, var5);
+         this.placeBlock(var1, var16, 8, -2, 9, var5);
+         this.placeBlock(var1, var16, 8, -2, 10, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)((BlockState)((BlockState)Blocks.REDSTONE_WIRE.defaultBlockState().setValue(RedStoneWireBlock.NORTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.SOUTH, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.EAST, RedstoneSide.SIDE)).setValue(RedStoneWireBlock.WEST, RedstoneSide.SIDE), 10, -1, 9, var5);
+         this.placeBlock(var1, (BlockState)Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.UP), 9, -2, 8, var5);
+         this.placeBlock(var1, (BlockState)Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.WEST), 10, -2, 8, var5);
+         this.placeBlock(var1, (BlockState)Blocks.STICKY_PISTON.defaultBlockState().setValue(PistonBaseBlock.FACING, Direction.WEST), 10, -1, 8, var5);
+         this.placeBlock(var1, (BlockState)Blocks.REPEATER.defaultBlockState().setValue(RepeaterBlock.FACING, Direction.NORTH), 10, -2, 10, var5);
          if (!this.placedHiddenChest) {
             this.placedHiddenChest = this.createChest(var1, var5, var4, 9, -3, 10, BuiltInLootTables.JUNGLE_TEMPLE);
          }
+
       }
    }
 
@@ -384,13 +240,13 @@ public class JungleTemplePiece extends ScatteredFeaturePiece {
          super();
       }
 
-      @Override
       public void next(RandomSource var1, int var2, int var3, int var4, boolean var5) {
          if (var1.nextFloat() < 0.4F) {
             this.next = Blocks.COBBLESTONE.defaultBlockState();
          } else {
             this.next = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
          }
+
       }
    }
 }

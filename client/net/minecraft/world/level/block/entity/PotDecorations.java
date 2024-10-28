@@ -5,29 +5,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
-public record PotDecorations(Optional<Item> d, Optional<Item> e, Optional<Item> f, Optional<Item> g) {
-   private final Optional<Item> back;
-   private final Optional<Item> left;
-   private final Optional<Item> right;
-   private final Optional<Item> front;
+public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<Item> right, Optional<Item> front) {
    public static final PotDecorations EMPTY = new PotDecorations(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-   public static final Codec<PotDecorations> CODEC = ExtraCodecs.sizeLimitedList(BuiltInRegistries.ITEM.byNameCodec().listOf(), 4)
-      .xmap(PotDecorations::new, PotDecorations::ordered);
-   public static final StreamCodec<RegistryFriendlyByteBuf, PotDecorations> STREAM_CODEC = ByteBufCodecs.registry(Registries.ITEM)
-      .<List<Item>>apply(ByteBufCodecs.list(4))
-      .map(PotDecorations::new, PotDecorations::ordered);
+   public static final Codec<PotDecorations> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, PotDecorations> STREAM_CODEC;
 
    private PotDecorations(List<Item> var1) {
       this(getItem(var1, 0), getItem(var1, 1), getItem(var1, 2), getItem(var1, 3));
@@ -58,16 +50,39 @@ public record PotDecorations(Optional<Item> d, Optional<Item> e, Optional<Item> 
       if (this.equals(EMPTY)) {
          return var1;
       } else {
-         var1.put("sherds", Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, this), IllegalStateException::new));
+         var1.put("sherds", (Tag)CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow());
          return var1;
       }
    }
 
    public List<Item> ordered() {
-      return Stream.of(this.back, this.left, this.right, this.front).map(var0 -> var0.orElse(Items.BRICK)).toList();
+      return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> {
+         return (Item)var0.orElse(Items.BRICK);
+      }).toList();
    }
 
    public static PotDecorations load(@Nullable CompoundTag var0) {
       return var0 != null && var0.contains("sherds") ? (PotDecorations)CODEC.parse(NbtOps.INSTANCE, var0.get("sherds")).result().orElse(EMPTY) : EMPTY;
+   }
+
+   public Optional<Item> back() {
+      return this.back;
+   }
+
+   public Optional<Item> left() {
+      return this.left;
+   }
+
+   public Optional<Item> right() {
+      return this.right;
+   }
+
+   public Optional<Item> front() {
+      return this.front;
+   }
+
+   static {
+      CODEC = BuiltInRegistries.ITEM.byNameCodec().sizeLimitedListOf(4).xmap(PotDecorations::new, PotDecorations::ordered);
+      STREAM_CODEC = ByteBufCodecs.registry(Registries.ITEM).apply(ByteBufCodecs.list(4)).map(PotDecorations::new, PotDecorations::ordered);
    }
 }

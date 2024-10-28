@@ -26,7 +26,6 @@ public class LecternMenu extends AbstractContainerMenu {
       this.lectern = var2;
       this.lecternData = var3;
       this.addSlot(new Slot(var2, 0, 0, 0) {
-         @Override
          public void setChanged() {
             super.setChanged();
             LecternMenu.this.slotsChanged(this.container);
@@ -35,20 +34,20 @@ public class LecternMenu extends AbstractContainerMenu {
       this.addDataSlots(var3);
    }
 
-   @Override
    public boolean clickMenuButton(Player var1, int var2) {
+      int var4;
       if (var2 >= 100) {
-         int var6 = var2 - 100;
-         this.setData(0, var6);
+         var4 = var2 - 100;
+         this.setData(0, var4);
          return true;
       } else {
-         switch(var2) {
+         switch (var2) {
             case 1:
-               int var5 = this.lecternData.get(0);
-               this.setData(0, var5 - 1);
+               var4 = this.lecternData.get(0);
+               this.setData(0, var4 - 1);
                return true;
             case 2:
-               int var4 = this.lecternData.get(0);
+               var4 = this.lecternData.get(0);
                this.setData(0, var4 + 1);
                return true;
             case 3:
@@ -69,18 +68,15 @@ public class LecternMenu extends AbstractContainerMenu {
       }
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       return ItemStack.EMPTY;
    }
 
-   @Override
    public void setData(int var1, int var2) {
       super.setData(var1, var2);
       this.broadcastChanges();
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.lectern.stillValid(var1);
    }

@@ -9,7 +9,7 @@ public class CamelRenderer extends MobRenderer<Camel, CamelModel<Camel>> {
    private static final ResourceLocation CAMEL_LOCATION = new ResourceLocation("textures/entity/camel/camel.png");
 
    public CamelRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
-      super(var1, new CamelModel<>(var1.bakeLayer(var2)), 0.7F);
+      super(var1, new CamelModel(var1.bakeLayer(var2)), 0.7F);
    }
 
    public ResourceLocation getTextureLocation(Camel var1) {

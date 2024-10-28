@@ -8,7 +8,6 @@ public class ClientboundBundleDelimiterPacket extends BundleDelimiterPacket<Clie
       super();
    }
 
-   @Override
    public PacketType<ClientboundBundleDelimiterPacket> type() {
       return GamePacketTypes.CLIENTBOUND_BUNDLE_DELIMITER;
    }

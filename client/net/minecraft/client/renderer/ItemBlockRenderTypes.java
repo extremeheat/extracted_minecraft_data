@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.Maps;
-import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -17,13 +16,11 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class ItemBlockRenderTypes {
-   private static final Map<Block, RenderType> TYPE_BY_BLOCK = Util.make(Maps.newHashMap(), var0 -> {
+   private static final Map<Block, RenderType> TYPE_BY_BLOCK = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       RenderType var1 = RenderType.tripwire();
       var0.put(Blocks.TRIPWIRE, var1);
       RenderType var2 = RenderType.cutoutMipped();
       var0.put(Blocks.GRASS_BLOCK, var2);
-      var0.put(Blocks.PEELGRASS_BLOCK, var2);
-      var0.put(Blocks.CORRUPTED_PEELGRASS_BLOCK, var2);
       var0.put(Blocks.IRON_BARS, var2);
       var0.put(Blocks.GLASS_PANE, var2);
       var0.put(Blocks.TRIPWIRE_HOOK, var2);
@@ -33,7 +30,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.OAK_LEAVES, var2);
       var0.put(Blocks.SPRUCE_LEAVES, var2);
       var0.put(Blocks.ACACIA_LEAVES, var2);
-      var0.put(Blocks.POTATO_LEAVES, var2);
       var0.put(Blocks.CHERRY_LEAVES, var2);
       var0.put(Blocks.BIRCH_LEAVES, var2);
       var0.put(Blocks.DARK_OAK_LEAVES, var2);
@@ -87,7 +83,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.CORNFLOWER, var3);
       var0.put(Blocks.WITHER_ROSE, var3);
       var0.put(Blocks.LILY_OF_THE_VALLEY, var3);
-      var0.put(Blocks.POTATO_FLOWER, var3);
       var0.put(Blocks.BROWN_MUSHROOM, var3);
       var0.put(Blocks.RED_MUSHROOM, var3);
       var0.put(Blocks.TORCH, var3);
@@ -162,7 +157,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_OXEYE_DAISY, var3);
       var0.put(Blocks.POTTED_CORNFLOWER, var3);
       var0.put(Blocks.POTTED_LILY_OF_THE_VALLEY, var3);
-      var0.put(Blocks.POTTED_POTATO_FLOWER, var3);
       var0.put(Blocks.POTTED_WITHER_ROSE, var3);
       var0.put(Blocks.POTTED_RED_MUSHROOM, var3);
       var0.put(Blocks.POTTED_BROWN_MUSHROOM, var3);
@@ -246,12 +240,10 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_BAMBOO, var3);
       var0.put(Blocks.SCAFFOLDING, var3);
       var0.put(Blocks.STONECUTTER, var3);
-      var0.put(Blocks.POISONOUS_POTATO_CUTTER, var3);
       var0.put(Blocks.LANTERN, var3);
       var0.put(Blocks.SOUL_LANTERN, var3);
       var0.put(Blocks.CAMPFIRE, var3);
       var0.put(Blocks.SOUL_CAMPFIRE, var3);
-      var0.put(Blocks.FRYING_TABLE, var3);
       var0.put(Blocks.SWEET_BERRY_BUSH, var3);
       var0.put(Blocks.WEEPING_VINES, var3);
       var0.put(Blocks.WEEPING_VINES_PLANT, var3);
@@ -262,18 +254,13 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.WARPED_FUNGUS, var3);
       var0.put(Blocks.CRIMSON_ROOTS, var3);
       var0.put(Blocks.WARPED_ROOTS, var3);
-      var0.put(Blocks.POTATO_SPROUTS, var3);
       var0.put(Blocks.POTTED_CRIMSON_FUNGUS, var3);
       var0.put(Blocks.POTTED_WARPED_FUNGUS, var3);
       var0.put(Blocks.POTTED_CRIMSON_ROOTS, var3);
       var0.put(Blocks.POTTED_WARPED_ROOTS, var3);
       var0.put(Blocks.CRIMSON_DOOR, var3);
       var0.put(Blocks.WARPED_DOOR, var3);
-      var0.put(Blocks.POTATO_DOOR, var3);
-      var0.put(Blocks.POTATO_TRAPDOOR, var3);
       var0.put(Blocks.POINTED_DRIPSTONE, var3);
-      var0.put(Blocks.POTATO_BUD, var3);
-      var0.put(Blocks.POTATO_PEDICULE, var3);
       var0.put(Blocks.SMALL_AMETHYST_BUD, var3);
       var0.put(Blocks.MEDIUM_AMETHYST_BUD, var3);
       var0.put(Blocks.LARGE_AMETHYST_BUD, var3);
@@ -307,8 +294,6 @@ public class ItemBlockRenderTypes {
       RenderType var4 = RenderType.translucent();
       var0.put(Blocks.ICE, var4);
       var0.put(Blocks.NETHER_PORTAL, var4);
-      var0.put(Blocks.POTATO_PORTAL, var4);
-      var0.put(Blocks.PEDESTAL, var3);
       var0.put(Blocks.WHITE_STAINED_GLASS, var4);
       var0.put(Blocks.ORANGE_STAINED_GLASS, var4);
       var0.put(Blocks.MAGENTA_STAINED_GLASS, var4);
@@ -347,7 +332,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.BUBBLE_COLUMN, var4);
       var0.put(Blocks.TINTED_GLASS, var4);
    });
-   private static final Map<Fluid, RenderType> TYPE_BY_FLUID = Util.make(Maps.newHashMap(), var0 -> {
+   private static final Map<Fluid, RenderType> TYPE_BY_FLUID = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       RenderType var1 = RenderType.translucent();
       var0.put(Fluids.FLOWING_WATER, var1);
       var0.put(Fluids.WATER, var1);
@@ -363,7 +348,7 @@ public class ItemBlockRenderTypes {
       if (var1 instanceof LeavesBlock) {
          return renderCutout ? RenderType.cutoutMipped() : RenderType.solid();
       } else {
-         RenderType var2 = TYPE_BY_BLOCK.get(var1);
+         RenderType var2 = (RenderType)TYPE_BY_BLOCK.get(var1);
          return var2 != null ? var2 : RenderType.solid();
       }
    }
@@ -373,7 +358,7 @@ public class ItemBlockRenderTypes {
       if (var1 instanceof LeavesBlock) {
          return renderCutout ? RenderType.cutoutMipped() : RenderType.solid();
       } else {
-         RenderType var2 = TYPE_BY_BLOCK.get(var1);
+         RenderType var2 = (RenderType)TYPE_BY_BLOCK.get(var1);
          if (var2 != null) {
             return var2 == RenderType.translucent() ? RenderType.translucentMovingBlock() : var2;
          } else {
@@ -406,7 +391,7 @@ public class ItemBlockRenderTypes {
    }
 
    public static RenderType getRenderLayer(FluidState var0) {
-      RenderType var1 = TYPE_BY_FLUID.get(var0.getType());
+      RenderType var1 = (RenderType)TYPE_BY_FLUID.get(var0.getType());
       return var1 != null ? var1 : RenderType.solid();
    }
 

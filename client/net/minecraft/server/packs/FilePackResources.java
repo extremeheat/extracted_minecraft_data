@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -24,10 +25,10 @@ import org.slf4j.Logger;
 
 public class FilePackResources extends AbstractPackResources {
    static final Logger LOGGER = LogUtils.getLogger();
-   private final FilePackResources.SharedZipFileAccess zipFileAccess;
+   private final SharedZipFileAccess zipFileAccess;
    private final String prefix;
 
-   FilePackResources(PackLocationInfo var1, FilePackResources.SharedZipFileAccess var2, String var3) {
+   FilePackResources(PackLocationInfo var1, SharedZipFileAccess var2, String var3) {
       super(var1);
       this.zipFileAccess = var2;
       this.prefix = var3;
@@ -38,12 +39,10 @@ public class FilePackResources extends AbstractPackResources {
    }
 
    @Nullable
-   @Override
    public IoSupplier<InputStream> getRootResource(String... var1) {
       return this.getResource(String.join("/", var1));
    }
 
-   @Override
    public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
       return this.getResource(getPathFromLocation(var1, var2));
    }
@@ -63,7 +62,6 @@ public class FilePackResources extends AbstractPackResources {
       }
    }
 
-   @Override
    public Set<String> getNamespaces(PackType var1) {
       ZipFile var2 = this.zipFileAccess.getOrCreateZipFile();
       if (var2 == null) {
@@ -101,17 +99,16 @@ public class FilePackResources extends AbstractPackResources {
       }
    }
 
-   @Override
    public void close() {
       this.zipFileAccess.close();
    }
 
-   @Override
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
       ZipFile var5 = this.zipFileAccess.getOrCreateZipFile();
       if (var5 != null) {
          Enumeration var6 = var5.entries();
-         String var7 = this.addPrefix(var1.getDirectory() + "/" + var2 + "/");
+         String var10001 = var1.getDirectory();
+         String var7 = this.addPrefix(var10001 + "/" + var2 + "/");
          String var8 = var7 + var3 + "/";
 
          while(var6.hasMoreElements()) {
@@ -129,47 +126,11 @@ public class FilePackResources extends AbstractPackResources {
                }
             }
          }
+
       }
    }
 
-   public static class FileResourcesSupplier implements Pack.ResourcesSupplier {
-      private final File content;
-
-      public FileResourcesSupplier(Path var1) {
-         this(var1.toFile());
-      }
-
-      public FileResourcesSupplier(File var1) {
-         super();
-         this.content = var1;
-      }
-
-      @Override
-      public PackResources openPrimary(PackLocationInfo var1) {
-         FilePackResources.SharedZipFileAccess var2 = new FilePackResources.SharedZipFileAccess(this.content);
-         return new FilePackResources(var1, var2, "");
-      }
-
-      @Override
-      public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
-         FilePackResources.SharedZipFileAccess var3 = new FilePackResources.SharedZipFileAccess(this.content);
-         FilePackResources var4 = new FilePackResources(var1, var3, "");
-         List var5 = var2.overlays();
-         if (var5.isEmpty()) {
-            return var4;
-         } else {
-            ArrayList var6 = new ArrayList(var5.size());
-
-            for(String var8 : var5) {
-               var6.add(new FilePackResources(var1, var3, var8));
-            }
-
-            return new CompositePackResources(var4, var6);
-         }
-      }
-   }
-
-   static class SharedZipFileAccess implements AutoCloseable {
+   private static class SharedZipFileAccess implements AutoCloseable {
       final File file;
       @Nullable
       private ZipFile zipFile;
@@ -199,18 +160,54 @@ public class FilePackResources extends AbstractPackResources {
          }
       }
 
-      @Override
       public void close() {
          if (this.zipFile != null) {
             IOUtils.closeQuietly(this.zipFile);
             this.zipFile = null;
          }
+
       }
 
-      @Override
       protected void finalize() throws Throwable {
          this.close();
          super.finalize();
+      }
+   }
+
+   public static class FileResourcesSupplier implements Pack.ResourcesSupplier {
+      private final File content;
+
+      public FileResourcesSupplier(Path var1) {
+         this(var1.toFile());
+      }
+
+      public FileResourcesSupplier(File var1) {
+         super();
+         this.content = var1;
+      }
+
+      public PackResources openPrimary(PackLocationInfo var1) {
+         SharedZipFileAccess var2 = new SharedZipFileAccess(this.content);
+         return new FilePackResources(var1, var2, "");
+      }
+
+      public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
+         SharedZipFileAccess var3 = new SharedZipFileAccess(this.content);
+         FilePackResources var4 = new FilePackResources(var1, var3, "");
+         List var5 = var2.overlays();
+         if (var5.isEmpty()) {
+            return var4;
+         } else {
+            ArrayList var6 = new ArrayList(var5.size());
+            Iterator var7 = var5.iterator();
+
+            while(var7.hasNext()) {
+               String var8 = (String)var7.next();
+               var6.add(new FilePackResources(var1, var3, var8));
+            }
+
+            return new CompositePackResources(var4, var6);
+         }
       }
    }
 }

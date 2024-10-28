@@ -54,5 +54,10 @@ public class BlockElementFace {
          String var2 = GsonHelper.getAsString(var1, "cullface", "");
          return Direction.byName(var2);
       }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
+      }
    }
 }

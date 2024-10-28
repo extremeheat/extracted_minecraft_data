@@ -1,11 +1,12 @@
 package net.minecraft.client.gui.screens.reporting;
 
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,21 +34,17 @@ public class ReportPlayerScreen extends Screen {
       this.player = var3;
    }
 
-   @Override
    public Component getNarrationMessage() {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), MESSAGE);
    }
 
-   @Override
    protected void init() {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
-      this.layout.addChild(new StringWidget(this.title, this.font), this.layout.newCellSettings().paddingBottom(6));
-      this.layout.addChild(new MultiLineTextWidget(MESSAGE, this.font).setCentered(true), this.layout.newCellSettings().paddingBottom(6));
-      Button var1 = this.layout
-         .addChild(
-            Button.builder(REPORT_CHAT, var1x -> this.minecraft.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId())))
-               .build()
-         );
+      this.layout.addChild(new StringWidget(this.title, this.font), (LayoutSettings)this.layout.newCellSettings().paddingBottom(6));
+      this.layout.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), (LayoutSettings)this.layout.newCellSettings().paddingBottom(6));
+      Button var1 = (Button)this.layout.addChild(Button.builder(REPORT_CHAT, (var1x) -> {
+         this.minecraft.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId()));
+      }).build());
       if (!this.player.isChatReportable()) {
          var1.active = false;
          var1.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.not_reportable")));
@@ -56,38 +53,27 @@ public class ReportPlayerScreen extends Screen {
          var1.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.no_messages", this.player.getPlayerName())));
       }
 
-      this.layout
-         .addChild(
-            Button.builder(
-                  REPORT_SKIN,
-                  var1x -> this.minecraft
-                        .setScreen(new SkinReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getSkinGetter()))
-               )
-               .build()
-         );
-      this.layout
-         .addChild(
-            Button.builder(
-                  REPORT_NAME,
-                  var1x -> this.minecraft
-                        .setScreen(new NameReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getPlayerName()))
-               )
-               .build()
-         );
+      this.layout.addChild(Button.builder(REPORT_SKIN, (var1x) -> {
+         this.minecraft.setScreen(new SkinReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getSkinGetter()));
+      }).build());
+      this.layout.addChild(Button.builder(REPORT_NAME, (var1x) -> {
+         this.minecraft.setScreen(new NameReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getPlayerName()));
+      }).build());
       this.layout.addChild(SpacerElement.height(20));
-      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).build());
-      this.layout.visitWidgets(var1x -> {
+      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
+         this.onClose();
+      }).build());
+      this.layout.visitWidgets((var1x) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
       this.repositionElements();
    }
 
-   @Override
    protected void repositionElements() {
       this.layout.arrangeElements();
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }

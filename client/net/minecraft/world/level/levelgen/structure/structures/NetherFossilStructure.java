@@ -1,10 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
-import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.EmptyBlockGetter;
@@ -16,12 +14,13 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
-import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class NetherFossilStructure extends Structure {
-   public static final Codec<NetherFossilStructure> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(settingsCodec(var0), HeightProvider.CODEC.fieldOf("height").forGetter(var0x -> var0x.height)).apply(var0, NetherFossilStructure::new)
-   );
+   public static final MapCodec<NetherFossilStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(settingsCodec(var0), HeightProvider.CODEC.fieldOf("height").forGetter((var0x) -> {
+         return var0x.height;
+      })).apply(var0, NetherFossilStructure::new);
+   });
    public final HeightProvider height;
 
    public NetherFossilStructure(Structure.StructureSettings var1, HeightProvider var2) {
@@ -29,7 +28,6 @@ public class NetherFossilStructure extends Structure {
       this.height = var2;
    }
 
-   @Override
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       WorldgenRandom var2 = var1.random();
       int var3 = var1.chunkPos().getMinBlockX() + var2.nextInt(16);
@@ -42,7 +40,8 @@ public class NetherFossilStructure extends Structure {
 
       while(var7 > var5) {
          BlockState var10 = var8.getBlock(var7);
-         BlockState var11 = var8.getBlock(--var7);
+         --var7;
+         BlockState var11 = var8.getBlock(var7);
          if (var10.isAir() && (var11.is(Blocks.SOUL_SAND) || var11.isFaceSturdy(EmptyBlockGetter.INSTANCE, var9.setY(var7), Direction.UP))) {
             break;
          }
@@ -52,15 +51,12 @@ public class NetherFossilStructure extends Structure {
          return Optional.empty();
       } else {
          BlockPos var12 = new BlockPos(var3, var7, var4);
-         return Optional.of(
-            new Structure.GenerationStub(
-               var12, (Consumer<StructurePiecesBuilder>)(var3x -> NetherFossilPieces.addPieces(var1.structureTemplateManager(), var3x, var2, var12))
-            )
-         );
+         return Optional.of(new Structure.GenerationStub(var12, (var3x) -> {
+            NetherFossilPieces.addPieces(var1.structureTemplateManager(), var3x, var2, var12);
+         }));
       }
    }
 
-   @Override
    public StructureType<?> type() {
       return StructureType.NETHER_FOSSIL;
    }

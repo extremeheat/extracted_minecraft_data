@@ -13,16 +13,20 @@ public class LlamaRenderer extends MobRenderer<Llama, LlamaModel<Llama>> {
    private static final ResourceLocation GRAY = new ResourceLocation("textures/entity/llama/gray.png");
 
    public LlamaRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
-      super(var1, new LlamaModel<>(var1.bakeLayer(var2)), 0.7F);
+      super(var1, new LlamaModel(var1.bakeLayer(var2)), 0.7F);
       this.addLayer(new LlamaDecorLayer(this, var1.getModelSet()));
    }
 
    public ResourceLocation getTextureLocation(Llama var1) {
-      return switch(var1.getVariant()) {
-         case CREAMY -> CREAMY;
-         case WHITE -> WHITE;
-         case BROWN -> BROWN;
-         case GRAY -> GRAY;
-      };
+      ResourceLocation var10000;
+      switch (var1.getVariant()) {
+         case CREAMY -> var10000 = CREAMY;
+         case WHITE -> var10000 = WHITE;
+         case BROWN -> var10000 = BROWN;
+         case GRAY -> var10000 = GRAY;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 }

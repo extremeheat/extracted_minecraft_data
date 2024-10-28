@@ -10,9 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundEntityPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSoundEntityPacket::write, ClientboundSoundEntityPacket::new
-   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundEntityPacket> STREAM_CODEC = Packet.codec(ClientboundSoundEntityPacket::write, ClientboundSoundEntityPacket::new);
    private final Holder<SoundEvent> sound;
    private final SoundSource source;
    private final int id;
@@ -32,8 +30,8 @@ public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketList
 
    private ClientboundSoundEntityPacket(RegistryFriendlyByteBuf var1) {
       super();
-      this.sound = SoundEvent.STREAM_CODEC.decode(var1);
-      this.source = var1.readEnum(SoundSource.class);
+      this.sound = (Holder)SoundEvent.STREAM_CODEC.decode(var1);
+      this.source = (SoundSource)var1.readEnum(SoundSource.class);
       this.id = var1.readVarInt();
       this.volume = var1.readFloat();
       this.pitch = var1.readFloat();
@@ -49,7 +47,6 @@ public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketList
       var1.writeLong(this.seed);
    }
 
-   @Override
    public PacketType<ClientboundSoundEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SOUND_ENTITY;
    }

@@ -10,9 +10,7 @@ import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 
 public class ClientboundSetDisplayObjectivePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetDisplayObjectivePacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetDisplayObjectivePacket::write, ClientboundSetDisplayObjectivePacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetDisplayObjectivePacket> STREAM_CODEC = Packet.codec(ClientboundSetDisplayObjectivePacket::write, ClientboundSetDisplayObjectivePacket::new);
    private final DisplaySlot slot;
    private final String objectiveName;
 
@@ -24,11 +22,12 @@ public class ClientboundSetDisplayObjectivePacket implements Packet<ClientGamePa
       } else {
          this.objectiveName = var2.getName();
       }
+
    }
 
    private ClientboundSetDisplayObjectivePacket(FriendlyByteBuf var1) {
       super();
-      this.slot = var1.readById(DisplaySlot.BY_ID);
+      this.slot = (DisplaySlot)var1.readById(DisplaySlot.BY_ID);
       this.objectiveName = var1.readUtf();
    }
 
@@ -37,7 +36,6 @@ public class ClientboundSetDisplayObjectivePacket implements Packet<ClientGamePa
       var1.writeUtf(this.objectiveName);
    }
 
-   @Override
    public PacketType<ClientboundSetDisplayObjectivePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_DISPLAY_OBJECTIVE;
    }

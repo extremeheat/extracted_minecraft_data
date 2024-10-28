@@ -12,7 +12,7 @@ import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.level.Level;
 
 public class FireworkStarFadeRecipe extends CustomRecipe {
-   private static final Ingredient STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
+   private static final Ingredient STAR_INGREDIENT;
 
    public FireworkStarFadeRecipe(CraftingBookCategory var1) {
       super(var1);
@@ -66,13 +66,15 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       }
    }
 
-   @Override
    public boolean canCraftInDimensions(int var1, int var2) {
       return var1 * var2 >= 2;
    }
 
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.FIREWORK_STAR_FADE;
+   }
+
+   static {
+      STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
    }
 }

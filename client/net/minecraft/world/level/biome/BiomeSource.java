@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -25,21 +27,21 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 
 public abstract class BiomeSource implements BiomeResolver {
-   public static final Codec<BiomeSource> CODEC = BuiltInRegistries.BIOME_SOURCE.byNameCodec().dispatchStable(BiomeSource::codec, Function.identity());
-   private final Supplier<Set<Holder<Biome>>> possibleBiomes = Suppliers.memoize(
-      () -> this.collectPossibleBiomes().distinct().collect(ImmutableSet.toImmutableSet())
-   );
+   public static final Codec<BiomeSource> CODEC;
+   private final Supplier<Set<Holder<Biome>>> possibleBiomes = Suppliers.memoize(() -> {
+      return (Set)this.collectPossibleBiomes().distinct().collect(ImmutableSet.toImmutableSet());
+   });
 
    protected BiomeSource() {
       super();
    }
 
-   protected abstract Codec<? extends BiomeSource> codec();
+   protected abstract MapCodec<? extends BiomeSource> codec();
 
    protected abstract Stream<Holder<Biome>> collectPossibleBiomes();
 
    public Set<Holder<Biome>> possibleBiomes() {
-      return this.possibleBiomes.get();
+      return (Set)this.possibleBiomes.get();
    }
 
    public Set<Holder<Biome>> getBiomesWithin(int var1, int var2, int var3, int var4, Climate.Sampler var5) {
@@ -69,30 +71,31 @@ public abstract class BiomeSource implements BiomeResolver {
    }
 
    @Nullable
-   public Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(
-      int var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, RandomSource var6, Climate.Sampler var7
-   ) {
+   public Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, RandomSource var6, Climate.Sampler var7) {
       return this.findBiomeHorizontal(var1, var2, var3, var4, 1, var5, var6, false, var7);
    }
 
    @Nullable
-   public Pair<BlockPos, Holder<Biome>> findClosestBiome3d(
-      BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7
-   ) {
-      Set var8 = this.possibleBiomes().stream().filter(var5).collect(Collectors.toUnmodifiableSet());
+   public Pair<BlockPos, Holder<Biome>> findClosestBiome3d(BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7) {
+      Set var8 = (Set)this.possibleBiomes().stream().filter(var5).collect(Collectors.toUnmodifiableSet());
       if (var8.isEmpty()) {
          return null;
       } else {
          int var9 = Math.floorDiv(var2, var3);
          int[] var10 = Mth.outFromOrigin(var1.getY(), var7.getMinBuildHeight() + 1, var7.getMaxBuildHeight(), var4).toArray();
+         Iterator var11 = BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH).iterator();
 
-         for(BlockPos.MutableBlockPos var12 : BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH)) {
+         while(var11.hasNext()) {
+            BlockPos.MutableBlockPos var12 = (BlockPos.MutableBlockPos)var11.next();
             int var13 = var1.getX() + var12.getX() * var3;
             int var14 = var1.getZ() + var12.getZ() * var3;
             int var15 = QuartPos.fromBlock(var13);
             int var16 = QuartPos.fromBlock(var14);
+            int[] var17 = var10;
+            int var18 = var10.length;
 
-            for(int var20 : var10) {
+            for(int var19 = 0; var19 < var18; ++var19) {
+               int var20 = var17[var19];
                int var21 = QuartPos.fromBlock(var20);
                Holder var22 = this.getNoiseBiome(var15, var21, var16, var6);
                if (var8.contains(var22)) {
@@ -106,9 +109,7 @@ public abstract class BiomeSource implements BiomeResolver {
    }
 
    @Nullable
-   public Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(
-      int var1, int var2, int var3, int var4, int var5, Predicate<Holder<Biome>> var6, RandomSource var7, boolean var8, Climate.Sampler var9
-   ) {
+   public Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, int var5, Predicate<Holder<Biome>> var6, RandomSource var7, boolean var8, Climate.Sampler var9) {
       int var10 = QuartPos.fromBlock(var1);
       int var11 = QuartPos.fromBlock(var3);
       int var12 = QuartPos.fromBlock(var4);
@@ -151,9 +152,12 @@ public abstract class BiomeSource implements BiomeResolver {
       return var14;
    }
 
-   @Override
    public abstract Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4);
 
    public void addDebugInfo(List<String> var1, BlockPos var2, Climate.Sampler var3) {
+   }
+
+   static {
+      CODEC = BuiltInRegistries.BIOME_SOURCE.byNameCodec().dispatchStable(BiomeSource::codec, Function.identity());
    }
 }

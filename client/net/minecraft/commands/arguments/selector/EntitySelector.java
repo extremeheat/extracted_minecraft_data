@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -32,7 +33,6 @@ public class EntitySelector {
          return var1;
       }
 
-      @Override
       public Class<? extends Entity> getBaseClass() {
          return Entity.class;
       }
@@ -54,21 +54,7 @@ public class EntitySelector {
    private final EntityTypeTest<Entity, ?> type;
    private final boolean usesSelector;
 
-   public EntitySelector(
-      int var1,
-      boolean var2,
-      boolean var3,
-      Predicate<Entity> var4,
-      MinMaxBounds.Doubles var5,
-      Function<Vec3, Vec3> var6,
-      @Nullable AABB var7,
-      BiConsumer<Vec3, List<? extends Entity>> var8,
-      boolean var9,
-      @Nullable String var10,
-      @Nullable UUID var11,
-      @Nullable EntityType<?> var12,
-      boolean var13
-   ) {
+   public EntitySelector(int var1, boolean var2, boolean var3, Predicate<Entity> var4, MinMaxBounds.Doubles var5, Function<Vec3, Vec3> var6, @Nullable AABB var7, BiConsumer<Vec3, List<? extends Entity>> var8, boolean var9, @Nullable String var10, @Nullable UUID var11, @Nullable EntityType<?> var12, boolean var13) {
       super();
       this.maxResults = var1;
       this.includesEntities = var2;
@@ -81,7 +67,7 @@ public class EntitySelector {
       this.currentEntity = var9;
       this.playerName = var10;
       this.entityUUID = var11;
-      this.type = (EntityTypeTest<Entity, ?>)(var12 == null ? ANY_TYPE : var12);
+      this.type = (EntityTypeTest)(var12 == null ? ANY_TYPE : var12);
       this.usesSelector = var13;
    }
 
@@ -124,7 +110,9 @@ public class EntitySelector {
    }
 
    public List<? extends Entity> findEntities(CommandSourceStack var1) throws CommandSyntaxException {
-      return this.findEntitiesRaw(var1).stream().filter(var1x -> var1x.getType().isEnabled(var1.enabledFeatures())).toList();
+      return this.findEntitiesRaw(var1).stream().filter((var1x) -> {
+         return var1x.getType().isEnabled(var1.enabledFeatures());
+      }).toList();
    }
 
    private List<? extends Entity> findEntitiesRaw(CommandSourceStack var1) throws CommandSyntaxException {
@@ -133,29 +121,35 @@ public class EntitySelector {
          return this.findPlayers(var1);
       } else if (this.playerName != null) {
          ServerPlayer var8 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
-         return (List<? extends Entity>)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
+         return (List)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
       } else if (this.entityUUID != null) {
-         for(ServerLevel var9 : var1.getServer().getAllLevels()) {
-            Entity var10 = var9.getEntity(this.entityUUID);
-            if (var10 != null) {
-               return Lists.newArrayList(new Entity[]{var10});
-            }
-         }
+         Iterator var7 = var1.getServer().getAllLevels().iterator();
 
-         return Collections.emptyList();
+         Entity var10;
+         do {
+            if (!var7.hasNext()) {
+               return Collections.emptyList();
+            }
+
+            ServerLevel var9 = (ServerLevel)var7.next();
+            var10 = var9.getEntity(this.entityUUID);
+         } while(var10 == null);
+
+         return Lists.newArrayList(new Entity[]{var10});
       } else {
-         Vec3 var2 = this.position.apply(var1.getPosition());
+         Vec3 var2 = (Vec3)this.position.apply(var1.getPosition());
          Predicate var3 = this.getPredicate(var2);
          if (this.currentEntity) {
-            return (List<? extends Entity>)(var1.getEntity() != null && var3.test(var1.getEntity())
-               ? Lists.newArrayList(new Entity[]{var1.getEntity()})
-               : Collections.emptyList());
+            return (List)(var1.getEntity() != null && var3.test(var1.getEntity()) ? Lists.newArrayList(new Entity[]{var1.getEntity()}) : Collections.emptyList());
          } else {
             ArrayList var4 = Lists.newArrayList();
             if (this.isWorldLimited()) {
                this.addEntities(var4, var1.getLevel(), var2, var3);
             } else {
-               for(ServerLevel var6 : var1.getServer().getAllLevels()) {
+               Iterator var5 = var1.getServer().getAllLevels().iterator();
+
+               while(var5.hasNext()) {
+                  ServerLevel var6 = (ServerLevel)var5.next();
                   this.addEntities(var4, var6, var2, var3);
                }
             }
@@ -173,6 +167,7 @@ public class EntitySelector {
          } else {
             var2.getEntities(this.type, var4, var1, var5);
          }
+
       }
    }
 
@@ -192,19 +187,23 @@ public class EntitySelector {
 
    public List<ServerPlayer> findPlayers(CommandSourceStack var1) throws CommandSyntaxException {
       this.checkPermissions(var1);
+      ServerPlayer var8;
       if (this.playerName != null) {
-         ServerPlayer var9 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
-         return (List<ServerPlayer>)(var9 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var9}));
+         var8 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
+         return (List)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
       } else if (this.entityUUID != null) {
-         ServerPlayer var8 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
-         return (List<ServerPlayer>)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
+         var8 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
+         return (List)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
       } else {
-         Vec3 var2 = this.position.apply(var1.getPosition());
+         Vec3 var2 = (Vec3)this.position.apply(var1.getPosition());
          Predicate var3 = this.getPredicate(var2);
          if (this.currentEntity) {
-            Entity var11 = var1.getEntity();
-            if (var11 instanceof ServerPlayer var10 && var3.test(var10)) {
-               return Lists.newArrayList(new ServerPlayer[]{(ServerPlayer)var10});
+            Entity var10 = var1.getEntity();
+            if (var10 instanceof ServerPlayer) {
+               ServerPlayer var9 = (ServerPlayer)var10;
+               if (var3.test(var9)) {
+                  return Lists.newArrayList(new ServerPlayer[]{var9});
+               }
             }
 
             return Collections.emptyList();
@@ -215,18 +214,20 @@ public class EntitySelector {
                var4 = var1.getLevel().getPlayers(var3, var5);
             } else {
                var4 = Lists.newArrayList();
+               Iterator var6 = var1.getServer().getPlayerList().getPlayers().iterator();
 
-               for(ServerPlayer var7 : var1.getServer().getPlayerList().getPlayers()) {
+               while(var6.hasNext()) {
+                  ServerPlayer var7 = (ServerPlayer)var6.next();
                   if (var3.test(var7)) {
-                     var4.add(var7);
-                     if (var4.size() >= var5) {
-                        return (List<ServerPlayer>)var4;
+                     ((List)var4).add(var7);
+                     if (((List)var4).size() >= var5) {
+                        return (List)var4;
                      }
                   }
                }
             }
 
-            return this.sortAndLimit(var2, (List<ServerPlayer>)var4);
+            return this.sortAndLimit(var2, (List)var4);
          }
       }
    }
@@ -235,11 +236,15 @@ public class EntitySelector {
       Predicate var2 = this.predicate;
       if (this.aabb != null) {
          AABB var3 = this.aabb.move(var1);
-         var2 = var2.and(var1x -> var3.intersects(var1x.getBoundingBox()));
+         var2 = var2.and((var1x) -> {
+            return var3.intersects(var1x.getBoundingBox());
+         });
       }
 
       if (!this.range.isAny()) {
-         var2 = var2.and(var2x -> this.range.matchesSqr(var2x.distanceToSqr(var1)));
+         var2 = var2.and((var2x) -> {
+            return this.range.matchesSqr(var2x.distanceToSqr(var1));
+         });
       }
 
       return var2;
@@ -254,6 +259,6 @@ public class EntitySelector {
    }
 
    public static Component joinNames(List<? extends Entity> var0) {
-      return ComponentUtils.formatList(var0, Entity::getDisplayName);
+      return ComponentUtils.formatList(var0, (Function)(Entity::getDisplayName));
    }
 }

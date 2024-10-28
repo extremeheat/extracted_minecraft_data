@@ -14,41 +14,36 @@ public class SpectatorMenu {
    static final ResourceLocation CLOSE_SPRITE = new ResourceLocation("spectator/close");
    static final ResourceLocation SCROLL_LEFT_SPRITE = new ResourceLocation("spectator/scroll_left");
    static final ResourceLocation SCROLL_RIGHT_SPRITE = new ResourceLocation("spectator/scroll_right");
-   private static final SpectatorMenuItem CLOSE_ITEM = new SpectatorMenu.CloseSpectatorItem();
-   private static final SpectatorMenuItem SCROLL_LEFT = new SpectatorMenu.ScrollMenuItem(-1, true);
-   private static final SpectatorMenuItem SCROLL_RIGHT_ENABLED = new SpectatorMenu.ScrollMenuItem(1, true);
-   private static final SpectatorMenuItem SCROLL_RIGHT_DISABLED = new SpectatorMenu.ScrollMenuItem(1, false);
+   private static final SpectatorMenuItem CLOSE_ITEM = new CloseSpectatorItem();
+   private static final SpectatorMenuItem SCROLL_LEFT = new ScrollMenuItem(-1, true);
+   private static final SpectatorMenuItem SCROLL_RIGHT_ENABLED = new ScrollMenuItem(1, true);
+   private static final SpectatorMenuItem SCROLL_RIGHT_DISABLED = new ScrollMenuItem(1, false);
    private static final int MAX_PER_PAGE = 8;
    static final Component CLOSE_MENU_TEXT = Component.translatable("spectatorMenu.close");
    static final Component PREVIOUS_PAGE_TEXT = Component.translatable("spectatorMenu.previous_page");
    static final Component NEXT_PAGE_TEXT = Component.translatable("spectatorMenu.next_page");
    public static final SpectatorMenuItem EMPTY_SLOT = new SpectatorMenuItem() {
-      @Override
       public void selectItem(SpectatorMenu var1) {
       }
 
-      @Override
       public Component getName() {
          return CommonComponents.EMPTY;
       }
 
-      @Override
       public void renderIcon(GuiGraphics var1, float var2, int var3) {
       }
 
-      @Override
       public boolean isEnabled() {
          return false;
       }
    };
    private final SpectatorMenuListener listener;
-   private SpectatorMenuCategory category;
+   private SpectatorMenuCategory category = new RootSpectatorMenuCategory();
    private int selectedSlot = -1;
    int page;
 
    public SpectatorMenu(SpectatorMenuListener var1) {
       super();
-      this.category = new RootSpectatorMenuCategory();
       this.listener = var1;
    }
 
@@ -61,9 +56,7 @@ public class SpectatorMenu {
       } else if (var1 == 8) {
          return CLOSE_ITEM;
       } else {
-         return var2 >= 0 && var2 < this.category.getItems().size()
-            ? (SpectatorMenuItem)MoreObjects.firstNonNull(this.category.getItems().get(var2), EMPTY_SLOT)
-            : EMPTY_SLOT;
+         return var2 >= 0 && var2 < this.category.getItems().size() ? (SpectatorMenuItem)MoreObjects.firstNonNull((SpectatorMenuItem)this.category.getItems().get(var2), EMPTY_SLOT) : EMPTY_SLOT;
       }
    }
 
@@ -94,6 +87,7 @@ public class SpectatorMenu {
             this.selectedSlot = var1;
          }
       }
+
    }
 
    public void exit() {
@@ -119,28 +113,24 @@ public class SpectatorMenu {
          super();
       }
 
-      @Override
       public void selectItem(SpectatorMenu var1) {
          var1.exit();
       }
 
-      @Override
       public Component getName() {
          return SpectatorMenu.CLOSE_MENU_TEXT;
       }
 
-      @Override
       public void renderIcon(GuiGraphics var1, float var2, int var3) {
          var1.blitSprite(SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16);
       }
 
-      @Override
       public boolean isEnabled() {
          return true;
       }
    }
 
-   static class ScrollMenuItem implements SpectatorMenuItem {
+   private static class ScrollMenuItem implements SpectatorMenuItem {
       private final int direction;
       private final boolean enabled;
 
@@ -150,26 +140,23 @@ public class SpectatorMenu {
          this.enabled = var2;
       }
 
-      @Override
       public void selectItem(SpectatorMenu var1) {
          var1.page += this.direction;
       }
 
-      @Override
       public Component getName() {
          return this.direction < 0 ? SpectatorMenu.PREVIOUS_PAGE_TEXT : SpectatorMenu.NEXT_PAGE_TEXT;
       }
 
-      @Override
       public void renderIcon(GuiGraphics var1, float var2, int var3) {
          if (this.direction < 0) {
             var1.blitSprite(SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16);
          } else {
             var1.blitSprite(SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16);
          }
+
       }
 
-      @Override
       public boolean isEnabled() {
          return this.enabled;
       }

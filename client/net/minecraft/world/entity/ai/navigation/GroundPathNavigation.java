@@ -23,34 +23,28 @@ public class GroundPathNavigation extends PathNavigation {
       super(var1, var2);
    }
 
-   @Override
    protected PathFinder createPathFinder(int var1) {
       this.nodeEvaluator = new WalkNodeEvaluator();
       this.nodeEvaluator.setCanPassDoors(true);
       return new PathFinder(this.nodeEvaluator, var1);
    }
 
-   @Override
    protected boolean canUpdatePath() {
       return this.mob.onGround() || this.mob.isInLiquid() || this.mob.isPassenger();
    }
 
-   @Override
    protected Vec3 getTempMobPos() {
       return new Vec3(this.mob.getX(), (double)this.getSurfaceY(), this.mob.getZ());
    }
 
-   @Override
    public Path createPath(BlockPos var1, int var2) {
       LevelChunk var3 = this.level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
       if (var3 == null) {
          return null;
       } else {
+         BlockPos var4;
          if (var3.getBlockState(var1).isAir()) {
-            BlockPos var4 = var1.below();
-
-            while(var4.getY() > this.level.getMinBuildHeight() && var3.getBlockState(var4).isAir()) {
-               var4 = var4.below();
+            for(var4 = var1.below(); var4.getY() > this.level.getMinBuildHeight() && var3.getBlockState(var4).isAir(); var4 = var4.below()) {
             }
 
             if (var4.getY() > this.level.getMinBuildHeight()) {
@@ -67,18 +61,14 @@ public class GroundPathNavigation extends PathNavigation {
          if (!var3.getBlockState(var1).isSolid()) {
             return super.createPath(var1, var2);
          } else {
-            BlockPos var5 = var1.above();
-
-            while(var5.getY() < this.level.getMaxBuildHeight() && var3.getBlockState(var5).isSolid()) {
-               var5 = var5.above();
+            for(var4 = var1.above(); var4.getY() < this.level.getMaxBuildHeight() && var3.getBlockState(var4).isSolid(); var4 = var4.above()) {
             }
 
-            return super.createPath(var5, var2);
+            return super.createPath(var4, var2);
          }
       }
    }
 
-   @Override
    public Path createPath(Entity var1, int var2) {
       return this.createPath(var1.blockPosition(), var2);
    }
@@ -89,20 +79,22 @@ public class GroundPathNavigation extends PathNavigation {
          BlockState var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ()));
          int var3 = 0;
 
-         while(var2.is(Blocks.WATER)) {
-            var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)(++var1), this.mob.getZ()));
-            if (++var3 > 16) {
-               return this.mob.getBlockY();
+         do {
+            if (!var2.is(Blocks.WATER)) {
+               return var1;
             }
-         }
 
-         return var1;
+            ++var1;
+            var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ()));
+            ++var3;
+         } while(var3 <= 16);
+
+         return this.mob.getBlockY();
       } else {
          return Mth.floor(this.mob.getY() + 0.5);
       }
    }
 
-   @Override
    protected void trimPath() {
       super.trimPath();
       if (this.avoidSun) {
@@ -118,6 +110,7 @@ public class GroundPathNavigation extends PathNavigation {
             }
          }
       }
+
    }
 
    protected boolean hasValidPathType(PathType var1) {

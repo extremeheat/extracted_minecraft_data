@@ -57,25 +57,28 @@ public class AdvancementNode {
       this.children.add(var1);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof AdvancementNode var2 && this.holder.equals(var2.holder)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof AdvancementNode) {
+            AdvancementNode var2 = (AdvancementNode)var1;
+            if (this.holder.equals(var2.holder)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       return this.holder.hashCode();
    }
 
-   @Override
    public String toString() {
       return this.holder.id().toString();
    }

@@ -6,9 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetHealthPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetHealthPacket> STREAM_CODEC = Packet.codec(
-      ClientboundSetHealthPacket::write, ClientboundSetHealthPacket::new
-   );
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetHealthPacket> STREAM_CODEC = Packet.codec(ClientboundSetHealthPacket::write, ClientboundSetHealthPacket::new);
    private final float health;
    private final int food;
    private final float saturation;
@@ -33,7 +31,6 @@ public class ClientboundSetHealthPacket implements Packet<ClientGamePacketListen
       var1.writeFloat(this.saturation);
    }
 
-   @Override
    public PacketType<ClientboundSetHealthPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_HEALTH;
    }

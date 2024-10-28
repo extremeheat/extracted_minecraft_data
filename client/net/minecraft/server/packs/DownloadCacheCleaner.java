@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 
@@ -41,7 +42,7 @@ public class DownloadCacheCleaner {
          HashSet var5 = new HashSet();
 
          for(int var6 = 0; var6 < var3; ++var6) {
-            DownloadCacheCleaner.PathAndPriority var7 = (DownloadCacheCleaner.PathAndPriority)var4.get(var6);
+            PathAndPriority var7 = (PathAndPriority)var4.get(var6);
             Path var8 = var7.path;
 
             try {
@@ -55,8 +56,11 @@ public class DownloadCacheCleaner {
          }
 
          var5.remove(var0);
+         Iterator var14 = var5.iterator();
 
-         for(Path var15 : var5) {
+         while(var14.hasNext()) {
+            Path var15 = (Path)var14.next();
+
             try {
                Files.delete(var15);
             } catch (DirectoryNotEmptyException var10) {
@@ -67,19 +71,25 @@ public class DownloadCacheCleaner {
       } catch (UncheckedIOException | IOException var13) {
          LOGGER.error("Failed to vacuum cache dir {}", var0, var13);
       }
+
    }
 
-   private static List<DownloadCacheCleaner.PathAndTime> listFilesWithModificationTimes(final Path var0) throws IOException {
+   private static List<PathAndTime> listFilesWithModificationTimes(final Path var0) throws IOException {
       try {
          final ArrayList var1 = new ArrayList();
          Files.walkFileTree(var0, new SimpleFileVisitor<Path>() {
             public FileVisitResult visitFile(Path var1x, BasicFileAttributes var2) {
                if (var2.isRegularFile() && !var1x.getParent().equals(var0)) {
                   FileTime var3 = var2.lastModifiedTime();
-                  var1.add(new DownloadCacheCleaner.PathAndTime(var1x, var3));
+                  var1.add(new PathAndTime(var1x, var3));
                }
 
                return FileVisitResult.CONTINUE;
+            }
+
+            // $FF: synthetic method
+            public FileVisitResult visitFile(Object var1x, BasicFileAttributes var2) throws IOException {
+               return this.visitFile((Path)var1x, var2);
             }
          });
          return var1;
@@ -88,43 +98,56 @@ public class DownloadCacheCleaner {
       }
    }
 
-   private static List<DownloadCacheCleaner.PathAndPriority> prioritizeFilesInDirs(List<DownloadCacheCleaner.PathAndTime> var0) {
+   private static List<PathAndPriority> prioritizeFilesInDirs(List<PathAndTime> var0) {
       ArrayList var1 = new ArrayList();
       Object2IntOpenHashMap var2 = new Object2IntOpenHashMap();
+      Iterator var3 = var0.iterator();
 
-      for(DownloadCacheCleaner.PathAndTime var4 : var0) {
+      while(var3.hasNext()) {
+         PathAndTime var4 = (PathAndTime)var3.next();
          int var5 = var2.addTo(var4.path.getParent(), 1);
-         var1.add(new DownloadCacheCleaner.PathAndPriority(var4.path, var5));
+         var1.add(new PathAndPriority(var4.path, var5));
       }
 
       return var1;
    }
 
-   static record PathAndPriority(Path b, int c) {
+   private static record PathAndTime(Path path, FileTime modifiedTime) {
+      final Path path;
+      public static final Comparator<PathAndTime> NEWEST_FIRST = Comparator.comparing(PathAndTime::modifiedTime).reversed();
+
+      PathAndTime(Path var1, FileTime var2) {
+         super();
+         this.path = var1;
+         this.modifiedTime = var2;
+      }
+
+      public Path path() {
+         return this.path;
+      }
+
+      public FileTime modifiedTime() {
+         return this.modifiedTime;
+      }
+   }
+
+   private static record PathAndPriority(Path path, int removalPriority) {
       final Path path;
       final int removalPriority;
-      public static final Comparator<DownloadCacheCleaner.PathAndPriority> HIGHEST_PRIORITY_FIRST = Comparator.comparing(
-            DownloadCacheCleaner.PathAndPriority::removalPriority
-         )
-         .reversed();
+      public static final Comparator<PathAndPriority> HIGHEST_PRIORITY_FIRST = Comparator.comparing(PathAndPriority::removalPriority).reversed();
 
       PathAndPriority(Path var1, int var2) {
          super();
          this.path = var1;
          this.removalPriority = var2;
       }
-   }
 
-   static record PathAndTime(Path b, FileTime c) {
-      final Path path;
-      private final FileTime modifiedTime;
-      public static final Comparator<DownloadCacheCleaner.PathAndTime> NEWEST_FIRST = Comparator.comparing(DownloadCacheCleaner.PathAndTime::modifiedTime)
-         .reversed();
+      public Path path() {
+         return this.path;
+      }
 
-      PathAndTime(Path var1, FileTime var2) {
-         super();
-         this.path = var1;
-         this.modifiedTime = var2;
+      public int removalPriority() {
+         return this.removalPriority;
       }
    }
 }

@@ -13,15 +13,15 @@ public class WalkTarget {
    private final int closeEnoughDist;
 
    public WalkTarget(BlockPos var1, float var2, int var3) {
-      this(new BlockPosTracker(var1), var2, var3);
+      this((PositionTracker)(new BlockPosTracker(var1)), var2, var3);
    }
 
    public WalkTarget(Vec3 var1, float var2, int var3) {
-      this(new BlockPosTracker(BlockPos.containing(var1)), var2, var3);
+      this((PositionTracker)(new BlockPosTracker(BlockPos.containing(var1))), var2, var3);
    }
 
    public WalkTarget(Entity var1, float var2, int var3) {
-      this(new EntityTracker(var1, false), var2, var3);
+      this((PositionTracker)(new EntityTracker(var1, false)), var2, var3);
    }
 
    public WalkTarget(PositionTracker var1, float var2, int var3) {

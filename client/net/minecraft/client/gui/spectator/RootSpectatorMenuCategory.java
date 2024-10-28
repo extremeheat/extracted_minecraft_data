@@ -16,12 +16,10 @@ public class RootSpectatorMenuCategory implements SpectatorMenuCategory {
       this.items.add(new TeleportToTeamMenuCategory());
    }
 
-   @Override
    public List<SpectatorMenuItem> getItems() {
       return this.items;
    }
 
-   @Override
    public Component getPrompt() {
       return PROMPT_TEXT;
    }

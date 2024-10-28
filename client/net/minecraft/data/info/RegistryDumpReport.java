@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.DefaultedRegistry;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
@@ -21,10 +20,11 @@ public class RegistryDumpReport implements DataProvider {
       this.output = var1;
    }
 
-   @Override
    public CompletableFuture<?> run(CachedOutput var1) {
       JsonObject var2 = new JsonObject();
-      BuiltInRegistries.REGISTRY.holders().forEach(var1x -> var2.add(var1x.key().location().toString(), dumpRegistry(var1x.value())));
+      BuiltInRegistries.REGISTRY.holders().forEach((var1x) -> {
+         var2.add(var1x.key().location().toString(), dumpRegistry((Registry)var1x.value()));
+      });
       Path var3 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("registries.json");
       return DataProvider.saveStable(var1, var2, var3);
    }
@@ -39,18 +39,17 @@ public class RegistryDumpReport implements DataProvider {
       int var4 = BuiltInRegistries.REGISTRY.getId(var0);
       var1.addProperty("protocol_id", var4);
       JsonObject var3 = new JsonObject();
-      var0.holders().forEach(var2x -> {
-         Object var3xx = var2x.value();
-         int var4xx = var0.getId(var3xx);
+      var0.holders().forEach((var2x) -> {
+         Object var3x = var2x.value();
+         int var4 = var0.getId(var3x);
          JsonObject var5 = new JsonObject();
-         var5.addProperty("protocol_id", var4xx);
+         var5.addProperty("protocol_id", var4);
          var3.add(var2x.key().location().toString(), var5);
       });
       var1.add("entries", var3);
       return var1;
    }
 
-   @Override
    public final String getName() {
       return "Registry Dump";
    }

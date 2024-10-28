@@ -13,17 +13,14 @@ public class HangingSignBlockEntity extends SignBlockEntity {
       super(BlockEntityType.HANGING_SIGN, var1, var2);
    }
 
-   @Override
    public int getTextLineHeight() {
       return 9;
    }
 
-   @Override
    public int getMaxTextLineWidth() {
       return 60;
    }
 
-   @Override
    public SoundEvent getSignInteractionFailedSoundEvent() {
       return SoundEvents.WAXED_HANGING_SIGN_INTERACT_FAIL;
    }

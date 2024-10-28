@@ -30,27 +30,25 @@ public class IntegerProperty extends Property<Integer> {
       }
    }
 
-   @Override
    public Collection<Integer> getPossibleValues() {
       return this.values;
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof IntegerProperty var2 && super.equals(var1)) {
-            return this.values.equals(var2.values);
+         if (var1 instanceof IntegerProperty) {
+            IntegerProperty var2 = (IntegerProperty)var1;
+            if (super.equals(var1)) {
+               return this.values.equals(var2.values);
+            }
          }
 
          return false;
       }
    }
 
-   @Override
    public int generateHashCode() {
       return 31 * super.generateHashCode() + this.values.hashCode();
    }
@@ -59,7 +57,6 @@ public class IntegerProperty extends Property<Integer> {
       return new IntegerProperty(var0, var1, var2);
    }
 
-   @Override
    public Optional<Integer> getValue(String var1) {
       try {
          Integer var2 = Integer.valueOf(var1);

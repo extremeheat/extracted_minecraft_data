@@ -28,47 +28,36 @@ public class EditServerScreen extends Screen {
       this.serverData = var3;
    }
 
-   @Override
    protected void init() {
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, Component.translatable("addServer.enterName"));
       this.nameEdit.setValue(this.serverData.name);
-      this.nameEdit.setResponder(var1 -> this.updateAddButtonStatus());
+      this.nameEdit.setResponder((var1) -> {
+         this.updateAddButtonStatus();
+      });
       this.addWidget(this.nameEdit);
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, Component.translatable("addServer.enterIp"));
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.serverData.ip);
-      this.ipEdit.setResponder(var1 -> this.updateAddButtonStatus());
+      this.ipEdit.setResponder((var1) -> {
+         this.updateAddButtonStatus();
+      });
       this.addWidget(this.ipEdit);
-      this.addRenderableWidget(
-         CycleButton.builder(ServerData.ServerPackStatus::getName)
-            .withValues(ServerData.ServerPackStatus.values())
-            .withInitialValue(this.serverData.getResourcePackStatus())
-            .create(
-               this.width / 2 - 100,
-               this.height / 4 + 72,
-               200,
-               20,
-               Component.translatable("addServer.resourcePack"),
-               (var1, var2) -> this.serverData.setResourcePackStatus(var2)
-            )
-      );
-      this.addButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("addServer.add"), var1 -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build()
-      );
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.callback.accept(false))
-            .bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20)
-            .build()
-      );
+      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues((Object[])ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("addServer.resourcePack"), (var1, var2) -> {
+         this.serverData.setResourcePackStatus(var2);
+      }));
+      this.addButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("addServer.add"), (var1) -> {
+         this.onAdd();
+      }).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
+         this.callback.accept(false);
+      }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
       this.updateAddButtonStatus();
    }
 
-   @Override
    protected void setInitialFocus() {
       this.setInitialFocus(this.nameEdit);
    }
 
-   @Override
    public void resize(Minecraft var1, int var2, int var3) {
       String var4 = this.ipEdit.getValue();
       String var5 = this.nameEdit.getValue();
@@ -83,7 +72,6 @@ public class EditServerScreen extends Screen {
       this.callback.accept(true);
    }
 
-   @Override
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }
@@ -92,12 +80,11 @@ public class EditServerScreen extends Screen {
       this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue()) && !this.nameEdit.getValue().isEmpty();
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
-      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100 + 1, 53, 10526880);
-      var1.drawString(this.font, IP_LABEL, this.width / 2 - 100 + 1, 94, 10526880);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, 16777215);
+      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, 10526880);
+      var1.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, 10526880);
       this.nameEdit.render(var1, var2, var3, var4);
       this.ipEdit.render(var1, var2, var3, var4);
    }

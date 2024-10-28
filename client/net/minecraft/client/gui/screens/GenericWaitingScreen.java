@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
@@ -22,7 +23,7 @@ public class GenericWaitingScreen extends Screen {
    private int disableButtonTicks;
 
    public static GenericWaitingScreen createWaiting(Component var0, Component var1, Runnable var2) {
-      return new GenericWaitingScreen(var0, null, var1, var2, 0);
+      return new GenericWaitingScreen(var0, (Component)null, var1, var2, 0);
    }
 
    public static GenericWaitingScreen createCompleted(Component var0, Component var1, Component var2, Runnable var3) {
@@ -37,7 +38,6 @@ public class GenericWaitingScreen extends Screen {
       this.disableButtonTicks = var5;
    }
 
-   @Override
    protected void init() {
       super.init();
       if (this.messageText != null) {
@@ -47,12 +47,15 @@ public class GenericWaitingScreen extends Screen {
       boolean var1 = true;
       boolean var2 = true;
       int var3 = this.message != null ? this.message.getLineCount() : 1;
-      int var4 = Math.max(var3, 5) * 9;
+      int var10000 = Math.max(var3, 5);
+      Objects.requireNonNull(this.font);
+      int var4 = var10000 * 9;
       int var5 = Math.min(120 + var4, this.height - 40);
-      this.button = this.addRenderableWidget(Button.builder(this.buttonLabel, var1x -> this.onClose()).bounds((this.width - 150) / 2, var5, 150, 20).build());
+      this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (var1x) -> {
+         this.onClose();
+      }).bounds((this.width - 150) / 2, var5, 150, 20).build());
    }
 
-   @Override
    public void tick() {
       if (this.disableButtonTicks > 0) {
          --this.disableButtonTicks;
@@ -61,29 +64,26 @@ public class GenericWaitingScreen extends Screen {
       this.button.active = this.disableButtonTicks == 0;
    }
 
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 80, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, 16777215);
       if (this.message == null) {
          String var5 = LoadingDotsText.get(Util.getMillis());
-         var1.drawCenteredString(this.font, var5, this.width / 2, 120, 10526880);
+         var1.drawCenteredString(this.font, (String)var5, this.width / 2, 120, 10526880);
       } else {
          this.message.renderCentered(var1, this.width / 2, 120);
       }
+
    }
 
-   @Override
    public boolean shouldCloseOnEsc() {
       return this.message != null && this.button.active;
    }
 
-   @Override
    public void onClose() {
       this.buttonCallback.run();
    }
 
-   @Override
    public Component getNarrationMessage() {
       return CommonComponents.joinForNarration(this.title, this.messageText != null ? this.messageText : CommonComponents.EMPTY);
    }

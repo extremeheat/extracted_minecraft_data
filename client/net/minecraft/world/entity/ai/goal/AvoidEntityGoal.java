@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.EntitySelector;
@@ -28,7 +29,12 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
    private final TargetingConditions avoidEntityTargeting;
 
    public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6) {
-      this(var1, var2, var0 -> true, var3, var4, var6, EntitySelector.NO_CREATIVE_OR_SPECTATOR::test);
+      Predicate var10003 = (var0) -> {
+         return true;
+      };
+      Predicate var10007 = EntitySelector.NO_CREATIVE_OR_SPECTATOR;
+      Objects.requireNonNull(var10007);
+      this(var1, var2, var10003, var3, var4, var6, var10007::test);
    }
 
    public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, Predicate<LivingEntity> var3, float var4, double var5, double var7, Predicate<LivingEntity> var9) {
@@ -46,23 +52,15 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
    }
 
    public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6, Predicate<LivingEntity> var8) {
-      this(var1, var2, var0 -> true, var3, var4, var6, var8);
+      this(var1, var2, (var0) -> {
+         return true;
+      }, var3, var4, var6, var8);
    }
 
-   @Override
    public boolean canUse() {
-      this.toAvoid = this.mob
-         .level()
-         .getNearestEntity(
-            this.mob
-               .level()
-               .getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), var0 -> true),
-            this.avoidEntityTargeting,
-            this.mob,
-            this.mob.getX(),
-            this.mob.getY(),
-            this.mob.getZ()
-         );
+      this.toAvoid = this.mob.level().getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (var0) -> {
+         return true;
+      }), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
       if (this.toAvoid == null) {
          return false;
       } else {
@@ -78,27 +76,24 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
       }
    }
 
-   @Override
    public boolean canContinueToUse() {
       return !this.pathNav.isDone();
    }
 
-   @Override
    public void start() {
       this.pathNav.moveTo(this.path, this.walkSpeedModifier);
    }
 
-   @Override
    public void stop() {
       this.toAvoid = null;
    }
 
-   @Override
    public void tick() {
       if (this.mob.distanceToSqr(this.toAvoid) < 49.0) {
          this.mob.getNavigation().setSpeedModifier(this.sprintSpeedModifier);
       } else {
          this.mob.getNavigation().setSpeedModifier(this.walkSpeedModifier);
       }
+
    }
 }

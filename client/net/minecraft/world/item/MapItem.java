@@ -55,7 +55,7 @@ public class MapItem extends ComplexItem {
 
    @Nullable
    public static MapItemSavedData getSavedData(ItemStack var0, Level var1) {
-      MapId var2 = var0.get(DataComponents.MAP_ID);
+      MapId var2 = (MapId)var0.get(DataComponents.MAP_ID);
       return getSavedData(var2, var1);
    }
 
@@ -100,8 +100,9 @@ public class MapItem extends ComplexItem {
                      if (!var23.isEmpty()) {
                         int var24 = 0;
                         double var25 = 0.0;
+                        int var27;
                         if (var1.dimensionType().hasCeiling()) {
-                           int var27 = var20 + var21 * 231871;
+                           var27 = var20 + var21 * 231871;
                            var27 = var27 * var27 * 31287121 + var27 * 11;
                            if ((var27 >> 20 & 1) == 0) {
                               var22.add(Blocks.DIRT.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 10);
@@ -111,20 +112,17 @@ public class MapItem extends ComplexItem {
 
                            var25 = 100.0;
                         } else {
-                           for(int var35 = 0; var35 < var4; ++var35) {
+                           for(var27 = 0; var27 < var4; ++var27) {
                               for(int var28 = 0; var28 < var4; ++var28) {
-                                 var11.set(var20 + var35, 0, var21 + var28);
+                                 var11.set(var20 + var27, 0, var21 + var28);
                                  int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
                                  BlockState var30;
                                  if (var29 <= var1.getMinBuildHeight() + 1) {
-                                    if (var1.isPotato()) {
-                                       var30 = Blocks.WARPED_WART_BLOCK.defaultBlockState();
-                                    } else {
-                                       var30 = Blocks.BEDROCK.defaultBlockState();
-                                    }
+                                    var30 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
-                                       var11.setY(--var29);
+                                       --var29;
+                                       var11.setY(var29);
                                        var30 = var23.getBlockState(var11);
                                     } while(var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinBuildHeight());
 
@@ -151,37 +149,39 @@ public class MapItem extends ComplexItem {
                         }
 
                         var24 /= var4 * var4;
-                        MapColor var36 = (MapColor)Iterables.getFirst(Multisets.copyHighestCountFirst(var22), MapColor.NONE);
-                        MapColor.Brightness var37;
-                        if (var36 == MapColor.WATER) {
-                           double var38 = (double)var24 * 0.1 + (double)(var14 + var17 & 1) * 0.2;
-                           if (var38 < 0.5) {
-                              var37 = MapColor.Brightness.HIGH;
-                           } else if (var38 > 0.9) {
-                              var37 = MapColor.Brightness.LOW;
+                        MapColor var33 = (MapColor)Iterables.getFirst(Multisets.copyHighestCountFirst(var22), MapColor.NONE);
+                        MapColor.Brightness var34;
+                        double var35;
+                        if (var33 == MapColor.WATER) {
+                           var35 = (double)var24 * 0.1 + (double)(var14 + var17 & 1) * 0.2;
+                           if (var35 < 0.5) {
+                              var34 = MapColor.Brightness.HIGH;
+                           } else if (var35 > 0.9) {
+                              var34 = MapColor.Brightness.LOW;
                            } else {
-                              var37 = MapColor.Brightness.NORMAL;
+                              var34 = MapColor.Brightness.NORMAL;
                            }
                         } else {
-                           double var39 = (var25 - var15) * 4.0 / (double)(var4 + 4) + ((double)(var14 + var17 & 1) - 0.5) * 0.4;
-                           if (var39 > 0.6) {
-                              var37 = MapColor.Brightness.HIGH;
-                           } else if (var39 < -0.6) {
-                              var37 = MapColor.Brightness.LOW;
+                           var35 = (var25 - var15) * 4.0 / (double)(var4 + 4) + ((double)(var14 + var17 & 1) - 0.5) * 0.4;
+                           if (var35 > 0.6) {
+                              var34 = MapColor.Brightness.HIGH;
+                           } else if (var35 < -0.6) {
+                              var34 = MapColor.Brightness.LOW;
                            } else {
-                              var37 = MapColor.Brightness.NORMAL;
+                              var34 = MapColor.Brightness.NORMAL;
                            }
                         }
 
                         var15 = var25;
                         if (var17 >= 0 && var18 < var9 * var9 && (!var19 || (var14 + var17 & 1) != 0)) {
-                           var13 |= var3.updateColor(var14, var17, var36.getPackedId(var37));
+                           var13 |= var3.updateColor(var14, var17, var33.getPackedId(var34));
                         }
                      }
                   }
                }
             }
          }
+
       }
    }
 
@@ -195,7 +195,7 @@ public class MapItem extends ComplexItem {
    }
 
    public static void renderBiomePreviewMap(ServerLevel var0, ItemStack var1) {
-      MapItemSavedData var2 = getSavedData(var1, var0);
+      MapItemSavedData var2 = getSavedData((ItemStack)var1, var0);
       if (var2 != null) {
          if (var0.dimension() == var2.dimension) {
             int var3 = 1 << var2.scale;
@@ -206,104 +206,104 @@ public class MapItem extends ComplexItem {
             int var8 = var5 / var3 - 64;
             BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
 
-            for(int var10 = 0; var10 < 128; ++var10) {
-               for(int var11 = 0; var11 < 128; ++var11) {
+            int var10;
+            int var11;
+            for(var10 = 0; var10 < 128; ++var10) {
+               for(var11 = 0; var11 < 128; ++var11) {
                   Holder var12 = var0.getBiome(var9.set((var7 + var11) * var3, 0, (var8 + var10) * var3));
                   var6[var10 * 128 + var11] = var12.is(BiomeTags.WATER_ON_MAP_OUTLINES);
                }
             }
 
-            for(int var15 = 1; var15 < 127; ++var15) {
-               for(int var16 = 1; var16 < 127; ++var16) {
-                  int var17 = 0;
+            for(var10 = 1; var10 < 127; ++var10) {
+               for(var11 = 1; var11 < 127; ++var11) {
+                  int var15 = 0;
 
                   for(int var13 = -1; var13 < 2; ++var13) {
                      for(int var14 = -1; var14 < 2; ++var14) {
-                        if ((var13 != 0 || var14 != 0) && isBiomeWatery(var6, var15 + var13, var16 + var14)) {
-                           ++var17;
+                        if ((var13 != 0 || var14 != 0) && isBiomeWatery(var6, var10 + var13, var11 + var14)) {
+                           ++var15;
                         }
                      }
                   }
 
-                  MapColor.Brightness var18 = MapColor.Brightness.LOWEST;
-                  MapColor var19 = MapColor.NONE;
-                  if (isBiomeWatery(var6, var15, var16)) {
-                     var19 = MapColor.COLOR_ORANGE;
-                     if (var17 > 7 && var16 % 2 == 0) {
-                        switch((var15 + (int)(Mth.sin((float)var16 + 0.0F) * 7.0F)) / 8 % 5) {
+                  MapColor.Brightness var16 = MapColor.Brightness.LOWEST;
+                  MapColor var17 = MapColor.NONE;
+                  if (isBiomeWatery(var6, var10, var11)) {
+                     var17 = MapColor.COLOR_ORANGE;
+                     if (var15 > 7 && var11 % 2 == 0) {
+                        switch ((var10 + (int)(Mth.sin((float)var11 + 0.0F) * 7.0F)) / 8 % 5) {
                            case 0:
                            case 4:
-                              var18 = MapColor.Brightness.LOW;
+                              var16 = MapColor.Brightness.LOW;
                               break;
                            case 1:
                            case 3:
-                              var18 = MapColor.Brightness.NORMAL;
+                              var16 = MapColor.Brightness.NORMAL;
                               break;
                            case 2:
-                              var18 = MapColor.Brightness.HIGH;
+                              var16 = MapColor.Brightness.HIGH;
                         }
-                     } else if (var17 > 7) {
-                        var19 = MapColor.NONE;
-                     } else if (var17 > 5) {
-                        var18 = MapColor.Brightness.NORMAL;
-                     } else if (var17 > 3) {
-                        var18 = MapColor.Brightness.LOW;
-                     } else if (var17 > 1) {
-                        var18 = MapColor.Brightness.LOW;
+                     } else if (var15 > 7) {
+                        var17 = MapColor.NONE;
+                     } else if (var15 > 5) {
+                        var16 = MapColor.Brightness.NORMAL;
+                     } else if (var15 > 3) {
+                        var16 = MapColor.Brightness.LOW;
+                     } else if (var15 > 1) {
+                        var16 = MapColor.Brightness.LOW;
                      }
-                  } else if (var17 > 0) {
-                     var19 = MapColor.COLOR_BROWN;
-                     if (var17 > 3) {
-                        var18 = MapColor.Brightness.NORMAL;
+                  } else if (var15 > 0) {
+                     var17 = MapColor.COLOR_BROWN;
+                     if (var15 > 3) {
+                        var16 = MapColor.Brightness.NORMAL;
                      } else {
-                        var18 = MapColor.Brightness.LOWEST;
+                        var16 = MapColor.Brightness.LOWEST;
                      }
                   }
 
-                  if (var19 != MapColor.NONE) {
-                     var2.setColor(var15, var16, var19.getPackedId(var18));
+                  if (var17 != MapColor.NONE) {
+                     var2.setColor(var10, var11, var17.getPackedId(var16));
                   }
                }
             }
+
          }
       }
    }
 
-   @Override
    public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
       if (!var2.isClientSide) {
          MapItemSavedData var6 = getSavedData(var1, var2);
          if (var6 != null) {
-            if (var3 instanceof Player var7) {
-               var6.tickCarriedBy((Player)var7, var1);
+            if (var3 instanceof Player) {
+               Player var7 = (Player)var3;
+               var6.tickCarriedBy(var7, var1);
             }
 
             if (!var6.locked && (var5 || var3 instanceof Player && ((Player)var3).getOffhandItem() == var1)) {
                this.update(var2, var3, var6);
             }
+
          }
       }
    }
 
    @Nullable
-   @Override
    public Packet<?> getUpdatePacket(ItemStack var1, Level var2, Player var3) {
-      MapId var4 = var1.get(DataComponents.MAP_ID);
+      MapId var4 = (MapId)var1.get(DataComponents.MAP_ID);
       MapItemSavedData var5 = getSavedData(var4, var2);
       return var5 != null ? var5.getUpdatePacket(var4, var3) : null;
    }
 
-   @Override
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
-      MapPostProcessing var3 = var1.remove(DataComponents.MAP_POST_PROCESSING);
+      MapPostProcessing var3 = (MapPostProcessing)var1.remove(DataComponents.MAP_POST_PROCESSING);
       if (var3 != null) {
-         switch(var3) {
-            case LOCK:
-               lockMap(var2, var1);
-               break;
-            case SCALE:
-               scaleMap(var1, var2);
+         switch (var3) {
+            case LOCK -> lockMap(var2, var1);
+            case SCALE -> scaleMap(var1, var2);
          }
+
       }
    }
 
@@ -314,6 +314,7 @@ public class MapItem extends ComplexItem {
          var1.setMapData(var3, var2.scaled());
          var0.set(DataComponents.MAP_ID, var3);
       }
+
    }
 
    public static void lockMap(Level var0, ItemStack var1) {
@@ -324,13 +325,13 @@ public class MapItem extends ComplexItem {
          var0.setMapData(var3, var4);
          var1.set(DataComponents.MAP_ID, var3);
       }
+
    }
 
-   @Override
-   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      MapId var5 = var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var6 = var2 == null ? null : getSavedData(var5, var2);
-      MapPostProcessing var7 = var1.get(DataComponents.MAP_POST_PROCESSING);
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      MapId var5 = (MapId)var1.get(DataComponents.MAP_ID);
+      MapItemSavedData var6 = var5 != null ? var2.mapData(var5) : null;
+      MapPostProcessing var7 = (MapPostProcessing)var1.get(DataComponents.MAP_POST_PROCESSING);
       if (var6 != null && (var6.locked || var7 == MapPostProcessing.LOCK)) {
          var3.add(Component.translatable("filled_map.locked", var5.id()).withStyle(ChatFormatting.GRAY));
       }
@@ -349,13 +350,13 @@ public class MapItem extends ComplexItem {
             var3.add(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
          }
       }
+
    }
 
    public static Component getTooltipForId(MapId var0) {
       return Component.translatable("filled_map.id", var0.id()).withStyle(ChatFormatting.GRAY);
    }
 
-   @Override
    public InteractionResult useOn(UseOnContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
       if (var2.is(BlockTags.BANNERS)) {

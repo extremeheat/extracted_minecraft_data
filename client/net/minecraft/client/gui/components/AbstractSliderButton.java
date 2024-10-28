@@ -37,24 +37,22 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       return !this.isHovered && !this.canChangeValue ? SLIDER_HANDLE_SPRITE : SLIDER_HANDLE_HIGHLIGHTED_SPRITE;
    }
 
-   @Override
    protected MutableComponent createNarrationMessage() {
       return Component.translatable("gui.narrate.slider", this.getMessage());
    }
 
-   @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
+      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, Component.translatable("narration.slider.usage.focused"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.focused"));
          } else {
-            var1.add(NarratedElementType.USAGE, Component.translatable("narration.slider.usage.hovered"));
+            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.slider.usage.hovered"));
          }
       }
+
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
       var1.setColor(1.0F, 1.0F, 1.0F, this.alpha);
@@ -68,12 +66,10 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.renderScrollingString(var1, var5.font, 2, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
    }
 
-   @Override
    public void onClick(double var1, double var3) {
       this.setValueFromMouse(var1);
    }
 
-   @Override
    public void setFocused(boolean var1) {
       super.setFocused(var1);
       if (!var1) {
@@ -83,10 +79,10 @@ public abstract class AbstractSliderButton extends AbstractWidget {
          if (var2 == InputType.MOUSE || var2 == InputType.KEYBOARD_TAB) {
             this.canChangeValue = true;
          }
+
       }
    }
 
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (CommonInputs.selected(var1)) {
          this.canChangeValue = !this.canChangeValue;
@@ -119,17 +115,14 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       this.updateMessage();
    }
 
-   @Override
    protected void onDrag(double var1, double var3, double var5, double var7) {
       this.setValueFromMouse(var1);
       super.onDrag(var1, var3, var5, var7);
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
    }
 
-   @Override
    public void onRelease(double var1, double var3) {
       super.playDownSound(Minecraft.getInstance().getSoundManager());
    }

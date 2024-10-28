@@ -6,7 +6,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CrafterBlock;
 
@@ -41,21 +40,23 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
    }
 
    private void addSlots(Inventory var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
-         for(int var3 = 0; var3 < 3; ++var3) {
+      int var2;
+      int var3;
+      for(var2 = 0; var2 < 3; ++var2) {
+         for(var3 = 0; var3 < 3; ++var3) {
             int var4 = var3 + var2 * 3;
             this.addSlot(new CrafterSlot(this.container, var4, 26 + var3 * 18, 17 + var2 * 18, this));
          }
       }
 
-      for(int var5 = 0; var5 < 3; ++var5) {
-         for(int var7 = 0; var7 < 9; ++var7) {
-            this.addSlot(new Slot(var1, var7 + var5 * 9 + 9, 8 + var7 * 18, 84 + var5 * 18));
+      for(var2 = 0; var2 < 3; ++var2) {
+         for(var3 = 0; var3 < 9; ++var3) {
+            this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
          }
       }
 
-      for(int var6 = 0; var6 < 9; ++var6) {
-         this.addSlot(new Slot(var1, var6, 8 + var6 * 18, 142));
+      for(var2 = 0; var2 < 9; ++var2) {
+         this.addSlot(new Slot(var1, var2, 8 + var2 * 18, 142));
       }
 
       this.addSlot(new NonInteractiveResultSlot(this.resultContainer, 0, 134, 35));
@@ -81,10 +82,9 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
       return this.containerData.get(9) == 1;
    }
 
-   @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
+      Slot var4 = (Slot)this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -112,34 +112,30 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
       return var3;
    }
 
-   @Override
    public boolean stillValid(Player var1) {
       return this.container.stillValid(var1);
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void refreshRecipeResult() {
       Player var2 = this.player;
       if (var2 instanceof ServerPlayer var1) {
          Level var4 = var1.level();
-         ItemStack var3 = CrafterBlock.getPotentialResults(var4, this.container)
-            .map(var2x -> ((CraftingRecipe)var2x.value()).assemble(this.container, var4.registryAccess()))
-            .orElse(ItemStack.EMPTY);
+         ItemStack var3 = (ItemStack)CrafterBlock.getPotentialResults(var4, this.container).map((var2x) -> {
+            return ((CraftingRecipe)var2x.value()).assemble(this.container, var4.registryAccess());
+         }).orElse(ItemStack.EMPTY);
          this.resultContainer.setItem(0, var3);
       }
+
    }
 
    public Container getContainer() {
       return this.container;
    }
 
-   @Override
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
       this.refreshRecipeResult();
    }
 
-   @Override
    public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
    }
 }

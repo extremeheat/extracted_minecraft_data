@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockMarker extends TextureSheetParticle {
@@ -14,12 +15,10 @@ public class BlockMarker extends TextureSheetParticle {
       this.hasPhysics = false;
    }
 
-   @Override
    public ParticleRenderType getRenderType() {
       return ParticleRenderType.TERRAIN_SHEET;
    }
 
-   @Override
    public float getQuadSize(float var1) {
       return 0.5F;
    }
@@ -31,6 +30,11 @@ public class BlockMarker extends TextureSheetParticle {
 
       public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new BlockMarker(var2, var3, var5, var7, var1.getState());
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

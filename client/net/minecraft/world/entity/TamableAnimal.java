@@ -15,29 +15,26 @@ import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.EntityGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.scores.PlayerTeam;
 
 public abstract class TamableAnimal extends Animal implements OwnableEntity {
-   protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
-   protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNERUUID_ID = SynchedEntityData.defineId(
-      TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID
-   );
+   protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
+   protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNERUUID_ID;
    private boolean orderedToSit;
 
    protected TamableAnimal(EntityType<? extends TamableAnimal> var1, Level var2) {
       super(var1, var2);
    }
 
-   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_FLAGS_ID, (byte)0);
       var1.define(DATA_OWNERUUID_ID, Optional.empty());
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.getOwnerUUID() != null) {
@@ -47,7 +44,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       var1.putBoolean("Sitting", this.orderedToSit);
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       UUID var2;
@@ -71,7 +67,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       this.setInSittingPose(this.orderedToSit);
    }
 
-   @Override
    public boolean canBeLeashed(Player var1) {
       return !this.isLeashed();
    }
@@ -88,9 +83,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          double var8 = this.random.nextGaussian() * 0.02;
          this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
       }
+
    }
 
-   @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 7) {
          this.spawnTamingParticles(true);
@@ -99,14 +94,15 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       } else {
          super.handleEntityEvent(var1);
       }
+
    }
 
    public boolean isTame() {
-      return (this.entityData.get(DATA_FLAGS_ID) & 4) != 0;
+      return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 4) != 0;
    }
 
    public void setTame(boolean var1, boolean var2) {
-      byte var3 = this.entityData.get(DATA_FLAGS_ID);
+      byte var3 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       if (var1) {
          this.entityData.set(DATA_FLAGS_ID, (byte)(var3 | 4));
       } else {
@@ -116,28 +112,29 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       if (var2) {
          this.applyTamingSideEffects();
       }
+
    }
 
    protected void applyTamingSideEffects() {
    }
 
    public boolean isInSittingPose() {
-      return (this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
+      return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }
 
    public void setInSittingPose(boolean var1) {
-      byte var2 = this.entityData.get(DATA_FLAGS_ID);
+      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       if (var1) {
          this.entityData.set(DATA_FLAGS_ID, (byte)(var2 | 1));
       } else {
          this.entityData.set(DATA_FLAGS_ID, (byte)(var2 & -2));
       }
+
    }
 
    @Nullable
-   @Override
    public UUID getOwnerUUID() {
-      return this.entityData.get(DATA_OWNERUUID_ID).orElse(null);
+      return (UUID)((Optional)this.entityData.get(DATA_OWNERUUID_ID)).orElse((Object)null);
    }
 
    public void setOwnerUUID(@Nullable UUID var1) {
@@ -148,11 +145,11 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       this.setTame(true, true);
       this.setOwnerUUID(var1.getUUID());
       if (var1 instanceof ServerPlayer var2) {
-         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)var2, this);
+         CriteriaTriggers.TAME_ANIMAL.trigger(var2, this);
       }
+
    }
 
-   @Override
    public boolean canAttack(LivingEntity var1) {
       return this.isOwnedBy(var1) ? false : super.canAttack(var1);
    }
@@ -165,7 +162,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return true;
    }
 
-   @Override
    public PlayerTeam getTeam() {
       if (this.isTame()) {
          LivingEntity var1 = this.getOwner();
@@ -177,7 +173,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return super.getTeam();
    }
 
-   @Override
    public boolean isAlliedTo(Entity var1) {
       if (this.isTame()) {
          LivingEntity var2 = this.getOwner();
@@ -193,7 +188,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return super.isAlliedTo(var1);
    }
 
-   @Override
    public void die(DamageSource var1) {
       if (!this.level().isClientSide && this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES) && this.getOwner() instanceof ServerPlayer) {
          this.getOwner().sendSystemMessage(this.getCombatTracker().getDeathMessage());
@@ -208,5 +202,15 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    public void setOrderedToSit(boolean var1) {
       this.orderedToSit = var1;
+   }
+
+   // $FF: synthetic method
+   public EntityGetter level() {
+      return super.level();
+   }
+
+   static {
+      DATA_FLAGS_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
+      DATA_OWNERUUID_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID);
    }
 }

@@ -13,7 +13,6 @@ public class PhantomEyesLayer<T extends Phantom> extends EyesLayer<T, PhantomMod
       super(var1);
    }
 
-   @Override
    public RenderType renderType() {
       return PHANTOM_EYES;
    }

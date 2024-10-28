@@ -7,9 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 
 public interface RuleBlockEntityModifier {
-   Codec<RuleBlockEntityModifier> CODEC = BuiltInRegistries.RULE_BLOCK_ENTITY_MODIFIER
-      .byNameCodec()
-      .dispatch(RuleBlockEntityModifier::getType, RuleBlockEntityModifierType::codec);
+   Codec<RuleBlockEntityModifier> CODEC = BuiltInRegistries.RULE_BLOCK_ENTITY_MODIFIER.byNameCodec().dispatch(RuleBlockEntityModifier::getType, RuleBlockEntityModifierType::codec);
 
    @Nullable
    CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2);

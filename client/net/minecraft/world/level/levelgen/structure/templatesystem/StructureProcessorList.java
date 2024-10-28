@@ -14,8 +14,7 @@ public class StructureProcessorList {
       return this.list;
    }
 
-   @Override
    public String toString() {
-      return "ProcessorList[" + this.list + "]";
+      return "ProcessorList[" + String.valueOf(this.list) + "]";
    }
 }

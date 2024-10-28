@@ -13,7 +13,6 @@ public class StructureVoidBlock extends Block {
    private static final double SIZE = 5.0;
    private static final VoxelShape SHAPE = Block.box(5.0, 5.0, 5.0, 11.0, 11.0, 11.0);
 
-   @Override
    public MapCodec<StructureVoidBlock> codec() {
       return CODEC;
    }
@@ -22,17 +21,14 @@ public class StructureVoidBlock extends Block {
       super(var1);
    }
 
-   @Override
    protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
-   @Override
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   @Override
    protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 1.0F;
    }

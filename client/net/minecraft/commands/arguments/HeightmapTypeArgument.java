@@ -9,12 +9,14 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class HeightmapTypeArgument extends StringRepresentableArgument<Heightmap.Types> {
-   private static final Codec<Heightmap.Types> LOWER_CASE_CODEC = StringRepresentable.fromEnumWithMapping(
-      HeightmapTypeArgument::keptTypes, var0 -> var0.toLowerCase(Locale.ROOT)
-   );
+   private static final Codec<Heightmap.Types> LOWER_CASE_CODEC = StringRepresentable.fromEnumWithMapping(HeightmapTypeArgument::keptTypes, (var0) -> {
+      return var0.toLowerCase(Locale.ROOT);
+   });
 
    private static Heightmap.Types[] keptTypes() {
-      return Arrays.stream(Heightmap.Types.values()).filter(Heightmap.Types::keepAfterWorldgen).toArray(var0 -> new Heightmap.Types[var0]);
+      return (Heightmap.Types[])Arrays.stream(Heightmap.Types.values()).filter(Heightmap.Types::keepAfterWorldgen).toArray((var0) -> {
+         return new Heightmap.Types[var0];
+      });
    }
 
    private HeightmapTypeArgument() {
@@ -29,7 +31,6 @@ public class HeightmapTypeArgument extends StringRepresentableArgument<Heightmap
       return (Heightmap.Types)var0.getArgument(var1, Heightmap.Types.class);
    }
 
-   @Override
    protected String convertId(String var1) {
       return var1.toLowerCase(Locale.ROOT);
    }

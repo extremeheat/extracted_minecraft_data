@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -43,21 +44,23 @@ public class RecipeButton extends AbstractWidget {
       this.menu = (RecipeBookMenu)var2.getMinecraft().player.containerMenu;
       this.book = var2.getRecipeBook();
       List var3 = var1.getRecipes(this.book.isFiltering(this.menu));
+      Iterator var4 = var3.iterator();
 
-      for(RecipeHolder var5 : var3) {
+      while(var4.hasNext()) {
+         RecipeHolder var5 = (RecipeHolder)var4.next();
          if (this.book.willHighlight(var5)) {
             var2.recipesShown(var3);
             this.animationTime = 15.0F;
             break;
          }
       }
+
    }
 
    public RecipeCollection getCollection() {
       return this.collection;
    }
 
-   @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (!Screen.hasControlDown()) {
          this.time += var4;
@@ -100,6 +103,7 @@ public class RecipeButton extends AbstractWidget {
       if (var6) {
          var1.pose().popPose();
       }
+
    }
 
    private List<RecipeHolder<?>> getOrderedRecipes() {
@@ -117,7 +121,7 @@ public class RecipeButton extends AbstractWidget {
 
    public RecipeHolder<?> getRecipe() {
       List var1 = this.getOrderedRecipes();
-      return (RecipeHolder<?>)var1.get(this.currentIndex);
+      return (RecipeHolder)var1.get(this.currentIndex);
    }
 
    public List<Component> getTooltipText() {
@@ -130,23 +134,21 @@ public class RecipeButton extends AbstractWidget {
       return var2;
    }
 
-   @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
       ItemStack var2 = ((RecipeHolder)this.getOrderedRecipes().get(this.currentIndex)).value().getResultItem(this.collection.registryAccess());
-      var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", var2.getHoverName()));
+      var1.add(NarratedElementType.TITLE, (Component)Component.translatable("narration.recipe", var2.getHoverName()));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));
       } else {
-         var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"));
+         var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
       }
+
    }
 
-   @Override
    public int getWidth() {
       return 25;
    }
 
-   @Override
    protected boolean isValidClickButton(int var1) {
       return var1 == 0 || var1 == 1;
    }

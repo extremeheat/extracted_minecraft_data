@@ -24,20 +24,18 @@ public interface Spawner {
       } else {
          var1.add(CommonComponents.EMPTY);
          var1.add(Component.translatable("block.minecraft.spawner.desc1").withStyle(ChatFormatting.GRAY));
-         var1.add(CommonComponents.space().append(Component.translatable("block.minecraft.spawner.desc2").withStyle(ChatFormatting.BLUE)));
+         var1.add(CommonComponents.space().append((Component)Component.translatable("block.minecraft.spawner.desc2").withStyle(ChatFormatting.BLUE)));
       }
+
    }
 
    @Nullable
    static Component getSpawnEntityDisplayName(ItemStack var0, String var1) {
-      CompoundTag var2 = var0.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).getUnsafe();
+      CompoundTag var2 = ((CustomData)var0.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY)).getUnsafe();
       ResourceLocation var3 = getEntityKey(var2, var1);
-      return var3 != null
-         ? BuiltInRegistries.ENTITY_TYPE
-            .getOptional(var3)
-            .map(var0x -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY))
-            .orElse(null)
-         : null;
+      return var3 != null ? (Component)BuiltInRegistries.ENTITY_TYPE.getOptional(var3).map((var0x) -> {
+         return Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY);
+      }).orElse((Object)null) : null;
    }
 
    @Nullable

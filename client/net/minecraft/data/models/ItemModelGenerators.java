@@ -1,9 +1,9 @@
 package net.minecraft.data.models;
 
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,19 +25,7 @@ import net.minecraft.world.item.Items;
 
 public class ItemModelGenerators {
    public static final ResourceLocation TRIM_TYPE_PREDICATE_ID = new ResourceLocation("trim_type");
-   private static final List<ItemModelGenerators.TrimModelData> GENERATED_TRIM_MODELS = List.of(
-      new ItemModelGenerators.TrimModelData("quartz", 0.01F, Map.of()),
-      new ItemModelGenerators.TrimModelData("iron", 0.02F, Map.of(ArmorMaterials.IRON, "iron_darker")),
-      new ItemModelGenerators.TrimModelData("netherite", 0.03F, Map.of(ArmorMaterials.NETHERITE, "netherite_darker")),
-      new ItemModelGenerators.TrimModelData("redstone", 0.04F, Map.of()),
-      new ItemModelGenerators.TrimModelData("copper", 0.05F, Map.of()),
-      new ItemModelGenerators.TrimModelData("gold", 0.06F, Map.of(ArmorMaterials.GOLD, "gold_darker")),
-      new ItemModelGenerators.TrimModelData("emerald", 0.07F, Map.of()),
-      new ItemModelGenerators.TrimModelData("diamond", 0.08F, Map.of(ArmorMaterials.DIAMOND, "diamond_darker")),
-      new ItemModelGenerators.TrimModelData("lapis", 0.09F, Map.of()),
-      new ItemModelGenerators.TrimModelData("amethyst", 0.1F, Map.of()),
-      new ItemModelGenerators.TrimModelData("amber", 1.0F, Map.of())
-   );
+   private static final List<TrimModelData> GENERATED_TRIM_MODELS;
    private final BiConsumer<ResourceLocation, Supplier<JsonElement>> output;
 
    public ItemModelGenerators(BiConsumer<ResourceLocation, Supplier<JsonElement>> var1) {
@@ -67,12 +55,14 @@ public class ItemModelGenerators {
             this.generateFlatItem(var1, String.format(Locale.ROOT, "_%02d", var2), ModelTemplates.FLAT_ITEM);
          }
       }
+
    }
 
    private void generateClockItem(Item var1) {
       for(int var2 = 1; var2 < 64; ++var2) {
          this.generateFlatItem(var1, String.format(Locale.ROOT, "_%02d", var2), ModelTemplates.FLAT_ITEM);
       }
+
    }
 
    private void generateLayeredItem(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
@@ -90,8 +80,10 @@ public class ItemModelGenerators {
    private JsonObject generateBaseArmorTrimTemplate(ResourceLocation var1, Map<TextureSlot, ResourceLocation> var2, Holder<ArmorMaterial> var3) {
       JsonObject var4 = ModelTemplates.TWO_LAYERED_ITEM.createBaseTemplate(var1, var2);
       JsonArray var5 = new JsonArray();
+      Iterator var6 = GENERATED_TRIM_MODELS.iterator();
 
-      for(ItemModelGenerators.TrimModelData var7 : GENERATED_TRIM_MODELS) {
+      while(var6.hasNext()) {
+         TrimModelData var7 = (TrimModelData)var6.next();
          JsonObject var8 = new JsonObject();
          JsonObject var9 = new JsonObject();
          var9.addProperty(TRIM_TYPE_PREDICATE_ID.getPath(), var7.itemModelIndex());
@@ -106,30 +98,35 @@ public class ItemModelGenerators {
 
    private void generateArmorTrims(ArmorItem var1) {
       if (var1.getType().hasTrims()) {
-         ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
+         ResourceLocation var2 = ModelLocationUtils.getModelLocation((Item)var1);
          ResourceLocation var3 = TextureMapping.getItemTexture(var1);
          ResourceLocation var4 = TextureMapping.getItemTexture(var1, "_overlay");
          if (var1.getMaterial().is(ArmorMaterials.LEATHER)) {
-            ModelTemplates.TWO_LAYERED_ITEM
-               .create(
-                  var2, TextureMapping.layered(var3, var4), this.output, (var2x, var3x) -> this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial())
-               );
+            ModelTemplates.TWO_LAYERED_ITEM.create(var2, TextureMapping.layered(var3, var4), this.output, (var2x, var3x) -> {
+               return this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial());
+            });
          } else {
-            ModelTemplates.FLAT_ITEM
-               .create(var2, TextureMapping.layer0(var3), this.output, (var2x, var3x) -> this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial()));
+            ModelTemplates.FLAT_ITEM.create(var2, TextureMapping.layer0(var3), this.output, (var2x, var3x) -> {
+               return this.generateBaseArmorTrimTemplate(var2x, var3x, var1.getMaterial());
+            });
          }
 
-         for(ItemModelGenerators.TrimModelData var6 : GENERATED_TRIM_MODELS) {
+         Iterator var5 = GENERATED_TRIM_MODELS.iterator();
+
+         while(var5.hasNext()) {
+            TrimModelData var6 = (TrimModelData)var5.next();
             String var7 = var6.name(var1.getMaterial());
             ResourceLocation var8 = this.getItemModelForTrimMaterial(var2, var7);
-            String var9 = var1.getType().getName() + "_trim_" + var7;
-            ResourceLocation var10 = new ResourceLocation(var9).withPrefix("trims/items/");
+            String var10000 = var1.getType().getName();
+            String var9 = var10000 + "_trim_" + var7;
+            ResourceLocation var10 = (new ResourceLocation(var9)).withPrefix("trims/items/");
             if (var1.getMaterial().is(ArmorMaterials.LEATHER)) {
                this.generateLayeredItem(var8, var3, var4, var10);
             } else {
                this.generateLayeredItem(var8, var3, var10);
             }
          }
+
       }
    }
 
@@ -144,7 +141,6 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.ARMOR_STAND, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARROW, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BAKED_POTATO, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.HOT_POTATO, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BAMBOO, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.BEEF, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.BEETROOT, ModelTemplates.FLAT_ITEM);
@@ -170,15 +166,12 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.CHICKEN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.CHORUS_FRUIT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.CLAY_BALL, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POTATO_BUD, ModelTemplates.FLAT_ITEM);
       this.generateClockItem(Items.CLOCK);
       this.generateFlatItem(Items.COAL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.COD_BUCKET, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.COMMAND_BLOCK_MINECART, ModelTemplates.FLAT_ITEM);
       this.generateCompassItem(Items.COMPASS);
       this.generateCompassItem(Items.RECOVERY_COMPASS);
-      this.generateFlatItem(Items.LASHING_POTATO, "_extended", ModelTemplates.FLAT_HANDHELD_ITEM);
-      this.generateFlatItem(Items.TOXIC_BEAM, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.COOKED_BEEF, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.COOKED_CHICKEN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.COOKED_COD, ModelTemplates.FLAT_ITEM);
@@ -227,7 +220,6 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.GLOW_ITEM_FRAME, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.RAW_GOLD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOLDEN_APPLE, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.GOLDEN_POISONOUS_POTATO, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOLDEN_AXE, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.GOLDEN_CARROT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.GOLDEN_HOE, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -260,9 +252,6 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.JUNGLE_CHEST_BOAT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.KNOWLEDGE_BOOK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.LAPIS_LAZULI, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.AMBER_GEM, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.DENT, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.TOXIC_RESIN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.LAVA_BUCKET, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.LEATHER, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.LEATHER_HORSE_ARMOR, ModelTemplates.FLAT_ITEM);
@@ -400,11 +389,12 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DEBUG_STICK, Items.STICK, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.ENCHANTED_GOLDEN_POISONOUS_POTATO, Items.GOLDEN_POISONOUS_POTATO, ModelTemplates.FLAT_ITEM);
+      Iterator var1 = BuiltInRegistries.ITEM.iterator();
 
-      for(Item var2 : BuiltInRegistries.ITEM) {
-         if (var2 instanceof ArmorItem var3 && var2 != Items.POISONOUS_POTATO_PLANT) {
-            this.generateArmorTrims((ArmorItem)var3);
+      while(var1.hasNext()) {
+         Item var2 = (Item)var1.next();
+         if (var2 instanceof ArmorItem var3) {
+            this.generateArmorTrims(var3);
          }
       }
 
@@ -432,31 +422,15 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.SKULL_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SNORT_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.TRIAL_KEY, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POTATO_OF_KNOWLEDGE, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POTATO_STAFF, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POISONOUS_POTATO_STICKS, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POISONOUS_POTATO_SLICES, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POISONOUS_POTATO_FRIES, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POISONOUS_POTATO_CHIPS, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POTATO_HAMMER, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POTATO_PEELER, ModelTemplates.FLAT_HANDHELD_ITEM);
-      UnmodifiableIterator var4 = Items.POTATO_PEELS_MAP.values().iterator();
-
-      while(var4.hasNext()) {
-         Item var5 = (Item)var4.next();
-         this.generateFlatItem(var5, ModelTemplates.FLAT_ITEM);
-      }
-
-      this.generateFlatItem(Items.CORRUPTED_POTATO_PEELS, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.HASH_BROWNS, ModelTemplates.FLAT_ITEM);
-      this.generateFlatItem(Items.POTATO_EYE, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OMINOUS_TRIAL_KEY, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.OMINOUS_BOTTLE, ModelTemplates.FLAT_ITEM);
    }
 
-   static record TrimModelData(String a, float b, Map<Holder<ArmorMaterial>, String> c) {
-      private final String name;
-      private final float itemModelIndex;
-      private final Map<Holder<ArmorMaterial>, String> overrideArmorMaterials;
+   static {
+      GENERATED_TRIM_MODELS = List.of(new TrimModelData("quartz", 0.1F, Map.of()), new TrimModelData("iron", 0.2F, Map.of(ArmorMaterials.IRON, "iron_darker")), new TrimModelData("netherite", 0.3F, Map.of(ArmorMaterials.NETHERITE, "netherite_darker")), new TrimModelData("redstone", 0.4F, Map.of()), new TrimModelData("copper", 0.5F, Map.of()), new TrimModelData("gold", 0.6F, Map.of(ArmorMaterials.GOLD, "gold_darker")), new TrimModelData("emerald", 0.7F, Map.of()), new TrimModelData("diamond", 0.8F, Map.of(ArmorMaterials.DIAMOND, "diamond_darker")), new TrimModelData("lapis", 0.9F, Map.of()), new TrimModelData("amethyst", 1.0F, Map.of()));
+   }
 
+   private static record TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
       TrimModelData(String var1, float var2, Map<Holder<ArmorMaterial>, String> var3) {
          super();
          this.name = var1;
@@ -465,7 +439,19 @@ public class ItemModelGenerators {
       }
 
       public String name(Holder<ArmorMaterial> var1) {
-         return this.overrideArmorMaterials.getOrDefault(var1, this.name);
+         return (String)this.overrideArmorMaterials.getOrDefault(var1, this.name);
+      }
+
+      public String name() {
+         return this.name;
+      }
+
+      public float itemModelIndex() {
+         return this.itemModelIndex;
+      }
+
+      public Map<Holder<ArmorMaterial>, String> overrideArmorMaterials() {
+         return this.overrideArmorMaterials;
       }
    }
 }

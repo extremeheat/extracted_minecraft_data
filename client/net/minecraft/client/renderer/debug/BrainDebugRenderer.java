@@ -7,13 +7,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -24,6 +24,8 @@ import net.minecraft.core.Position;
 import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
@@ -63,7 +65,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int RED = -65536;
    private static final int ORANGE = -23296;
    private final Minecraft minecraft;
-   private final Map<BlockPos, BrainDebugRenderer.PoiInfo> pois = Maps.newHashMap();
+   private final Map<BlockPos, PoiInfo> pois = Maps.newHashMap();
    private final Map<UUID, BrainDebugPayload.BrainDump> brainDumpsPerEntity = Maps.newHashMap();
    @Nullable
    private UUID lastLookedAtUuid;
@@ -73,14 +75,13 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   @Override
    public void clear() {
       this.pois.clear();
       this.brainDumpsPerEntity.clear();
       this.lastLookedAtUuid = null;
    }
 
-   public void addPoi(BrainDebugRenderer.PoiInfo var1) {
+   public void addPoi(PoiInfo var1) {
       this.pois.put(var1.pos, var1);
    }
 
@@ -89,7 +90,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void setFreeTicketCount(BlockPos var1, int var2) {
-      BrainDebugRenderer.PoiInfo var3 = this.pois.get(var1);
+      PoiInfo var3 = (PoiInfo)this.pois.get(var1);
       if (var3 == null) {
          LOGGER.warn("Strange, setFreeTicketCount was called for an unknown POI: {}", var1);
       } else {
@@ -102,20 +103,22 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void removeBrainDump(int var1) {
-      this.brainDumpsPerEntity.values().removeIf(var1x -> var1x.id() == var1);
+      this.brainDumpsPerEntity.values().removeIf((var1x) -> {
+         return var1x.id() == var1;
+      });
    }
 
-   @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       this.clearRemovedEntities();
       this.doRender(var1, var2, var3, var5, var7);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();
       }
+
    }
 
    private void clearRemovedEntities() {
-      this.brainDumpsPerEntity.entrySet().removeIf(var1 -> {
+      this.brainDumpsPerEntity.entrySet().removeIf((var1) -> {
          Entity var2 = this.minecraft.level.getEntity(((BrainDebugPayload.BrainDump)var1.getValue()).id());
          return var2 == null || var2.isRemoved();
       });
@@ -123,27 +126,32 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private void doRender(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       BlockPos var9 = BlockPos.containing(var3, var5, var7);
-      this.brainDumpsPerEntity.values().forEach(var9x -> {
+      this.brainDumpsPerEntity.values().forEach((var9x) -> {
          if (this.isPlayerCloseEnoughToMob(var9x)) {
             this.renderBrainInfo(var1, var2, var9x, var3, var5, var7);
          }
-      });
 
-      for(BlockPos var11 : this.pois.keySet()) {
+      });
+      Iterator var10 = this.pois.keySet().iterator();
+
+      while(var10.hasNext()) {
+         BlockPos var11 = (BlockPos)var10.next();
          if (var9.closerThan(var11, 30.0)) {
             highlightPoi(var1, var2, var11);
          }
       }
 
-      this.pois.values().forEach(var4 -> {
+      this.pois.values().forEach((var4) -> {
          if (var9.closerThan(var4.pos, 30.0)) {
             this.renderPoiInfo(var1, var2, var4);
          }
+
       });
       this.getGhostPois().forEach((var4, var5x) -> {
          if (var9.closerThan(var4, 30.0)) {
             this.renderGhostPoi(var1, var2, var4, var5x);
          }
+
       });
    }
 
@@ -155,15 +163,15 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private void renderGhostPoi(PoseStack var1, MultiBufferSource var2, BlockPos var3, List<String> var4) {
       float var5 = 0.05F;
       DebugRenderer.renderFilledBox(var1, var2, var3, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
-      renderTextOverPos(var1, var2, var4 + "", var3, 0, -256);
+      renderTextOverPos(var1, var2, "" + String.valueOf(var4), var3, 0, -256);
       renderTextOverPos(var1, var2, "Ghost POI", var3, 1, -65536);
    }
 
-   private void renderPoiInfo(PoseStack var1, MultiBufferSource var2, BrainDebugRenderer.PoiInfo var3) {
+   private void renderPoiInfo(PoseStack var1, MultiBufferSource var2, PoiInfo var3) {
       int var4 = 0;
       Set var5 = this.getTicketHolderNames(var3);
       if (var5.size() < 4) {
-         renderTextOverPoi(var1, var2, "Owners: " + var5, var3, var4, -256);
+         renderTextOverPoi(var1, var2, "Owners: " + String.valueOf(var5), var3, var4, -256);
       } else {
          renderTextOverPoi(var1, var2, var5.size() + " ticket holders", var3, var4, -256);
       }
@@ -171,19 +179,22 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       ++var4;
       Set var6 = this.getPotentialTicketHolderNames(var3);
       if (var6.size() < 4) {
-         renderTextOverPoi(var1, var2, "Candidates: " + var6, var3, var4, -23296);
+         renderTextOverPoi(var1, var2, "Candidates: " + String.valueOf(var6), var3, var4, -23296);
       } else {
          renderTextOverPoi(var1, var2, var6.size() + " potential owners", var3, var4, -23296);
       }
 
-      renderTextOverPoi(var1, var2, "Free tickets: " + var3.freeTicketCount, var3, ++var4, -256);
-      renderTextOverPoi(var1, var2, var3.type, var3, ++var4, -1);
+      ++var4;
+      renderTextOverPoi(var1, var2, "Free tickets: " + var3.freeTicketCount, var3, var4, -256);
+      ++var4;
+      renderTextOverPoi(var1, var2, var3.type, var3, var4, -1);
    }
 
    private void renderPath(PoseStack var1, MultiBufferSource var2, BrainDebugPayload.BrainDump var3, double var4, double var6, double var8) {
       if (var3.path() != null) {
          PathfindingRenderer.renderPath(var1, var2, var3.path(), 0.5F, false, false, var4, var6, var8);
       }
+
    }
 
    private void renderBrainInfo(PoseStack var1, MultiBufferSource var2, BrainDebugPayload.BrainDump var3, double var4, double var6, double var8) {
@@ -198,15 +209,9 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       if (var10) {
          int var12 = var3.health() < var3.maxHealth() ? -23296 : -1;
-         renderTextOverMob(
-            var1,
-            var2,
-            var3.pos(),
-            var11,
-            "health: " + String.format(Locale.ROOT, "%.1f", var3.health()) + " / " + String.format(Locale.ROOT, "%.1f", var3.maxHealth()),
-            var12,
-            0.02F
-         );
+         Vec3 var10002 = var3.pos();
+         String var10004 = String.format(Locale.ROOT, "%.1f", var3.health());
+         renderTextOverMob(var1, var2, var10002, var11, "health: " + var10004 + " / " + String.format(Locale.ROOT, "%.1f", var3.maxHealth()), var12, 0.02F);
          ++var11;
       }
 
@@ -215,17 +220,19 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          ++var11;
       }
 
+      String var13;
+      Iterator var14;
       if (var10) {
-         for(String var13 : var3.behaviors()) {
+         for(var14 = var3.behaviors().iterator(); var14.hasNext(); ++var11) {
+            var13 = (String)var14.next();
             renderTextOverMob(var1, var2, var3.pos(), var11, var13, -16711681, 0.02F);
-            ++var11;
          }
       }
 
       if (var10) {
-         for(String var19 : var3.activities()) {
-            renderTextOverMob(var1, var2, var3.pos(), var11, var19, -16711936, 0.02F);
-            ++var11;
+         for(var14 = var3.activities().iterator(); var14.hasNext(); ++var11) {
+            var13 = (String)var14.next();
+            renderTextOverMob(var1, var2, var3.pos(), var11, var13, -16711936, 0.02F);
          }
       }
 
@@ -240,30 +247,30 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (var10) {
-         for(String var20 : var3.gossips()) {
-            if (var20.startsWith(var3.name())) {
-               renderTextOverMob(var1, var2, var3.pos(), var11, var20, -1, 0.02F);
+         for(var14 = var3.gossips().iterator(); var14.hasNext(); ++var11) {
+            var13 = (String)var14.next();
+            if (var13.startsWith(var3.name())) {
+               renderTextOverMob(var1, var2, var3.pos(), var11, var13, -1, 0.02F);
             } else {
-               renderTextOverMob(var1, var2, var3.pos(), var11, var20, -23296, 0.02F);
+               renderTextOverMob(var1, var2, var3.pos(), var11, var13, -23296, 0.02F);
             }
-
-            ++var11;
          }
       }
 
       if (var10) {
-         for(String var21 : Lists.reverse(var3.memories())) {
-            renderTextOverMob(var1, var2, var3.pos(), var11, var21, -3355444, 0.02F);
-            ++var11;
+         for(var14 = Lists.reverse(var3.memories()).iterator(); var14.hasNext(); ++var11) {
+            var13 = (String)var14.next();
+            renderTextOverMob(var1, var2, var3.pos(), var11, var13, -3355444, 0.02F);
          }
       }
 
       if (var10) {
          this.renderPath(var1, var2, var3, var4, var6, var8);
       }
+
    }
 
-   private static void renderTextOverPoi(PoseStack var0, MultiBufferSource var1, String var2, BrainDebugRenderer.PoiInfo var3, int var4, int var5) {
+   private static void renderTextOverPoi(PoseStack var0, MultiBufferSource var1, String var2, PoiInfo var3, int var4, int var5) {
       renderTextOverPos(var0, var1, var2, var3.pos, var4, var5);
    }
 
@@ -287,12 +294,12 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       DebugRenderer.renderFloatingText(var0, var1, var4, var12, var14, var16, var5, var6, false, 0.5F, true);
    }
 
-   private Set<String> getTicketHolderNames(BrainDebugRenderer.PoiInfo var1) {
-      return this.getTicketHolders(var1.pos).stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
+   private Set<String> getTicketHolderNames(PoiInfo var1) {
+      return (Set)this.getTicketHolders(var1.pos).stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
    }
 
-   private Set<String> getPotentialTicketHolderNames(BrainDebugRenderer.PoiInfo var1) {
-      return this.getPotentialTicketHolders(var1.pos).stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
+   private Set<String> getPotentialTicketHolderNames(PoiInfo var1) {
+      return (Set)this.getPotentialTicketHolders(var1.pos).stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
    }
 
    private boolean isMobSelected(BrainDebugPayload.BrainDump var1) {
@@ -301,31 +308,37 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private boolean isPlayerCloseEnoughToMob(BrainDebugPayload.BrainDump var1) {
       LocalPlayer var2 = this.minecraft.player;
-      BlockPos var3 = BlockPos.containing(var2.getX(), var1.pos().y(), var2.getZ());
+      BlockPos var3 = BlockPos.containing(((Player)var2).getX(), var1.pos().y(), ((Player)var2).getZ());
       BlockPos var4 = BlockPos.containing(var1.pos());
       return var3.closerThan(var4, 30.0);
    }
 
    private Collection<UUID> getTicketHolders(BlockPos var1) {
-      return this.brainDumpsPerEntity.values().stream().filter(var1x -> var1x.hasPoi(var1)).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
+      return (Collection)this.brainDumpsPerEntity.values().stream().filter((var1x) -> {
+         return var1x.hasPoi(var1);
+      }).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
    }
 
    private Collection<UUID> getPotentialTicketHolders(BlockPos var1) {
-      return this.brainDumpsPerEntity
-         .values()
-         .stream()
-         .filter(var1x -> var1x.hasPotentialPoi(var1))
-         .map(BrainDebugPayload.BrainDump::uuid)
-         .collect(Collectors.toSet());
+      return (Collection)this.brainDumpsPerEntity.values().stream().filter((var1x) -> {
+         return var1x.hasPotentialPoi(var1);
+      }).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
    }
 
    private Map<BlockPos, List<String>> getGhostPois() {
       HashMap var1 = Maps.newHashMap();
+      Iterator var2 = this.brainDumpsPerEntity.values().iterator();
 
-      for(BrainDebugPayload.BrainDump var3 : this.brainDumpsPerEntity.values()) {
-         for(BlockPos var5 : Iterables.concat(var3.pois(), var3.potentialPois())) {
+      while(var2.hasNext()) {
+         BrainDebugPayload.BrainDump var3 = (BrainDebugPayload.BrainDump)var2.next();
+         Iterator var4 = Iterables.concat(var3.pois(), var3.potentialPois()).iterator();
+
+         while(var4.hasNext()) {
+            BlockPos var5 = (BlockPos)var4.next();
             if (!this.pois.containsKey(var5)) {
-               var1.computeIfAbsent(var5, var0 -> Lists.newArrayList()).add(var3.name());
+               ((List)var1.computeIfAbsent(var5, (var0) -> {
+                  return Lists.newArrayList();
+               })).add(var3.name());
             }
          }
       }
@@ -334,7 +347,9 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private void updateLastLookedAtUuid() {
-      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent(var1 -> this.lastLookedAtUuid = var1.getUUID());
+      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> {
+         this.lastLookedAtUuid = var1.getUUID();
+      });
    }
 
    public static class PoiInfo {

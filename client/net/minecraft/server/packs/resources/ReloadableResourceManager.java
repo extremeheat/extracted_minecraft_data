@@ -29,7 +29,6 @@ public class ReloadableResourceManager implements ResourceManager, AutoCloseable
       this.resources = new MultiPackResourceManager(var1, List.of());
    }
 
-   @Override
    public void close() {
       this.resources.close();
    }
@@ -39,38 +38,34 @@ public class ReloadableResourceManager implements ResourceManager, AutoCloseable
    }
 
    public ReloadInstance createReload(Executor var1, Executor var2, CompletableFuture<Unit> var3, List<PackResources> var4) {
-      LOGGER.info("Reloading ResourceManager: {}", LogUtils.defer(() -> var4.stream().map(PackResources::packId).collect(Collectors.joining(", "))));
+      LOGGER.info("Reloading ResourceManager: {}", LogUtils.defer(() -> {
+         return var4.stream().map(PackResources::packId).collect(Collectors.joining(", "));
+      }));
       this.resources.close();
       this.resources = new MultiPackResourceManager(this.type, var4);
       return SimpleReloadInstance.create(this.resources, this.listeners, var1, var2, var3, LOGGER.isDebugEnabled());
    }
 
-   @Override
    public Optional<Resource> getResource(ResourceLocation var1) {
       return this.resources.getResource(var1);
    }
 
-   @Override
    public Set<String> getNamespaces() {
       return this.resources.getNamespaces();
    }
 
-   @Override
    public List<Resource> getResourceStack(ResourceLocation var1) {
       return this.resources.getResourceStack(var1);
    }
 
-   @Override
    public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
       return this.resources.listResources(var1, var2);
    }
 
-   @Override
    public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
       return this.resources.listResourceStacks(var1, var2);
    }
 
-   @Override
    public Stream<PackResources> listPacks() {
       return this.resources.listPacks();
    }

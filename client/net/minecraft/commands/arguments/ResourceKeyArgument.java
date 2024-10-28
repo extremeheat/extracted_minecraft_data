@@ -29,15 +29,15 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-   private static final DynamicCommandExceptionType ERROR_INVALID_FEATURE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("commands.place.feature.invalid", var0)
-   );
-   private static final DynamicCommandExceptionType ERROR_INVALID_STRUCTURE = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("commands.place.structure.invalid", var0)
-   );
-   private static final DynamicCommandExceptionType ERROR_INVALID_TEMPLATE_POOL = new DynamicCommandExceptionType(
-      var0 -> Component.translatableEscape("commands.place.jigsaw.invalid", var0)
-   );
+   private static final DynamicCommandExceptionType ERROR_INVALID_FEATURE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("commands.place.feature.invalid", var0);
+   });
+   private static final DynamicCommandExceptionType ERROR_INVALID_STRUCTURE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("commands.place.structure.invalid", var0);
+   });
+   private static final DynamicCommandExceptionType ERROR_INVALID_TEMPLATE_POOL = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("commands.place.jigsaw.invalid", var0);
+   });
    final ResourceKey<? extends Registry<T>> registryKey;
 
    public ResourceKeyArgument(ResourceKey<? extends Registry<T>> var1) {
@@ -46,26 +46,26 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    }
 
    public static <T> ResourceKeyArgument<T> key(ResourceKey<? extends Registry<T>> var0) {
-      return new ResourceKeyArgument<>(var0);
+      return new ResourceKeyArgument(var0);
    }
 
-   private static <T> ResourceKey<T> getRegistryKey(
-      CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3
-   ) throws CommandSyntaxException {
+   private static <T> ResourceKey<T> getRegistryKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = (ResourceKey)var0.getArgument(var1, ResourceKey.class);
       Optional var5 = var4.cast(var2);
-      return (ResourceKey<T>)var5.orElseThrow(() -> var3.create(var4));
+      return (ResourceKey)var5.orElseThrow(() -> {
+         return var3.create(var4);
+      });
    }
 
    private static <T> Registry<T> getRegistry(CommandContext<CommandSourceStack> var0, ResourceKey<? extends Registry<T>> var1) {
       return ((CommandSourceStack)var0.getSource()).getServer().registryAccess().registryOrThrow(var1);
    }
 
-   private static <T> Holder.Reference<T> resolveKey(
-      CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3
-   ) throws CommandSyntaxException {
+   private static <T> Holder.Reference<T> resolveKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = getRegistryKey(var0, var1, var2, var3);
-      return getRegistry(var0, var2).getHolder(var4).orElseThrow(() -> var3.create(var4.location()));
+      return (Holder.Reference)getRegistry(var0, var2).getHolder(var4).orElseThrow(() -> {
+         return var3.create(var4.location());
+      });
    }
 
    public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
@@ -87,34 +87,46 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       Object var4 = var1.getSource();
-      return var4 instanceof SharedSuggestionProvider var3
-         ? var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, var2, var1)
-         : var2.buildFuture();
+      if (var4 instanceof SharedSuggestionProvider var3) {
+         return var3.suggestRegistryElements(this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, var2, var1);
+      } else {
+         return var2.buildFuture();
+      }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   public static class Info<T> implements ArgumentTypeInfo<ResourceKeyArgument<T>, ResourceKeyArgument.Info<T>.Template> {
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
+   }
+
+   public static class Info<T> implements ArgumentTypeInfo<ResourceKeyArgument<T>, Info<T>.Template> {
       public Info() {
          super();
       }
 
-      public void serializeToNetwork(ResourceKeyArgument.Info<T>.Template var1, FriendlyByteBuf var2) {
+      public void serializeToNetwork(Info<T>.Template var1, FriendlyByteBuf var2) {
          var2.writeResourceKey(var1.registryKey);
       }
 
-      public ResourceKeyArgument.Info<T>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         return new ResourceKeyArgument.Info.Template(var1.readRegistryKey());
+      public Info<T>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+         return new Template(var1.readRegistryKey());
       }
 
-      public void serializeToJson(ResourceKeyArgument.Info<T>.Template var1, JsonObject var2) {
+      public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
          var2.addProperty("registry", var1.registryKey.location().toString());
       }
 
-      public ResourceKeyArgument.Info<T>.Template unpack(ResourceKeyArgument<T> var1) {
-         return new ResourceKeyArgument.Info.Template(var1.registryKey);
+      public Info<T>.Template unpack(ResourceKeyArgument<T> var1) {
+         return new Template(var1.registryKey);
+      }
+
+      // $FF: synthetic method
+      public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+         return this.deserializeFromNetwork(var1);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<ResourceKeyArgument<T>> {
@@ -126,12 +138,16 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
          }
 
          public ResourceKeyArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceKeyArgument<>(this.registryKey);
+            return new ResourceKeyArgument(this.registryKey);
          }
 
-         @Override
          public ArgumentTypeInfo<ResourceKeyArgument<T>, ?> type() {
             return Info.this;
+         }
+
+         // $FF: synthetic method
+         public ArgumentType instantiate(CommandBuildContext var1) {
+            return this.instantiate(var1);
          }
       }
    }

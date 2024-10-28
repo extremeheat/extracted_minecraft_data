@@ -14,7 +14,9 @@ public class V1909 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:jigsaw", () -> DSL.optionalFields("final_state", References.FLAT_BLOCK_STATE.in(var1)));
+      var1.register(var2, "minecraft:jigsaw", () -> {
+         return DSL.optionalFields("final_state", References.FLAT_BLOCK_STATE.in(var1));
+      });
       return var2;
    }
 }

@@ -26,7 +26,7 @@ public class PlayerSkinWidget extends AbstractWidget {
    private static final float DEFAULT_ROTATION_X = -5.0F;
    private static final float DEFAULT_ROTATION_Y = 30.0F;
    private static final float ROTATION_X_LIMIT = 50.0F;
-   private final PlayerSkinWidget.Model model;
+   private final Model model;
    private final Supplier<PlayerSkin> skin;
    private float rotationX = -5.0F;
    private float rotationY = 30.0F;
@@ -37,7 +37,6 @@ public class PlayerSkinWidget extends AbstractWidget {
       this.skin = var4;
    }
 
-   @Override
    protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       var1.pose().pushPose();
       var1.pose().translate((float)this.getX() + (float)this.getWidth() / 2.0F, (float)(this.getY() + this.getHeight()), 100.0F);
@@ -54,47 +53,39 @@ public class PlayerSkinWidget extends AbstractWidget {
       var1.pose().popPose();
    }
 
-   @Override
    protected void onDrag(double var1, double var3, double var5, double var7) {
       this.rotationX = Mth.clamp(this.rotationX - (float)var7 * 2.5F, -50.0F, 50.0F);
       this.rotationY += (float)var5 * 2.5F;
    }
 
-   @Override
    public void playDownSound(SoundManager var1) {
    }
 
-   @Override
    protected void updateWidgetNarration(NarrationElementOutput var1) {
    }
 
-   @Override
    public boolean isActive() {
       return false;
    }
 
    @Nullable
-   @Override
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       return null;
    }
 
-   static record Model(PlayerModel<?> a, PlayerModel<?> b) {
-      private final PlayerModel<?> wideModel;
-      private final PlayerModel<?> slimModel;
-
+   static record Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
       private Model(PlayerModel<?> var1, PlayerModel<?> var2) {
          super();
          this.wideModel = var1;
          this.slimModel = var2;
       }
 
-      public static PlayerSkinWidget.Model bake(EntityModelSet var0) {
+      public static Model bake(EntityModelSet var0) {
          PlayerModel var1 = new PlayerModel(var0.bakeLayer(ModelLayers.PLAYER), false);
          PlayerModel var2 = new PlayerModel(var0.bakeLayer(ModelLayers.PLAYER_SLIM), true);
          var1.young = false;
          var2.young = false;
-         return new PlayerSkinWidget.Model(var1, var2);
+         return new Model(var1, var2);
       }
 
       public void render(GuiGraphics var1, PlayerSkin var2) {
@@ -105,6 +96,14 @@ public class PlayerSkinWidget extends AbstractWidget {
          RenderType var4 = var3.renderType(var2.texture());
          var3.renderToBuffer(var1.pose(), var1.bufferSource().getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
          var1.pose().popPose();
+      }
+
+      public PlayerModel<?> wideModel() {
+         return this.wideModel;
+      }
+
+      public PlayerModel<?> slimModel() {
+         return this.slimModel;
       }
    }
 }

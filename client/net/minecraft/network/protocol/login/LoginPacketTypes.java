@@ -21,10 +21,10 @@ public class LoginPacketTypes {
    }
 
    private static <T extends Packet<ClientLoginPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<>(PacketFlow.CLIENTBOUND, new ResourceLocation(var0));
+      return new PacketType(PacketFlow.CLIENTBOUND, new ResourceLocation(var0));
    }
 
    private static <T extends Packet<ServerLoginPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<>(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
+      return new PacketType(PacketFlow.SERVERBOUND, new ResourceLocation(var0));
    }
 }

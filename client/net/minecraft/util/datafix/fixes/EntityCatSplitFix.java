@@ -10,7 +10,6 @@ public class EntityCatSplitFix extends SimpleEntityRenameFix {
       super("EntityCatSplitFix", var1, var2);
    }
 
-   @Override
    protected Pair<String, Dynamic<?>> getNewNameAndTag(String var1, Dynamic<?> var2) {
       if (Objects.equals("minecraft:ocelot", var1)) {
          int var3 = var2.get("CatType").asInt(0);

@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -22,16 +21,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
+import net.minecraft.world.scores.Scoreboard;
 
 public class ScoreContents implements ComponentContents {
-   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> var0.group(
-               Codec.STRING.fieldOf("name").forGetter(ScoreContents::getName), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::getObjective)
-            )
-            .apply(var0, ScoreContents::new)
-   );
-   public static final MapCodec<ScoreContents> CODEC = INNER_CODEC.fieldOf("score");
-   public static final ComponentContents.Type<ScoreContents> TYPE = new ComponentContents.Type<>(CODEC, "score");
+   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(Codec.STRING.fieldOf("name").forGetter(ScoreContents::getName), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::getObjective)).apply(var0, ScoreContents::new);
+   });
+   public static final MapCodec<ScoreContents> CODEC;
+   public static final ComponentContents.Type<ScoreContents> TYPE;
    private final String name;
    @Nullable
    private final EntitySelector selector;
@@ -40,7 +37,7 @@ public class ScoreContents implements ComponentContents {
    @Nullable
    private static EntitySelector parseSelector(String var0) {
       try {
-         return new EntitySelectorParser(new StringReader(var0)).parse();
+         return (new EntitySelectorParser(new StringReader(var0))).parse();
       } catch (CommandSyntaxException var2) {
          return null;
       }
@@ -53,7 +50,6 @@ public class ScoreContents implements ComponentContents {
       this.objective = var2;
    }
 
-   @Override
    public ComponentContents.Type<?> type() {
       return TYPE;
    }
@@ -90,9 +86,9 @@ public class ScoreContents implements ComponentContents {
       MinecraftServer var3 = var2.getServer();
       if (var3 != null) {
          ServerScoreboard var4 = var3.getScoreboard();
-         Objective var5 = var4.getObjective(this.objective);
+         Objective var5 = ((Scoreboard)var4).getObjective(this.objective);
          if (var5 != null) {
-            ReadOnlyScoreInfo var6 = var4.getPlayerScoreInfo(var1, var5);
+            ReadOnlyScoreInfo var6 = ((Scoreboard)var4).getPlayerScoreInfo(var1, var5);
             if (var6 != null) {
                return var6.formatValue(var5.numberFormatOrDefault(StyledFormat.NO_STYLE));
             }
@@ -102,7 +98,6 @@ public class ScoreContents implements ComponentContents {
       return Component.empty();
    }
 
-   @Override
    public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       if (var1 == null) {
          return Component.empty();
@@ -113,27 +108,36 @@ public class ScoreContents implements ComponentContents {
       }
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         if (var1 instanceof ScoreContents var2 && this.name.equals(var2.name) && this.objective.equals(var2.objective)) {
-            return true;
+         boolean var10000;
+         if (var1 instanceof ScoreContents) {
+            ScoreContents var2 = (ScoreContents)var1;
+            if (this.name.equals(var2.name) && this.objective.equals(var2.objective)) {
+               var10000 = true;
+               return var10000;
+            }
          }
 
-         return false;
+         var10000 = false;
+         return var10000;
       }
    }
 
-   @Override
    public int hashCode() {
       int var1 = this.name.hashCode();
-      return 31 * var1 + this.objective.hashCode();
+      var1 = 31 * var1 + this.objective.hashCode();
+      return var1;
    }
 
-   @Override
    public String toString() {
       return "score{name='" + this.name + "', objective='" + this.objective + "'}";
+   }
+
+   static {
+      CODEC = INNER_CODEC.fieldOf("score");
+      TYPE = new ComponentContents.Type(CODEC, "score");
    }
 }

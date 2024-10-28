@@ -23,7 +23,6 @@ public class KeyValueCondition implements Condition {
       this.value = var2;
    }
 
-   @Override
    public Predicate<BlockState> getPredicate(StateDefinition<Block, BlockState> var1) {
       Property var2 = var1.getProperty(this.key);
       if (var2 == null) {
@@ -43,8 +42,14 @@ public class KeyValueCondition implements Condition {
             if (var5.size() == 1) {
                var6 = this.getBlockStatePredicate(var1, var2, var3);
             } else {
-               List var7 = var5.stream().map(var3x -> this.getBlockStatePredicate(var1, var2, var3x)).collect(Collectors.toList());
-               var6 = var1x -> var7.stream().anyMatch(var1xx -> var1xx.test(var1x));
+               List var7 = (List)var5.stream().map((var3x) -> {
+                  return this.getBlockStatePredicate(var1, var2, var3x);
+               }).collect(Collectors.toList());
+               var6 = (var1x) -> {
+                  return var7.stream().anyMatch((var1) -> {
+                     return var1.test(var1x);
+                  });
+               };
             }
 
             return var4 ? var6.negate() : var6;
@@ -55,15 +60,14 @@ public class KeyValueCondition implements Condition {
    private Predicate<BlockState> getBlockStatePredicate(StateDefinition<Block, BlockState> var1, Property<?> var2, String var3) {
       Optional var4 = var2.getValue(var3);
       if (var4.isEmpty()) {
-         throw new RuntimeException(
-            String.format(Locale.ROOT, "Unknown value '%s' for property '%s' on '%s' in '%s'", var3, this.key, var1.getOwner(), this.value)
-         );
+         throw new RuntimeException(String.format(Locale.ROOT, "Unknown value '%s' for property '%s' on '%s' in '%s'", var3, this.key, var1.getOwner(), this.value));
       } else {
-         return var2x -> var2x.getValue(var2).equals(var4.get());
+         return (var2x) -> {
+            return var2x.getValue(var2).equals(var4.get());
+         };
       }
    }
 
-   @Override
    public String toString() {
       return MoreObjects.toStringHelper(this).add("key", this.key).add("value", this.value).toString();
    }

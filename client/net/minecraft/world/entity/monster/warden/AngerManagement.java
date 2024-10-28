@@ -5,11 +5,9 @@ import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,44 +35,44 @@ public class AngerManagement {
    private static final int DEFAULT_ANGER_DECREASE = 1;
    private int conversionDelay = Mth.randomBetweenInclusive(RandomSource.create(), 0, 2);
    int highestAnger;
-   private static final Codec<Pair<UUID, Integer>> SUSPECT_ANGER_PAIR = RecordCodecBuilder.create(
-      var0 -> var0.group(UUIDUtil.CODEC.fieldOf("uuid").forGetter(Pair::getFirst), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anger").forGetter(Pair::getSecond))
-            .apply(var0, Pair::of)
-   );
+   private static final Codec<Pair<UUID, Integer>> SUSPECT_ANGER_PAIR = RecordCodecBuilder.create((var0) -> {
+      return var0.group(UUIDUtil.CODEC.fieldOf("uuid").forGetter(Pair::getFirst), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anger").forGetter(Pair::getSecond)).apply(var0, Pair::of);
+   });
    private final Predicate<Entity> filter;
    @VisibleForTesting
    protected final ArrayList<Entity> suspects;
-   private final AngerManagement.Sorter suspectSorter;
+   private final Sorter suspectSorter;
    @VisibleForTesting
    protected final Object2IntMap<Entity> angerBySuspect;
    @VisibleForTesting
    protected final Object2IntMap<UUID> angerByUuid;
 
    public static Codec<AngerManagement> codec(Predicate<Entity> var0) {
-      return RecordCodecBuilder.create(
-         var1 -> var1.group(SUSPECT_ANGER_PAIR.listOf().fieldOf("suspects").orElse(Collections.emptyList()).forGetter(AngerManagement::createUuidAngerPairs))
-               .apply(var1, var1x -> new AngerManagement(var0, var1x))
-      );
+      return RecordCodecBuilder.create((var1) -> {
+         return var1.group(SUSPECT_ANGER_PAIR.listOf().fieldOf("suspects").orElse(Collections.emptyList()).forGetter(AngerManagement::createUuidAngerPairs)).apply(var1, (var1x) -> {
+            return new AngerManagement(var0, var1x);
+         });
+      });
    }
 
    public AngerManagement(Predicate<Entity> var1, List<Pair<UUID, Integer>> var2) {
       super();
       this.filter = var1;
-      this.suspects = new ArrayList<>();
-      this.suspectSorter = new AngerManagement.Sorter(this);
+      this.suspects = new ArrayList();
+      this.suspectSorter = new Sorter(this);
       this.angerBySuspect = new Object2IntOpenHashMap();
       this.angerByUuid = new Object2IntOpenHashMap(var2.size());
-      var2.forEach(var1x -> this.angerByUuid.put((UUID)var1x.getFirst(), (Integer)var1x.getSecond()));
+      var2.forEach((var1x) -> {
+         this.angerByUuid.put((UUID)var1x.getFirst(), (Integer)var1x.getSecond());
+      });
    }
 
    private List<Pair<UUID, Integer>> createUuidAngerPairs() {
-      return Streams.concat(
-            new Stream[]{
-               this.suspects.stream().map(var1 -> Pair.of(var1.getUUID(), this.angerBySuspect.getInt(var1))),
-               this.angerByUuid.object2IntEntrySet().stream().map(var0 -> Pair.of((UUID)var0.getKey(), var0.getIntValue()))
-            }
-         )
-         .collect(Collectors.toList());
+      return (List)Streams.concat(new Stream[]{this.suspects.stream().map((var1) -> {
+         return Pair.of(var1.getUUID(), this.angerBySuspect.getInt(var1));
+      }), this.angerByUuid.object2IntEntrySet().stream().map((var0) -> {
+         return Pair.of((UUID)var0.getKey(), var0.getIntValue());
+      })}).collect(Collectors.toList());
    }
 
    public void tick(ServerLevel var1, Predicate<Entity> var2) {
@@ -87,7 +85,7 @@ public class AngerManagement {
       ObjectIterator var3 = this.angerByUuid.object2IntEntrySet().iterator();
 
       while(var3.hasNext()) {
-         Entry var4 = (Entry)var3.next();
+         Object2IntMap.Entry var4 = (Object2IntMap.Entry)var3.next();
          int var5 = var4.getIntValue();
          if (var5 <= 1) {
             var3.remove();
@@ -98,28 +96,31 @@ public class AngerManagement {
 
       ObjectIterator var9 = this.angerBySuspect.object2IntEntrySet().iterator();
 
-      while(var9.hasNext()) {
-         Entry var10 = (Entry)var9.next();
-         int var6 = var10.getIntValue();
-         Entity var7 = (Entity)var10.getKey();
-         Entity.RemovalReason var8 = var7.getRemovalReason();
-         if (var6 > 1 && var2.test(var7) && var8 == null) {
-            var10.setValue(var6 - 1);
-         } else {
-            this.suspects.remove(var7);
-            var9.remove();
-            if (var6 > 1 && var8 != null) {
-               switch(var8) {
-                  case CHANGED_DIMENSION:
-                  case UNLOADED_TO_CHUNK:
-                  case UNLOADED_WITH_PLAYER:
-                     this.angerByUuid.put(var7.getUUID(), var6 - 1);
+      while(true) {
+         while(var9.hasNext()) {
+            Object2IntMap.Entry var10 = (Object2IntMap.Entry)var9.next();
+            int var6 = var10.getIntValue();
+            Entity var7 = (Entity)var10.getKey();
+            Entity.RemovalReason var8 = var7.getRemovalReason();
+            if (var6 > 1 && var2.test(var7) && var8 == null) {
+               var10.setValue(var6 - 1);
+            } else {
+               this.suspects.remove(var7);
+               var9.remove();
+               if (var6 > 1 && var8 != null) {
+                  switch (var8) {
+                     case CHANGED_DIMENSION:
+                     case UNLOADED_TO_CHUNK:
+                     case UNLOADED_WITH_PLAYER:
+                        this.angerByUuid.put(var7.getUUID(), var6 - 1);
+                  }
                }
             }
          }
-      }
 
-      this.sortAndUpdateHighestAnger();
+         this.sortAndUpdateHighestAnger();
+         return;
+      }
    }
 
    private void sortAndUpdateHighestAnger() {
@@ -128,13 +129,14 @@ public class AngerManagement {
       if (this.suspects.size() == 1) {
          this.highestAnger = this.angerBySuspect.getInt(this.suspects.get(0));
       }
+
    }
 
    private void convertFromUuids(ServerLevel var1) {
       ObjectIterator var2 = this.angerByUuid.object2IntEntrySet().iterator();
 
       while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
+         Object2IntMap.Entry var3 = (Object2IntMap.Entry)var2.next();
          int var4 = var3.getIntValue();
          Entity var5 = var1.getEntity((UUID)var3.getKey());
          if (var5 != null) {
@@ -143,11 +145,14 @@ public class AngerManagement {
             var2.remove();
          }
       }
+
    }
 
    public int increaseAnger(Entity var1, int var2) {
       boolean var3 = !this.angerBySuspect.containsKey(var1);
-      int var4 = this.angerBySuspect.computeInt(var1, (var1x, var2x) -> Math.min(150, (var2x == null ? 0 : var2x) + var2));
+      int var4 = this.angerBySuspect.computeInt(var1, (var1x, var2x) -> {
+         return Math.min(150, (var2x == null ? 0 : var2x) + var2);
+      });
       if (var3) {
          int var5 = this.angerByUuid.removeInt(var1.getUUID());
          var4 += var5;
@@ -167,7 +172,7 @@ public class AngerManagement {
 
    @Nullable
    private Entity getTopSuspect() {
-      return this.suspects.stream().filter(this.filter).findFirst().orElse(null);
+      return (Entity)this.suspects.stream().filter(this.filter).findFirst().orElse((Object)null);
    }
 
    public int getActiveAnger(@Nullable Entity var1) {
@@ -175,13 +180,15 @@ public class AngerManagement {
    }
 
    public Optional<LivingEntity> getActiveEntity() {
-      return Optional.ofNullable(this.getTopSuspect()).filter(var0 -> var0 instanceof LivingEntity).map(var0 -> (LivingEntity)var0);
+      return Optional.ofNullable(this.getTopSuspect()).filter((var0) -> {
+         return var0 instanceof LivingEntity;
+      }).map((var0) -> {
+         return (LivingEntity)var0;
+      });
    }
 
    @VisibleForTesting
-   protected static record Sorter(AngerManagement a) implements Comparator<Entity> {
-      private final AngerManagement angerManagement;
-
+   protected static record Sorter(AngerManagement angerManagement) implements Comparator<Entity> {
       protected Sorter(AngerManagement var1) {
          super();
          this.angerManagement = var1;
@@ -208,6 +215,15 @@ public class AngerManagement {
                }
             }
          }
+      }
+
+      public AngerManagement angerManagement() {
+         return this.angerManagement;
+      }
+
+      // $FF: synthetic method
+      public int compare(Object var1, Object var2) {
+         return this.compare((Entity)var1, (Entity)var2);
       }
    }
 }

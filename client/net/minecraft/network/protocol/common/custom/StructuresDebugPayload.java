@@ -8,20 +8,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
-public record StructuresDebugPayload(ResourceKey<Level> c, BoundingBox d, List<StructuresDebugPayload.PieceInfo> e) implements CustomPacketPayload {
-   private final ResourceKey<Level> dimension;
-   private final BoundingBox mainBB;
-   private final List<StructuresDebugPayload.PieceInfo> pieces;
-   public static final StreamCodec<FriendlyByteBuf, StructuresDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
-      StructuresDebugPayload::write, StructuresDebugPayload::new
-   );
+public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox mainBB, List<PieceInfo> pieces) implements CustomPacketPayload {
+   public static final StreamCodec<FriendlyByteBuf, StructuresDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(StructuresDebugPayload::write, StructuresDebugPayload::new);
    public static final CustomPacketPayload.Type<StructuresDebugPayload> TYPE = CustomPacketPayload.createType("debug/structures");
 
    private StructuresDebugPayload(FriendlyByteBuf var1) {
-      this(var1.readResourceKey(Registries.DIMENSION), readBoundingBox(var1), var1.readList(StructuresDebugPayload.PieceInfo::new));
+      this(var1.readResourceKey(Registries.DIMENSION), readBoundingBox(var1), var1.readList(PieceInfo::new));
    }
 
-   public StructuresDebugPayload(ResourceKey<Level> var1, BoundingBox var2, List<StructuresDebugPayload.PieceInfo> var3) {
+   public StructuresDebugPayload(ResourceKey<Level> var1, BoundingBox var2, List<PieceInfo> var3) {
       super();
       this.dimension = var1;
       this.mainBB = var2;
@@ -31,10 +26,11 @@ public record StructuresDebugPayload(ResourceKey<Level> c, BoundingBox d, List<S
    private void write(FriendlyByteBuf var1) {
       var1.writeResourceKey(this.dimension);
       writeBoundingBox(var1, this.mainBB);
-      var1.writeCollection(this.pieces, (var1x, var2) -> var2.write(var1));
+      var1.writeCollection(this.pieces, (var1x, var2) -> {
+         var2.write(var1);
+      });
    }
 
-   @Override
    public CustomPacketPayload.Type<StructuresDebugPayload> type() {
       return TYPE;
    }
@@ -52,10 +48,19 @@ public record StructuresDebugPayload(ResourceKey<Level> c, BoundingBox d, List<S
       var0.writeInt(var1.maxZ());
    }
 
-   public static record PieceInfo(BoundingBox a, boolean b) {
-      private final BoundingBox boundingBox;
-      private final boolean isStart;
+   public ResourceKey<Level> dimension() {
+      return this.dimension;
+   }
 
+   public BoundingBox mainBB() {
+      return this.mainBB;
+   }
+
+   public List<PieceInfo> pieces() {
+      return this.pieces;
+   }
+
+   public static record PieceInfo(BoundingBox boundingBox, boolean isStart) {
       public PieceInfo(FriendlyByteBuf var1) {
          this(StructuresDebugPayload.readBoundingBox(var1), var1.readBoolean());
       }
@@ -69,6 +74,14 @@ public record StructuresDebugPayload(ResourceKey<Level> c, BoundingBox d, List<S
       public void write(FriendlyByteBuf var1) {
          StructuresDebugPayload.writeBoundingBox(var1, this.boundingBox);
          var1.writeBoolean(this.isStart);
+      }
+
+      public BoundingBox boundingBox() {
+         return this.boundingBox;
+      }
+
+      public boolean isStart() {
+         return this.isStart;
       }
    }
 }

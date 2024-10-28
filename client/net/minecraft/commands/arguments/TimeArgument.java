@@ -23,9 +23,9 @@ import net.minecraft.network.chat.Component;
 public class TimeArgument implements ArgumentType<Integer> {
    private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
    private static final SimpleCommandExceptionType ERROR_INVALID_UNIT = new SimpleCommandExceptionType(Component.translatable("argument.time.invalid_unit"));
-   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatableEscape("argument.time.tick_count_too_low", var1, var0)
-   );
+   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType((var0, var1) -> {
+      return Component.translatableEscape("argument.time.tick_count_too_low", var1, var0);
+   });
    private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap();
    final int minimum;
 
@@ -67,11 +67,16 @@ public class TimeArgument implements ArgumentType<Integer> {
          return var2.buildFuture();
       }
 
-      return SharedSuggestionProvider.suggest(UNITS.keySet(), var2.createOffset(var2.getStart() + var3.getCursor()));
+      return SharedSuggestionProvider.suggest((Iterable)UNITS.keySet(), var2.createOffset(var2.getStart() + var3.getCursor()));
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1);
    }
 
    static {
@@ -81,26 +86,31 @@ public class TimeArgument implements ArgumentType<Integer> {
       UNITS.put("", 1);
    }
 
-   public static class Info implements ArgumentTypeInfo<TimeArgument, TimeArgument.Info.Template> {
+   public static class Info implements ArgumentTypeInfo<TimeArgument, Template> {
       public Info() {
          super();
       }
 
-      public void serializeToNetwork(TimeArgument.Info.Template var1, FriendlyByteBuf var2) {
+      public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
          var2.writeInt(var1.min);
       }
 
-      public TimeArgument.Info.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+      public Template deserializeFromNetwork(FriendlyByteBuf var1) {
          int var2 = var1.readInt();
-         return new TimeArgument.Info.Template(var2);
+         return new Template(var2);
       }
 
-      public void serializeToJson(TimeArgument.Info.Template var1, JsonObject var2) {
+      public void serializeToJson(Template var1, JsonObject var2) {
          var2.addProperty("min", var1.min);
       }
 
-      public TimeArgument.Info.Template unpack(TimeArgument var1) {
-         return new TimeArgument.Info.Template(var1.minimum);
+      public Template unpack(TimeArgument var1) {
+         return new Template(var1.minimum);
+      }
+
+      // $FF: synthetic method
+      public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+         return this.deserializeFromNetwork(var1);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<TimeArgument> {
@@ -115,9 +125,13 @@ public class TimeArgument implements ArgumentType<Integer> {
             return TimeArgument.time(this.min);
          }
 
-         @Override
          public ArgumentTypeInfo<TimeArgument, ?> type() {
             return Info.this;
+         }
+
+         // $FF: synthetic method
+         public ArgumentType instantiate(CommandBuildContext var1) {
+            return this.instantiate(var1);
          }
       }
    }

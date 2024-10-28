@@ -7,13 +7,11 @@ import net.minecraft.network.protocol.Packet;
 public interface PacketSendListener {
    static PacketSendListener thenRun(final Runnable var0) {
       return new PacketSendListener() {
-         @Override
          public void onSuccess() {
             var0.run();
          }
 
          @Nullable
-         @Override
          public Packet<?> onFailure() {
             var0.run();
             return null;
@@ -24,9 +22,8 @@ public interface PacketSendListener {
    static PacketSendListener exceptionallySend(final Supplier<Packet<?>> var0) {
       return new PacketSendListener() {
          @Nullable
-         @Override
          public Packet<?> onFailure() {
-            return (Packet<?>)var0.get();
+            return (Packet)var0.get();
          }
       };
    }

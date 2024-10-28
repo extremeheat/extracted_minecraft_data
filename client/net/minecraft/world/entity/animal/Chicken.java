@@ -36,39 +36,35 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class Chicken extends Animal {
-   private static final EntityDimensions BABY_DIMENSIONS = EntityType.CHICKEN.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
+   private static final EntityDimensions BABY_DIMENSIONS;
    public float flap;
    public float flapSpeed;
    public float oFlapSpeed;
    public float oFlap;
    public float flapping = 1.0F;
    private float nextFlap = 1.0F;
-   public int eggTime = this.random.nextInt(6000) + 6000;
+   public int eggTime;
    public boolean isChickenJockey;
 
    public Chicken(EntityType<? extends Chicken> var1, Level var2) {
       super(var1, var2);
+      this.eggTime = this.random.nextInt(6000) + 6000;
       this.setPathfindingMalus(PathType.WATER, 0.0F);
    }
 
-   @Override
-   public boolean hasPotatoVariant() {
-      return true;
-   }
-
-   @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.4));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, var0 -> var0.is(ItemTags.CHICKEN_FOOD), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (var0) -> {
+         return var0.is(ItemTags.CHICKEN_FOOD);
+      }, false));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
    }
 
-   @Override
    public EntityDimensions getDefaultDimensions(Pose var1) {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
@@ -77,7 +73,6 @@ public class Chicken extends Animal {
       return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 4.0).add(Attributes.MOVEMENT_SPEED, 0.25);
    }
 
-   @Override
    public void aiStep() {
       super.aiStep();
       this.oFlap = this.flap;
@@ -101,80 +96,71 @@ public class Chicken extends Animal {
          this.gameEvent(GameEvent.ENTITY_PLACE);
          this.eggTime = this.random.nextInt(6000) + 6000;
       }
+
    }
 
-   @Override
    protected boolean isFlapping() {
       return this.flyDist > this.nextFlap;
    }
 
-   @Override
    protected void onFlap() {
       this.nextFlap = this.flyDist + this.flapSpeed / 2.0F;
    }
 
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.CHICKEN_AMBIENT;
    }
 
-   @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
       return SoundEvents.CHICKEN_HURT;
    }
 
-   @Override
    protected SoundEvent getDeathSound() {
       return SoundEvents.CHICKEN_DEATH;
    }
 
-   @Override
    protected void playStepSound(BlockPos var1, BlockState var2) {
       this.playSound(SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
    }
 
    @Nullable
    public Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.CHICKEN.create(var1);
+      return (Chicken)EntityType.CHICKEN.create(var1);
    }
 
-   @Override
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.CHICKEN_FOOD);
    }
 
-   @Override
    public int getExperienceReward() {
       return this.isChickenJockey() ? 10 : super.getExperienceReward();
    }
 
-   @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.isChickenJockey = var1.getBoolean("IsChickenJockey");
       if (var1.contains("EggLayTime")) {
          this.eggTime = var1.getInt("EggLayTime");
       }
+
    }
 
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("IsChickenJockey", this.isChickenJockey);
       var1.putInt("EggLayTime", this.eggTime);
    }
 
-   @Override
    public boolean removeWhenFarAway(double var1) {
       return this.isChickenJockey();
    }
 
-   @Override
    protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       super.positionRider(var1, var2);
       if (var1 instanceof LivingEntity) {
          ((LivingEntity)var1).yBodyRot = this.yBodyRot;
       }
+
    }
 
    public boolean isChickenJockey() {
@@ -183,5 +169,15 @@ public class Chicken extends Animal {
 
    public void setChickenJockey(boolean var1) {
       this.isChickenJockey = var1;
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return this.getBreedOffspring(var1, var2);
+   }
+
+   static {
+      BABY_DIMENSIONS = EntityType.CHICKEN.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
    }
 }

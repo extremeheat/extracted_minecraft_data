@@ -34,13 +34,11 @@ public class LoggerChunkProgressListener implements ChunkProgressListener {
       return new LoggerChunkProgressListener(0);
    }
 
-   @Override
    public void updateSpawnPos(ChunkPos var1) {
       this.nextTickTime = Util.getMillis();
       this.startTime = this.nextTickTime;
    }
 
-   @Override
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
       if (var2 == ChunkStatus.FULL) {
          ++this.count;
@@ -51,13 +49,12 @@ public class LoggerChunkProgressListener implements ChunkProgressListener {
          this.nextTickTime += 500L;
          LOGGER.info(Component.translatable("menu.preparingSpawn", Mth.clamp(var3, 0, 100)).getString());
       }
+
    }
 
-   @Override
    public void start() {
    }
 
-   @Override
    public void stop() {
       LOGGER.info("Time elapsed: {} ms", Util.getMillis() - this.startTime);
       this.nextTickTime = 9223372036854775807L;

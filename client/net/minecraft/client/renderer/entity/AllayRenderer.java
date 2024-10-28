@@ -12,7 +12,7 @@ public class AllayRenderer extends MobRenderer<Allay, AllayModel> {
 
    public AllayRenderer(EntityRendererProvider.Context var1) {
       super(var1, new AllayModel(var1.bakeLayer(ModelLayers.ALLAY)), 0.4F);
-      this.addLayer(new ItemInHandLayer<>(this, var1.getItemInHandRenderer()));
+      this.addLayer(new ItemInHandLayer(this, var1.getItemInHandRenderer()));
    }
 
    public ResourceLocation getTextureLocation(Allay var1) {

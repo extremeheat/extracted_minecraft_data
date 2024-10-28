@@ -13,11 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Program {
    private static final int MAX_LOG_LENGTH = 32768;
-   private final Program.Type type;
+   private final Type type;
    private final String name;
    private int id;
 
-   protected Program(Program.Type var1, int var2, String var3) {
+   protected Program(Type var1, int var2, String var3) {
       super();
       this.type = var1;
       this.id = var2;
@@ -42,7 +42,7 @@ public class Program {
       return this.name;
    }
 
-   public static Program compileShader(Program.Type var0, String var1, InputStream var2, String var3, GlslPreprocessor var4) throws IOException {
+   public static Program compileShader(Type var0, String var1, InputStream var2, String var3, GlslPreprocessor var4) throws IOException {
       RenderSystem.assertOnRenderThread();
       int var5 = compileShaderInternal(var0, var1, var2, var3, var4);
       Program var6 = new Program(var0, var5, var1);
@@ -50,7 +50,7 @@ public class Program {
       return var6;
    }
 
-   protected static int compileShaderInternal(Program.Type var0, String var1, InputStream var2, String var3, GlslPreprocessor var4) throws IOException {
+   protected static int compileShaderInternal(Type var0, String var1, InputStream var2, String var3, GlslPreprocessor var4) throws IOException {
       String var5 = IOUtils.toString(var2, StandardCharsets.UTF_8);
       if (var5 == null) {
          throw new IOException("Could not load program " + var0.getName());
@@ -100,6 +100,11 @@ public class Program {
 
       public Map<String, Program> getPrograms() {
          return this.programs;
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{VERTEX, FRAGMENT};
       }
    }
 }

@@ -5,7 +5,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -18,14 +20,17 @@ public class AdvancementTree {
    private final Set<AdvancementNode> roots = new ObjectLinkedOpenHashSet();
    private final Set<AdvancementNode> tasks = new ObjectLinkedOpenHashSet();
    @Nullable
-   private AdvancementTree.Listener listener;
+   private Listener listener;
 
    public AdvancementTree() {
       super();
    }
 
    private void remove(AdvancementNode var1) {
-      for(AdvancementNode var3 : var1.children()) {
+      Iterator var2 = var1.children().iterator();
+
+      while(var2.hasNext()) {
+         AdvancementNode var3 = (AdvancementNode)var2.next();
          this.remove(var3);
       }
 
@@ -42,17 +47,22 @@ public class AdvancementTree {
             this.listener.onRemoveAdvancementTask(var1);
          }
       }
+
    }
 
    public void remove(Set<ResourceLocation> var1) {
-      for(ResourceLocation var3 : var1) {
-         AdvancementNode var4 = this.nodes.get(var3);
+      Iterator var2 = var1.iterator();
+
+      while(var2.hasNext()) {
+         ResourceLocation var3 = (ResourceLocation)var2.next();
+         AdvancementNode var4 = (AdvancementNode)this.nodes.get(var3);
          if (var4 == null) {
             LOGGER.warn("Told to remove advancement {} but I don't know what that is", var3);
          } else {
             this.remove(var4);
          }
       }
+
    }
 
    public void addAll(Collection<AdvancementHolder> var1) {
@@ -70,7 +80,9 @@ public class AdvancementTree {
 
    private boolean tryInsert(AdvancementHolder var1) {
       Optional var2 = var1.value().parent();
-      AdvancementNode var3 = var2.map(this.nodes::get).orElse(null);
+      Map var10001 = this.nodes;
+      Objects.requireNonNull(var10001);
+      AdvancementNode var3 = (AdvancementNode)var2.map(var10001::get).orElse((Object)null);
       if (var3 == null && var2.isPresent()) {
          return false;
       } else {
@@ -103,6 +115,7 @@ public class AdvancementTree {
       if (this.listener != null) {
          this.listener.onAdvancementsCleared();
       }
+
    }
 
    public Iterable<AdvancementNode> roots() {
@@ -115,25 +128,33 @@ public class AdvancementTree {
 
    @Nullable
    public AdvancementNode get(ResourceLocation var1) {
-      return this.nodes.get(var1);
+      return (AdvancementNode)this.nodes.get(var1);
    }
 
    @Nullable
    public AdvancementNode get(AdvancementHolder var1) {
-      return this.nodes.get(var1.id());
+      return (AdvancementNode)this.nodes.get(var1.id());
    }
 
-   public void setListener(@Nullable AdvancementTree.Listener var1) {
+   public void setListener(@Nullable Listener var1) {
       this.listener = var1;
       if (var1 != null) {
-         for(AdvancementNode var3 : this.roots) {
+         Iterator var2 = this.roots.iterator();
+
+         AdvancementNode var3;
+         while(var2.hasNext()) {
+            var3 = (AdvancementNode)var2.next();
             var1.onAddAdvancementRoot(var3);
          }
 
-         for(AdvancementNode var5 : this.tasks) {
-            var1.onAddAdvancementTask(var5);
+         var2 = this.tasks.iterator();
+
+         while(var2.hasNext()) {
+            var3 = (AdvancementNode)var2.next();
+            var1.onAddAdvancementTask(var3);
          }
       }
+
    }
 
    public interface Listener {

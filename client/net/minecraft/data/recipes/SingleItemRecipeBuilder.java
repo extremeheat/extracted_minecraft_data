@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.PoisonousPotatoCutterRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.ItemLike;
@@ -23,7 +22,7 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
    private final Item result;
    private final Ingredient ingredient;
    private final int count;
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
+   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
    @Nullable
    private String group;
    private final SingleItemRecipe.Factory<?> factory;
@@ -45,10 +44,6 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
       return new SingleItemRecipeBuilder(var1, StonecutterRecipe::new, var0, var2, var3);
    }
 
-   public static SingleItemRecipeBuilder poisonous_potato_cutting(Ingredient var0, RecipeCategory var1, ItemLike var2, int var3) {
-      return new SingleItemRecipeBuilder(var1, PoisonousPotatoCutterRecipe::new, var0, var2, var3);
-   }
-
    public SingleItemRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
       this.criteria.put(var1, var2);
       return this;
@@ -59,26 +54,33 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
       return this;
    }
 
-   @Override
    public Item getResult() {
       return this.result;
    }
 
-   @Override
    public void save(RecipeOutput var1, ResourceLocation var2) {
       this.ensureValid(var2);
-      Advancement.Builder var3 = var1.advancement()
-         .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
-         .rewards(AdvancementRewards.Builder.recipe(var2))
-         .requirements(AdvancementRequirements.Strategy.OR);
-      this.criteria.forEach(var3::addCriterion);
-      SingleItemRecipe var4 = this.factory.create(Objects.requireNonNullElse(this.group, ""), this.ingredient, new ItemStack(this.result, this.count));
+      Advancement.Builder var3 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
+      Map var10000 = this.criteria;
+      Objects.requireNonNull(var3);
+      var10000.forEach(var3::addCriterion);
+      SingleItemRecipe var4 = this.factory.create((String)Objects.requireNonNullElse(this.group, ""), this.ingredient, new ItemStack(this.result, this.count));
       var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + var1);
+         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1));
       }
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder group(@Nullable String var1) {
+      return this.group(var1);
+   }
+
+   // $FF: synthetic method
+   public RecipeBuilder unlockedBy(String var1, Criterion var2) {
+      return this.unlockedBy(var1, var2);
    }
 }
