@@ -32,7 +32,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
          var1.reportProblem("Condition " + String.valueOf(this.name.location()) + " is recursively called");
       } else {
          LootItemCondition.super.validate(var1);
-         var1.resolver().get(Registries.PREDICATE, this.name).ifPresentOrElse((var2) -> {
+         var1.resolver().get(this.name).ifPresentOrElse((var2) -> {
             ((LootItemCondition)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name));
          }, () -> {
             var1.reportProblem("Unknown condition table called " + String.valueOf(this.name.location()));
@@ -41,7 +41,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
    }
 
    public boolean test(LootContext var1) {
-      LootItemCondition var2 = (LootItemCondition)var1.getResolver().get(Registries.PREDICATE, this.name).map(Holder.Reference::value).orElse((Object)null);
+      LootItemCondition var2 = (LootItemCondition)var1.getResolver().get(this.name).map(Holder.Reference::value).orElse((Object)null);
       if (var2 == null) {
          LOGGER.warn("Tried using unknown condition table called {}", this.name.location());
          return false;

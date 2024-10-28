@@ -59,7 +59,7 @@ public class ItemPickupParticle extends Particle {
       double var15 = Mth.lerp((double)var4, this.itemEntity.getZ(), var9);
       MultiBufferSource.BufferSource var17 = this.renderBuffers.bufferSource();
       Vec3 var18 = var2.getPosition();
-      this.entityRenderDispatcher.render(this.itemEntity, var11 - var18.x(), var13 - var18.y(), var15 - var18.z(), this.itemEntity.getYRot(), var3, new PoseStack(), var17, this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var3));
+      this.entityRenderDispatcher.render(this.itemEntity, var11 - var18.x(), var13 - var18.y(), var15 - var18.z(), var3, new PoseStack(), var17, this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var3));
       var17.endBatch();
    }
 

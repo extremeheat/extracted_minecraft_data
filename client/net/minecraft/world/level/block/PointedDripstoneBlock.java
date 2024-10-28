@@ -23,12 +23,12 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DripstoneThickness;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -45,7 +45,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PointedDripstoneBlock extends Block implements Fallable, SimpleWaterloggedBlock {
    public static final MapCodec<PointedDripstoneBlock> CODEC = simpleCodec(PointedDripstoneBlock::new);
-   public static final DirectionProperty TIP_DIRECTION;
+   public static final EnumProperty<Direction> TIP_DIRECTION;
    public static final EnumProperty<DripstoneThickness> THICKNESS;
    public static final BooleanProperty WATERLOGGED;
    private static final int MAX_SEARCH_LENGTH_WHEN_CHECKING_DRIP_TYPE = 11;
@@ -92,29 +92,29 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       return isValidPointedDripstonePlacement(var2, var3, (Direction)var1.getValue(TIP_DIRECTION));
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      if (var2 != Direction.UP && var2 != Direction.DOWN) {
+      if (var5 != Direction.UP && var5 != Direction.DOWN) {
          return var1;
       } else {
-         Direction var7 = (Direction)var1.getValue(TIP_DIRECTION);
-         if (var7 == Direction.DOWN && var4.getBlockTicks().hasScheduledTick(var5, this)) {
+         Direction var9 = (Direction)var1.getValue(TIP_DIRECTION);
+         if (var9 == Direction.DOWN && var3.getBlockTicks().hasScheduledTick(var4, this)) {
             return var1;
-         } else if (var2 == var7.getOpposite() && !this.canSurvive(var1, var4, var5)) {
-            if (var7 == Direction.DOWN) {
-               var4.scheduleTick(var5, (Block)this, 2);
+         } else if (var5 == var9.getOpposite() && !this.canSurvive(var1, var2, var4)) {
+            if (var9 == Direction.DOWN) {
+               var3.scheduleTick(var4, (Block)this, 2);
             } else {
-               var4.scheduleTick(var5, (Block)this, 1);
+               var3.scheduleTick(var4, (Block)this, 1);
             }
 
             return var1;
          } else {
-            boolean var8 = var1.getValue(THICKNESS) == DripstoneThickness.TIP_MERGE;
-            DripstoneThickness var9 = calculateDripstoneThickness(var4, var5, var7, var8);
-            return (BlockState)var1.setValue(THICKNESS, var9);
+            boolean var10 = var1.getValue(THICKNESS) == DripstoneThickness.TIP_MERGE;
+            DripstoneThickness var11 = calculateDripstoneThickness(var2, var4, var9, var10);
+            return (BlockState)var1.setValue(THICKNESS, var11);
          }
       }
    }
@@ -122,8 +122,11 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       if (!var1.isClientSide) {
          BlockPos var5 = var3.getBlockPos();
-         if (var4.mayInteract(var1, var5) && var4.mayBreak(var1) && var4 instanceof ThrownTrident && var4.getDeltaMovement().length() > 0.6) {
-            var1.destroyBlock(var5, true);
+         if (var1 instanceof ServerLevel) {
+            ServerLevel var6 = (ServerLevel)var1;
+            if (var4.mayInteract(var6, var5) && var4.mayBreak(var6) && var4 instanceof ThrownTrident && var4.getDeltaMovement().length() > 0.6) {
+               var1.destroyBlock(var5, true);
+            }
          }
 
       }
@@ -231,7 +234,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
-   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1) {
       return Shapes.empty();
    }
 
@@ -254,7 +257,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
          var5 = BASE_SHAPE;
       }
 
-      Vec3 var7 = var1.getOffset(var2, var3);
+      Vec3 var7 = var1.getOffset(var3);
       return var5.move(var7.x, 0.0, var7.z);
    }
 
@@ -379,7 +382,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    }
 
    private static void spawnDripParticle(Level var0, BlockPos var1, BlockState var2, Fluid var3) {
-      Vec3 var4 = var2.getOffset(var0, var1);
+      Vec3 var4 = var2.getOffset(var1);
       double var5 = 0.0625;
       double var7 = (double)var1.getX() + 0.5 + var4.x;
       double var9 = (double)((float)(var1.getY() + 1) - 0.6875F) - 0.0625;
@@ -580,7 +583,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    private static boolean canDripThrough(BlockGetter var0, BlockPos var1, BlockState var2) {
       if (var2.isAir()) {
          return true;
-      } else if (var2.isSolidRender(var0, var1)) {
+      } else if (var2.isSolidRender()) {
          return false;
       } else if (!var2.getFluidState().isEmpty()) {
          return false;

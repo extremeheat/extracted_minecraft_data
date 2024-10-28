@@ -21,6 +21,8 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 
 public class EntitySectionStorage<T extends EntityAccess> {
+   public static final int CHONKY_ENTITY_SEARCH_GRACE = 2;
+   public static final int MAX_NON_CHONKY_ENTITY_SIZE = 4;
    private final Class<T> entityClass;
    private final Long2ObjectFunction<Visibility> intialSectionVisibility;
    private final Long2ObjectMap<EntitySection<T>> sections = new Long2ObjectOpenHashMap();
@@ -33,26 +35,25 @@ public class EntitySectionStorage<T extends EntityAccess> {
    }
 
    public void forEachAccessibleNonEmptySection(AABB var1, AbortableIterationConsumer<EntitySection<T>> var2) {
-      boolean var3 = true;
-      int var4 = SectionPos.posToSectionCoord(var1.minX - 2.0);
-      int var5 = SectionPos.posToSectionCoord(var1.minY - 4.0);
-      int var6 = SectionPos.posToSectionCoord(var1.minZ - 2.0);
-      int var7 = SectionPos.posToSectionCoord(var1.maxX + 2.0);
-      int var8 = SectionPos.posToSectionCoord(var1.maxY + 0.0);
-      int var9 = SectionPos.posToSectionCoord(var1.maxZ + 2.0);
+      int var3 = SectionPos.posToSectionCoord(var1.minX - 2.0);
+      int var4 = SectionPos.posToSectionCoord(var1.minY - 4.0);
+      int var5 = SectionPos.posToSectionCoord(var1.minZ - 2.0);
+      int var6 = SectionPos.posToSectionCoord(var1.maxX + 2.0);
+      int var7 = SectionPos.posToSectionCoord(var1.maxY + 0.0);
+      int var8 = SectionPos.posToSectionCoord(var1.maxZ + 2.0);
 
-      for(int var10 = var4; var10 <= var7; ++var10) {
-         long var11 = SectionPos.asLong(var10, 0, 0);
-         long var13 = SectionPos.asLong(var10, -1, -1);
-         LongBidirectionalIterator var15 = this.sectionIds.subSet(var11, var13 + 1L).iterator();
+      for(int var9 = var3; var9 <= var6; ++var9) {
+         long var10 = SectionPos.asLong(var9, 0, 0);
+         long var12 = SectionPos.asLong(var9, -1, -1);
+         LongBidirectionalIterator var14 = this.sectionIds.subSet(var10, var12 + 1L).iterator();
 
-         while(var15.hasNext()) {
-            long var16 = var15.nextLong();
-            int var18 = SectionPos.y(var16);
-            int var19 = SectionPos.z(var16);
-            if (var18 >= var5 && var18 <= var8 && var19 >= var6 && var19 <= var9) {
-               EntitySection var20 = (EntitySection)this.sections.get(var16);
-               if (var20 != null && !var20.isEmpty() && var20.getStatus().isAccessible() && var2.accept(var20).shouldAbort()) {
+         while(var14.hasNext()) {
+            long var15 = var14.nextLong();
+            int var17 = SectionPos.y(var15);
+            int var18 = SectionPos.z(var15);
+            if (var17 >= var4 && var17 <= var7 && var18 >= var5 && var18 <= var8) {
+               EntitySection var19 = (EntitySection)this.sections.get(var15);
+               if (var19 != null && !var19.isEmpty() && var19.getStatus().isAccessible() && var2.accept(var19).shouldAbort()) {
                   return;
                }
             }

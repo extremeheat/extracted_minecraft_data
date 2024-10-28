@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -31,7 +30,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PowerableMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
@@ -58,7 +56,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob {
+public class WitherBoss extends Monster implements RangedAttackMob {
    private static final EntityDataAccessor<Integer> DATA_TARGET_A;
    private static final EntityDataAccessor<Integer> DATA_TARGET_B;
    private static final EntityDataAccessor<Integer> DATA_TARGET_C;
@@ -73,7 +71,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    private final int[] idleHeadUpdates = new int[2];
    private int destroyBlocksTick;
    private final ServerBossEvent bossEvent;
-   private static final Predicate<LivingEntity> LIVING_ENTITY_SELECTOR;
+   private static final TargetingConditions.Selector LIVING_ENTITY_SELECTOR;
    private static final TargetingConditions TARGETING_CONDITIONS;
 
    public WitherBoss(EntityType<? extends WitherBoss> var1, Level var2) {
@@ -222,61 +220,61 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
    }
 
-   protected void customServerAiStep() {
-      int var1;
+   protected void customServerAiStep(ServerLevel var1) {
+      int var2;
       if (this.getInvulnerableTicks() > 0) {
-         var1 = this.getInvulnerableTicks() - 1;
-         this.bossEvent.setProgress(1.0F - (float)var1 / 220.0F);
-         if (var1 <= 0) {
-            this.level().explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
+         var2 = this.getInvulnerableTicks() - 1;
+         this.bossEvent.setProgress(1.0F - (float)var2 / 220.0F);
+         if (var2 <= 0) {
+            var1.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
             if (!this.isSilent()) {
-               this.level().globalLevelEvent(1023, this.blockPosition(), 0);
+               var1.globalLevelEvent(1023, this.blockPosition(), 0);
             }
          }
 
-         this.setInvulnerableTicks(var1);
+         this.setInvulnerableTicks(var2);
          if (this.tickCount % 10 == 0) {
             this.heal(10.0F);
          }
 
       } else {
-         super.customServerAiStep();
+         super.customServerAiStep(var1);
 
-         int var11;
-         for(var1 = 1; var1 < 3; ++var1) {
-            if (this.tickCount >= this.nextHeadUpdate[var1 - 1]) {
-               this.nextHeadUpdate[var1 - 1] = this.tickCount + 10 + this.random.nextInt(10);
-               if (this.level().getDifficulty() == Difficulty.NORMAL || this.level().getDifficulty() == Difficulty.HARD) {
+         int var12;
+         for(var2 = 1; var2 < 3; ++var2) {
+            if (this.tickCount >= this.nextHeadUpdate[var2 - 1]) {
+               this.nextHeadUpdate[var2 - 1] = this.tickCount + 10 + this.random.nextInt(10);
+               if (var1.getDifficulty() == Difficulty.NORMAL || var1.getDifficulty() == Difficulty.HARD) {
                   int[] var10000 = this.idleHeadUpdates;
-                  int var10001 = var1 - 1;
-                  int var10003 = var10000[var1 - 1];
-                  var10000[var10001] = var10000[var1 - 1] + 1;
+                  int var10001 = var2 - 1;
+                  int var10003 = var10000[var2 - 1];
+                  var10000[var10001] = var10000[var2 - 1] + 1;
                   if (var10003 > 15) {
-                     float var2 = 10.0F;
-                     float var3 = 5.0F;
-                     double var4 = Mth.nextDouble(this.random, this.getX() - 10.0, this.getX() + 10.0);
-                     double var6 = Mth.nextDouble(this.random, this.getY() - 5.0, this.getY() + 5.0);
-                     double var8 = Mth.nextDouble(this.random, this.getZ() - 10.0, this.getZ() + 10.0);
-                     this.performRangedAttack(var1 + 1, var4, var6, var8, true);
-                     this.idleHeadUpdates[var1 - 1] = 0;
+                     float var3 = 10.0F;
+                     float var4 = 5.0F;
+                     double var5 = Mth.nextDouble(this.random, this.getX() - 10.0, this.getX() + 10.0);
+                     double var7 = Mth.nextDouble(this.random, this.getY() - 5.0, this.getY() + 5.0);
+                     double var9 = Mth.nextDouble(this.random, this.getZ() - 10.0, this.getZ() + 10.0);
+                     this.performRangedAttack(var2 + 1, var5, var7, var9, true);
+                     this.idleHeadUpdates[var2 - 1] = 0;
                   }
                }
 
-               var11 = this.getAlternativeTarget(var1);
-               if (var11 > 0) {
-                  LivingEntity var13 = (LivingEntity)this.level().getEntity(var11);
-                  if (var13 != null && this.canAttack(var13) && !(this.distanceToSqr(var13) > 900.0) && this.hasLineOfSight(var13)) {
-                     this.performRangedAttack(var1 + 1, var13);
-                     this.nextHeadUpdate[var1 - 1] = this.tickCount + 40 + this.random.nextInt(20);
-                     this.idleHeadUpdates[var1 - 1] = 0;
+               var12 = this.getAlternativeTarget(var2);
+               if (var12 > 0) {
+                  LivingEntity var14 = (LivingEntity)var1.getEntity(var12);
+                  if (var14 != null && this.canAttack(var14) && !(this.distanceToSqr(var14) > 900.0) && this.hasLineOfSight(var14)) {
+                     this.performRangedAttack(var2 + 1, var14);
+                     this.nextHeadUpdate[var2 - 1] = this.tickCount + 40 + this.random.nextInt(20);
+                     this.idleHeadUpdates[var2 - 1] = 0;
                   } else {
-                     this.setAlternativeTarget(var1, 0);
+                     this.setAlternativeTarget(var2, 0);
                   }
                } else {
-                  List var12 = this.level().getNearbyEntities(LivingEntity.class, TARGETING_CONDITIONS, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
-                  if (!var12.isEmpty()) {
-                     LivingEntity var15 = (LivingEntity)var12.get(this.random.nextInt(var12.size()));
-                     this.setAlternativeTarget(var1, var15.getId());
+                  List var13 = var1.getNearbyEntities(LivingEntity.class, TARGETING_CONDITIONS, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
+                  if (!var13.isEmpty()) {
+                     LivingEntity var16 = (LivingEntity)var13.get(this.random.nextInt(var13.size()));
+                     this.setAlternativeTarget(var2, var16.getId());
                   }
                }
             }
@@ -290,29 +288,29 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
          if (this.destroyBlocksTick > 0) {
             --this.destroyBlocksTick;
-            if (this.destroyBlocksTick == 0 && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-               boolean var10 = false;
-               var11 = Mth.floor(this.getBbWidth() / 2.0F + 1.0F);
-               int var14 = Mth.floor(this.getBbHeight());
-               Iterator var16 = BlockPos.betweenClosed(this.getBlockX() - var11, this.getBlockY(), this.getBlockZ() - var11, this.getBlockX() + var11, this.getBlockY() + var14, this.getBlockZ() + var11).iterator();
+            if (this.destroyBlocksTick == 0 && var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+               boolean var11 = false;
+               var12 = Mth.floor(this.getBbWidth() / 2.0F + 1.0F);
+               int var15 = Mth.floor(this.getBbHeight());
+               Iterator var17 = BlockPos.betweenClosed(this.getBlockX() - var12, this.getBlockY(), this.getBlockZ() - var12, this.getBlockX() + var12, this.getBlockY() + var15, this.getBlockZ() + var12).iterator();
 
                label74:
                while(true) {
-                  BlockPos var5;
-                  BlockState var17;
+                  BlockPos var6;
+                  BlockState var18;
                   do {
-                     if (!var16.hasNext()) {
-                        if (var10) {
-                           this.level().levelEvent((Player)null, 1022, this.blockPosition(), 0);
+                     if (!var17.hasNext()) {
+                        if (var11) {
+                           var1.levelEvent((Player)null, 1022, this.blockPosition(), 0);
                         }
                         break label74;
                      }
 
-                     var5 = (BlockPos)var16.next();
-                     var17 = this.level().getBlockState(var5);
-                  } while(!canDestroy(var17));
+                     var6 = (BlockPos)var17.next();
+                     var18 = var1.getBlockState(var6);
+                  } while(!canDestroy(var18));
 
-                  var10 = this.level().destroyBlock(var5, true, this) || var10;
+                  var11 = var1.destroyBlock(var6, true, this) || var11;
                }
             }
          }
@@ -408,7 +406,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          var22.setDangerous(true);
       }
 
-      var22.setPosRaw(var9, var11, var13);
+      var22.setPos(var9, var11, var13);
       this.level().addFreshEntity(var22);
    }
 
@@ -416,35 +414,35 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       this.performRangedAttack(0, var1);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
-      } else if (!var1.is(DamageTypeTags.WITHER_IMMUNE_TO) && !(var1.getEntity() instanceof WitherBoss)) {
-         if (this.getInvulnerableTicks() > 0 && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+      } else if (!var2.is(DamageTypeTags.WITHER_IMMUNE_TO) && !(var2.getEntity() instanceof WitherBoss)) {
+         if (this.getInvulnerableTicks() > 0 && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
          } else {
-            Entity var3;
+            Entity var4;
             if (this.isPowered()) {
-               var3 = var1.getDirectEntity();
-               if (var3 instanceof AbstractArrow || var3 instanceof WindCharge) {
+               var4 = var2.getDirectEntity();
+               if (var4 instanceof AbstractArrow || var4 instanceof WindCharge) {
                   return false;
                }
             }
 
-            var3 = var1.getEntity();
-            if (var3 != null && var3.getType().is(EntityTypeTags.WITHER_FRIENDS)) {
+            var4 = var2.getEntity();
+            if (var4 != null && var4.getType().is(EntityTypeTags.WITHER_FRIENDS)) {
                return false;
             } else {
                if (this.destroyBlocksTick <= 0) {
                   this.destroyBlocksTick = 20;
                }
 
-               for(int var4 = 0; var4 < this.idleHeadUpdates.length; ++var4) {
+               for(int var5 = 0; var5 < this.idleHeadUpdates.length; ++var5) {
                   int[] var10000 = this.idleHeadUpdates;
-                  var10000[var4] += 3;
+                  var10000[var5] += 3;
                }
 
-               return super.hurt(var1, var2);
+               return super.hurtServer(var1, var2, var3);
             }
          }
       } else {
@@ -454,7 +452,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      ItemEntity var4 = this.spawnAtLocation(Items.NETHER_STAR);
+      ItemEntity var4 = this.spawnAtLocation(var1, Items.NETHER_STAR);
       if (var4 != null) {
          var4.setExtendedLifetime();
       }
@@ -477,12 +475,12 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 300.0).add(Attributes.MOVEMENT_SPEED, 0.6000000238418579).add(Attributes.FLYING_SPEED, 0.6000000238418579).add(Attributes.FOLLOW_RANGE, 40.0).add(Attributes.ARMOR, 4.0);
    }
 
-   public float getHeadYRot(int var1) {
-      return this.yRotHeads[var1];
+   public float[] getHeadYRots() {
+      return this.yRotHeads;
    }
 
-   public float getHeadXRot(int var1) {
-      return this.xRotHeads[var1];
+   public float[] getHeadXRots() {
+      return this.xRotHeads;
    }
 
    public int getInvulnerableTicks() {
@@ -523,7 +521,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       DATA_TARGET_C = SynchedEntityData.defineId(WitherBoss.class, EntityDataSerializers.INT);
       DATA_TARGETS = ImmutableList.of(DATA_TARGET_A, DATA_TARGET_B, DATA_TARGET_C);
       DATA_ID_INV = SynchedEntityData.defineId(WitherBoss.class, EntityDataSerializers.INT);
-      LIVING_ENTITY_SELECTOR = (var0) -> {
+      LIVING_ENTITY_SELECTOR = (var0, var1) -> {
          return !var0.getType().is(EntityTypeTags.WITHER_FRIENDS) && var0.attackable();
       };
       TARGETING_CONDITIONS = TargetingConditions.forCombat().range(20.0).selector(LIVING_ENTITY_SELECTOR);

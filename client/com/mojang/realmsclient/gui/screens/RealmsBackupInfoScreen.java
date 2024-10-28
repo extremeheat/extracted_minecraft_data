@@ -132,10 +132,6 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
          return var10000;
       }
 
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         return true;
-      }
-
       public Component getNarration() {
          return Component.translatable("narrator.select", this.key + " " + this.value);
       }

@@ -28,6 +28,8 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -122,11 +124,11 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
          return InteractionResult.CONSUME;
       } else {
          this.press(var1, var2, var3, var4);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
-   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.canTriggerBlocks() && !(Boolean)var1.getValue(POWERED)) {
          this.press(var1, var2, var3, (Player)null);
       }
@@ -202,8 +204,10 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    private void updateNeighbours(BlockState var1, Level var2, BlockPos var3) {
-      var2.updateNeighborsAt(var3, this);
-      var2.updateNeighborsAt(var3.relative(getConnectedDirection(var1).getOpposite()), this);
+      Direction var4 = getConnectedDirection(var1).getOpposite();
+      Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var2, var4, var4.getAxis().isHorizontal() ? Direction.UP : (Direction)var1.getValue(FACING));
+      var2.updateNeighborsAt(var3, this, var5);
+      var2.updateNeighborsAt(var3.relative(var4), this, var5);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

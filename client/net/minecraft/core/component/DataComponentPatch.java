@@ -340,7 +340,7 @@ public final class DataComponentPatch {
             }
 
             ResourceLocation var2 = ResourceLocation.tryParse(var0);
-            DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.get(var2);
+            DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(var2);
             if (var3 == null) {
                return DataResult.error(() -> {
                   return "No component with type: '" + String.valueOf(var2) + "'";

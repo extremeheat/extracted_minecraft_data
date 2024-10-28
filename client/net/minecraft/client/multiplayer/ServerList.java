@@ -6,18 +6,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.ConsecutiveExecutor;
 import org.slf4j.Logger;
 
 public class ServerList {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ProcessorMailbox<Runnable> IO_MAILBOX = ProcessorMailbox.create(Util.backgroundExecutor(), "server-list-io");
+   private static final ConsecutiveExecutor IO_EXECUTOR = new ConsecutiveExecutor(Util.backgroundExecutor(), "server-list-io");
    private static final int MAX_HIDDEN_SERVERS = 16;
    private final Minecraft minecraft;
    private final List<ServerData> serverList = Lists.newArrayList();
@@ -173,7 +174,7 @@ public class ServerList {
    private static boolean set(ServerData var0, List<ServerData> var1) {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
          ServerData var3 = (ServerData)var1.get(var2);
-         if (var3.name.equals(var0.name) && var3.ip.equals(var0.ip)) {
+         if (Objects.equals(var3.name, var0.name) && var3.ip.equals(var0.ip)) {
             var1.set(var2, var0);
             return true;
          }
@@ -183,7 +184,7 @@ public class ServerList {
    }
 
    public static void saveSingleServer(ServerData var0) {
-      IO_MAILBOX.tell(() -> {
+      IO_EXECUTOR.schedule(() -> {
          ServerList var1 = new ServerList(Minecraft.getInstance());
          var1.load();
          if (!set(var0, var1.serverList)) {

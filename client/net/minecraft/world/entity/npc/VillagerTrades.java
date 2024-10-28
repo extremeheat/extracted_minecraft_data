@@ -34,7 +34,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -190,7 +189,7 @@ public class VillagerTrades {
       }
 
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         Optional var3 = var1.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
+         Optional var3 = var1.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
          int var4;
          ItemStack var5;
          if (!var3.isEmpty()) {
@@ -199,7 +198,7 @@ public class VillagerTrades {
             int var8 = Math.max(var7.getMinLevel(), this.minLevel);
             int var9 = Math.min(var7.getMaxLevel(), this.maxLevel);
             int var10 = Mth.nextInt(var2, var8, var9);
-            var5 = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var6, var10));
+            var5 = EnchantmentHelper.createBook(new EnchantmentInstance(var6, var10));
             var4 = 2 + var2.nextInt(5 + var10 * 10) + 3 * var10;
             if (var6.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
                var4 *= 2;
@@ -398,7 +397,7 @@ public class VillagerTrades {
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          int var3 = 5 + var2.nextInt(15);
          RegistryAccess var4 = var1.level().registryAccess();
-         Optional var5 = var4.registryOrThrow(Registries.ENCHANTMENT).getTag(EnchantmentTags.ON_TRADED_EQUIPMENT);
+         Optional var5 = var4.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.ON_TRADED_EQUIPMENT);
          ItemStack var6 = EnchantmentHelper.enchantItem(var2, new ItemStack(this.itemStack.getItem()), var3, var4, var5);
          int var7 = Math.min(this.baseEmeraldCost + var3, 64);
          ItemCost var8 = new ItemCost(Items.EMERALD, var7);
@@ -460,7 +459,7 @@ public class VillagerTrades {
 
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemCost var3 = new ItemCost(Items.EMERALD, this.emeraldCost);
-         List var4 = (List)BuiltInRegistries.POTION.holders().filter((var1x) -> {
+         List var4 = (List)BuiltInRegistries.POTION.listElements().filter((var1x) -> {
             return !((Potion)var1x.value()).getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x);
          }).collect(Collectors.toList());
          Holder var5 = (Holder)Util.getRandom(var4, var2);

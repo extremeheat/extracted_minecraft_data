@@ -8,13 +8,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.level.Level;
 
 public class BreedGoal extends Goal {
    private static final TargetingConditions PARTNER_TARGETING = TargetingConditions.forNonCombat().range(8.0).ignoreLineOfSight();
    protected final Animal animal;
    private final Class<? extends Animal> partnerClass;
-   protected final Level level;
+   protected final ServerLevel level;
    @Nullable
    protected Animal partner;
    private int loveTime;
@@ -27,7 +26,7 @@ public class BreedGoal extends Goal {
    public BreedGoal(Animal var1, double var2, Class<? extends Animal> var4) {
       super();
       this.animal = var1;
-      this.level = var1.level();
+      this.level = getServerLevel(var1);
       this.partnerClass = var4;
       this.speedModifier = var2;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
@@ -80,6 +79,6 @@ public class BreedGoal extends Goal {
    }
 
    protected void breed() {
-      this.animal.spawnChildFromBreeding((ServerLevel)this.level, this.partner);
+      this.animal.spawnChildFromBreeding(this.level, this.partner);
    }
 }

@@ -1,9 +1,12 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,10 +14,10 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SmithingMenu;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SmithingTemplateItem;
+import net.minecraft.world.item.equipment.Equippable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -105,23 +108,18 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    private void updateArmorStandPreview(ItemStack var1) {
       if (this.armorStandPreview != null) {
-         EquipmentSlot[] var2 = EquipmentSlot.values();
-         int var3 = var2.length;
+         Iterator var2 = EquipmentSlot.VALUES.iterator();
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            EquipmentSlot var5 = var2[var4];
-            this.armorStandPreview.setItemSlot(var5, ItemStack.EMPTY);
+         EquipmentSlot var3;
+         while(var2.hasNext()) {
+            var3 = (EquipmentSlot)var2.next();
+            this.armorStandPreview.setItemSlot(var3, ItemStack.EMPTY);
          }
 
          if (!var1.isEmpty()) {
-            ItemStack var6 = var1.copy();
-            Item var8 = var1.getItem();
-            if (var8 instanceof ArmorItem) {
-               ArmorItem var7 = (ArmorItem)var8;
-               this.armorStandPreview.setItemSlot(var7.getEquipmentSlot(), var6);
-            } else {
-               this.armorStandPreview.setItemSlot(EquipmentSlot.OFFHAND, var6);
-            }
+            Equippable var4 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
+            var3 = var4 != null ? var4.slot() : EquipmentSlot.OFFHAND;
+            this.armorStandPreview.setItemSlot(var3, var1.copy());
          }
 
       }
@@ -129,7 +127,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if (this.hasRecipeError()) {
-         var1.blitSprite(ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ERROR_SPRITE, var2 + 65, var3 + 46, 28, 21);
       }
 
    }
@@ -168,7 +166,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    }
 
    private boolean hasRecipeError() {
-      return ((SmithingMenu)this.menu).getSlot(0).hasItem() && ((SmithingMenu)this.menu).getSlot(1).hasItem() && ((SmithingMenu)this.menu).getSlot(2).hasItem() && !((SmithingMenu)this.menu).getSlot(((SmithingMenu)this.menu).getResultSlot()).hasItem();
+      return ((SmithingMenu)this.menu).hasRecipeError();
    }
 
    static {

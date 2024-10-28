@@ -9,7 +9,7 @@ public interface DefaultedRegistry<T> extends Registry<T> {
    ResourceLocation getKey(T var1);
 
    @Nonnull
-   T get(@Nullable ResourceLocation var1);
+   T getValue(@Nullable ResourceLocation var1);
 
    @Nonnull
    T byId(int var1);

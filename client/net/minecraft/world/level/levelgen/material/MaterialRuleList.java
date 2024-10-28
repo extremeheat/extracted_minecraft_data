@@ -1,36 +1,33 @@
 package net.minecraft.world.level.levelgen.material;
 
-import java.util.Iterator;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.NoiseChunk;
 
-public record MaterialRuleList(List<NoiseChunk.BlockStateFiller> materialRuleList) implements NoiseChunk.BlockStateFiller {
-   public MaterialRuleList(List<NoiseChunk.BlockStateFiller> var1) {
+public record MaterialRuleList(NoiseChunk.BlockStateFiller[] materialRuleList) implements NoiseChunk.BlockStateFiller {
+   public MaterialRuleList(NoiseChunk.BlockStateFiller[] var1) {
       super();
       this.materialRuleList = var1;
    }
 
    @Nullable
    public BlockState calculate(DensityFunction.FunctionContext var1) {
-      Iterator var2 = this.materialRuleList.iterator();
+      NoiseChunk.BlockStateFiller[] var2 = this.materialRuleList;
+      int var3 = var2.length;
 
-      BlockState var4;
-      do {
-         if (!var2.hasNext()) {
-            return null;
+      for(int var4 = 0; var4 < var3; ++var4) {
+         NoiseChunk.BlockStateFiller var5 = var2[var4];
+         BlockState var6 = var5.calculate(var1);
+         if (var6 != null) {
+            return var6;
          }
+      }
 
-         NoiseChunk.BlockStateFiller var3 = (NoiseChunk.BlockStateFiller)var2.next();
-         var4 = var3.calculate(var1);
-      } while(var4 == null);
-
-      return var4;
+      return null;
    }
 
-   public List<NoiseChunk.BlockStateFiller> materialRuleList() {
+   public NoiseChunk.BlockStateFiller[] materialRuleList() {
       return this.materialRuleList;
    }
 }

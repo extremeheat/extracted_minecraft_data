@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -65,49 +66,63 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
    public void tick() {
       Entity var1 = this.getOwner();
-      if (!this.level().isClientSide && (var1 != null && var1.isRemoved() || !this.level().hasChunkAt(this.blockPosition()))) {
-         this.discard();
-      } else {
+      this.applyInertia();
+      if (this.level().isClientSide || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
+         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
+         Vec3 var3;
+         if (var2.getType() != HitResult.Type.MISS) {
+            var3 = var2.getLocation();
+         } else {
+            var3 = this.position().add(this.getDeltaMovement());
+         }
+
+         ProjectileUtil.rotateTowardsMovement(this, 0.2F);
+         this.setPos(var3);
+         this.applyEffectsFromBlocks();
          super.tick();
          if (this.shouldBurn()) {
             this.igniteForSeconds(1.0F);
          }
 
-         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
-         if (var2.getType() != HitResult.Type.MISS) {
+         if (var2.getType() != HitResult.Type.MISS && this.isAlive()) {
             this.hitTargetOrDeflectSelf(var2);
          }
 
-         this.checkInsideBlocks();
-         Vec3 var3 = this.getDeltaMovement();
-         double var4 = this.getX() + var3.x;
-         double var6 = this.getY() + var3.y;
-         double var8 = this.getZ() + var3.z;
-         ProjectileUtil.rotateTowardsMovement(this, 0.2F);
-         float var10;
-         if (this.isInWater()) {
-            for(int var11 = 0; var11 < 4; ++var11) {
-               float var12 = 0.25F;
-               this.level().addParticle(ParticleTypes.BUBBLE, var4 - var3.x * 0.25, var6 - var3.y * 0.25, var8 - var3.z * 0.25, var3.x, var3.y, var3.z);
-            }
-
-            var10 = this.getLiquidInertia();
-         } else {
-            var10 = this.getInertia();
-         }
-
-         this.setDeltaMovement(var3.add(var3.normalize().scale(this.accelerationPower)).scale((double)var10));
-         ParticleOptions var13 = this.getTrailParticle();
-         if (var13 != null) {
-            this.level().addParticle(var13, var4, var6 + 0.5, var8, 0.0, 0.0, 0.0);
-         }
-
-         this.setPos(var4, var6, var8);
+         this.createParticleTrail();
+      } else {
+         this.discard();
       }
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      return !this.isInvulnerableTo(var1);
+   private void applyInertia() {
+      Vec3 var1 = this.getDeltaMovement();
+      Vec3 var2 = this.position();
+      float var3;
+      if (this.isInWater()) {
+         for(int var4 = 0; var4 < 4; ++var4) {
+            float var5 = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, var2.x - var1.x * 0.25, var2.y - var1.y * 0.25, var2.z - var1.z * 0.25, var1.x, var1.y, var1.z);
+         }
+
+         var3 = this.getLiquidInertia();
+      } else {
+         var3 = this.getInertia();
+      }
+
+      this.setDeltaMovement(var1.add(var1.normalize().scale(this.accelerationPower)).scale((double)var3));
+   }
+
+   private void createParticleTrail() {
+      ParticleOptions var1 = this.getTrailParticle();
+      Vec3 var2 = this.position();
+      if (var1 != null) {
+         this.level().addParticle(var1, var2.x, var2.y + 0.5, var2.z, 0.0, 0.0, 0.0);
+      }
+
+   }
+
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
    }
 
    protected boolean canHitEntity(Entity var1) {

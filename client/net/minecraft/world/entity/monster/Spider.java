@@ -16,9 +16,9 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -133,11 +133,11 @@ public class Spider extends Monster {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Object var8 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var5 = var1.getRandom();
       if (var5.nextInt(100) == 0) {
-         Skeleton var6 = (Skeleton)EntityType.SKELETON.create(this.level());
+         Skeleton var6 = (Skeleton)EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
          if (var6 != null) {
             var6.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var6.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);

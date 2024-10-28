@@ -4,14 +4,13 @@ import com.google.common.primitives.Doubles;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.DoubleStream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -46,7 +45,7 @@ public class BlendingData {
    private static final int CELL_HORIZONTAL_MAX_INDEX_OUTSIDE;
    private static final int CELL_COLUMN_INSIDE_COUNT;
    private static final int CELL_COLUMN_OUTSIDE_COUNT;
-   private static final int CELL_COLUMN_COUNT;
+   static final int CELL_COLUMN_COUNT;
    private final LevelHeightAccessor areaWithOldGeneration;
    private static final List<Block> SURFACE_BLOCKS;
    protected static final double NO_VALUE = 1.7976931348623157E308;
@@ -54,20 +53,14 @@ public class BlendingData {
    private final double[] heights;
    private final List<List<Holder<Biome>>> biomes;
    private final transient double[][] densities;
-   private static final Codec<double[]> DOUBLE_ARRAY_CODEC;
-   public static final Codec<BlendingData> CODEC;
-
-   private static DataResult<BlendingData> validateArraySize(BlendingData var0) {
-      return var0.heights.length != CELL_COLUMN_COUNT ? DataResult.error(() -> {
-         return "heights has to be of length " + CELL_COLUMN_COUNT;
-      }) : DataResult.success(var0);
-   }
 
    private BlendingData(int var1, int var2, Optional<double[]> var3) {
       super();
-      this.heights = (double[])var3.orElse((double[])Util.make(new double[CELL_COLUMN_COUNT], (var0) -> {
-         Arrays.fill(var0, 1.7976931348623157E308);
-      }));
+      this.heights = (double[])var3.orElseGet(() -> {
+         return (double[])Util.make(new double[CELL_COLUMN_COUNT], (var0) -> {
+            Arrays.fill(var0, 1.7976931348623157E308);
+         });
+      });
       this.densities = new double[CELL_COLUMN_COUNT][];
       ObjectArrayList var4 = new ObjectArrayList(CELL_COLUMN_COUNT);
       var4.size(CELL_COLUMN_COUNT);
@@ -75,6 +68,27 @@ public class BlendingData {
       int var5 = SectionPos.sectionToBlockCoord(var1);
       int var6 = SectionPos.sectionToBlockCoord(var2) - var5;
       this.areaWithOldGeneration = LevelHeightAccessor.create(var5, var6);
+   }
+
+   @Nullable
+   public static BlendingData unpack(@Nullable Packed var0) {
+      return var0 == null ? null : new BlendingData(var0.minSection(), var0.maxSection(), var0.heights());
+   }
+
+   public Packed pack() {
+      boolean var1 = false;
+      double[] var2 = this.heights;
+      int var3 = var2.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         double var5 = var2[var4];
+         if (var5 != 1.7976931348623157E308) {
+            var1 = true;
+            break;
+         }
+      }
+
+      return new Packed(this.areaWithOldGeneration.getMinSectionY(), this.areaWithOldGeneration.getMaxSectionY() + 1, var1 ? Optional.of(DoubleArrays.copy(this.heights)) : Optional.empty());
    }
 
    @Nullable
@@ -161,23 +175,23 @@ public class BlendingData {
    private int getHeightAtXZ(ChunkAccess var1, int var2, int var3) {
       int var4;
       if (var1.hasPrimedHeightmap(Heightmap.Types.WORLD_SURFACE_WG)) {
-         var4 = Math.min(var1.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var2, var3) + 1, this.areaWithOldGeneration.getMaxBuildHeight());
+         var4 = Math.min(var1.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var2, var3), this.areaWithOldGeneration.getMaxY());
       } else {
-         var4 = this.areaWithOldGeneration.getMaxBuildHeight();
+         var4 = this.areaWithOldGeneration.getMaxY();
       }
 
-      int var5 = this.areaWithOldGeneration.getMinBuildHeight();
+      int var5 = this.areaWithOldGeneration.getMinY();
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(var2, var4, var3);
 
-      do {
-         if (var6.getY() <= var5) {
-            return var5;
+      while(var6.getY() > var5) {
+         if (SURFACE_BLOCKS.contains(var1.getBlockState(var6).getBlock())) {
+            return var6.getY();
          }
 
          var6.move(Direction.DOWN);
-      } while(!SURFACE_BLOCKS.contains(var1.getBlockState(var6).getBlock()));
+      }
 
-      return var6.getY();
+      return var5;
    }
 
    private static double read1(ChunkAccess var0, BlockPos.MutableBlockPos var1) {
@@ -197,7 +211,7 @@ public class BlendingData {
    private double[] getDensityColumn(ChunkAccess var1, int var2, int var3, int var4) {
       double[] var5 = new double[this.cellCountPerColumn()];
       Arrays.fill(var5, -1.0);
-      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(var2, this.areaWithOldGeneration.getMaxBuildHeight(), var3);
+      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(var2, this.areaWithOldGeneration.getMaxY() + 1, var3);
       double var7 = read7(var1, var6);
 
       int var9;
@@ -227,7 +241,7 @@ public class BlendingData {
       var4.size(this.quartCountPerColumn());
 
       for(int var5 = 0; var5 < var4.size(); ++var5) {
-         int var6 = var5 + QuartPos.fromBlock(this.areaWithOldGeneration.getMinBuildHeight());
+         int var6 = var5 + QuartPos.fromBlock(this.areaWithOldGeneration.getMinY());
          var4.set(var5, var1.getNoiseBiome(QuartPos.fromBlock(var2), var6, QuartPos.fromBlock(var3)));
       }
 
@@ -277,8 +291,8 @@ public class BlendingData {
    }
 
    protected void iterateBiomes(int var1, int var2, int var3, BiomeConsumer var4) {
-      if (var2 >= QuartPos.fromBlock(this.areaWithOldGeneration.getMinBuildHeight()) && var2 < QuartPos.fromBlock(this.areaWithOldGeneration.getMaxBuildHeight())) {
-         int var5 = var2 - QuartPos.fromBlock(this.areaWithOldGeneration.getMinBuildHeight());
+      if (var2 >= QuartPos.fromBlock(this.areaWithOldGeneration.getMinY()) && var2 <= QuartPos.fromBlock(this.areaWithOldGeneration.getMaxY())) {
+         int var5 = var2 - QuartPos.fromBlock(this.areaWithOldGeneration.getMinY());
 
          for(int var6 = 0; var6 < this.biomes.size(); ++var6) {
             if (this.biomes.get(var6) != null) {
@@ -334,7 +348,7 @@ public class BlendingData {
    }
 
    private int getMinY() {
-      return this.areaWithOldGeneration.getMinSection() * 2;
+      return this.areaWithOldGeneration.getMinSectionY() * 2;
    }
 
    private int getCellYIndex(int var1) {
@@ -382,18 +396,43 @@ public class BlendingData {
       CELL_COLUMN_OUTSIDE_COUNT = 2 * CELL_HORIZONTAL_MAX_INDEX_OUTSIDE + 1;
       CELL_COLUMN_COUNT = CELL_COLUMN_INSIDE_COUNT + CELL_COLUMN_OUTSIDE_COUNT;
       SURFACE_BLOCKS = List.of(Blocks.PODZOL, Blocks.GRAVEL, Blocks.GRASS_BLOCK, Blocks.STONE, Blocks.COARSE_DIRT, Blocks.SAND, Blocks.RED_SAND, Blocks.MYCELIUM, Blocks.SNOW_BLOCK, Blocks.TERRACOTTA, Blocks.DIRT);
-      DOUBLE_ARRAY_CODEC = Codec.DOUBLE.listOf().xmap(Doubles::toArray, Doubles::asList);
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("min_section").forGetter((var0x) -> {
-            return var0x.areaWithOldGeneration.getMinSection();
-         }), Codec.INT.fieldOf("max_section").forGetter((var0x) -> {
-            return var0x.areaWithOldGeneration.getMaxSection();
-         }), DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights").forGetter((var0x) -> {
-            return DoubleStream.of(var0x.heights).anyMatch((var0) -> {
-               return var0 != 1.7976931348623157E308;
-            }) ? Optional.of(var0x.heights) : Optional.empty();
-         })).apply(var0, BlendingData::new);
-      }).comapFlatMap(BlendingData::validateArraySize, Function.identity());
+   }
+
+   public static record Packed(int minSection, int maxSection, Optional<double[]> heights) {
+      private static final Codec<double[]> DOUBLE_ARRAY_CODEC;
+      public static final Codec<Packed> CODEC;
+
+      public Packed(int var1, int var2, Optional<double[]> var3) {
+         super();
+         this.minSection = var1;
+         this.maxSection = var2;
+         this.heights = var3;
+      }
+
+      private static DataResult<Packed> validateArraySize(Packed var0) {
+         return var0.heights.isPresent() && ((double[])var0.heights.get()).length != BlendingData.CELL_COLUMN_COUNT ? DataResult.error(() -> {
+            return "heights has to be of length " + BlendingData.CELL_COLUMN_COUNT;
+         }) : DataResult.success(var0);
+      }
+
+      public int minSection() {
+         return this.minSection;
+      }
+
+      public int maxSection() {
+         return this.maxSection;
+      }
+
+      public Optional<double[]> heights() {
+         return this.heights;
+      }
+
+      static {
+         DOUBLE_ARRAY_CODEC = Codec.DOUBLE.listOf().xmap(Doubles::toArray, Doubles::asList);
+         CODEC = RecordCodecBuilder.create((var0) -> {
+            return var0.group(Codec.INT.fieldOf("min_section").forGetter(Packed::minSection), Codec.INT.fieldOf("max_section").forGetter(Packed::maxSection), DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights").forGetter(Packed::heights)).apply(var0, Packed::new);
+         }).validate(Packed::validateArraySize);
+      }
    }
 
    protected interface BiomeConsumer {

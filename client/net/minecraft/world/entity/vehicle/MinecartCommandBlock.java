@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.Level;
@@ -31,12 +32,12 @@ public class MinecartCommandBlock extends AbstractMinecart {
       super(var1, var2);
    }
 
-   public MinecartCommandBlock(Level var1, double var2, double var4, double var6) {
-      super(EntityType.COMMAND_BLOCK_MINECART, var1, var2, var4, var6);
-   }
-
    protected Item getDropItem() {
       return Items.MINECART;
+   }
+
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.COMMAND_BLOCK_MINECART);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -55,10 +56,6 @@ public class MinecartCommandBlock extends AbstractMinecart {
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       this.commandBlock.save(var1, this.registryAccess());
-   }
-
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.COMMAND_BLOCK;
    }
 
    public BlockState getDefaultDisplayBlockState() {

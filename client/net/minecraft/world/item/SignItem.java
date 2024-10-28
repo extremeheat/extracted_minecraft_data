@@ -12,12 +12,12 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SignItem extends StandingAndWallBlockItem {
-   public SignItem(Item.Properties var1, Block var2, Block var3) {
-      super(var2, var3, var1, Direction.DOWN);
+   public SignItem(Block var1, Block var2, Item.Properties var3) {
+      super(var1, var2, Direction.DOWN, var3);
    }
 
    public SignItem(Item.Properties var1, Block var2, Block var3, Direction var4) {
-      super(var2, var3, var1, var4);
+      super(var2, var3, var4, var1);
    }
 
    protected boolean updateCustomBlockEntityTag(BlockPos var1, Level var2, @Nullable Player var3, ItemStack var4, BlockState var5) {

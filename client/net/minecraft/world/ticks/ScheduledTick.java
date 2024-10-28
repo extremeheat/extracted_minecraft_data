@@ -63,6 +63,10 @@ public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPrior
       return new ScheduledTick(var0, var1, 0L, TickPriority.NORMAL, 0L);
    }
 
+   public SavedTick<T> toSavedTick(long var1) {
+      return new SavedTick(this.type, this.pos, (int)(this.triggerTick - var1), this.priority);
+   }
+
    public T type() {
       return this.type;
    }

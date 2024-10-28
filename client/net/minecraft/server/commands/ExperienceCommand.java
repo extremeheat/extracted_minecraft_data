@@ -30,22 +30,22 @@ public class ExperienceCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralCommandNode var1 = var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("experience").requires((var0x) -> {
          return var0x.hasPermission(2);
-      })).then(Commands.literal("add").then(Commands.argument("targets", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer()).executes((var0x) -> {
-         return addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
+      })).then(Commands.literal("add").then(Commands.argument("target", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer()).executes((var0x) -> {
+         return addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
       })).then(Commands.literal("points").executes((var0x) -> {
-         return addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
+         return addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
       }))).then(Commands.literal("levels").executes((var0x) -> {
-         return addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.LEVELS);
-      })))))).then(Commands.literal("set").then(Commands.argument("targets", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer(0)).executes((var0x) -> {
-         return setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
+         return addExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.LEVELS);
+      })))))).then(Commands.literal("set").then(Commands.argument("target", EntityArgument.players()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("amount", IntegerArgumentType.integer(0)).executes((var0x) -> {
+         return setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
       })).then(Commands.literal("points").executes((var0x) -> {
-         return setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
+         return setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.POINTS);
       }))).then(Commands.literal("levels").executes((var0x) -> {
-         return setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.LEVELS);
-      })))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.player()).then(Commands.literal("points").executes((var0x) -> {
-         return queryExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "targets"), ExperienceCommand.Type.POINTS);
+         return setExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "target"), IntegerArgumentType.getInteger(var0x, "amount"), ExperienceCommand.Type.LEVELS);
+      })))))).then(Commands.literal("query").then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.player()).then(Commands.literal("points").executes((var0x) -> {
+         return queryExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target"), ExperienceCommand.Type.POINTS);
       }))).then(Commands.literal("levels").executes((var0x) -> {
-         return queryExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "targets"), ExperienceCommand.Type.LEVELS);
+         return queryExperience((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target"), ExperienceCommand.Type.LEVELS);
       })))));
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("xp").requires((var0x) -> {
          return var0x.hasPermission(2);

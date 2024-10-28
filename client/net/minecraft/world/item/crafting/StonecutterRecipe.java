@@ -1,19 +1,34 @@
 package net.minecraft.world.item.crafting;
 
+import java.util.List;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
 
 public class StonecutterRecipe extends SingleItemRecipe {
    public StonecutterRecipe(String var1, Ingredient var2, ItemStack var3) {
-      super(RecipeType.STONECUTTING, RecipeSerializer.STONECUTTER, var1, var2, var3);
+      super(var1, var2, var3);
    }
 
-   public boolean matches(SingleRecipeInput var1, Level var2) {
-      return this.ingredient.test(var1.item());
+   public RecipeType<StonecutterRecipe> getType() {
+      return RecipeType.STONECUTTING;
    }
 
-   public ItemStack getToastSymbol() {
-      return new ItemStack(Blocks.STONECUTTER);
+   public RecipeSerializer<StonecutterRecipe> getSerializer() {
+      return RecipeSerializer.STONECUTTER;
+   }
+
+   public List<RecipeDisplay> display() {
+      return List.of(new StonecutterRecipeDisplay(this.input().display(), this.resultDisplay(), new SlotDisplay.ItemSlotDisplay(Items.STONECUTTER)));
+   }
+
+   public SlotDisplay resultDisplay() {
+      return new SlotDisplay.ItemStackSlotDisplay(this.result());
+   }
+
+   public RecipeBookCategory recipeBookCategory() {
+      return RecipeBookCategories.STONECUTTER;
    }
 }

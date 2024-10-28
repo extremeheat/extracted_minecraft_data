@@ -19,18 +19,19 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceLocation> recipes, Optional<CacheableFunction> function) {
+public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceKey<Recipe<?>>> recipes, Optional<CacheableFunction> function) {
    public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), ResourceKey.codec(Registries.LOOT_TABLE).listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), ResourceLocation.CODEC.listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new);
+      return var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), ResourceKey.codec(Registries.LOOT_TABLE).listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), ResourceKey.codec(Registries.RECIPE).listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new);
    });
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
-   public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceLocation> var3, Optional<CacheableFunction> var4) {
+   public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceKey<Recipe<?>>> var3, Optional<CacheableFunction> var4) {
       super();
       this.experience = var1;
       this.loot = var2;
@@ -87,7 +88,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       return this.loot;
    }
 
-   public List<ResourceLocation> recipes() {
+   public List<ResourceKey<Recipe<?>>> recipes() {
       return this.recipes;
    }
 
@@ -98,7 +99,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
    public static class Builder {
       private int experience;
       private final ImmutableList.Builder<ResourceKey<LootTable>> loot = ImmutableList.builder();
-      private final ImmutableList.Builder<ResourceLocation> recipes = ImmutableList.builder();
+      private final ImmutableList.Builder<ResourceKey<Recipe<?>>> recipes = ImmutableList.builder();
       private Optional<ResourceLocation> function = Optional.empty();
 
       public Builder() {
@@ -123,11 +124,11 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
          return this;
       }
 
-      public static Builder recipe(ResourceLocation var0) {
+      public static Builder recipe(ResourceKey<Recipe<?>> var0) {
          return (new Builder()).addRecipe(var0);
       }
 
-      public Builder addRecipe(ResourceLocation var1) {
+      public Builder addRecipe(ResourceKey<Recipe<?>> var1) {
          this.recipes.add(var1);
          return this;
       }

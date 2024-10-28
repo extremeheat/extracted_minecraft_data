@@ -1,7 +1,5 @@
 package net.minecraft.server;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
@@ -28,8 +26,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.tags.TagLoader;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -38,106 +36,102 @@ import org.slf4j.Logger;
 
 public class ReloadableServerRegistries {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Gson GSON = (new GsonBuilder()).create();
    private static final RegistrationInfo DEFAULT_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
 
    public ReloadableServerRegistries() {
       super();
    }
 
-   public static CompletableFuture<LayeredRegistryAccess<RegistryLayer>> reload(LayeredRegistryAccess<RegistryLayer> var0, ResourceManager var1, Executor var2) {
-      RegistryAccess.Frozen var3 = var0.getAccessForLoading(RegistryLayer.RELOADABLE);
-      RegistryOps var4 = (new EmptyTagLookupWrapper(var3)).createSerializationContext(JsonOps.INSTANCE);
-      List var5 = LootDataType.values().map((var3x) -> {
-         return scheduleElementParse(var3x, var4, var1, var2);
+   public static CompletableFuture<LoadResult> reload(LayeredRegistryAccess<RegistryLayer> var0, List<Registry.PendingTags<?>> var1, ResourceManager var2, Executor var3) {
+      List var4 = TagLoader.buildUpdatedLookups(var0.getAccessForLoading(RegistryLayer.RELOADABLE), var1);
+      HolderLookup.Provider var5 = HolderLookup.Provider.create(var4.stream());
+      RegistryOps var6 = var5.createSerializationContext(JsonOps.INSTANCE);
+      List var7 = LootDataType.values().map((var3x) -> {
+         return scheduleRegistryLoad(var3x, var6, var2, var3);
       }).toList();
-      CompletableFuture var6 = Util.sequence(var5);
-      return var6.thenApplyAsync((var1x) -> {
-         return apply(var0, var1x);
-      }, var2);
+      CompletableFuture var8 = Util.sequence(var7);
+      return var8.thenApplyAsync((var2x) -> {
+         return createAndValidateFullContext(var0, var5, var2x);
+      }, var3);
    }
 
-   private static <T> CompletableFuture<WritableRegistry<?>> scheduleElementParse(LootDataType<T> var0, RegistryOps<JsonElement> var1, ResourceManager var2, Executor var3) {
+   private static <T> CompletableFuture<WritableRegistry<?>> scheduleRegistryLoad(LootDataType<T> var0, RegistryOps<JsonElement> var1, ResourceManager var2, Executor var3) {
       return CompletableFuture.supplyAsync(() -> {
          MappedRegistry var3 = new MappedRegistry(var0.registryKey(), Lifecycle.experimental());
          HashMap var4 = new HashMap();
          String var5 = Registries.elementsDirPath(var0.registryKey());
-         SimpleJsonResourceReloadListener.scanDirectory(var2, var5, GSON, var4);
-         var4.forEach((var3x, var4x) -> {
-            var0.deserialize(var3x, var1, var4x).ifPresent((var3xx) -> {
-               var3.register(ResourceKey.create(var0.registryKey(), var3x), var3xx, DEFAULT_REGISTRATION_INFO);
-            });
+         SimpleJsonResourceReloadListener.scanDirectory(var2, var5, var1, var0.codec(), var4);
+         var4.forEach((var2x, var3x) -> {
+            var3.register(ResourceKey.create(var0.registryKey(), var2x), var3x, DEFAULT_REGISTRATION_INFO);
          });
+         TagLoader.loadTagsForRegistry(var2, var3);
          return var3;
       }, var3);
    }
 
-   private static LayeredRegistryAccess<RegistryLayer> apply(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {
-      LayeredRegistryAccess var2 = createUpdatedRegistries(var0, var1);
-      ProblemReporter.Collector var3 = new ProblemReporter.Collector();
-      RegistryAccess.Frozen var4 = var2.compositeAccess();
-      ValidationContext var5 = new ValidationContext(var3, LootContextParamSets.ALL_PARAMS, var4.asGetterLookup());
+   private static LoadResult createAndValidateFullContext(LayeredRegistryAccess<RegistryLayer> var0, HolderLookup.Provider var1, List<WritableRegistry<?>> var2) {
+      LayeredRegistryAccess var3 = createUpdatedRegistries(var0, var2);
+      HolderLookup.Provider var4 = concatenateLookups(var1, var3.getLayer(RegistryLayer.RELOADABLE));
+      validateLootRegistries(var4);
+      return new LoadResult(var3, var4);
+   }
+
+   private static HolderLookup.Provider concatenateLookups(HolderLookup.Provider var0, HolderLookup.Provider var1) {
+      return HolderLookup.Provider.create(Stream.concat(var0.listRegistries(), var1.listRegistries()));
+   }
+
+   private static void validateLootRegistries(HolderLookup.Provider var0) {
+      ProblemReporter.Collector var1 = new ProblemReporter.Collector();
+      ValidationContext var2 = new ValidationContext(var1, LootContextParamSets.ALL_PARAMS, var0);
       LootDataType.values().forEach((var2x) -> {
-         validateRegistry(var5, var2x, var4);
+         validateRegistry(var2, var2x, var0);
       });
-      var3.get().forEach((var0x, var1x) -> {
+      var1.get().forEach((var0x, var1x) -> {
          LOGGER.warn("Found loot table element validation problem in {}: {}", var0x, var1x);
       });
-      return var2;
    }
 
    private static LayeredRegistryAccess<RegistryLayer> createUpdatedRegistries(LayeredRegistryAccess<RegistryLayer> var0, List<WritableRegistry<?>> var1) {
-      RegistryAccess.ImmutableRegistryAccess var2 = new RegistryAccess.ImmutableRegistryAccess(var1);
-      ((WritableRegistry)var2.registryOrThrow(Registries.LOOT_TABLE)).register(BuiltInLootTables.EMPTY, LootTable.EMPTY, DEFAULT_REGISTRATION_INFO);
-      return var0.replaceFrom(RegistryLayer.RELOADABLE, (RegistryAccess.Frozen[])(var2.freeze()));
+      return var0.replaceFrom(RegistryLayer.RELOADABLE, (RegistryAccess.Frozen[])((new RegistryAccess.ImmutableRegistryAccess(var1)).freeze()));
    }
 
-   private static <T> void validateRegistry(ValidationContext var0, LootDataType<T> var1, RegistryAccess var2) {
-      Registry var3 = var2.registryOrThrow(var1.registryKey());
-      var3.holders().forEach((var2x) -> {
+   private static <T> void validateRegistry(ValidationContext var0, LootDataType<T> var1, HolderLookup.Provider var2) {
+      HolderLookup.RegistryLookup var3 = var2.lookupOrThrow(var1.registryKey());
+      var3.listElements().forEach((var2x) -> {
          var1.runValidation(var0, var2x.key(), var2x.value());
       });
    }
 
-   static class EmptyTagLookupWrapper implements HolderLookup.Provider {
-      private final RegistryAccess registryAccess;
-
-      EmptyTagLookupWrapper(RegistryAccess var1) {
+   public static record LoadResult(LayeredRegistryAccess<RegistryLayer> layers, HolderLookup.Provider lookupWithUpdatedTags) {
+      public LoadResult(LayeredRegistryAccess<RegistryLayer> var1, HolderLookup.Provider var2) {
          super();
-         this.registryAccess = var1;
+         this.layers = var1;
+         this.lookupWithUpdatedTags = var2;
       }
 
-      public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
-         return this.registryAccess.listRegistries();
+      public LayeredRegistryAccess<RegistryLayer> layers() {
+         return this.layers;
       }
 
-      public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-         return this.registryAccess.registry(var1).map(Registry::asTagAddingLookup);
+      public HolderLookup.Provider lookupWithUpdatedTags() {
+         return this.lookupWithUpdatedTags;
       }
    }
 
    public static class Holder {
-      private final RegistryAccess.Frozen registries;
+      private final HolderLookup.Provider registries;
 
-      public Holder(RegistryAccess.Frozen var1) {
+      public Holder(HolderLookup.Provider var1) {
          super();
          this.registries = var1;
       }
 
-      public RegistryAccess.Frozen get() {
+      public HolderGetter.Provider lookup() {
          return this.registries;
       }
 
-      public HolderGetter.Provider lookup() {
-         return this.registries.asGetterLookup();
-      }
-
       public Collection<ResourceLocation> getKeys(ResourceKey<? extends Registry<?>> var1) {
-         return this.registries.registry(var1).stream().flatMap((var0) -> {
-            return var0.holders().map((var0x) -> {
-               return var0x.key().location();
-            });
-         }).toList();
+         return this.registries.lookupOrThrow(var1).listElementIds().map(ResourceKey::location).toList();
       }
 
       public LootTable getLootTable(ResourceKey<LootTable> var1) {

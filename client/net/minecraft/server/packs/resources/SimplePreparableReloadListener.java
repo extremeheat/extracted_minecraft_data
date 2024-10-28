@@ -3,6 +3,7 @@ package net.minecraft.server.packs.resources;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public abstract class SimplePreparableReloadListener<T> implements PreparableReloadListener {
@@ -10,14 +11,14 @@ public abstract class SimplePreparableReloadListener<T> implements PreparableRel
       super();
    }
 
-   public final CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
+   public final CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
       CompletableFuture var10000 = CompletableFuture.supplyAsync(() -> {
-         return this.prepare(var2, var3);
-      }, var5);
+         return this.prepare(var2, Profiler.get());
+      }, var3);
       Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {
-         this.apply(var3x, var2, var4);
-      }, var6);
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var2x) -> {
+         this.apply(var2x, var2, Profiler.get());
+      }, var4);
    }
 
    protected abstract T prepare(ResourceManager var1, ProfilerFiller var2);

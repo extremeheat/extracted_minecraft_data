@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Iterator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.StructureUtils;
@@ -84,7 +84,7 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
                float var31 = 0.5F;
                if (var1.getMode() == StructureMode.SAVE || var1.getShowBoundingBox()) {
                   VertexConsumer var32 = var4.getBuffer(RenderType.lines());
-                  LevelRenderer.renderLineBox(var3, var32, var17, var19, var21, var23, var25, var27, 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F);
+                  ShapeRenderer.renderLineBox(var3, var32, var17, var19, var21, var23, var25, var27, 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F);
                }
 
                if (var1.getMode() == StructureMode.SAVE && var1.getShowAir()) {
@@ -132,13 +132,13 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
          double var25 = (double)((float)(var9.getY() - var6.getY()) + 0.55F + var16);
          double var27 = (double)((float)(var9.getZ() - var6.getZ()) + 0.55F + var16);
          if (var11) {
-            LevelRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 0.5F, 0.5F, 1.0F, 1.0F, 0.5F, 0.5F, 1.0F);
+            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 0.5F, 0.5F, 1.0F, 1.0F, 0.5F, 0.5F, 1.0F);
          } else if (var12) {
-            LevelRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.75F, 0.75F, 1.0F, 1.0F, 0.75F, 0.75F);
+            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.75F, 0.75F, 1.0F, 1.0F, 0.75F, 0.75F);
          } else if (var13) {
-            LevelRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F);
+            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F);
          } else if (var14) {
-            LevelRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F);
+            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F);
          }
       }
    }
@@ -167,7 +167,7 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
             float var12 = (float)(var5x + var6.getX() - var5.getX()) + 0.5F + 0.48F;
             float var13 = (float)(var6x + var6.getY() - var5.getY()) + 0.5F + 0.48F;
             float var14 = (float)(var7x + var6.getZ() - var5.getZ()) + 0.5F + 0.48F;
-            LevelRenderer.renderFace(var3, var2, var4x, var9, var10, var11, var12, var13, var14, 0.75F, 0.75F, 1.0F, 0.2F);
+            ShapeRenderer.renderFace(var3, var2, var4x, var9, var10, var11, var12, var13, var14, 0.75F, 0.75F, 1.0F, 0.2F);
          });
       }
    }

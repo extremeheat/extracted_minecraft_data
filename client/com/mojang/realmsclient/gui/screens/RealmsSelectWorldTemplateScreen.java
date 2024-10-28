@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -32,10 +33,10 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.realms.RealmsObjectSelectionList;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CommonLinks;
@@ -253,13 +254,13 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       return this.warning != null ? row(1) : 33;
    }
 
-   private class WorldTemplateList extends RealmsObjectSelectionList<Entry> {
+   private class WorldTemplateList extends ObjectSelectionList<Entry> {
       public WorldTemplateList() {
          this(Collections.emptyList());
       }
 
       public WorldTemplateList(final Iterable<WorldTemplate> var2) {
-         super(RealmsSelectWorldTemplateScreen.this.width, RealmsSelectWorldTemplateScreen.this.height - 33 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), 46);
+         super(Minecraft.getInstance(), RealmsSelectWorldTemplateScreen.this.width, RealmsSelectWorldTemplateScreen.this.height - 33 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), 46);
          var2.forEach(this::addEntry);
       }
 
@@ -280,10 +281,6 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          super.setSelected(var1);
          RealmsSelectWorldTemplateScreen.this.selectedTemplate = var1 == null ? null : var1.template;
          RealmsSelectWorldTemplateScreen.this.updateButtonStates();
-      }
-
-      public int getMaxPosition() {
-         return this.getItemCount() * 46;
       }
 
       public int getRowWidth() {
@@ -348,8 +345,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.blit(RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
-         var1.blitSprite(RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
+         var1.blit(RenderType::guiTextured, RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
          boolean var11 = true;
          int var12 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version);
          if (this.websiteButton != null) {

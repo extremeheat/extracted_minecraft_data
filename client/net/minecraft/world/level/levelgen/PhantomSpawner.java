@@ -9,8 +9,8 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.level.CustomSpawner;
@@ -84,10 +84,10 @@ public class PhantomSpawner implements CustomSpawner {
                   int var17 = 1 + var4.nextInt(var9.getDifficulty().getId() + 1);
 
                   for(int var18 = 0; var18 < var17; ++var18) {
-                     Phantom var19 = (Phantom)EntityType.PHANTOM.create(var1);
+                     Phantom var19 = (Phantom)EntityType.PHANTOM.create(var1, EntitySpawnReason.NATURAL);
                      if (var19 != null) {
                         var19.moveTo(var13, 0.0F, 0.0F);
-                        var16 = var19.finalizeSpawn(var1, var9, MobSpawnType.NATURAL, var16);
+                        var16 = var19.finalizeSpawn(var1, var9, EntitySpawnReason.NATURAL, var16);
                         var1.addFreshEntityWithPassengers(var19);
                         ++var5;
                      }

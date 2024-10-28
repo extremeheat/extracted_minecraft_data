@@ -15,19 +15,7 @@ public class PoiRecord {
    private int freeTickets;
    private final Runnable setDirty;
 
-   public static Codec<PoiRecord> codec(Runnable var0) {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(BlockPos.CODEC.fieldOf("pos").forGetter((var0x) -> {
-            return var0x.pos;
-         }), RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter((var0x) -> {
-            return var0x.poiType;
-         }), Codec.INT.fieldOf("free_tickets").orElse(0).forGetter((var0x) -> {
-            return var0x.freeTickets;
-         }), RecordCodecBuilder.point(var0)).apply(var1, PoiRecord::new);
-      });
-   }
-
-   private PoiRecord(BlockPos var1, Holder<PoiType> var2, int var3, Runnable var4) {
+   PoiRecord(BlockPos var1, Holder<PoiType> var2, int var3, Runnable var4) {
       super();
       this.pos = var1.immutable();
       this.poiType = var2;
@@ -37,6 +25,10 @@ public class PoiRecord {
 
    public PoiRecord(BlockPos var1, Holder<PoiType> var2, Runnable var3) {
       this(var1, var2, ((PoiType)var2.value()).maxTickets(), var3);
+   }
+
+   public Packed pack() {
+      return new Packed(this.pos, this.poiType, this.freeTickets);
    }
 
    /** @deprecated */
@@ -92,5 +84,34 @@ public class PoiRecord {
 
    public int hashCode() {
       return this.pos.hashCode();
+   }
+
+   public static record Packed(BlockPos pos, Holder<PoiType> poiType, int freeTickets) {
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(Packed::pos), RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(Packed::poiType), Codec.INT.fieldOf("free_tickets").orElse(0).forGetter(Packed::freeTickets)).apply(var0, Packed::new);
+      });
+
+      public Packed(BlockPos var1, Holder<PoiType> var2, int var3) {
+         super();
+         this.pos = var1;
+         this.poiType = var2;
+         this.freeTickets = var3;
+      }
+
+      public PoiRecord unpack(Runnable var1) {
+         return new PoiRecord(this.pos, this.poiType, this.freeTickets, var1);
+      }
+
+      public BlockPos pos() {
+         return this.pos;
+      }
+
+      public Holder<PoiType> poiType() {
+         return this.poiType;
+      }
+
+      public int freeTickets() {
+         return this.freeTickets;
+      }
    }
 }

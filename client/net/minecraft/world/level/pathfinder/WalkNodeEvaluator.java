@@ -74,7 +74,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          } else {
             var2.set(this.mob.getX(), this.mob.getY() + 1.0, this.mob.getZ());
 
-            while(var2.getY() > this.currentContext.level().getMinBuildHeight()) {
+            while(var2.getY() > this.currentContext.level().getMinY()) {
                var1 = var2.getY();
                var2.setY(var2.getY() - 1);
                BlockState var4 = this.currentContext.getBlockState(var2);
@@ -308,7 +308,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    private Node tryFindFirstNonWaterBelow(int var1, int var2, int var3, @Nullable Node var4) {
       --var2;
 
-      while(var2 > this.mob.level().getMinBuildHeight()) {
+      while(var2 > this.mob.level().getMinY()) {
          PathType var5 = this.getCachedPathType(var1, var2, var3);
          if (var5 != PathType.WATER) {
             return var4;
@@ -322,7 +322,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    }
 
    private Node tryFindFirstGroundNodeBelow(int var1, int var2, int var3) {
-      for(int var4 = var2 - 1; var4 >= this.mob.level().getMinBuildHeight(); --var4) {
+      for(int var4 = var2 - 1; var4 >= this.mob.level().getMinY(); --var4) {
          if (var2 - var4 > this.mob.getMaxFallDistance()) {
             return this.getBlockedNode(var1, var4, var3);
          }
@@ -427,7 +427,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       int var3 = var1.getY();
       int var4 = var1.getZ();
       PathType var5 = var0.getPathTypeFromState(var2, var3, var4);
-      if (var5 == PathType.OPEN && var3 >= var0.level().getMinBuildHeight() + 1) {
+      if (var5 == PathType.OPEN && var3 >= var0.level().getMinY() + 1) {
          PathType var10000;
          switch (var0.getPathTypeFromState(var2, var3 - 1, var4)) {
             case OPEN:

@@ -25,8 +25,8 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class HoeItem extends DiggerItem {
    protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES;
 
-   public HoeItem(Tier var1, Item.Properties var2) {
-      super(var1, BlockTags.MINEABLE_WITH_HOE, var2);
+   public HoeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
+      super(var1, BlockTags.MINEABLE_WITH_HOE, var2, var3, var4);
    }
 
    public InteractionResult useOn(UseOnContext var1) {
@@ -48,7 +48,7 @@ public class HoeItem extends DiggerItem {
                }
             }
 
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.PASS;
          }

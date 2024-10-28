@@ -33,7 +33,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
@@ -50,16 +49,16 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
 
-public class WorldUpgrader {
+public class WorldUpgrader implements AutoCloseable {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setDaemon(true).build();
    private static final String NEW_DIRECTORY_PREFIX = "new_";
-   static final MutableComponent STATUS_UPGRADING_POI = Component.translatable("optimizeWorld.stage.upgrading.poi");
-   static final MutableComponent STATUS_FINISHED_POI = Component.translatable("optimizeWorld.stage.finished.poi");
-   static final MutableComponent STATUS_UPGRADING_ENTITIES = Component.translatable("optimizeWorld.stage.upgrading.entities");
-   static final MutableComponent STATUS_FINISHED_ENTITIES = Component.translatable("optimizeWorld.stage.finished.entities");
-   static final MutableComponent STATUS_UPGRADING_CHUNKS = Component.translatable("optimizeWorld.stage.upgrading.chunks");
-   static final MutableComponent STATUS_FINISHED_CHUNKS = Component.translatable("optimizeWorld.stage.finished.chunks");
+   static final Component STATUS_UPGRADING_POI = Component.translatable("optimizeWorld.stage.upgrading.poi");
+   static final Component STATUS_FINISHED_POI = Component.translatable("optimizeWorld.stage.finished.poi");
+   static final Component STATUS_UPGRADING_ENTITIES = Component.translatable("optimizeWorld.stage.upgrading.entities");
+   static final Component STATUS_FINISHED_ENTITIES = Component.translatable("optimizeWorld.stage.finished.entities");
+   static final Component STATUS_UPGRADING_CHUNKS = Component.translatable("optimizeWorld.stage.upgrading.chunks");
+   static final Component STATUS_FINISHED_CHUNKS = Component.translatable("optimizeWorld.stage.finished.chunks");
    final Registry<LevelStem> dimensions;
    final Set<ResourceKey<Level>> levels;
    final boolean eraseCache;
@@ -81,12 +80,12 @@ public class WorldUpgrader {
 
    public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, RegistryAccess var3, boolean var4, boolean var5) {
       super();
-      this.dimensions = var3.registryOrThrow(Registries.LEVEL_STEM);
+      this.dimensions = var3.lookupOrThrow(Registries.LEVEL_STEM);
       this.levels = (Set)this.dimensions.registryKeySet().stream().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
       this.eraseCache = var4;
       this.dataFixer = var2;
       this.levelStorage = var1;
-      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data").toFile(), var2, var3);
+      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var3);
       this.recreateRegionFiles = var5;
       this.thread = THREAD_FACTORY.newThread(this::work);
       this.thread.setUncaughtExceptionHandler((var1x, var2x) -> {
@@ -115,7 +114,7 @@ public class WorldUpgrader {
       (new PoiUpgrader(this)).upgrade();
       LOGGER.info("Upgrading blocks");
       (new ChunkUpgrader()).upgrade();
-      this.overworldDataStorage.save();
+      this.overworldDataStorage.saveAndJoin();
       var1 = Util.getMillis() - var1;
       LOGGER.info("World optimizaton finished after {} seconds", var1 / 1000L);
       this.finished = true;
@@ -153,6 +152,10 @@ public class WorldUpgrader {
       return this.status;
    }
 
+   public void close() {
+      this.overworldDataStorage.close();
+   }
+
    static Path resolveRecreateDirectory(Path var0) {
       return var0.resolveSibling("new_" + var0.getFileName().toString());
    }
@@ -186,7 +189,7 @@ public class WorldUpgrader {
          CompoundTag var4 = (CompoundTag)((Optional)var1.read(var2).join()).orElse((Object)null);
          if (var4 != null) {
             int var5 = ChunkStorage.getVersion(var4);
-            ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getOrThrow(Registries.levelToLevelStem(var3))).generator();
+            ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(var3))).generator();
             CompoundTag var7 = var1.upgradeChunkTag(var3, () -> {
                return WorldUpgrader.this.overworldDataStorage;
             }, var4, var6.getTypeNameForDataFixer());
@@ -217,7 +220,9 @@ public class WorldUpgrader {
                   this.previousWriteFuture.join();
                }
 
-               this.previousWriteFuture = var1.write(var2, var7);
+               this.previousWriteFuture = var1.write(var2, () -> {
+                  return var7;
+               });
                return true;
             }
          }
@@ -236,7 +241,7 @@ public class WorldUpgrader {
    }
 
    private abstract class SimpleRegionStorageUpgrader extends AbstractUpgrader<SimpleRegionStorage> {
-      SimpleRegionStorageUpgrader(final DataFixTypes var2, final String var3, final MutableComponent var4, final MutableComponent var5) {
+      SimpleRegionStorageUpgrader(final DataFixTypes var2, final String var3, final Component var4, final Component var5) {
          super(var2, var3, var3, var4, var5);
       }
 
@@ -272,15 +277,15 @@ public class WorldUpgrader {
    }
 
    abstract class AbstractUpgrader<T extends AutoCloseable> {
-      private final MutableComponent upgradingStatus;
-      private final MutableComponent finishedStatus;
+      private final Component upgradingStatus;
+      private final Component finishedStatus;
       private final String type;
       private final String folderName;
       @Nullable
       protected CompletableFuture<Void> previousWriteFuture;
       protected final DataFixTypes dataFixType;
 
-      AbstractUpgrader(final DataFixTypes var2, final String var3, final String var4, final MutableComponent var5, final MutableComponent var6) {
+      AbstractUpgrader(final DataFixTypes var2, final String var3, final String var4, final Component var5, final Component var6) {
          super();
          this.dataFixType = var2;
          this.type = var3;

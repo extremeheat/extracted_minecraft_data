@@ -5,9 +5,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.FishingHookRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -15,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
-public class FishingHookRenderer extends EntityRenderer<FishingHook> {
+public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHookRenderState> {
    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/fishing_hook.png");
    private static final RenderType RENDER_TYPE;
    private static final double VIEW_BOBBING_SCALE = 960.0;
@@ -24,38 +28,35 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook> {
       super(var1);
    }
 
-   public void render(FishingHook var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      Player var7 = var1.getPlayerOwner();
-      if (var7 != null) {
-         var4.pushPose();
-         var4.pushPose();
-         var4.scale(0.5F, 0.5F, 0.5F);
-         var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
-         PoseStack.Pose var8 = var4.last();
-         VertexConsumer var9 = var5.getBuffer(RENDER_TYPE);
-         vertex(var9, var8, var6, 0.0F, 0, 0, 1);
-         vertex(var9, var8, var6, 1.0F, 0, 1, 1);
-         vertex(var9, var8, var6, 1.0F, 1, 1, 0);
-         vertex(var9, var8, var6, 0.0F, 1, 0, 0);
-         var4.popPose();
-         float var10 = var7.getAttackAnim(var3);
-         float var11 = Mth.sin(Mth.sqrt(var10) * 3.1415927F);
-         Vec3 var12 = this.getPlayerHandPos(var7, var11, var3);
-         Vec3 var13 = var1.getPosition(var3).add(0.0, 0.25, 0.0);
-         float var14 = (float)(var12.x - var13.x);
-         float var15 = (float)(var12.y - var13.y);
-         float var16 = (float)(var12.z - var13.z);
-         VertexConsumer var17 = var5.getBuffer(RenderType.lineStrip());
-         PoseStack.Pose var18 = var4.last();
-         boolean var19 = true;
+   public boolean shouldRender(FishingHook var1, Frustum var2, double var3, double var5, double var7) {
+      return super.shouldRender(var1, var2, var3, var5, var7) && var1.getPlayerOwner() != null;
+   }
 
-         for(int var20 = 0; var20 <= 16; ++var20) {
-            stringVertex(var14, var15, var16, var17, var18, fraction(var20, 16), fraction(var20 + 1, 16));
-         }
+   public void render(FishingHookRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      var2.pushPose();
+      var2.pushPose();
+      var2.scale(0.5F, 0.5F, 0.5F);
+      var2.mulPose(this.entityRenderDispatcher.cameraOrientation());
+      PoseStack.Pose var5 = var2.last();
+      VertexConsumer var6 = var3.getBuffer(RENDER_TYPE);
+      vertex(var6, var5, var4, 0.0F, 0, 0, 1);
+      vertex(var6, var5, var4, 1.0F, 0, 1, 1);
+      vertex(var6, var5, var4, 1.0F, 1, 1, 0);
+      vertex(var6, var5, var4, 0.0F, 1, 0, 0);
+      var2.popPose();
+      float var7 = (float)var1.lineOriginOffset.x;
+      float var8 = (float)var1.lineOriginOffset.y;
+      float var9 = (float)var1.lineOriginOffset.z;
+      VertexConsumer var10 = var3.getBuffer(RenderType.lineStrip());
+      PoseStack.Pose var11 = var2.last();
+      boolean var12 = true;
 
-         var4.popPose();
-         super.render(var1, var2, var3, var4, var5, var6);
+      for(int var13 = 0; var13 <= 16; ++var13) {
+         stringVertex(var7, var8, var9, var10, var11, fraction(var13, 16), fraction(var13 + 1, 16));
       }
+
+      var2.popPose();
+      super.render(var1, var2, var3, var4);
    }
 
    private Vec3 getPlayerHandPos(Player var1, float var2, float var3) {
@@ -103,8 +104,36 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook> {
       var3.addVertex(var4, var7, var8, var9).setColor(-16777216).setNormal(var4, var10, var11, var12);
    }
 
-   public ResourceLocation getTextureLocation(FishingHook var1) {
-      return TEXTURE_LOCATION;
+   public FishingHookRenderState createRenderState() {
+      return new FishingHookRenderState();
+   }
+
+   public void extractRenderState(FishingHook var1, FishingHookRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      Player var4 = var1.getPlayerOwner();
+      if (var4 == null) {
+         var2.lineOriginOffset = Vec3.ZERO;
+      } else {
+         float var5 = var4.getAttackAnim(var3);
+         float var6 = Mth.sin(Mth.sqrt(var5) * 3.1415927F);
+         Vec3 var7 = this.getPlayerHandPos(var4, var6, var3);
+         Vec3 var8 = var1.getPosition(var3).add(0.0, 0.25, 0.0);
+         var2.lineOriginOffset = var7.subtract(var8);
+      }
+   }
+
+   protected boolean affectedByCulling(FishingHook var1) {
+      return false;
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
+   }
+
+   // $FF: synthetic method
+   protected boolean affectedByCulling(final Entity var1) {
+      return this.affectedByCulling((FishingHook)var1);
    }
 
    static {

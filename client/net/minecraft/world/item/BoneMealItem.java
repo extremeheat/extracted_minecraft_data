@@ -41,7 +41,7 @@ public class BoneMealItem extends Item {
             var2.levelEvent(1505, var3, 15);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          BlockState var5 = var2.getBlockState(var3);
          boolean var6 = var5.isFaceSturdy(var2, var3, var1.getClickedFace());
@@ -51,7 +51,7 @@ public class BoneMealItem extends Item {
                var2.levelEvent(1505, var4, 15);
             }
 
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.PASS;
          }
@@ -85,7 +85,7 @@ public class BoneMealItem extends Item {
          } else {
             RandomSource var4 = var1.getRandom();
 
-            label78:
+            label80:
             for(int var5 = 0; var5 < 128; ++var5) {
                BlockPos var6 = var2;
                BlockState var7 = Blocks.SEAGRASS.defaultBlockState();
@@ -93,7 +93,7 @@ public class BoneMealItem extends Item {
                for(int var8 = 0; var8 < var5 / 16; ++var8) {
                   var6 = var6.offset(var4.nextInt(3) - 1, (var4.nextInt(3) - 1) * var4.nextInt(3) / 2, var4.nextInt(3) - 1);
                   if (var1.getBlockState(var6).isCollisionShapeFullBlock(var1, var6)) {
-                     continue label78;
+                     continue label80;
                   }
                }
 
@@ -125,7 +125,7 @@ public class BoneMealItem extends Item {
                   BlockState var11 = var1.getBlockState(var6);
                   if (var11.is(Blocks.WATER) && var1.getFluidState(var6).getAmount() == 8) {
                      var1.setBlock(var6, var7, 3);
-                  } else if (var11.is(Blocks.SEAGRASS) && var4.nextInt(10) == 0) {
+                  } else if (var11.is(Blocks.SEAGRASS) && ((BonemealableBlock)Blocks.SEAGRASS).isValidBonemealTarget(var1, var6, var11) && var4.nextInt(10) == 0) {
                      ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal((ServerLevel)var1, var4, var6, var11);
                   }
                }

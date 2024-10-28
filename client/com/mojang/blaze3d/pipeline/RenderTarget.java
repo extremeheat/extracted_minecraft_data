@@ -10,8 +10,8 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.CompiledShaderProgram;
+import net.minecraft.client.renderer.CoreShaders;
 
 public abstract class RenderTarget {
    private static final int RED_CHANNEL = 0;
@@ -40,25 +40,14 @@ public abstract class RenderTarget {
       this.depthBufferId = -1;
    }
 
-   public void resize(int var1, int var2, boolean var3) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            this._resize(var1, var2, var3);
-         });
-      } else {
-         this._resize(var1, var2, var3);
-      }
-
-   }
-
-   private void _resize(int var1, int var2, boolean var3) {
+   public void resize(int var1, int var2) {
       RenderSystem.assertOnRenderThreadOrInit();
       GlStateManager._enableDepthTest();
       if (this.frameBufferId >= 0) {
          this.destroyBuffers();
       }
 
-      this.createBuffers(var1, var2, var3);
+      this.createBuffers(var1, var2);
       GlStateManager._glBindFramebuffer(36160, 0);
    }
 
@@ -92,10 +81,10 @@ public abstract class RenderTarget {
       GlStateManager._glBindFramebuffer(36160, 0);
    }
 
-   public void createBuffers(int var1, int var2, boolean var3) {
+   public void createBuffers(int var1, int var2) {
       RenderSystem.assertOnRenderThreadOrInit();
-      int var4 = RenderSystem.maxSupportedTextureSize();
-      if (var1 > 0 && var1 <= var4 && var2 > 0 && var2 <= var4) {
+      int var3 = RenderSystem.maxSupportedTextureSize();
+      if (var1 > 0 && var1 <= var3 && var2 > 0 && var2 <= var3) {
          this.viewWidth = var1;
          this.viewHeight = var2;
          this.width = var1;
@@ -125,10 +114,10 @@ public abstract class RenderTarget {
          }
 
          this.checkStatus();
-         this.clear(var3);
+         this.clear();
          this.unbindRead();
       } else {
-         throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var4 + ")");
+         throw new IllegalArgumentException("Window " + var1 + "x" + var2 + " size out of bounds (max. size: " + var3 + ")");
       }
    }
 
@@ -181,17 +170,6 @@ public abstract class RenderTarget {
    }
 
    public void bindWrite(boolean var1) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            this._bindWrite(var1);
-         });
-      } else {
-         this._bindWrite(var1);
-      }
-
-   }
-
-   private void _bindWrite(boolean var1) {
       RenderSystem.assertOnRenderThreadOrInit();
       GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
       if (var1) {
@@ -201,14 +179,8 @@ public abstract class RenderTarget {
    }
 
    public void unbindWrite() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            GlStateManager._glBindFramebuffer(36160, 0);
-         });
-      } else {
-         GlStateManager._glBindFramebuffer(36160, 0);
-      }
-
+      RenderSystem.assertOnRenderThreadOrInit();
+      GlStateManager._glBindFramebuffer(36160, 0);
    }
 
    public void setClearColor(float var1, float var2, float var3, float var4) {
@@ -219,49 +191,40 @@ public abstract class RenderTarget {
    }
 
    public void blitToScreen(int var1, int var2) {
-      this.blitToScreen(var1, var2, true);
+      GlStateManager._glBindFramebuffer(36008, this.frameBufferId);
+      GlStateManager._glBlitFrameBuffer(0, 0, this.width, this.height, 0, 0, var1, var2, 16384, 9728);
+      GlStateManager._glBindFramebuffer(36008, 0);
    }
 
-   public void blitToScreen(int var1, int var2, boolean var3) {
-      this._blitToScreen(var1, var2, var3);
-   }
-
-   private void _blitToScreen(int var1, int var2, boolean var3) {
+   public void blitAndBlendToScreen(int var1, int var2) {
       RenderSystem.assertOnRenderThread();
       GlStateManager._colorMask(true, true, true, false);
       GlStateManager._disableDepthTest();
       GlStateManager._depthMask(false);
       GlStateManager._viewport(0, 0, var1, var2);
-      if (var3) {
-         GlStateManager._disableBlend();
-      }
-
-      Minecraft var4 = Minecraft.getInstance();
-      ShaderInstance var5 = (ShaderInstance)Objects.requireNonNull(var4.gameRenderer.blitShader, "Blit shader not loaded");
-      var5.setSampler("DiffuseSampler", this.colorTextureId);
-      var5.apply();
-      BufferBuilder var6 = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLIT_SCREEN);
-      var6.addVertex(0.0F, 0.0F, 0.0F);
-      var6.addVertex(1.0F, 0.0F, 0.0F);
-      var6.addVertex(1.0F, 1.0F, 0.0F);
-      var6.addVertex(0.0F, 1.0F, 0.0F);
-      BufferUploader.draw(var6.buildOrThrow());
-      var5.clear();
+      CompiledShaderProgram var3 = (CompiledShaderProgram)Objects.requireNonNull(RenderSystem.setShader(CoreShaders.BLIT_SCREEN), "Blit shader not loaded");
+      var3.bindSampler("InSampler", this.colorTextureId);
+      BufferBuilder var4 = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLIT_SCREEN);
+      var4.addVertex(0.0F, 0.0F, 0.0F);
+      var4.addVertex(1.0F, 0.0F, 0.0F);
+      var4.addVertex(1.0F, 1.0F, 0.0F);
+      var4.addVertex(0.0F, 1.0F, 0.0F);
+      BufferUploader.drawWithShader(var4.buildOrThrow());
       GlStateManager._depthMask(true);
       GlStateManager._colorMask(true, true, true, true);
    }
 
-   public void clear(boolean var1) {
+   public void clear() {
       RenderSystem.assertOnRenderThreadOrInit();
       this.bindWrite(true);
       GlStateManager._clearColor(this.clearChannels[0], this.clearChannels[1], this.clearChannels[2], this.clearChannels[3]);
-      int var2 = 16384;
+      int var1 = 16384;
       if (this.useDepth) {
          GlStateManager._clearDepth(1.0);
-         var2 |= 256;
+         var1 |= 256;
       }
 
-      GlStateManager._clear(var2, var1);
+      GlStateManager._clear(var1);
       this.unbindWrite();
    }
 

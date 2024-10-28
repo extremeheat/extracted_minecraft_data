@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
@@ -55,10 +56,10 @@ public class WitherSkullBlock extends SkullBlock {
       if (!var0.isClientSide) {
          BlockState var3 = var2.getBlockState();
          boolean var4 = var3.is(Blocks.WITHER_SKELETON_SKULL) || var3.is(Blocks.WITHER_SKELETON_WALL_SKULL);
-         if (var4 && var1.getY() >= var0.getMinBuildHeight() && var0.getDifficulty() != Difficulty.PEACEFUL) {
+         if (var4 && var1.getY() >= var0.getMinY() && var0.getDifficulty() != Difficulty.PEACEFUL) {
             BlockPattern.BlockPatternMatch var5 = getOrCreateWitherFull().find(var0, var1);
             if (var5 != null) {
-               WitherBoss var6 = (WitherBoss)EntityType.WITHER.create(var0);
+               WitherBoss var6 = (WitherBoss)EntityType.WITHER.create(var0, EntitySpawnReason.TRIGGERED);
                if (var6 != null) {
                   CarvedPumpkinBlock.clearPatternBlocks(var0, var5);
                   BlockPos var7 = var5.getBlock(1, 2, 0).getPos();
@@ -82,7 +83,7 @@ public class WitherSkullBlock extends SkullBlock {
    }
 
    public static boolean canSpawnMob(Level var0, BlockPos var1, ItemStack var2) {
-      if (var2.is(Items.WITHER_SKELETON_SKULL) && var1.getY() >= var0.getMinBuildHeight() + 2 && var0.getDifficulty() != Difficulty.PEACEFUL && !var0.isClientSide) {
+      if (var2.is(Items.WITHER_SKELETON_SKULL) && var1.getY() >= var0.getMinY() + 2 && var0.getDifficulty() != Difficulty.PEACEFUL && !var0.isClientSide) {
          return getOrCreateWitherBase().find(var0, var1) != null;
       } else {
          return false;

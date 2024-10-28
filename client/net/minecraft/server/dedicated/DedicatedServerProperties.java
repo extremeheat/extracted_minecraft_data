@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -49,8 +49,6 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean onlineMode = this.get("online-mode", true);
    public final boolean preventProxyConnections = this.get("prevent-proxy-connections", false);
    public final String serverIp = this.get("server-ip", "");
-   public final boolean spawnAnimals = this.get("spawn-animals", true);
-   public final boolean spawnNpcs = this.get("spawn-npcs", true);
    public final boolean pvp = this.get("pvp", true);
    public final boolean allowFlight = this.get("allow-flight", false);
    public final String motd = this.get("motd", "A Minecraft Server");
@@ -93,12 +91,14 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean hideOnlinePlayers;
    public final int entityBroadcastRangePercentage;
    public final String textFilteringConfig;
+   public final int textFilteringVersion;
    public final Optional<MinecraftServer.ServerResourcePackInfo> serverResourcePackInfo;
    public final DataPackConfig initialDataPackConfiguration;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> playerIdleTimeout;
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> whiteList;
    public final boolean enforceSecureProfile;
    public final boolean logIPs;
+   public final int pauseWhenEmptySeconds;
    private final WorldDimensionData worldDimensionData;
    public final WorldOptions worldOptions;
    public boolean acceptsTransfers;
@@ -144,10 +144,12 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
          return Mth.clamp(var0, 10, 1000);
       }, 100);
       this.textFilteringConfig = this.get("text-filtering-config", "");
+      this.textFilteringVersion = this.get("text-filtering-version", 0);
       this.playerIdleTimeout = this.getMutable("player-idle-timeout", 0);
       this.whiteList = this.getMutable("white-list", false);
       this.enforceSecureProfile = this.get("enforce-secure-profile", true);
       this.logIPs = this.get("log-ips", true);
+      this.pauseWhenEmptySeconds = this.get("pause-when-empty-seconds", 60);
       this.acceptsTransfers = this.get("accepts-transfers", false);
       String var2 = this.get("level-seed", "");
       boolean var3 = this.get("generate-structures", true);
@@ -230,7 +232,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return new DataPackConfig(var2, var3);
    }
 
-   public WorldDimensions createDimensions(RegistryAccess var1) {
+   public WorldDimensions createDimensions(HolderLookup.Provider var1) {
       return this.worldDimensionData.create(var1);
    }
 
@@ -248,10 +250,10 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
          this.levelType = var2;
       }
 
-      public WorldDimensions create(RegistryAccess var1) {
-         Registry var2 = var1.registryOrThrow(Registries.WORLD_PRESET);
-         Holder.Reference var3 = (Holder.Reference)var2.getHolder(WorldPresets.NORMAL).or(() -> {
-            return var2.holders().findAny();
+      public WorldDimensions create(HolderLookup.Provider var1) {
+         HolderLookup.RegistryLookup var2 = var1.lookupOrThrow(Registries.WORLD_PRESET);
+         Holder.Reference var3 = (Holder.Reference)var2.get(WorldPresets.NORMAL).or(() -> {
+            return var2.listElements().findAny();
          }).orElseThrow(() -> {
             return new IllegalStateException("Invalid datapack contents: can't find default preset");
          });
@@ -261,7 +263,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
             return Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType));
          });
          Objects.requireNonNull(var2);
-         Holder var4 = (Holder)var10000.flatMap(var2::getHolder).orElseGet(() -> {
+         Holder var4 = (Holder)var10000.flatMap(var2::get).orElseGet(() -> {
             DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, var3.key().location());
             return var3;
          });

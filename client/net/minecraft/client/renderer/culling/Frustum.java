@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.culling;
 
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
@@ -57,16 +58,45 @@ public class Frustum {
    }
 
    public boolean isVisible(AABB var1) {
-      return this.cubeInFrustum(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
+      int var2 = this.cubeInFrustum(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
+      return var2 == -2 || var2 == -1;
    }
 
-   private boolean cubeInFrustum(double var1, double var3, double var5, double var7, double var9, double var11) {
+   public int cubeInFrustum(BoundingBox var1) {
+      return this.cubeInFrustum((double)var1.minX(), (double)var1.minY(), (double)var1.minZ(), (double)(var1.maxX() + 1), (double)(var1.maxY() + 1), (double)(var1.maxZ() + 1));
+   }
+
+   private int cubeInFrustum(double var1, double var3, double var5, double var7, double var9, double var11) {
       float var13 = (float)(var1 - this.camX);
       float var14 = (float)(var3 - this.camY);
       float var15 = (float)(var5 - this.camZ);
       float var16 = (float)(var7 - this.camX);
       float var17 = (float)(var9 - this.camY);
       float var18 = (float)(var11 - this.camZ);
-      return this.intersection.testAab(var13, var14, var15, var16, var17, var18);
+      return this.intersection.intersectAab(var13, var14, var15, var16, var17, var18);
+   }
+
+   public Vector4f[] getFrustumPoints() {
+      Vector4f[] var1 = new Vector4f[]{new Vector4f(-1.0F, -1.0F, -1.0F, 1.0F), new Vector4f(1.0F, -1.0F, -1.0F, 1.0F), new Vector4f(1.0F, 1.0F, -1.0F, 1.0F), new Vector4f(-1.0F, 1.0F, -1.0F, 1.0F), new Vector4f(-1.0F, -1.0F, 1.0F, 1.0F), new Vector4f(1.0F, -1.0F, 1.0F, 1.0F), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector4f(-1.0F, 1.0F, 1.0F, 1.0F)};
+      Matrix4f var2 = this.matrix.invert(new Matrix4f());
+
+      for(int var3 = 0; var3 < 8; ++var3) {
+         var2.transform(var1[var3]);
+         var1[var3].div(var1[var3].w());
+      }
+
+      return var1;
+   }
+
+   public double getCamX() {
+      return this.camX;
+   }
+
+   public double getCamY() {
+      return this.camY;
+   }
+
+   public double getCamZ() {
+      return this.camZ;
    }
 }

@@ -12,10 +12,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -36,7 +36,7 @@ public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean j
       if (Level.isInSpawnableBounds(var6)) {
          Optional var7 = this.entityTypes().getRandomElement(var1.getRandom());
          if (!var7.isEmpty()) {
-            Entity var8 = ((EntityType)((Holder)var7.get()).value()).spawn(var1, var6, MobSpawnType.TRIGGERED);
+            Entity var8 = ((EntityType)((Holder)var7.get()).value()).spawn(var1, var6, EntitySpawnReason.TRIGGERED);
             if (var8 != null) {
                if (var8 instanceof LightningBolt) {
                   LightningBolt var9 = (LightningBolt)var8;

@@ -41,7 +41,7 @@ public class FlintAndSteelItem extends Item {
                var8.hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));
             }
 
-            return InteractionResult.sidedSuccess(var3.isClientSide());
+            return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.FAIL;
          }
@@ -53,7 +53,7 @@ public class FlintAndSteelItem extends Item {
             var1.getItemInHand().hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));
          }
 
-         return InteractionResult.sidedSuccess(var3.isClientSide());
+         return InteractionResult.SUCCESS;
       }
    }
 }

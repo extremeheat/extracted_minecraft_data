@@ -115,8 +115,10 @@ public class SoundType {
    public static final SoundType SPONGE;
    public static final SoundType WET_SPONGE;
    public static final SoundType VAULT;
+   public static final SoundType CREAKING_HEART;
    public static final SoundType HEAVY_CORE;
    public static final SoundType COBWEB;
+   public static final SoundType SPAWNER;
    public final float volume;
    public final float pitch;
    private final SoundEvent breakSound;
@@ -276,7 +278,9 @@ public class SoundType {
       SPONGE = new SoundType(1.0F, 1.0F, SoundEvents.SPONGE_BREAK, SoundEvents.SPONGE_STEP, SoundEvents.SPONGE_PLACE, SoundEvents.SPONGE_HIT, SoundEvents.SPONGE_FALL);
       WET_SPONGE = new SoundType(1.0F, 1.0F, SoundEvents.WET_SPONGE_BREAK, SoundEvents.WET_SPONGE_STEP, SoundEvents.WET_SPONGE_PLACE, SoundEvents.WET_SPONGE_HIT, SoundEvents.WET_SPONGE_FALL);
       VAULT = new SoundType(1.0F, 1.0F, SoundEvents.VAULT_BREAK, SoundEvents.VAULT_STEP, SoundEvents.VAULT_PLACE, SoundEvents.VAULT_HIT, SoundEvents.VAULT_FALL);
+      CREAKING_HEART = new SoundType(1.0F, 1.0F, SoundEvents.CREAKING_HEART_BREAK, SoundEvents.CREAKING_HEART_STEP, SoundEvents.CREAKING_HEART_PLACE, SoundEvents.CREAKING_HEART_HIT, SoundEvents.CREAKING_HEART_FALL);
       HEAVY_CORE = new SoundType(1.0F, 1.0F, SoundEvents.HEAVY_CORE_BREAK, SoundEvents.HEAVY_CORE_STEP, SoundEvents.HEAVY_CORE_PLACE, SoundEvents.HEAVY_CORE_HIT, SoundEvents.HEAVY_CORE_FALL);
       COBWEB = new SoundType(1.0F, 1.0F, SoundEvents.COBWEB_BREAK, SoundEvents.COBWEB_STEP, SoundEvents.COBWEB_PLACE, SoundEvents.COBWEB_HIT, SoundEvents.COBWEB_FALL);
+      SPAWNER = new SoundType(1.0F, 1.0F, SoundEvents.SPAWNER_BREAK, SoundEvents.SPAWNER_STEP, SoundEvents.SPAWNER_PLACE, SoundEvents.SPAWNER_HIT, SoundEvents.SPAWNER_FALL);
    }
 }

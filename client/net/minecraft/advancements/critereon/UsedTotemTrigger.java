@@ -5,7 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
@@ -39,8 +41,8 @@ public class UsedTotemTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return CriteriaTriggers.USED_TOTEM.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var0)));
       }
 
-      public static Criterion<TriggerInstance> usedTotem(ItemLike var0) {
-         return CriteriaTriggers.USED_TOTEM.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var0).build())));
+      public static Criterion<TriggerInstance> usedTotem(HolderGetter<Item> var0, ItemLike var1) {
+         return CriteriaTriggers.USED_TOTEM.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var0, var1).build())));
       }
 
       public boolean matches(ItemStack var1) {

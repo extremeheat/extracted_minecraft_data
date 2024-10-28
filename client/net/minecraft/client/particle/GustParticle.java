@@ -17,7 +17,7 @@ public class GustParticle extends TextureSheetParticle {
    }
 
    public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_LIT;
+      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
    public int getLightColor(float var1) {

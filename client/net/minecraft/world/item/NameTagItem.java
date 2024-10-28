@@ -15,7 +15,7 @@ public class NameTagItem extends Item {
 
    public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
       Component var5 = (Component)var1.get(DataComponents.CUSTOM_NAME);
-      if (var5 != null && !(var3 instanceof Player)) {
+      if (var5 != null && var3.getType().canSerialize()) {
          if (!var2.level().isClientSide && var3.isAlive()) {
             var3.setCustomName(var5);
             if (var3 instanceof Mob) {
@@ -26,7 +26,7 @@ public class NameTagItem extends Item {
             var1.shrink(1);
          }
 
-         return InteractionResult.sidedSuccess(var2.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }

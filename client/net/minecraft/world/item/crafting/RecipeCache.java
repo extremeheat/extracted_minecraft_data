@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 
 public class RecipeCache {
    private final Entry[] entries;
@@ -17,7 +17,7 @@ public class RecipeCache {
       this.entries = new Entry[var1];
    }
 
-   public Optional<RecipeHolder<CraftingRecipe>> get(Level var1, CraftingInput var2) {
+   public Optional<RecipeHolder<CraftingRecipe>> get(ServerLevel var1, CraftingInput var2) {
       if (var2.isEmpty()) {
          return Optional.empty();
       } else {
@@ -35,8 +35,8 @@ public class RecipeCache {
       }
    }
 
-   private void validateRecipeManager(Level var1) {
-      RecipeManager var2 = var1.getRecipeManager();
+   private void validateRecipeManager(ServerLevel var1) {
+      RecipeManager var2 = var1.recipeAccess();
       if (var2 != this.cachedRecipeManager.get()) {
          this.cachedRecipeManager = new WeakReference(var2);
          Arrays.fill(this.entries, (Object)null);
@@ -44,8 +44,8 @@ public class RecipeCache {
 
    }
 
-   private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingInput var1, Level var2) {
-      Optional var3 = var2.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var1, var2);
+   private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingInput var1, ServerLevel var2) {
+      Optional var3 = var2.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var1, var2);
       this.insert(var1, (RecipeHolder)var3.orElse((Object)null));
       return var3;
    }

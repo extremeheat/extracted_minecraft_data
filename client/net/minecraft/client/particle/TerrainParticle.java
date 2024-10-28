@@ -70,6 +70,29 @@ public class TerrainParticle extends TextureSheetParticle {
       return !var14.isAir() && !var14.is(Blocks.MOVING_PISTON) && var14.shouldSpawnTerrainParticles() ? new TerrainParticle(var1, var2, var4, var6, var8, var10, var12, var14) : null;
    }
 
+   public static class CrumblingProvider implements ParticleProvider<BlockParticleOption> {
+      public CrumblingProvider() {
+         super();
+      }
+
+      @Nullable
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         TerrainParticle var15 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
+         if (var15 != null) {
+            ((Particle)var15).setParticleSpeed(0.0, 0.0, 0.0);
+            ((Particle)var15).setLifetime(var2.random.nextInt(10) + 1);
+         }
+
+         return var15;
+      }
+
+      // $FF: synthetic method
+      @Nullable
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((BlockParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
    public static class DustPillarProvider implements ParticleProvider<BlockParticleOption> {
       public DustPillarProvider() {
          super();

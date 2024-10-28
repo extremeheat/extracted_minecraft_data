@@ -1,21 +1,22 @@
 package net.minecraft.client.model;
 
+import java.util.Set;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.PandaRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Panda;
 
-public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
-   private float sitAmount;
-   private float lieOnBackAmount;
-   private float rollAmount;
+public class PandaModel extends QuadrupedModel<PandaRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 23.0F, 4.8F, 2.7F, 3.0F, 49.0F, Set.of("head"));
 
    public PandaModel(ModelPart var1) {
-      super(var1, true, 23.0F, 4.8F, 2.7F, 3.0F, 49);
+      super(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -33,52 +34,40 @@ public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      super.prepareMobModel(var1, var2, var3, var4);
-      this.sitAmount = var1.getSitAmount(var4);
-      this.lieOnBackAmount = var1.getLieOnBackAmount(var4);
-      this.rollAmount = var1.isBaby() ? 0.0F : var1.getRollAmount(var4);
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim(var1, var2, var3, var4, var5, var6);
-      boolean var7 = var1.getUnhappyCounter() > 0;
-      boolean var8 = var1.isSneezing();
-      int var9 = var1.getSneezeCounter();
-      boolean var10 = var1.isEating();
-      boolean var11 = var1.isScared();
-      if (var7) {
-         this.head.yRot = 0.35F * Mth.sin(0.6F * var4);
-         this.head.zRot = 0.35F * Mth.sin(0.6F * var4);
-         this.rightFrontLeg.xRot = -0.75F * Mth.sin(0.3F * var4);
-         this.leftFrontLeg.xRot = 0.75F * Mth.sin(0.3F * var4);
+   public void setupAnim(PandaRenderState var1) {
+      super.setupAnim((LivingEntityRenderState)var1);
+      if (var1.isUnhappy) {
+         this.head.yRot = 0.35F * Mth.sin(0.6F * var1.ageInTicks);
+         this.head.zRot = 0.35F * Mth.sin(0.6F * var1.ageInTicks);
+         this.rightFrontLeg.xRot = -0.75F * Mth.sin(0.3F * var1.ageInTicks);
+         this.leftFrontLeg.xRot = 0.75F * Mth.sin(0.3F * var1.ageInTicks);
       } else {
          this.head.zRot = 0.0F;
       }
 
-      if (var8) {
-         if (var9 < 15) {
-            this.head.xRot = -0.7853982F * (float)var9 / 14.0F;
-         } else if (var9 < 20) {
-            float var12 = (float)((var9 - 15) / 5);
-            this.head.xRot = -0.7853982F + 0.7853982F * var12;
+      if (var1.isSneezing) {
+         if (var1.sneezeTime < 15) {
+            this.head.xRot = -0.7853982F * (float)var1.sneezeTime / 14.0F;
+         } else if (var1.sneezeTime < 20) {
+            float var2 = (float)((var1.sneezeTime - 15) / 5);
+            this.head.xRot = -0.7853982F + 0.7853982F * var2;
          }
       }
 
-      if (this.sitAmount > 0.0F) {
-         this.body.xRot = ModelUtils.rotlerpRad(this.body.xRot, 1.7407963F, this.sitAmount);
-         this.head.xRot = ModelUtils.rotlerpRad(this.head.xRot, 1.5707964F, this.sitAmount);
+      if (var1.sitAmount > 0.0F) {
+         this.body.xRot = Mth.rotLerpRad(var1.sitAmount, this.body.xRot, 1.7407963F);
+         this.head.xRot = Mth.rotLerpRad(var1.sitAmount, this.head.xRot, 1.5707964F);
          this.rightFrontLeg.zRot = -0.27079642F;
          this.leftFrontLeg.zRot = 0.27079642F;
          this.rightHindLeg.zRot = 0.5707964F;
          this.leftHindLeg.zRot = -0.5707964F;
-         if (var10) {
-            this.head.xRot = 1.5707964F + 0.2F * Mth.sin(var4 * 0.6F);
-            this.rightFrontLeg.xRot = -0.4F - 0.2F * Mth.sin(var4 * 0.6F);
-            this.leftFrontLeg.xRot = -0.4F - 0.2F * Mth.sin(var4 * 0.6F);
+         if (var1.isEating) {
+            this.head.xRot = 1.5707964F + 0.2F * Mth.sin(var1.ageInTicks * 0.6F);
+            this.rightFrontLeg.xRot = -0.4F - 0.2F * Mth.sin(var1.ageInTicks * 0.6F);
+            this.leftFrontLeg.xRot = -0.4F - 0.2F * Mth.sin(var1.ageInTicks * 0.6F);
          }
 
-         if (var11) {
+         if (var1.isScared) {
             this.head.xRot = 2.1707964F;
             this.rightFrontLeg.xRot = -0.9F;
             this.leftFrontLeg.xRot = -0.9F;
@@ -90,20 +79,20 @@ public class PandaModel<T extends Panda> extends QuadrupedModel<T> {
          this.leftFrontLeg.zRot = 0.0F;
       }
 
-      if (this.lieOnBackAmount > 0.0F) {
-         this.rightHindLeg.xRot = -0.6F * Mth.sin(var4 * 0.15F);
-         this.leftHindLeg.xRot = 0.6F * Mth.sin(var4 * 0.15F);
-         this.rightFrontLeg.xRot = 0.3F * Mth.sin(var4 * 0.25F);
-         this.leftFrontLeg.xRot = -0.3F * Mth.sin(var4 * 0.25F);
-         this.head.xRot = ModelUtils.rotlerpRad(this.head.xRot, 1.5707964F, this.lieOnBackAmount);
+      if (var1.lieOnBackAmount > 0.0F) {
+         this.rightHindLeg.xRot = -0.6F * Mth.sin(var1.ageInTicks * 0.15F);
+         this.leftHindLeg.xRot = 0.6F * Mth.sin(var1.ageInTicks * 0.15F);
+         this.rightFrontLeg.xRot = 0.3F * Mth.sin(var1.ageInTicks * 0.25F);
+         this.leftFrontLeg.xRot = -0.3F * Mth.sin(var1.ageInTicks * 0.25F);
+         this.head.xRot = Mth.rotLerpRad(var1.lieOnBackAmount, this.head.xRot, 1.5707964F);
       }
 
-      if (this.rollAmount > 0.0F) {
-         this.head.xRot = ModelUtils.rotlerpRad(this.head.xRot, 2.0561945F, this.rollAmount);
-         this.rightHindLeg.xRot = -0.5F * Mth.sin(var4 * 0.5F);
-         this.leftHindLeg.xRot = 0.5F * Mth.sin(var4 * 0.5F);
-         this.rightFrontLeg.xRot = 0.5F * Mth.sin(var4 * 0.5F);
-         this.leftFrontLeg.xRot = -0.5F * Mth.sin(var4 * 0.5F);
+      if (var1.rollAmount > 0.0F) {
+         this.head.xRot = Mth.rotLerpRad(var1.rollAmount, this.head.xRot, 2.0561945F);
+         this.rightHindLeg.xRot = -0.5F * Mth.sin(var1.ageInTicks * 0.5F);
+         this.leftHindLeg.xRot = 0.5F * Mth.sin(var1.ageInTicks * 0.5F);
+         this.rightFrontLeg.xRot = 0.5F * Mth.sin(var1.ageInTicks * 0.5F);
+         this.leftFrontLeg.xRot = -0.5F * Mth.sin(var1.ageInTicks * 0.5F);
       }
 
    }

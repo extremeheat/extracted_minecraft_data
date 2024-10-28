@@ -11,8 +11,8 @@ import java.util.Iterator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
-import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.commands.arguments.ResourceKeyArgument;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -28,12 +28,12 @@ public class RecipeCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("recipe").requires((var0x) -> {
          return var0x.hasPermission(2);
-      })).then(Commands.literal("give").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceLocationArgument.id()).suggests(SuggestionProviders.ALL_RECIPES).executes((var0x) -> {
-         return giveRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Collections.singleton(ResourceLocationArgument.getRecipe(var0x, "recipe")));
+      })).then(Commands.literal("give").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((var0x) -> {
+         return giveRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(var0x, "recipe")));
       }))).then(Commands.literal("*").executes((var0x) -> {
          return giveRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ((CommandSourceStack)var0x.getSource()).getServer().getRecipeManager().getRecipes());
-      }))))).then(Commands.literal("take").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceLocationArgument.id()).suggests(SuggestionProviders.ALL_RECIPES).executes((var0x) -> {
-         return takeRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Collections.singleton(ResourceLocationArgument.getRecipe(var0x, "recipe")));
+      }))))).then(Commands.literal("take").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((var0x) -> {
+         return takeRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(var0x, "recipe")));
       }))).then(Commands.literal("*").executes((var0x) -> {
          return takeRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ((CommandSourceStack)var0x.getSource()).getServer().getRecipeManager().getRecipes());
       })))));

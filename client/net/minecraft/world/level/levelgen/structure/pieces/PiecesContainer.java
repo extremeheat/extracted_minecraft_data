@@ -67,7 +67,7 @@ public record PiecesContainer(List<StructurePiece> pieces) {
          String var5 = var4.getString("id").toLowerCase(Locale.ROOT);
          ResourceLocation var6 = ResourceLocation.parse(var5);
          ResourceLocation var7 = (ResourceLocation)RENAMES.getOrDefault(var6, var6);
-         StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.get(var7);
+         StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.getValue(var7);
          if (var8 == null) {
             LOGGER.error("Unknown structure piece id: {}", var7);
          } else {

@@ -24,7 +24,7 @@ public class OfferFlowerGoal extends Goal {
       } else if (this.golem.getRandom().nextInt(8000) != 0) {
          return false;
       } else {
-         this.villager = (Villager)this.golem.level().getNearestEntity(Villager.class, OFFER_TARGER_CONTEXT, this.golem, this.golem.getX(), this.golem.getY(), this.golem.getZ(), this.golem.getBoundingBox().inflate(6.0, 2.0, 6.0));
+         this.villager = (Villager)getServerLevel(this.golem).getNearestEntity(Villager.class, OFFER_TARGER_CONTEXT, this.golem, this.golem.getX(), this.golem.getY(), this.golem.getZ(), this.golem.getBoundingBox().inflate(6.0, 2.0, 6.0));
          return this.villager != null;
       }
    }

@@ -25,7 +25,6 @@ public class AmethystBlock extends Block {
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       if (!var1.isClientSide) {
          BlockPos var5 = var3.getBlockPos();
-         var1.playSound((Player)null, (BlockPos)var5, SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.BLOCKS, 1.0F, 0.5F + var1.random.nextFloat() * 1.2F);
          var1.playSound((Player)null, (BlockPos)var5, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0F, 0.5F + var1.random.nextFloat() * 1.2F);
       }
 

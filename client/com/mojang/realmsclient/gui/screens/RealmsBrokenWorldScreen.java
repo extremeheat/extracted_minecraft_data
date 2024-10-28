@@ -23,11 +23,13 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.slf4j.Logger;
 
@@ -214,22 +216,16 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
          var13 = RealmsTextureManager.worldTemplate(String.valueOf(this.serverData.minigameId), this.serverData.minigameImage);
       }
 
-      if (!var6) {
-         var1.setColor(0.56F, 0.56F, 0.56F, 1.0F);
-      } else if (var6) {
-         float var14 = 0.9F + 0.1F * Mth.cos((float)this.animTick * 0.2F);
-         var1.setColor(var14, var14, var14, 1.0F);
-      }
-
-      var1.blit(var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74);
       if (var6) {
-         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+         float var14 = 0.9F + 0.1F * Mth.cos((float)this.animTick * 0.2F);
+         var1.blit(RenderType::guiTextured, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
       } else {
-         var1.setColor(0.56F, 0.56F, 0.56F, 1.0F);
+         int var15 = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
+         var1.blit(RenderType::guiTextured, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
       }
 
-      var1.blitSprite(SLOT_FRAME_SPRITE, var2, var3, 80, 80);
       var1.drawCenteredString(this.font, (String)var7, var2 + 40, var3 + 66, -1);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 }

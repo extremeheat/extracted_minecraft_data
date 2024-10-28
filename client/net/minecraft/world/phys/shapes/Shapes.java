@@ -203,25 +203,6 @@ public final class Shapes {
       }
    }
 
-   public static VoxelShape getFaceShape(VoxelShape var0, Direction var1) {
-      if (var0 == block()) {
-         return block();
-      } else {
-         Direction.Axis var4 = var1.getAxis();
-         boolean var2;
-         int var3;
-         if (var1.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
-            var2 = DoubleMath.fuzzyEquals(var0.max(var4), 1.0, 1.0E-7);
-            var3 = var0.shape.getSize(var4) - 1;
-         } else {
-            var2 = DoubleMath.fuzzyEquals(var0.min(var4), 0.0, 1.0E-7);
-            var3 = 0;
-         }
-
-         return (VoxelShape)(!var2 ? empty() : new SliceShape(var0, var4, var3));
-      }
-   }
-
    public static boolean mergedFaceOccludes(VoxelShape var0, VoxelShape var1, Direction var2) {
       if (var0 != block() && var1 != block()) {
          Direction.Axis var3 = var2.getAxis();

@@ -26,8 +26,8 @@ public abstract class AbstractIllager extends Raider {
       return var1 instanceof AbstractVillager && var1.isBaby() ? false : super.canAttack(var1);
    }
 
-   public boolean isAlliedTo(Entity var1) {
-      if (super.isAlliedTo(var1)) {
+   protected boolean considersEntityAsAlly(Entity var1) {
+      if (super.considersEntityAsAlly(var1)) {
          return true;
       } else if (!var1.getType().is(EntityTypeTags.ILLAGER_FRIENDS)) {
          return false;

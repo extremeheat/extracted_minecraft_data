@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.player.Player;
@@ -65,7 +66,7 @@ public class SnifferEggBlock extends Block {
       } else {
          var2.playSound((Player)null, var3, SoundEvents.SNIFFER_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
          var2.destroyBlock(var3, false);
-         Sniffer var5 = (Sniffer)EntityType.SNIFFER.create(var2);
+         Sniffer var5 = (Sniffer)EntityType.SNIFFER.create(var2, EntitySpawnReason.BREEDING);
          if (var5 != null) {
             Vec3 var6 = var3.getCenter();
             var5.setBaby(true);

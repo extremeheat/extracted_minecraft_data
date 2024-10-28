@@ -30,12 +30,13 @@ import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.Fireworks;
+import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
@@ -179,6 +180,19 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CHERRY_TRAPDOOR);
          var1.accept((ItemLike)Items.CHERRY_PRESSURE_PLATE);
          var1.accept((ItemLike)Items.CHERRY_BUTTON);
+         var1.accept((ItemLike)Items.PALE_OAK_LOG);
+         var1.accept((ItemLike)Items.PALE_OAK_WOOD);
+         var1.accept((ItemLike)Items.STRIPPED_PALE_OAK_LOG);
+         var1.accept((ItemLike)Items.STRIPPED_PALE_OAK_WOOD);
+         var1.accept((ItemLike)Items.PALE_OAK_PLANKS);
+         var1.accept((ItemLike)Items.PALE_OAK_STAIRS);
+         var1.accept((ItemLike)Items.PALE_OAK_SLAB);
+         var1.accept((ItemLike)Items.PALE_OAK_FENCE);
+         var1.accept((ItemLike)Items.PALE_OAK_FENCE_GATE);
+         var1.accept((ItemLike)Items.PALE_OAK_DOOR);
+         var1.accept((ItemLike)Items.PALE_OAK_TRAPDOOR);
+         var1.accept((ItemLike)Items.PALE_OAK_PRESSURE_PLATE);
+         var1.accept((ItemLike)Items.PALE_OAK_BUTTON);
          var1.accept((ItemLike)Items.BAMBOO_BLOCK);
          var1.accept((ItemLike)Items.STRIPPED_BAMBOO_BLOCK);
          var1.accept((ItemLike)Items.BAMBOO_PLANKS);
@@ -705,6 +719,9 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.SNOW);
          var1.accept((ItemLike)Items.MOSS_BLOCK);
          var1.accept((ItemLike)Items.MOSS_CARPET);
+         var1.accept((ItemLike)Items.PALE_MOSS_BLOCK);
+         var1.accept((ItemLike)Items.PALE_MOSS_CARPET);
+         var1.accept((ItemLike)Items.PALE_HANGING_MOSS);
          var1.accept((ItemLike)Items.STONE);
          var1.accept((ItemLike)Items.DEEPSLATE);
          var1.accept((ItemLike)Items.GRANITE);
@@ -767,6 +784,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MANGROVE_ROOTS);
          var1.accept((ItemLike)Items.MUDDY_MANGROVE_ROOTS);
          var1.accept((ItemLike)Items.CHERRY_LOG);
+         var1.accept((ItemLike)Items.PALE_OAK_LOG);
          var1.accept((ItemLike)Items.MUSHROOM_STEM);
          var1.accept((ItemLike)Items.CRIMSON_STEM);
          var1.accept((ItemLike)Items.WARPED_STEM);
@@ -778,6 +796,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.DARK_OAK_LEAVES);
          var1.accept((ItemLike)Items.MANGROVE_LEAVES);
          var1.accept((ItemLike)Items.CHERRY_LEAVES);
+         var1.accept((ItemLike)Items.PALE_OAK_LEAVES);
          var1.accept((ItemLike)Items.AZALEA_LEAVES);
          var1.accept((ItemLike)Items.FLOWERING_AZALEA_LEAVES);
          var1.accept((ItemLike)Items.BROWN_MUSHROOM_BLOCK);
@@ -793,6 +812,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.DARK_OAK_SAPLING);
          var1.accept((ItemLike)Items.MANGROVE_PROPAGULE);
          var1.accept((ItemLike)Items.CHERRY_SAPLING);
+         var1.accept((ItemLike)Items.PALE_OAK_SAPLING);
          var1.accept((ItemLike)Items.AZALEA);
          var1.accept((ItemLike)Items.FLOWERING_AZALEA);
          var1.accept((ItemLike)Items.BROWN_MUSHROOM);
@@ -1002,6 +1022,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MANGROVE_HANGING_SIGN);
          var1.accept((ItemLike)Items.CHERRY_SIGN);
          var1.accept((ItemLike)Items.CHERRY_HANGING_SIGN);
+         var1.accept((ItemLike)Items.PALE_OAK_SIGN);
+         var1.accept((ItemLike)Items.PALE_OAK_HANGING_SIGN);
          var1.accept((ItemLike)Items.BAMBOO_SIGN);
          var1.accept((ItemLike)Items.BAMBOO_HANGING_SIGN);
          var1.accept((ItemLike)Items.CRIMSON_SIGN);
@@ -1078,7 +1100,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.PURPLE_BANNER);
          var1.accept((ItemLike)Items.MAGENTA_BANNER);
          var1.accept((ItemLike)Items.PINK_BANNER);
-         var1.accept(Raid.getLeaderBannerInstance(var0x.holders().lookupOrThrow(Registries.BANNER_PATTERN)));
+         var1.accept(Raid.getOminousBannerInstance(var0x.holders().lookupOrThrow(Registries.BANNER_PATTERN)));
          var1.accept((ItemLike)Items.SKELETON_SKULL);
          var1.accept((ItemLike)Items.WITHER_SKELETON_SKULL);
          var1.accept((ItemLike)Items.PLAYER_HEAD);
@@ -1234,10 +1256,23 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.BRUSH);
          var1.accept((ItemLike)Items.NAME_TAG);
          var1.accept((ItemLike)Items.LEAD);
-         if (var0x.enabledFeatures().contains(FeatureFlags.BUNDLE)) {
-            var1.accept((ItemLike)Items.BUNDLE);
-         }
-
+         var1.accept((ItemLike)Items.BUNDLE);
+         var1.accept((ItemLike)Items.WHITE_BUNDLE);
+         var1.accept((ItemLike)Items.LIGHT_GRAY_BUNDLE);
+         var1.accept((ItemLike)Items.GRAY_BUNDLE);
+         var1.accept((ItemLike)Items.BLACK_BUNDLE);
+         var1.accept((ItemLike)Items.BROWN_BUNDLE);
+         var1.accept((ItemLike)Items.RED_BUNDLE);
+         var1.accept((ItemLike)Items.ORANGE_BUNDLE);
+         var1.accept((ItemLike)Items.YELLOW_BUNDLE);
+         var1.accept((ItemLike)Items.LIME_BUNDLE);
+         var1.accept((ItemLike)Items.GREEN_BUNDLE);
+         var1.accept((ItemLike)Items.CYAN_BUNDLE);
+         var1.accept((ItemLike)Items.LIGHT_BLUE_BUNDLE);
+         var1.accept((ItemLike)Items.BLUE_BUNDLE);
+         var1.accept((ItemLike)Items.PURPLE_BUNDLE);
+         var1.accept((ItemLike)Items.MAGENTA_BUNDLE);
+         var1.accept((ItemLike)Items.PINK_BUNDLE);
          var1.accept((ItemLike)Items.COMPASS);
          var1.accept((ItemLike)Items.RECOVERY_COMPASS);
          var1.accept((ItemLike)Items.CLOCK);
@@ -1268,6 +1303,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MANGROVE_CHEST_BOAT);
          var1.accept((ItemLike)Items.CHERRY_BOAT);
          var1.accept((ItemLike)Items.CHERRY_CHEST_BOAT);
+         var1.accept((ItemLike)Items.PALE_OAK_BOAT);
+         var1.accept((ItemLike)Items.PALE_OAK_CHEST_BOAT);
          var1.accept((ItemLike)Items.BAMBOO_RAFT);
          var1.accept((ItemLike)Items.BAMBOO_CHEST_RAFT);
          var1.accept((ItemLike)Items.RAIL);
@@ -1410,7 +1447,7 @@ public class CreativeModeTabs {
          generateSuspiciousStews(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
          var1.accept((ItemLike)Items.MILK_BUCKET);
          var1.accept((ItemLike)Items.HONEY_BOTTLE);
-         generateOminousVials(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+         generateOminousBottles(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
          var0x.holders().lookup(Registries.POTION).ifPresent((var2) -> {
             generatePotionEffectTypes(var1, var2, Items.POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
             generatePotionEffectTypes(var1, var2, Items.SPLASH_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
@@ -1511,6 +1548,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.GHAST_TEAR);
          var1.accept((ItemLike)Items.TURTLE_HELMET);
          var1.accept((ItemLike)Items.PHANTOM_MEMBRANE);
+         var1.accept((ItemLike)Items.FIELD_MASONED_BANNER_PATTERN);
+         var1.accept((ItemLike)Items.BORDURE_INDENTED_BANNER_PATTERN);
          var1.accept((ItemLike)Items.FLOWER_BANNER_PATTERN);
          var1.accept((ItemLike)Items.CREEPER_BANNER_PATTERN);
          var1.accept((ItemLike)Items.SKULL_BANNER_PATTERN);
@@ -1574,6 +1613,7 @@ public class CreativeModeTabs {
       }).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.SPAWNER);
          var1.accept((ItemLike)Items.TRIAL_SPAWNER);
+         var1.accept((ItemLike)Items.CREAKING_HEART);
          var1.accept((ItemLike)Items.ALLAY_SPAWN_EGG);
          var1.accept((ItemLike)Items.ARMADILLO_SPAWN_EGG);
          var1.accept((ItemLike)Items.AXOLOTL_SPAWN_EGG);
@@ -1588,6 +1628,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CHICKEN_SPAWN_EGG);
          var1.accept((ItemLike)Items.COD_SPAWN_EGG);
          var1.accept((ItemLike)Items.COW_SPAWN_EGG);
+         var1.accept((ItemLike)Items.CREAKING_SPAWN_EGG);
          var1.accept((ItemLike)Items.CREEPER_SPAWN_EGG);
          var1.accept((ItemLike)Items.DOLPHIN_SPAWN_EGG);
          var1.accept((ItemLike)Items.DONKEY_SPAWN_EGG);
@@ -1696,7 +1737,7 @@ public class CreativeModeTabs {
          }
 
          ResourceKey var2 = (ResourceKey)var1.next();
-         CreativeModeTab var3 = (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(var2);
+         CreativeModeTab var3 = (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(var2);
          var4 = var3.getDisplayName().getString();
          var5 = (String)var0.put(Pair.of(var3.row(), var3.column()), var4);
       } while(var5 == null);
@@ -1705,7 +1746,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab getDefaultTab() {
-      return (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(BUILDING_BLOCKS);
+      return (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(BUILDING_BLOCKS);
    }
 
    private static void generatePotionEffectTypes(CreativeModeTab.Output var0, HolderLookup<Potion> var1, Item var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4) {
@@ -1720,7 +1761,7 @@ public class CreativeModeTabs {
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
       var1.listElements().map((var0x) -> {
-         return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel()));
+         return EnchantmentHelper.createBook(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel()));
       }).forEach((var2x) -> {
          var0.accept(var2x, var2);
       });
@@ -1729,7 +1770,7 @@ public class CreativeModeTabs {
    private static void generateEnchantmentBookTypesAllLevels(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
       var1.listElements().flatMap((var0x) -> {
          return IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel()).mapToObj((var1) -> {
-            return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var1));
+            return EnchantmentHelper.createBook(new EnchantmentInstance(var0x, var1));
          });
       }).forEach((var2x) -> {
          var0.accept(var2x, var2);
@@ -1761,10 +1802,10 @@ public class CreativeModeTabs {
       var0.acceptAll(var3, var1);
    }
 
-   private static void generateOminousVials(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
+   private static void generateOminousBottles(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
       for(int var2 = 0; var2 <= 4; ++var2) {
          ItemStack var3 = new ItemStack(Items.OMINOUS_BOTTLE);
-         var3.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var2);
+         var3.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, new OminousBottleAmplifier(var2));
          var0.accept(var3, var1);
       }
 
@@ -1808,7 +1849,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab searchTab() {
-      return (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(SEARCH);
+      return (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(SEARCH);
    }
 
    private static void buildAllTabContents(CreativeModeTab.ItemDisplayParameters var0) {

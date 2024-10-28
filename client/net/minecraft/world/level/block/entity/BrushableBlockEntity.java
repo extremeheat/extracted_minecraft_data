@@ -56,56 +56,56 @@ public class BrushableBlockEntity extends BlockEntity {
       this.item = ItemStack.EMPTY;
    }
 
-   public boolean brush(long var1, Player var3, Direction var4) {
+   public boolean brush(long var1, ServerLevel var3, Player var4, Direction var5, ItemStack var6) {
       if (this.hitDirection == null) {
-         this.hitDirection = var4;
+         this.hitDirection = var5;
       }
 
       this.brushCountResetsAtTick = var1 + 40L;
-      if (var1 >= this.coolDownEndsAtTick && this.level instanceof ServerLevel) {
+      if (var1 < this.coolDownEndsAtTick) {
+         return false;
+      } else {
          this.coolDownEndsAtTick = var1 + 10L;
-         this.unpackLootTable(var3);
-         int var5 = this.getCompletionState();
+         this.unpackLootTable(var3, var4, var6);
+         int var7 = this.getCompletionState();
          if (++this.brushCount >= 10) {
-            this.brushingCompleted(var3);
+            this.brushingCompleted(var3, var4, var6);
             return true;
          } else {
-            this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
-            int var6 = this.getCompletionState();
-            if (var5 != var6) {
-               BlockState var7 = this.getBlockState();
-               BlockState var8 = (BlockState)var7.setValue(BlockStateProperties.DUSTED, var6);
-               this.level.setBlock(this.getBlockPos(), var8, 3);
+            var3.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
+            int var8 = this.getCompletionState();
+            if (var7 != var8) {
+               BlockState var9 = this.getBlockState();
+               BlockState var10 = (BlockState)var9.setValue(BlockStateProperties.DUSTED, var8);
+               var3.setBlock(this.getBlockPos(), var10, 3);
             }
 
             return false;
          }
-      } else {
-         return false;
       }
    }
 
-   public void unpackLootTable(Player var1) {
-      if (this.lootTable != null && this.level != null && !this.level.isClientSide() && this.level.getServer() != null) {
-         LootTable var2 = this.level.getServer().reloadableRegistries().getLootTable(this.lootTable);
-         if (var1 instanceof ServerPlayer) {
-            ServerPlayer var3 = (ServerPlayer)var1;
-            CriteriaTriggers.GENERATE_LOOT.trigger(var3, this.lootTable);
+   private void unpackLootTable(ServerLevel var1, Player var2, ItemStack var3) {
+      if (this.lootTable != null) {
+         LootTable var4 = var1.getServer().reloadableRegistries().getLootTable(this.lootTable);
+         if (var2 instanceof ServerPlayer) {
+            ServerPlayer var5 = (ServerPlayer)var2;
+            CriteriaTriggers.GENERATE_LOOT.trigger(var5, this.lootTable);
          }
 
-         LootParams var5 = (new LootParams.Builder((ServerLevel)this.level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition)).withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1).create(LootContextParamSets.CHEST);
-         ObjectArrayList var4 = var2.getRandomItems(var5, this.lootTableSeed);
+         LootParams var7 = (new LootParams.Builder(var1)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition)).withLuck(var2.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var2).withParameter(LootContextParams.TOOL, var3).create(LootContextParamSets.ARCHAEOLOGY);
+         ObjectArrayList var6 = var4.getRandomItems(var7, this.lootTableSeed);
          ItemStack var10001;
-         switch (var4.size()) {
+         switch (var6.size()) {
             case 0:
                var10001 = ItemStack.EMPTY;
                break;
             case 1:
-               var10001 = (ItemStack)var4.get(0);
+               var10001 = (ItemStack)var6.getFirst();
                break;
             default:
-               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var4.size());
-               var10001 = (ItemStack)var4.get(0);
+               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var6.size());
+               var10001 = (ItemStack)var6.getFirst();
          }
 
          this.item = var10001;
@@ -114,68 +114,61 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   private void brushingCompleted(Player var1) {
-      if (this.level != null && this.level.getServer() != null) {
-         this.dropContent(var1);
-         BlockState var2 = this.getBlockState();
-         this.level.levelEvent(3008, this.getBlockPos(), Block.getId(var2));
-         Block var3 = this.getBlockState().getBlock();
-         Block var4;
-         if (var3 instanceof BrushableBlock) {
-            BrushableBlock var5 = (BrushableBlock)var3;
-            var4 = var5.getTurnsInto();
-         } else {
-            var4 = Blocks.AIR;
-         }
-
-         this.level.setBlock(this.worldPosition, var4.defaultBlockState(), 3);
+   private void brushingCompleted(ServerLevel var1, Player var2, ItemStack var3) {
+      this.dropContent(var1, var2, var3);
+      BlockState var4 = this.getBlockState();
+      var1.levelEvent(3008, this.getBlockPos(), Block.getId(var4));
+      Block var5 = this.getBlockState().getBlock();
+      Block var6;
+      if (var5 instanceof BrushableBlock var7) {
+         var6 = var7.getTurnsInto();
+      } else {
+         var6 = Blocks.AIR;
       }
+
+      var1.setBlock(this.worldPosition, var6.defaultBlockState(), 3);
    }
 
-   private void dropContent(Player var1) {
-      if (this.level != null && this.level.getServer() != null) {
-         this.unpackLootTable(var1);
-         if (!this.item.isEmpty()) {
-            double var2 = (double)EntityType.ITEM.getWidth();
-            double var4 = 1.0 - var2;
-            double var6 = var2 / 2.0;
-            Direction var8 = (Direction)Objects.requireNonNullElse(this.hitDirection, Direction.UP);
-            BlockPos var9 = this.worldPosition.relative((Direction)var8, 1);
-            double var10 = (double)var9.getX() + 0.5 * var4 + var6;
-            double var12 = (double)var9.getY() + 0.5 + (double)(EntityType.ITEM.getHeight() / 2.0F);
-            double var14 = (double)var9.getZ() + 0.5 * var4 + var6;
-            ItemEntity var16 = new ItemEntity(this.level, var10, var12, var14, this.item.split(this.level.random.nextInt(21) + 10));
-            var16.setDeltaMovement(Vec3.ZERO);
-            this.level.addFreshEntity(var16);
-            this.item = ItemStack.EMPTY;
-         }
-
+   private void dropContent(ServerLevel var1, Player var2, ItemStack var3) {
+      this.unpackLootTable(var1, var2, var3);
+      if (!this.item.isEmpty()) {
+         double var4 = (double)EntityType.ITEM.getWidth();
+         double var6 = 1.0 - var4;
+         double var8 = var4 / 2.0;
+         Direction var10 = (Direction)Objects.requireNonNullElse(this.hitDirection, Direction.UP);
+         BlockPos var11 = this.worldPosition.relative((Direction)var10, 1);
+         double var12 = (double)var11.getX() + 0.5 * var6 + var8;
+         double var14 = (double)var11.getY() + 0.5 + (double)(EntityType.ITEM.getHeight() / 2.0F);
+         double var16 = (double)var11.getZ() + 0.5 * var6 + var8;
+         ItemEntity var18 = new ItemEntity(var1, var12, var14, var16, this.item.split(var1.random.nextInt(21) + 10));
+         var18.setDeltaMovement(Vec3.ZERO);
+         var1.addFreshEntity(var18);
+         this.item = ItemStack.EMPTY;
       }
+
    }
 
-   public void checkReset() {
-      if (this.level != null) {
-         if (this.brushCount != 0 && this.level.getGameTime() >= this.brushCountResetsAtTick) {
-            int var1 = this.getCompletionState();
-            this.brushCount = Math.max(0, this.brushCount - 2);
-            int var2 = this.getCompletionState();
-            if (var1 != var2) {
-               this.level.setBlock(this.getBlockPos(), (BlockState)this.getBlockState().setValue(BlockStateProperties.DUSTED, var2), 3);
-            }
-
-            boolean var3 = true;
-            this.brushCountResetsAtTick = this.level.getGameTime() + 4L;
+   public void checkReset(ServerLevel var1) {
+      if (this.brushCount != 0 && var1.getGameTime() >= this.brushCountResetsAtTick) {
+         int var2 = this.getCompletionState();
+         this.brushCount = Math.max(0, this.brushCount - 2);
+         int var3 = this.getCompletionState();
+         if (var2 != var3) {
+            var1.setBlock(this.getBlockPos(), (BlockState)this.getBlockState().setValue(BlockStateProperties.DUSTED, var3), 3);
          }
 
-         if (this.brushCount == 0) {
-            this.hitDirection = null;
-            this.brushCountResetsAtTick = 0L;
-            this.coolDownEndsAtTick = 0L;
-         } else {
-            this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
-         }
-
+         boolean var4 = true;
+         this.brushCountResetsAtTick = var1.getGameTime() + 4L;
       }
+
+      if (this.brushCount == 0) {
+         this.hitDirection = null;
+         this.brushCountResetsAtTick = 0L;
+         this.coolDownEndsAtTick = 0L;
+      } else {
+         var1.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
+      }
+
    }
 
    private boolean tryLoadLootTable(CompoundTag var1) {

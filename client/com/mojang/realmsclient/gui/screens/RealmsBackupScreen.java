@@ -64,7 +64,7 @@ public class RealmsBackupScreen extends RealmsScreen {
 
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
-      this.backupList = (BackupObjectSelectionList)this.layout.addToContents(new BackupObjectSelectionList());
+      this.backupList = (BackupObjectSelectionList)this.layout.addToContents(new BackupObjectSelectionList(this));
       LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       this.downloadButton = (Button)var1.addChild(Button.builder(DOWNLOAD_LATEST, (var1x) -> {
          this.downloadClicked();
@@ -116,13 +116,9 @@ public class RealmsBackupScreen extends RealmsScreen {
                   }
 
                   if (RealmsBackupScreen.this.backupList != null) {
-                     RealmsBackupScreen.this.backupList.children().clear();
-                     Iterator var2x = RealmsBackupScreen.this.backups.iterator();
-
-                     while(var2x.hasNext()) {
-                        Backup var3 = (Backup)var2x.next();
-                        RealmsBackupScreen.this.backupList.addEntry(var3);
-                     }
+                     RealmsBackupScreen.this.backupList.replaceEntries(RealmsBackupScreen.this.backups.stream().map((var1) -> {
+                        return RealmsBackupScreen.this.new Entry(var1);
+                     }).toList());
                   }
 
                });
@@ -143,8 +139,10 @@ public class RealmsBackupScreen extends RealmsScreen {
          Minecraft var10000 = this.minecraft;
          RealmsConfigureWorldScreen var10003 = this.lastScreen.getNewScreen();
          LongRunningTask[] var10004 = new LongRunningTask[1];
-         String var10011 = this.serverData.name;
-         var10004[0] = new DownloadTask(this.serverData.id, this.slotId, var10011 + " (" + ((RealmsWorldOptions)this.serverData.slots.get(this.serverData.activeSlot)).getSlotName(this.serverData.activeSlot) + ")", this);
+         long var10009 = this.serverData.id;
+         int var10010 = this.slotId;
+         String var10011 = (String)Objects.requireNonNullElse(this.serverData.name, "");
+         var10004[0] = new DownloadTask(var10009, var10010, var10011 + " (" + ((RealmsWorldOptions)this.serverData.slots.get(this.serverData.activeSlot)).getSlotName(this.serverData.activeSlot) + ")", this);
          var10000.setScreen(new RealmsLongRunningMcoTaskScreen(var10003, var10004));
       }));
    }
@@ -152,16 +150,8 @@ public class RealmsBackupScreen extends RealmsScreen {
    private class BackupObjectSelectionList extends ContainerObjectSelectionList<Entry> {
       private static final int ITEM_HEIGHT = 36;
 
-      public BackupObjectSelectionList() {
-         super(Minecraft.getInstance(), RealmsBackupScreen.this.width, RealmsBackupScreen.this.layout.getContentHeight(), RealmsBackupScreen.this.layout.getHeaderHeight(), 36);
-      }
-
-      public void addEntry(Backup var1) {
-         this.addEntry(RealmsBackupScreen.this.new Entry(var1));
-      }
-
-      public int getMaxPosition() {
-         return this.getItemCount() * 36 + this.headerHeight;
+      public BackupObjectSelectionList(final RealmsBackupScreen var1) {
+         super(Minecraft.getInstance(), var1.width, var1.layout.getContentHeight(), var1.layout.getHeaderHeight(), 36);
       }
 
       public int getRowWidth() {

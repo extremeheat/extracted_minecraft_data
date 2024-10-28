@@ -31,10 +31,6 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
       return var2;
    }
 
-   public String getDescriptionId() {
-      return this.getOrCreateDescriptionId();
-   }
-
    protected SoundEvent getPlaceSound(BlockState var1) {
       return this.placeSound;
    }

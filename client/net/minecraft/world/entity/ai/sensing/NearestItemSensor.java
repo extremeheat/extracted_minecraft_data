@@ -33,8 +33,8 @@ public class NearestItemSensor extends Sensor<Mob> {
       });
       Objects.requireNonNull(var2);
       var4.sort(Comparator.comparingDouble(var2::distanceToSqr));
-      Stream var10000 = var4.stream().filter((var1x) -> {
-         return var2.wantsToPickUp(var1x.getItem());
+      Stream var10000 = var4.stream().filter((var2x) -> {
+         return var2.wantsToPickUp(var1, var2x.getItem());
       }).filter((var1x) -> {
          return var1x.closerThan(var2, 32.0);
       });

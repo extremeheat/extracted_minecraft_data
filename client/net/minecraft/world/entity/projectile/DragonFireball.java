@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AreaEffectCloud;
@@ -62,10 +61,6 @@ public class DragonFireball extends AbstractHurtingProjectile {
          }
 
       }
-   }
-
-   public boolean hurt(DamageSource var1, float var2) {
-      return false;
    }
 
    protected ParticleOptions getTrailParticle() {

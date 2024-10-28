@@ -1,12 +1,14 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.GhastModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.GhastRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Ghast;
 
-public class GhastRenderer extends MobRenderer<Ghast, GhastModel<Ghast>> {
+public class GhastRenderer extends MobRenderer<Ghast, GhastRenderState, GhastModel> {
    private static final ResourceLocation GHAST_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/ghast.png");
    private static final ResourceLocation GHAST_SHOOTING_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/ghast/ghast_shooting.png");
 
@@ -14,14 +16,26 @@ public class GhastRenderer extends MobRenderer<Ghast, GhastModel<Ghast>> {
       super(var1, new GhastModel(var1.bakeLayer(ModelLayers.GHAST)), 1.5F);
    }
 
-   public ResourceLocation getTextureLocation(Ghast var1) {
-      return var1.isCharging() ? GHAST_SHOOTING_LOCATION : GHAST_LOCATION;
+   public ResourceLocation getTextureLocation(GhastRenderState var1) {
+      return var1.isCharging ? GHAST_SHOOTING_LOCATION : GHAST_LOCATION;
    }
 
-   protected void scale(Ghast var1, PoseStack var2, float var3) {
-      float var4 = 1.0F;
-      float var5 = 4.5F;
-      float var6 = 4.5F;
-      var2.scale(4.5F, 4.5F, 4.5F);
+   public GhastRenderState createRenderState() {
+      return new GhastRenderState();
+   }
+
+   public void extractRenderState(Ghast var1, GhastRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.isCharging = var1.isCharging();
+   }
+
+   // $FF: synthetic method
+   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+      return this.getTextureLocation((GhastRenderState)var1);
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

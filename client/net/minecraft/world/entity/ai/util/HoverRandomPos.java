@@ -22,7 +22,7 @@ public class HoverRandomPos {
             if (var12 == null) {
                return null;
             } else {
-               var12 = RandomPos.moveUpToAboveSolid(var12, var0.getRandom().nextInt(var8 - var9 + 1) + var9, var0.level().getMaxBuildHeight(), (var1x) -> {
+               var12 = RandomPos.moveUpToAboveSolid(var12, var0.getRandom().nextInt(var8 - var9 + 1) + var9, var0.level().getMaxY(), (var1x) -> {
                   return GoalUtils.isSolid(var0, var1x);
                });
                return !GoalUtils.isWater(var0, var12) && !GoalUtils.hasMalus(var0, var12) ? var12 : null;

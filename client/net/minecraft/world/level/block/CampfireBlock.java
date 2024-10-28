@@ -3,13 +3,13 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -17,18 +17,21 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.crafting.CampfireCookingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -38,7 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -62,7 +65,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    public static final BooleanProperty LIT;
    public static final BooleanProperty SIGNAL_FIRE;
    public static final BooleanProperty WATERLOGGED;
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    private static final VoxelShape VIRTUAL_FENCE_POST;
    private static final int SMOKE_DISTANCE = 5;
    private final boolean spawnParticles;
@@ -79,22 +82,24 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(LIT, true)).setValue(SIGNAL_FIRE, false)).setValue(WATERLOGGED, false)).setValue(FACING, Direction.NORTH));
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       BlockEntity var8 = var3.getBlockEntity(var4);
       if (var8 instanceof CampfireBlockEntity var9) {
          ItemStack var10 = var5.getItemInHand(var6);
-         Optional var11 = var9.getCookableRecipe(var10);
-         if (var11.isPresent()) {
-            if (!var3.isClientSide && var9.placeFood(var5, var10, ((CampfireCookingRecipe)((RecipeHolder)var11.get()).value()).getCookingTime())) {
-               var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
-               return ItemInteractionResult.SUCCESS;
+         if (var3.recipeAccess().propertySet(RecipePropertySet.CAMPFIRE_INPUT).test(var10)) {
+            if (var3 instanceof ServerLevel) {
+               ServerLevel var11 = (ServerLevel)var3;
+               if (var9.placeFood(var11, var5, var10)) {
+                  var5.awardStat(Stats.INTERACT_WITH_CAMPFIRE);
+                  return InteractionResult.SUCCESS_SERVER;
+               }
             }
 
-            return ItemInteractionResult.CONSUME;
+            return InteractionResult.CONSUME;
          }
       }
 
-      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      return InteractionResult.TRY_WITH_EMPTY_HAND;
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
@@ -124,12 +129,12 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, var4)).setValue(SIGNAL_FIRE, this.isSmokeSource(var2.getBlockState(var3.below())))).setValue(LIT, !var4)).setValue(FACING, var1.getHorizontalDirection());
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return var2 == Direction.DOWN ? (BlockState)var1.setValue(SIGNAL_FIRE, this.isSmokeSource(var3)) : super.updateShape(var1, var2, var3, var4, var5, var6);
+      return var5 == Direction.DOWN ? (BlockState)var1.setValue(SIGNAL_FIRE, this.isSmokeSource(var7)) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    private boolean isSmokeSource(BlockState var1) {
@@ -195,8 +200,10 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
-      if (!var1.isClientSide && var4.isOnFire() && var4.mayInteract(var1, var5) && !(Boolean)var2.getValue(LIT) && !(Boolean)var2.getValue(WATERLOGGED)) {
-         var1.setBlock(var5, (BlockState)var2.setValue(BlockStateProperties.LIT, true), 11);
+      if (var1 instanceof ServerLevel var6) {
+         if (var4.isOnFire() && var4.mayInteract(var6, var5) && !(Boolean)var2.getValue(LIT) && !(Boolean)var2.getValue(WATERLOGGED)) {
+            var1.setBlock(var5, (BlockState)var2.setValue(BlockStateProperties.LIT, true), 11);
+         }
       }
 
    }
@@ -255,10 +262,17 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      if (var1.isClientSide) {
-         return (Boolean)var2.getValue(LIT) ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
+      if (var1 instanceof ServerLevel var4) {
+         if ((Boolean)var2.getValue(LIT)) {
+            RecipeManager.CachedCheck var5 = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);
+            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, (var2x, var3x, var4x, var5x) -> {
+               CampfireBlockEntity.cookTick(var4, var3x, var4x, var5x, var5);
+            });
+         } else {
+            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
+         }
       } else {
-         return (Boolean)var2.getValue(LIT) ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cookTick) : createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
+         return (Boolean)var2.getValue(LIT) ? createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::particleTick) : null;
       }
    }
 

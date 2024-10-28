@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components.tabs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +24,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -126,11 +126,9 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      RenderSystem.enableBlend();
-      var1.blit(Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
+      var1.blit(RenderType::guiTextured, Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
       int var5 = ((TabButton)this.tabButtons.get(this.tabButtons.size() - 1)).getRight();
-      var1.blit(Screen.HEADER_SEPARATOR, var5, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-      RenderSystem.disableBlend();
+      var1.blit(RenderType::guiTextured, Screen.HEADER_SEPARATOR, var5, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
       UnmodifiableIterator var6 = this.tabButtons.iterator();
 
       while(var6.hasNext()) {

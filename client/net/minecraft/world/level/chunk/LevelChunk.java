@@ -24,6 +24,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -80,14 +81,17 @@ public class LevelChunk extends ChunkAccess {
    private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
    private final LevelChunkTicks<Block> blockTicks;
    private final LevelChunkTicks<Fluid> fluidTicks;
+   private UnsavedListener unsavedListener;
 
    public LevelChunk(Level var1, ChunkPos var2) {
       this(var1, var2, UpgradeData.EMPTY, new LevelChunkTicks(), new LevelChunkTicks(), 0L, (LevelChunkSection[])null, (PostLoadProcessor)null, (BlendingData)null);
    }
 
    public LevelChunk(Level var1, ChunkPos var2, UpgradeData var3, LevelChunkTicks<Block> var4, LevelChunkTicks<Fluid> var5, long var6, @Nullable LevelChunkSection[] var8, @Nullable PostLoadProcessor var9, @Nullable BlendingData var10) {
-      super(var2, var3, var1, var1.registryAccess().registryOrThrow(Registries.BIOME), var6, var8, var10);
+      super(var2, var3, var1, var1.registryAccess().lookupOrThrow(Registries.BIOME), var6, var8, var10);
       this.tickersInLevel = Maps.newHashMap();
+      this.unsavedListener = (var0) -> {
+      };
       this.level = var1;
       this.gameEventListenerRegistrySections = new Int2ObjectOpenHashMap();
       Heightmap.Types[] var11 = Heightmap.Types.values();
@@ -133,7 +137,24 @@ public class LevelChunk extends ChunkAccess {
 
       this.skyLightSources = var2.skyLightSources;
       this.setLightCorrect(var2.isLightCorrect());
-      this.unsaved = true;
+      this.markUnsaved();
+   }
+
+   public void setUnsavedListener(UnsavedListener var1) {
+      this.unsavedListener = var1;
+      if (this.isUnsaved()) {
+         var1.setUnsaved(this.chunkPos);
+      }
+
+   }
+
+   public void markUnsaved() {
+      boolean var1 = this.isUnsaved();
+      super.markUnsaved();
+      if (!var1) {
+         this.unsavedListener.setUnsaved(this.chunkPos);
+      }
+
    }
 
    public TickContainerAccess<Block> getBlockTicks() {
@@ -144,8 +165,8 @@ public class LevelChunk extends ChunkAccess {
       return this.fluidTicks;
    }
 
-   public ChunkAccess.TicksToSave getTicksForSerialization() {
-      return new ChunkAccess.TicksToSave(this.blockTicks, this.fluidTicks);
+   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
+      return new ChunkAccess.PackedTicks(this.blockTicks.pack(var1), this.fluidTicks.pack(var1));
    }
 
    public GameEventListenerRegistry getListenerRegistry(int var1) {
@@ -266,10 +287,11 @@ public class LevelChunk extends ChunkAccess {
             boolean var12 = var5.hasOnlyAir();
             if (var6 != var12) {
                this.level.getChunkSource().getLightEngine().updateSectionStatus(var1, var12);
+               this.level.getChunkSource().onSectionEmptinessChanged(this.chunkPos.x, SectionPos.blockToSectionCoord(var4), this.chunkPos.z, var12);
             }
 
-            if (LightEngine.hasDifferentLightProperties(this, var1, var10, var2)) {
-               ProfilerFiller var13 = this.level.getProfiler();
+            if (LightEngine.hasDifferentLightProperties(var10, var2)) {
+               ProfilerFiller var13 = Profiler.get();
                var13.push("updateSkyLightSources");
                this.skyLightSources.update(this, var7, var4, var9);
                var13.popPush("queueCheckLight");
@@ -294,6 +316,7 @@ public class LevelChunk extends ChunkAccess {
                if (var2.hasBlockEntity()) {
                   BlockEntity var14 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
                   if (var14 != null && !var14.isValidBlockState(var2)) {
+                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var14.getType().builtInRegistryHolder().key().location(), var2});
                      this.removeBlockEntity(var1);
                      var14 = null;
                   }
@@ -309,7 +332,7 @@ public class LevelChunk extends ChunkAccess {
                   }
                }
 
-               this.unsaved = true;
+               this.markUnsaved();
                return var10;
             }
          }
@@ -550,37 +573,39 @@ public class LevelChunk extends ChunkAccess {
       return this.blockEntities;
    }
 
-   public void postProcessGeneration() {
-      ChunkPos var1 = this.getPos();
+   public void postProcessGeneration(ServerLevel var1) {
+      ChunkPos var2 = this.getPos();
 
-      for(int var2 = 0; var2 < this.postProcessing.length; ++var2) {
-         if (this.postProcessing[var2] != null) {
-            ShortListIterator var3 = this.postProcessing[var2].iterator();
+      for(int var3 = 0; var3 < this.postProcessing.length; ++var3) {
+         if (this.postProcessing[var3] != null) {
+            ShortListIterator var4 = this.postProcessing[var3].iterator();
 
-            while(var3.hasNext()) {
-               Short var4 = (Short)var3.next();
-               BlockPos var5 = ProtoChunk.unpackOffsetCoordinates(var4, this.getSectionYFromSectionIndex(var2), var1);
-               BlockState var6 = this.getBlockState(var5);
-               FluidState var7 = var6.getFluidState();
-               if (!var7.isEmpty()) {
-                  var7.tick(this.level, var5);
+            while(var4.hasNext()) {
+               Short var5 = (Short)var4.next();
+               BlockPos var6 = ProtoChunk.unpackOffsetCoordinates(var5, this.getSectionYFromSectionIndex(var3), var2);
+               BlockState var7 = this.getBlockState(var6);
+               FluidState var8 = var7.getFluidState();
+               if (!var8.isEmpty()) {
+                  var8.tick(var1, var6, var7);
                }
 
-               if (!(var6.getBlock() instanceof LiquidBlock)) {
-                  BlockState var8 = Block.updateFromNeighbourShapes(var6, this.level, var5);
-                  this.level.setBlock(var5, var8, 20);
+               if (!(var7.getBlock() instanceof LiquidBlock)) {
+                  BlockState var9 = Block.updateFromNeighbourShapes(var7, var1, var6);
+                  if (var9 != var7) {
+                     var1.setBlock(var6, var9, 20);
+                  }
                }
             }
 
-            this.postProcessing[var2].clear();
+            this.postProcessing[var3].clear();
          }
       }
 
-      UnmodifiableIterator var9 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
+      UnmodifiableIterator var10 = ImmutableList.copyOf(this.pendingBlockEntities.keySet()).iterator();
 
-      while(var9.hasNext()) {
-         BlockPos var10 = (BlockPos)var9.next();
-         this.getBlockEntity(var10);
+      while(var10.hasNext()) {
+         BlockPos var11 = (BlockPos)var10.next();
+         this.getBlockEntity(var11);
       }
 
       this.pendingBlockEntities.clear();
@@ -702,6 +727,11 @@ public class LevelChunk extends ChunkAccess {
       void run(LevelChunk var1);
    }
 
+   @FunctionalInterface
+   public interface UnsavedListener {
+      void setUnsaved(ChunkPos var1);
+   }
+
    public static enum EntityCreationType {
       IMMEDIATE,
       QUEUED,
@@ -765,7 +795,7 @@ public class LevelChunk extends ChunkAccess {
             BlockPos var1 = this.blockEntity.getBlockPos();
             if (LevelChunk.this.isTicking(var1)) {
                try {
-                  ProfilerFiller var2 = LevelChunk.this.level.getProfiler();
+                  ProfilerFiller var2 = Profiler.get();
                   var2.push(this::getType);
                   BlockState var6 = LevelChunk.this.getBlockState(var1);
                   if (this.blockEntity.getType().isValid(var6)) {

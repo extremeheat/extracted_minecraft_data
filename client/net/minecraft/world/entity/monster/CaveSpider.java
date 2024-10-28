@@ -1,14 +1,15 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -25,18 +26,18 @@ public class CaveSpider extends Spider {
       return Spider.createAttributes().add(Attributes.MAX_HEALTH, 12.0);
    }
 
-   public boolean doHurtTarget(Entity var1) {
-      if (super.doHurtTarget(var1)) {
-         if (var1 instanceof LivingEntity) {
-            byte var2 = 0;
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      if (super.doHurtTarget(var1, var2)) {
+         if (var2 instanceof LivingEntity) {
+            byte var3 = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var2 = 7;
+               var3 = 7;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var2 = 15;
+               var3 = 15;
             }
 
-            if (var2 > 0) {
-               ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.POISON, var2 * 20, 0), this);
+            if (var3 > 0) {
+               ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.POISON, var3 * 20, 0), this);
             }
          }
 
@@ -47,7 +48,7 @@ public class CaveSpider extends Spider {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       return var4;
    }
 

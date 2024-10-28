@@ -24,7 +24,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 public class ModelBlockRenderer {
    private static final int FACE_CUBIC = 0;
@@ -41,8 +40,7 @@ public class ModelBlockRenderer {
 
    public void tesselateBlock(BlockAndTintGetter var1, BakedModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, RandomSource var8, long var9, int var11) {
       boolean var12 = Minecraft.useAmbientOcclusion() && var3.getLightEmission() == 0 && var2.useAmbientOcclusion();
-      Vec3 var13 = var3.getOffset(var1, var4);
-      var5.translate(var13.x, var13.y, var13.z);
+      var5.translate(var3.getOffset(var4));
 
       try {
          if (var12) {
@@ -51,12 +49,12 @@ public class ModelBlockRenderer {
             this.tesselateWithoutAO(var1, var2, var3, var4, var5, var6, var7, var8, var9, var11);
          }
 
-      } catch (Throwable var17) {
-         CrashReport var15 = CrashReport.forThrowable(var17, "Tesselating block model");
-         CrashReportCategory var16 = var15.addCategory("Block model being tesselated");
-         CrashReportCategory.populateBlockDetails(var16, var1, var4, var3);
-         var16.setDetail("Using AO", (Object)var12);
-         throw new ReportedException(var15);
+      } catch (Throwable var16) {
+         CrashReport var14 = CrashReport.forThrowable(var16, "Tesselating block model");
+         CrashReportCategory var15 = var14.addCategory("Block model being tesselated");
+         CrashReportCategory.populateBlockDetails(var15, var1, var4, var3);
+         var15.setDetail("Using AO", (Object)var12);
+         throw new ReportedException(var14);
       }
    }
 
@@ -74,7 +72,7 @@ public class ModelBlockRenderer {
          List var20 = var2.getQuads(var3, var19, var8);
          if (!var20.isEmpty()) {
             var15.setWithOffset(var4, (Direction)var19);
-            if (!var7 || Block.shouldRenderFace(var3, var1, var4, var19, var15)) {
+            if (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var15), var19)) {
                this.renderModelFaceAO(var1, var3, var4, var5, var6, var20, var12, var13, var14, var11);
             }
          }
@@ -100,7 +98,7 @@ public class ModelBlockRenderer {
          List var18 = var2.getQuads(var3, var17, var8);
          if (!var18.isEmpty()) {
             var13.setWithOffset(var4, (Direction)var17);
-            if (!var7 || Block.shouldRenderFace(var3, var1, var4, var17, var13)) {
+            if (!var7 || Block.shouldRenderFace(var3, var1.getBlockState(var13), var17)) {
                int var19 = LevelRenderer.getLightColor(var1, var3, var13);
                this.renderModelFaceFlat(var1, var3, var4, var19, var11, false, var5, var6, var18, var12);
             }
@@ -304,13 +302,13 @@ public class ModelBlockRenderer {
          int var22 = var11.getLightColor(var21, var1, var10);
          float var23 = var11.getShadeBrightness(var21, var1, var10);
          BlockState var24 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[0]).move(var4));
-         boolean var25 = !var24.isViewBlocking(var1, var10) || var24.getLightBlock(var1, var10) == 0;
+         boolean var25 = !var24.isViewBlocking(var1, var10) || var24.getLightBlock() == 0;
          BlockState var26 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[1]).move(var4));
-         boolean var27 = !var26.isViewBlocking(var1, var10) || var26.getLightBlock(var1, var10) == 0;
+         boolean var27 = !var26.isViewBlocking(var1, var10) || var26.getLightBlock() == 0;
          BlockState var28 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[2]).move(var4));
-         boolean var29 = !var28.isViewBlocking(var1, var10) || var28.getLightBlock(var1, var10) == 0;
+         boolean var29 = !var28.isViewBlocking(var1, var10) || var28.getLightBlock() == 0;
          BlockState var30 = var1.getBlockState(var10.setWithOffset(var8, (Direction)var9.corners[3]).move(var4));
-         boolean var31 = !var30.isViewBlocking(var1, var10) || var30.getLightBlock(var1, var10) == 0;
+         boolean var31 = !var30.isViewBlocking(var1, var10) || var30.getLightBlock() == 0;
          float var32;
          int var36;
          BlockState var40;
@@ -363,7 +361,7 @@ public class ModelBlockRenderer {
          int var68 = var11.getLightColor(var2, var1, var3);
          var10.setWithOffset(var3, (Direction)var4);
          BlockState var41 = var1.getBlockState(var10);
-         if (var6.get(0) || !var41.isSolidRender(var1, var10)) {
+         if (var6.get(0) || !var41.isSolidRender()) {
             var68 = var11.getLightColor(var41, var1, var10);
          }
 
@@ -394,10 +392,10 @@ public class ModelBlockRenderer {
             float var61 = var5[var9.vert3Weights[2].shape] * var5[var9.vert3Weights[3].shape];
             float var62 = var5[var9.vert3Weights[4].shape] * var5[var9.vert3Weights[5].shape];
             float var63 = var5[var9.vert3Weights[6].shape] * var5[var9.vert3Weights[7].shape];
-            this.brightness[var43.vert0] = var44 * var48 + var45 * var49 + var46 * var50 + var47 * var51;
-            this.brightness[var43.vert1] = var44 * var52 + var45 * var53 + var46 * var54 + var47 * var55;
-            this.brightness[var43.vert2] = var44 * var56 + var45 * var57 + var46 * var58 + var47 * var59;
-            this.brightness[var43.vert3] = var44 * var60 + var45 * var61 + var46 * var62 + var47 * var63;
+            this.brightness[var43.vert0] = Math.clamp(var44 * var48 + var45 * var49 + var46 * var50 + var47 * var51, 0.0F, 1.0F);
+            this.brightness[var43.vert1] = Math.clamp(var44 * var52 + var45 * var53 + var46 * var54 + var47 * var55, 0.0F, 1.0F);
+            this.brightness[var43.vert2] = Math.clamp(var44 * var56 + var45 * var57 + var46 * var58 + var47 * var59, 0.0F, 1.0F);
+            this.brightness[var43.vert3] = Math.clamp(var44 * var60 + var45 * var61 + var46 * var62 + var47 * var63, 0.0F, 1.0F);
             int var64 = this.blend(var22, var13, var37, var68);
             int var65 = this.blend(var19, var13, var36, var68);
             int var66 = this.blend(var19, var16, var38, var68);

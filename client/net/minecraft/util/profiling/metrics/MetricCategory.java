@@ -3,7 +3,7 @@ package net.minecraft.util.profiling.metrics;
 public enum MetricCategory {
    PATH_FINDING("pathfinding"),
    EVENT_LOOPS("event-loops"),
-   MAIL_BOXES("mailboxes"),
+   CONSECUTIVE_EXECUTORS("consecutive-executors"),
    TICK_LOOP("ticking"),
    JVM("jvm"),
    CHUNK_RENDERING("chunk rendering"),
@@ -23,6 +23,6 @@ public enum MetricCategory {
 
    // $FF: synthetic method
    private static MetricCategory[] $values() {
-      return new MetricCategory[]{PATH_FINDING, EVENT_LOOPS, MAIL_BOXES, TICK_LOOP, JVM, CHUNK_RENDERING, CHUNK_RENDERING_DISPATCHING, CPU, GPU};
+      return new MetricCategory[]{PATH_FINDING, EVENT_LOOPS, CONSECUTIVE_EXECUTORS, TICK_LOOP, JVM, CHUNK_RENDERING, CHUNK_RENDERING_DISPATCHING, CPU, GPU};
    }
 }

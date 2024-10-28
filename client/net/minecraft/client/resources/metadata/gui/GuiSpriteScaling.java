@@ -55,16 +55,17 @@ public interface GuiSpriteScaling {
       }
    }
 
-   public static record NineSlice(int width, int height, Border border) implements GuiSpriteScaling {
+   public static record NineSlice(int width, int height, Border border, boolean stretchInner) implements GuiSpriteScaling {
       public static final MapCodec<NineSlice> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(NineSlice::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(NineSlice::height), GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(NineSlice::border)).apply(var0, NineSlice::new);
+         return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(NineSlice::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(NineSlice::height), GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(NineSlice::border), Codec.BOOL.optionalFieldOf("stretch_inner", false).forGetter(NineSlice::stretchInner)).apply(var0, NineSlice::new);
       }).validate(NineSlice::validate);
 
-      public NineSlice(int var1, int var2, Border var3) {
+      public NineSlice(int var1, int var2, Border var3, boolean var4) {
          super();
          this.width = var1;
          this.height = var2;
          this.border = var3;
+         this.stretchInner = var4;
       }
 
       private static DataResult<NineSlice> validate(NineSlice var0) {
@@ -96,6 +97,10 @@ public interface GuiSpriteScaling {
 
       public Border border() {
          return this.border;
+      }
+
+      public boolean stretchInner() {
+         return this.stretchInner;
       }
 
       public static record Border(int left, int top, int right, int bottom) {

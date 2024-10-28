@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.tags.TagKey;
@@ -197,7 +198,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return super.getTeam();
    }
 
-   public boolean isAlliedTo(Entity var1) {
+   protected boolean considersEntityAsAlly(Entity var1) {
       if (this.isTame()) {
          LivingEntity var2 = this.getOwner();
          if (var1 == var2) {
@@ -205,16 +206,23 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          }
 
          if (var2 != null) {
-            return var2.isAlliedTo(var1);
+            return var2.considersEntityAsAlly(var1);
          }
       }
 
-      return super.isAlliedTo(var1);
+      return super.considersEntityAsAlly(var1);
    }
 
    public void die(DamageSource var1) {
-      if (!this.level().isClientSide && this.level().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES) && this.getOwner() instanceof ServerPlayer) {
-         this.getOwner().sendSystemMessage(this.getCombatTracker().getDeathMessage());
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         if (var2.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES)) {
+            LivingEntity var4 = this.getOwner();
+            if (var4 instanceof ServerPlayer) {
+               ServerPlayer var5 = (ServerPlayer)var4;
+               var5.sendSystemMessage(this.getCombatTracker().getDeathMessage());
+            }
+         }
       }
 
       super.die(var1);

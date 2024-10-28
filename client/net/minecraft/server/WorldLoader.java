@@ -5,7 +5,9 @@ import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Stream;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryDataLoader;
@@ -14,6 +16,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.tags.TagLoader;
 import net.minecraft.world.level.WorldDataConfiguration;
 import org.slf4j.Logger;
 
@@ -29,34 +32,28 @@ public class WorldLoader {
          Pair var5 = var0.packConfig.createResourceManager();
          CloseableResourceManager var6 = (CloseableResourceManager)var5.getSecond();
          LayeredRegistryAccess var7 = RegistryLayer.createRegistryAccess();
-         LayeredRegistryAccess var8 = loadAndReplaceLayer(var6, var7, RegistryLayer.WORLDGEN, RegistryDataLoader.WORLDGEN_REGISTRIES);
-         RegistryAccess.Frozen var9 = var8.getAccessForLoading(RegistryLayer.DIMENSIONS);
-         RegistryAccess.Frozen var10 = RegistryDataLoader.load((ResourceManager)var6, var9, RegistryDataLoader.DIMENSION_REGISTRIES);
-         WorldDataConfiguration var11 = (WorldDataConfiguration)var5.getFirst();
-         DataLoadOutput var12 = var1.get(new DataLoadContext(var6, var11, var9, var10));
-         LayeredRegistryAccess var13 = var8.replaceFrom(RegistryLayer.DIMENSIONS, (RegistryAccess.Frozen[])(var12.finalDimensions));
-         return ReloadableServerResources.loadResources(var6, var13, var11.enabledFeatures(), var0.commandSelection(), var0.functionCompilationLevel(), var3, var4).whenComplete((var1x, var2x) -> {
+         List var8 = TagLoader.loadTagsForExistingRegistries(var6, var7.getLayer(RegistryLayer.STATIC));
+         RegistryAccess.Frozen var9 = var7.getAccessForLoading(RegistryLayer.WORLDGEN);
+         List var10 = TagLoader.buildUpdatedLookups(var9, var8);
+         RegistryAccess.Frozen var11 = RegistryDataLoader.load((ResourceManager)var6, var10, RegistryDataLoader.WORLDGEN_REGISTRIES);
+         List var12 = Stream.concat(var10.stream(), var11.listRegistries()).toList();
+         RegistryAccess.Frozen var13 = RegistryDataLoader.load((ResourceManager)var6, var12, RegistryDataLoader.DIMENSION_REGISTRIES);
+         WorldDataConfiguration var14 = (WorldDataConfiguration)var5.getFirst();
+         HolderLookup.Provider var15 = HolderLookup.Provider.create(var12.stream());
+         DataLoadOutput var16 = var1.get(new DataLoadContext(var6, var14, var15, var13));
+         LayeredRegistryAccess var17 = var7.replaceFrom(RegistryLayer.WORLDGEN, (RegistryAccess.Frozen[])(var11, var16.finalDimensions));
+         return ReloadableServerResources.loadResources(var6, var17, var8, var14.enabledFeatures(), var0.commandSelection(), var0.functionCompilationLevel(), var3, var4).whenComplete((var1x, var2x) -> {
             if (var2x != null) {
                var6.close();
             }
 
          }).thenApplyAsync((var4x) -> {
-            var4x.updateRegistryTags();
-            return var2.create(var6, var4x, var13, var12.cookie);
+            var4x.updateStaticRegistryTags();
+            return var2.create(var6, var4x, var17, var16.cookie);
          }, var4);
-      } catch (Exception var14) {
-         return CompletableFuture.failedFuture(var14);
+      } catch (Exception var18) {
+         return CompletableFuture.failedFuture(var18);
       }
-   }
-
-   private static RegistryAccess.Frozen loadLayer(ResourceManager var0, LayeredRegistryAccess<RegistryLayer> var1, RegistryLayer var2, List<RegistryDataLoader.RegistryData<?>> var3) {
-      RegistryAccess.Frozen var4 = var1.getAccessForLoading(var2);
-      return RegistryDataLoader.load((ResourceManager)var0, var4, var3);
-   }
-
-   private static LayeredRegistryAccess<RegistryLayer> loadAndReplaceLayer(ResourceManager var0, LayeredRegistryAccess<RegistryLayer> var1, RegistryLayer var2, List<RegistryDataLoader.RegistryData<?>> var3) {
-      RegistryAccess.Frozen var4 = loadLayer(var0, var1, var2, var3);
-      return var1.replaceFrom(var2, (RegistryAccess.Frozen[])(var4));
    }
 
    public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
@@ -115,8 +112,8 @@ public class WorldLoader {
       }
    }
 
-   public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, RegistryAccess.Frozen datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
-      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, RegistryAccess.Frozen var3, RegistryAccess.Frozen var4) {
+   public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, HolderLookup.Provider datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
+      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, HolderLookup.Provider var3, RegistryAccess.Frozen var4) {
          super();
          this.resources = var1;
          this.dataConfiguration = var2;
@@ -132,7 +129,7 @@ public class WorldLoader {
          return this.dataConfiguration;
       }
 
-      public RegistryAccess.Frozen datapackWorldgen() {
+      public HolderLookup.Provider datapackWorldgen() {
          return this.datapackWorldgen;
       }
 

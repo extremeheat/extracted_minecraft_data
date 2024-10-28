@@ -12,10 +12,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -28,6 +28,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EvokerFangs;
@@ -55,6 +56,7 @@ public class Evoker extends SpellcasterIllager {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new EvokerCastingSpellGoal());
       this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Player.class, 8.0F, 0.6, 1.0));
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Creaking.class, 8.0F, 1.0, 1.2));
       this.goalSelector.addGoal(4, new EvokerSummonSpellGoal());
       this.goalSelector.addGoal(5, new EvokerAttackSpellGoal());
       this.goalSelector.addGoal(6, new EvokerWololoSpellGoal());
@@ -87,21 +89,19 @@ public class Evoker extends SpellcasterIllager {
       super.addAdditionalSaveData(var1);
    }
 
-   protected void customServerAiStep() {
-      super.customServerAiStep();
-   }
-
-   public boolean isAlliedTo(Entity var1) {
-      if (var1 == null) {
-         return false;
-      } else if (var1 == this) {
+   protected boolean considersEntityAsAlly(Entity var1) {
+      if (var1 == this) {
          return true;
-      } else if (super.isAlliedTo(var1)) {
+      } else if (super.considersEntityAsAlly(var1)) {
          return true;
-      } else if (var1 instanceof Vex) {
-         Vex var2 = (Vex)var1;
-         return this.isAlliedTo(var2.getOwner());
       } else {
+         if (var1 instanceof Vex) {
+            Vex var2 = (Vex)var1;
+            if (var2.getOwner() != null) {
+               return this.considersEntityAsAlly(var2.getOwner());
+            }
+         }
+
          return false;
       }
    }
@@ -160,7 +160,7 @@ public class Evoker extends SpellcasterIllager {
          if (!super.canUse()) {
             return false;
          } else {
-            int var1 = Evoker.this.level().getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0)).size();
+            int var1 = getServerLevel(Evoker.this.level()).getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0)).size();
             return Evoker.this.random.nextInt(8) + 1 > var1;
          }
       }
@@ -179,10 +179,10 @@ public class Evoker extends SpellcasterIllager {
 
          for(int var3 = 0; var3 < 3; ++var3) {
             BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
-            Vex var5 = (Vex)EntityType.VEX.create(Evoker.this.level());
+            Vex var5 = (Vex)EntityType.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
             if (var5 != null) {
                var5.moveTo(var4, 0.0F, 0.0F);
-               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), MobSpawnType.MOB_SUMMONED, (SpawnGroupData)null);
+               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);
                var5.setOwner(Evoker.this);
                var5.setBoundOrigin(var4);
                var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
@@ -287,7 +287,7 @@ public class Evoker extends SpellcasterIllager {
    }
 
    public class EvokerWololoSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
-      private final TargetingConditions wololoTargeting = TargetingConditions.forNonCombat().range(16.0).selector((var0) -> {
+      private final TargetingConditions wololoTargeting = TargetingConditions.forNonCombat().range(16.0).selector((var0, var1x) -> {
          return ((Sheep)var0).getColor() == DyeColor.BLUE;
       });
 
@@ -302,15 +302,18 @@ public class Evoker extends SpellcasterIllager {
             return false;
          } else if (Evoker.this.tickCount < this.nextAttackTickCount) {
             return false;
-         } else if (!Evoker.this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            return false;
          } else {
-            List var1 = Evoker.this.level().getNearbyEntities(Sheep.class, this.wololoTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0, 4.0, 16.0));
-            if (var1.isEmpty()) {
+            ServerLevel var1 = getServerLevel(Evoker.this.level());
+            if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                return false;
             } else {
-               Evoker.this.setWololoTarget((Sheep)var1.get(Evoker.this.random.nextInt(var1.size())));
-               return true;
+               List var2 = var1.getNearbyEntities(Sheep.class, this.wololoTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0, 4.0, 16.0));
+               if (var2.isEmpty()) {
+                  return false;
+               } else {
+                  Evoker.this.setWololoTarget((Sheep)var2.get(Evoker.this.random.nextInt(var2.size())));
+                  return true;
+               }
             }
          }
       }

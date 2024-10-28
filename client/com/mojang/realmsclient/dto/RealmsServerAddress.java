@@ -4,12 +4,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsServerAddress extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
+   @Nullable
    public String address;
+   @Nullable
    public String resourcePackUrl;
+   @Nullable
    public String resourcePackHash;
 
    public RealmsServerAddress() {
@@ -17,18 +21,17 @@ public class RealmsServerAddress extends ValueObject {
    }
 
    public static RealmsServerAddress parse(String var0) {
-      JsonParser var1 = new JsonParser();
-      RealmsServerAddress var2 = new RealmsServerAddress();
+      RealmsServerAddress var1 = new RealmsServerAddress();
 
       try {
-         JsonObject var3 = var1.parse(var0).getAsJsonObject();
-         var2.address = JsonUtils.getStringOr("address", var3, (String)null);
-         var2.resourcePackUrl = JsonUtils.getStringOr("resourcePackUrl", var3, (String)null);
-         var2.resourcePackHash = JsonUtils.getStringOr("resourcePackHash", var3, (String)null);
-      } catch (Exception var4) {
-         LOGGER.error("Could not parse RealmsServerAddress: {}", var4.getMessage());
+         JsonObject var2 = JsonParser.parseString(var0).getAsJsonObject();
+         var1.address = JsonUtils.getStringOr("address", var2, (String)null);
+         var1.resourcePackUrl = JsonUtils.getStringOr("resourcePackUrl", var2, (String)null);
+         var1.resourcePackHash = JsonUtils.getStringOr("resourcePackHash", var2, (String)null);
+      } catch (Exception var3) {
+         LOGGER.error("Could not parse RealmsServerAddress: {}", var3.getMessage());
       }
 
-      return var2;
+      return var1;
    }
 }

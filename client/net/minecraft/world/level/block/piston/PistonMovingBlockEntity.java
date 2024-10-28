@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -175,6 +176,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
    private static void moveEntityByPiston(Direction var0, Entity var1, double var2, Direction var4) {
       NOCLIP.set(var0);
       var1.move(MoverType.PISTON, new Vec3(var2 * (double)var4.getStepX(), var2 * (double)var4.getStepY(), var2 * (double)var4.getStepZ()));
+      var1.applyEffectsFromBlocks();
       NOCLIP.set((Object)null);
    }
 
@@ -268,10 +270,14 @@ public class PistonMovingBlockEntity extends BlockEntity {
             }
 
             this.level.setBlock(this.worldPosition, var1, 3);
-            this.level.neighborChanged(this.worldPosition, var1.getBlock(), this.worldPosition);
+            this.level.neighborChanged(this.worldPosition, var1.getBlock(), ExperimentalRedstoneUtils.initialOrientation(this.level, this.getPushDirection(), (Direction)null));
          }
       }
 
+   }
+
+   public Direction getPushDirection() {
+      return this.extending ? this.direction : this.direction.getOpposite();
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, PistonMovingBlockEntity var3) {
@@ -294,7 +300,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
                   }
 
                   var0.setBlock(var1, var5, 67);
-                  var0.neighborChanged(var1, var5.getBlock(), var1);
+                  var0.neighborChanged(var1, var5.getBlock(), ExperimentalRedstoneUtils.initialOrientation(var0, var3.getPushDirection(), (Direction)null));
                }
             }
 
@@ -313,7 +319,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
+      Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK;
       this.movedState = NbtUtils.readBlockState((HolderGetter)var3, var1.getCompound("blockState"));
       this.direction = Direction.from3DDataValue(var1.getInt("facing"));
       this.progress = var1.getFloat("progress");

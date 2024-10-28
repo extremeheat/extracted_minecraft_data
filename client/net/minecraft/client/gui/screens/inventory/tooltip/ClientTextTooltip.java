@@ -17,7 +17,7 @@ public class ClientTextTooltip implements ClientTooltipComponent {
       return var1.width(this.text);
    }
 
-   public int getHeight() {
+   public int getHeight(Font var1) {
       return 10;
    }
 

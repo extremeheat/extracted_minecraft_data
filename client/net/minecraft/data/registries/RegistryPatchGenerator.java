@@ -1,5 +1,6 @@
 package net.minecraft.data.registries;
 
+import com.mojang.datafixers.DataFixUtils;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -30,9 +31,9 @@ public class RegistryPatchGenerator {
          Optional var6 = var5.lookup(Registries.BIOME);
          Optional var7 = var5.lookup(Registries.PLACED_FEATURE);
          if (var6.isPresent() || var7.isPresent()) {
-            VanillaRegistries.validateThatAllBiomeFeaturesHaveBiomeFilter((HolderGetter)var7.orElseGet(() -> {
+            VanillaRegistries.validateThatAllBiomeFeaturesHaveBiomeFilter((HolderGetter)DataFixUtils.orElseGet(var7, () -> {
                return var1x.lookupOrThrow(Registries.PLACED_FEATURE);
-            }), (HolderLookup)var6.orElseGet(() -> {
+            }), (HolderLookup)DataFixUtils.orElseGet(var6, () -> {
                return var1x.lookupOrThrow(Registries.BIOME);
             }));
          }

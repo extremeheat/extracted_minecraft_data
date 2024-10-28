@@ -36,6 +36,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.MultipliedFloats;
 import net.minecraft.util.valueproviders.SampledFloat;
@@ -62,64 +63,97 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
 
    protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
       Preparations var3 = new Preparations();
-      var2.startTick();
-      var2.push("list");
-      var3.listResources(var1);
-      var2.pop();
+      Zone var4 = var2.zone("list");
 
-      for(Iterator var4 = var1.getNamespaces().iterator(); var4.hasNext(); var2.pop()) {
-         String var5 = (String)var4.next();
-         var2.push(var5);
+      try {
+         var3.listResources(var1);
+      } catch (Throwable var17) {
+         if (var4 != null) {
+            try {
+               var4.close();
+            } catch (Throwable var14) {
+               var17.addSuppressed(var14);
+            }
+         }
+
+         throw var17;
+      }
+
+      if (var4 != null) {
+         var4.close();
+      }
+
+      Iterator var22 = var1.getNamespaces().iterator();
+
+      while(var22.hasNext()) {
+         String var5 = (String)var22.next();
 
          try {
-            List var6 = var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"));
+            Zone var6 = var2.zone(var5);
 
-            for(Iterator var7 = var6.iterator(); var7.hasNext(); var2.pop()) {
-               Resource var8 = (Resource)var7.next();
-               var2.push(var8.sourcePackId());
+            try {
+               List var7 = var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"));
 
-               try {
-                  BufferedReader var9 = var8.openAsReader();
+               for(Iterator var8 = var7.iterator(); var8.hasNext(); var2.pop()) {
+                  Resource var9 = (Resource)var8.next();
+                  var2.push(var9.sourcePackId());
 
                   try {
-                     var2.push("parse");
-                     Map var10 = (Map)GsonHelper.fromJson(GSON, (Reader)var9, (TypeToken)SOUND_EVENT_REGISTRATION_TYPE);
-                     var2.popPush("register");
-                     Iterator var11 = var10.entrySet().iterator();
+                     BufferedReader var10 = var9.openAsReader();
 
-                     while(true) {
-                        if (!var11.hasNext()) {
-                           var2.pop();
-                           break;
+                     try {
+                        var2.push("parse");
+                        Map var11 = (Map)GsonHelper.fromJson(GSON, (Reader)var10, (TypeToken)SOUND_EVENT_REGISTRATION_TYPE);
+                        var2.popPush("register");
+                        Iterator var12 = var11.entrySet().iterator();
+
+                        while(true) {
+                           if (!var12.hasNext()) {
+                              var2.pop();
+                              break;
+                           }
+
+                           Map.Entry var13 = (Map.Entry)var12.next();
+                           var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var13.getKey()), (SoundEventRegistration)var13.getValue());
+                        }
+                     } catch (Throwable var18) {
+                        if (var10 != null) {
+                           try {
+                              ((Reader)var10).close();
+                           } catch (Throwable var16) {
+                              var18.addSuppressed(var16);
+                           }
                         }
 
-                        Map.Entry var12 = (Map.Entry)var11.next();
-                        var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var12.getKey()), (SoundEventRegistration)var12.getValue());
-                     }
-                  } catch (Throwable var14) {
-                     if (var9 != null) {
-                        try {
-                           ((Reader)var9).close();
-                        } catch (Throwable var13) {
-                           var14.addSuppressed(var13);
-                        }
+                        throw var18;
                      }
 
-                     throw var14;
+                     if (var10 != null) {
+                        ((Reader)var10).close();
+                     }
+                  } catch (RuntimeException var19) {
+                     LOGGER.warn("Invalid {} in resourcepack: '{}'", new Object[]{"sounds.json", var9.sourcePackId(), var19});
                   }
-
-                  if (var9 != null) {
-                     ((Reader)var9).close();
-                  }
-               } catch (RuntimeException var15) {
-                  LOGGER.warn("Invalid {} in resourcepack: '{}'", new Object[]{"sounds.json", var8.sourcePackId(), var15});
                }
+            } catch (Throwable var20) {
+               if (var6 != null) {
+                  try {
+                     var6.close();
+                  } catch (Throwable var15) {
+                     var20.addSuppressed(var15);
+                  }
+               }
+
+               throw var20;
             }
-         } catch (IOException var16) {
+
+            if (var6 != null) {
+               var6.close();
+            }
+         } catch (IOException var21) {
          }
       }
 
-      var2.endTick();
       return var3;
    }
 

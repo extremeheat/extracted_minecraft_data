@@ -105,18 +105,7 @@ public class LoomMenu extends AbstractContainerMenu {
             super.onTake(var1, var2);
          }
       });
-
-      int var4;
-      for(var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
-            this.addSlot(new Slot(var2, var5 + var4 * 9 + 9, 8 + var5 * 18, 84 + var4 * 18));
-         }
-      }
-
-      for(var4 = 0; var4 < 9; ++var4) {
-         this.addSlot(new Slot(var2, var4, 8 + var4 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var2, 8, 84);
       this.addDataSlot(this.selectedBannerPatternIndex);
       this.patternGetter = var2.player.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
    }

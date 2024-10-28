@@ -64,7 +64,7 @@ public class TagEntry {
 
          var3.forEach(var2);
       } else {
-         Object var4 = var1.element(this.id);
+         Object var4 = var1.element(this.id, this.required);
          if (var4 == null) {
             return !this.required;
          }
@@ -121,7 +121,7 @@ public class TagEntry {
 
    public interface Lookup<T> {
       @Nullable
-      T element(ResourceLocation var1);
+      T element(ResourceLocation var1, boolean var2);
 
       @Nullable
       Collection<T> tag(ResourceLocation var1);

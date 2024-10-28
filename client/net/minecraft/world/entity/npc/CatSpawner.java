@@ -6,8 +6,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -85,11 +85,11 @@ public class CatSpawner implements CustomSpawner {
    }
 
    private int spawnCat(BlockPos var1, ServerLevel var2) {
-      Cat var3 = (Cat)EntityType.CAT.create(var2);
+      Cat var3 = (Cat)EntityType.CAT.create(var2, EntitySpawnReason.NATURAL);
       if (var3 == null) {
          return 0;
       } else {
-         var3.finalizeSpawn(var2, var2.getCurrentDifficultyAt(var1), MobSpawnType.NATURAL, (SpawnGroupData)null);
+         var3.finalizeSpawn(var2, var2.getCurrentDifficultyAt(var1), EntitySpawnReason.NATURAL, (SpawnGroupData)null);
          var3.moveTo(var1, 0.0F, 0.0F);
          var2.addFreshEntityWithPassengers(var3);
          return 1;

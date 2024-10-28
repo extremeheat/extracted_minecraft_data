@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -35,7 +36,6 @@ public class PiglinBruteAi {
    private static final double ACTIVITY_SOUND_LIKELIHOOD_PER_TICK = 0.0125;
    private static final int MAX_LOOK_DIST = 8;
    private static final int INTERACTION_RANGE = 8;
-   private static final double TARGETING_RANGE = 12.0;
    private static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.6F;
    private static final int HOME_CLOSE_ENOUGH_DISTANCE = 2;
    private static final int HOME_TOO_FAR_DISTANCE = 100;
@@ -69,8 +69,8 @@ public class PiglinBruteAi {
    }
 
    private static void initFightActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((var1x) -> {
-         return !isNearestValidAttackTarget(var0, var1x);
+      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((var1x, var2) -> {
+         return !isNearestValidAttackTarget(var1x, var0, var2);
       }), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20)), MemoryModuleType.ATTACK_TARGET);
    }
 
@@ -94,31 +94,25 @@ public class PiglinBruteAi {
       var0.setAggressive(var1.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
    }
 
-   private static boolean isNearestValidAttackTarget(AbstractPiglin var0, LivingEntity var1) {
-      return findNearestValidAttackTarget(var0).filter((var1x) -> {
-         return var1x == var1;
+   private static boolean isNearestValidAttackTarget(ServerLevel var0, AbstractPiglin var1, LivingEntity var2) {
+      return findNearestValidAttackTarget(var0, var1).filter((var1x) -> {
+         return var1x == var2;
       }).isPresent();
    }
 
-   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(AbstractPiglin var0) {
-      Optional var1 = BehaviorUtils.getLivingEntityFromUUIDMemory(var0, MemoryModuleType.ANGRY_AT);
-      if (var1.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(var0, (LivingEntity)var1.get())) {
-         return var1;
+   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, AbstractPiglin var1) {
+      Optional var2 = BehaviorUtils.getLivingEntityFromUUIDMemory(var1, MemoryModuleType.ANGRY_AT);
+      if (var2.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, (LivingEntity)var2.get())) {
+         return var2;
       } else {
-         Optional var2 = getTargetIfWithinRange(var0, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
-         return var2.isPresent() ? var2 : var0.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_NEMESIS);
+         Optional var3 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
+         return var3.isPresent() ? var3 : var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_NEMESIS);
       }
    }
 
-   private static Optional<? extends LivingEntity> getTargetIfWithinRange(AbstractPiglin var0, MemoryModuleType<? extends LivingEntity> var1) {
-      return var0.getBrain().getMemory(var1).filter((var1x) -> {
-         return var1x.closerThan(var0, 12.0);
-      });
-   }
-
-   protected static void wasHurtBy(PiglinBrute var0, LivingEntity var1) {
-      if (!(var1 instanceof AbstractPiglin)) {
-         PiglinAi.maybeRetaliate(var0, var1);
+   protected static void wasHurtBy(ServerLevel var0, PiglinBrute var1, LivingEntity var2) {
+      if (!(var2 instanceof AbstractPiglin)) {
+         PiglinAi.maybeRetaliate(var0, var1, var2);
       }
    }
 

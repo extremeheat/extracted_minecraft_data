@@ -1,7 +1,5 @@
 package net.minecraft.client.resources.language;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.locale.DeprecatedTranslationsInfo;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -31,7 +30,7 @@ public class ClientLanguage extends Language {
    }
 
    public static ClientLanguage loadFrom(ResourceManager var0, List<String> var1, boolean var2) {
-      HashMap var3 = Maps.newHashMap();
+      HashMap var3 = new HashMap();
       Iterator var4 = var1.iterator();
 
       while(var4.hasNext()) {
@@ -51,7 +50,8 @@ public class ClientLanguage extends Language {
          }
       }
 
-      return new ClientLanguage(ImmutableMap.copyOf(var3), var2);
+      DeprecatedTranslationsInfo.loadFromDefaultResource().applyToMap(var3);
+      return new ClientLanguage(Map.copyOf(var3), var2);
    }
 
    private static void appendFrom(String var0, List<Resource> var1, Map<String, String> var2) {

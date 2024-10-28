@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Container;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -20,9 +19,9 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
@@ -30,8 +29,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.AnimalArmorItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -96,16 +93,6 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
       return Markings.byId((this.getTypeVariant() & '\uff00') >> 8);
    }
 
-   public void containerChanged(Container var1) {
-      ItemStack var2 = this.getBodyArmorItem();
-      super.containerChanged(var1);
-      ItemStack var3 = this.getBodyArmorItem();
-      if (this.tickCount > 20 && this.isBodyArmorItem(var3) && var2 != var3) {
-         this.playSound(SoundEvents.HORSE_ARMOR, 0.5F, 1.0F);
-      }
-
-   }
-
    protected void playGallopSound(SoundType var1) {
       super.playGallopSound(var1);
       if (this.random.nextInt(10) == 0) {
@@ -146,7 +133,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
 
             if (!this.isTamed()) {
                this.makeMad();
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               return InteractionResult.SUCCESS;
             }
          }
 
@@ -169,7 +156,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       if (var2 instanceof Donkey) {
-         Mule var9 = (Mule)EntityType.MULE.create(var1);
+         Mule var9 = (Mule)EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
          if (var9 != null) {
             this.setOffspringAttributes(var2, var9);
          }
@@ -177,7 +164,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
          return var9;
       } else {
          Horse var3 = (Horse)var2;
-         Horse var4 = (Horse)EntityType.HORSE.create(var1);
+         Horse var4 = (Horse)EntityType.HORSE.create(var1, EntitySpawnReason.BREEDING);
          if (var4 != null) {
             int var6 = this.random.nextInt(9);
             Variant var5;
@@ -211,22 +198,12 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
       return true;
    }
 
-   public boolean isBodyArmorItem(ItemStack var1) {
-      Item var3 = var1.getItem();
-      boolean var10000;
-      if (var3 instanceof AnimalArmorItem var2) {
-         if (var2.getBodyType() == AnimalArmorItem.BodyType.EQUESTRIAN) {
-            var10000 = true;
-            return var10000;
-         }
-      }
-
-      var10000 = false;
-      return var10000;
+   protected void hurtArmor(DamageSource var1, float var2) {
+      this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.BODY});
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       Variant var6;
       if (var4 instanceof HorseGroupData) {

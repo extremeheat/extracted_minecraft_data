@@ -101,6 +101,6 @@ public class StringUtil {
    }
 
    public static boolean isBlank(@Nullable String var0) {
-      return var0 != null && var0.length() != 0 ? var0.chars().allMatch(StringUtil::isWhitespace) : true;
+      return var0 != null && !var0.isEmpty() ? var0.chars().allMatch(StringUtil::isWhitespace) : true;
    }
 }

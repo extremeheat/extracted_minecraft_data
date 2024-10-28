@@ -13,10 +13,6 @@ public record ModelResourceLocation(ResourceLocation id, String variant) {
       this.variant = var2;
    }
 
-   public static ModelResourceLocation vanilla(String var0, String var1) {
-      return new ModelResourceLocation(ResourceLocation.withDefaultNamespace(var0), var1);
-   }
-
    public static ModelResourceLocation inventory(ResourceLocation var0) {
       return new ModelResourceLocation(var0, "inventory");
    }

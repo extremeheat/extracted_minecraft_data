@@ -12,7 +12,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -70,7 +69,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
          int var33 = var2.outerWallDistance.sample(var3);
          var34 = var4.offset(var31, var32, var33);
          var35 = var5.getBlockState(var34);
-         if (var35.isAir() || var35.is(BlockTags.GEODE_INVALID_BLOCKS)) {
+         if (var35.isAir() || var35.is(var16.invalidBlocks)) {
             ++var29;
             if (var29 > var2.invalidBlocksThreshold) {
                return false;

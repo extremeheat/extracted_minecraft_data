@@ -1,10 +1,12 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -16,11 +18,15 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -41,12 +47,16 @@ public abstract class Animal extends AgeableMob {
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
-   protected void customServerAiStep() {
+   public static AttributeSupplier.Builder createAnimalAttributes() {
+      return Mob.createMobAttributes().add(Attributes.TEMPT_RANGE, 10.0);
+   }
+
+   protected void customServerAiStep(ServerLevel var1) {
       if (this.getAge() != 0) {
          this.inLove = 0;
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    public void aiStep() {
@@ -67,9 +77,9 @@ public abstract class Animal extends AgeableMob {
 
    }
 
-   protected void actuallyHurt(DamageSource var1, float var2) {
+   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
       this.resetLove();
-      super.actuallyHurt(var1, var2);
+      super.actuallyHurt(var1, var2, var3);
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -91,8 +101,8 @@ public abstract class Animal extends AgeableMob {
       this.loveCause = var1.hasUUID("LoveCause") ? var1.getUUID("LoveCause") : null;
    }
 
-   public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      boolean var5 = MobSpawnType.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
+   public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      boolean var5 = EntitySpawnReason.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
       return var1.getBlockState(var3.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) && var5;
    }
 
@@ -108,8 +118,8 @@ public abstract class Animal extends AgeableMob {
       return false;
    }
 
-   protected int getBaseExperienceReward() {
-      return 1 + this.level().random.nextInt(3);
+   protected int getBaseExperienceReward(ServerLevel var1) {
+      return 1 + this.random.nextInt(3);
    }
 
    public abstract boolean isFood(ItemStack var1);
@@ -121,13 +131,15 @@ public abstract class Animal extends AgeableMob {
          if (!this.level().isClientSide && var4 == 0 && this.canFallInLove()) {
             this.usePlayerItem(var1, var2, var3);
             this.setInLove(var1);
-            return InteractionResult.SUCCESS;
+            this.playEatingSound();
+            return InteractionResult.SUCCESS_SERVER;
          }
 
          if (this.isBaby()) {
             this.usePlayerItem(var1, var2, var3);
             this.ageUp(getSpeedUpSecondsWhenFeeding(-var4), true);
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            this.playEatingSound();
+            return InteractionResult.SUCCESS;
          }
 
          if (this.level().isClientSide) {
@@ -138,8 +150,20 @@ public abstract class Animal extends AgeableMob {
       return super.mobInteract(var1, var2);
    }
 
+   protected void playEatingSound() {
+   }
+
    protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
+      int var4 = var3.getCount();
+      UseRemainder var5 = (UseRemainder)var3.get(DataComponents.USE_REMAINDER);
       var3.consume(1, var1);
+      if (var5 != null) {
+         boolean var10003 = var1.hasInfiniteMaterials();
+         Objects.requireNonNull(var1);
+         ItemStack var6 = var5.convertIntoRemainder(var3, var4, var10003, var1::handleExtraItemsCreatedOnUse);
+         var1.setItemInHand(var2, var6);
+      }
+
    }
 
    public boolean canFallInLove() {

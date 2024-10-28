@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -54,20 +53,20 @@ public class JukeboxBlock extends BaseEntityBlock {
          if (var7 instanceof JukeboxBlockEntity) {
             JukeboxBlockEntity var6 = (JukeboxBlockEntity)var7;
             var6.popOutTheItem();
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return InteractionResult.SUCCESS;
          }
       }
 
       return InteractionResult.PASS;
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if ((Boolean)var2.getValue(HAS_RECORD)) {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
          ItemStack var8 = var5.getItemInHand(var6);
-         ItemInteractionResult var9 = JukeboxPlayable.tryInsertIntoJukebox(var3, var4, var8, var5);
-         return !var9.consumesAction() ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION : var9;
+         InteractionResult var9 = JukeboxPlayable.tryInsertIntoJukebox(var3, var4, var8, var5);
+         return (InteractionResult)(!var9.consumesAction() ? InteractionResult.TRY_WITH_EMPTY_HAND : var9);
       }
    }
 

@@ -1,7 +1,7 @@
 package net.minecraft.client.tutorial;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,7 +14,7 @@ public interface TutorialStepInstance {
    default void tick() {
    }
 
-   default void onInput(Input var1) {
+   default void onInput(ClientInput var1) {
    }
 
    default void onMouse(double var1, double var3) {

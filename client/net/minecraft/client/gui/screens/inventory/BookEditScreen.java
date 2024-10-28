@@ -45,6 +45,8 @@ public class BookEditScreen extends Screen {
    private static final int TEXT_HEIGHT = 128;
    private static final int IMAGE_WIDTH = 192;
    private static final int IMAGE_HEIGHT = 192;
+   private static final int BACKGROUND_TEXTURE_WIDTH = 256;
+   private static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    private static final Component EDIT_TITLE_LABEL = Component.translatable("book.editTitle");
    private static final Component FINALIZE_WARNING_LABEL = Component.translatable("book.finalizeWarning");
    private static final FormattedCharSequence BLACK_CURSOR;
@@ -81,21 +83,17 @@ public class BookEditScreen extends Screen {
    private Component pageMsg;
    private final Component ownerText;
 
-   public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3) {
+   public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3, WritableBookContent var4) {
       super(GameNarrator.NO_TITLE);
       this.displayCache = BookEditScreen.DisplayCache.EMPTY;
       this.pageMsg = CommonComponents.EMPTY;
       this.owner = var1;
       this.book = var2;
       this.hand = var3;
-      WritableBookContent var4 = (WritableBookContent)var2.get(DataComponents.WRITABLE_BOOK_CONTENT);
-      if (var4 != null) {
-         Stream var10000 = var4.getPages(Minecraft.getInstance().isTextFilteringEnabled());
-         List var10001 = this.pages;
-         Objects.requireNonNull(var10001);
-         var10000.forEach(var10001::add);
-      }
-
+      Stream var10000 = var4.getPages(Minecraft.getInstance().isTextFilteringEnabled());
+      List var10001 = this.pages;
+      Objects.requireNonNull(var10001);
+      var10000.forEach(var10001::add);
       if (this.pages.isEmpty()) {
          this.pages.add("");
       }
@@ -420,7 +418,7 @@ public class BookEditScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTransparentBackground(var1);
-      var1.blit(BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0, 0, 192, 192);
+      var1.blit(RenderType::guiTextured, BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
    private void renderCursor(GuiGraphics var1, Pos2i var2, boolean var3) {

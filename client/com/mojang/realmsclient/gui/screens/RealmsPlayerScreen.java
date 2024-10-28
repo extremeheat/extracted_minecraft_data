@@ -116,10 +116,6 @@ public class RealmsPlayerScreen extends RealmsScreen {
          var1.drawString(RealmsPlayerScreen.this.font, (Component)var5, var2 + this.getRowWidth() / 2 - RealmsPlayerScreen.this.font.width((FormattedText)var5) / 2, var3, -1, false);
       }
 
-      public int getMaxPosition() {
-         return this.getItemCount() * this.itemHeight + this.headerHeight;
-      }
-
       public int getRowWidth() {
          return 300;
       }

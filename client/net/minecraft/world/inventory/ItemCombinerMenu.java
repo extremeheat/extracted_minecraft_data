@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
 import java.util.Iterator;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -12,31 +11,35 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    private static final int INVENTORY_SLOTS_PER_ROW = 9;
-   private static final int INVENTORY_SLOTS_PER_COLUMN = 3;
+   private static final int INVENTORY_ROWS = 3;
+   private static final int INPUT_SLOT_START = 0;
    protected final ContainerLevelAccess access;
    protected final Player player;
    protected final Container inputSlots;
-   private final List<Integer> inputSlotIndexes;
-   protected final ResultContainer resultSlots = new ResultContainer();
+   protected final ResultContainer resultSlots = new ResultContainer() {
+      public void setChanged() {
+         ItemCombinerMenu.this.slotsChanged(this);
+      }
+   };
    private final int resultSlotIndex;
 
-   protected abstract boolean mayPickup(Player var1, boolean var2);
+   protected boolean mayPickup(Player var1, boolean var2) {
+      return true;
+   }
 
    protected abstract void onTake(Player var1, ItemStack var2);
 
    protected abstract boolean isValidBlock(BlockState var1);
 
-   public ItemCombinerMenu(@Nullable MenuType<?> var1, int var2, Inventory var3, ContainerLevelAccess var4) {
+   public ItemCombinerMenu(@Nullable MenuType<?> var1, int var2, Inventory var3, ContainerLevelAccess var4, ItemCombinerMenuSlotDefinition var5) {
       super(var1, var2);
       this.access = var4;
       this.player = var3.player;
-      ItemCombinerMenuSlotDefinition var5 = this.createInputSlotDefinitions();
       this.inputSlots = this.createContainer(var5.getNumOfInputSlots());
-      this.inputSlotIndexes = var5.getInputSlotIndexes();
       this.resultSlotIndex = var5.getResultSlotIndex();
       this.createInputSlots(var5);
       this.createResultSlot(var5);
-      this.createInventorySlots(var3);
+      this.addStandardInventorySlots(var3, 8, 84);
    }
 
    private void createInputSlots(ItemCombinerMenuSlotDefinition var1) {
@@ -69,23 +72,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
       });
    }
 
-   private void createInventorySlots(Inventory var1) {
-      int var2;
-      for(var2 = 0; var2 < 3; ++var2) {
-         for(int var3 = 0; var3 < 9; ++var3) {
-            this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
-         }
-      }
-
-      for(var2 = 0; var2 < 9; ++var2) {
-         this.addSlot(new Slot(var1, var2, 8 + var2 * 18, 142));
-      }
-
-   }
-
    public abstract void createResult();
-
-   protected abstract ItemCombinerMenuSlotDefinition createInputSlotDefinitions();
 
    private SimpleContainer createContainer(int var1) {
       return new SimpleContainer(var1) {
@@ -131,13 +118,12 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
             }
 
             var4.onQuickCraft(var5, var3);
-         } else if (this.inputSlotIndexes.contains(var2)) {
+         } else if (var2 >= 0 && var2 < this.getResultSlot()) {
             if (!this.moveItemStackTo(var5, var6, var7, false)) {
                return ItemStack.EMPTY;
             }
          } else if (this.canMoveIntoInputSlots(var5) && var2 >= this.getInventorySlotStart() && var2 < this.getUseRowEnd()) {
-            int var8 = this.getSlotToQuickMoveTo(var3);
-            if (!this.moveItemStackTo(var5, var8, this.getResultSlot(), false)) {
+            if (!this.moveItemStackTo(var5, 0, this.getResultSlot(), false)) {
                return ItemStack.EMPTY;
             }
          } else if (var2 >= this.getInventorySlotStart() && var2 < this.getInventorySlotEnd()) {
@@ -166,10 +152,6 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
 
    protected boolean canMoveIntoInputSlots(ItemStack var1) {
       return true;
-   }
-
-   public int getSlotToQuickMoveTo(ItemStack var1) {
-      return this.inputSlots.isEmpty() ? 0 : (Integer)this.inputSlotIndexes.get(0);
    }
 
    public int getResultSlot() {

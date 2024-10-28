@@ -2,8 +2,9 @@ package net.minecraft.world.entity.projectile;
 
 import com.google.common.base.MoreObjects;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
-import java.util.Iterator;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -16,14 +17,19 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -55,16 +61,20 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public Entity getOwner() {
       if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
          return this.cachedOwner;
+      } else if (this.ownerUUID != null) {
+         this.cachedOwner = this.findOwner(this.ownerUUID);
+         return this.cachedOwner;
       } else {
-         if (this.ownerUUID != null) {
-            Level var2 = this.level();
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var1 = (ServerLevel)var2;
-               this.cachedOwner = var1.getEntity(this.ownerUUID);
-               return this.cachedOwner;
-            }
-         }
+         return null;
+      }
+   }
 
+   @Nullable
+   protected Entity findOwner(UUID var1) {
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         return var2.getEntity(var1);
+      } else {
          return null;
       }
    }
@@ -91,17 +101,25 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       if (var1.hasUUID("Owner")) {
-         this.ownerUUID = var1.getUUID("Owner");
-         this.cachedOwner = null;
+         this.setOwnerThroughUUID(var1.getUUID("Owner"));
       }
 
       this.leftOwner = var1.getBoolean("LeftOwner");
       this.hasBeenShot = var1.getBoolean("HasBeenShot");
    }
 
+   protected void setOwnerThroughUUID(UUID var1) {
+      if (this.ownerUUID != var1) {
+         this.ownerUUID = var1;
+         this.cachedOwner = this.findOwner(var1);
+      }
+
+   }
+
    public void restoreFrom(Entity var1) {
       super.restoreFrom(var1);
       if (var1 instanceof Projectile var2) {
+         this.ownerUUID = var2.ownerUUID;
          this.cachedOwner = var2.cachedOwner;
       }
 
@@ -123,19 +141,13 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private boolean checkLeftOwner() {
       Entity var1 = this.getOwner();
       if (var1 != null) {
-         Iterator var2 = this.level().getEntities((Entity)this, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), (var0) -> {
-            return !var0.isSpectator() && var0.isPickable();
-         }).iterator();
-
-         while(var2.hasNext()) {
-            Entity var3 = (Entity)var2.next();
-            if (var3.getRootVehicle() == var1.getRootVehicle()) {
-               return false;
-            }
-         }
+         AABB var2 = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);
+         return var1.getRootVehicle().getSelfAndPassengers().filter(EntitySelector.CAN_BE_PICKED).noneMatch((var1x) -> {
+            return var2.intersects(var1x.getBoundingBox());
+         });
+      } else {
+         return true;
       }
-
-      return true;
    }
 
    public Vec3 getMovementToShoot(double var1, double var3, double var5, float var7, float var8) {
@@ -162,17 +174,69 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
+   public static <T extends Projectile> T spawnProjectileFromRotation(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, float var4, float var5, float var6) {
+      return spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var4x) -> {
+         var4x.shootFromRotation(var3, var3.getXRot(), var3.getYRot(), var4, var5, var6);
+      });
+   }
+
+   public static <T extends Projectile> T spawnProjectileUsingShoot(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, double var4, double var6, double var8, float var10, float var11) {
+      return spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var8x) -> {
+         var8x.shoot(var4, var6, var8, var10, var11);
+      });
+   }
+
+   public static <T extends Projectile> T spawnProjectileUsingShoot(T var0, ServerLevel var1, ItemStack var2, double var3, double var5, double var7, float var9, float var10) {
+      return spawnProjectile(var0, var1, var2, (var9x) -> {
+         var0.shoot(var3, var5, var7, var9, var10);
+      });
+   }
+
+   public static <T extends Projectile> T spawnProjectile(T var0, ServerLevel var1, ItemStack var2) {
+      return spawnProjectile(var0, var1, var2, (var0x) -> {
+      });
+   }
+
+   public static <T extends Projectile> T spawnProjectile(T var0, ServerLevel var1, ItemStack var2, Consumer<T> var3) {
+      var3.accept(var0);
+      var1.addFreshEntity(var0);
+      var0.applyOnProjectileSpawned(var1, var2);
+      return var0;
+   }
+
+   public void applyOnProjectileSpawned(ServerLevel var1, ItemStack var2) {
+      EnchantmentHelper.onProjectileSpawned(var1, var2, this, (var0) -> {
+      });
+      if (this instanceof AbstractArrow var3) {
+         ItemStack var4 = var3.getWeaponItem();
+         if (var4 != null && !var4.isEmpty() && !var2.getItem().equals(var4.getItem())) {
+            Objects.requireNonNull(var3);
+            EnchantmentHelper.onProjectileSpawned(var1, var4, this, var3::onItemBreak);
+         }
+      }
+
+   }
+
    protected ProjectileDeflection hitTargetOrDeflectSelf(HitResult var1) {
       if (var1.getType() == HitResult.Type.ENTITY) {
-         EntityHitResult var2 = (EntityHitResult)var1;
-         Entity var3 = var2.getEntity();
-         ProjectileDeflection var4 = var3.deflection(this);
-         if (var4 != ProjectileDeflection.NONE) {
-            if (var3 != this.lastDeflectedBy && this.deflect(var4, var3, this.getOwner(), false)) {
-               this.lastDeflectedBy = var3;
+         EntityHitResult var3 = (EntityHitResult)var1;
+         Entity var4 = var3.getEntity();
+         ProjectileDeflection var5 = var4.deflection(this);
+         if (var5 != ProjectileDeflection.NONE) {
+            if (var4 != this.lastDeflectedBy && this.deflect(var5, var4, this.getOwner(), false)) {
+               this.lastDeflectedBy = var4;
             }
 
-            return var4;
+            return var5;
+         }
+      } else if (this.shouldBounceOnWorldBorder() && var1 instanceof BlockHitResult) {
+         BlockHitResult var2 = (BlockHitResult)var1;
+         if (var2.isWorldBorderHit()) {
+            ProjectileDeflection var6 = ProjectileDeflection.REVERSE;
+            if (this.deflect(var6, (Entity)null, this.getOwner(), false)) {
+               this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
+               return var6;
+            }
          }
       }
 
@@ -180,9 +244,13 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return ProjectileDeflection.NONE;
    }
 
+   protected boolean shouldBounceOnWorldBorder() {
+      return false;
+   }
+
    public boolean deflect(ProjectileDeflection var1, @Nullable Entity var2, @Nullable Entity var3, boolean var4) {
+      var1.deflect(this, var2, this.random);
       if (!this.level().isClientSide) {
-         var1.deflect(this, var2, this.random);
          this.setOwner(var3);
          this.onDeflection(var2, var4);
       }
@@ -191,6 +259,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void onDeflection(@Nullable Entity var1, boolean var2) {
+   }
+
+   protected void onItemBreak(Item var1) {
    }
 
    protected void onHit(HitResult var1) {
@@ -277,7 +348,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    }
 
-   public boolean mayInteract(Level var1, BlockPos var2) {
+   public boolean mayInteract(ServerLevel var1, BlockPos var2) {
       Entity var3 = this.getOwner();
       if (var3 instanceof Player) {
          return var3.mayInteract(var1, var2);
@@ -286,7 +357,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       }
    }
 
-   public boolean mayBreak(Level var1) {
+   public boolean mayBreak(ServerLevel var1) {
       return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
    }
 
@@ -302,5 +373,22 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       double var3 = this.getDeltaMovement().x;
       double var5 = this.getDeltaMovement().z;
       return DoubleDoubleImmutablePair.of(var3, var5);
+   }
+
+   public int getDimensionChangingDelay() {
+      return 2;
+   }
+
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.isInvulnerableToBase(var2)) {
+         this.markHurt();
+      }
+
+      return false;
+   }
+
+   @FunctionalInterface
+   public interface ProjectileFactory<T extends Projectile> {
+      T create(ServerLevel var1, LivingEntity var2, ItemStack var3);
    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -9,11 +8,11 @@ import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.armortrim.ArmorTrim;
-import net.minecraft.world.item.armortrim.TrimMaterials;
-import net.minecraft.world.item.armortrim.TrimPatterns;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
+import net.minecraft.world.item.equipment.trim.TrimMaterials;
+import net.minecraft.world.item.equipment.trim.TrimPatterns;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -31,11 +30,11 @@ public record VanillaEquipmentLoot(HolderLookup.Provider registries) implements 
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
-      HolderLookup.RegistryLookup var2 = (HolderLookup.RegistryLookup)this.registries.lookup(Registries.TRIM_PATTERN).orElseThrow();
-      HolderLookup.RegistryLookup var3 = (HolderLookup.RegistryLookup)this.registries.lookup(Registries.TRIM_MATERIAL).orElseThrow();
+      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.TRIM_PATTERN);
+      HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.TRIM_MATERIAL);
       HolderLookup.RegistryLookup var4 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
-      ArmorTrim var5 = new ArmorTrim((Holder)var3.get(TrimMaterials.COPPER).orElseThrow(), (Holder)var2.get(TrimPatterns.FLOW).orElseThrow());
-      ArmorTrim var6 = new ArmorTrim((Holder)var3.get(TrimMaterials.COPPER).orElseThrow(), (Holder)var2.get(TrimPatterns.BOLT).orElseThrow());
+      ArmorTrim var5 = new ArmorTrim(var3.getOrThrow(TrimMaterials.COPPER), var2.getOrThrow(TrimPatterns.FLOW));
+      ArmorTrim var6 = new ArmorTrim(var3.getOrThrow(TrimMaterials.COPPER), var2.getOrThrow(TrimPatterns.BOLT));
       var1.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.inlineLootTable(trialChamberEquipment(Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, var6, var4).build()).setWeight(4)).add(NestedLootTable.inlineLootTable(trialChamberEquipment(Items.IRON_HELMET, Items.IRON_CHESTPLATE, var5, var4).build()).setWeight(2)).add(NestedLootTable.inlineLootTable(trialChamberEquipment(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, var5, var4).build()).setWeight(1))));
       var1.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_MELEE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.lootTableReference(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.IRON_SWORD).setWeight(4)).add(LootItem.lootTableItem(Items.IRON_SWORD).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(var4.getOrThrow(Enchantments.SHARPNESS), ConstantValue.exactly(1.0F)))).add(LootItem.lootTableItem(Items.IRON_SWORD).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(var4.getOrThrow(Enchantments.KNOCKBACK), ConstantValue.exactly(1.0F)))).add(LootItem.lootTableItem(Items.DIAMOND_SWORD))));
       var1.accept(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_RANGED, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.lootTableReference(BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.BOW).setWeight(2)).add(LootItem.lootTableItem(Items.BOW).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(var4.getOrThrow(Enchantments.POWER), ConstantValue.exactly(1.0F)))).add(LootItem.lootTableItem(Items.BOW).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(var4.getOrThrow(Enchantments.PUNCH), ConstantValue.exactly(1.0F))))));

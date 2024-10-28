@@ -20,10 +20,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
@@ -123,7 +123,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    public boolean hasBook() {
-      return this.book.is(Items.WRITABLE_BOOK) || this.book.is(Items.WRITTEN_BOOK);
+      return this.book.has(DataComponents.WRITABLE_BOOK_CONTENT) || this.book.has(DataComponents.WRITTEN_BOOK_CONTENT);
    }
 
    public void setBook(ItemStack var1) {
@@ -163,26 +163,27 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    private ItemStack resolveBook(ItemStack var1, @Nullable Player var2) {
-      if (this.level instanceof ServerLevel && var1.is(Items.WRITTEN_BOOK)) {
-         WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(var2), var2);
+      Level var4 = this.level;
+      if (var4 instanceof ServerLevel var3) {
+         WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(var2, var3), var2);
       }
 
       return var1;
    }
 
-   private CommandSourceStack createCommandSourceStack(@Nullable Player var1) {
-      String var2;
-      Object var3;
+   private CommandSourceStack createCommandSourceStack(@Nullable Player var1, ServerLevel var2) {
+      String var3;
+      Object var4;
       if (var1 == null) {
-         var2 = "Lectern";
-         var3 = Component.literal("Lectern");
+         var3 = "Lectern";
+         var4 = Component.literal("Lectern");
       } else {
-         var2 = var1.getName().getString();
-         var3 = var1.getDisplayName();
+         var3 = var1.getName().getString();
+         var4 = var1.getDisplayName();
       }
 
-      Vec3 var4 = Vec3.atCenterOf(this.worldPosition);
-      return new CommandSourceStack(CommandSource.NULL, var4, Vec2.ZERO, (ServerLevel)this.level, 2, var2, (Component)var3, this.level.getServer(), var1);
+      Vec3 var5 = Vec3.atCenterOf(this.worldPosition);
+      return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, 2, var3, (Component)var4, var2.getServer(), var1);
    }
 
    public boolean onlyOpCanSetNbt() {

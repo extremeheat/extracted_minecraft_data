@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.SnowGolem;
@@ -22,11 +23,11 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    public static final MapCodec<CarvedPumpkinBlock> CODEC = simpleCodec(CarvedPumpkinBlock::new);
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    @Nullable
    private BlockPattern snowGolemBase;
    @Nullable
@@ -59,14 +60,14 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    private void trySpawnGolem(Level var1, BlockPos var2) {
       BlockPattern.BlockPatternMatch var3 = this.getOrCreateSnowGolemFull().find(var1, var2);
       if (var3 != null) {
-         SnowGolem var4 = (SnowGolem)EntityType.SNOW_GOLEM.create(var1);
+         SnowGolem var4 = (SnowGolem)EntityType.SNOW_GOLEM.create(var1, EntitySpawnReason.TRIGGERED);
          if (var4 != null) {
             spawnGolemInWorld(var1, var3, var4, var3.getBlock(0, 2, 0).getPos());
          }
       } else {
          BlockPattern.BlockPatternMatch var6 = this.getOrCreateIronGolemFull().find(var1, var2);
          if (var6 != null) {
-            IronGolem var5 = (IronGolem)EntityType.IRON_GOLEM.create(var1);
+            IronGolem var5 = (IronGolem)EntityType.IRON_GOLEM.create(var1, EntitySpawnReason.TRIGGERED);
             if (var5 != null) {
                var5.setPlayerCreated(true);
                spawnGolemInWorld(var1, var6, var5, var6.getBlock(1, 2, 0).getPos());

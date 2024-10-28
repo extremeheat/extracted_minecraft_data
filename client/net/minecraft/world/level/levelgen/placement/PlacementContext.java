@@ -8,7 +8,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ProtoChunk;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
@@ -28,16 +27,16 @@ public class PlacementContext extends WorldGenerationContext {
       return this.level.getHeight(var1, var2, var3);
    }
 
-   public CarvingMask getCarvingMask(ChunkPos var1, GenerationStep.Carving var2) {
-      return ((ProtoChunk)this.level.getChunk(var1.x, var1.z)).getOrCreateCarvingMask(var2);
+   public CarvingMask getCarvingMask(ChunkPos var1) {
+      return ((ProtoChunk)this.level.getChunk(var1.x, var1.z)).getOrCreateCarvingMask();
    }
 
    public BlockState getBlockState(BlockPos var1) {
       return this.level.getBlockState(var1);
    }
 
-   public int getMinBuildHeight() {
-      return this.level.getMinBuildHeight();
+   public int getMinY() {
+      return this.level.getMinY();
    }
 
    public WorldGenLevel getLevel() {

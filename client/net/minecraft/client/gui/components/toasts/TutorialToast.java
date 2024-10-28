@@ -1,8 +1,9 @@
 package net.minecraft.client.gui.components.toasts;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -18,46 +19,67 @@ public class TutorialToast implements Toast {
    @Nullable
    private final Component message;
    private Toast.Visibility visibility;
-   private long lastProgressTime;
-   private float lastProgress;
+   private long lastSmoothingTime;
+   private float smoothedProgress;
    private float progress;
    private final boolean progressable;
+   private final int timeToDisplayMs;
 
-   public TutorialToast(Icons var1, Component var2, @Nullable Component var3, boolean var4) {
+   public TutorialToast(Icons var1, Component var2, @Nullable Component var3, boolean var4, int var5) {
       super();
       this.visibility = Toast.Visibility.SHOW;
       this.icon = var1;
       this.title = var2;
       this.message = var3;
       this.progressable = var4;
+      this.timeToDisplayMs = var5;
    }
 
-   public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
-      var1.blitSprite(BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+   public TutorialToast(Icons var1, Component var2, @Nullable Component var3, boolean var4) {
+      this(var1, var2, var3, var4, 0);
+   }
+
+   public Toast.Visibility getWantedVisibility() {
+      return this.visibility;
+   }
+
+   public void update(ToastManager var1, long var2) {
+      if (this.timeToDisplayMs > 0) {
+         this.progress = Math.min((float)var2 / (float)this.timeToDisplayMs, 1.0F);
+         this.smoothedProgress = this.progress;
+         this.lastSmoothingTime = var2;
+         if (var2 > (long)this.timeToDisplayMs) {
+            this.hide();
+         }
+      } else if (this.progressable) {
+         this.smoothedProgress = Mth.clampedLerp(this.smoothedProgress, this.progress, (float)(var2 - this.lastSmoothingTime) / 100.0F);
+         this.lastSmoothingTime = var2;
+      }
+
+   }
+
+   public void render(GuiGraphics var1, Font var2, long var3) {
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       this.icon.render(var1, 6, 6);
       if (this.message == null) {
-         var1.drawString(var2.getMinecraft().font, (Component)this.title, 30, 12, -11534256, false);
+         var1.drawString(var2, (Component)this.title, 30, 12, -11534256, false);
       } else {
-         var1.drawString(var2.getMinecraft().font, (Component)this.title, 30, 7, -11534256, false);
-         var1.drawString(var2.getMinecraft().font, (Component)this.message, 30, 18, -16777216, false);
+         var1.drawString(var2, (Component)this.title, 30, 7, -11534256, false);
+         var1.drawString(var2, (Component)this.message, 30, 18, -16777216, false);
       }
 
       if (this.progressable) {
          var1.fill(3, 28, 157, 29, -1);
-         float var5 = Mth.clampedLerp(this.lastProgress, this.progress, (float)(var3 - this.lastProgressTime) / 100.0F);
-         int var6;
-         if (this.progress >= this.lastProgress) {
-            var6 = -16755456;
+         int var5;
+         if (this.progress >= this.smoothedProgress) {
+            var5 = -16755456;
          } else {
-            var6 = -11206656;
+            var5 = -11206656;
          }
 
-         var1.fill(3, 28, (int)(3.0F + 154.0F * var5), 29, var6);
-         this.lastProgress = var5;
-         this.lastProgressTime = var3;
+         var1.fill(3, 28, (int)(3.0F + 154.0F * this.smoothedProgress), 29, var5);
       }
 
-      return this.visibility;
    }
 
    public void hide() {
@@ -84,8 +106,7 @@ public class TutorialToast implements Toast {
       }
 
       public void render(GuiGraphics var1, int var2, int var3) {
-         RenderSystem.enableBlend();
-         var1.blitSprite(this.sprite, var2, var3, 20, 20);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.sprite, var2, var3, 20, 20);
       }
 
       // $FF: synthetic method

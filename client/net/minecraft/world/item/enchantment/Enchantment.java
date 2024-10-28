@@ -92,15 +92,14 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
 
    public Map<EquipmentSlot, ItemStack> getSlotItems(LivingEntity var1) {
       EnumMap var2 = Maps.newEnumMap(EquipmentSlot.class);
-      EquipmentSlot[] var3 = EquipmentSlot.values();
-      int var4 = var3.length;
+      Iterator var3 = EquipmentSlot.VALUES.iterator();
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         EquipmentSlot var6 = var3[var5];
-         if (this.matchingSlot(var6)) {
-            ItemStack var7 = var1.getItemBySlot(var6);
-            if (!var7.isEmpty()) {
-               var2.put(var6, var7);
+      while(var3.hasNext()) {
+         EquipmentSlot var4 = (EquipmentSlot)var3.next();
+         if (this.matchingSlot(var4)) {
+            ItemStack var5 = var1.getItemBySlot(var4);
+            if (!var5.isEmpty()) {
+               var2.put(var4, var5);
             }
          }
       }
@@ -266,6 +265,18 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       this.modifyDamageFilteredValue(EnchantmentEffectComponents.ARMOR_EFFECTIVENESS, var1, var2, var3, var4, var5, var6);
    }
 
+   public void doPostAttack(ServerLevel var1, int var2, EnchantedItemInUse var3, EnchantmentTarget var4, Entity var5, DamageSource var6) {
+      Iterator var7 = this.getEffects(EnchantmentEffectComponents.POST_ATTACK).iterator();
+
+      while(var7.hasNext()) {
+         TargetedConditionalEffect var8 = (TargetedConditionalEffect)var7.next();
+         if (var4 == var8.enchanted()) {
+            doPostAttack(var8, var1, var2, var3, var5, var6);
+         }
+      }
+
+   }
+
    public static void doPostAttack(TargetedConditionalEffect<EnchantmentEntityEffect> var0, ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, DamageSource var5) {
       if (var0.matches(damageContext(var1, var2, var4, var5))) {
          Entity var10000;
@@ -279,18 +290,6 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
          Entity var6 = var10000;
          if (var6 != null) {
             ((EnchantmentEntityEffect)var0.effect()).apply(var1, var2, var3, var6, var6.position());
-         }
-      }
-
-   }
-
-   public void doPostAttack(ServerLevel var1, int var2, EnchantedItemInUse var3, EnchantmentTarget var4, Entity var5, DamageSource var6) {
-      Iterator var7 = this.getEffects(EnchantmentEffectComponents.POST_ATTACK).iterator();
-
-      while(var7.hasNext()) {
-         TargetedConditionalEffect var8 = (TargetedConditionalEffect)var7.next();
-         if (var4 == var8.enchanted()) {
-            doPostAttack(var8, var1, var2, var3, var5, var6);
          }
       }
 
@@ -390,55 +389,62 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    }
 
    public void runLocationChangedEffects(ServerLevel var1, int var2, EnchantedItemInUse var3, LivingEntity var4) {
-      if (var3.inSlot() != null && !this.matchingSlot(var3.inSlot())) {
-         Set var10 = (Set)var4.activeLocationDependentEnchantments().remove(this);
-         if (var10 != null) {
-            var10.forEach((var3x) -> {
-               var3x.onDeactivated(var3, var4, var4.position(), var2);
-            });
-         }
+      EquipmentSlot var5 = var3.inSlot();
+      if (var5 != null) {
+         Map var6 = var4.activeLocationDependentEnchantments(var5);
+         if (!this.matchingSlot(var5)) {
+            Set var12 = (Set)var6.remove(this);
+            if (var12 != null) {
+               var12.forEach((var3x) -> {
+                  var3x.onDeactivated(var3, var4, var4.position(), var2);
+               });
+            }
 
-      } else {
-         Object var5 = (Set)var4.activeLocationDependentEnchantments().get(this);
-         Iterator var6 = this.getEffects(EnchantmentEffectComponents.LOCATION_CHANGED).iterator();
+         } else {
+            Object var7 = (Set)var6.get(this);
+            Iterator var8 = this.getEffects(EnchantmentEffectComponents.LOCATION_CHANGED).iterator();
 
-         while(var6.hasNext()) {
-            ConditionalEffect var7 = (ConditionalEffect)var6.next();
-            EnchantmentLocationBasedEffect var8 = (EnchantmentLocationBasedEffect)var7.effect();
-            boolean var9 = var5 != null && ((Set)var5).contains(var8);
-            if (var7.matches(locationContext(var1, var2, var4, var9))) {
-               if (!var9) {
-                  if (var5 == null) {
-                     var5 = new ObjectArraySet();
-                     var4.activeLocationDependentEnchantments().put(this, var5);
+            while(var8.hasNext()) {
+               ConditionalEffect var9 = (ConditionalEffect)var8.next();
+               EnchantmentLocationBasedEffect var10 = (EnchantmentLocationBasedEffect)var9.effect();
+               boolean var11 = var7 != null && ((Set)var7).contains(var10);
+               if (var9.matches(locationContext(var1, var2, var4, var11))) {
+                  if (!var11) {
+                     if (var7 == null) {
+                        var7 = new ObjectArraySet();
+                        var6.put(this, var7);
+                     }
+
+                     ((Set)var7).add(var10);
                   }
 
-                  ((Set)var5).add(var8);
+                  var10.onChangedBlock(var1, var2, var3, var4, var4.position(), !var11);
+               } else if (var7 != null && ((Set)var7).remove(var10)) {
+                  var10.onDeactivated(var3, var4, var4.position(), var2);
                }
-
-               var8.onChangedBlock(var1, var2, var3, var4, var4.position(), !var9);
-            } else if (var5 != null && ((Set)var5).remove(var8)) {
-               var8.onDeactivated(var3, var4, var4.position(), var2);
             }
-         }
 
-         if (var5 != null && ((Set)var5).isEmpty()) {
-            var4.activeLocationDependentEnchantments().remove(this);
-         }
+            if (var7 != null && ((Set)var7).isEmpty()) {
+               var6.remove(this);
+            }
 
+         }
       }
    }
 
    public void stopLocationBasedEffects(int var1, EnchantedItemInUse var2, LivingEntity var3) {
-      Set var4 = (Set)var3.activeLocationDependentEnchantments().remove(this);
+      EquipmentSlot var4 = var2.inSlot();
       if (var4 != null) {
-         Iterator var5 = var4.iterator();
+         Set var5 = (Set)var3.activeLocationDependentEnchantments(var4).remove(this);
+         if (var5 != null) {
+            Iterator var6 = var5.iterator();
 
-         while(var5.hasNext()) {
-            EnchantmentLocationBasedEffect var6 = (EnchantmentLocationBasedEffect)var5.next();
-            var6.onDeactivated(var2, var3, var3.position(), var1);
+            while(var6.hasNext()) {
+               EnchantmentLocationBasedEffect var7 = (EnchantmentLocationBasedEffect)var6.next();
+               var7.onDeactivated(var2, var3, var3.position(), var1);
+            }
+
          }
-
       }
    }
 

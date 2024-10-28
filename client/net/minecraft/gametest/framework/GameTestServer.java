@@ -37,6 +37,7 @@ import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameRules;
@@ -56,6 +57,7 @@ public class GameTestServer extends MinecraftServer {
    private static final int PROGRESS_REPORT_INTERVAL = 20;
    private static final int TEST_POSITION_RANGE = 14999992;
    private static final Services NO_SERVICES;
+   private static final FeatureFlagSet ENABLED_FEATURES;
    private final LocalSampleLogger sampleLogger = new LocalSampleLogger(4);
    private List<GameTestBatch> testBatches = new ArrayList();
    private final List<TestFunction> testFunctions;
@@ -71,7 +73,7 @@ public class GameTestServer extends MinecraftServer {
          throw new IllegalArgumentException("No test functions were given!");
       } else {
          var2.reload();
-         WorldDataConfiguration var5 = new WorldDataConfiguration(new DataPackConfig(new ArrayList(var2.getAvailableIds()), List.of()), FeatureFlags.REGISTRY.allFlags());
+         WorldDataConfiguration var5 = new WorldDataConfiguration(new DataPackConfig(new ArrayList(var2.getAvailableIds()), List.of()), ENABLED_FEATURES);
          LevelSettings var6 = new LevelSettings("Test Level", GameType.CREATIVE, false, Difficulty.NORMAL, true, TEST_GAME_RULES, var5);
          WorldLoader.PackConfig var7 = new WorldLoader.PackConfig(var2, var5, false, true);
          WorldLoader.InitConfig var8 = new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, 4);
@@ -82,7 +84,7 @@ public class GameTestServer extends MinecraftServer {
             WorldStem var10 = (WorldStem)Util.blockUntilDone((var2x) -> {
                return WorldLoader.load(var8, (var1) -> {
                   Registry var2 = (new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
-                  WorldDimensions.Complete var3 = ((WorldPreset)var1.datapackWorldgen().registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value()).createWorldDimensions().bake(var2);
+                  WorldDimensions.Complete var3 = ((WorldPreset)var1.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions().bake(var2);
                   return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var6, WORLD_OPTIONS, var3.specialWorldProperty(), var3.lifecycle()), var3.dimensionsRegistryAccess());
                }, WorldStem::new, Util.backgroundExecutor(), var2x);
             }).get();
@@ -144,7 +146,7 @@ public class GameTestServer extends MinecraftServer {
          if (this.testTracker.hasFailedOptional()) {
             LOGGER.info("{} optional tests failed", this.testTracker.getFailedOptionalCount());
             this.testTracker.getFailedOptional().forEach((var0) -> {
-               LOGGER.info("   - {}", var0.getTestName());
+               LOGGER.info("   - {} with rotation: {}", var0.getTestName(), var0.getRotation());
             });
          }
 
@@ -243,7 +245,8 @@ public class GameTestServer extends MinecraftServer {
 
    static {
       NO_SERVICES = new Services((MinecraftSessionService)null, ServicesKeySet.EMPTY, (GameProfileRepository)null, (GameProfileCache)null);
-      TEST_GAME_RULES = (GameRules)Util.make(new GameRules(), (var0) -> {
+      ENABLED_FEATURES = FeatureFlags.REGISTRY.allFlags().subtract(FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS, FeatureFlags.MINECART_IMPROVEMENTS));
+      TEST_GAME_RULES = (GameRules)Util.make(new GameRules(ENABLED_FEATURES), (var0) -> {
          ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_DOMOBSPAWNING)).set(false, (MinecraftServer)null);
          ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_WEATHER_CYCLE)).set(false, (MinecraftServer)null);
          ((GameRules.IntegerValue)var0.getRule(GameRules.RULE_RANDOMTICKING)).set(0, (MinecraftServer)null);

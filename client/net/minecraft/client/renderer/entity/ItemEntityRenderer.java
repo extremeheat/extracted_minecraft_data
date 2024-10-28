@@ -4,10 +4,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
+public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRenderState> {
    private static final float ITEM_BUNDLE_OFFSET_SCALE = 0.15F;
    private static final float FLAT_ITEM_BUNDLE_OFFSET_X = 0.0F;
    private static final float FLAT_ITEM_BUNDLE_OFFSET_Y = 0.0F;
@@ -32,25 +32,36 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
       this.shadowStrength = 0.75F;
    }
 
-   public ResourceLocation getTextureLocation(ItemEntity var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
+   public ItemEntityRenderState createRenderState() {
+      return new ItemEntityRenderState();
    }
 
-   public void render(ItemEntity var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      var4.pushPose();
-      ItemStack var7 = var1.getItem();
-      this.random.setSeed((long)getSeedForItemStack(var7));
-      BakedModel var8 = this.itemRenderer.getModel(var7, var1.level(), (LivingEntity)null, var1.getId());
-      boolean var9 = var8.isGui3d();
-      float var10 = 0.25F;
-      float var11 = Mth.sin(((float)var1.getAge() + var3) / 10.0F + var1.bobOffs) * 0.1F + 0.1F;
-      float var12 = var8.getTransforms().getTransform(ItemDisplayContext.GROUND).scale.y();
-      var4.translate(0.0F, var11 + 0.25F * var12, 0.0F);
-      float var13 = var1.getSpin(var3);
-      var4.mulPose(Axis.YP.rotation(var13));
-      renderMultipleFromCount(this.itemRenderer, var4, var5, var6, var7, var8, var9, this.random);
-      var4.popPose();
-      super.render(var1, var2, var3, var4, var5, var6);
+   public void extractRenderState(ItemEntity var1, ItemEntityRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.ageInTicks = (float)var1.getAge() + var3;
+      var2.bobOffset = var1.bobOffs;
+      ItemStack var4 = var1.getItem();
+      var2.item = var4.copy();
+      var2.itemModel = this.itemRenderer.getModel(var4, var1.level(), (LivingEntity)null, var1.getId());
+   }
+
+   public void render(ItemEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      BakedModel var5 = var1.itemModel;
+      if (var5 != null) {
+         var2.pushPose();
+         ItemStack var6 = var1.item;
+         this.random.setSeed((long)getSeedForItemStack(var6));
+         boolean var7 = var5.isGui3d();
+         float var8 = 0.25F;
+         float var9 = Mth.sin(var1.ageInTicks / 10.0F + var1.bobOffset) * 0.1F + 0.1F;
+         float var10 = var5.getTransforms().getTransform(ItemDisplayContext.GROUND).scale.y();
+         var2.translate(0.0F, var9 + 0.25F * var10, 0.0F);
+         float var11 = ItemEntity.getSpin(var1.ageInTicks, var1.bobOffset);
+         var2.mulPose(Axis.YP.rotation(var11));
+         renderMultipleFromCount(this.itemRenderer, var2, var3, var4, var6, var5, var7, this.random);
+         var2.popPose();
+         super.render(var1, var2, var3, var4);
+      }
    }
 
    public static int getSeedForItemStack(ItemStack var0) {
@@ -111,5 +122,10 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
          }
       }
 
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

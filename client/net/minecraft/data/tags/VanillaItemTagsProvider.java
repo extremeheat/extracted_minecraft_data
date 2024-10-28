@@ -72,8 +72,10 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.DIRT, ItemTags.DIRT);
       this.copy(BlockTags.TERRACOTTA, ItemTags.TERRACOTTA);
       this.copy(BlockTags.COMPLETES_FIND_TREE_TUTORIAL, ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
+      this.copy(BlockTags.SHULKER_BOXES, ItemTags.SHULKER_BOXES);
       this.tag(ItemTags.BANNERS).add((Object[])(Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER, Items.YELLOW_BANNER, Items.LIME_BANNER, Items.PINK_BANNER, Items.GRAY_BANNER, Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER, Items.BROWN_BANNER, Items.GREEN_BANNER, Items.RED_BANNER, Items.BLACK_BANNER));
       this.tag(ItemTags.BOATS).add((Object[])(Items.OAK_BOAT, Items.SPRUCE_BOAT, Items.BIRCH_BOAT, Items.JUNGLE_BOAT, Items.ACACIA_BOAT, Items.DARK_OAK_BOAT, Items.MANGROVE_BOAT, Items.BAMBOO_RAFT, Items.CHERRY_BOAT)).addTag(ItemTags.CHEST_BOATS);
+      this.tag(ItemTags.BUNDLES).add((Object[])(Items.BUNDLE, Items.BLACK_BUNDLE, Items.BLUE_BUNDLE, Items.BROWN_BUNDLE, Items.CYAN_BUNDLE, Items.GRAY_BUNDLE, Items.GREEN_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.LIME_BUNDLE, Items.MAGENTA_BUNDLE, Items.ORANGE_BUNDLE, Items.PINK_BUNDLE, Items.PURPLE_BUNDLE, Items.RED_BUNDLE, Items.YELLOW_BUNDLE, Items.WHITE_BUNDLE));
       this.tag(ItemTags.CHEST_BOATS).add((Object[])(Items.OAK_CHEST_BOAT, Items.SPRUCE_CHEST_BOAT, Items.BIRCH_CHEST_BOAT, Items.JUNGLE_CHEST_BOAT, Items.ACACIA_CHEST_BOAT, Items.DARK_OAK_CHEST_BOAT, Items.MANGROVE_CHEST_BOAT, Items.BAMBOO_CHEST_RAFT, Items.CHERRY_CHEST_BOAT));
       this.tag(ItemTags.FISHES).add((Object[])(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.PUFFERFISH, Items.TROPICAL_FISH));
       this.copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
@@ -87,9 +89,25 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add((Object[])(Items.GOLD_BLOCK, Items.GILDED_BLACKSTONE, Items.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT, Items.BELL, Items.CLOCK, Items.GOLDEN_CARROT, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, Items.GOLDEN_HORSE_ARMOR, Items.GOLDEN_SWORD, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.RAW_GOLD, Items.RAW_GOLD_BLOCK));
       this.tag(ItemTags.IGNORED_BY_PIGLIN_BABIES).add((Object)Items.LEATHER);
       this.tag(ItemTags.PIGLIN_FOOD).add((Object[])(Items.PORKCHOP, Items.COOKED_PORKCHOP));
+      this.tag(ItemTags.PIGLIN_SAFE_ARMOR).add((Object[])(Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS));
       this.tag(ItemTags.FOX_FOOD).add((Object[])(Items.SWEET_BERRIES, Items.GLOW_BERRIES));
+      this.tag(ItemTags.DUPLICATES_ALLAYS).add((Object)Items.AMETHYST_SHARD);
+      this.tag(ItemTags.BREWING_FUEL).add((Object)Items.BLAZE_POWDER);
       this.tag(ItemTags.NON_FLAMMABLE_WOOD).add((Object[])(Items.WARPED_STEM, Items.STRIPPED_WARPED_STEM, Items.WARPED_HYPHAE, Items.STRIPPED_WARPED_HYPHAE, Items.CRIMSON_STEM, Items.STRIPPED_CRIMSON_STEM, Items.CRIMSON_HYPHAE, Items.STRIPPED_CRIMSON_HYPHAE, Items.CRIMSON_PLANKS, Items.WARPED_PLANKS, Items.CRIMSON_SLAB, Items.WARPED_SLAB, Items.CRIMSON_PRESSURE_PLATE, Items.WARPED_PRESSURE_PLATE, Items.CRIMSON_FENCE, Items.WARPED_FENCE, Items.CRIMSON_TRAPDOOR, Items.WARPED_TRAPDOOR, Items.CRIMSON_FENCE_GATE, Items.WARPED_FENCE_GATE, Items.CRIMSON_STAIRS, Items.WARPED_STAIRS, Items.CRIMSON_BUTTON, Items.WARPED_BUTTON, Items.CRIMSON_DOOR, Items.WARPED_DOOR, Items.CRIMSON_SIGN, Items.WARPED_SIGN, Items.WARPED_HANGING_SIGN, Items.CRIMSON_HANGING_SIGN));
+      this.tag(ItemTags.WOODEN_TOOL_MATERIALS).addTag(ItemTags.PLANKS);
       this.tag(ItemTags.STONE_TOOL_MATERIALS).add((Object[])(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE));
+      this.tag(ItemTags.IRON_TOOL_MATERIALS).add((Object)Items.IRON_INGOT);
+      this.tag(ItemTags.GOLD_TOOL_MATERIALS).add((Object)Items.GOLD_INGOT);
+      this.tag(ItemTags.DIAMOND_TOOL_MATERIALS).add((Object)Items.DIAMOND);
+      this.tag(ItemTags.NETHERITE_TOOL_MATERIALS).add((Object)Items.NETHERITE_INGOT);
+      this.tag(ItemTags.REPAIRS_LEATHER_ARMOR).add((Object)Items.LEATHER);
+      this.tag(ItemTags.REPAIRS_CHAIN_ARMOR).add((Object)Items.IRON_INGOT);
+      this.tag(ItemTags.REPAIRS_IRON_ARMOR).add((Object)Items.IRON_INGOT);
+      this.tag(ItemTags.REPAIRS_GOLD_ARMOR).add((Object)Items.GOLD_INGOT);
+      this.tag(ItemTags.REPAIRS_DIAMOND_ARMOR).add((Object)Items.DIAMOND);
+      this.tag(ItemTags.REPAIRS_NETHERITE_ARMOR).add((Object)Items.NETHERITE_INGOT);
+      this.tag(ItemTags.REPAIRS_TURTLE_HELMET).add((Object)Items.TURTLE_SCUTE);
+      this.tag(ItemTags.REPAIRS_WOLF_ARMOR).add((Object)Items.ARMADILLO_SCUTE);
       this.tag(ItemTags.STONE_CRAFTING_MATERIALS).add((Object[])(Items.COBBLESTONE, Items.BLACKSTONE, Items.COBBLED_DEEPSLATE));
       this.tag(ItemTags.FREEZE_IMMUNE_WEARABLES).add((Object[])(Items.LEATHER_BOOTS, Items.LEATHER_LEGGINGS, Items.LEATHER_CHESTPLATE, Items.LEATHER_HELMET, Items.LEATHER_HORSE_ARMOR));
       this.tag(ItemTags.AXOLOTL_FOOD).add((Object)Items.TROPICAL_FISH_BUCKET);
@@ -116,6 +134,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add((Object[])(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD));
       this.tag(ItemTags.SNIFFER_FOOD).add((Object)Items.TORCHFLOWER_SEEDS);
       this.tag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add((Object[])(Items.WHEAT_SEEDS, Items.POTATO, Items.CARROT, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD));
+      this.tag(ItemTags.VILLAGER_PICKS_UP).addTag(ItemTags.VILLAGER_PLANTABLE_SEEDS).add((Object[])(Items.BREAD, Items.WHEAT, Items.BEETROOT));
       this.tag(ItemTags.FOOT_ARMOR_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR);
       this.tag(ItemTags.LEG_ARMOR_ENCHANTABLE).addTag(ItemTags.LEG_ARMOR);
       this.tag(ItemTags.CHEST_ARMOR_ENCHANTABLE).addTag(ItemTags.CHEST_ARMOR);
@@ -136,8 +155,9 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.CROSSBOW_ENCHANTABLE).add((Object)Items.CROSSBOW);
       this.tag(ItemTags.VANISHING_ENCHANTABLE).addTag(ItemTags.DURABILITY_ENCHANTABLE).add((Object)Items.COMPASS).add((Object)Items.CARVED_PUMPKIN).addTag(ItemTags.SKULLS);
       this.tag(ItemTags.DYEABLE).add((Object[])(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS, Items.LEATHER_HORSE_ARMOR, Items.WOLF_ARMOR));
+      this.tag(ItemTags.FURNACE_MINECART_FUEL).add((Object[])(Items.COAL, Items.CHARCOAL));
       this.tag(ItemTags.MEAT).add((Object[])(Items.BEEF, Items.CHICKEN, Items.COOKED_BEEF, Items.COOKED_CHICKEN, Items.COOKED_MUTTON, Items.COOKED_PORKCHOP, Items.COOKED_RABBIT, Items.MUTTON, Items.PORKCHOP, Items.RABBIT, Items.ROTTEN_FLESH));
-      this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT);
+      this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT).add((Object[])(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.RABBIT_STEW));
       this.tag(ItemTags.OCELOT_FOOD).add((Object[])(Items.COD, Items.SALMON));
       this.tag(ItemTags.CAT_FOOD).add((Object[])(Items.COD, Items.SALMON));
       this.tag(ItemTags.HORSE_FOOD).add((Object[])(Items.WHEAT, Items.SUGAR, Items.HAY_BLOCK, Items.APPLE, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE));
@@ -151,6 +171,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.LLAMA_FOOD).add((Object[])(Items.WHEAT, Items.HAY_BLOCK));
       this.tag(ItemTags.LLAMA_TEMPT_ITEMS).add((Object)Items.HAY_BLOCK);
       this.tag(ItemTags.PANDA_FOOD).add((Object)Items.BAMBOO);
+      this.tag(ItemTags.PANDA_EATS_FROM_GROUND).addTag(ItemTags.PANDA_FOOD).add((Object)Items.CAKE);
       this.tag(ItemTags.PIG_FOOD).add((Object[])(Items.CARROT, Items.POTATO, Items.BEETROOT));
       this.tag(ItemTags.RABBIT_FOOD).add((Object[])(Items.CARROT, Items.GOLDEN_CARROT, Items.DANDELION));
       this.tag(ItemTags.STRIDER_FOOD).add((Object)Items.WARPED_FUNGUS);
@@ -161,5 +182,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.COW_FOOD).add((Object)Items.WHEAT);
       this.tag(ItemTags.SHEEP_FOOD).add((Object)Items.WHEAT);
       this.tag(ItemTags.GOAT_FOOD).add((Object)Items.WHEAT);
+      this.tag(ItemTags.MAP_INVISIBILITY_EQUIPMENT).add((Object)Items.CARVED_PUMPKIN);
+      this.tag(ItemTags.GAZE_DISGUISE_EQUIPMENT).add((Object)Items.CARVED_PUMPKIN);
    }
 }

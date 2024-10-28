@@ -19,19 +19,15 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.DyeColor;
@@ -95,7 +91,7 @@ public interface DispenseItemBehavior {
             EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2);
 
             try {
-               var4.spawn(var1.level(), var2, (Player)null, var1.pos().relative(var3), MobSpawnType.DISPENSER, var3 != Direction.UP, false);
+               var4.spawn(var1.level(), var2, (Player)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
             } catch (Exception var6) {
                LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
                return ItemStack.EMPTY;
@@ -121,7 +117,7 @@ public interface DispenseItemBehavior {
             Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> {
                var1x.setYRot(var3.toYRot());
             }, var5, var2, (Player)null);
-            ArmorStand var7 = (ArmorStand)EntityType.ARMOR_STAND.spawn(var5, var6, var4, MobSpawnType.DISPENSER, false, false);
+            ArmorStand var7 = (ArmorStand)EntityType.ARMOR_STAND.spawn(var5, var6, var4, EntitySpawnReason.DISPENSER, false, false);
             if (var7 != null) {
                var2.shrink(1);
             }
@@ -148,48 +144,6 @@ public interface DispenseItemBehavior {
             }
          }
       });
-      OptionalDispenseItemBehavior var8 = new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-            List var4 = var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), (var0) -> {
-               return var0.isAlive() && var0.canUseSlot(EquipmentSlot.BODY);
-            });
-            Iterator var5 = var4.iterator();
-
-            AbstractHorse var6;
-            do {
-               if (!var5.hasNext()) {
-                  return super.execute(var1, var2);
-               }
-
-               var6 = (AbstractHorse)var5.next();
-            } while(!var6.isBodyArmorItem(var2) || var6.isWearingBodyArmor() || !var6.isTamed());
-
-            var6.setBodyArmorItem(var2.split(1));
-            this.setSuccess(true);
-            return var2;
-         }
-      };
-      DispenserBlock.registerBehavior(Items.LEATHER_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.IRON_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.GOLDEN_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.DIAMOND_HORSE_ARMOR, var8);
-      DispenserBlock.registerBehavior(Items.WHITE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.ORANGE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.CYAN_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.BLUE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.BROWN_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.BLACK_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.GRAY_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.GREEN_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.LIGHT_BLUE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.LIGHT_GRAY_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.LIME_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.MAGENTA_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.PINK_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.PURPLE_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.RED_CARPET, var8);
-      DispenserBlock.registerBehavior(Items.YELLOW_CARPET, var8);
       DispenserBlock.registerBehavior(Items.CHEST, new OptionalDispenseItemBehavior() {
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             BlockPos var3 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
@@ -212,25 +166,27 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      DispenserBlock.registerBehavior(Items.OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK));
-      DispenserBlock.registerBehavior(Items.SPRUCE_BOAT, new BoatDispenseItemBehavior(Boat.Type.SPRUCE));
-      DispenserBlock.registerBehavior(Items.BIRCH_BOAT, new BoatDispenseItemBehavior(Boat.Type.BIRCH));
-      DispenserBlock.registerBehavior(Items.JUNGLE_BOAT, new BoatDispenseItemBehavior(Boat.Type.JUNGLE));
-      DispenserBlock.registerBehavior(Items.DARK_OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK));
-      DispenserBlock.registerBehavior(Items.ACACIA_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA));
-      DispenserBlock.registerBehavior(Items.CHERRY_BOAT, new BoatDispenseItemBehavior(Boat.Type.CHERRY));
-      DispenserBlock.registerBehavior(Items.MANGROVE_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE));
-      DispenserBlock.registerBehavior(Items.BAMBOO_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO));
-      DispenserBlock.registerBehavior(Items.OAK_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK, true));
-      DispenserBlock.registerBehavior(Items.SPRUCE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.SPRUCE, true));
-      DispenserBlock.registerBehavior(Items.BIRCH_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.BIRCH, true));
-      DispenserBlock.registerBehavior(Items.JUNGLE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.JUNGLE, true));
-      DispenserBlock.registerBehavior(Items.DARK_OAK_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK, true));
-      DispenserBlock.registerBehavior(Items.ACACIA_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA, true));
-      DispenserBlock.registerBehavior(Items.CHERRY_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.CHERRY, true));
-      DispenserBlock.registerBehavior(Items.MANGROVE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE, true));
-      DispenserBlock.registerBehavior(Items.BAMBOO_CHEST_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO, true));
-      DefaultDispenseItemBehavior var9 = new DefaultDispenseItemBehavior() {
+      DispenserBlock.registerBehavior(Items.OAK_BOAT, new BoatDispenseItemBehavior(EntityType.OAK_BOAT));
+      DispenserBlock.registerBehavior(Items.SPRUCE_BOAT, new BoatDispenseItemBehavior(EntityType.SPRUCE_BOAT));
+      DispenserBlock.registerBehavior(Items.BIRCH_BOAT, new BoatDispenseItemBehavior(EntityType.BIRCH_BOAT));
+      DispenserBlock.registerBehavior(Items.JUNGLE_BOAT, new BoatDispenseItemBehavior(EntityType.JUNGLE_BOAT));
+      DispenserBlock.registerBehavior(Items.DARK_OAK_BOAT, new BoatDispenseItemBehavior(EntityType.DARK_OAK_BOAT));
+      DispenserBlock.registerBehavior(Items.ACACIA_BOAT, new BoatDispenseItemBehavior(EntityType.ACACIA_BOAT));
+      DispenserBlock.registerBehavior(Items.CHERRY_BOAT, new BoatDispenseItemBehavior(EntityType.CHERRY_BOAT));
+      DispenserBlock.registerBehavior(Items.MANGROVE_BOAT, new BoatDispenseItemBehavior(EntityType.MANGROVE_BOAT));
+      DispenserBlock.registerBehavior(Items.PALE_OAK_BOAT, new BoatDispenseItemBehavior(EntityType.PALE_OAK_BOAT));
+      DispenserBlock.registerBehavior(Items.BAMBOO_RAFT, new BoatDispenseItemBehavior(EntityType.BAMBOO_RAFT));
+      DispenserBlock.registerBehavior(Items.OAK_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.OAK_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.SPRUCE_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.SPRUCE_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.BIRCH_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.BIRCH_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.JUNGLE_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.JUNGLE_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.DARK_OAK_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.DARK_OAK_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.ACACIA_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.ACACIA_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.CHERRY_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.CHERRY_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.MANGROVE_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.MANGROVE_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.PALE_OAK_CHEST_BOAT, new BoatDispenseItemBehavior(EntityType.PALE_OAK_CHEST_BOAT));
+      DispenserBlock.registerBehavior(Items.BAMBOO_CHEST_RAFT, new BoatDispenseItemBehavior(EntityType.BAMBOO_CHEST_RAFT));
+      DefaultDispenseItemBehavior var6 = new DefaultDispenseItemBehavior() {
          private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
 
          public ItemStack execute(BlockSource var1, ItemStack var2) {
@@ -245,15 +201,15 @@ public interface DispenseItemBehavior {
             }
          }
       };
-      DispenserBlock.registerBehavior(Items.LAVA_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.WATER_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.POWDER_SNOW_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.SALMON_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.COD_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var9);
+      DispenserBlock.registerBehavior(Items.LAVA_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.WATER_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.POWDER_SNOW_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.SALMON_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.COD_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var6);
+      DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var6);
       DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
@@ -330,18 +286,6 @@ public interface DispenseItemBehavior {
             return var2;
          }
       });
-      OptionalDispenseItemBehavior var3 = new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
-            return var2;
-         }
-      };
-      DispenserBlock.registerBehavior(Items.CREEPER_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.ZOMBIE_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.DRAGON_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.SKELETON_SKULL, var3);
-      DispenserBlock.registerBehavior(Items.PIGLIN_HEAD, var3);
-      DispenserBlock.registerBehavior(Items.PLAYER_HEAD, var3);
       DispenserBlock.registerBehavior(Items.WITHER_SKELETON_SKULL, new OptionalDispenseItemBehavior() {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             ServerLevel var3 = var1.level();
@@ -358,7 +302,7 @@ public interface DispenseItemBehavior {
                var2.shrink(1);
                this.setSuccess(true);
             } else {
-               this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
+               this.setSuccess(EquipmentDispenseItemBehavior.dispenseEquipment(var1, var2));
             }
 
             return var2;
@@ -378,19 +322,19 @@ public interface DispenseItemBehavior {
                var2.shrink(1);
                this.setSuccess(true);
             } else {
-               this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
+               this.setSuccess(EquipmentDispenseItemBehavior.dispenseEquipment(var1, var2));
             }
 
             return var2;
          }
       });
       DispenserBlock.registerBehavior(Blocks.SHULKER_BOX.asItem(), new ShulkerBoxDispenseBehavior());
-      DyeColor[] var4 = DyeColor.values();
-      int var5 = var4.length;
+      DyeColor[] var7 = DyeColor.values();
+      int var3 = var7.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         DyeColor var7 = var4[var6];
-         DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(var7).asItem(), new ShulkerBoxDispenseBehavior());
+      for(int var4 = 0; var4 < var3; ++var4) {
+         DyeColor var5 = var7[var4];
+         DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(var5).asItem(), new ShulkerBoxDispenseBehavior());
       }
 
       DispenserBlock.registerBehavior(Items.GLASS_BOTTLE.asItem(), new OptionalDispenseItemBehavior() {
@@ -512,5 +456,11 @@ public interface DispenseItemBehavior {
             }
          }
       });
+      DispenserBlock.registerBehavior(Items.MINECART, new MinecartDispenseItemBehavior(EntityType.MINECART));
+      DispenserBlock.registerBehavior(Items.CHEST_MINECART, new MinecartDispenseItemBehavior(EntityType.CHEST_MINECART));
+      DispenserBlock.registerBehavior(Items.FURNACE_MINECART, new MinecartDispenseItemBehavior(EntityType.FURNACE_MINECART));
+      DispenserBlock.registerBehavior(Items.TNT_MINECART, new MinecartDispenseItemBehavior(EntityType.TNT_MINECART));
+      DispenserBlock.registerBehavior(Items.HOPPER_MINECART, new MinecartDispenseItemBehavior(EntityType.HOPPER_MINECART));
+      DispenserBlock.registerBehavior(Items.COMMAND_BLOCK_MINECART, new MinecartDispenseItemBehavior(EntityType.COMMAND_BLOCK_MINECART));
    }
 }

@@ -6,16 +6,40 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePacketListener> {
+   private static final int FLAG_ON_GROUND = 1;
+   private static final int FLAG_HORIZONTAL_COLLISION = 2;
    protected final double x;
    protected final double y;
    protected final double z;
    protected final float yRot;
    protected final float xRot;
    protected final boolean onGround;
+   protected final boolean horizontalCollision;
    protected final boolean hasPos;
    protected final boolean hasRot;
 
-   protected ServerboundMovePlayerPacket(double var1, double var3, double var5, float var7, float var8, boolean var9, boolean var10, boolean var11) {
+   static int packFlags(boolean var0, boolean var1) {
+      int var2 = 0;
+      if (var0) {
+         var2 |= 1;
+      }
+
+      if (var1) {
+         var2 |= 2;
+      }
+
+      return var2;
+   }
+
+   static boolean unpackOnGround(int var0) {
+      return (var0 & 1) != 0;
+   }
+
+   static boolean unpackHorizontalCollision(int var0) {
+      return (var0 & 2) != 0;
+   }
+
+   protected ServerboundMovePlayerPacket(double var1, double var3, double var5, float var7, float var8, boolean var9, boolean var10, boolean var11, boolean var12) {
       super();
       this.x = var1;
       this.y = var3;
@@ -23,8 +47,9 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
       this.yRot = var7;
       this.xRot = var8;
       this.onGround = var9;
-      this.hasPos = var10;
-      this.hasRot = var11;
+      this.horizontalCollision = var10;
+      this.hasPos = var11;
+      this.hasRot = var12;
    }
 
    public abstract PacketType<? extends ServerboundMovePlayerPacket> type();
@@ -57,6 +82,10 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
       return this.onGround;
    }
 
+   public boolean horizontalCollision() {
+      return this.horizontalCollision;
+   }
+
    public boolean hasPosition() {
       return this.hasPos;
    }
@@ -68,17 +97,19 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
    public static class StatusOnly extends ServerboundMovePlayerPacket {
       public static final StreamCodec<FriendlyByteBuf, StatusOnly> STREAM_CODEC = Packet.codec(StatusOnly::write, StatusOnly::read);
 
-      public StatusOnly(boolean var1) {
-         super(0.0, 0.0, 0.0, 0.0F, 0.0F, var1, false, false);
+      public StatusOnly(boolean var1, boolean var2) {
+         super(0.0, 0.0, 0.0, 0.0F, 0.0F, var1, var2, false, false);
       }
 
       private static StatusOnly read(FriendlyByteBuf var0) {
-         boolean var1 = var0.readUnsignedByte() != 0;
-         return new StatusOnly(var1);
+         short var1 = var0.readUnsignedByte();
+         boolean var2 = ServerboundMovePlayerPacket.unpackOnGround(var1);
+         boolean var3 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var1);
+         return new StatusOnly(var2, var3);
       }
 
       private void write(FriendlyByteBuf var1) {
-         var1.writeByte(this.onGround ? 1 : 0);
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
       }
 
       public PacketType<StatusOnly> type() {
@@ -89,21 +120,23 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
    public static class Rot extends ServerboundMovePlayerPacket {
       public static final StreamCodec<FriendlyByteBuf, Rot> STREAM_CODEC = Packet.codec(Rot::write, Rot::read);
 
-      public Rot(float var1, float var2, boolean var3) {
-         super(0.0, 0.0, 0.0, var1, var2, var3, false, true);
+      public Rot(float var1, float var2, boolean var3, boolean var4) {
+         super(0.0, 0.0, 0.0, var1, var2, var3, var4, false, true);
       }
 
       private static Rot read(FriendlyByteBuf var0) {
          float var1 = var0.readFloat();
          float var2 = var0.readFloat();
-         boolean var3 = var0.readUnsignedByte() != 0;
-         return new Rot(var1, var2, var3);
+         short var3 = var0.readUnsignedByte();
+         boolean var4 = ServerboundMovePlayerPacket.unpackOnGround(var3);
+         boolean var5 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var3);
+         return new Rot(var1, var2, var4, var5);
       }
 
       private void write(FriendlyByteBuf var1) {
          var1.writeFloat(this.yRot);
          var1.writeFloat(this.xRot);
-         var1.writeByte(this.onGround ? 1 : 0);
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
       }
 
       public PacketType<Rot> type() {
@@ -114,23 +147,25 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
    public static class Pos extends ServerboundMovePlayerPacket {
       public static final StreamCodec<FriendlyByteBuf, Pos> STREAM_CODEC = Packet.codec(Pos::write, Pos::read);
 
-      public Pos(double var1, double var3, double var5, boolean var7) {
-         super(var1, var3, var5, 0.0F, 0.0F, var7, true, false);
+      public Pos(double var1, double var3, double var5, boolean var7, boolean var8) {
+         super(var1, var3, var5, 0.0F, 0.0F, var7, var8, true, false);
       }
 
       private static Pos read(FriendlyByteBuf var0) {
          double var1 = var0.readDouble();
          double var3 = var0.readDouble();
          double var5 = var0.readDouble();
-         boolean var7 = var0.readUnsignedByte() != 0;
-         return new Pos(var1, var3, var5, var7);
+         short var7 = var0.readUnsignedByte();
+         boolean var8 = ServerboundMovePlayerPacket.unpackOnGround(var7);
+         boolean var9 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var7);
+         return new Pos(var1, var3, var5, var8, var9);
       }
 
       private void write(FriendlyByteBuf var1) {
          var1.writeDouble(this.x);
          var1.writeDouble(this.y);
          var1.writeDouble(this.z);
-         var1.writeByte(this.onGround ? 1 : 0);
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
       }
 
       public PacketType<Pos> type() {
@@ -141,8 +176,8 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
    public static class PosRot extends ServerboundMovePlayerPacket {
       public static final StreamCodec<FriendlyByteBuf, PosRot> STREAM_CODEC = Packet.codec(PosRot::write, PosRot::read);
 
-      public PosRot(double var1, double var3, double var5, float var7, float var8, boolean var9) {
-         super(var1, var3, var5, var7, var8, var9, true, true);
+      public PosRot(double var1, double var3, double var5, float var7, float var8, boolean var9, boolean var10) {
+         super(var1, var3, var5, var7, var8, var9, var10, true, true);
       }
 
       private static PosRot read(FriendlyByteBuf var0) {
@@ -151,8 +186,10 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
          double var5 = var0.readDouble();
          float var7 = var0.readFloat();
          float var8 = var0.readFloat();
-         boolean var9 = var0.readUnsignedByte() != 0;
-         return new PosRot(var1, var3, var5, var7, var8, var9);
+         short var9 = var0.readUnsignedByte();
+         boolean var10 = ServerboundMovePlayerPacket.unpackOnGround(var9);
+         boolean var11 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var9);
+         return new PosRot(var1, var3, var5, var7, var8, var10, var11);
       }
 
       private void write(FriendlyByteBuf var1) {
@@ -161,7 +198,7 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
          var1.writeDouble(this.z);
          var1.writeFloat(this.yRot);
          var1.writeFloat(this.xRot);
-         var1.writeByte(this.onGround ? 1 : 0);
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
       }
 
       public PacketType<PosRot> type() {

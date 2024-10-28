@@ -22,7 +22,7 @@ public interface HolderGetter<T> {
    }
 
    public interface Provider {
-      <T> Optional<HolderGetter<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
+      <T> Optional<? extends HolderGetter<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
 
       default <T> HolderGetter<T> lookupOrThrow(ResourceKey<? extends Registry<? extends T>> var1) {
          return (HolderGetter)this.lookup(var1).orElseThrow(() -> {
@@ -30,9 +30,9 @@ public interface HolderGetter<T> {
          });
       }
 
-      default <T> Optional<Holder.Reference<T>> get(ResourceKey<? extends Registry<? extends T>> var1, ResourceKey<T> var2) {
-         return this.lookup(var1).flatMap((var1x) -> {
-            return var1x.get(var2);
+      default <T> Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
+         return this.lookup(var1.registryKey()).flatMap((var1x) -> {
+            return var1x.get(var1);
          });
       }
    }

@@ -1,13 +1,14 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 
-public record RecipeHolder<T extends Recipe<?>>(ResourceLocation id, T value) {
+public record RecipeHolder<T extends Recipe<?>>(ResourceKey<Recipe<?>> id, T value) {
    public static final StreamCodec<RegistryFriendlyByteBuf, RecipeHolder<?>> STREAM_CODEC;
 
-   public RecipeHolder(ResourceLocation var1, T var2) {
+   public RecipeHolder(ResourceKey<Recipe<?>> var1, T var2) {
       super();
       this.id = var1;
       this.value = var2;
@@ -20,7 +21,7 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation id, T value) {
          boolean var10000;
          if (var1 instanceof RecipeHolder) {
             RecipeHolder var2 = (RecipeHolder)var1;
-            if (this.id.equals(var2.id)) {
+            if (this.id == var2.id) {
                var10000 = true;
                return var10000;
             }
@@ -39,7 +40,7 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation id, T value) {
       return this.id.toString();
    }
 
-   public ResourceLocation id() {
+   public ResourceKey<Recipe<?>> id() {
       return this.id;
    }
 
@@ -48,6 +49,6 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation id, T value) {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new);
+      STREAM_CODEC = StreamCodec.composite(ResourceKey.streamCodec(Registries.RECIPE), RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new);
    }
 }

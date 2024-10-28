@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -55,6 +55,8 @@ public class PlayerTabOverlay {
    private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half_blinking");
    private static final ResourceLocation HEART_HALF_SPRITE = ResourceLocation.withDefaultNamespace("hud/heart/half");
    private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.comparingInt((var0) -> {
+      return -var0.getTabListOrder();
+   }).thenComparingInt((var0) -> {
       return var0.getGameMode() == GameType.SPECTATOR ? 1 : 0;
    }).thenComparing((var0) -> {
       return (String)Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, "");
@@ -222,7 +224,6 @@ public class PlayerTabOverlay {
          int var25 = var39 + var23 * var15 + var23 * 5;
          int var26 = var40 + var24 * 9;
          var1.fill(var25, var26, var25 + var15, var26 + 8, var44);
-         RenderSystem.enableBlend();
          if (var45 < var5.size()) {
             PlayerInfo var27 = (PlayerInfo)var5.get(var45);
             ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var45);
@@ -231,7 +232,7 @@ public class PlayerTabOverlay {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
                boolean var31 = var30 != null && LivingEntityRenderer.isEntityUpsideDown(var30);
                boolean var32 = var30 != null && var30.isModelPartShown(PlayerModelPart.HAT);
-               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var32, var31);
+               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var32, var31, -1);
                var25 += 9;
             }
 
@@ -285,7 +286,7 @@ public class PlayerTabOverlay {
 
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
-      var1.blitSprite(var6, var3 + var2 - 11, var4, 10, 8);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var6, var3 + var2 - 11, var4, 10, 8);
       var1.pose().popPose();
    }
 
@@ -326,27 +327,27 @@ public class PlayerTabOverlay {
             ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
 
             for(var13 = var8; var13 < var9; ++var13) {
-               var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
+               var5.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var2 + var13 * var11, var1, 9, 9);
             }
 
             for(var13 = 0; var13 < var8; ++var13) {
-               var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
+               var5.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var2 + var13 * var11, var1, 9, 9);
                if (var10) {
                   if (var13 * 2 + 1 < var7.displayedValue()) {
-                     var5.blitSprite(HEART_FULL_BLINKING_SPRITE, var2 + var13 * var11, var1, 9, 9);
+                     var5.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_FULL_BLINKING_SPRITE, var2 + var13 * var11, var1, 9, 9);
                   }
 
                   if (var13 * 2 + 1 == var7.displayedValue()) {
-                     var5.blitSprite(HEART_HALF_BLINKING_SPRITE, var2 + var13 * var11, var1, 9, 9);
+                     var5.blitSprite(RenderType::guiTextured, (ResourceLocation)HEART_HALF_BLINKING_SPRITE, var2 + var13 * var11, var1, 9, 9);
                   }
                }
 
                if (var13 * 2 + 1 < var6) {
-                  var5.blitSprite(var13 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE, var2 + var13 * var11, var1, 9, 9);
+                  var5.blitSprite(RenderType::guiTextured, (ResourceLocation)(var13 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE), var2 + var13 * var11, var1, 9, 9);
                }
 
                if (var13 * 2 + 1 == var6) {
-                  var5.blitSprite(var13 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE, var2 + var13 * var11, var1, 9, 9);
+                  var5.blitSprite(RenderType::guiTextured, (ResourceLocation)(var13 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE), var2 + var13 * var11, var1, 9, 9);
                }
             }
 

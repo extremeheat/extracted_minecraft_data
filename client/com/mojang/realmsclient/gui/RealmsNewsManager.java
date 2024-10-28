@@ -31,15 +31,14 @@ public class RealmsNewsManager {
    }
 
    private RealmsPersistence.RealmsPersistenceData updateNewsStorage(RealmsNews var1) {
-      RealmsPersistence.RealmsPersistenceData var2 = new RealmsPersistence.RealmsPersistenceData();
-      var2.newsLink = var1.newsLink;
-      RealmsPersistence.RealmsPersistenceData var3 = this.newsLocalStorage.read();
-      boolean var4 = var2.newsLink == null || var2.newsLink.equals(var3.newsLink);
-      if (var4) {
+      RealmsPersistence.RealmsPersistenceData var2 = this.newsLocalStorage.read();
+      if (var1.newsLink != null && !var1.newsLink.equals(var2.newsLink)) {
+         RealmsPersistence.RealmsPersistenceData var3 = new RealmsPersistence.RealmsPersistenceData();
+         var3.newsLink = var1.newsLink;
+         var3.hasUnreadNews = true;
+         this.newsLocalStorage.save(var3);
          return var3;
       } else {
-         var2.hasUnreadNews = true;
-         this.newsLocalStorage.save(var2);
          return var2;
       }
    }

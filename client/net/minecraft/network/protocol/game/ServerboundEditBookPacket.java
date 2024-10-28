@@ -9,10 +9,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundEditBookPacket(int slot, List<String> pages, Optional<String> title) implements Packet<ServerGamePacketListener> {
-   public static final int MAX_BYTES_PER_CHAR = 4;
-   private static final int TITLE_MAX_CHARS = 128;
-   private static final int PAGE_MAX_CHARS = 8192;
-   private static final int MAX_PAGES_COUNT = 200;
    public static final StreamCodec<FriendlyByteBuf, ServerboundEditBookPacket> STREAM_CODEC;
 
    public ServerboundEditBookPacket(int var1, List<String> var2, Optional<String> var3) {
@@ -44,6 +40,6 @@ public record ServerboundEditBookPacket(int slot, List<String> pages, Optional<S
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundEditBookPacket::slot, ByteBufCodecs.stringUtf8(8192).apply(ByteBufCodecs.list(200)), ServerboundEditBookPacket::pages, ByteBufCodecs.stringUtf8(128).apply(ByteBufCodecs::optional), ServerboundEditBookPacket::title, ServerboundEditBookPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundEditBookPacket::slot, ByteBufCodecs.stringUtf8(1024).apply(ByteBufCodecs.list(100)), ServerboundEditBookPacket::pages, ByteBufCodecs.stringUtf8(32).apply(ByteBufCodecs::optional), ServerboundEditBookPacket::title, ServerboundEditBookPacket::new);
    }
 }

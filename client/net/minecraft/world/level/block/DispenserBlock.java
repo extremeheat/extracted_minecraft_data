@@ -2,15 +2,17 @@ package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import net.minecraft.Util;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
@@ -33,8 +35,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -42,7 +45,7 @@ import org.slf4j.Logger;
 public class DispenserBlock extends BaseEntityBlock {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<DispenserBlock> CODEC = simpleCodec(DispenserBlock::new);
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty TRIGGERED;
    private static final DefaultDispenseItemBehavior DEFAULT_BEHAVIOR;
    public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY;
@@ -66,21 +69,16 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof DispenserBlockEntity) {
-            var4.openMenu((DispenserBlockEntity)var6);
-            if (var6 instanceof DropperBlockEntity) {
-               var4.awardStat(Stats.INSPECT_DROPPER);
-            } else {
-               var4.awardStat(Stats.INSPECT_DISPENSER);
-            }
+      if (!var2.isClientSide) {
+         BlockEntity var7 = var2.getBlockEntity(var3);
+         if (var7 instanceof DispenserBlockEntity) {
+            DispenserBlockEntity var6 = (DispenserBlockEntity)var7;
+            var4.openMenu(var6);
+            var4.awardStat(var6 instanceof DropperBlockEntity ? Stats.INSPECT_DROPPER : Stats.INSPECT_DISPENSER);
          }
-
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected void dispenseFrom(ServerLevel var1, BlockState var2, BlockPos var3) {
@@ -105,10 +103,19 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected DispenseItemBehavior getDispenseMethod(Level var1, ItemStack var2) {
-      return (DispenseItemBehavior)(!var2.isItemEnabled(var1.enabledFeatures()) ? DEFAULT_BEHAVIOR : (DispenseItemBehavior)DISPENSER_REGISTRY.get(var2.getItem()));
+      if (!var2.isItemEnabled(var1.enabledFeatures())) {
+         return DEFAULT_BEHAVIOR;
+      } else {
+         DispenseItemBehavior var3 = (DispenseItemBehavior)DISPENSER_REGISTRY.get(var2.getItem());
+         return var3 != null ? var3 : getDefaultDispenseMethod(var2);
+      }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   private static DispenseItemBehavior getDefaultDispenseMethod(ItemStack var0) {
+      return (DispenseItemBehavior)(var0.has(DataComponents.EQUIPPABLE) ? EquipmentDispenseItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
+   }
+
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3) || var2.hasNeighborSignal(var3.above());
       boolean var8 = (Boolean)var1.getValue(TRIGGERED);
       if (var7 && !var8) {
@@ -174,8 +181,6 @@ public class DispenserBlock extends BaseEntityBlock {
       FACING = DirectionalBlock.FACING;
       TRIGGERED = BlockStateProperties.TRIGGERED;
       DEFAULT_BEHAVIOR = new DefaultDispenseItemBehavior();
-      DISPENSER_REGISTRY = (Map)Util.make(new Object2ObjectOpenHashMap(), (var0) -> {
-         var0.defaultReturnValue(DEFAULT_BEHAVIOR);
-      });
+      DISPENSER_REGISTRY = new IdentityHashMap();
    }
 }

@@ -7,11 +7,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.IronGolem;
 
-public class IronGolemModel<T extends IronGolem> extends HierarchicalModel<T> {
-   private final ModelPart root;
+public class IronGolemModel extends EntityModel<IronGolemRenderState> {
    private final ModelPart head;
    private final ModelPart rightArm;
    private final ModelPart leftArm;
@@ -19,8 +18,7 @@ public class IronGolemModel<T extends IronGolem> extends HierarchicalModel<T> {
    private final ModelPart leftLeg;
 
    public IronGolemModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.rightArm = var1.getChild("right_arm");
       this.leftArm = var1.getChild("left_arm");
@@ -40,35 +38,31 @@ public class IronGolemModel<T extends IronGolem> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 128, 128);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      this.rightLeg.xRot = -1.5F * Mth.triangleWave(var2, 13.0F) * var3;
-      this.leftLeg.xRot = 1.5F * Mth.triangleWave(var2, 13.0F) * var3;
-      this.rightLeg.yRot = 0.0F;
-      this.leftLeg.yRot = 0.0F;
-   }
-
-   public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      int var5 = var1.getAttackAnimationTick();
-      if (var5 > 0) {
-         this.rightArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float)var5 - var4, 10.0F);
-         this.leftArm.xRot = -2.0F + 1.5F * Mth.triangleWave((float)var5 - var4, 10.0F);
+   public void setupAnim(IronGolemRenderState var1) {
+      super.setupAnim(var1);
+      float var2 = var1.attackTicksRemaining;
+      float var3 = var1.walkAnimationSpeed;
+      float var4 = var1.walkAnimationPos;
+      if (var2 > 0.0F) {
+         this.rightArm.xRot = -2.0F + 1.5F * Mth.triangleWave(var2, 10.0F);
+         this.leftArm.xRot = -2.0F + 1.5F * Mth.triangleWave(var2, 10.0F);
       } else {
-         int var6 = var1.getOfferFlowerTick();
-         if (var6 > 0) {
-            this.rightArm.xRot = -0.8F + 0.025F * Mth.triangleWave((float)var6, 70.0F);
+         int var5 = var1.offerFlowerTick;
+         if (var5 > 0) {
+            this.rightArm.xRot = -0.8F + 0.025F * Mth.triangleWave((float)var5, 70.0F);
             this.leftArm.xRot = 0.0F;
          } else {
-            this.rightArm.xRot = (-0.2F + 1.5F * Mth.triangleWave(var2, 13.0F)) * var3;
-            this.leftArm.xRot = (-0.2F - 1.5F * Mth.triangleWave(var2, 13.0F)) * var3;
+            this.rightArm.xRot = (-0.2F + 1.5F * Mth.triangleWave(var4, 13.0F)) * var3;
+            this.leftArm.xRot = (-0.2F - 1.5F * Mth.triangleWave(var4, 13.0F)) * var3;
          }
       }
 
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.rightLeg.xRot = -1.5F * Mth.triangleWave(var4, 13.0F) * var3;
+      this.leftLeg.xRot = 1.5F * Mth.triangleWave(var4, 13.0F) * var3;
+      this.rightLeg.yRot = 0.0F;
+      this.leftLeg.yRot = 0.0F;
    }
 
    public ModelPart getFlowerHoldingArm() {

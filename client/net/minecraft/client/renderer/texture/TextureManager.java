@@ -23,7 +23,6 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
 public class TextureManager implements PreparableReloadListener, Tickable, AutoCloseable {
@@ -37,27 +36,6 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    public TextureManager(ResourceManager var1) {
       super();
       this.resourceManager = var1;
-   }
-
-   public void bindForSetup(ResourceLocation var1) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            this._bind(var1);
-         });
-      } else {
-         this._bind(var1);
-      }
-
-   }
-
-   private void _bind(ResourceLocation var1) {
-      Object var2 = (AbstractTexture)this.byPath.get(var1);
-      if (var2 == null) {
-         var2 = new SimpleTexture(var1);
-         this.register((ResourceLocation)var1, (AbstractTexture)var2);
-      }
-
-      ((AbstractTexture)var2).bind();
    }
 
    public void register(ResourceLocation var1, AbstractTexture var2) {
@@ -182,29 +160,29 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       this.prefixRegister.clear();
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
-      CompletableFuture var7 = new CompletableFuture();
-      CompletableFuture var10000 = TitleScreen.preloadResources(this, var5);
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
+      CompletableFuture var5 = new CompletableFuture();
+      CompletableFuture var10000 = TitleScreen.preloadResources(this, var3);
       Objects.requireNonNull(var1);
       var10000.thenCompose(var1::wait).thenAcceptAsync((var4x) -> {
          MissingTextureAtlasSprite.getTexture();
          AddRealmPopupScreen.updateCarouselImages(this.resourceManager);
-         Iterator var5 = this.byPath.entrySet().iterator();
+         Iterator var5x = this.byPath.entrySet().iterator();
 
          while(true) {
-            while(var5.hasNext()) {
-               Map.Entry var6x = (Map.Entry)var5.next();
-               ResourceLocation var7x = (ResourceLocation)var6x.getKey();
-               AbstractTexture var8 = (AbstractTexture)var6x.getValue();
-               if (var8 == MissingTextureAtlasSprite.getTexture() && !var7x.equals(MissingTextureAtlasSprite.getLocation())) {
-                  var5.remove();
+            while(var5x.hasNext()) {
+               Map.Entry var6 = (Map.Entry)var5x.next();
+               ResourceLocation var7 = (ResourceLocation)var6.getKey();
+               AbstractTexture var8 = (AbstractTexture)var6.getValue();
+               if (var8 == MissingTextureAtlasSprite.getTexture() && !var7.equals(MissingTextureAtlasSprite.getLocation())) {
+                  var5x.remove();
                } else {
-                  var8.reset(this, var2, var7x, var6);
+                  var8.reset(this, var2, var7, var4);
                }
             }
 
-            Minecraft.getInstance().tell(() -> {
-               var7.complete((Object)null);
+            Minecraft.getInstance().schedule(() -> {
+               var5.complete((Object)null);
             });
             return;
          }
@@ -212,7 +190,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
          Objects.requireNonNull(var0);
          RenderSystem.recordRenderCall(var0::run);
       });
-      return var7;
+      return var5;
    }
 
    public void dumpAllSheets(Path var1) {

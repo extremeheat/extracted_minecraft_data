@@ -9,13 +9,11 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.state.VexRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.monster.Vex;
-import net.minecraft.world.item.ItemStack;
 
-public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
-   private final ModelPart root;
+public class VexModel extends EntityModel<VexRenderState> implements ArmedModel {
    private final ModelPart body;
    private final ModelPart rightArm;
    private final ModelPart leftArm;
@@ -24,8 +22,7 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
    private final ModelPart head;
 
    public VexModel(ModelPart var1) {
-      super(RenderType::entityTranslucent);
-      this.root = var1.getChild("root");
+      super(var1.getChild("root"), RenderType::entityTranslucent);
       this.body = this.root.getChild("body");
       this.rightArm = this.body.getChild("right_arm");
       this.leftArm = this.body.getChild("left_arm");
@@ -47,21 +44,21 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   public void setupAnim(Vex var1, float var2, float var3, float var4, float var5, float var6) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      float var7 = Mth.cos(var4 * 5.5F * 0.017453292F) * 0.1F;
-      this.rightArm.zRot = 0.62831855F + var7;
-      this.leftArm.zRot = -(0.62831855F + var7);
-      if (var1.isCharging()) {
+   public void setupAnim(VexRenderState var1) {
+      super.setupAnim(var1);
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      float var2 = Mth.cos(var1.ageInTicks * 5.5F * 0.017453292F) * 0.1F;
+      this.rightArm.zRot = 0.62831855F + var2;
+      this.leftArm.zRot = -(0.62831855F + var2);
+      if (var1.isCharging) {
          this.body.xRot = 0.0F;
-         this.setArmsCharging(var1.getMainHandItem(), var1.getOffhandItem(), var7);
+         this.setArmsCharging(!var1.rightHandItem.isEmpty(), !var1.leftHandItem.isEmpty(), var2);
       } else {
          this.body.xRot = 0.15707964F;
       }
 
-      this.leftWing.yRot = 1.0995574F + Mth.cos(var4 * 45.836624F * 0.017453292F) * 0.017453292F * 16.2F;
+      this.leftWing.yRot = 1.0995574F + Mth.cos(var1.ageInTicks * 45.836624F * 0.017453292F) * 0.017453292F * 16.2F;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.leftWing.xRot = 0.47123888F;
       this.leftWing.zRot = -0.47123888F;
@@ -69,8 +66,8 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
       this.rightWing.zRot = 0.47123888F;
    }
 
-   private void setArmsCharging(ItemStack var1, ItemStack var2, float var3) {
-      if (var1.isEmpty() && var2.isEmpty()) {
+   private void setArmsCharging(boolean var1, boolean var2, float var3) {
+      if (!var1 && !var2) {
          this.rightArm.xRot = -1.2217305F;
          this.rightArm.yRot = 0.2617994F;
          this.rightArm.zRot = -0.47123888F - var3;
@@ -78,23 +75,19 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
          this.leftArm.yRot = -0.2617994F;
          this.leftArm.zRot = 0.47123888F + var3;
       } else {
-         if (!var1.isEmpty()) {
+         if (var1) {
             this.rightArm.xRot = 3.6651914F;
             this.rightArm.yRot = 0.2617994F;
             this.rightArm.zRot = -0.47123888F - var3;
          }
 
-         if (!var2.isEmpty()) {
+         if (var2) {
             this.leftArm.xRot = 3.6651914F;
             this.leftArm.yRot = -0.2617994F;
             this.leftArm.zRot = 0.47123888F + var3;
          }
 
       }
-   }
-
-   public ModelPart root() {
-      return this.root;
    }
 
    public void translateToHand(HumanoidArm var1, PoseStack var2) {

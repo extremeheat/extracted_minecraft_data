@@ -10,8 +10,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -37,7 +37,7 @@ public class HoneyBlock extends HalfTransparentBlock {
    }
 
    private static boolean doesEntityDoHoneyBlockSlideEffects(Entity var0) {
-      return var0 instanceof LivingEntity || var0 instanceof AbstractMinecart || var0 instanceof PrimedTnt || var0 instanceof Boat;
+      return var0 instanceof LivingEntity || var0 instanceof AbstractMinecart || var0 instanceof PrimedTnt || var0 instanceof AbstractBoat;
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -66,12 +66,20 @@ public class HoneyBlock extends HalfTransparentBlock {
       super.entityInside(var1, var2, var3, var4);
    }
 
+   private static double getOldDeltaY(double var0) {
+      return var0 / 0.9800000190734863 + 0.08;
+   }
+
+   private static double getNewDeltaY(double var0) {
+      return (var0 - 0.08) * 0.9800000190734863;
+   }
+
    private boolean isSlidingDown(BlockPos var1, Entity var2) {
       if (var2.onGround()) {
          return false;
       } else if (var2.getY() > (double)var1.getY() + 0.9375 - 1.0E-7) {
          return false;
-      } else if (var2.getDeltaMovement().y >= -0.08) {
+      } else if (getOldDeltaY(var2.getDeltaMovement().y) >= -0.08) {
          return false;
       } else {
          double var3 = Math.abs((double)var1.getX() + 0.5 - var2.getX());
@@ -90,11 +98,11 @@ public class HoneyBlock extends HalfTransparentBlock {
 
    private void doSlideMovement(Entity var1) {
       Vec3 var2 = var1.getDeltaMovement();
-      if (var2.y < -0.13) {
-         double var3 = -0.05 / var2.y;
-         var1.setDeltaMovement(new Vec3(var2.x * var3, -0.05, var2.z * var3));
+      if (getOldDeltaY(var1.getDeltaMovement().y) < -0.13) {
+         double var3 = -0.05 / getOldDeltaY(var1.getDeltaMovement().y);
+         var1.setDeltaMovement(new Vec3(var2.x * var3, getNewDeltaY(-0.05), var2.z * var3));
       } else {
-         var1.setDeltaMovement(new Vec3(var2.x, -0.05, var2.z));
+         var1.setDeltaMovement(new Vec3(var2.x, getNewDeltaY(-0.05), var2.z));
       }
 
       var1.resetFallDistance();

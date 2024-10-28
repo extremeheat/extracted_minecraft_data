@@ -15,8 +15,9 @@ import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.entity.ChunkEntities;
@@ -30,13 +31,13 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    private final ServerLevel level;
    private final SimpleRegionStorage simpleRegionStorage;
    private final LongSet emptyChunks = new LongOpenHashSet();
-   private final ProcessorMailbox<Runnable> entityDeserializerQueue;
+   private final ConsecutiveExecutor entityDeserializerQueue;
 
    public EntityStorage(SimpleRegionStorage var1, ServerLevel var2, Executor var3) {
       super();
       this.simpleRegionStorage = var1;
       this.level = var2;
-      this.entityDeserializerQueue = ProcessorMailbox.create(var3, "entity-deserializer");
+      this.entityDeserializerQueue = new ConsecutiveExecutor(var3, "entity-deserializer");
    }
 
    public CompletableFuture<ChunkEntities<Entity>> loadEntities(ChunkPos var1) {
@@ -63,13 +64,13 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
 
                CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)((CompoundTag)var2x.get()), -1);
                ListTag var4 = var7.getList("Entities", 10);
-               List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());
+               List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
                return new ChunkEntities(var1, var5);
             }
          };
-         ProcessorMailbox var10002 = this.entityDeserializerQueue;
+         ConsecutiveExecutor var10002 = this.entityDeserializerQueue;
          Objects.requireNonNull(var10002);
-         return var2.thenApplyAsync(var10001, var10002::tell);
+         return var2.thenApplyAsync(var10001, var10002::schedule);
       }
    }
 

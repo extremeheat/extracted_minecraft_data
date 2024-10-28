@@ -144,7 +144,7 @@ public class ChunkGeneratorStructureState {
                } else {
                   return new ChunkPos(var17, var18);
                }
-            }, Util.backgroundExecutor()));
+            }, Util.backgroundExecutor().forName("structureRings")));
             var10 += 6.283185307179586 / (double)var7;
             ++var12;
             if (var12 == var7) {

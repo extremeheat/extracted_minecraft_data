@@ -36,9 +36,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
@@ -90,7 +90,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setVariant((Variant)Util.getRandom((Object[])Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
@@ -115,7 +115,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 6.0).add(Attributes.FLYING_SPEED, 0.4000000059604645).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224).add(Attributes.ATTACK_DAMAGE, 3.0);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 6.0).add(Attributes.FLYING_SPEED, 0.4000000059604645).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224).add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    protected PathNavigation createNavigation(Level var1) {
@@ -188,7 +188,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (!this.isTame() && var3.is(ItemTags.PARROT_FOOD)) {
-         var3.consume(1, var1);
+         this.usePlayerItem(var1, var2, var3);
          if (!this.isSilent()) {
             this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
@@ -202,25 +202,25 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else if (!var3.is(ItemTags.PARROT_POISONOUS_FOOD)) {
          if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
             if (!this.level().isClientSide) {
                this.setOrderedToSit(!this.isOrderedToSit());
             }
 
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             return super.mobInteract(var1, var2);
          }
       } else {
-         var3.consume(1, var1);
+         this.usePlayerItem(var1, var2, var3);
          this.addEffect(new MobEffectInstance(MobEffects.POISON, 900));
          if (var1.isCreative() || !this.isInvulnerable()) {
             this.hurt(this.damageSources().playerAttack(var1), 3.4028235E38F);
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
@@ -228,7 +228,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       return false;
    }
 
-   public static boolean checkParrotSpawnRules(EntityType<Parrot> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkParrotSpawnRules(EntityType<Parrot> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.PARROTS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
@@ -305,15 +305,12 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       }
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         if (!this.level().isClientSide) {
-            this.setOrderedToSit(false);
-         }
-
-         return super.hurt(var1, var2);
+         this.setOrderedToSit(false);
+         return super.hurtServer(var1, var2, var3);
       }
    }
 
@@ -404,6 +401,8 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
          var0.put(EntityType.WITHER, SoundEvents.PARROT_IMITATE_WITHER);
          var0.put(EntityType.WITHER_SKELETON, SoundEvents.PARROT_IMITATE_WITHER_SKELETON);
          var0.put(EntityType.ZOGLIN, SoundEvents.PARROT_IMITATE_ZOGLIN);
+         var0.put(EntityType.CREAKING, SoundEvents.PARROT_IMITATE_CREAKING);
+         var0.put(EntityType.CREAKING_TRANSIENT, SoundEvents.PARROT_IMITATE_CREAKING);
          var0.put(EntityType.ZOMBIE, SoundEvents.PARROT_IMITATE_ZOMBIE);
          var0.put(EntityType.ZOMBIE_VILLAGER, SoundEvents.PARROT_IMITATE_ZOMBIE_VILLAGER);
       });

@@ -67,14 +67,16 @@ public class GameConfig {
       public final String versionType;
       public final boolean disableMultiplayer;
       public final boolean disableChat;
+      public final boolean captureTracyImages;
 
-      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5) {
+      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5, boolean var6) {
          super();
          this.demo = var1;
          this.launchVersion = var2;
          this.versionType = var3;
          this.disableMultiplayer = var4;
          this.disableChat = var5;
+         this.captureTracyImages = var6;
       }
    }
 

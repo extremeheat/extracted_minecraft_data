@@ -102,7 +102,7 @@ public interface Bucketable {
          }
 
          var2.discard();
-         return Optional.of(InteractionResult.sidedSuccess(var6.isClientSide));
+         return Optional.of(InteractionResult.SUCCESS);
       } else {
          return Optional.empty();
       }

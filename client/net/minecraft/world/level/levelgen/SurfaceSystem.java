@@ -77,7 +77,7 @@ public class SurfaceSystem {
 
          public void setBlock(int var1, BlockState var2) {
             LevelHeightAccessor var3 = var6.getHeightAccessorForGeneration();
-            if (var1 >= var3.getMinBuildHeight() && var1 < var3.getMaxBuildHeight()) {
+            if (var3.isInsideBuildHeight(var1)) {
                var6.setBlockState(var9.setY(var1), var2, false);
                if (!var2.getFluidState().isEmpty()) {
                   var6.markPosForPostprocessing(var9);
@@ -111,7 +111,7 @@ public class SurfaceSystem {
             int var24 = 0;
             int var25 = -2147483648;
             int var26 = 2147483647;
-            int var27 = var6.getMinBuildHeight();
+            int var27 = var6.getMinY();
 
             for(int var28 = var23; var28 >= var27; --var28) {
                BlockState var29 = var13.getBlock(var28);
@@ -170,10 +170,14 @@ public class SurfaceSystem {
       return !var1.isAir() && var1.getFluidState().isEmpty();
    }
 
+   public int getSeaLevel() {
+      return this.seaLevel;
+   }
+
    /** @deprecated */
    @Deprecated
    public Optional<BlockState> topMaterial(SurfaceRules.RuleSource var1, CarvingContext var2, Function<BlockPos, Holder<Biome>> var3, ChunkAccess var4, NoiseChunk var5, BlockPos var6, boolean var7) {
-      SurfaceRules.Context var8 = new SurfaceRules.Context(this, var2.randomState(), var4, var5, var3, var2.registryAccess().registryOrThrow(Registries.BIOME), var2);
+      SurfaceRules.Context var8 = new SurfaceRules.Context(this, var2.randomState(), var4, var5, var3, var2.registryAccess().lookupOrThrow(Registries.BIOME), var2);
       SurfaceRules.SurfaceRule var9 = (SurfaceRules.SurfaceRule)var1.apply(var8);
       int var10 = var6.getX();
       int var11 = var6.getY();
@@ -195,7 +199,7 @@ public class SurfaceSystem {
          int var18 = Mth.floor(var16);
          if (var4 <= var18) {
             int var19;
-            for(var19 = var18; var19 >= var5.getMinBuildHeight(); --var19) {
+            for(var19 = var18; var19 >= var5.getMinY(); --var19) {
                BlockState var20 = var1.getBlock(var19);
                if (var20.is(this.defaultBlock.getBlock())) {
                   break;
@@ -206,7 +210,7 @@ public class SurfaceSystem {
                }
             }
 
-            for(var19 = var18; var19 >= var5.getMinBuildHeight() && var1.getBlock(var19).isAir(); --var19) {
+            for(var19 = var18; var19 >= var5.getMinY() && var1.getBlock(var19).isAir(); --var19) {
                var1.setBlock(var19, this.defaultBlock);
             }
 
@@ -222,7 +226,7 @@ public class SurfaceSystem {
          double var16 = 1.5;
          double var18 = Math.abs(this.icebergPillarRoofNoise.getValue((double)var5 * 1.17, 0.0, (double)var6 * 1.17) * 1.5);
          double var20 = Math.min(var10 * var10 * 1.2, Math.ceil(var18 * 40.0) + 14.0);
-         if (var2.shouldMeltFrozenOceanIcebergSlightly(var4.set(var5, 63, var6))) {
+         if (var2.shouldMeltFrozenOceanIcebergSlightly(var4.set(var5, this.seaLevel, var6), this.seaLevel)) {
             var20 -= 2.0;
          }
 

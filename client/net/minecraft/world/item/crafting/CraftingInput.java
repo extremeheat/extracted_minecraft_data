@@ -3,7 +3,7 @@ package net.minecraft.world.item.crafting;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.item.ItemStack;
 
 public class CraftingInput implements RecipeInput {
@@ -11,7 +11,7 @@ public class CraftingInput implements RecipeInput {
    private final int width;
    private final int height;
    private final List<ItemStack> items;
-   private final StackedContents stackedContents = new StackedContents();
+   private final StackedItemContents stackedContents = new StackedItemContents();
    private final int ingredientCount;
 
    private CraftingInput(int var1, int var2, List<ItemStack> var3) {
@@ -104,7 +104,7 @@ public class CraftingInput implements RecipeInput {
       return this.ingredientCount == 0;
    }
 
-   public StackedContents stackedContents() {
+   public StackedItemContents stackedContents() {
       return this.stackedContents;
    }
 

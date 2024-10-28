@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
+import net.minecraft.util.ARGB;
 
 public class PlayerMenuItem implements SpectatorMenuItem {
    private final GameProfile profile;
@@ -29,10 +30,8 @@ public class PlayerMenuItem implements SpectatorMenuItem {
       return this.name;
    }
 
-   public void renderIcon(GuiGraphics var1, float var2, int var3) {
-      var1.setColor(1.0F, 1.0F, 1.0F, (float)var3 / 255.0F);
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)((PlayerSkin)this.skin.get()), 2, 2, 12);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+   public void renderIcon(GuiGraphics var1, float var2, float var3) {
+      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), 2, 2, 12, ARGB.white(var3));
    }
 
    public boolean isEnabled() {

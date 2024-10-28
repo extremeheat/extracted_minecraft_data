@@ -76,13 +76,13 @@ public class RegistrySetBuilder {
    private static HolderLookup.Provider buildProviderWithContext(UniversalOwner var0, RegistryAccess var1, Stream<HolderLookup.RegistryLookup<?>> var2) {
       final HashMap var3 = new HashMap();
       var1.registries().forEach((var1x) -> {
-         var3.put(var1x.key(), 1Entry.createForContextRegistry(var1x.value().asLookup()));
+         var3.put(var1x.key(), 1Entry.createForContextRegistry(var1x.value()));
       });
       var2.forEach((var2x) -> {
          var3.put(var2x.key(), 1Entry.createForNewRegistry(var0, var2x));
       });
       return new HolderLookup.Provider() {
-         public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
+         public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
             return var3.keySet().stream();
          }
 
@@ -191,8 +191,8 @@ public class RegistrySetBuilder {
       }).forEach((var1x) -> {
          var5.put(var1x.key, var1x);
       });
-      Set var6 = (Set)var1.listRegistries().collect(Collectors.toUnmodifiableSet());
-      var2.listRegistries().filter((var1x) -> {
+      Set var6 = (Set)var1.listRegistryKeys().collect(Collectors.toUnmodifiableSet());
+      var2.listRegistryKeys().filter((var1x) -> {
          return !var6.contains(var1x);
       }).forEach((var1x) -> {
          var5.putIfAbsent(var1x, new RegistryContents(var1x, Lifecycle.stable(), Map.of()));
@@ -277,7 +277,7 @@ public class RegistrySetBuilder {
          UniversalLookup var4 = new UniversalLookup(var2);
          ImmutableMap.Builder var5 = ImmutableMap.builder();
          var0.registries().forEach((var1x) -> {
-            var5.put(var1x.key().location(), RegistrySetBuilder.wrapContextLookup(var1x.value().asLookup()));
+            var5.put(var1x.key().location(), RegistrySetBuilder.wrapContextLookup(var1x.value()));
          });
          var1.forEach((var2x) -> {
             var5.put(var2x.location(), var4);

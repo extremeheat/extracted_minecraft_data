@@ -51,15 +51,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NullOps;
+import net.minecraft.util.StringUtil;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -76,13 +75,19 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipProvider;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,9 +97,22 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
-   public static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC;
-   public static final Codec<ItemStack> CODEC;
-   public static final Codec<ItemStack> SINGLE_ITEM_CODEC;
+   public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(() -> {
+      return RecordCodecBuilder.create((var0) -> {
+         return var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> {
+            return var0x.components.asPatch();
+         })).apply(var0, ItemStack::new);
+      });
+   });
+   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = Codec.lazyInitialized(() -> {
+      return RecordCodecBuilder.create((var0) -> {
+         return var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> {
+            return var0x.components.asPatch();
+         })).apply(var0, (var0x, var1) -> {
+            return new ItemStack(var0x, 1, var1);
+         });
+      });
+   });
    public static final Codec<ItemStack> STRICT_CODEC;
    public static final Codec<ItemStack> STRICT_SINGLE_ITEM_CODEC;
    public static final Codec<ItemStack> OPTIONAL_CODEC;
@@ -102,7 +120,6 @@ public final class ItemStack implements DataComponentHolder {
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, List<ItemStack>> OPTIONAL_LIST_STREAM_CODEC;
-   public static final StreamCodec<RegistryFriendlyByteBuf, List<ItemStack>> LIST_STREAM_CODEC;
    private static final Logger LOGGER;
    public static final ItemStack EMPTY;
    private static final Component DISABLED_ITEM_TOOLTIP;
@@ -164,6 +181,10 @@ public final class ItemStack implements DataComponentHolder {
 
    public DataComponentMap getComponents() {
       return (DataComponentMap)(!this.isEmpty() ? this.components : DataComponentMap.EMPTY);
+   }
+
+   public void clearComponents() {
+      this.components.clearPatch();
    }
 
    public DataComponentMap getPrototype() {
@@ -310,8 +331,11 @@ public final class ItemStack implements DataComponentHolder {
       } else {
          Item var4 = this.getItem();
          InteractionResult var5 = var4.useOn(var1);
-         if (var2 != null && var5.indicateItemUse()) {
-            var2.awardStat(Stats.ITEM_USED.get(var4));
+         if (var2 != null && var5 instanceof InteractionResult.Success) {
+            InteractionResult.Success var6 = (InteractionResult.Success)var5;
+            if (var6.wasItemInteraction()) {
+               var2.awardStat(Stats.ITEM_USED.get(var4));
+            }
          }
 
          return var5;
@@ -322,12 +346,39 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().getDestroySpeed(this, var1);
    }
 
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      return this.getItem().use(var1, var2, var3);
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
+      ItemStack var4 = this.copy();
+      boolean var5 = this.getUseDuration(var2) <= 0;
+      InteractionResult var6 = this.getItem().use(var1, var2, var3);
+      if (var5 && var6 instanceof InteractionResult.Success var7) {
+         return var7.heldItemTransformedTo(var7.heldItemTransformedTo() == null ? this.applyAfterUseComponentSideEffects(var2, var4) : var7.heldItemTransformedTo().applyAfterUseComponentSideEffects(var2, var4));
+      } else {
+         return var6;
+      }
    }
 
    public ItemStack finishUsingItem(Level var1, LivingEntity var2) {
-      return this.getItem().finishUsingItem(this, var1, var2);
+      ItemStack var3 = this.copy();
+      ItemStack var4 = this.getItem().finishUsingItem(this, var1, var2);
+      return var4.applyAfterUseComponentSideEffects(var2, var3);
+   }
+
+   private ItemStack applyAfterUseComponentSideEffects(LivingEntity var1, ItemStack var2) {
+      UseRemainder var3 = (UseRemainder)var2.get(DataComponents.USE_REMAINDER);
+      UseCooldown var4 = (UseCooldown)var2.get(DataComponents.USE_COOLDOWN);
+      int var5 = var2.getCount();
+      ItemStack var6 = this;
+      if (var3 != null) {
+         boolean var10003 = var1.hasInfiniteMaterials();
+         Objects.requireNonNull(var1);
+         var6 = var3.convertIntoRemainder(this, var5, var10003, var1::handleExtraItemsCreatedOnUse);
+      }
+
+      if (var4 != null) {
+         var4.apply(var2, var1);
+      }
+
+      return var6;
    }
 
    public Tag save(HolderLookup.Provider var1, Tag var2) {
@@ -378,30 +429,58 @@ public final class ItemStack implements DataComponentHolder {
       return (Integer)this.getOrDefault(DataComponents.MAX_DAMAGE, 0);
    }
 
+   public boolean isBroken() {
+      return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage();
+   }
+
+   public boolean nextDamageWillBreak() {
+      return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage() - 1;
+   }
+
    public void hurtAndBreak(int var1, ServerLevel var2, @Nullable ServerPlayer var3, Consumer<Item> var4) {
-      if (this.isDamageableItem()) {
-         if (var3 == null || !var3.hasInfiniteMaterials()) {
-            if (var1 > 0) {
-               var1 = EnchantmentHelper.processDurabilityChange(var2, this, var1);
-               if (var1 <= 0) {
-                  return;
-               }
-            }
-
-            if (var3 != null && var1 != 0) {
-               CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(var3, this, this.getDamageValue() + var1);
-            }
-
-            int var5 = this.getDamageValue() + var1;
-            this.setDamageValue(var5);
-            if (var5 >= this.getMaxDamage()) {
-               Item var6 = this.getItem();
-               this.shrink(1);
-               var4.accept(var6);
-            }
-
-         }
+      int var5 = this.processDurabilityChange(var1, var2, var3);
+      if (var5 != 0) {
+         this.applyDamage(this.getDamageValue() + var5, var3, var4);
       }
+
+   }
+
+   private int processDurabilityChange(int var1, ServerLevel var2, @Nullable ServerPlayer var3) {
+      if (!this.isDamageableItem()) {
+         return 0;
+      } else if (var3 != null && var3.hasInfiniteMaterials()) {
+         return 0;
+      } else {
+         return var1 > 0 ? EnchantmentHelper.processDurabilityChange(var2, this, var1) : var1;
+      }
+   }
+
+   private void applyDamage(int var1, @Nullable ServerPlayer var2, Consumer<Item> var3) {
+      if (var2 != null) {
+         CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(var2, this, var1);
+      }
+
+      this.setDamageValue(var1);
+      if (this.isBroken()) {
+         Item var4 = this.getItem();
+         this.shrink(1);
+         var3.accept(var4);
+      }
+
+   }
+
+   public void hurtWithoutBreaking(int var1, Player var2) {
+      if (var2 instanceof ServerPlayer var3) {
+         int var4 = this.processDurabilityChange(var1, var3.serverLevel(), var3);
+         if (var4 == 0) {
+            return;
+         }
+
+         int var5 = Math.min(this.getDamageValue() + var4, this.getMaxDamage() - 1);
+         this.applyDamage(var5, var3, (var0) -> {
+         });
+      }
+
    }
 
    public void hurtAndBreak(int var1, LivingEntity var2, EquipmentSlot var3) {
@@ -455,17 +534,21 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().overrideOtherStackedOnMe(this, var1, var2, var3, var4, var5);
    }
 
-   public boolean hurtEnemy(LivingEntity var1, Player var2) {
+   public boolean hurtEnemy(LivingEntity var1, LivingEntity var2) {
       Item var3 = this.getItem();
       if (var3.hurtEnemy(this, var1, var2)) {
-         var2.awardStat(Stats.ITEM_USED.get(var3));
+         if (var2 instanceof Player) {
+            Player var4 = (Player)var2;
+            var4.awardStat(Stats.ITEM_USED.get(var3));
+         }
+
          return true;
       } else {
          return false;
       }
    }
 
-   public void postHurtEnemy(LivingEntity var1, Player var2) {
+   public void postHurtEnemy(LivingEntity var1, LivingEntity var2) {
       this.getItem().postHurtEnemy(this, var1, var2);
    }
 
@@ -583,10 +666,6 @@ public final class ItemStack implements DataComponentHolder {
       return var1;
    }
 
-   public String getDescriptionId() {
-      return this.getItem().getDescriptionId(this);
-   }
-
    public String toString() {
       int var10000 = this.getCount();
       return "" + var10000 + " " + String.valueOf(this.getItem());
@@ -616,12 +695,19 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().getUseDuration(this, var1);
    }
 
-   public UseAnim getUseAnimation() {
+   public ItemUseAnimation getUseAnimation() {
       return this.getItem().getUseAnimation(this);
    }
 
    public void releaseUsing(Level var1, LivingEntity var2, int var3) {
-      this.getItem().releaseUsing(this, var1, var2, var3);
+      ItemStack var4 = this.copy();
+      if (this.getItem().releaseUsing(this, var1, var2, var3)) {
+         ItemStack var5 = this.applyAfterUseComponentSideEffects(var2, var4);
+         if (var5 != this) {
+            var2.setItemInHand(var2.getUsedItemHand(), var5);
+         }
+      }
+
    }
 
    public boolean useOnRelease() {
@@ -676,9 +762,29 @@ public final class ItemStack implements DataComponentHolder {
       if (var1 != null) {
          return var1;
       } else {
-         Component var2 = (Component)this.get(DataComponents.ITEM_NAME);
-         return var2 != null ? var2 : this.getItem().getName(this);
+         WrittenBookContent var2 = (WrittenBookContent)this.get(DataComponents.WRITTEN_BOOK_CONTENT);
+         if (var2 != null) {
+            String var3 = (String)var2.title().raw();
+            if (!StringUtil.isBlank(var3)) {
+               return Component.literal(var3);
+            }
+         }
+
+         return this.getItemName();
       }
+   }
+
+   public Component getItemName() {
+      return this.getItem().getName(this);
+   }
+
+   public Component getStyledHoverName() {
+      MutableComponent var1 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
+      if (this.has(DataComponents.CUSTOM_NAME)) {
+         var1.withStyle(ChatFormatting.ITALIC);
+      }
+
+      return var1;
    }
 
    private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, Consumer<Component> var3, TooltipFlag var4) {
@@ -694,45 +800,42 @@ public final class ItemStack implements DataComponentHolder {
          return List.of();
       } else {
          ArrayList var4 = Lists.newArrayList();
-         MutableComponent var5 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
-         if (this.has(DataComponents.CUSTOM_NAME)) {
-            var5.withStyle(ChatFormatting.ITALIC);
-         }
-
-         var4.add(var5);
-         if (!var3.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME) && this.is(Items.FILLED_MAP)) {
-            MapId var6 = (MapId)this.get(DataComponents.MAP_ID);
-            if (var6 != null) {
-               var4.add(MapItem.getTooltipForId(var6));
+         var4.add(this.getStyledHoverName());
+         if (!var3.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME)) {
+            MapId var5 = (MapId)this.get(DataComponents.MAP_ID);
+            if (var5 != null) {
+               var4.add(MapItem.getTooltipForId(var5));
             }
          }
 
          Objects.requireNonNull(var4);
-         Consumer var10 = var4::add;
+         Consumer var9 = var4::add;
          if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
             this.getItem().appendHoverText(this, var1, var4, var3);
          }
 
-         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var10, var3);
-         this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
-         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
-         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var10, var3);
-         this.addToTooltip(DataComponents.DYED_COLOR, var1, var10, var3);
-         this.addToTooltip(DataComponents.LORE, var1, var10, var3);
-         this.addAttributeTooltips(var10, var2);
-         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var10, var3);
-         AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
-         if (var7 != null && var7.showInTooltip()) {
-            var10.accept(CommonComponents.EMPTY);
-            var10.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-            var7.addToTooltip(var10);
+         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var9, var3);
+         this.addToTooltip(DataComponents.TRIM, var1, var9, var3);
+         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var9, var3);
+         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var9, var3);
+         this.addToTooltip(DataComponents.DYED_COLOR, var1, var9, var3);
+         this.addToTooltip(DataComponents.LORE, var1, var9, var3);
+         this.addAttributeTooltips(var9, var2);
+         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var9, var3);
+         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var9, var3);
+         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var9, var3);
+         AdventureModePredicate var6 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
+         if (var6 != null && var6.showInTooltip()) {
+            var9.accept(CommonComponents.EMPTY);
+            var9.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+            var6.addToTooltip(var9);
          }
 
-         AdventureModePredicate var8 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
-         if (var8 != null && var8.showInTooltip()) {
-            var10.accept(CommonComponents.EMPTY);
-            var10.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-            var8.addToTooltip(var10);
+         AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
+         if (var7 != null && var7.showInTooltip()) {
+            var9.accept(CommonComponents.EMPTY);
+            var9.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+            var7.addToTooltip(var9);
          }
 
          if (var3.isAdvanced()) {
@@ -741,9 +844,9 @@ public final class ItemStack implements DataComponentHolder {
             }
 
             var4.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-            int var9 = this.components.size();
-            if (var9 > 0) {
-               var4.add(Component.translatable("item.components", var9).withStyle(ChatFormatting.DARK_GRAY));
+            int var8 = this.components.size();
+            if (var8 > 0) {
+               var4.add(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
             }
          }
 
@@ -840,7 +943,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public boolean isEnchantable() {
-      if (!this.getItem().isEnchantable(this)) {
+      if (!this.has(DataComponents.ENCHANTABLE)) {
          return false;
       } else {
          ItemEnchantments var1 = (ItemEnchantments)this.get(DataComponents.ENCHANTMENTS);
@@ -885,23 +988,13 @@ public final class ItemStack implements DataComponentHolder {
 
    public void forEachModifier(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
       ItemAttributeModifiers var3 = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      if (!var3.modifiers().isEmpty()) {
-         var3.forEach(var1, var2);
-      } else {
-         this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
-      }
-
+      var3.forEach(var1, var2);
       EnchantmentHelper.forEachModifier(this, var1, var2);
    }
 
    public void forEachModifier(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
       ItemAttributeModifiers var3 = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      if (!var3.modifiers().isEmpty()) {
-         var3.forEach(var1, var2);
-      } else {
-         this.getItem().getDefaultAttributeModifiers().forEach(var1, var2);
-      }
-
+      var3.forEach(var1, var2);
       EnchantmentHelper.forEachModifier(this, var1, var2);
    }
 
@@ -976,6 +1069,11 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public void onUseTick(Level var1, LivingEntity var2, int var3) {
+      Consumable var4 = (Consumable)this.get(DataComponents.CONSUMABLE);
+      if (var4 != null && var4.shouldEmitParticlesAndSounds(var3)) {
+         var4.emitParticlesAndSounds(var2.getRandom(), var2, this, 5);
+      }
+
       this.getItem().onUseTick(var1, var2, this, var3);
    }
 
@@ -983,44 +1081,21 @@ public final class ItemStack implements DataComponentHolder {
       this.getItem().onDestroyed(var1);
    }
 
-   public SoundEvent getDrinkingSound() {
-      return this.getItem().getDrinkingSound();
-   }
-
-   public SoundEvent getEatingSound() {
-      return this.getItem().getEatingSound();
-   }
-
    public SoundEvent getBreakingSound() {
       return this.getItem().getBreakingSound();
    }
 
    public boolean canBeHurtBy(DamageSource var1) {
-      return !this.has(DataComponents.FIRE_RESISTANT) || !var1.is(DamageTypeTags.IS_FIRE);
+      DamageResistant var2 = (DamageResistant)this.get(DataComponents.DAMAGE_RESISTANT);
+      return var2 == null || !var2.isResistantTo(var1);
+   }
+
+   public boolean isValidRepairItem(ItemStack var1) {
+      Repairable var2 = (Repairable)this.get(DataComponents.REPAIRABLE);
+      return var2 != null && var2.isValidRepairItem(var1);
    }
 
    static {
-      ITEM_NON_AIR_CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> {
-         return var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> {
-            return "Item must not be minecraft:air";
-         }) : DataResult.success(var0);
-      });
-      CODEC = Codec.lazyInitialized(() -> {
-         return RecordCodecBuilder.create((var0) -> {
-            return var0.group(ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> {
-               return var0x.components.asPatch();
-            })).apply(var0, ItemStack::new);
-         });
-      });
-      SINGLE_ITEM_CODEC = Codec.lazyInitialized(() -> {
-         return RecordCodecBuilder.create((var0) -> {
-            return var0.group(ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> {
-               return var0x.components.asPatch();
-            })).apply(var0, (var0x, var1) -> {
-               return new ItemStack(var0x, 1, var1);
-            });
-         });
-      });
       STRICT_CODEC = CODEC.validate(ItemStack::validateStrict);
       STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
       OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC).xmap((var0) -> {
@@ -1028,7 +1103,7 @@ public final class ItemStack implements DataComponentHolder {
       }, (var0) -> {
          return var0.isEmpty() ? Optional.empty() : Optional.of(var0);
       });
-      SIMPLE_ITEM_CODEC = ITEM_NON_AIR_CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
+      SIMPLE_ITEM_CODEC = Item.CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
       OPTIONAL_STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
          private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_STREAM_CODEC;
 
@@ -1096,7 +1171,6 @@ public final class ItemStack implements DataComponentHolder {
          }
       };
       OPTIONAL_LIST_STREAM_CODEC = OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.collection(NonNullList::createWithCapacity));
-      LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.collection(NonNullList::createWithCapacity));
       LOGGER = LogUtils.getLogger();
       EMPTY = new ItemStack((Void)null);
       DISABLED_ITEM_TOOLTIP = Component.translatable("item.disabled").withStyle(ChatFormatting.RED);

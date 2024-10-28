@@ -6,14 +6,11 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 
-public class SlimeModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
-
+public class SlimeModel extends EntityModel<EntityRenderState> {
    public SlimeModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
    }
 
    public static LayerDefinition createOuterBodyLayer() {
@@ -31,12 +28,5 @@ public class SlimeModel<T extends Entity> extends HierarchicalModel<T> {
       var1.addOrReplaceChild("left_eye", CubeListBuilder.create().texOffs(32, 4).addBox(1.25F, 18.0F, -3.5F, 2.0F, 2.0F, 2.0F), PartPose.ZERO);
       var1.addOrReplaceChild("mouth", CubeListBuilder.create().texOffs(32, 8).addBox(0.0F, 21.0F, -3.5F, 1.0F, 1.0F, 1.0F), PartPose.ZERO);
       return LayerDefinition.create(var0, 64, 32);
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-   }
-
-   public ModelPart root() {
-      return this.root;
    }
 }

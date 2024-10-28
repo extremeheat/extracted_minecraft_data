@@ -9,44 +9,45 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextKeySet;
 
 public class LootContextParamSets {
-   private static final BiMap<ResourceLocation, LootContextParamSet> REGISTRY = HashBiMap.create();
-   public static final Codec<LootContextParamSet> CODEC;
-   public static final LootContextParamSet EMPTY;
-   public static final LootContextParamSet CHEST;
-   public static final LootContextParamSet COMMAND;
-   public static final LootContextParamSet SELECTOR;
-   public static final LootContextParamSet FISHING;
-   public static final LootContextParamSet ENTITY;
-   public static final LootContextParamSet EQUIPMENT;
-   public static final LootContextParamSet ARCHAEOLOGY;
-   public static final LootContextParamSet GIFT;
-   public static final LootContextParamSet PIGLIN_BARTER;
-   public static final LootContextParamSet VAULT;
-   public static final LootContextParamSet ADVANCEMENT_REWARD;
-   public static final LootContextParamSet ADVANCEMENT_ENTITY;
-   public static final LootContextParamSet ADVANCEMENT_LOCATION;
-   public static final LootContextParamSet BLOCK_USE;
-   public static final LootContextParamSet ALL_PARAMS;
-   public static final LootContextParamSet BLOCK;
-   public static final LootContextParamSet SHEARING;
-   public static final LootContextParamSet ENCHANTED_DAMAGE;
-   public static final LootContextParamSet ENCHANTED_ITEM;
-   public static final LootContextParamSet ENCHANTED_LOCATION;
-   public static final LootContextParamSet ENCHANTED_ENTITY;
-   public static final LootContextParamSet HIT_BLOCK;
+   private static final BiMap<ResourceLocation, ContextKeySet> REGISTRY = HashBiMap.create();
+   public static final Codec<ContextKeySet> CODEC;
+   public static final ContextKeySet EMPTY;
+   public static final ContextKeySet CHEST;
+   public static final ContextKeySet COMMAND;
+   public static final ContextKeySet SELECTOR;
+   public static final ContextKeySet FISHING;
+   public static final ContextKeySet ENTITY;
+   public static final ContextKeySet EQUIPMENT;
+   public static final ContextKeySet ARCHAEOLOGY;
+   public static final ContextKeySet GIFT;
+   public static final ContextKeySet PIGLIN_BARTER;
+   public static final ContextKeySet VAULT;
+   public static final ContextKeySet ADVANCEMENT_REWARD;
+   public static final ContextKeySet ADVANCEMENT_ENTITY;
+   public static final ContextKeySet ADVANCEMENT_LOCATION;
+   public static final ContextKeySet BLOCK_USE;
+   public static final ContextKeySet ALL_PARAMS;
+   public static final ContextKeySet BLOCK;
+   public static final ContextKeySet SHEARING;
+   public static final ContextKeySet ENCHANTED_DAMAGE;
+   public static final ContextKeySet ENCHANTED_ITEM;
+   public static final ContextKeySet ENCHANTED_LOCATION;
+   public static final ContextKeySet ENCHANTED_ENTITY;
+   public static final ContextKeySet HIT_BLOCK;
 
    public LootContextParamSets() {
       super();
    }
 
-   private static LootContextParamSet register(String var0, Consumer<LootContextParamSet.Builder> var1) {
-      LootContextParamSet.Builder var2 = new LootContextParamSet.Builder();
+   private static ContextKeySet register(String var0, Consumer<ContextKeySet.Builder> var1) {
+      ContextKeySet.Builder var2 = new ContextKeySet.Builder();
       var1.accept(var2);
-      LootContextParamSet var3 = var2.build();
+      ContextKeySet var3 = var2.build();
       ResourceLocation var4 = ResourceLocation.withDefaultNamespace(var0);
-      LootContextParamSet var5 = (LootContextParamSet)REGISTRY.put(var4, var3);
+      ContextKeySet var5 = (ContextKeySet)REGISTRY.put(var4, var3);
       if (var5 != null) {
          throw new IllegalStateException("Loot table parameter set " + String.valueOf(var4) + " is already registered");
       } else {
@@ -57,7 +58,7 @@ public class LootContextParamSets {
    static {
       Codec var10000 = ResourceLocation.CODEC;
       Function var10001 = (var0) -> {
-         return (DataResult)Optional.ofNullable((LootContextParamSet)REGISTRY.get(var0)).map(DataResult::success).orElseGet(() -> {
+         return (DataResult)Optional.ofNullable((ContextKeySet)REGISTRY.get(var0)).map(DataResult::success).orElseGet(() -> {
             return DataResult.error(() -> {
                return "No parameter set exists with id: '" + String.valueOf(var0) + "'";
             });
@@ -87,7 +88,7 @@ public class LootContextParamSets {
          var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY);
       });
       ARCHAEOLOGY = register("archaeology", (var0) -> {
-         var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY);
+         var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.TOOL);
       });
       GIFT = register("gift", (var0) -> {
          var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY);
@@ -96,7 +97,7 @@ public class LootContextParamSets {
          var0.required(LootContextParams.THIS_ENTITY);
       });
       VAULT = register("vault", (var0) -> {
-         var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY);
+         var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY).optional(LootContextParams.TOOL);
       });
       ADVANCEMENT_REWARD = register("advancement_reward", (var0) -> {
          var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN);
@@ -117,7 +118,7 @@ public class LootContextParamSets {
          var0.required(LootContextParams.BLOCK_STATE).required(LootContextParams.ORIGIN).required(LootContextParams.TOOL).optional(LootContextParams.THIS_ENTITY).optional(LootContextParams.BLOCK_ENTITY).optional(LootContextParams.EXPLOSION_RADIUS);
       });
       SHEARING = register("shearing", (var0) -> {
-         var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY);
+         var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY).required(LootContextParams.TOOL);
       });
       ENCHANTED_DAMAGE = register("enchanted_damage", (var0) -> {
          var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ENCHANTMENT_LEVEL).required(LootContextParams.ORIGIN).required(LootContextParams.DAMAGE_SOURCE).optional(LootContextParams.DIRECT_ATTACKING_ENTITY).optional(LootContextParams.ATTACKING_ENTITY);

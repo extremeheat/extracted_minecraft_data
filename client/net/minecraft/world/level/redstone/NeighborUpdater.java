@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface NeighborUpdater {
@@ -18,30 +19,32 @@ public interface NeighborUpdater {
 
    void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6);
 
-   void neighborChanged(BlockPos var1, Block var2, BlockPos var3);
+   void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3);
 
-   void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5);
+   void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5);
 
-   default void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3) {
-      Direction[] var4 = UPDATE_ORDER;
-      int var5 = var4.length;
+   default void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3, @Nullable Orientation var4) {
+      Direction[] var5 = UPDATE_ORDER;
+      int var6 = var5.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
-         if (var7 != var3) {
-            this.neighborChanged(var1.relative(var7), var2, var1);
+      for(int var7 = 0; var7 < var6; ++var7) {
+         Direction var8 = var5[var7];
+         if (var8 != var3) {
+            this.neighborChanged(var1.relative(var8), var2, (Orientation)null);
          }
       }
 
    }
 
-   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
-      BlockState var7 = var0.getBlockState(var3);
-      BlockState var8 = var7.updateShape(var1, var2, var0, var3, var4);
-      Block.updateOrDestroy(var7, var8, var0, var3, var5, var6);
+   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+      BlockState var7 = var0.getBlockState(var2);
+      if ((var5 & 128) == 0 || !var7.is(Blocks.REDSTONE_WIRE)) {
+         BlockState var8 = var7.updateShape(var0, var0, var2, var1, var3, var4, var0.getRandom());
+         Block.updateOrDestroy(var7, var8, var0, var2, var5, var6);
+      }
    }
 
-   static void executeUpdate(Level var0, BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
+   static void executeUpdate(Level var0, BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
       try {
          var1.handleNeighborChanged(var0, var2, var3, var4, var5);
       } catch (Throwable var9) {

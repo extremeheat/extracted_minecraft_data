@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -23,10 +24,10 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
       var1.pose().translate((float)this.width / 2.0F, 125.0F, 50.0F);
    }
 
-   protected void renderSignBackground(GuiGraphics var1, BlockState var2) {
+   protected void renderSignBackground(GuiGraphics var1) {
       var1.pose().translate(0.0F, -13.0F, 0.0F);
       var1.pose().scale(4.5F, 4.5F, 1.0F);
-      var1.blit(this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
+      var1.blit(RenderType::guiTextured, this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
    }
 
    protected Vector3f getSignTextScale() {

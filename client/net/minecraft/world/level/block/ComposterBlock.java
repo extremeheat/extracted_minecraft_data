@@ -16,7 +16,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
@@ -69,6 +68,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.OAK_LEAVES);
       add(0.3F, Items.SPRUCE_LEAVES);
       add(0.3F, Items.DARK_OAK_LEAVES);
+      add(0.3F, Items.PALE_OAK_LEAVES);
       add(0.3F, Items.ACACIA_LEAVES);
       add(0.3F, Items.CHERRY_LEAVES);
       add(0.3F, Items.BIRCH_LEAVES);
@@ -81,6 +81,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.ACACIA_SAPLING);
       add(0.3F, Items.CHERRY_SAPLING);
       add(0.3F, Items.DARK_OAK_SAPLING);
+      add(0.3F, Items.PALE_OAK_SAPLING);
       add(0.3F, Items.MANGROVE_PROPAGULE);
       add(0.3F, Items.BEETROOT_SEEDS);
       add(0.3F, Items.DRIED_KELP);
@@ -93,6 +94,8 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.GLOW_BERRIES);
       add(0.3F, Items.WHEAT_SEEDS);
       add(0.3F, Items.MOSS_CARPET);
+      add(0.3F, Items.PALE_MOSS_CARPET);
+      add(0.3F, Items.PALE_HANGING_MOSS);
       add(0.3F, Items.PINK_PETALS);
       add(0.3F, Items.SMALL_DRIPLEAF);
       add(0.3F, Items.HANGING_ROOTS);
@@ -152,6 +155,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.65F, Items.SPORE_BLOSSOM);
       add(0.65F, Items.AZALEA);
       add(0.65F, Items.MOSS_BLOCK);
+      add(0.65F, Items.PALE_MOSS_BLOCK);
       add(0.65F, Items.BIG_DRIPLEAF);
       add(0.85F, Items.HAY_BLOCK);
       add(0.85F, Items.BROWN_MUSHROOM_BLOCK);
@@ -213,7 +217,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       int var8 = (Integer)var2.getValue(LEVEL);
       if (var8 < 8 && COMPOSTABLES.containsKey(var1.getItem())) {
          if (var8 < 7 && !var3.isClientSide) {
@@ -223,7 +227,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
             var1.consume(1, var5);
          }
 
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       }
@@ -233,7 +237,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       int var6 = (Integer)var1.getValue(LEVEL);
       if (var6 == 8) {
          extractProduce(var4, var1, var2, var3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
@@ -281,7 +285,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
          var2.setBlock(var3, var8, 3);
          var2.gameEvent((Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var8));
          if (var7 == 7) {
-            var2.scheduleTick(var3, (Block)var1.getBlock(), 20);
+            var2.scheduleTick(var3, var1.getBlock(), 20);
          }
 
          return var8;

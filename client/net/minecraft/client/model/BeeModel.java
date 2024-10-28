@@ -1,18 +1,18 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.BeeRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.Bee;
 
-public class BeeModel<T extends Bee> extends AgeableListModel<T> {
-   private static final float BEE_Y_BASE = 19.0F;
+public class BeeModel extends EntityModel<BeeRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private static final String BONE = "bone";
    private static final String STINGER = "stinger";
    private static final String LEFT_ANTENNA = "left_antenna";
@@ -32,7 +32,7 @@ public class BeeModel<T extends Bee> extends AgeableListModel<T> {
    private float rollAmount;
 
    public BeeModel(ModelPart var1) {
-      super(false, 24.0F, 0.0F);
+      super(var1);
       this.bone = var1.getChild("bone");
       ModelPart var2 = this.bone.getChild("body");
       this.stinger = var2.getChild("stinger");
@@ -62,69 +62,37 @@ public class BeeModel<T extends Bee> extends AgeableListModel<T> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void prepareMobModel(T var1, float var2, float var3, float var4) {
-      super.prepareMobModel(var1, var2, var3, var4);
-      this.rollAmount = var1.getRollAmount(var4);
-      this.stinger.visible = !var1.hasStung();
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.rightWing.xRot = 0.0F;
-      this.leftAntenna.xRot = 0.0F;
-      this.rightAntenna.xRot = 0.0F;
-      this.bone.xRot = 0.0F;
-      boolean var7 = var1.onGround() && var1.getDeltaMovement().lengthSqr() < 1.0E-7;
-      float var8;
-      if (var7) {
-         this.rightWing.yRot = -0.2618F;
-         this.rightWing.zRot = 0.0F;
-         this.leftWing.xRot = 0.0F;
-         this.leftWing.yRot = 0.2618F;
-         this.leftWing.zRot = 0.0F;
-         this.frontLeg.xRot = 0.0F;
-         this.midLeg.xRot = 0.0F;
-         this.backLeg.xRot = 0.0F;
-      } else {
-         var8 = var4 * 120.32113F * 0.017453292F;
+   public void setupAnim(BeeRenderState var1) {
+      super.setupAnim(var1);
+      this.rollAmount = var1.rollAmount;
+      this.stinger.visible = var1.hasStinger;
+      float var2;
+      if (!var1.isOnGround) {
+         var2 = var1.ageInTicks * 120.32113F * 0.017453292F;
          this.rightWing.yRot = 0.0F;
-         this.rightWing.zRot = Mth.cos(var8) * 3.1415927F * 0.15F;
+         this.rightWing.zRot = Mth.cos(var2) * 3.1415927F * 0.15F;
          this.leftWing.xRot = this.rightWing.xRot;
          this.leftWing.yRot = this.rightWing.yRot;
          this.leftWing.zRot = -this.rightWing.zRot;
          this.frontLeg.xRot = 0.7853982F;
          this.midLeg.xRot = 0.7853982F;
          this.backLeg.xRot = 0.7853982F;
-         this.bone.xRot = 0.0F;
-         this.bone.yRot = 0.0F;
-         this.bone.zRot = 0.0F;
       }
 
-      if (!var1.isAngry()) {
-         this.bone.xRot = 0.0F;
-         this.bone.yRot = 0.0F;
-         this.bone.zRot = 0.0F;
-         if (!var7) {
-            var8 = Mth.cos(var4 * 0.18F);
-            this.bone.xRot = 0.1F + var8 * 3.1415927F * 0.025F;
-            this.leftAntenna.xRot = var8 * 3.1415927F * 0.03F;
-            this.rightAntenna.xRot = var8 * 3.1415927F * 0.03F;
-            this.frontLeg.xRot = -var8 * 3.1415927F * 0.1F + 0.3926991F;
-            this.backLeg.xRot = -var8 * 3.1415927F * 0.05F + 0.7853982F;
-            this.bone.y = 19.0F - Mth.cos(var4 * 0.18F) * 0.9F;
-         }
+      if (!var1.isAngry && !var1.isOnGround) {
+         var2 = Mth.cos(var1.ageInTicks * 0.18F);
+         this.bone.xRot = 0.1F + var2 * 3.1415927F * 0.025F;
+         this.leftAntenna.xRot = var2 * 3.1415927F * 0.03F;
+         this.rightAntenna.xRot = var2 * 3.1415927F * 0.03F;
+         this.frontLeg.xRot = -var2 * 3.1415927F * 0.1F + 0.3926991F;
+         this.backLeg.xRot = -var2 * 3.1415927F * 0.05F + 0.7853982F;
+         ModelPart var10000 = this.bone;
+         var10000.y -= Mth.cos(var1.ageInTicks * 0.18F) * 0.9F;
       }
 
       if (this.rollAmount > 0.0F) {
-         this.bone.xRot = ModelUtils.rotlerpRad(this.bone.xRot, 3.0915928F, this.rollAmount);
+         this.bone.xRot = Mth.rotLerpRad(this.rollAmount, this.bone.xRot, 3.0915928F);
       }
 
-   }
-
-   protected Iterable<ModelPart> headParts() {
-      return ImmutableList.of();
-   }
-
-   protected Iterable<ModelPart> bodyParts() {
-      return ImmutableList.of(this.bone);
    }
 }

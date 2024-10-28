@@ -12,12 +12,14 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
+import java.util.Optional;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.functions.MacroFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.timers.FunctionCallback;
@@ -29,6 +31,7 @@ public class ScheduleCommand {
    private static final DynamicCommandExceptionType ERROR_CANT_REMOVE = new DynamicCommandExceptionType((var0) -> {
       return Component.translatableEscape("commands.schedule.cleared.failure", var0);
    });
+   private static final SimpleCommandExceptionType ERROR_MACRO = new SimpleCommandExceptionType(Component.translatableEscape("commands.schedule.macro"));
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (var0, var1) -> {
       return SharedSuggestionProvider.suggest((Iterable)((CommandSourceStack)var0.getSource()).getServer().getWorldData().overworldData().getScheduledEvents().getEventsIds(), var1);
    };
@@ -58,27 +61,34 @@ public class ScheduleCommand {
          long var4 = var0.getLevel().getGameTime() + (long)var2;
          ResourceLocation var6 = (ResourceLocation)var1.getFirst();
          TimerQueue var7 = var0.getServer().getWorldData().overworldData().getScheduledEvents();
-         ((Either)var1.getSecond()).ifLeft((var7x) -> {
-            String var8 = var6.toString();
-            if (var3) {
-               var7.remove(var8);
+         Optional var8 = ((Either)var1.getSecond()).left();
+         String var9;
+         if (var8.isPresent()) {
+            if (var8.get() instanceof MacroFunction) {
+               throw ERROR_MACRO.create();
             }
 
-            var7.schedule(var8, var4, new FunctionCallback(var6));
+            var9 = var6.toString();
+            if (var3) {
+               var7.remove(var9);
+            }
+
+            var7.schedule(var9, var4, new FunctionCallback(var6));
             var0.sendSuccess(() -> {
                return Component.translatable("commands.schedule.created.function", Component.translationArg(var6), var2, var4);
             }, true);
-         }).ifRight((var7x) -> {
-            String var8 = "#" + String.valueOf(var6);
+         } else {
+            var9 = "#" + String.valueOf(var6);
             if (var3) {
-               var7.remove(var8);
+               var7.remove(var9);
             }
 
-            var7.schedule(var8, var4, new FunctionTagCallback(var6));
+            var7.schedule(var9, var4, new FunctionTagCallback(var6));
             var0.sendSuccess(() -> {
                return Component.translatable("commands.schedule.created.tag", Component.translationArg(var6), var2, var4);
             }, true);
-         });
+         }
+
          return Math.floorMod(var4, 2147483647);
       }
    }

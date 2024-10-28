@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.platform;
 
+import com.mojang.blaze3d.TracyFrameCapture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -11,7 +12,9 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -20,6 +23,7 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -52,8 +56,8 @@ public final class Window implements AutoCloseable {
    private double guiScale;
    private String errorSection = "";
    private boolean dirty;
-   private int framerateLimit;
    private boolean vsync;
+   private boolean iconified;
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
@@ -105,6 +109,7 @@ public final class Window implements AutoCloseable {
       GLFW.glfwSetWindowSizeCallback(this.window, this::onResize);
       GLFW.glfwSetWindowFocusCallback(this.window, this::onFocus);
       GLFW.glfwSetCursorEnterCallback(this.window, this::onEnter);
+      GLFW.glfwSetWindowIconifyCallback(this.window, this::onIconify);
    }
 
    public static String getPlatform() {
@@ -181,7 +186,7 @@ public final class Window implements AutoCloseable {
                      try {
                         ByteBuffer var10 = MemoryUtil.memAlloc(var9.getWidth() * var9.getHeight() * 4);
                         var5.add(var10);
-                        var10.asIntBuffer().put(var9.getPixelsRGBA());
+                        var10.asIntBuffer().put(var9.getPixelsABGR());
                         var7.position(var8);
                         var7.width(var9.getWidth());
                         var7.height(var9.getHeight());
@@ -291,7 +296,15 @@ public final class Window implements AutoCloseable {
             this.framebufferWidth = var3;
             this.framebufferHeight = var4;
             if (this.getWidth() != var5 || this.getHeight() != var6) {
-               this.eventHandler.resizeDisplay();
+               try {
+                  this.eventHandler.resizeDisplay();
+               } catch (Exception var10) {
+                  CrashReport var8 = CrashReport.forThrowable(var10, "Window resize");
+                  CrashReportCategory var9 = var8.addCategory("Window Dimensions");
+                  var9.setDetail("Old", (Object)("" + var5 + "x" + var6));
+                  var9.setDetail("New", (Object)("" + var3 + "x" + var4));
+                  throw new ReportedException(var8);
+               }
             }
 
          }
@@ -325,19 +338,15 @@ public final class Window implements AutoCloseable {
 
    }
 
-   public void setFramerateLimit(int var1) {
-      this.framerateLimit = var1;
+   private void onIconify(long var1, boolean var3) {
+      this.iconified = var3;
    }
 
-   public int getFramerateLimit() {
-      return this.framerateLimit;
-   }
-
-   public void updateDisplay() {
-      RenderSystem.flipFrame(this.window);
+   public void updateDisplay(@Nullable TracyFrameCapture var1) {
+      RenderSystem.flipFrame(this.window, var1);
       if (this.fullscreen != this.actuallyFullscreen) {
          this.actuallyFullscreen = this.fullscreen;
-         this.updateFullscreen(this.vsync);
+         this.updateFullscreen(this.vsync, var1);
       }
 
    }
@@ -372,7 +381,7 @@ public final class Window implements AutoCloseable {
             LOGGER.warn("Failed to find suitable monitor for fullscreen mode");
             this.fullscreen = false;
          } else {
-            if (Minecraft.ON_OSX) {
+            if (MacosUtil.IS_MACOS) {
                MacosUtil.exitNativeFullscreen(this.window);
             }
 
@@ -389,7 +398,7 @@ public final class Window implements AutoCloseable {
             this.width = var3.getWidth();
             this.height = var3.getHeight();
             GLFW.glfwSetWindowMonitor(this.window, var2.getMonitor(), this.x, this.y, this.width, this.height, var3.getRefreshRate());
-            if (Minecraft.ON_OSX) {
+            if (MacosUtil.IS_MACOS) {
                MacosUtil.clearResizableBit(this.window);
             }
          }
@@ -414,16 +423,16 @@ public final class Window implements AutoCloseable {
       this.setMode();
    }
 
-   private void updateFullscreen(boolean var1) {
+   private void updateFullscreen(boolean var1, @Nullable TracyFrameCapture var2) {
       RenderSystem.assertOnRenderThread();
 
       try {
          this.setMode();
          this.eventHandler.resizeDisplay();
          this.updateVsync(var1);
-         this.updateDisplay();
-      } catch (Exception var3) {
-         LOGGER.error("Couldn't toggle fullscreen", var3);
+         this.updateDisplay(var2);
+      } catch (Exception var4) {
+         LOGGER.error("Couldn't toggle fullscreen", var4);
       }
 
    }
@@ -458,6 +467,10 @@ public final class Window implements AutoCloseable {
 
    public boolean isFullscreen() {
       return this.fullscreen;
+   }
+
+   public boolean isIconified() {
+      return this.iconified;
    }
 
    public int getWidth() {
@@ -511,6 +524,16 @@ public final class Window implements AutoCloseable {
 
    public void updateRawMouseInput(boolean var1) {
       InputConstants.updateRawMouseInput(this.window, var1);
+   }
+
+   public void setWindowCloseCallback(Runnable var1) {
+      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, (var1x) -> {
+         var1.run();
+      });
+      if (var2 != null) {
+         var2.free();
+      }
+
    }
 
    public static class WindowInitFailed extends SilentInitException {

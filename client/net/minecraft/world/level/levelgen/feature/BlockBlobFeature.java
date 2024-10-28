@@ -19,7 +19,7 @@ public class BlockBlobFeature extends Feature<BlockStateConfiguration> {
       RandomSource var4 = var1.random();
 
       BlockStateConfiguration var5;
-      for(var5 = (BlockStateConfiguration)var1.config(); var2.getY() > var3.getMinBuildHeight() + 3; var2 = var2.below()) {
+      for(var5 = (BlockStateConfiguration)var1.config(); var2.getY() > var3.getMinY() + 3; var2 = var2.below()) {
          if (!var3.isEmptyBlock(var2.below())) {
             BlockState var6 = var3.getBlockState(var2.below());
             if (isDirt(var6) || isStone(var6)) {
@@ -28,7 +28,7 @@ public class BlockBlobFeature extends Feature<BlockStateConfiguration> {
          }
       }
 
-      if (var2.getY() <= var3.getMinBuildHeight() + 3) {
+      if (var2.getY() <= var3.getMinY() + 3) {
          return false;
       } else {
          for(int var13 = 0; var13 < 3; ++var13) {

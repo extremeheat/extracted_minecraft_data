@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.phys.Vec3;
 
@@ -12,7 +13,7 @@ public class DragonHoverPhase extends AbstractDragonPhaseInstance {
       super(var1);
    }
 
-   public void doServerTick() {
+   public void doServerTick(ServerLevel var1) {
       if (this.targetLocation == null) {
          this.targetLocation = this.dragon.position();
       }

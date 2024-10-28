@@ -5,9 +5,11 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -17,8 +19,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -29,10 +31,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -40,7 +42,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BellBlock extends BaseEntityBlock {
    public static final MapCodec<BellBlock> CODEC = simpleCodec(BellBlock::new);
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<BellAttachType> ATTACHMENT;
    public static final BooleanProperty POWERED;
    private static final VoxelShape NORTH_SOUTH_FLOOR_SHAPE;
@@ -66,7 +68,7 @@ public class BellBlock extends BaseEntityBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(ATTACHMENT, BellAttachType.FLOOR)).setValue(POWERED, false));
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3);
       if (var7 != (Boolean)var1.getValue(POWERED)) {
          if (var7) {
@@ -85,7 +87,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      return this.onHit(var2, var1, var5, var4, true) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
+      return (InteractionResult)(this.onHit(var2, var1, var5, var4, true) ? InteractionResult.SUCCESS : InteractionResult.PASS);
    }
 
    public boolean onHit(Level var1, BlockState var2, BlockHitResult var3, @Nullable Player var4, boolean var5) {
@@ -203,7 +205,7 @@ public class BellBlock extends BaseEntityBlock {
       return null;
    }
 
-   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.canTriggerBlocks()) {
          this.attemptToRing(var2, var3, (Direction)null);
       }
@@ -211,23 +213,23 @@ public class BellBlock extends BaseEntityBlock {
       super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      BellAttachType var7 = (BellAttachType)var1.getValue(ATTACHMENT);
-      Direction var8 = getConnectedDirection(var1).getOpposite();
-      if (var8 == var2 && !var1.canSurvive(var4, var5) && var7 != BellAttachType.DOUBLE_WALL) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      BellAttachType var9 = (BellAttachType)var1.getValue(ATTACHMENT);
+      Direction var10 = getConnectedDirection(var1).getOpposite();
+      if (var10 == var5 && !var1.canSurvive(var2, var4) && var9 != BellAttachType.DOUBLE_WALL) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         if (var2.getAxis() == ((Direction)var1.getValue(FACING)).getAxis()) {
-            if (var7 == BellAttachType.DOUBLE_WALL && !var3.isFaceSturdy(var4, var6, var2)) {
-               return (BlockState)((BlockState)var1.setValue(ATTACHMENT, BellAttachType.SINGLE_WALL)).setValue(FACING, var2.getOpposite());
+         if (var5.getAxis() == ((Direction)var1.getValue(FACING)).getAxis()) {
+            if (var9 == BellAttachType.DOUBLE_WALL && !var7.isFaceSturdy(var2, var6, var5)) {
+               return (BlockState)((BlockState)var1.setValue(ATTACHMENT, BellAttachType.SINGLE_WALL)).setValue(FACING, var5.getOpposite());
             }
 
-            if (var7 == BellAttachType.SINGLE_WALL && var8.getOpposite() == var2 && var3.isFaceSturdy(var4, var6, (Direction)var1.getValue(FACING))) {
+            if (var9 == BellAttachType.SINGLE_WALL && var10.getOpposite() == var5 && var7.isFaceSturdy(var2, var6, (Direction)var1.getValue(FACING))) {
                return (BlockState)var1.setValue(ATTACHMENT, BellAttachType.DOUBLE_WALL);
             }
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 

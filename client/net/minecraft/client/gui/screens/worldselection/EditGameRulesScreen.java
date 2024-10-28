@@ -106,7 +106,7 @@ public class EditGameRulesScreen extends Screen {
       public RuleList(final GameRules var2) {
          super(Minecraft.getInstance(), EditGameRulesScreen.this.width, EditGameRulesScreen.this.layout.getContentHeight(), EditGameRulesScreen.this.layout.getHeaderHeight(), 24);
          final HashMap var3 = Maps.newHashMap();
-         GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+         var2.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             public void visitBoolean(GameRules.Key<GameRules.BooleanValue> var1, GameRules.Type<GameRules.BooleanValue> var2x) {
                this.addEntry(var1, (var1x, var2xx, var3x, var4) -> {
                   return EditGameRulesScreen.thisx.new BooleanRuleEntry(EditGameRulesScreen.thisx, var1x, var2xx, var3x, var4);

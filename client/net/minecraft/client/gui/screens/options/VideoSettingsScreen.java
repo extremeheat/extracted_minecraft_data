@@ -30,7 +30,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private final int oldMipmaps;
 
    private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.graphicsMode(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.framerateLimit(), var0.enableVsync(), var0.bobView(), var0.guiScale(), var0.attackIndicator(), var0.gamma(), var0.cloudStatus(), var0.fullscreen(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.screenEffectScale(), var0.entityDistanceScaling(), var0.fovEffectScale(), var0.showAutosaveIndicator(), var0.glintSpeed(), var0.glintStrength(), var0.menuBackgroundBlurriness()};
+      return new OptionInstance[]{var0.graphicsMode(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.framerateLimit(), var0.enableVsync(), var0.inactivityFpsLimit(), var0.guiScale(), var0.attackIndicator(), var0.gamma(), var0.cloudStatus(), var0.fullscreen(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.screenEffectScale(), var0.entityDistanceScaling(), var0.fovEffectScale(), var0.showAutosaveIndicator(), var0.glintSpeed(), var0.glintStrength(), var0.menuBackgroundBlurriness(), var0.bobView()};
    }
 
    public VideoSettingsScreen(Screen var1, Minecraft var2, Options var3) {

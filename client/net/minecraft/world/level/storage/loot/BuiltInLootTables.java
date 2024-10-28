@@ -1,16 +1,19 @@
 package net.minecraft.world.level.storage.loot;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 
 public class BuiltInLootTables {
    private static final Set<ResourceKey<LootTable>> LOCATIONS = new HashSet();
    private static final Set<ResourceKey<LootTable>> IMMUTABLE_LOCATIONS;
-   public static final ResourceKey<LootTable> EMPTY;
    public static final ResourceKey<LootTable> SPAWN_BONUS_CHEST;
    public static final ResourceKey<LootTable> END_CITY_TREASURE;
    public static final ResourceKey<LootTable> SIMPLE_DUNGEON;
@@ -74,22 +77,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER;
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER_RANGED;
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER_MELEE;
-   public static final ResourceKey<LootTable> SHEEP_WHITE;
-   public static final ResourceKey<LootTable> SHEEP_ORANGE;
-   public static final ResourceKey<LootTable> SHEEP_MAGENTA;
-   public static final ResourceKey<LootTable> SHEEP_LIGHT_BLUE;
-   public static final ResourceKey<LootTable> SHEEP_YELLOW;
-   public static final ResourceKey<LootTable> SHEEP_LIME;
-   public static final ResourceKey<LootTable> SHEEP_PINK;
-   public static final ResourceKey<LootTable> SHEEP_GRAY;
-   public static final ResourceKey<LootTable> SHEEP_LIGHT_GRAY;
-   public static final ResourceKey<LootTable> SHEEP_CYAN;
-   public static final ResourceKey<LootTable> SHEEP_PURPLE;
-   public static final ResourceKey<LootTable> SHEEP_BLUE;
-   public static final ResourceKey<LootTable> SHEEP_BROWN;
-   public static final ResourceKey<LootTable> SHEEP_GREEN;
-   public static final ResourceKey<LootTable> SHEEP_RED;
-   public static final ResourceKey<LootTable> SHEEP_BLACK;
+   public static final Map<DyeColor, ResourceKey<LootTable>> SHEEP_BY_DYE;
    public static final ResourceKey<LootTable> FISHING;
    public static final ResourceKey<LootTable> FISHING_JUNK;
    public static final ResourceKey<LootTable> FISHING_TREASURE;
@@ -108,8 +96,12 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> SHEPHERD_GIFT;
    public static final ResourceKey<LootTable> TOOLSMITH_GIFT;
    public static final ResourceKey<LootTable> WEAPONSMITH_GIFT;
+   public static final ResourceKey<LootTable> UNEMPLOYED_GIFT;
+   public static final ResourceKey<LootTable> BABY_VILLAGER_GIFT;
    public static final ResourceKey<LootTable> SNIFFER_DIGGING;
    public static final ResourceKey<LootTable> PANDA_SNEEZE;
+   public static final ResourceKey<LootTable> CHICKEN_LAY;
+   public static final ResourceKey<LootTable> ARMADILLO_SHED;
    public static final ResourceKey<LootTable> PIGLIN_BARTERING;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_KEY;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_CHAMBER_CONSUMABLES;
@@ -117,6 +109,12 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES;
    public static final ResourceKey<LootTable> SPAWNER_TRIAL_ITEMS_TO_DROP_WHEN_OMINOUS;
    public static final ResourceKey<LootTable> BOGGED_SHEAR;
+   public static final ResourceKey<LootTable> SHEAR_MOOSHROOM;
+   public static final ResourceKey<LootTable> SHEAR_RED_MOOSHROOM;
+   public static final ResourceKey<LootTable> SHEAR_BROWN_MOOSHROOM;
+   public static final ResourceKey<LootTable> SHEAR_SNOW_GOLEM;
+   public static final ResourceKey<LootTable> SHEAR_SHEEP;
+   public static final Map<DyeColor, ResourceKey<LootTable>> SHEAR_SHEEP_BY_DYE;
    public static final ResourceKey<LootTable> DESERT_WELL_ARCHAEOLOGY;
    public static final ResourceKey<LootTable> DESERT_PYRAMID_ARCHAEOLOGY;
    public static final ResourceKey<LootTable> TRAIL_RUINS_ARCHAEOLOGY_COMMON;
@@ -126,6 +124,17 @@ public class BuiltInLootTables {
 
    public BuiltInLootTables() {
       super();
+   }
+
+   private static void makeDyeKeyMap(EnumMap<DyeColor, ResourceKey<LootTable>> var0, String var1) {
+      DyeColor[] var2 = DyeColor.values();
+      int var3 = var2.length;
+
+      for(int var4 = 0; var4 < var3; ++var4) {
+         DyeColor var5 = var2[var4];
+         var0.put(var5, register(var1 + "/" + var5.getName()));
+      }
+
    }
 
    private static ResourceKey<LootTable> register(String var0) {
@@ -146,7 +155,6 @@ public class BuiltInLootTables {
 
    static {
       IMMUTABLE_LOCATIONS = Collections.unmodifiableSet(LOCATIONS);
-      EMPTY = ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.withDefaultNamespace("empty"));
       SPAWN_BONUS_CHEST = register("chests/spawn_bonus_chest");
       END_CITY_TREASURE = register("chests/end_city_treasure");
       SIMPLE_DUNGEON = register("chests/simple_dungeon");
@@ -210,22 +218,9 @@ public class BuiltInLootTables {
       EQUIPMENT_TRIAL_CHAMBER = register("equipment/trial_chamber");
       EQUIPMENT_TRIAL_CHAMBER_RANGED = register("equipment/trial_chamber_ranged");
       EQUIPMENT_TRIAL_CHAMBER_MELEE = register("equipment/trial_chamber_melee");
-      SHEEP_WHITE = register("entities/sheep/white");
-      SHEEP_ORANGE = register("entities/sheep/orange");
-      SHEEP_MAGENTA = register("entities/sheep/magenta");
-      SHEEP_LIGHT_BLUE = register("entities/sheep/light_blue");
-      SHEEP_YELLOW = register("entities/sheep/yellow");
-      SHEEP_LIME = register("entities/sheep/lime");
-      SHEEP_PINK = register("entities/sheep/pink");
-      SHEEP_GRAY = register("entities/sheep/gray");
-      SHEEP_LIGHT_GRAY = register("entities/sheep/light_gray");
-      SHEEP_CYAN = register("entities/sheep/cyan");
-      SHEEP_PURPLE = register("entities/sheep/purple");
-      SHEEP_BLUE = register("entities/sheep/blue");
-      SHEEP_BROWN = register("entities/sheep/brown");
-      SHEEP_GREEN = register("entities/sheep/green");
-      SHEEP_RED = register("entities/sheep/red");
-      SHEEP_BLACK = register("entities/sheep/black");
+      SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> {
+         makeDyeKeyMap(var0, "entities/sheep");
+      });
       FISHING = register("gameplay/fishing");
       FISHING_JUNK = register("gameplay/fishing/junk");
       FISHING_TREASURE = register("gameplay/fishing/treasure");
@@ -244,8 +239,12 @@ public class BuiltInLootTables {
       SHEPHERD_GIFT = register("gameplay/hero_of_the_village/shepherd_gift");
       TOOLSMITH_GIFT = register("gameplay/hero_of_the_village/toolsmith_gift");
       WEAPONSMITH_GIFT = register("gameplay/hero_of_the_village/weaponsmith_gift");
+      UNEMPLOYED_GIFT = register("gameplay/hero_of_the_village/unemployed_gift");
+      BABY_VILLAGER_GIFT = register("gameplay/hero_of_the_village/baby_gift");
       SNIFFER_DIGGING = register("gameplay/sniffer_digging");
       PANDA_SNEEZE = register("gameplay/panda_sneeze");
+      CHICKEN_LAY = register("gameplay/chicken_lay");
+      ARMADILLO_SHED = register("gameplay/armadillo_shed");
       PIGLIN_BARTERING = register("gameplay/piglin_bartering");
       SPAWNER_TRIAL_CHAMBER_KEY = register("spawners/trial_chamber/key");
       SPAWNER_TRIAL_CHAMBER_CONSUMABLES = register("spawners/trial_chamber/consumables");
@@ -253,6 +252,14 @@ public class BuiltInLootTables {
       SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES = register("spawners/ominous/trial_chamber/consumables");
       SPAWNER_TRIAL_ITEMS_TO_DROP_WHEN_OMINOUS = register("spawners/trial_chamber/items_to_drop_when_ominous");
       BOGGED_SHEAR = register("shearing/bogged");
+      SHEAR_MOOSHROOM = register("shearing/mooshroom");
+      SHEAR_RED_MOOSHROOM = register("shearing/mooshroom/red");
+      SHEAR_BROWN_MOOSHROOM = register("shearing/mooshroom/brown");
+      SHEAR_SNOW_GOLEM = register("shearing/snow_golem");
+      SHEAR_SHEEP = register("shearing/sheep");
+      SHEAR_SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> {
+         makeDyeKeyMap(var0, "shearing/sheep");
+      });
       DESERT_WELL_ARCHAEOLOGY = register("archaeology/desert_well");
       DESERT_PYRAMID_ARCHAEOLOGY = register("archaeology/desert_pyramid");
       TRAIL_RUINS_ARCHAEOLOGY_COMMON = register("archaeology/trail_ruins_common");

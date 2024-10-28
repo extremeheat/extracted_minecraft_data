@@ -1,7 +1,5 @@
 package net.minecraft.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -11,12 +9,10 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 public class SkullModel extends SkullModelBase {
-   private final ModelPart root;
    protected final ModelPart head;
 
    public SkullModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
    }
 
@@ -42,9 +38,5 @@ public class SkullModel extends SkullModelBase {
    public void setupAnim(float var1, float var2, float var3) {
       this.head.yRot = var2 * 0.017453292F;
       this.head.xRot = var3 * 0.017453292F;
-   }
-
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      this.root.render(var1, var2, var3, var4, var5);
    }
 }

@@ -14,8 +14,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -63,11 +63,11 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       }
    }
 
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   public BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if (isDouble((Integer)var1.getValue(AGE))) {
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
-         return var1.canSurvive(var4, var5) ? var1 : Blocks.AIR.defaultBlockState();
+         return var1.canSurvive(var2, var4) ? var1 : Blocks.AIR.defaultBlockState();
       }
    }
 
@@ -85,8 +85,10 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var4 instanceof Ravager && var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-         var2.destroyBlock(var3, true, var4);
+      if (var2 instanceof ServerLevel var5) {
+         if (var4 instanceof Ravager && var5.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            var5.destroyBlock(var3, true, var4);
+         }
       }
 
       super.entityInside(var1, var2, var3, var4);

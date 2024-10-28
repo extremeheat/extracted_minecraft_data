@@ -14,17 +14,13 @@ class WindChargedMobEffect extends MobEffect {
       super(var1, var2, ParticleTypes.SMALL_GUST);
    }
 
-   public void onMobRemoved(LivingEntity var1, int var2, Entity.RemovalReason var3) {
-      if (var3 == Entity.RemovalReason.KILLED) {
-         Level var5 = var1.level();
-         if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            double var12 = var1.getX();
-            double var7 = var1.getY() + (double)(var1.getBbHeight() / 2.0F);
-            double var9 = var1.getZ();
-            float var11 = 3.0F + var1.getRandom().nextFloat() * 2.0F;
-            var4.explode(var1, (DamageSource)null, AbstractWindCharge.EXPLOSION_DAMAGE_CALCULATOR, var12, var7, var9, var11, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
-         }
+   public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
+      if (var4 == Entity.RemovalReason.KILLED) {
+         double var5 = var2.getX();
+         double var7 = var2.getY() + (double)(var2.getBbHeight() / 2.0F);
+         double var9 = var2.getZ();
+         float var11 = 3.0F + var2.getRandom().nextFloat() * 2.0F;
+         var1.explode(var2, (DamageSource)null, AbstractWindCharge.EXPLOSION_DAMAGE_CALCULATOR, var5, var7, var9, var11, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.BREEZE_WIND_CHARGE_BURST);
       }
 
    }

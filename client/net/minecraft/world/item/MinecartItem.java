@@ -1,75 +1,29 @@
 package net.minecraft.world.item;
 
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.dispenser.BlockSource;
-import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
-import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartItem extends Item {
-   private static final DispenseItemBehavior DISPENSE_ITEM_BEHAVIOR = new DefaultDispenseItemBehavior() {
-      private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
+   private final EntityType<? extends AbstractMinecart> type;
 
-      public ItemStack execute(BlockSource var1, ItemStack var2) {
-         Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
-         ServerLevel var4 = var1.level();
-         Vec3 var5 = var1.center();
-         double var6 = var5.x() + (double)var3.getStepX() * 1.125;
-         double var8 = Math.floor(var5.y()) + (double)var3.getStepY();
-         double var10 = var5.z() + (double)var3.getStepZ() * 1.125;
-         BlockPos var12 = var1.pos().relative(var3);
-         BlockState var13 = var4.getBlockState(var12);
-         RailShape var14 = var13.getBlock() instanceof BaseRailBlock ? (RailShape)var13.getValue(((BaseRailBlock)var13.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
-         double var15;
-         if (var13.is(BlockTags.RAILS)) {
-            if (var14.isAscending()) {
-               var15 = 0.6;
-            } else {
-               var15 = 0.1;
-            }
-         } else {
-            if (!var13.isAir() || !var4.getBlockState(var12.below()).is(BlockTags.RAILS)) {
-               return this.defaultDispenseItemBehavior.dispense(var1, var2);
-            }
-
-            BlockState var17 = var4.getBlockState(var12.below());
-            RailShape var18 = var17.getBlock() instanceof BaseRailBlock ? (RailShape)var17.getValue(((BaseRailBlock)var17.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
-            if (var3 != Direction.DOWN && var18.isAscending()) {
-               var15 = -0.4;
-            } else {
-               var15 = -0.9;
-            }
-         }
-
-         AbstractMinecart var19 = AbstractMinecart.createMinecart(var4, var6, var8 + var15, var10, ((MinecartItem)var2.getItem()).type, var2, (Player)null);
-         var4.addFreshEntity(var19);
-         var2.shrink(1);
-         return var2;
-      }
-
-      protected void playSound(BlockSource var1) {
-         var1.level().levelEvent(1000, var1.pos(), 0);
-      }
-   };
-   final AbstractMinecart.Type type;
-
-   public MinecartItem(AbstractMinecart.Type var1, Item.Properties var2) {
+   public MinecartItem(EntityType<? extends AbstractMinecart> var1, Item.Properties var2) {
       super(var2);
       this.type = var1;
-      DispenserBlock.registerBehavior(this, DISPENSE_ITEM_BEHAVIOR);
    }
 
    public InteractionResult useOn(UseOnContext var1) {
@@ -80,21 +34,38 @@ public class MinecartItem extends Item {
          return InteractionResult.FAIL;
       } else {
          ItemStack var5 = var1.getItemInHand();
-         if (var2 instanceof ServerLevel) {
-            ServerLevel var6 = (ServerLevel)var2;
-            RailShape var7 = var4.getBlock() instanceof BaseRailBlock ? (RailShape)var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
-            double var8 = 0.0;
-            if (var7.isAscending()) {
-               var8 = 0.5;
-            }
-
-            AbstractMinecart var10 = AbstractMinecart.createMinecart(var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer());
-            var6.addFreshEntity(var10);
-            var6.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var6.getBlockState(var3.below())));
+         RailShape var6 = var4.getBlock() instanceof BaseRailBlock ? (RailShape)var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty()) : RailShape.NORTH_SOUTH;
+         double var7 = 0.0;
+         if (var6.isSlope()) {
+            var7 = 0.5;
          }
 
-         var5.shrink(1);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         Vec3 var9 = new Vec3((double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var7, (double)var3.getZ() + 0.5);
+         AbstractMinecart var10 = AbstractMinecart.createMinecart(var2, var9.x, var9.y, var9.z, this.type, EntitySpawnReason.DISPENSER, var5, var1.getPlayer());
+         if (var10 == null) {
+            return InteractionResult.FAIL;
+         } else {
+            if (AbstractMinecart.useExperimentalMovement(var2)) {
+               List var11 = var2.getEntities((Entity)null, var10.getBoundingBox());
+               Iterator var12 = var11.iterator();
+
+               while(var12.hasNext()) {
+                  Entity var13 = (Entity)var12.next();
+                  if (var13 instanceof AbstractMinecart) {
+                     return InteractionResult.FAIL;
+                  }
+               }
+            }
+
+            if (var2 instanceof ServerLevel) {
+               ServerLevel var14 = (ServerLevel)var2;
+               var14.addFreshEntity(var10);
+               var14.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var14.getBlockState(var3.below())));
+            }
+
+            var5.shrink(1);
+            return InteractionResult.SUCCESS;
+         }
       }
    }
 }

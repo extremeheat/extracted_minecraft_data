@@ -1,61 +1,62 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
 import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.PiglinModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.PiglinRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
+import net.minecraft.world.item.CrossbowItem;
 
-public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
-   private static final Map<EntityType<?>, ResourceLocation> TEXTURES;
-   private static final float PIGLIN_CUSTOM_HEAD_SCALE = 1.0019531F;
+public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRenderState, PiglinModel> {
+   private static final ResourceLocation PIGLIN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin.png");
+   private static final ResourceLocation PIGLIN_BRUTE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin_brute.png");
+   public static final CustomHeadLayer.Transforms PIGLIN_CUSTOM_HEAD_TRANSFORMS = new CustomHeadLayer.Transforms(0.0F, 0.0F, 1.0019531F);
 
-   public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4, boolean var5) {
-      super(var1, createModel(var1.getModelSet(), var2, var5), 0.5F, 1.0019531F, 1.0F, 1.0019531F);
-      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var3)), new HumanoidArmorModel(var1.bakeLayer(var4)), var1.getModelManager()));
+   public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4, ModelLayerLocation var5, ModelLayerLocation var6, ModelLayerLocation var7) {
+      super(var1, new PiglinModel(var1.bakeLayer(var2)), new PiglinModel(var1.bakeLayer(var3)), 0.5F, PIGLIN_CUSTOM_HEAD_TRANSFORMS);
+      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var4)), new HumanoidArmorModel(var1.bakeLayer(var5)), new HumanoidArmorModel(var1.bakeLayer(var6)), new HumanoidArmorModel(var1.bakeLayer(var7)), var1.getEquipmentRenderer()));
    }
 
-   private static PiglinModel<Mob> createModel(EntityModelSet var0, ModelLayerLocation var1, boolean var2) {
-      PiglinModel var3 = new PiglinModel(var0.bakeLayer(var1));
-      if (var2) {
-         var3.rightEar.visible = false;
-      }
-
-      return var3;
+   public ResourceLocation getTextureLocation(PiglinRenderState var1) {
+      return var1.isBrute ? PIGLIN_BRUTE_LOCATION : PIGLIN_LOCATION;
    }
 
-   public ResourceLocation getTextureLocation(Mob var1) {
-      ResourceLocation var2 = (ResourceLocation)TEXTURES.get(var1.getType());
-      if (var2 == null) {
-         throw new IllegalArgumentException("I don't know what texture to use for " + String.valueOf(var1.getType()));
-      } else {
-         return var2;
-      }
+   public PiglinRenderState createRenderState() {
+      return new PiglinRenderState();
    }
 
-   protected boolean isShaking(Mob var1) {
-      return super.isShaking(var1) || var1 instanceof AbstractPiglin && ((AbstractPiglin)var1).isConverting();
+   public void extractRenderState(AbstractPiglin var1, PiglinRenderState var2, float var3) {
+      super.extractRenderState((Mob)var1, (HumanoidRenderState)var2, var3);
+      var2.isBrute = var1.getType() == EntityType.PIGLIN_BRUTE;
+      var2.armPose = var1.getArmPose();
+      var2.maxCrossbowChageDuration = (float)CrossbowItem.getChargeDuration(var1.getUseItem(), var1);
+      var2.isConverting = var1.isConverting();
    }
 
-   // $FF: synthetic method
-   protected boolean isShaking(final LivingEntity var1) {
-      return this.isShaking((Mob)var1);
+   protected boolean isShaking(PiglinRenderState var1) {
+      return super.isShaking(var1) || var1.isConverting;
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(final Entity var1) {
-      return this.getTextureLocation((Mob)var1);
+   protected boolean isShaking(final LivingEntityRenderState var1) {
+      return this.isShaking((PiglinRenderState)var1);
    }
 
-   static {
-      TEXTURES = ImmutableMap.of(EntityType.PIGLIN, ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin.png"), EntityType.ZOMBIFIED_PIGLIN, ResourceLocation.withDefaultNamespace("textures/entity/piglin/zombified_piglin.png"), EntityType.PIGLIN_BRUTE, ResourceLocation.withDefaultNamespace("textures/entity/piglin/piglin_brute.png"));
+   // $FF: synthetic method
+   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+      return this.getTextureLocation((PiglinRenderState)var1);
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

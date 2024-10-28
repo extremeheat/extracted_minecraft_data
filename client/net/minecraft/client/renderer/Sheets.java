@@ -45,7 +45,6 @@ public class Sheets {
    private static final RenderType SOLID_BLOCK_SHEET;
    private static final RenderType CUTOUT_BLOCK_SHEET;
    private static final RenderType TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
-   private static final RenderType TRANSLUCENT_CULL_BLOCK_SHEET;
    public static final Material DEFAULT_SHULKER_TEXTURE_LOCATION;
    public static final List<Material> SHULKER_TEXTURE_LOCATION;
    public static final Map<WoodType, Material> SIGN_MATERIALS;
@@ -115,10 +114,6 @@ public class Sheets {
 
    public static RenderType translucentItemSheet() {
       return TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
-   }
-
-   public static RenderType translucentCullBlockSheet() {
-      return TRANSLUCENT_CULL_BLOCK_SHEET;
    }
 
    private static Material createSignMaterial(WoodType var0) {
@@ -198,7 +193,6 @@ public class Sheets {
       SOLID_BLOCK_SHEET = RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_BLOCK_SHEET = RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS);
       TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_CULL_BLOCK_SHEET = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
       DEFAULT_SHULKER_TEXTURE_LOCATION = new Material(SHULKER_SHEET, ResourceLocation.withDefaultNamespace("entity/shulker/shulker"));
       SHULKER_TEXTURE_LOCATION = (List)Stream.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black").map((var0) -> {
          return new Material(SHULKER_SHEET, ResourceLocation.withDefaultNamespace("entity/shulker/shulker_" + var0));
@@ -209,7 +203,7 @@ public class Sheets {
       SHIELD_BASE = new Material(SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield/base"));
       BANNER_MATERIALS = new HashMap();
       SHIELD_MATERIALS = new HashMap();
-      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.holders().collect(Collectors.toMap(Holder.Reference::key, (var0) -> {
+      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> {
          return createDecoratedPotMaterial(((DecoratedPotPattern)var0.value()).assetId());
       }));
       DECORATED_POT_BASE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_base"));

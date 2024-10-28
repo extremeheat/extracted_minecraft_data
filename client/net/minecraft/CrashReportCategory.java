@@ -60,10 +60,10 @@ public class CrashReportCategory {
          var9 = var2 & 15;
          var10 = var3 & 15;
          var11 = SectionPos.sectionToBlockCoord(var5);
-         var12 = var0.getMinBuildHeight();
+         var12 = var0.getMinY();
          var13 = SectionPos.sectionToBlockCoord(var7);
          var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
-         var15 = var0.getMaxBuildHeight() - 1;
+         var15 = var0.getMaxY();
          var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
          var4.append(String.format(Locale.ROOT, "Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", var8, var9, var10, var5, var6, var7, var11, var12, var13, var14, var15, var16));
       } catch (Throwable var18) {
@@ -80,10 +80,10 @@ public class CrashReportCategory {
          var9 = (var5 + 1 << 5) - 1;
          var10 = (var6 + 1 << 5) - 1;
          var11 = var5 << 9;
-         var12 = var0.getMinBuildHeight();
+         var12 = var0.getMinY();
          var13 = var6 << 9;
          var14 = (var5 + 1 << 9) - 1;
-         var15 = var0.getMaxBuildHeight() - 1;
+         var15 = var0.getMaxY();
          var16 = (var6 + 1 << 9) - 1;
          var4.append(String.format(Locale.ROOT, "Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16));
       } catch (Throwable var17) {

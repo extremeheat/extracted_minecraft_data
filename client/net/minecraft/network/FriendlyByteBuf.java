@@ -401,6 +401,14 @@ public class FriendlyByteBuf extends ByteBuf {
       return this;
    }
 
+   public static ChunkPos readChunkPos(ByteBuf var0) {
+      return new ChunkPos(var0.readLong());
+   }
+
+   public static void writeChunkPos(ByteBuf var0, ChunkPos var1) {
+      var0.writeLong(var1.toLong());
+   }
+
    public SectionPos readSectionPos() {
       return SectionPos.of(this.readLong());
    }
@@ -458,14 +466,22 @@ public class FriendlyByteBuf extends ByteBuf {
       var0.writeFloat(var1.w);
    }
 
+   public static Vec3 readVec3(ByteBuf var0) {
+      return new Vec3(var0.readDouble(), var0.readDouble(), var0.readDouble());
+   }
+
    public Vec3 readVec3() {
-      return new Vec3(this.readDouble(), this.readDouble(), this.readDouble());
+      return readVec3(this);
+   }
+
+   public static void writeVec3(ByteBuf var0, Vec3 var1) {
+      var0.writeDouble(var1.x());
+      var0.writeDouble(var1.y());
+      var0.writeDouble(var1.z());
    }
 
    public void writeVec3(Vec3 var1) {
-      this.writeDouble(var1.x());
-      this.writeDouble(var1.y());
-      this.writeDouble(var1.z());
+      writeVec3(this, var1);
    }
 
    public <T extends Enum<T>> T readEnum(Class<T> var1) {
@@ -655,7 +671,8 @@ public class FriendlyByteBuf extends ByteBuf {
       float var4 = this.readFloat();
       float var5 = this.readFloat();
       boolean var6 = this.readBoolean();
-      return new BlockHitResult(new Vec3((double)var1.getX() + (double)var3, (double)var1.getY() + (double)var4, (double)var1.getZ() + (double)var5), var2, var1, var6);
+      boolean var7 = this.readBoolean();
+      return new BlockHitResult(new Vec3((double)var1.getX() + (double)var3, (double)var1.getY() + (double)var4, (double)var1.getZ() + (double)var5), var2, var1, var6, var7);
    }
 
    public void writeBlockHitResult(BlockHitResult var1) {
@@ -667,6 +684,7 @@ public class FriendlyByteBuf extends ByteBuf {
       this.writeFloat((float)(var3.y - (double)var2.getY()));
       this.writeFloat((float)(var3.z - (double)var2.getZ()));
       this.writeBoolean(var1.isInside());
+      this.writeBoolean(var1.isWorldBorderHit());
    }
 
    public BitSet readBitSet() {
@@ -691,6 +709,22 @@ public class FriendlyByteBuf extends ByteBuf {
          byte[] var3 = var1.toByteArray();
          this.writeBytes(Arrays.copyOf(var3, Mth.positiveCeilDiv(var2, 8)));
       }
+   }
+
+   public static int readContainerId(ByteBuf var0) {
+      return VarInt.read(var0);
+   }
+
+   public int readContainerId() {
+      return readContainerId(this.source);
+   }
+
+   public static void writeContainerId(ByteBuf var0, int var1) {
+      VarInt.write(var0, var1);
+   }
+
+   public void writeContainerId(int var1) {
+      writeContainerId(this.source, var1);
    }
 
    public boolean isContiguous() {

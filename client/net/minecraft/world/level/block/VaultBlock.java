@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -21,14 +21,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class VaultBlock extends BaseEntityBlock {
    public static final MapCodec<VaultBlock> CODEC = simpleCodec(VaultBlock::new);
    public static final Property<VaultState> STATE;
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty OMINOUS;
 
    public MapCodec<VaultBlock> codec() {
@@ -40,23 +40,22 @@ public class VaultBlock extends BaseEntityBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(STATE, VaultState.INACTIVE)).setValue(OMINOUS, false));
    }
 
-   public ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   public InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (!var1.isEmpty() && var2.getValue(STATE) == VaultState.ACTIVE) {
          if (var3 instanceof ServerLevel) {
             ServerLevel var8 = (ServerLevel)var3;
             BlockEntity var10 = var8.getBlockEntity(var4);
-            if (var10 instanceof VaultBlockEntity) {
-               VaultBlockEntity var9 = (VaultBlockEntity)var10;
-               VaultBlockEntity.Server.tryInsertKey(var8, var4, var2, var9.getConfig(), var9.getServerData(), var9.getSharedData(), var5, var1);
-               return ItemInteractionResult.SUCCESS;
-            } else {
-               return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            if (!(var10 instanceof VaultBlockEntity)) {
+               return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
-         } else {
-            return ItemInteractionResult.CONSUME;
+
+            VaultBlockEntity var9 = (VaultBlockEntity)var10;
+            VaultBlockEntity.Server.tryInsertKey(var8, var4, var2, var9.getConfig(), var9.getServerData(), var9.getSharedData(), var5, var1);
          }
+
+         return InteractionResult.SUCCESS_SERVER;
       } else {
-         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.TRY_WITH_EMPTY_HAND;
       }
    }
 

@@ -7,12 +7,13 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.ArmadilloRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.armadillo.Armadillo;
 
-public class ArmadilloModel extends AgeableHierarchicalModel<Armadillo> {
-   private static final float BABY_Y_OFFSET = 16.02F;
+public class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.6F);
    private static final float MAX_DOWN_HEAD_ROTATION_EXTENT = 25.0F;
    private static final float MAX_UP_HEAD_ROTATION_EXTENT = 22.5F;
    private static final float MAX_WALK_ANIMATION_SPEED = 16.5F;
@@ -20,7 +21,6 @@ public class ArmadilloModel extends AgeableHierarchicalModel<Armadillo> {
    private static final String HEAD_CUBE = "head_cube";
    private static final String RIGHT_EAR_CUBE = "right_ear_cube";
    private static final String LEFT_EAR_CUBE = "left_ear_cube";
-   private final ModelPart root;
    private final ModelPart body;
    private final ModelPart rightHindLeg;
    private final ModelPart leftHindLeg;
@@ -29,8 +29,7 @@ public class ArmadilloModel extends AgeableHierarchicalModel<Armadillo> {
    private final ModelPart tail;
 
    public ArmadilloModel(ModelPart var1) {
-      super(0.6F, 16.02F);
-      this.root = var1;
+      super(var1);
       this.body = var1.getChild("body");
       this.rightHindLeg = var1.getChild("right_hind_leg");
       this.leftHindLeg = var1.getChild("left_hind_leg");
@@ -58,13 +57,9 @@ public class ArmadilloModel extends AgeableHierarchicalModel<Armadillo> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(Armadillo var1, float var2, float var3, float var4, float var5, float var6) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
-      if (var1.shouldHideInShell()) {
+   public void setupAnim(ArmadilloRenderState var1) {
+      super.setupAnim(var1);
+      if (var1.isHidingInShell) {
          this.body.skipDraw = true;
          this.leftHindLeg.visible = false;
          this.rightHindLeg.visible = false;
@@ -76,13 +71,13 @@ public class ArmadilloModel extends AgeableHierarchicalModel<Armadillo> {
          this.rightHindLeg.visible = true;
          this.tail.visible = true;
          this.cube.visible = false;
-         this.head.xRot = Mth.clamp(var6, -22.5F, 25.0F) * 0.017453292F;
-         this.head.yRot = Mth.clamp(var5, -32.5F, 32.5F) * 0.017453292F;
+         this.head.xRot = Mth.clamp(var1.xRot, -22.5F, 25.0F) * 0.017453292F;
+         this.head.yRot = Mth.clamp(var1.yRot, -32.5F, 32.5F) * 0.017453292F;
       }
 
-      this.animateWalk(ArmadilloAnimation.ARMADILLO_WALK, var2, var3, 16.5F, 2.5F);
-      this.animate(var1.rollOutAnimationState, ArmadilloAnimation.ARMADILLO_ROLL_OUT, var4, 1.0F);
-      this.animate(var1.rollUpAnimationState, ArmadilloAnimation.ARMADILLO_ROLL_UP, var4, 1.0F);
-      this.animate(var1.peekAnimationState, ArmadilloAnimation.ARMADILLO_PEEK, var4, 1.0F);
+      this.animateWalk(ArmadilloAnimation.ARMADILLO_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 16.5F, 2.5F);
+      this.animate(var1.rollOutAnimationState, ArmadilloAnimation.ARMADILLO_ROLL_OUT, var1.ageInTicks, 1.0F);
+      this.animate(var1.rollUpAnimationState, ArmadilloAnimation.ARMADILLO_ROLL_UP, var1.ageInTicks, 1.0F);
+      this.animate(var1.peekAnimationState, ArmadilloAnimation.ARMADILLO_PEEK, var1.ageInTicks, 1.0F);
    }
 }

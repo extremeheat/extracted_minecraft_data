@@ -20,8 +20,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -57,7 +58,7 @@ public class MobEffect implements FeatureElement {
       this.color = var2;
       this.particleFactory = (var1x) -> {
          int var2x = var1x.isAmbient() ? AMBIENT_ALPHA : 255;
-         return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(var2x, var2));
+         return ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, ARGB.color(var2x, var2));
       };
    }
 
@@ -75,12 +76,12 @@ public class MobEffect implements FeatureElement {
       return this.blendDurationTicks;
    }
 
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
       return true;
    }
 
-   public void applyInstantenousEffect(@Nullable Entity var1, @Nullable Entity var2, LivingEntity var3, int var4, double var5) {
-      this.applyEffectTick(var3, var4);
+   public void applyInstantenousEffect(ServerLevel var1, @Nullable Entity var2, @Nullable Entity var3, LivingEntity var4, int var5, double var6) {
+      this.applyEffectTick(var1, var4, var5);
    }
 
    public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
@@ -96,10 +97,10 @@ public class MobEffect implements FeatureElement {
       });
    }
 
-   public void onMobRemoved(LivingEntity var1, int var2, Entity.RemovalReason var3) {
+   public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
    }
 
-   public void onMobHurt(LivingEntity var1, int var2, DamageSource var3, float var4) {
+   public void onMobHurt(ServerLevel var1, LivingEntity var2, int var3, DamageSource var4, float var5) {
    }
 
    public boolean isInstantenous() {

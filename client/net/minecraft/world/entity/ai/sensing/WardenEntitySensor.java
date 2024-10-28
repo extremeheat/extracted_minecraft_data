@@ -44,12 +44,4 @@ public class WardenEntitySensor extends NearestLivingEntitySensor<Warden> {
       Objects.requireNonNull(var0);
       return var10000.filter(var0::canTargetEntity).filter(var1).findFirst();
    }
-
-   protected int radiusXZ() {
-      return 24;
-   }
-
-   protected int radiusY() {
-      return 24;
-   }
 }

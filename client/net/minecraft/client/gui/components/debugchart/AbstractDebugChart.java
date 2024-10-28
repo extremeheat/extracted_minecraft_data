@@ -4,7 +4,7 @@ import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.SampleStorage;
 
@@ -23,6 +23,11 @@ public abstract class AbstractDebugChart {
 
    public int getWidth(int var1) {
       return Math.min(this.sampleStorage.capacity() + 2, var1);
+   }
+
+   public int getFullHeight() {
+      Objects.requireNonNull(this.font);
+      return 60 + 9;
    }
 
    public void drawChart(GuiGraphics var1, int var2, int var3) {
@@ -113,6 +118,6 @@ public abstract class AbstractDebugChart {
 
    protected int getSampleColor(double var1, double var3, int var5, double var6, int var8, double var9, int var11) {
       var1 = Mth.clamp(var1, var3, var9);
-      return var1 < var6 ? FastColor.ARGB32.lerp((float)((var1 - var3) / (var6 - var3)), var5, var8) : FastColor.ARGB32.lerp((float)((var1 - var6) / (var9 - var6)), var8, var11);
+      return var1 < var6 ? ARGB.lerp((float)((var1 - var3) / (var6 - var3)), var5, var8) : ARGB.lerp((float)((var1 - var6) / (var9 - var6)), var8, var11);
    }
 }

@@ -11,8 +11,6 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.breeze.Breeze;
 
 public class BreezeAttackEntitySensor extends NearestLivingEntitySensor<Breeze> {
-   public static final int BREEZE_SENSOR_RADIUS = 24;
-
    public BreezeAttackEntitySensor() {
       super();
    }
@@ -23,20 +21,12 @@ public class BreezeAttackEntitySensor extends NearestLivingEntitySensor<Breeze> 
 
    protected void doTick(ServerLevel var1, Breeze var2) {
       super.doTick(var1, var2);
-      var2.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).stream().flatMap(Collection::stream).filter(EntitySelector.NO_CREATIVE_OR_SPECTATOR).filter((var1x) -> {
-         return Sensor.isEntityAttackable(var2, var1x);
+      var2.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).stream().flatMap(Collection::stream).filter(EntitySelector.NO_CREATIVE_OR_SPECTATOR).filter((var2x) -> {
+         return Sensor.isEntityAttackable(var1, var2, var2x);
       }).findFirst().ifPresentOrElse((var1x) -> {
          var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, (Object)var1x);
       }, () -> {
          var2.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE);
       });
-   }
-
-   protected int radiusXZ() {
-      return 24;
-   }
-
-   protected int radiusY() {
-      return 24;
    }
 }

@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -84,6 +83,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final int UPDATE_KNOWN_SHAPE = 16;
    public static final int UPDATE_SUPPRESS_DROPS = 32;
    public static final int UPDATE_MOVE_BY_PISTON = 64;
+   public static final int UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE = 128;
    public static final int UPDATE_NONE = 4;
    public static final int UPDATE_ALL = 3;
    public static final int UPDATE_ALL_IMMEDIATE = 11;
@@ -93,12 +93,10 @@ public class Block extends BlockBehaviour implements ItemLike {
    protected final StateDefinition<Block, BlockState> stateDefinition;
    private BlockState defaultBlockState;
    @Nullable
-   private String descriptionId;
-   @Nullable
    private Item item;
-   private static final int CACHE_SIZE = 2048;
-   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<BlockStatePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<BlockStatePairKey>(2048, 0.25F) {
+   private static final int CACHE_SIZE = 256;
+   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<ShapePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
+      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<ShapePairKey>(256, 0.25F) {
          protected void rehash(int var1) {
          }
       };
@@ -159,7 +157,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       for(int var7 = 0; var7 < var6; ++var7) {
          Direction var8 = var5[var7];
          var4.setWithOffset(var2, (Direction)var8);
-         var3 = var3.updateShape(var8, var1.getBlockState(var4), var1, var2, var4);
+         var3 = var3.updateShape(var1, var1, var2, var8, var4, var1.getBlockState(var4), var1.getRandom());
       }
 
       return var3;
@@ -202,33 +200,34 @@ public class Block extends BlockBehaviour implements ItemLike {
       return var0.getBlock() instanceof LeavesBlock || var0.is(Blocks.BARRIER) || var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN) || var0.is(Blocks.MELON) || var0.is(Blocks.PUMPKIN) || var0.is(BlockTags.SHULKER_BOXES);
    }
 
-   public static boolean shouldRenderFace(BlockState var0, BlockGetter var1, BlockPos var2, Direction var3, BlockPos var4) {
-      BlockState var5 = var1.getBlockState(var4);
-      if (var0.skipRendering(var5, var3)) {
+   public static boolean shouldRenderFace(BlockState var0, BlockState var1, Direction var2) {
+      VoxelShape var3 = var1.getFaceOcclusionShape(var2.getOpposite());
+      if (var3 == Shapes.block()) {
          return false;
-      } else if (var5.canOcclude()) {
-         BlockStatePairKey var6 = new BlockStatePairKey(var0, var5, var3);
-         Object2ByteLinkedOpenHashMap var7 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
-         byte var8 = var7.getAndMoveToFirst(var6);
-         if (var8 != 127) {
-            return var8 != 0;
+      } else if (var0.skipRendering(var1, var2)) {
+         return false;
+      } else if (var3 == Shapes.empty()) {
+         return true;
+      } else {
+         VoxelShape var4 = var0.getFaceOcclusionShape(var2);
+         if (var4 == Shapes.empty()) {
+            return true;
          } else {
-            VoxelShape var9 = var0.getFaceOcclusionShape(var1, var2, var3);
-            if (var9.isEmpty()) {
-               return true;
+            ShapePairKey var5 = new ShapePairKey(var4, var3);
+            Object2ByteLinkedOpenHashMap var6 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
+            byte var7 = var6.getAndMoveToFirst(var5);
+            if (var7 != 127) {
+               return var7 != 0;
             } else {
-               VoxelShape var10 = var5.getFaceOcclusionShape(var1, var4, var3.getOpposite());
-               boolean var11 = Shapes.joinIsNotEmpty(var9, var10, BooleanOp.ONLY_FIRST);
-               if (var7.size() == 2048) {
-                  var7.removeLastByte();
+               boolean var8 = Shapes.joinIsNotEmpty(var4, var3, BooleanOp.ONLY_FIRST);
+               if (var6.size() == 256) {
+                  var6.removeLastByte();
                }
 
-               var7.putAndMoveToFirst(var6, (byte)(var11 ? 1 : 0));
-               return var11;
+               var6.putAndMoveToFirst(var5, (byte)(var8 ? 1 : 0));
+               return var8;
             }
          }
-      } else {
-         return true;
       }
    }
 
@@ -324,11 +323,15 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    private static void popResource(Level var0, Supplier<ItemEntity> var1, ItemStack var2) {
-      if (!var0.isClientSide && !var2.isEmpty() && var0.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
-         ItemEntity var3 = (ItemEntity)var1.get();
-         var3.setDefaultPickUpDelay();
-         var0.addFreshEntity(var3);
+      if (var0 instanceof ServerLevel var3) {
+         if (!var2.isEmpty() && var3.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+            ItemEntity var4 = (ItemEntity)var1.get();
+            var4.setDefaultPickUpDelay();
+            var0.addFreshEntity(var4);
+            return;
+         }
       }
+
    }
 
    protected void popExperience(ServerLevel var1, BlockPos var2, int var3) {
@@ -342,7 +345,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.explosionResistance;
    }
 
-   public void wasExploded(Level var1, BlockPos var2, Explosion var3) {
+   public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
    }
 
    public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
@@ -370,19 +373,11 @@ public class Block extends BlockBehaviour implements ItemLike {
       return Component.translatable(this.getDescriptionId());
    }
 
-   public String getDescriptionId() {
-      if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("block", BuiltInRegistries.BLOCK.getKey(this));
-      }
-
-      return this.descriptionId;
-   }
-
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
       var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
    }
 
-   public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {
+   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
       var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
    }
 
@@ -408,8 +403,8 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       this.spawnDestroyParticles(var1, var4, var2, var3);
-      if (var3.is(BlockTags.GUARDED_BY_PIGLINS)) {
-         PiglinAi.angerNearbyPiglins(var4, false);
+      if (var3.is(BlockTags.GUARDED_BY_PIGLINS) && var1 instanceof ServerLevel var5) {
+         PiglinAi.angerNearbyPiglins(var5, var4, false);
       }
 
       var1.gameEvent(GameEvent.BLOCK_DESTROY, var2, GameEvent.Context.of(var4, var3));
@@ -497,34 +492,36 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    }
 
-   public static final class BlockStatePairKey {
-      private final BlockState first;
-      private final BlockState second;
-      private final Direction direction;
-
-      public BlockStatePairKey(BlockState var1, BlockState var2, Direction var3) {
+   static record ShapePairKey(VoxelShape first, VoxelShape second) {
+      ShapePairKey(VoxelShape var1, VoxelShape var2) {
          super();
          this.first = var1;
          this.second = var2;
-         this.direction = var3;
       }
 
       public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else if (!(var1 instanceof BlockStatePairKey)) {
-            return false;
-         } else {
-            BlockStatePairKey var2 = (BlockStatePairKey)var1;
-            return this.first == var2.first && this.second == var2.second && this.direction == var2.direction;
+         boolean var10000;
+         if (var1 instanceof ShapePairKey var2) {
+            if (this.first == var2.first && this.second == var2.second) {
+               var10000 = true;
+               return var10000;
+            }
          }
+
+         var10000 = false;
+         return var10000;
       }
 
       public int hashCode() {
-         int var1 = this.first.hashCode();
-         var1 = 31 * var1 + this.second.hashCode();
-         var1 = 31 * var1 + this.direction.hashCode();
-         return var1;
+         return System.identityHashCode(this.first) * 31 + System.identityHashCode(this.second);
+      }
+
+      public VoxelShape first() {
+         return this.first;
+      }
+
+      public VoxelShape second() {
+         return this.second;
       }
    }
 }

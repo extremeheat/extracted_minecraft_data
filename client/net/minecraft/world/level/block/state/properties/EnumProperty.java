@@ -1,39 +1,50 @@
 package net.minecraft.world.level.block.state.properties;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.util.StringRepresentable;
 
-public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Property<T> {
-   private final ImmutableSet<T> values;
-   private final Map<String, T> names = Maps.newHashMap();
+public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends Property<T> {
+   private final List<T> values;
+   private final Map<String, T> names;
+   private final int[] ordinalToIndex;
 
-   protected EnumProperty(String var1, Class<T> var2, Collection<T> var3) {
+   private EnumProperty(String var1, Class<T> var2, List<T> var3) {
       super(var1, var2);
-      this.values = ImmutableSet.copyOf(var3);
-      Iterator var4 = var3.iterator();
+      if (var3.isEmpty()) {
+         throw new IllegalArgumentException("Trying to make empty EnumProperty '" + var1 + "'");
+      } else {
+         this.values = List.copyOf(var3);
+         Enum[] var4 = (Enum[])var2.getEnumConstants();
+         this.ordinalToIndex = new int[var4.length];
+         Enum[] var5 = var4;
+         int var6 = var4.length;
 
-      while(var4.hasNext()) {
-         Enum var5 = (Enum)var4.next();
-         String var6 = ((StringRepresentable)var5).getSerializedName();
-         if (this.names.containsKey(var6)) {
-            throw new IllegalArgumentException("Multiple values have the same name '" + var6 + "'");
+         for(int var7 = 0; var7 < var6; ++var7) {
+            Enum var8 = var5[var7];
+            this.ordinalToIndex[var8.ordinal()] = var3.indexOf(var8);
          }
 
-         this.names.put(var6, var5);
-      }
+         ImmutableMap.Builder var9 = ImmutableMap.builder();
+         Iterator var10 = var3.iterator();
 
+         while(var10.hasNext()) {
+            Enum var11 = (Enum)var10.next();
+            String var12 = ((StringRepresentable)var11).getSerializedName();
+            var9.put(var12, var11);
+         }
+
+         this.names = var9.buildOrThrow();
+      }
    }
 
-   public Collection<T> getPossibleValues() {
+   public List<T> getPossibleValues() {
       return this.values;
    }
 
@@ -45,6 +56,10 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
       return ((StringRepresentable)var1).getSerializedName();
    }
 
+   public int getInternalIndex(T var1) {
+      return this.ordinalToIndex[var1.ordinal()];
+   }
+
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -52,7 +67,7 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
          if (var1 instanceof EnumProperty) {
             EnumProperty var2 = (EnumProperty)var1;
             if (super.equals(var1)) {
-               return this.values.equals(var2.values) && this.names.equals(var2.names);
+               return this.values.equals(var2.values);
             }
          }
 
@@ -63,7 +78,6 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
    public int generateHashCode() {
       int var1 = super.generateHashCode();
       var1 = 31 * var1 + this.values.hashCode();
-      var1 = 31 * var1 + this.names.hashCode();
       return var1;
    }
 
@@ -74,14 +88,25 @@ public class EnumProperty<T extends Enum<T> & StringRepresentable> extends Prope
    }
 
    public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, Predicate<T> var2) {
-      return create(var0, var1, (Collection)Arrays.stream((Enum[])var1.getEnumConstants()).filter(var2).collect(Collectors.toList()));
+      return create(var0, var1, (List)Arrays.stream((Enum[])var1.getEnumConstants()).filter(var2).collect(Collectors.toList()));
    }
 
+   @SafeVarargs
    public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, T... var2) {
-      return create(var0, var1, (Collection)Lists.newArrayList(var2));
+      return create(var0, var1, List.of(var2));
    }
 
-   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, Collection<T> var2) {
+   public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, List<T> var2) {
       return new EnumProperty(var0, var1, var2);
+   }
+
+   // $FF: synthetic method
+   public int getInternalIndex(final Comparable var1) {
+      return this.getInternalIndex((Enum)var1);
+   }
+
+   // $FF: synthetic method
+   public String getName(final Comparable var1) {
+      return this.getName((Enum)var1);
    }
 }

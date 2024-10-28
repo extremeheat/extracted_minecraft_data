@@ -1,7 +1,10 @@
 package net.minecraft.world.entity.decoration;
 
+import java.util.Optional;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -81,16 +84,16 @@ public class PaintingVariants {
       register(var0, STAGE, 2, 2);
       register(var0, VOID, 2, 2);
       register(var0, SKULL_AND_ROSES, 2, 2);
-      register(var0, WITHER, 2, 2);
+      register(var0, WITHER, 2, 2, false);
       register(var0, FIGHTERS, 4, 2);
       register(var0, POINTER, 4, 4);
       register(var0, PIGSCENE, 4, 4);
       register(var0, BURNING_SKULL, 4, 4);
       register(var0, SKELETON, 4, 3);
-      register(var0, EARTH, 2, 2);
-      register(var0, WIND, 2, 2);
-      register(var0, WATER, 2, 2);
-      register(var0, FIRE, 2, 2);
+      register(var0, EARTH, 2, 2, false);
+      register(var0, WIND, 2, 2, false);
+      register(var0, WATER, 2, 2, false);
+      register(var0, FIRE, 2, 2, false);
       register(var0, DONKEY_KONG, 4, 3);
       register(var0, BAROQUE, 2, 2);
       register(var0, HUMBLE, 2, 2);
@@ -115,7 +118,11 @@ public class PaintingVariants {
    }
 
    private static void register(BootstrapContext<PaintingVariant> var0, ResourceKey<PaintingVariant> var1, int var2, int var3) {
-      var0.register(var1, new PaintingVariant(var2, var3, var1.location()));
+      register(var0, var1, var2, var3, true);
+   }
+
+   private static void register(BootstrapContext<PaintingVariant> var0, ResourceKey<PaintingVariant> var1, int var2, int var3, boolean var4) {
+      var0.register(var1, new PaintingVariant(var2, var3, var1.location(), Optional.of(Component.translatable(var1.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW)), var4 ? Optional.of(Component.translatable(var1.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY)) : Optional.empty()));
    }
 
    private static ResourceKey<PaintingVariant> create(String var0) {

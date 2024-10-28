@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -26,7 +27,7 @@ public class SetOminousBottleAmplifierFunction extends LootItemConditionalFuncti
       this.amplifierGenerator = var2;
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getReferencedContextParams() {
       return this.amplifierGenerator.getReferencedContextParams();
    }
 
@@ -36,7 +37,7 @@ public class SetOminousBottleAmplifierFunction extends LootItemConditionalFuncti
 
    public ItemStack run(ItemStack var1, LootContext var2) {
       int var3 = Mth.clamp(this.amplifierGenerator.getInt(var2), 0, 4);
-      var1.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var3);
+      var1.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, new OminousBottleAmplifier(var3));
       return var1;
    }
 

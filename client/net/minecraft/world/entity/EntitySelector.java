@@ -2,10 +2,8 @@ package net.minecraft.world.entity;
 
 import com.google.common.base.Predicates;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
@@ -27,6 +25,7 @@ public final class EntitySelector {
       return !var0.isSpectator();
    };
    public static final Predicate<Entity> CAN_BE_COLLIDED_WITH;
+   public static final Predicate<Entity> CAN_BE_PICKED;
 
    private EntitySelector() {
       super();
@@ -83,30 +82,6 @@ public final class EntitySelector {
 
    static {
       CAN_BE_COLLIDED_WITH = NO_SPECTATORS.and(Entity::canBeCollidedWith);
-   }
-
-   public static class MobCanWearArmorEntitySelector implements Predicate<Entity> {
-      private final ItemStack itemStack;
-
-      public MobCanWearArmorEntitySelector(ItemStack var1) {
-         super();
-         this.itemStack = var1;
-      }
-
-      public boolean test(@Nullable Entity var1) {
-         if (!var1.isAlive()) {
-            return false;
-         } else if (!(var1 instanceof LivingEntity)) {
-            return false;
-         } else {
-            LivingEntity var2 = (LivingEntity)var1;
-            return var2.canTakeItem(this.itemStack);
-         }
-      }
-
-      // $FF: synthetic method
-      public boolean test(@Nullable final Object var1) {
-         return this.test((Entity)var1);
-      }
+      CAN_BE_PICKED = NO_SPECTATORS.and(Entity::isPickable);
    }
 }

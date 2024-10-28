@@ -22,8 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -32,7 +33,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HopperBlock extends BaseEntityBlock {
    public static final MapCodec<HopperBlock> CODEC = simpleCodec(HopperBlock::new);
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty ENABLED;
    private static final VoxelShape TOP;
    private static final VoxelShape FUNNEL;
@@ -126,20 +127,19 @@ public class HopperBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof HopperBlockEntity) {
-            var4.openMenu((HopperBlockEntity)var6);
+      if (!var2.isClientSide) {
+         BlockEntity var7 = var2.getBlockEntity(var3);
+         if (var7 instanceof HopperBlockEntity) {
+            HopperBlockEntity var6 = (HopperBlockEntity)var7;
+            var4.openMenu(var6);
             var4.awardStat(Stats.INSPECT_HOPPER);
          }
-
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       this.checkPoweredState(var2, var3, var1);
    }
 

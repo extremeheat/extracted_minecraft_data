@@ -26,7 +26,7 @@ public record DamageEntity(LevelBasedValue minDamage, LevelBasedValue maxDamage,
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
       float var6 = Mth.randomBetween(var4.getRandom(), this.minDamage.calculate(var2), this.maxDamage.calculate(var2));
-      var4.hurt(new DamageSource(this.damageType, var3.owner()), var6);
+      var4.hurtServer(var1, new DamageSource(this.damageType, var3.owner()), var6);
    }
 
    public MapCodec<DamageEntity> codec() {

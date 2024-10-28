@@ -23,7 +23,7 @@ public record WorldGenSettings(WorldOptions options, WorldDimensions dimensions)
    }
 
    public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, RegistryAccess var2) {
-      return encode(var0, var1, new WorldDimensions(var2.registryOrThrow(Registries.LEVEL_STEM)));
+      return encode(var0, var1, new WorldDimensions(var2.lookupOrThrow(Registries.LEVEL_STEM)));
    }
 
    public WorldOptions options() {

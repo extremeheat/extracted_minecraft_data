@@ -5,9 +5,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> requirements) {
@@ -17,7 +17,7 @@ public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> require
       this.requirements = var2;
    }
 
-   public static Codec<LootItemCondition> conditionCodec(LootContextParamSet var0) {
+   public static Codec<LootItemCondition> conditionCodec(ContextKeySet var0) {
       return LootItemCondition.DIRECT_CODEC.validate((var1) -> {
          ProblemReporter.Collector var2 = new ProblemReporter.Collector();
          ValidationContext var3 = new ValidationContext(var2, var0);
@@ -32,7 +32,7 @@ public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> require
       });
    }
 
-   public static <T> Codec<ConditionalEffect<T>> codec(Codec<T> var0, LootContextParamSet var1) {
+   public static <T> Codec<ConditionalEffect<T>> codec(Codec<T> var0, ContextKeySet var1) {
       return RecordCodecBuilder.create((var2) -> {
          return var2.group(var0.fieldOf("effect").forGetter(ConditionalEffect::effect), conditionCodec(var1).optionalFieldOf("requirements").forGetter(ConditionalEffect::requirements)).apply(var2, ConditionalEffect::new);
       });

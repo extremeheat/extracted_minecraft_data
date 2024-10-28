@@ -7,6 +7,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -20,6 +21,7 @@ import net.minecraft.world.phys.Vec3;
 public class WindCharge extends AbstractWindCharge {
    private static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR;
    private static final float RADIUS = 1.2F;
+   private static final float MIN_CAMERA_DISTANCE_SQUARED;
    private int noDeflectTicks = 5;
 
    public WindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
@@ -50,7 +52,12 @@ public class WindCharge extends AbstractWindCharge {
       this.level().explode(this, (DamageSource)null, EXPLOSION_DAMAGE_CALCULATOR, var1.x(), var1.y(), var1.z(), 1.2F, false, Level.ExplosionInteraction.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.WIND_CHARGE_BURST);
    }
 
+   public boolean shouldRenderAtSqrDistance(double var1) {
+      return this.tickCount < 2 && var1 < (double)MIN_CAMERA_DISTANCE_SQUARED ? false : super.shouldRenderAtSqrDistance(var1);
+   }
+
    static {
-      EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(true, false, Optional.of(1.22F), BuiltInRegistries.BLOCK.getTag(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity()));
+      EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(true, false, Optional.of(1.22F), BuiltInRegistries.BLOCK.get(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity()));
+      MIN_CAMERA_DISTANCE_SQUARED = Mth.square(3.5F);
    }
 }

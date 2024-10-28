@@ -19,11 +19,13 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.execution.TraceCallbacks;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -291,7 +293,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
          while(var3.hasNext()) {
             ServerPlayer var4 = (ServerPlayer)var3.next();
-            if (var4 != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
+            if (var4.commandSource() != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
                var4.sendSystemMessage(var2);
             }
          }
@@ -323,11 +325,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public Stream<ResourceLocation> getAvailableSounds() {
-      return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::getLocation);
-   }
-
-   public Stream<ResourceLocation> getRecipeNames() {
-      return this.server.getRecipeManager().getRecipeIds();
+      return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::location);
    }
 
    public CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1) {
@@ -335,10 +333,19 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
-      return (CompletableFuture)this.registryAccess().registry(var1).map((var3x) -> {
-         this.suggestRegistryElements(var3x, var2, var3);
-         return var3.buildFuture();
-      }).orElseGet(Suggestions::empty);
+      if (var1 == Registries.RECIPE) {
+         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> {
+            return var0.id().location();
+         }), var3);
+      } else if (var1 == Registries.ADVANCEMENT) {
+         Collection var5 = this.server.getAdvancements().getAllAdvancements();
+         return SharedSuggestionProvider.suggestResource(var5.stream().map(AdvancementHolder::id), var3);
+      } else {
+         return (CompletableFuture)this.registryAccess().lookup(var1).map((var3x) -> {
+            this.suggestRegistryElements(var3x, var2, var3);
+            return var3.buildFuture();
+         }).orElseGet(Suggestions::empty);
+      }
    }
 
    public Set<ResourceKey<Level>> levels() {

@@ -1,6 +1,7 @@
 package net.minecraft.world.effect;
 
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -12,27 +13,27 @@ class HealOrHarmMobEffect extends InstantenousMobEffect {
       this.isHarm = var3;
    }
 
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
-      if (this.isHarm == var1.isInvertedHealAndHarm()) {
-         var1.heal((float)Math.max(4 << var2, 0));
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
+      if (this.isHarm == var2.isInvertedHealAndHarm()) {
+         var2.heal((float)Math.max(4 << var3, 0));
       } else {
-         var1.hurt(var1.damageSources().magic(), (float)(6 << var2));
+         var2.hurtServer(var1, var2.damageSources().magic(), (float)(6 << var3));
       }
 
       return true;
    }
 
-   public void applyInstantenousEffect(@Nullable Entity var1, @Nullable Entity var2, LivingEntity var3, int var4, double var5) {
-      int var7;
-      if (this.isHarm == var3.isInvertedHealAndHarm()) {
-         var7 = (int)(var5 * (double)(4 << var4) + 0.5);
-         var3.heal((float)var7);
+   public void applyInstantenousEffect(ServerLevel var1, @Nullable Entity var2, @Nullable Entity var3, LivingEntity var4, int var5, double var6) {
+      int var8;
+      if (this.isHarm == var4.isInvertedHealAndHarm()) {
+         var8 = (int)(var6 * (double)(4 << var5) + 0.5);
+         var4.heal((float)var8);
       } else {
-         var7 = (int)(var5 * (double)(6 << var4) + 0.5);
-         if (var1 == null) {
-            var3.hurt(var3.damageSources().magic(), (float)var7);
+         var8 = (int)(var6 * (double)(6 << var5) + 0.5);
+         if (var2 == null) {
+            var4.hurtServer(var1, var4.damageSources().magic(), (float)var8);
          } else {
-            var3.hurt(var3.damageSources().indirectMagic(var1, var2), (float)var7);
+            var4.hurtServer(var1, var4.damageSources().indirectMagic(var2, var3), (float)var8);
          }
       }
 

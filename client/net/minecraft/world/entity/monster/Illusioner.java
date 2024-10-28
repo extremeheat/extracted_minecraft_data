@@ -10,14 +10,15 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
@@ -25,22 +26,23 @@ import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    private static final int NUM_ILLUSIONS = 4;
    private static final int ILLUSION_TRANSITION_TICKS = 3;
-   private static final int ILLUSION_SPREAD = 3;
+   public static final int ILLUSION_SPREAD = 3;
    private int clientSideIllusionTicks;
    private final Vec3[][] clientSideIllusionOffsets;
 
@@ -60,6 +62,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new SpellcasterIllager.SpellcasterCastingSpellGoal());
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Creaking.class, 8.0F, 1.0, 1.2));
       this.goalSelector.addGoal(4, new IllusionerMirrorSpellGoal());
       this.goalSelector.addGoal(5, new IllusionerBlindnessSpellGoal());
       this.goalSelector.addGoal(6, new RangedBowAttackGoal(this, 0.5, 20, 15.0F));
@@ -76,13 +79,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.5).add(Attributes.FOLLOW_RANGE, 18.0).add(Attributes.MAX_HEALTH, 32.0);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
       return super.finalizeSpawn(var1, var2, var3, var4);
-   }
-
-   public AABB getBoundingBoxForCulling() {
-      return this.getBoundingBox().inflate(3.0, 0.0, 3.0);
    }
 
    public void aiStep() {
@@ -170,9 +169,12 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       double var8 = var1.getY(0.3333333333333333) - var5.getY();
       double var10 = var1.getZ() - this.getZ();
       double var12 = Math.sqrt(var6 * var6 + var10 * var10);
-      var5.shoot(var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+      Level var15 = this.level();
+      if (var15 instanceof ServerLevel var14) {
+         Projectile.spawnProjectileUsingShoot(var5, var14, var4, var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - var14.getDifficulty().getId() * 4));
+      }
+
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level().addFreshEntity(var5);
    }
 
    public AbstractIllager.IllagerArmPose getArmPose() {

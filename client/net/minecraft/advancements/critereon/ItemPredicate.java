@@ -7,11 +7,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponentPredicate;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -92,15 +92,15 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
          return new Builder();
       }
 
-      public Builder of(ItemLike... var1) {
+      public Builder of(HolderGetter<Item> var1, ItemLike... var2) {
          this.items = Optional.of(HolderSet.direct((var0) -> {
             return var0.asItem().builtInRegistryHolder();
-         }, (Object[])var1));
+         }, (Object[])var2));
          return this;
       }
 
-      public Builder of(TagKey<Item> var1) {
-         this.items = Optional.of(BuiltInRegistries.ITEM.getOrCreateTag(var1));
+      public Builder of(HolderGetter<Item> var1, TagKey<Item> var2) {
+         this.items = Optional.of(var1.getOrThrow(var2));
          return this;
       }
 

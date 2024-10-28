@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -250,9 +251,7 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
    public static class Builder {
       private Optional<EntityTypePredicate> entityType = Optional.empty();
       private Optional<DistancePredicate> distanceToPlayer = Optional.empty();
-      private Optional<DistancePredicate> fallDistance = Optional.empty();
       private Optional<MovementPredicate> movement = Optional.empty();
-      private Optional<LocationWrapper> location = Optional.empty();
       private Optional<LocationPredicate> located = Optional.empty();
       private Optional<LocationPredicate> steppingOnLocation = Optional.empty();
       private Optional<LocationPredicate> movementAffectedBy = Optional.empty();
@@ -276,13 +275,13 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
          return new Builder();
       }
 
-      public Builder of(EntityType<?> var1) {
-         this.entityType = Optional.of(EntityTypePredicate.of(var1));
+      public Builder of(HolderGetter<EntityType<?>> var1, EntityType<?> var2) {
+         this.entityType = Optional.of(EntityTypePredicate.of(var1, var2));
          return this;
       }
 
-      public Builder of(TagKey<EntityType<?>> var1) {
-         this.entityType = Optional.of(EntityTypePredicate.of(var1));
+      public Builder of(HolderGetter<EntityType<?>> var1, TagKey<EntityType<?>> var2) {
+         this.entityType = Optional.of(EntityTypePredicate.of(var1, var2));
          return this;
       }
 

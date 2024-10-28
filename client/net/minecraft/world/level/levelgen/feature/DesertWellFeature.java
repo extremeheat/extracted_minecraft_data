@@ -34,7 +34,7 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
       WorldGenLevel var2 = var1.level();
       BlockPos var3 = var1.origin();
 
-      for(var3 = var3.above(); var2.isEmptyBlock(var3) && var3.getY() > var2.getMinBuildHeight() + 2; var3 = var3.below()) {
+      for(var3 = var3.above(); var2.isEmptyBlock(var3) && var3.getY() > var2.getMinY() + 2; var3 = var3.below()) {
       }
 
       if (!IS_SAND.test(var2.getBlockState(var3))) {

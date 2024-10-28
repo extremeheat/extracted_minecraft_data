@@ -1,5 +1,6 @@
 package net.minecraft.world.entity;
 
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -8,7 +9,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -24,7 +25,7 @@ public abstract class AgeableMob extends PathfinderMob {
       super(var1, var2);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMobGroupData(true);
       }
@@ -141,8 +142,8 @@ public abstract class AgeableMob extends PathfinderMob {
    protected void ageBoundaryReached() {
       if (!this.isBaby() && this.isPassenger()) {
          Entity var2 = this.getVehicle();
-         if (var2 instanceof Boat) {
-            Boat var1 = (Boat)var2;
+         if (var2 instanceof AbstractBoat) {
+            AbstractBoat var1 = (AbstractBoat)var2;
             if (!var1.hasEnoughSpaceFor(this)) {
                this.stopRiding();
             }
@@ -163,6 +164,16 @@ public abstract class AgeableMob extends PathfinderMob {
       return (int)((float)(var0 / 20) * 0.1F);
    }
 
+   @VisibleForTesting
+   public int getForcedAge() {
+      return this.forcedAge;
+   }
+
+   @VisibleForTesting
+   public int getForcedAgeTimer() {
+      return this.forcedAgeTimer;
+   }
+
    static {
       DATA_BABY_ID = SynchedEntityData.defineId(AgeableMob.class, EntityDataSerializers.BOOLEAN);
    }
@@ -172,7 +183,7 @@ public abstract class AgeableMob extends PathfinderMob {
       private final boolean shouldSpawnBaby;
       private final float babySpawnChance;
 
-      private AgeableMobGroupData(boolean var1, float var2) {
+      public AgeableMobGroupData(boolean var1, float var2) {
          super();
          this.shouldSpawnBaby = var1;
          this.babySpawnChance = var2;

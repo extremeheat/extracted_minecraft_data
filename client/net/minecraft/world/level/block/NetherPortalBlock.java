@@ -15,15 +15,16 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -31,8 +32,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.level.portal.PortalShape;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -72,20 +73,24 @@ public class NetherPortalBlock extends Block implements Portal {
          }
 
          if (var2.getBlockState(var3).isValidSpawn(var2, var3, EntityType.ZOMBIFIED_PIGLIN)) {
-            Entity var5 = EntityType.ZOMBIFIED_PIGLIN.spawn(var2, var3.above(), MobSpawnType.STRUCTURE);
+            Entity var5 = EntityType.ZOMBIFIED_PIGLIN.spawn(var2, var3.above(), EntitySpawnReason.STRUCTURE);
             if (var5 != null) {
                var5.setPortalCooldown();
+               Entity var6 = var5.getVehicle();
+               if (var6 != null) {
+                  var6.setPortalCooldown();
+               }
             }
          }
       }
 
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      Direction.Axis var7 = var2.getAxis();
-      Direction.Axis var8 = (Direction.Axis)var1.getValue(AXIS);
-      boolean var9 = var8 != var7 && var7.isHorizontal();
-      return !var9 && !var3.is(this) && !(new PortalShape(var4, var5, var8)).isComplete() ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      Direction.Axis var9 = var5.getAxis();
+      Direction.Axis var10 = (Direction.Axis)var1.getValue(AXIS);
+      boolean var11 = var10 != var9 && var9.isHorizontal();
+      return !var11 && !var7.is(this) && !PortalShape.findAnyShape(var2, var4, var10).isComplete() ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
@@ -97,14 +102,14 @@ public class NetherPortalBlock extends Block implements Portal {
 
    public int getPortalTransitionTime(ServerLevel var1, Entity var2) {
       if (var2 instanceof Player var3) {
-         return Math.max(1, var1.getGameRules().getInt(var3.getAbilities().invulnerable ? GameRules.RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY : GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY));
+         return Math.max(0, var1.getGameRules().getInt(var3.getAbilities().invulnerable ? GameRules.RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY : GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY));
       } else {
          return 0;
       }
    }
 
    @Nullable
-   public DimensionTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
+   public TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
       ResourceKey var4 = var1.dimension() == Level.NETHER ? Level.OVERWORLD : Level.NETHER;
       ServerLevel var5 = var1.getServer().getLevel(var4);
       if (var5 == null) {
@@ -119,17 +124,17 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    @Nullable
-   private DimensionTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
+   private TeleportTransition getExitPortal(ServerLevel var1, Entity var2, BlockPos var3, BlockPos var4, boolean var5, WorldBorder var6) {
       Optional var7 = var1.getPortalForcer().findClosestPortalPosition(var4, var5, var6);
       BlockUtil.FoundRectangle var8;
-      DimensionTransition.PostDimensionTransition var9;
+      TeleportTransition.PostTeleportTransition var9;
       if (var7.isPresent()) {
          BlockPos var10 = (BlockPos)var7.get();
          BlockState var11 = var1.getBlockState(var10);
          var8 = BlockUtil.getLargestRectangleAround(var10, (Direction.Axis)var11.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, (var2x) -> {
             return var1.getBlockState(var2x) == var11;
          });
-         var9 = DimensionTransition.PLAY_PORTAL_SOUND.then((var1x) -> {
+         var9 = TeleportTransition.PLAY_PORTAL_SOUND.then((var1x) -> {
             var1x.placePortalTicket(var10);
          });
       } else {
@@ -141,13 +146,13 @@ public class NetherPortalBlock extends Block implements Portal {
          }
 
          var8 = (BlockUtil.FoundRectangle)var13.get();
-         var9 = DimensionTransition.PLAY_PORTAL_SOUND.then(DimensionTransition.PLACE_PORTAL_TICKET);
+         var9 = TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET);
       }
 
       return getDimensionTransitionFromExit(var2, var3, var8, var1, var9);
    }
 
-   private static DimensionTransition getDimensionTransitionFromExit(Entity var0, BlockPos var1, BlockUtil.FoundRectangle var2, ServerLevel var3, DimensionTransition.PostDimensionTransition var4) {
+   private static TeleportTransition getDimensionTransitionFromExit(Entity var0, BlockPos var1, BlockUtil.FoundRectangle var2, ServerLevel var3, TeleportTransition.PostTeleportTransition var4) {
       BlockState var7 = var0.level().getBlockState(var1);
       Direction.Axis var5;
       Vec3 var6;
@@ -162,25 +167,24 @@ public class NetherPortalBlock extends Block implements Portal {
          var6 = new Vec3(0.5, 0.0, 0.0);
       }
 
-      return createDimensionTransition(var3, var2, var5, var6, var0, var0.getDeltaMovement(), var0.getYRot(), var0.getXRot(), var4);
+      return createDimensionTransition(var3, var2, var5, var6, var0, var4);
    }
 
-   private static DimensionTransition createDimensionTransition(ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, Vec3 var5, float var6, float var7, DimensionTransition.PostDimensionTransition var8) {
-      BlockPos var9 = var1.minCorner;
-      BlockState var10 = var0.getBlockState(var9);
-      Direction.Axis var11 = (Direction.Axis)var10.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
-      double var12 = (double)var1.axis1Size;
-      double var14 = (double)var1.axis2Size;
-      EntityDimensions var16 = var4.getDimensions(var4.getPose());
-      int var17 = var2 == var11 ? 0 : 90;
-      Vec3 var18 = var2 == var11 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
-      double var19 = (double)var16.width() / 2.0 + (var12 - (double)var16.width()) * var3.x();
-      double var21 = (var14 - (double)var16.height()) * var3.y();
-      double var23 = 0.5 + var3.z();
-      boolean var25 = var11 == Direction.Axis.X;
-      Vec3 var26 = new Vec3((double)var9.getX() + (var25 ? var19 : var23), (double)var9.getY() + var21, (double)var9.getZ() + (var25 ? var23 : var19));
-      Vec3 var27 = PortalShape.findCollisionFreePosition(var26, var0, var4, var16);
-      return new DimensionTransition(var0, var27, var18, var6 + (float)var17, var7, var8);
+   private static TeleportTransition createDimensionTransition(ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, TeleportTransition.PostTeleportTransition var5) {
+      BlockPos var6 = var1.minCorner;
+      BlockState var7 = var0.getBlockState(var6);
+      Direction.Axis var8 = (Direction.Axis)var7.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
+      double var9 = (double)var1.axis1Size;
+      double var11 = (double)var1.axis2Size;
+      EntityDimensions var13 = var4.getDimensions(var4.getPose());
+      int var14 = var2 == var8 ? 0 : 90;
+      double var15 = (double)var13.width() / 2.0 + (var9 - (double)var13.width()) * var3.x();
+      double var17 = (var11 - (double)var13.height()) * var3.y();
+      double var19 = 0.5 + var3.z();
+      boolean var21 = var8 == Direction.Axis.X;
+      Vec3 var22 = new Vec3((double)var6.getX() + (var21 ? var15 : var19), (double)var6.getY() + var17, (double)var6.getZ() + (var21 ? var19 : var15));
+      Vec3 var23 = PortalShape.findCollisionFreePosition(var22, var0, var4, var13);
+      return new TeleportTransition(var0, var23, Vec3.ZERO, (float)var14, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), var5);
    }
 
    public Portal.Transition getLocalTransition() {

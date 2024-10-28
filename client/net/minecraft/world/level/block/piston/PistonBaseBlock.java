@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -38,6 +39,8 @@ import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -100,7 +103,7 @@ public class PistonBaseBlock extends DirectionalBlock {
 
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide) {
          this.checkIfExtend(var2, var3, var1);
       }
@@ -244,13 +247,13 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    public static boolean isPushable(BlockState var0, Level var1, BlockPos var2, Direction var3, boolean var4, Direction var5) {
-      if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() <= var1.getMaxBuildHeight() - 1 && var1.getWorldBorder().isWithinBounds(var2)) {
+      if (var2.getY() >= var1.getMinY() && var2.getY() <= var1.getMaxY() && var1.getWorldBorder().isWithinBounds(var2)) {
          if (var0.isAir()) {
             return true;
          } else if (!var0.is(Blocks.OBSIDIAN) && !var0.is(Blocks.CRYING_OBSIDIAN) && !var0.is(Blocks.RESPAWN_ANCHOR) && !var0.is(Blocks.REINFORCED_DEEPSLATE)) {
-            if (var3 == Direction.DOWN && var2.getY() == var1.getMinBuildHeight()) {
+            if (var3 == Direction.DOWN && var2.getY() == var1.getMinY()) {
                return false;
-            } else if (var3 == Direction.UP && var2.getY() == var1.getMaxBuildHeight() - 1) {
+            } else if (var3 == Direction.UP && var2.getY() == var1.getMaxY()) {
                return false;
             } else {
                if (!var0.is(Blocks.PISTON) && !var0.is(Blocks.STICKY_PISTON)) {
@@ -327,12 +330,13 @@ public class PistonBaseBlock extends DirectionalBlock {
             var20[var13++] = var16;
          }
 
+         BlockState var28;
          for(var14 = var8.size() - 1; var14 >= 0; --var14) {
             var15 = (BlockPos)var8.get(var14);
             var16 = var1.getBlockState(var15);
             var15 = var15.relative(var21);
             var7.remove(var15);
-            BlockState var28 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
+            var28 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
             var1.setBlock(var15, var28, 68);
             var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var15, var28, (BlockState)var9.get(var14), var3, var4, false));
             var20[var13++] = var16;
@@ -357,32 +361,32 @@ public class PistonBaseBlock extends DirectionalBlock {
 
          var25 = var7.entrySet().iterator();
 
-         BlockPos var30;
          while(var25.hasNext()) {
             Map.Entry var29 = (Map.Entry)var25.next();
-            var30 = (BlockPos)var29.getKey();
+            BlockPos var31 = (BlockPos)var29.getKey();
             BlockState var18 = (BlockState)var29.getValue();
-            var18.updateIndirectNeighbourShapes(var1, var30, 2);
-            var23.updateNeighbourShapes(var1, var30, 2);
-            var23.updateIndirectNeighbourShapes(var1, var30, 2);
+            var18.updateIndirectNeighbourShapes(var1, var31, 2);
+            var23.updateNeighbourShapes(var1, var31, 2);
+            var23.updateIndirectNeighbourShapes(var1, var31, 2);
          }
 
+         Orientation var27 = ExperimentalRedstoneUtils.initialOrientation(var1, var6.getPushDirection(), (Direction)null);
          var13 = 0;
 
-         int var27;
-         for(var27 = var19.size() - 1; var27 >= 0; --var27) {
-            var16 = var20[var13++];
-            var30 = (BlockPos)var19.get(var27);
-            var16.updateIndirectNeighbourShapes(var1, var30, 2);
-            var1.updateNeighborsAt(var30, var16.getBlock());
+         int var30;
+         for(var30 = var19.size() - 1; var30 >= 0; --var30) {
+            var28 = var20[var13++];
+            BlockPos var33 = (BlockPos)var19.get(var30);
+            var28.updateIndirectNeighbourShapes(var1, var33, 2);
+            var1.updateNeighborsAt(var33, var28.getBlock(), var27);
          }
 
-         for(var27 = var8.size() - 1; var27 >= 0; --var27) {
-            var1.updateNeighborsAt((BlockPos)var8.get(var27), var20[var13++].getBlock());
+         for(var30 = var8.size() - 1; var30 >= 0; --var30) {
+            var1.updateNeighborsAt((BlockPos)var8.get(var30), var20[var13++].getBlock(), var27);
          }
 
          if (var4) {
-            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD);
+            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD, var27);
          }
 
          return true;

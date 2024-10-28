@@ -122,7 +122,7 @@ public class FillBiomeCommand {
          while(var16.hasNext()) {
             var14 = (ChunkAccess)var16.next();
             var14.fillBiomesFromNoise(makeResolver(var15, var14, var8, var3, var4), var0.getChunkSource().randomState().sampler());
-            var14.setUnsaved(true);
+            var14.markUnsaved();
          }
 
          var0.getChunkSource().chunkMap.resendBiomesForChunks(var11);

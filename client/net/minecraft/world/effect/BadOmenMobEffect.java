@@ -15,17 +15,14 @@ class BadOmenMobEffect extends MobEffect {
       return true;
    }
 
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
-      if (var1 instanceof ServerPlayer var3) {
-         if (!var3.isSpectator()) {
-            ServerLevel var4 = var3.serverLevel();
-            if (var4.getDifficulty() != Difficulty.PEACEFUL && var4.isVillage(var3.blockPosition())) {
-               Raid var5 = var4.getRaidAt(var3.blockPosition());
-               if (var5 == null || var5.getRaidOmenLevel() < var5.getMaxRaidOmenLevel()) {
-                  var3.addEffect(new MobEffectInstance(MobEffects.RAID_OMEN, 600, var2));
-                  var3.setRaidOmenPosition(var3.blockPosition());
-                  return false;
-               }
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
+      if (var2 instanceof ServerPlayer var4) {
+         if (!var4.isSpectator() && var1.getDifficulty() != Difficulty.PEACEFUL && var1.isVillage(var4.blockPosition())) {
+            Raid var5 = var1.getRaidAt(var4.blockPosition());
+            if (var5 == null || var5.getRaidOmenLevel() < var5.getMaxRaidOmenLevel()) {
+               var4.addEffect(new MobEffectInstance(MobEffects.RAID_OMEN, 600, var3));
+               var4.setRaidOmenPosition(var4.blockPosition());
+               return false;
             }
          }
       }

@@ -19,7 +19,7 @@ public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlo
    public void render(TheEndGatewayBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       if (var1.isSpawning() || var1.isCoolingDown()) {
          float var7 = var1.isSpawning() ? var1.getSpawnPercent(var2) : var1.getCooldownPercent(var2);
-         double var8 = var1.isSpawning() ? (double)var1.getLevel().getMaxBuildHeight() : 50.0;
+         double var8 = var1.isSpawning() ? (double)var1.getLevel().getMaxY() : 50.0;
          var7 = Mth.sin(var7 * 3.1415927F);
          int var10 = Mth.floor((double)var7 * var8);
          int var11 = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();

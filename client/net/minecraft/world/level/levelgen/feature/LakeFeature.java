@@ -27,7 +27,7 @@ public class LakeFeature extends Feature<Configuration> {
       WorldGenLevel var3 = var1.level();
       RandomSource var4 = var1.random();
       Configuration var5 = (Configuration)var1.config();
-      if (var2.getY() <= var3.getMinBuildHeight() + 4) {
+      if (var2.getY() <= var3.getMinY() + 4) {
          return false;
       } else {
          var2 = var2.below(4);

@@ -1,14 +1,13 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,13 +26,13 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
       return LootItemConditions.ENTITY_PROPERTIES;
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(LootContextParams.ORIGIN, this.entityTarget.getParam());
+   public Set<ContextKey<?>> getReferencedContextParams() {
+      return Set.of(LootContextParams.ORIGIN, this.entityTarget.getParam());
    }
 
    public boolean test(LootContext var1) {
-      Entity var2 = (Entity)var1.getParamOrNull(this.entityTarget.getParam());
-      Vec3 var3 = (Vec3)var1.getParamOrNull(LootContextParams.ORIGIN);
+      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.getParam());
+      Vec3 var3 = (Vec3)var1.getOptionalParameter(LootContextParams.ORIGIN);
       return this.predicate.isEmpty() || ((EntityPredicate)this.predicate.get()).matches(var1.getLevel(), var3, var2);
    }
 

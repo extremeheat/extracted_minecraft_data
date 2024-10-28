@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -25,7 +26,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import org.slf4j.Logger;
 
@@ -36,7 +38,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       }), propertiesCodec()).apply(var0, CommandBlock::new);
    });
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty CONDITIONAL;
    private final boolean automatic;
 
@@ -56,22 +58,30 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       return var3;
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof CommandBlockEntity) {
             CommandBlockEntity var8 = (CommandBlockEntity)var7;
-            boolean var9 = var2.hasNeighborSignal(var3);
-            boolean var10 = var8.isPowered();
-            var8.setPowered(var9);
-            if (!var10 && !var8.isAutomatic() && var8.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
-               if (var9) {
-                  var8.markConditionMet();
-                  var2.scheduleTick(var3, this, 1);
-               }
-
-            }
+            this.setPoweredAndUpdate(var2, var3, var8, var2.hasNeighborSignal(var3));
          }
+
+      }
+   }
+
+   private void setPoweredAndUpdate(Level var1, BlockPos var2, CommandBlockEntity var3, boolean var4) {
+      boolean var5 = var3.isPowered();
+      if (var4 != var5) {
+         var3.setPowered(var4);
+         if (var4) {
+            if (var3.isAutomatic() || var3.getMode() == CommandBlockEntity.Mode.SEQUENCE) {
+               return;
+            }
+
+            var3.markConditionMet();
+            var1.scheduleTick(var2, this, 1);
+         }
+
       }
    }
 
@@ -106,7 +116,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
 
    }
 
-   private void execute(BlockState var1, Level var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
+   private void execute(BlockState var1, ServerLevel var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
       if (var5) {
          var4.performCommand(var2);
       } else {
@@ -120,7 +130,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof CommandBlockEntity && var4.canUseGameMasterBlocks()) {
          var4.openCommandBlock((CommandBlockEntity)var6);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
@@ -139,14 +149,14 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       BlockEntity var6 = var1.getBlockEntity(var2);
       if (var6 instanceof CommandBlockEntity var7) {
          BaseCommandBlock var8 = var7.getCommandBlock();
-         if (!var1.isClientSide) {
+         if (var1 instanceof ServerLevel var9) {
             if (!var5.has(DataComponents.BLOCK_ENTITY_DATA)) {
-               var8.setTrackOutput(var1.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK));
+               var8.setTrackOutput(var9.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK));
                var7.setAutomatic(this.automatic);
             }
 
-            boolean var9 = var1.hasNeighborSignal(var2);
-            var7.setPowered(var9);
+            boolean var10 = var1.hasNeighborSignal(var2);
+            this.setPoweredAndUpdate(var1, var2, var7, var10);
          }
 
       }
@@ -172,7 +182,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
    }
 
-   private static void executeChain(Level var0, BlockPos var1, Direction var2) {
+   private static void executeChain(ServerLevel var0, BlockPos var1, Direction var2) {
       BlockPos.MutableBlockPos var3 = var1.mutable();
       GameRules var4 = var0.getGameRules();
 

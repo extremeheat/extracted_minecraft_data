@@ -5,6 +5,7 @@ import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.ResourceLocation;
@@ -50,7 +51,7 @@ public abstract class ImageWidget extends AbstractWidget {
       }
 
       protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blit(this.texture, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
+         var1.blit(RenderType::guiTextured, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
       }
    }
 
@@ -63,7 +64,7 @@ public abstract class ImageWidget extends AbstractWidget {
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         var1.blitSprite(this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+         var1.blitSprite(RenderType::guiTextured, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
    }
 }

@@ -28,6 +28,10 @@ public class WorldOptions {
       return new WorldOptions(randomSeed(), true, false);
    }
 
+   public static WorldOptions testWorldWithRandomSeed() {
+      return new WorldOptions(randomSeed(), false, false);
+   }
+
    private WorldOptions(long var1, boolean var3, boolean var4, Optional<String> var5) {
       super();
       this.seed = var1;

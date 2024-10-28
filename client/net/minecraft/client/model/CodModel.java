@@ -6,16 +6,14 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class CodModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
+public class CodModel extends EntityModel<LivingEntityRenderState> {
    private final ModelPart tailFin;
 
    public CodModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.tailFin = var1.getChild("tail_fin");
    }
 
@@ -33,16 +31,9 @@ public class CodModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = 1.0F;
-      if (!var1.isInWater()) {
-         var7 = 1.5F;
-      }
-
-      this.tailFin.yRot = -var7 * 0.45F * Mth.sin(0.6F * var4);
+   public void setupAnim(LivingEntityRenderState var1) {
+      super.setupAnim(var1);
+      float var2 = var1.isInWater ? 1.0F : 1.5F;
+      this.tailFin.yRot = -var2 * 0.45F * Mth.sin(0.6F * var1.ageInTicks);
    }
 }

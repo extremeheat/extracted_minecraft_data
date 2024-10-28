@@ -21,7 +21,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PowerableMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -42,7 +41,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public class Creeper extends Monster implements PowerableMob {
+public class Creeper extends Monster {
    private static final EntityDataAccessor<Integer> DATA_SWELL_DIR;
    private static final EntityDataAccessor<Boolean> DATA_IS_POWERED;
    private static final EntityDataAccessor<Boolean> DATA_IS_IGNITED;
@@ -169,13 +168,13 @@ public class Creeper extends Monster implements PowerableMob {
       if (var4 != this && var4 instanceof Creeper var5) {
          if (var5.canDropMobsSkull()) {
             var5.increaseDroppedSkulls();
-            this.spawnAtLocation(Items.CREEPER_HEAD);
+            this.spawnAtLocation(var1, Items.CREEPER_HEAD);
          }
       }
 
    }
 
-   public boolean doHurtTarget(Entity var1) {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
       return true;
    }
 
@@ -214,19 +213,20 @@ public class Creeper extends Monster implements PowerableMob {
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
    }
 
    private void explodeCreeper() {
-      if (!this.level().isClientSide) {
-         float var1 = this.isPowered() ? 2.0F : 1.0F;
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         float var3 = this.isPowered() ? 2.0F : 1.0F;
          this.dead = true;
-         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var1, Level.ExplosionInteraction.MOB);
+         var1.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var3, Level.ExplosionInteraction.MOB);
          this.spawnLingeringCloud();
-         this.triggerOnDeathMobEffects(Entity.RemovalReason.KILLED);
+         this.triggerOnDeathMobEffects(var1, Entity.RemovalReason.KILLED);
          this.discard();
       }
 

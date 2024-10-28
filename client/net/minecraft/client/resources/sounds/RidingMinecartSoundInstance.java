@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.NewMinecartBehavior;
 
 public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
    private static final float VOLUME_MIN = 0.0F;
@@ -38,7 +39,8 @@ public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
             this.volume = 0.0F;
          } else {
             float var1 = (float)this.minecart.getDeltaMovement().horizontalDistance();
-            if (var1 >= 0.01F) {
+            boolean var2 = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
+            if (var1 >= 0.01F && !var2) {
                this.volume = Mth.clampedLerp(0.0F, 0.75F, var1);
             } else {
                this.volume = 0.0F;

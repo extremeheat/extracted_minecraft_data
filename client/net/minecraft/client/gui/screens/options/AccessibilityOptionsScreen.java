@@ -12,12 +12,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
+import net.minecraft.world.flag.FeatureFlags;
 
 public class AccessibilityOptionsScreen extends OptionsSubScreen {
    public static final Component TITLE = Component.translatable("options.accessibility.title");
 
    private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.narrator(), var0.showSubtitles(), var0.highContrast(), var0.autoJump(), var0.menuBackgroundBlurriness(), var0.textBackgroundOpacity(), var0.backgroundForChatOnly(), var0.chatOpacity(), var0.chatLineSpacing(), var0.chatDelay(), var0.notificationDisplayTime(), var0.bobView(), var0.toggleCrouch(), var0.toggleSprint(), var0.screenEffectScale(), var0.fovEffectScale(), var0.darknessEffectScale(), var0.damageTiltStrength(), var0.glintSpeed(), var0.glintStrength(), var0.hideLightningFlash(), var0.darkMojangStudiosBackground(), var0.panoramaSpeed(), var0.hideSplashTexts(), var0.narratorHotkey()};
+      return new OptionInstance[]{var0.narrator(), var0.showSubtitles(), var0.highContrast(), var0.autoJump(), var0.menuBackgroundBlurriness(), var0.textBackgroundOpacity(), var0.backgroundForChatOnly(), var0.chatOpacity(), var0.chatLineSpacing(), var0.chatDelay(), var0.notificationDisplayTime(), var0.bobView(), var0.toggleCrouch(), var0.toggleSprint(), var0.screenEffectScale(), var0.fovEffectScale(), var0.darknessEffectScale(), var0.damageTiltStrength(), var0.glintSpeed(), var0.glintStrength(), var0.hideLightningFlash(), var0.darkMojangStudiosBackground(), var0.panoramaSpeed(), var0.hideSplashTexts(), var0.narratorHotkey(), var0.rotateWithMinecart(), var0.highContrastBlockOutline()};
    }
 
    public AccessibilityOptionsScreen(Screen var1, Options var2) {
@@ -32,6 +33,11 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
          var1.setTooltip(Tooltip.create(Component.translatable("options.accessibility.high_contrast.error.tooltip")));
       }
 
+      AbstractWidget var2 = this.list.findOption(this.options.rotateWithMinecart());
+      if (var2 != null) {
+         var2.active = this.isMinecartOptionEnabled();
+      }
+
    }
 
    protected void addOptions() {
@@ -44,5 +50,9 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
       var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          this.minecraft.setScreen(this.lastScreen);
       }).build());
+   }
+
+   private boolean isMinecartOptionEnabled() {
+      return this.minecraft.level != null && this.minecraft.level.enabledFeatures().contains(FeatureFlags.MINECART_IMPROVEMENTS);
    }
 }

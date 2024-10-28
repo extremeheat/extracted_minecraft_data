@@ -104,6 +104,7 @@ public class OptimizeWorldScreen extends Screen {
 
    public void removed() {
       this.upgrader.cancel();
+      this.upgrader.close();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

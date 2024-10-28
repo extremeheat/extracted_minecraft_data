@@ -116,7 +116,7 @@ public class SelectWorldScreen extends Screen {
             }
          }
 
-         LevelSettings var6 = new LevelSettings("DEBUG world", GameType.SPECTATOR, false, Difficulty.NORMAL, true, new GameRules(), WorldDataConfiguration.DEFAULT);
+         LevelSettings var6 = new LevelSettings("DEBUG world", GameType.SPECTATOR, false, Difficulty.NORMAL, true, new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures()), WorldDataConfiguration.DEFAULT);
          String var7 = FileUtil.findAvailableName(this.minecraft.getLevelSource().getBaseDir(), "DEBUG world", "");
          this.minecraft.createWorldOpenFlows().createFreshLevel(var7, var6, TEST_OPTIONS, WorldPresets::createNormalWorldDimensions, this);
       } catch (IOException var5) {

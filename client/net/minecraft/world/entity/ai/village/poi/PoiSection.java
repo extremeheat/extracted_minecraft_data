@@ -31,32 +31,21 @@ public class PoiSection {
    private final Runnable setDirty;
    private boolean isValid;
 
-   public static Codec<PoiSection> codec(Runnable var0) {
-      Codec var10000 = RecordCodecBuilder.create((var1) -> {
-         return var1.group(RecordCodecBuilder.point(var0), Codec.BOOL.lenientOptionalFieldOf("Valid", false).forGetter((var0x) -> {
-            return var0x.isValid;
-         }), PoiRecord.codec(var0).listOf().fieldOf("Records").forGetter((var0x) -> {
-            return ImmutableList.copyOf(var0x.records.values());
-         })).apply(var1, PoiSection::new);
-      });
-      Logger var10002 = LOGGER;
-      Objects.requireNonNull(var10002);
-      return var10000.orElseGet(Util.prefix("Failed to read POI section: ", var10002::error), () -> {
-         return new PoiSection(var0, false, ImmutableList.of());
-      });
-   }
-
    public PoiSection(Runnable var1) {
       this(var1, true, ImmutableList.of());
    }
 
-   private PoiSection(Runnable var1, boolean var2, List<PoiRecord> var3) {
+   PoiSection(Runnable var1, boolean var2, List<PoiRecord> var3) {
       super();
       this.records = new Short2ObjectOpenHashMap();
       this.byType = Maps.newHashMap();
       this.setDirty = var1;
       this.isValid = var2;
       var3.forEach(this::add);
+   }
+
+   public Packed pack() {
+      return new Packed(this.isValid, this.records.values().stream().map(PoiRecord::pack).toList());
    }
 
    public Stream<PoiRecord> getRecords(Predicate<Holder<PoiType>> var1, PoiManager.Occupancy var2) {
@@ -164,5 +153,31 @@ public class PoiSection {
 
    boolean isValid() {
       return this.isValid;
+   }
+
+   public static record Packed(boolean isValid, List<PoiRecord.Packed> records) {
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(Codec.BOOL.lenientOptionalFieldOf("Valid", false).forGetter(Packed::isValid), PoiRecord.Packed.CODEC.listOf().fieldOf("Records").forGetter(Packed::records)).apply(var0, Packed::new);
+      });
+
+      public Packed(boolean var1, List<PoiRecord.Packed> var2) {
+         super();
+         this.isValid = var1;
+         this.records = var2;
+      }
+
+      public PoiSection unpack(Runnable var1) {
+         return new PoiSection(var1, this.isValid, this.records.stream().map((var1x) -> {
+            return var1x.unpack(var1);
+         }).toList());
+      }
+
+      public boolean isValid() {
+         return this.isValid;
+      }
+
+      public List<PoiRecord.Packed> records() {
+         return this.records;
+      }
    }
 }

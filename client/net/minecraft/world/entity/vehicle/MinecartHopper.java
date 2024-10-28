@@ -2,6 +2,7 @@ package net.minecraft.world.entity.vehicle;
 
 import java.util.Iterator;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -10,26 +11,21 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
 
 public class MinecartHopper extends AbstractMinecartContainer implements Hopper {
    private boolean enabled = true;
+   private boolean consumedItemThisFrame = false;
 
    public MinecartHopper(EntityType<? extends MinecartHopper> var1, Level var2) {
       super(var1, var2);
-   }
-
-   public MinecartHopper(Level var1, double var2, double var4, double var6) {
-      super(EntityType.HOPPER_MINECART, var2, var4, var6, var1);
-   }
-
-   public AbstractMinecart.Type getMinecartType() {
-      return AbstractMinecart.Type.HOPPER;
    }
 
    public BlockState getDefaultDisplayBlockState() {
@@ -77,8 +73,20 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
    }
 
    public void tick() {
+      this.consumedItemThisFrame = false;
       super.tick();
-      if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && this.suckInItems()) {
+      this.tryConsumeItems();
+   }
+
+   protected double makeStepAlongTrack(BlockPos var1, RailShape var2, double var3) {
+      double var5 = super.makeStepAlongTrack(var1, var2, var3);
+      this.tryConsumeItems();
+      return var5;
+   }
+
+   private void tryConsumeItems() {
+      if (!this.level().isClientSide && this.isAlive() && this.isEnabled() && !this.consumedItemThisFrame && this.suckInItems()) {
+         this.consumedItemThisFrame = true;
          this.setChanged();
       }
 
@@ -106,6 +114,10 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
 
    protected Item getDropItem() {
       return Items.HOPPER_MINECART;
+   }
+
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.HOPPER_MINECART);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

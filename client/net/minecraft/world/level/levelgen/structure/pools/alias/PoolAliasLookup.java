@@ -29,7 +29,7 @@ public interface PoolAliasLookup {
          ImmutableMap var6 = var5.build();
          return (var1x) -> {
             return (ResourceKey)Objects.requireNonNull((ResourceKey)var6.getOrDefault(var1x, var1x), () -> {
-               return "alias " + String.valueOf(var1x) + " was mapped to null value";
+               return "alias " + String.valueOf(var1x.location()) + " was mapped to null value";
             });
          };
       }

@@ -15,11 +15,16 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,9 +48,10 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.monster.hoglin.HoglinBase;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class Zoglin extends Monster implements Enemy, HoglinBase {
+public class Zoglin extends Monster implements HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    private static final int MAX_HEALTH = 40;
    private static final int ATTACK_KNOCKBACK = 1;
@@ -86,20 +92,24 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    }
 
    private static void initIdleActivity(Brain<Zoglin> var0) {
-      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create(Zoglin::findNearestValidAttackTarget), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((var0x, var1) -> {
+         return var1.findNearestValidAttackTarget(var0x);
+      }), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
    private static void initFightActivity(Brain<Zoglin> var0) {
       var0.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), BehaviorBuilder.triggerIf(Zoglin::isAdult, MeleeAttack.create(40)), BehaviorBuilder.triggerIf(Zoglin::isBaby, MeleeAttack.create(15)), StopAttackingIfTargetInvalid.create()), MemoryModuleType.ATTACK_TARGET);
    }
 
-   private Optional<? extends LivingEntity> findNearestValidAttackTarget() {
-      return ((NearestVisibleLivingEntities)this.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest(this::isTargetable);
+   private Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var1) {
+      return ((NearestVisibleLivingEntities)this.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest((var2) -> {
+         return this.isTargetable(var1, var2);
+      });
    }
 
-   private boolean isTargetable(LivingEntity var1) {
-      EntityType var2 = var1.getType();
-      return var2 != EntityType.ZOGLIN && var2 != EntityType.CREEPER && Sensor.isEntityAttackable(this, var1);
+   private boolean isTargetable(ServerLevel var1, LivingEntity var2) {
+      EntityType var3 = var2.getType();
+      return var3 != EntityType.ZOGLIN && var3 != EntityType.CREEPER && Sensor.isEntityAttackable(var1, this, var2);
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -115,6 +125,15 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
 
    }
 
+   @Nullable
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      if (var1.getRandom().nextFloat() < 0.2F) {
+         this.setBaby(true);
+      }
+
+      return super.finalizeSpawn(var1, var2, var3, var4);
+   }
+
    public static AttributeSupplier.Builder createAttributes() {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 40.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.KNOCKBACK_RESISTANCE, 0.6000000238418579).add(Attributes.ATTACK_KNOCKBACK, 1.0).add(Attributes.ATTACK_DAMAGE, 6.0);
    }
@@ -123,14 +142,14 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       return !this.isBaby();
    }
 
-   public boolean doHurtTarget(Entity var1) {
-      if (!(var1 instanceof LivingEntity)) {
-         return false;
-      } else {
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      if (var2 instanceof LivingEntity var3) {
          this.attackAnimationRemainingTicks = 10;
-         this.level().broadcastEntityEvent(this, (byte)4);
+         var1.broadcastEntityEvent(this, (byte)4);
          this.makeSound(SoundEvents.ZOGLIN_ATTACK);
-         return HoglinBase.hurtAndThrowTarget(this, (LivingEntity)var1);
+         return HoglinBase.hurtAndThrowTarget(var1, this, var3);
+      } else {
+         return false;
       }
    }
 
@@ -145,20 +164,21 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
 
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      boolean var3 = super.hurt(var1, var2);
-      if (this.level().isClientSide) {
-         return false;
-      } else if (var3 && var1.getEntity() instanceof LivingEntity) {
-         LivingEntity var4 = (LivingEntity)var1.getEntity();
-         if (this.canAttack(var4) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, var4, 4.0)) {
-            this.setAttackTarget(var4);
-         }
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      boolean var4 = super.hurtServer(var1, var2, var3);
+      if (var4) {
+         Entity var6 = var2.getEntity();
+         if (var6 instanceof LivingEntity) {
+            LivingEntity var5 = (LivingEntity)var6;
+            if (this.canAttack(var5) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, var5, 4.0)) {
+               this.setAttackTarget(var5);
+            }
 
-         return var3;
-      } else {
-         return var3;
+            return true;
+         }
       }
+
+      return var4;
    }
 
    private void setAttackTarget(LivingEntity var1) {
@@ -181,10 +201,11 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       this.setAggressive(this.brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("zoglinBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("zoglinBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
       this.updateActivity();
    }
 

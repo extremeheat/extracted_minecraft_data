@@ -22,12 +22,13 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.reporting.ReportPlayerScreen;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 
 public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry> {
    private static final ResourceLocation DRAFT_REPORT_SPRITE = ResourceLocation.withDefaultNamespace("icon/draft_report");
@@ -150,7 +151,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR, false);
       }
 
-      PlayerFaceRenderer.draw(var1, (PlayerSkin)((PlayerSkin)this.skinGetter.get()), var11, var12, 24);
+      PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var11, var12, 24);
       var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR, false);
       if (this.isRemoved) {
          var1.fill(var11, var12, var11 + 24, var12 + 24, SKIN_SHADE);
@@ -173,7 +174,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       }
 
       if (this.hasDraftReport && this.reportButton != null) {
-         var1.blitSprite(DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
       }
 
    }
@@ -261,10 +262,10 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       HIDE_TEXT_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.hide");
       SHOW_TEXT_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.show");
       REPORT_PLAYER_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.report");
-      SKIN_SHADE = FastColor.ARGB32.color(190, 0, 0, 0);
-      BG_FILL = FastColor.ARGB32.color(255, 74, 74, 74);
-      BG_FILL_REMOVED = FastColor.ARGB32.color(255, 48, 48, 48);
-      PLAYERNAME_COLOR = FastColor.ARGB32.color(255, 255, 255, 255);
-      PLAYER_STATUS_COLOR = FastColor.ARGB32.color(140, 255, 255, 255);
+      SKIN_SHADE = ARGB.color(190, 0, 0, 0);
+      BG_FILL = ARGB.color(255, 74, 74, 74);
+      BG_FILL_REMOVED = ARGB.color(255, 48, 48, 48);
+      PLAYERNAME_COLOR = ARGB.color(255, 255, 255, 255);
+      PLAYER_STATUS_COLOR = ARGB.color(140, 255, 255, 255);
    }
 }

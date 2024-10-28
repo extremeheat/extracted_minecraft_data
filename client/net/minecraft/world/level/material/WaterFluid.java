@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -58,7 +59,7 @@ public abstract class WaterFluid extends FlowingFluid {
       return ParticleTypes.DRIPPING_WATER;
    }
 
-   protected boolean canConvertToSource(Level var1) {
+   protected boolean canConvertToSource(ServerLevel var1) {
       return var1.getGameRules().getBoolean(GameRules.RULE_WATER_SOURCE_CONVERSION);
    }
 

@@ -41,10 +41,10 @@ import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.network.protocol.login.ClientLoginPacketListener;
 import net.minecraft.network.protocol.login.ClientboundCustomQueryPacket;
-import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraft.network.protocol.login.ClientboundHelloPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginCompressionPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
+import net.minecraft.network.protocol.login.ClientboundLoginFinishedPacket;
 import net.minecraft.network.protocol.login.ServerboundCustomQueryAnswerPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
@@ -120,7 +120,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       }
 
       if (var1.shouldAuthenticate()) {
-         Util.ioPool().submit(() -> {
+         Util.ioPool().execute(() -> {
             Component var5x = this.authenticateServer(var4);
             if (var5x != null) {
                if (this.serverData == null || !this.serverData.isLan()) {
@@ -168,10 +168,10 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       return this.minecraft.getMinecraftSessionService();
    }
 
-   public void handleGameProfile(ClientboundGameProfilePacket var1) {
+   public void handleLoginFinished(ClientboundLoginFinishedPacket var1) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
       GameProfile var2 = var1.gameProfile();
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, var1.strictErrorHandling(), Map.of(), ServerLinks.EMPTY)));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, Map.of(), ServerLinks.EMPTY)));
       this.connection.send(ServerboundLoginAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
       this.connection.send(new ServerboundCustomPayloadPacket(new BrandPayload(ClientBrandRetriever.getClientModName())));
@@ -222,6 +222,9 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       });
       var2.setDetail("Login phase", () -> {
          return ((State)this.state.get()).toString();
+      });
+      var2.setDetail("Is Local", () -> {
+         return String.valueOf(this.connection.isMemoryConnection());
       });
    }
 

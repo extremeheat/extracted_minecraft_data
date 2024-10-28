@@ -3,6 +3,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
@@ -32,10 +33,10 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
       this.targetLocation = null;
    }
 
-   public void doServerTick() {
-      double var1 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-      if (var1 < 100.0 || var1 > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
-         this.findNewTarget();
+   public void doServerTick(ServerLevel var1) {
+      double var2 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      if (var2 < 100.0 || var2 > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
+         this.findNewTarget(var1);
       }
 
    }
@@ -45,21 +46,21 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
       return this.targetLocation;
    }
 
-   private void findNewTarget() {
+   private void findNewTarget(ServerLevel var1) {
       if (this.currentPath == null || this.currentPath.isDone()) {
-         int var1 = this.dragon.findClosestNode();
-         BlockPos var2 = this.dragon.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         Player var3 = this.dragon.level().getNearestPlayer(NEAR_EGG_TARGETING, this.dragon, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-         int var4;
-         if (var3 != null) {
-            Vec3 var5 = (new Vec3(var3.getX(), 0.0, var3.getZ())).normalize();
-            var4 = this.dragon.findClosestNode(-var5.x * 40.0, 105.0, -var5.z * 40.0);
+         int var2 = this.dragon.findClosestNode();
+         BlockPos var3 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         Player var4 = var1.getNearestPlayer(NEAR_EGG_TARGETING, this.dragon, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ());
+         int var5;
+         if (var4 != null) {
+            Vec3 var6 = (new Vec3(var4.getX(), 0.0, var4.getZ())).normalize();
+            var5 = this.dragon.findClosestNode(-var6.x * 40.0, 105.0, -var6.z * 40.0);
          } else {
-            var4 = this.dragon.findClosestNode(40.0, (double)var2.getY(), 0.0);
+            var5 = this.dragon.findClosestNode(40.0, (double)var3.getY(), 0.0);
          }
 
-         Node var6 = new Node(var2.getX(), var2.getY(), var2.getZ());
-         this.currentPath = this.dragon.findPath(var1, var4, var6);
+         Node var7 = new Node(var3.getX(), var3.getY(), var3.getZ());
+         this.currentPath = this.dragon.findPath(var2, var5, var7);
          if (this.currentPath != null) {
             this.currentPath.advance();
          }

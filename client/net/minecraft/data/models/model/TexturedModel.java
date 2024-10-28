@@ -19,6 +19,7 @@ public class TexturedModel {
    public static final Provider ORIENTABLE_ONLY_TOP;
    public static final Provider ORIENTABLE;
    public static final Provider CARPET;
+   public static final Provider MOSSY_CARPET_SIDE;
    public static final Provider FLOWERBED_1;
    public static final Provider FLOWERBED_2;
    public static final Provider FLOWERBED_3;
@@ -86,6 +87,7 @@ public class TexturedModel {
       ORIENTABLE_ONLY_TOP = createDefault(TextureMapping::orientableCubeOnlyTop, ModelTemplates.CUBE_ORIENTABLE);
       ORIENTABLE = createDefault(TextureMapping::orientableCube, ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM);
       CARPET = createDefault(TextureMapping::wool, ModelTemplates.CARPET);
+      MOSSY_CARPET_SIDE = createDefault(TextureMapping::side, ModelTemplates.MOSSY_CARPET_SIDE);
       FLOWERBED_1 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_1);
       FLOWERBED_2 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_2);
       FLOWERBED_3 = createDefault(TextureMapping::flowerbed, ModelTemplates.FLOWERBED_3);

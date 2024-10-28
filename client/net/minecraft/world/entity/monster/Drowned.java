@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
@@ -14,10 +15,10 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -39,6 +40,7 @@ import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -77,14 +79,16 @@ public class Drowned extends Zombie implements RangedAttackMob {
       this.goalSelector.addGoal(6, new DrownedSwimUpGoal(this, 1.0, this.level().getSeaLevel()));
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Drowned.class})).setAlertOthers(ZombifiedPiglin.class));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::okTarget));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> {
+         return this.okTarget(var1);
+      }));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Axolotl.class, true, false));
       this.targetSelector.addGoal(5, new NearestAttackableTargetGoal(this, Turtle.class, 10, true, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       if (this.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && var1.getRandom().nextFloat() < 0.03F) {
          this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.NAUTILUS_SHELL));
@@ -94,13 +98,13 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return var4;
    }
 
-   public static boolean checkDrownedSpawnRules(EntityType<Drowned> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      if (!var1.getFluidState(var3.below()).is(FluidTags.WATER) && !MobSpawnType.isSpawner(var2)) {
+   public static boolean checkDrownedSpawnRules(EntityType<Drowned> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      if (!var1.getFluidState(var3.below()).is(FluidTags.WATER) && !EntitySpawnReason.isSpawner(var2)) {
          return false;
       } else {
          Holder var5 = var1.getBiome(var3);
-         boolean var6 = var1.getDifficulty() != Difficulty.PEACEFUL && (MobSpawnType.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4)) && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER));
-         if (var6 && MobSpawnType.isSpawner(var2)) {
+         boolean var6 = var1.getDifficulty() != Difficulty.PEACEFUL && (EntitySpawnReason.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4)) && (EntitySpawnReason.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER));
+         if (var6 && (EntitySpawnReason.isSpawner(var2) || var2 == EntitySpawnReason.REINFORCEMENT)) {
             return true;
          } else if (var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
             return var4.nextInt(15) == 0 && var6;
@@ -112,10 +116,6 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    private static boolean isDeepEnoughToSpawn(LevelAccessor var0, BlockPos var1) {
       return var1.getY() < var0.getSeaLevel() - 5;
-   }
-
-   protected boolean supportsBreakDoorGoal() {
-      return false;
    }
 
    protected SoundEvent getAmbientSound() {
@@ -138,6 +138,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return SoundEvents.DROWNED_SWIM;
    }
 
+   protected boolean canSpawnInLiquids() {
+      return true;
+   }
+
    protected ItemStack getSkull() {
       return ItemStack.EMPTY;
    }
@@ -154,7 +158,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    }
 
-   protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
+   protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
       if (var2.is(Items.NAUTILUS_SHELL)) {
          return false;
       } else if (var2.is(Items.TRIDENT)) {
@@ -164,7 +168,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
             return false;
          }
       } else {
-         return var1.is(Items.TRIDENT) ? true : super.canReplaceCurrentItem(var1, var2);
+         return var1.is(Items.TRIDENT) ? true : super.canReplaceCurrentItem(var1, var2, var3);
       }
    }
 
@@ -198,7 +202,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater() && this.wantsToSwim()) {
+      if (this.isControlledByLocalInstance() && this.isUnderWater() && this.wantsToSwim()) {
          this.moveRelative(0.01F, var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
@@ -210,7 +214,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public void updateSwimming() {
       if (!this.level().isClientSide) {
-         if (this.isEffectiveAi() && this.isInWater() && this.wantsToSwim()) {
+         if (this.isEffectiveAi() && this.isUnderWater() && this.wantsToSwim()) {
             this.navigation = this.waterNavigation;
             this.setSwimming(true);
          } else {
@@ -241,14 +245,19 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    public void performRangedAttack(LivingEntity var1, float var2) {
-      ThrownTrident var3 = new ThrownTrident(this.level(), this, new ItemStack(Items.TRIDENT));
-      double var4 = var1.getX() - this.getX();
-      double var6 = var1.getY(0.3333333333333333) - var3.getY();
-      double var8 = var1.getZ() - this.getZ();
-      double var10 = Math.sqrt(var4 * var4 + var8 * var8);
-      var3.shoot(var4, var6 + var10 * 0.20000000298023224, var8, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+      ItemStack var3 = this.getMainHandItem();
+      ItemStack var4 = var3.is(Items.TRIDENT) ? var3 : new ItemStack(Items.TRIDENT);
+      ThrownTrident var5 = new ThrownTrident(this.level(), this, var4);
+      double var6 = var1.getX() - this.getX();
+      double var8 = var1.getY(0.3333333333333333) - var5.getY();
+      double var10 = var1.getZ() - this.getZ();
+      double var12 = Math.sqrt(var6 * var6 + var10 * var10);
+      Level var15 = this.level();
+      if (var15 instanceof ServerLevel var14) {
+         Projectile.spawnProjectileUsingShoot(var5, var14, var4, var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+      }
+
       this.playSound(SoundEvents.DROWNED_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level().addFreshEntity(var3);
    }
 
    public void setSearchingForLand(boolean var1) {

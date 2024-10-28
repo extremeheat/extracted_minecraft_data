@@ -38,6 +38,14 @@ public class InactiveProfiler implements ProfileCollector {
    public void popPush(Supplier<String> var1) {
    }
 
+   public Zone zone(String var1) {
+      return Zone.INACTIVE;
+   }
+
+   public Zone zone(Supplier<String> var1) {
+      return Zone.INACTIVE;
+   }
+
    public void incrementCounter(String var1, int var2) {
    }
 

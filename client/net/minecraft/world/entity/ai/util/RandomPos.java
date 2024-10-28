@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.PathfinderMob;
@@ -46,11 +47,13 @@ public class RandomPos {
       if (!var2.test(var0)) {
          return var0;
       } else {
-         BlockPos var3;
-         for(var3 = var0.above(); var3.getY() < var1 && var2.test(var3); var3 = var3.above()) {
+         BlockPos.MutableBlockPos var3 = var0.mutable().move(Direction.UP);
+
+         while(var3.getY() <= var1 && var2.test(var3)) {
+            var3.move(Direction.UP);
          }
 
-         return var3;
+         return var3.immutable();
       }
    }
 
@@ -61,20 +64,23 @@ public class RandomPos {
       } else if (!var3.test(var0)) {
          return var0;
       } else {
-         BlockPos var4;
-         for(var4 = var0.above(); var4.getY() < var2 && var3.test(var4); var4 = var4.above()) {
+         BlockPos.MutableBlockPos var4 = var0.mutable().move(Direction.UP);
+
+         while(var4.getY() <= var2 && var3.test(var4)) {
+            var4.move(Direction.UP);
          }
 
-         BlockPos var5;
-         BlockPos var6;
-         for(var5 = var4; var5.getY() < var2 && var5.getY() - var4.getY() < var1; var5 = var6) {
-            var6 = var5.above();
-            if (var3.test(var6)) {
+         int var5 = var4.getY();
+
+         while(var4.getY() <= var2 && var4.getY() - var5 < var1) {
+            var4.move(Direction.UP);
+            if (var3.test(var4)) {
+               var4.move(Direction.DOWN);
                break;
             }
          }
 
-         return var5;
+         return var4.immutable();
       }
    }
 

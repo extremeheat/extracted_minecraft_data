@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
+import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.util.StringUtil;
 
 public abstract class GlslPreprocessor {
@@ -126,6 +127,17 @@ public abstract class GlslPreprocessor {
 
    @Nullable
    public abstract String applyImport(boolean var1, String var2);
+
+   public static String injectDefines(String var0, ShaderDefines var1) {
+      if (var1.isEmpty()) {
+         return var0;
+      } else {
+         int var2 = var0.indexOf(10);
+         int var3 = var2 + 1;
+         String var10000 = var0.substring(0, var3);
+         return var10000 + var1.asSourceDirectives() + "#line 1 0\n" + var0.substring(var3);
+      }
+   }
 
    private static final class Context {
       int glslVersion;

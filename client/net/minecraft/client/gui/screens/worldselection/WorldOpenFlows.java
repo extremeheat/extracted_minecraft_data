@@ -11,6 +11,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -33,16 +34,17 @@ import net.minecraft.client.gui.screens.RecoverWorldDataScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.WorldLoader;
@@ -77,7 +79,7 @@ public class WorldOpenFlows {
       this.levelSource = var2;
    }
 
-   public void createFreshLevel(String var1, LevelSettings var2, WorldOptions var3, Function<RegistryAccess, WorldDimensions> var4, Screen var5) {
+   public void createFreshLevel(String var1, LevelSettings var2, WorldOptions var3, Function<HolderLookup.Provider, WorldDimensions> var4, Screen var5) {
       this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
       LevelStorageSource.LevelStorageAccess var6 = this.createWorldAccess(var1);
       if (var6 != null) {
@@ -87,7 +89,7 @@ public class WorldOpenFlows {
          try {
             WorldLoader.PackConfig var9 = new WorldLoader.PackConfig(var7, var8, false, false);
             WorldStem var10 = (WorldStem)this.loadWorldDataBlocking(var9, (var3x) -> {
-               WorldDimensions.Complete var4x = ((WorldDimensions)var4.apply(var3x.datapackWorldgen())).bake(var3x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM));
+               WorldDimensions.Complete var4x = ((WorldDimensions)var4.apply(var3x.datapackWorldgen())).bake(var3x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM));
                return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var2, var3, var4x.specialWorldProperty(), var4x.lifecycle()), var4x.dimensionsRegistryAccess());
             }, WorldStem::new);
             this.minecraft.doWorldLoad(var6, var7, var10, true);
@@ -127,7 +129,7 @@ public class WorldOpenFlows {
    public WorldStem loadWorldStem(Dynamic<?> var1, boolean var2, PackRepository var3) throws Exception {
       WorldLoader.PackConfig var4 = LevelStorageSource.getPackConfig(var1, var3, var2);
       return (WorldStem)this.loadWorldDataBlocking(var4, (var1x) -> {
-         Registry var2 = var1x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+         Registry var2 = var1x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
          LevelDataAndDimensions var3 = LevelStorageSource.getLevelDataAndDimensions(var1, var1x.dataConfiguration(), var2, var1x.datapackWorldgen());
          return new WorldLoader.DataLoadOutput(var3.worldData(), var3.dimensions().dimensionsRegistryAccess());
       }, WorldStem::new);
@@ -169,7 +171,8 @@ public class WorldOpenFlows {
          return new WorldLoader.DataLoadOutput(new 1Data(var3x.worldData().getLevelSettings(), var3x.worldData().worldGenOptions(), var3x.dimensions().dimensions()), var1x.datapackDimensions());
       }, (var0, var1x, var2x, var3x) -> {
          var0.close();
-         return Pair.of(var3x.levelSettings, new WorldCreationContext(var3x.options, new WorldDimensions(var3x.existingDimensions), var2x, var1x, var3x.levelSettings.getDataConfiguration()));
+         InitialWorldCreationOptions var4 = new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.SURVIVAL, Set.of(), (ResourceKey)null);
+         return Pair.of(var3x.levelSettings, new WorldCreationContext(var3x.options, new WorldDimensions(var3x.existingDimensions), var2x, var1x, var3x.levelSettings.getDataConfiguration(), var4));
       });
    }
 
@@ -252,7 +255,6 @@ public class WorldOpenFlows {
          return;
       } catch (OutOfMemoryError var11) {
          MemoryReserve.release();
-         System.gc();
          String var6 = "Ran out of memory trying to read level data of world folder \"" + var1.getLevelId() + "\"";
          LOGGER.error(LogUtils.FATAL_MARKER, var6);
          OutOfMemoryError var7 = new OutOfMemoryError("Ran out of memory reading level data");
@@ -305,7 +307,7 @@ public class WorldOpenFlows {
       WorldStem var6;
       try {
          var6 = this.loadWorldStem(var2, var3, var5);
-         Iterator var7 = var6.registries().compositeAccess().registryOrThrow(Registries.LEVEL_STEM).iterator();
+         Iterator var7 = var6.registries().compositeAccess().lookupOrThrow(Registries.LEVEL_STEM).iterator();
 
          while(var7.hasNext()) {
             LevelStem var8 = (LevelStem)var7.next();

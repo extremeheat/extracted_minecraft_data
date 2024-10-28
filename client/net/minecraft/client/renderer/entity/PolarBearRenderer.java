@@ -1,24 +1,40 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.PolarBearModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.PolarBearRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.PolarBear;
 
-public class PolarBearRenderer extends MobRenderer<PolarBear, PolarBearModel<PolarBear>> {
+public class PolarBearRenderer extends AgeableMobRenderer<PolarBear, PolarBearRenderState, PolarBearModel> {
    private static final ResourceLocation BEAR_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/bear/polarbear.png");
 
    public PolarBearRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new PolarBearModel(var1.bakeLayer(ModelLayers.POLAR_BEAR)), 0.9F);
+      super(var1, new PolarBearModel(var1.bakeLayer(ModelLayers.POLAR_BEAR)), new PolarBearModel(var1.bakeLayer(ModelLayers.POLAR_BEAR_BABY)), 0.9F);
    }
 
-   public ResourceLocation getTextureLocation(PolarBear var1) {
+   public ResourceLocation getTextureLocation(PolarBearRenderState var1) {
       return BEAR_LOCATION;
    }
 
-   protected void scale(PolarBear var1, PoseStack var2, float var3) {
-      var2.scale(1.2F, 1.2F, 1.2F);
-      super.scale(var1, var2, var3);
+   public PolarBearRenderState createRenderState() {
+      return new PolarBearRenderState();
+   }
+
+   public void extractRenderState(PolarBear var1, PolarBearRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.standScale = var1.getStandingAnimationScale(var3);
+   }
+
+   // $FF: synthetic method
+   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+      return this.getTextureLocation((PolarBearRenderState)var1);
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

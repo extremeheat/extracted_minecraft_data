@@ -165,8 +165,8 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       if (var4 == null) {
          BlockPos var5 = BlockPos.containing(var2.x + 0.5, 75.0, var2.z + 0.5);
          LOGGER.debug("Failed to find a suitable block to teleport to, spawning an island on {}", var5);
-         var0.registryAccess().registry(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> {
-            return var0x.getHolder(EndFeatures.END_ISLAND);
+         var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> {
+            return var0x.get(EndFeatures.END_ISLAND);
          }).ifPresent((var2x) -> {
             ((ConfiguredFeature)var2x.value()).place(var0, var0.getChunkSource().getGenerator(), RandomSource.create(var5.asLong()), var5);
          });
@@ -206,7 +206,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       for(int var5 = -var2; var5 <= var2; ++var5) {
          for(int var6 = -var2; var6 <= var2; ++var6) {
             if (var5 != 0 || var6 != 0 || var3) {
-               for(int var7 = var0.getMaxBuildHeight() - 1; var7 > (var4 == null ? var0.getMinBuildHeight() : var4.getY()); --var7) {
+               for(int var7 = var0.getMaxY(); var7 > (var4 == null ? var0.getMinY() : var4.getY()); --var7) {
                   BlockPos var8 = new BlockPos(var1.getX() + var5, var7, var1.getZ() + var6);
                   BlockState var9 = var0.getBlockState(var8);
                   if (var9.isCollisionShapeFullBlock(var0, var8) && (var3 || !var9.is(Blocks.BEDROCK))) {
@@ -270,7 +270,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    public boolean shouldRenderFace(Direction var1) {
-      return Block.shouldRenderFace(this.getBlockState(), this.level, this.getBlockPos(), var1, this.getBlockPos().relative(var1));
+      return Block.shouldRenderFace(this.getBlockState(), this.level.getBlockState(this.getBlockPos().relative(var1)), var1);
    }
 
    public int getParticleAmount() {

@@ -43,12 +43,7 @@ public class BlockItem extends Item {
 
    public InteractionResult useOn(UseOnContext var1) {
       InteractionResult var2 = this.place(new BlockPlaceContext(var1));
-      if (!var2.consumesAction() && var1.getItemInHand().has(DataComponents.FOOD)) {
-         InteractionResult var3 = super.use(var1.getLevel(), var1.getPlayer(), var1.getHand()).getResult();
-         return var3 == InteractionResult.CONSUME ? InteractionResult.CONSUME_PARTIAL : var3;
-      } else {
-         return var2;
-      }
+      return !var2.consumesAction() && var1.getItemInHand().has(DataComponents.CONSUMABLE) ? super.use(var1.getLevel(), var1.getPlayer(), var1.getHand()) : var2;
    }
 
    public InteractionResult place(BlockPlaceContext var1) {
@@ -86,7 +81,7 @@ public class BlockItem extends Item {
                var5.playSound(var6, var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
                var5.gameEvent(GameEvent.BLOCK_PLACE, var4, GameEvent.Context.of(var6, var8));
                var7.consume(1, var6);
-               return InteractionResult.sidedSuccess(var5.isClientSide);
+               return InteractionResult.SUCCESS;
             }
          }
       }
@@ -167,10 +162,6 @@ public class BlockItem extends Item {
 
          return false;
       }
-   }
-
-   public String getDescriptionId() {
-      return this.getBlock().getDescriptionId();
    }
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {

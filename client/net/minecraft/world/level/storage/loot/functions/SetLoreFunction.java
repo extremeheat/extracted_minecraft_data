@@ -11,10 +11,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetLoreFunction extends LootItemConditionalFunction {
@@ -42,7 +42,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       return LootItemFunctions.SET_LORE;
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getReferencedContextParams() {
       return (Set)this.resolutionContext.map((var0) -> {
          return Set.of(var0.getParam());
       }).orElseGet(Set::of);
@@ -61,8 +61,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       } else {
          UnaryOperator var3 = SetNameFunction.createResolver(var2, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null));
          List var4 = this.lore.stream().map(var3).toList();
-         List var5 = this.mode.apply(var1.lines(), var4, 256);
-         return var5;
+         return this.mode.apply(var1.lines(), var4, 256);
       }
    }
 

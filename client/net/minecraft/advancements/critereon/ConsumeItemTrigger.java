@@ -5,7 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
@@ -39,8 +41,8 @@ public class ConsumeItemTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          return CriteriaTriggers.CONSUME_ITEM.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty()));
       }
 
-      public static Criterion<TriggerInstance> usedItem(ItemLike var0) {
-         return usedItem(ItemPredicate.Builder.item().of(var0.asItem()));
+      public static Criterion<TriggerInstance> usedItem(HolderGetter<Item> var0, ItemLike var1) {
+         return usedItem(ItemPredicate.Builder.item().of(var0, var1.asItem()));
       }
 
       public static Criterion<TriggerInstance> usedItem(ItemPredicate.Builder var0) {

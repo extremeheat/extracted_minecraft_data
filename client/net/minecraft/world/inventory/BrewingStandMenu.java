@@ -5,6 +5,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -46,18 +47,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       this.ingredientSlot = this.addSlot(new IngredientsSlot(var5, var3, 3, 79, 17));
       this.addSlot(new FuelSlot(var3, 4, 17, 17));
       this.addDataSlots(var4);
-
-      int var6;
-      for(var6 = 0; var6 < 3; ++var6) {
-         for(int var7 = 0; var7 < 9; ++var7) {
-            this.addSlot(new Slot(var2, var7 + var6 * 9 + 9, 8 + var7 * 18, 84 + var6 * 18));
-         }
-      }
-
-      for(var6 = 0; var6 < 9; ++var6) {
-         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var2, 8, 84);
    }
 
    public boolean stillValid(Player var1) {
@@ -176,7 +166,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
 
       public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(Items.BLAZE_POWDER);
+         return var0.is(ItemTags.BREWING_FUEL);
       }
    }
 }

@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySynchronization;
@@ -30,42 +29,45 @@ public class TagNetworkSerialization {
       return (Map)RegistrySynchronization.networkSafeRegistries(var0).map((var0x) -> {
          return Pair.of(var0x.key(), serializeToNetwork(var0x.value()));
       }).filter((var0x) -> {
-         return ((NetworkPayload)var0x.getSecond()).size() > 0;
+         return !((NetworkPayload)var0x.getSecond()).isEmpty();
       }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
    }
 
    private static <T> NetworkPayload serializeToNetwork(Registry<T> var0) {
       HashMap var1 = new HashMap();
       var0.getTags().forEach((var2) -> {
-         HolderSet var3 = (HolderSet)var2.getSecond();
-         IntArrayList var4 = new IntArrayList(var3.size());
-         Iterator var5 = var3.iterator();
+         IntArrayList var3 = new IntArrayList(var2.size());
+         Iterator var4 = var2.iterator();
 
-         while(var5.hasNext()) {
-            Holder var6 = (Holder)var5.next();
-            if (var6.kind() != Holder.Kind.REFERENCE) {
-               throw new IllegalStateException("Can't serialize unregistered value " + String.valueOf(var6));
+         while(var4.hasNext()) {
+            Holder var5 = (Holder)var4.next();
+            if (var5.kind() != Holder.Kind.REFERENCE) {
+               throw new IllegalStateException("Can't serialize unregistered value " + String.valueOf(var5));
             }
 
-            var4.add(var0.getId(var6.value()));
+            var3.add(var0.getId(var5.value()));
          }
 
-         var1.put(((TagKey)var2.getFirst()).location(), var4);
+         var1.put(var2.key().location(), var3);
       });
       return new NetworkPayload(var1);
    }
 
-   static <T> void deserializeTagsFromNetwork(ResourceKey<? extends Registry<T>> var0, Registry<T> var1, NetworkPayload var2, TagOutput<T> var3) {
-      var2.tags.forEach((var3x, var4) -> {
-         TagKey var5 = TagKey.create(var0, var3x);
+   static <T> TagLoader.LoadResult<T> deserializeTagsFromNetwork(Registry<T> var0, NetworkPayload var1) {
+      ResourceKey var2 = var0.key();
+      HashMap var3 = new HashMap();
+      var1.tags.forEach((var3x, var4) -> {
+         TagKey var5 = TagKey.create(var2, var3x);
          IntStream var10000 = var4.intStream();
-         Objects.requireNonNull(var1);
-         List var6 = (List)var10000.mapToObj(var1::getHolder).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
-         var3.accept(var5, var6);
+         Objects.requireNonNull(var0);
+         List var6 = (List)var10000.mapToObj(var0::get).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+         var3.put(var5, var6);
       });
+      return new TagLoader.LoadResult(var2, var3);
    }
 
    public static final class NetworkPayload {
+      public static final NetworkPayload EMPTY = new NetworkPayload(Map.of());
       final Map<ResourceLocation, IntList> tags;
 
       NetworkPayload(Map<ResourceLocation, IntList> var1) {
@@ -81,23 +83,16 @@ public class TagNetworkSerialization {
          return new NetworkPayload(var0.readMap(FriendlyByteBuf::readResourceLocation, FriendlyByteBuf::readIntIdList));
       }
 
+      public boolean isEmpty() {
+         return this.tags.isEmpty();
+      }
+
       public int size() {
          return this.tags.size();
       }
 
-      public <T> void applyToRegistry(Registry<T> var1) {
-         if (this.size() != 0) {
-            HashMap var2 = new HashMap(this.size());
-            ResourceKey var10000 = var1.key();
-            Objects.requireNonNull(var2);
-            TagNetworkSerialization.deserializeTagsFromNetwork(var10000, var1, this, var2::put);
-            var1.bindTags(var2);
-         }
+      public <T> TagLoader.LoadResult<T> resolve(Registry<T> var1) {
+         return TagNetworkSerialization.deserializeTagsFromNetwork(var1, this);
       }
-   }
-
-   @FunctionalInterface
-   public interface TagOutput<T> {
-      void accept(TagKey<T> var1, List<Holder<T>> var2);
    }
 }

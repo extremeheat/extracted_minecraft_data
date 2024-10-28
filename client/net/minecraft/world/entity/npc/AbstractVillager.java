@@ -24,8 +24,8 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +36,7 @@ import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -57,7 +57,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
@@ -177,9 +177,9 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
    }
 
    @Nullable
-   public Entity changeDimension(DimensionTransition var1) {
+   public Entity teleport(TeleportTransition var1) {
       this.stopTrading();
-      return super.changeDimension(var1);
+      return super.teleport(var1);
    }
 
    protected void stopTrading() {

@@ -151,7 +151,7 @@ public class CloneCommands {
                            CloneBlockEntityInfo var29 = new CloneBlockEntityInfo(var28.saveCustomOnly(var0.registryAccess()), var28.components());
                            var17.add(new CloneBlockInfo(var25, var27, var29));
                            var19.addLast(var24);
-                        } else if (!var27.isSolidRender(var12, var24) && !var27.isCollisionShapeFullBlock(var12, var24)) {
+                        } else if (!var27.isSolidRender() && !var27.isCollisionShapeFullBlock(var12, var24)) {
                            var18.add(new CloneBlockInfo(var25, var27, (CloneBlockEntityInfo)null));
                            var19.addFirst(var24);
                         } else {

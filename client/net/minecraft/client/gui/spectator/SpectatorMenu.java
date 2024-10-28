@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 public class SpectatorMenu {
    static final ResourceLocation CLOSE_SPRITE = ResourceLocation.withDefaultNamespace("spectator/close");
@@ -30,7 +32,7 @@ public class SpectatorMenu {
          return CommonComponents.EMPTY;
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, int var3) {
+      public void renderIcon(GuiGraphics var1, float var2, float var3) {
       }
 
       public boolean isEnabled() {
@@ -121,8 +123,8 @@ public class SpectatorMenu {
          return SpectatorMenu.CLOSE_MENU_TEXT;
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, int var3) {
-         var1.blitSprite(SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16);
+      public void renderIcon(GuiGraphics var1, float var2, float var3) {
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
       }
 
       public boolean isEnabled() {
@@ -148,11 +150,12 @@ public class SpectatorMenu {
          return this.direction < 0 ? SpectatorMenu.PREVIOUS_PAGE_TEXT : SpectatorMenu.NEXT_PAGE_TEXT;
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, int var3) {
+      public void renderIcon(GuiGraphics var1, float var2, float var3) {
+         int var4 = ARGB.colorFromFloat(var3, var2, var2, var2);
          if (this.direction < 0) {
-            var1.blitSprite(SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16);
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, var4);
          } else {
-            var1.blitSprite(SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16);
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, var4);
          }
 
       }

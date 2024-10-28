@@ -29,7 +29,7 @@ import com.mojang.realmsclient.dto.WorldTemplatePaginatedList;
 import com.mojang.realmsclient.exception.RealmsHttpException;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
-import com.mojang.realmsclient.util.WorldGenerationInfo;
+import com.mojang.realmsclient.util.UploadTokenCache;
 import com.mojang.util.UndashedUuid;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -298,13 +298,6 @@ public class RealmsClient {
       return Boolean.valueOf(var4);
    }
 
-   public Boolean resetWorldWithSeed(long var1, WorldGenerationInfo var3) throws RealmsServiceException {
-      RealmsWorldResetDto var4 = new RealmsWorldResetDto(var3.seed(), -1L, var3.levelType().getDtoIndex(), var3.generateStructures(), var3.experiments());
-      String var5 = this.url("worlds" + "/$WORLD_ID/reset".replace("$WORLD_ID", String.valueOf(var1)));
-      String var6 = this.execute(Request.post(var5, GSON.toJson((ReflectionBasedSerialization)var4), 30000, 80000));
-      return Boolean.valueOf(var6);
-   }
-
    public Boolean resetWorldWithTemplate(long var1, String var3) throws RealmsServiceException {
       RealmsWorldResetDto var4 = new RealmsWorldResetDto((String)null, Long.valueOf(var3), -1, false, Set.of());
       String var5 = this.url("worlds" + "/$WORLD_ID/reset".replace("$WORLD_ID", String.valueOf(var1)));
@@ -346,9 +339,15 @@ public class RealmsClient {
    }
 
    @Nullable
-   public UploadInfo requestUploadInfo(long var1, @Nullable String var3) throws RealmsServiceException {
-      String var4 = this.url("worlds" + "/$WORLD_ID/backups/upload".replace("$WORLD_ID", String.valueOf(var1)));
-      return UploadInfo.parse(this.execute(Request.put(var4, UploadInfo.createRequest(var3))));
+   public UploadInfo requestUploadInfo(long var1) throws RealmsServiceException {
+      String var3 = this.url("worlds" + "/$WORLD_ID/backups/upload".replace("$WORLD_ID", String.valueOf(var1)));
+      String var4 = UploadTokenCache.get(var1);
+      UploadInfo var5 = UploadInfo.parse(this.execute(Request.put(var3, UploadInfo.createRequest(var4))));
+      if (var5 != null) {
+         UploadTokenCache.put(var1, var5.getToken());
+      }
+
+      return var5;
    }
 
    public void rejectInvitation(String var1) throws RealmsServiceException {

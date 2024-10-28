@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -26,20 +27,21 @@ public class DefendVillageTargetGoal extends TargetGoal {
 
    public boolean canUse() {
       AABB var1 = this.golem.getBoundingBox().inflate(10.0, 8.0, 10.0);
-      List var2 = this.golem.level().getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
-      List var3 = this.golem.level().getNearbyPlayers(this.attackTargeting, this.golem, var1);
-      Iterator var4 = var2.iterator();
+      ServerLevel var2 = getServerLevel(this.golem);
+      List var3 = var2.getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
+      List var4 = var2.getNearbyPlayers(this.attackTargeting, this.golem, var1);
+      Iterator var5 = var3.iterator();
 
-      while(var4.hasNext()) {
-         LivingEntity var5 = (LivingEntity)var4.next();
-         Villager var6 = (Villager)var5;
-         Iterator var7 = var3.iterator();
+      while(var5.hasNext()) {
+         LivingEntity var6 = (LivingEntity)var5.next();
+         Villager var7 = (Villager)var6;
+         Iterator var8 = var4.iterator();
 
-         while(var7.hasNext()) {
-            Player var8 = (Player)var7.next();
-            int var9 = var6.getPlayerReputation(var8);
-            if (var9 <= -100) {
-               this.potentialTarget = var8;
+         while(var8.hasNext()) {
+            Player var9 = (Player)var8.next();
+            int var10 = var7.getPlayerReputation(var9);
+            if (var10 <= -100) {
+               this.potentialTarget = var9;
             }
          }
       }

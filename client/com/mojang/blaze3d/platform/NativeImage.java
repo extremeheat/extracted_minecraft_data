@@ -1,14 +1,14 @@
 package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.jtracy.MemoryPool;
+import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.function.IntUnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.providers.FreeTypeUtil;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.PngInfo;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.stb.STBIWriteCallback;
@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 
 public final class NativeImage implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final MemoryPool MEMORY_POOL = TracyClient.createMemoryPool("NativeImage");
    private static final Set<StandardOpenOption> OPEN_OPTIONS;
    private final Format format;
    private final int width;
@@ -64,6 +65,7 @@ public final class NativeImage implements AutoCloseable {
             this.pixels = MemoryUtil.nmemAlloc(this.size);
          }
 
+         MEMORY_POOL.malloc(this.pixels, (int)this.size);
          if (this.pixels == 0L) {
             throw new IllegalStateException("Unable to allocate texture of size " + var2 + "x" + var3 + " (" + var1.components() + " channels)");
          }
@@ -156,7 +158,7 @@ public final class NativeImage implements AutoCloseable {
          PngInfo.validateHeader(var1);
          MemoryStack var2 = MemoryStack.stackPush();
 
-         NativeImage var7;
+         NativeImage var9;
          try {
             IntBuffer var3 = var2.mallocInt(1);
             IntBuffer var4 = var2.mallocInt(1);
@@ -166,24 +168,26 @@ public final class NativeImage implements AutoCloseable {
                throw new IOException("Could not load image: " + STBImage.stbi_failure_reason());
             }
 
-            var7 = new NativeImage(var0 == null ? NativeImage.Format.getStbFormat(var5.get(0)) : var0, var3.get(0), var4.get(0), true, MemoryUtil.memAddress(var6));
-         } catch (Throwable var9) {
+            long var7 = MemoryUtil.memAddress(var6);
+            MEMORY_POOL.malloc(var7, var6.limit());
+            var9 = new NativeImage(var0 == null ? NativeImage.Format.getStbFormat(var5.get(0)) : var0, var3.get(0), var4.get(0), true, var7);
+         } catch (Throwable var11) {
             if (var2 != null) {
                try {
                   var2.close();
-               } catch (Throwable var8) {
-                  var9.addSuppressed(var8);
+               } catch (Throwable var10) {
+                  var11.addSuppressed(var10);
                }
             }
 
-            throw var9;
+            throw var11;
          }
 
          if (var2 != null) {
             var2.close();
          }
 
-         return var7;
+         return var9;
       }
    }
 
@@ -212,6 +216,8 @@ public final class NativeImage implements AutoCloseable {
          } else {
             MemoryUtil.nmemFree(this.pixels);
          }
+
+         MEMORY_POOL.free(this.pixels);
       }
 
       this.pixels = 0L;
@@ -229,7 +235,7 @@ public final class NativeImage implements AutoCloseable {
       return this.format;
    }
 
-   public int getPixelRGBA(int var1, int var2) {
+   private int getPixelABGR(int var1, int var2) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
@@ -241,7 +247,11 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   public void setPixelRGBA(int var1, int var2, int var3) {
+   public int getPixel(int var1, int var2) {
+      return ARGB.fromABGR(this.getPixelABGR(var1, var2));
+   }
+
+   private void setPixelABGR(int var1, int var2, int var3) {
       if (this.format != NativeImage.Format.RGBA) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
@@ -251,6 +261,10 @@ public final class NativeImage implements AutoCloseable {
          long var4 = ((long)var1 + (long)var2 * (long)this.width) * 4L;
          MemoryUtil.memPutInt(this.pixels + var4, var3);
       }
+   }
+
+   public void setPixel(int var1, int var2, int var3) {
+      this.setPixelABGR(var1, var2, ARGB.toABGR(var3));
    }
 
    public NativeImage mappedCopy(IntUnaryOperator var1) {
@@ -264,7 +278,9 @@ public final class NativeImage implements AutoCloseable {
          IntBuffer var5 = MemoryUtil.memIntBuffer(var2.pixels, var3);
 
          for(int var6 = 0; var6 < var3; ++var6) {
-            var5.put(var6, var1.applyAsInt(var4.get(var6)));
+            int var7 = ARGB.fromABGR(var4.get(var6));
+            int var8 = var1.applyAsInt(var7);
+            var5.put(var6, ARGB.toABGR(var8));
          }
 
          return var2;
@@ -280,15 +296,17 @@ public final class NativeImage implements AutoCloseable {
          IntBuffer var3 = MemoryUtil.memIntBuffer(this.pixels, var2);
 
          for(int var4 = 0; var4 < var2; ++var4) {
-            var3.put(var4, var1.applyAsInt(var3.get(var4)));
+            int var5 = ARGB.fromABGR(var3.get(var4));
+            int var6 = var1.applyAsInt(var5);
+            var3.put(var4, ARGB.toABGR(var6));
          }
 
       }
    }
 
-   public int[] getPixelsRGBA() {
+   public int[] getPixelsABGR() {
       if (this.format != NativeImage.Format.RGBA) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixelsRGBA only works on RGBA images; have %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixels only works on RGBA images; have %s", this.format));
       } else {
          this.checkAllocated();
          int[] var1 = new int[this.width * this.height];
@@ -297,53 +315,14 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   public void setPixelLuminance(int var1, int var2, byte var3) {
-      RenderSystem.assertOnRenderThread();
-      if (!this.format.hasLuminance()) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelLuminance only works on image with luminance; have %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
-      } else {
-         this.checkAllocated();
-         long var4 = ((long)var1 + (long)var2 * (long)this.width) * (long)this.format.components() + (long)(this.format.luminanceOffset() / 8);
-         MemoryUtil.memPutByte(this.pixels + var4, var3);
-      }
-   }
+   public int[] getPixels() {
+      int[] var1 = this.getPixelsABGR();
 
-   public byte getRedOrLuminance(int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      if (!this.format.hasLuminanceOrRed()) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "no red or luminance in %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
-      } else {
-         int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrRedOffset() / 8;
-         return MemoryUtil.memGetByte(this.pixels + (long)var3);
+      for(int var2 = 0; var2 < var1.length; ++var2) {
+         var1[var2] = ARGB.fromABGR(var1[var2]);
       }
-   }
 
-   public byte getGreenOrLuminance(int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      if (!this.format.hasLuminanceOrGreen()) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "no green or luminance in %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
-      } else {
-         int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrGreenOffset() / 8;
-         return MemoryUtil.memGetByte(this.pixels + (long)var3);
-      }
-   }
-
-   public byte getBlueOrLuminance(int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      if (!this.format.hasLuminanceOrBlue()) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "no blue or luminance in %s", this.format));
-      } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
-      } else {
-         int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrBlueOffset() / 8;
-         return MemoryUtil.memGetByte(this.pixels + (long)var3);
-      }
+      return var1;
    }
 
    public byte getLuminanceOrAlpha(int var1, int var2) {
@@ -354,48 +333,6 @@ public final class NativeImage implements AutoCloseable {
       } else {
          int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrAlphaOffset() / 8;
          return MemoryUtil.memGetByte(this.pixels + (long)var3);
-      }
-   }
-
-   public void blendPixel(int var1, int var2, int var3) {
-      if (this.format != NativeImage.Format.RGBA) {
-         throw new UnsupportedOperationException("Can only call blendPixel with RGBA format");
-      } else {
-         int var4 = this.getPixelRGBA(var1, var2);
-         float var5 = (float)FastColor.ABGR32.alpha(var3) / 255.0F;
-         float var6 = (float)FastColor.ABGR32.blue(var3) / 255.0F;
-         float var7 = (float)FastColor.ABGR32.green(var3) / 255.0F;
-         float var8 = (float)FastColor.ABGR32.red(var3) / 255.0F;
-         float var9 = (float)FastColor.ABGR32.alpha(var4) / 255.0F;
-         float var10 = (float)FastColor.ABGR32.blue(var4) / 255.0F;
-         float var11 = (float)FastColor.ABGR32.green(var4) / 255.0F;
-         float var12 = (float)FastColor.ABGR32.red(var4) / 255.0F;
-         float var14 = 1.0F - var5;
-         float var15 = var5 * var5 + var9 * var14;
-         float var16 = var6 * var5 + var10 * var14;
-         float var17 = var7 * var5 + var11 * var14;
-         float var18 = var8 * var5 + var12 * var14;
-         if (var15 > 1.0F) {
-            var15 = 1.0F;
-         }
-
-         if (var16 > 1.0F) {
-            var16 = 1.0F;
-         }
-
-         if (var17 > 1.0F) {
-            var17 = 1.0F;
-         }
-
-         if (var18 > 1.0F) {
-            var18 = 1.0F;
-         }
-
-         int var19 = (int)(var15 * 255.0F);
-         int var20 = (int)(var16 * 255.0F);
-         int var21 = (int)(var17 * 255.0F);
-         int var22 = (int)(var18 * 255.0F);
-         this.setPixelRGBA(var1, var2, FastColor.ABGR32.color(var19, var20, var21, var22));
       }
    }
 
@@ -410,8 +347,7 @@ public final class NativeImage implements AutoCloseable {
 
          for(int var2 = 0; var2 < this.getHeight(); ++var2) {
             for(int var3 = 0; var3 < this.getWidth(); ++var3) {
-               int var4 = this.getPixelRGBA(var3, var2);
-               var1[var3 + var2 * this.getWidth()] = FastColor.ARGB32.color(FastColor.ABGR32.alpha(var4), FastColor.ABGR32.red(var4), FastColor.ABGR32.green(var4), FastColor.ABGR32.blue(var4));
+               var1[var3 + var2 * this.getWidth()] = this.getPixel(var3, var2);
             }
          }
 
@@ -474,7 +410,7 @@ public final class NativeImage implements AutoCloseable {
       if (var2 && this.format.hasAlpha()) {
          for(int var3 = 0; var3 < this.getHeight(); ++var3) {
             for(int var4 = 0; var4 < this.getWidth(); ++var4) {
-               this.setPixelRGBA(var4, var3, this.getPixelRGBA(var4, var3) | 255 << this.format.alphaOffset());
+               this.setPixelABGR(var4, var3, this.getPixelABGR(var4, var3) | 255 << this.format.alphaOffset());
             }
          }
       }
@@ -554,48 +490,6 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   public byte[] asByteArray() throws IOException {
-      ByteArrayOutputStream var1 = new ByteArrayOutputStream();
-
-      byte[] var3;
-      try {
-         WritableByteChannel var2 = Channels.newChannel(var1);
-
-         try {
-            if (!this.writeToChannel(var2)) {
-               throw new IOException("Could not write image to byte array: " + STBImage.stbi_failure_reason());
-            }
-
-            var3 = var1.toByteArray();
-         } catch (Throwable var7) {
-            if (var2 != null) {
-               try {
-                  var2.close();
-               } catch (Throwable var6) {
-                  var7.addSuppressed(var6);
-               }
-            }
-
-            throw var7;
-         }
-
-         if (var2 != null) {
-            var2.close();
-         }
-      } catch (Throwable var8) {
-         try {
-            var1.close();
-         } catch (Throwable var5) {
-            var8.addSuppressed(var5);
-         }
-
-         throw var8;
-      }
-
-      var1.close();
-      return var3;
-   }
-
    private boolean writeToChannel(WritableByteChannel var1) throws IOException {
       WriteCallback var2 = new WriteCallback(var1);
 
@@ -606,13 +500,13 @@ public final class NativeImage implements AutoCloseable {
             LOGGER.warn("Dropping image height from {} to {} to fit the size into 32-bit signed int", this.getHeight(), var3);
          }
 
-         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) == 0) {
-            var4 = false;
+         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) != 0) {
+            var2.throwIfException();
+            var4 = true;
             return var4;
          }
 
-         var2.throwIfException();
-         var4 = true;
+         var4 = false;
       } finally {
          var2.free();
       }
@@ -646,7 +540,7 @@ public final class NativeImage implements AutoCloseable {
    public void fillRect(int var1, int var2, int var3, int var4, int var5) {
       for(int var6 = var2; var6 < var2 + var4; ++var6) {
          for(int var7 = var1; var7 < var1 + var3; ++var7) {
-            this.setPixelRGBA(var7, var6, var5);
+            this.setPixel(var7, var6, var5);
          }
       }
 
@@ -661,8 +555,8 @@ public final class NativeImage implements AutoCloseable {
          for(int var11 = 0; var11 < var6; ++var11) {
             int var12 = var8 ? var6 - 1 - var11 : var11;
             int var13 = var9 ? var7 - 1 - var10 : var10;
-            int var14 = this.getPixelRGBA(var2 + var11, var3 + var10);
-            var1.setPixelRGBA(var4 + var12, var5 + var13, var14);
+            int var14 = this.getPixelABGR(var2 + var11, var3 + var10);
+            var1.setPixelABGR(var4 + var12, var5 + var13, var14);
          }
       }
 

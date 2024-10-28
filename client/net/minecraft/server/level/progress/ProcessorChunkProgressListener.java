@@ -3,19 +3,19 @@ package net.minecraft.server.level.progress;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class ProcessorChunkProgressListener implements ChunkProgressListener {
    private final ChunkProgressListener delegate;
-   private final ProcessorMailbox<Runnable> mailbox;
+   private final ConsecutiveExecutor consecutiveExecutor;
    private boolean started;
 
    private ProcessorChunkProgressListener(ChunkProgressListener var1, Executor var2) {
       super();
       this.delegate = var1;
-      this.mailbox = ProcessorMailbox.create(var2, "progressListener");
+      this.consecutiveExecutor = new ConsecutiveExecutor(var2, "progressListener");
    }
 
    public static ProcessorChunkProgressListener createStarted(ChunkProgressListener var0, Executor var1) {
@@ -25,14 +25,14 @@ public class ProcessorChunkProgressListener implements ChunkProgressListener {
    }
 
    public void updateSpawnPos(ChunkPos var1) {
-      this.mailbox.tell(() -> {
+      this.consecutiveExecutor.schedule(() -> {
          this.delegate.updateSpawnPos(var1);
       });
    }
 
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
       if (this.started) {
-         this.mailbox.tell(() -> {
+         this.consecutiveExecutor.schedule(() -> {
             this.delegate.onStatusChange(var1, var2);
          });
       }
@@ -41,17 +41,17 @@ public class ProcessorChunkProgressListener implements ChunkProgressListener {
 
    public void start() {
       this.started = true;
-      ProcessorMailbox var10000 = this.mailbox;
+      ConsecutiveExecutor var10000 = this.consecutiveExecutor;
       ChunkProgressListener var10001 = this.delegate;
       Objects.requireNonNull(var10001);
-      var10000.tell(var10001::start);
+      var10000.schedule(var10001::start);
    }
 
    public void stop() {
       this.started = false;
-      ProcessorMailbox var10000 = this.mailbox;
+      ConsecutiveExecutor var10000 = this.consecutiveExecutor;
       ChunkProgressListener var10001 = this.delegate;
       Objects.requireNonNull(var10001);
-      var10000.tell(var10001::stop);
+      var10000.schedule(var10001::stop);
    }
 }

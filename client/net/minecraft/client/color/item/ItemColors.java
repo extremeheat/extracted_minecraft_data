@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -53,7 +53,7 @@ public class ItemColors {
             if (var4 == 0) {
                return -7697782;
             } else if (var4 == 1) {
-               return FastColor.ARGB32.opaque(var3.getInt(0));
+               return ARGB.opaque(var3.getInt(0));
             } else {
                int var5 = 0;
                int var6 = 0;
@@ -61,24 +61,24 @@ public class ItemColors {
 
                for(int var8 = 0; var8 < var4; ++var8) {
                   int var9 = var3.getInt(var8);
-                  var5 += FastColor.ARGB32.red(var9);
-                  var6 += FastColor.ARGB32.green(var9);
-                  var7 += FastColor.ARGB32.blue(var9);
+                  var5 += ARGB.red(var9);
+                  var6 += ARGB.green(var9);
+                  var7 += ARGB.blue(var9);
                }
 
-               return FastColor.ARGB32.color(var5 / var4, var6 / var4, var7 / var4);
+               return ARGB.color(var5 / var4, var6 / var4, var7 / var4);
             }
          }
       }, Items.FIREWORK_STAR);
       var1.register((var0x, var1x) -> {
-         return var1x > 0 ? -1 : FastColor.ARGB32.opaque(((PotionContents)var0x.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).getColor());
+         return var1x > 0 ? -1 : ARGB.opaque(((PotionContents)var0x.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).getColor());
       }, Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION, Items.TIPPED_ARROW);
       Iterator var2 = SpawnEggItem.eggs().iterator();
 
       while(var2.hasNext()) {
          SpawnEggItem var3 = (SpawnEggItem)var2.next();
          var1.register((var1x, var2x) -> {
-            return FastColor.ARGB32.opaque(var3.getColor(var2x));
+            return ARGB.opaque(var3.getColor(var2x));
          }, var3);
       }
 
@@ -90,7 +90,7 @@ public class ItemColors {
          return FoliageColor.getMangroveColor();
       }, Blocks.MANGROVE_LEAVES);
       var1.register((var0x, var1x) -> {
-         return var1x == 0 ? -1 : FastColor.ARGB32.opaque(((MapItemColor)var0x.getOrDefault(DataComponents.MAP_COLOR, MapItemColor.DEFAULT)).rgb());
+         return var1x == 0 ? -1 : ARGB.opaque(((MapItemColor)var0x.getOrDefault(DataComponents.MAP_COLOR, MapItemColor.DEFAULT)).rgb());
       }, Items.FILLED_MAP);
       return var1;
    }

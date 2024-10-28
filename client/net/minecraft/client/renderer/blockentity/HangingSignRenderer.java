@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Map;
 import net.minecraft.client.model.Model;
@@ -71,11 +70,6 @@ public class HangingSignRenderer extends SignRenderer {
       var1.translate(0.0F, -0.3125F, 0.0F);
    }
 
-   void renderSignModel(PoseStack var1, int var2, int var3, Model var4, VertexConsumer var5) {
-      HangingSignModel var6 = (HangingSignModel)var4;
-      var6.root.render(var1, var5, var2, var3);
-   }
-
    Material getSignMaterial(WoodType var1) {
       return Sheets.getHangingSignMaterial(var1);
    }
@@ -99,14 +93,12 @@ public class HangingSignRenderer extends SignRenderer {
    }
 
    public static final class HangingSignModel extends Model {
-      public final ModelPart root;
       public final ModelPart plank;
       public final ModelPart vChains;
       public final ModelPart normalChains;
 
       public HangingSignModel(ModelPart var1) {
-         super(RenderType::entityCutoutNoCull);
-         this.root = var1;
+         super(var1, RenderType::entityCutoutNoCull);
          this.plank = var1.getChild("plank");
          this.normalChains = var1.getChild("normalChains");
          this.vChains = var1.getChild("vChains");
@@ -123,10 +115,6 @@ public class HangingSignRenderer extends SignRenderer {
             this.vChains.visible = var3;
          }
 
-      }
-
-      public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-         this.root.render(var1, var2, var3, var4, var5);
       }
    }
 }

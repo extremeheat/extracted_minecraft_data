@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
@@ -47,7 +47,7 @@ public class HeightMapRenderer implements DebugRenderer.SimpleDebugRenderer {
                      int var22 = SectionPos.sectionToBlockCoord(var18.x, var20);
                      int var23 = SectionPos.sectionToBlockCoord(var18.z, var21);
                      float var24 = (float)((double)((float)var9.getHeight(var17, var22, var23) + (float)var17.ordinal() * 0.09375F) - var5);
-                     LevelRenderer.addChainedFilledBoxVertices(var1, var10, (double)((float)var22 + 0.25F) - var3, (double)var24, (double)((float)var23 + 0.25F) - var7, (double)((float)var22 + 0.75F) - var3, (double)(var24 + 0.09375F), (double)((float)var23 + 0.75F) - var7, var19.x(), var19.y(), var19.z(), 1.0F);
+                     ShapeRenderer.addChainedFilledBoxVertices(var1, var10, (double)((float)var22 + 0.25F) - var3, (double)var24, (double)((float)var23 + 0.25F) - var7, (double)((float)var22 + 0.75F) - var3, (double)(var24 + 0.09375F), (double)((float)var23 + 0.75F) - var7, var19.x(), var19.y(), var19.z(), 1.0F);
                   }
                }
             }

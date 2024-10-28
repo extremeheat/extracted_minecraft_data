@@ -1,264 +1,143 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Either;
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntComparators;
-import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.resources.HolderSetCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.ItemLike;
 
 public final class Ingredient implements Predicate<ItemStack> {
-   public static final Ingredient EMPTY = new Ingredient(Stream.empty());
    public static final StreamCodec<RegistryFriendlyByteBuf, Ingredient> CONTENTS_STREAM_CODEC;
-   private final Value[] values;
-   @Nullable
-   private ItemStack[] itemStacks;
-   @Nullable
-   private IntList stackingIds;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Ingredient>> OPTIONAL_CONTENTS_STREAM_CODEC;
+   public static final Codec<HolderSet<Item>> NON_AIR_HOLDER_SET_CODEC;
    public static final Codec<Ingredient> CODEC;
-   public static final Codec<Ingredient> CODEC_NONEMPTY;
+   private final HolderSet<Item> values;
+   @Nullable
+   private List<Holder<Item>> items;
 
-   private Ingredient(Stream<? extends Value> var1) {
+   private Ingredient(HolderSet<Item> var1) {
       super();
-      this.values = (Value[])var1.toArray((var0) -> {
-         return new Value[var0];
+      var1.unwrap().ifRight((var0) -> {
+         if (var0.isEmpty()) {
+            throw new UnsupportedOperationException("Ingredients can't be empty");
+         } else if (var0.contains(Items.AIR.builtInRegistryHolder())) {
+            throw new UnsupportedOperationException("Ingredient can't contain air");
+         }
       });
-   }
-
-   private Ingredient(Value[] var1) {
-      super();
       this.values = var1;
    }
 
-   public ItemStack[] getItems() {
-      if (this.itemStacks == null) {
-         this.itemStacks = (ItemStack[])Arrays.stream(this.values).flatMap((var0) -> {
-            return var0.getItems().stream();
-         }).distinct().toArray((var0) -> {
-            return new ItemStack[var0];
-         });
-      }
-
-      return this.itemStacks;
+   public static boolean testOptionalIngredient(Optional<Ingredient> var0, ItemStack var1) {
+      Optional var10000 = var0.map((var1x) -> {
+         return var1x.test(var1);
+      });
+      Objects.requireNonNull(var1);
+      return (Boolean)var10000.orElseGet(var1::isEmpty);
    }
 
-   public boolean test(@Nullable ItemStack var1) {
-      if (var1 == null) {
-         return false;
-      } else if (this.isEmpty()) {
-         return var1.isEmpty();
-      } else {
-         ItemStack[] var2 = this.getItems();
-         int var3 = var2.length;
+   public List<Holder<Item>> items() {
+      if (this.items == null) {
+         this.items = ImmutableList.copyOf(this.values);
+      }
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            ItemStack var5 = var2[var4];
-            if (var5.is(var1.getItem())) {
-               return true;
-            }
+      return this.items;
+   }
+
+   public boolean test(ItemStack var1) {
+      List var2 = this.items();
+
+      for(int var3 = 0; var3 < var2.size(); ++var3) {
+         if (var1.is((Holder)var2.get(var3))) {
+            return true;
          }
-
-         return false;
-      }
-   }
-
-   public IntList getStackingIds() {
-      if (this.stackingIds == null) {
-         ItemStack[] var1 = this.getItems();
-         this.stackingIds = new IntArrayList(var1.length);
-         ItemStack[] var2 = var1;
-         int var3 = var1.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            ItemStack var5 = var2[var4];
-            this.stackingIds.add(StackedContents.getStackingIndex(var5));
-         }
-
-         this.stackingIds.sort(IntComparators.NATURAL_COMPARATOR);
       }
 
-      return this.stackingIds;
-   }
-
-   public boolean isEmpty() {
-      return this.values.length == 0;
+      return false;
    }
 
    public boolean equals(Object var1) {
       if (var1 instanceof Ingredient var2) {
-         return Arrays.equals(this.values, var2.values);
+         return Objects.equals(this.values, var2.values);
       } else {
          return false;
       }
    }
 
-   private static Ingredient fromValues(Stream<? extends Value> var0) {
-      Ingredient var1 = new Ingredient(var0);
-      return var1.isEmpty() ? EMPTY : var1;
-   }
-
-   public static Ingredient of() {
-      return EMPTY;
+   public static Ingredient of(ItemLike var0) {
+      return new Ingredient(HolderSet.direct(var0.asItem().builtInRegistryHolder()));
    }
 
    public static Ingredient of(ItemLike... var0) {
-      return of(Arrays.stream(var0).map(ItemStack::new));
-   }
-
-   public static Ingredient of(ItemStack... var0) {
       return of(Arrays.stream(var0));
    }
 
-   public static Ingredient of(Stream<ItemStack> var0) {
-      return fromValues(var0.filter((var0x) -> {
-         return !var0x.isEmpty();
-      }).map(ItemValue::new));
+   public static Ingredient of(Stream<? extends ItemLike> var0) {
+      return new Ingredient(HolderSet.direct(var0.map((var0x) -> {
+         return var0x.asItem().builtInRegistryHolder();
+      }).toList()));
    }
 
-   public static Ingredient of(TagKey<Item> var0) {
-      return fromValues(Stream.of(new TagValue(var0)));
+   public static Ingredient of(HolderSet<Item> var0) {
+      return new Ingredient(var0);
    }
 
-   private static Codec<Ingredient> codec(boolean var0) {
-      Codec var1 = Codec.list(Ingredient.Value.CODEC).comapFlatMap((var1x) -> {
-         return !var0 && var1x.size() < 1 ? DataResult.error(() -> {
-            return "Item array cannot be empty, at least one item must be defined";
-         }) : DataResult.success((Value[])var1x.toArray(new Value[0]));
-      }, List::of);
-      return Codec.either(var1, Ingredient.Value.CODEC).flatComapMap((var0x) -> {
-         return (Ingredient)var0x.map(Ingredient::new, (var0) -> {
-            return new Ingredient(new Value[]{var0});
-         });
-      }, (var1x) -> {
-         if (var1x.values.length == 1) {
-            return DataResult.success(Either.right(var1x.values[0]));
-         } else {
-            return var1x.values.length == 0 && !var0 ? DataResult.error(() -> {
-               return "Item array cannot be empty, at least one item must be defined";
-            }) : DataResult.success(Either.left(var1x.values));
-         }
+   public SlotDisplay display() {
+      return (SlotDisplay)this.values.unwrap().map(SlotDisplay.TagSlotDisplay::new, (var0) -> {
+         return new SlotDisplay.Composite(var0.stream().map(Ingredient::displayForSingleItem).toList());
       });
    }
 
+   public static SlotDisplay optionalIngredientToDisplay(Optional<Ingredient> var0) {
+      return (SlotDisplay)var0.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE);
+   }
+
+   private static SlotDisplay displayForSingleItem(Holder<Item> var0) {
+      SlotDisplay.ItemSlotDisplay var1 = new SlotDisplay.ItemSlotDisplay(var0);
+      ItemStack var2 = ((Item)var0.value()).getCraftingRemainder();
+      if (!var2.isEmpty()) {
+         SlotDisplay.ItemStackSlotDisplay var3 = new SlotDisplay.ItemStackSlotDisplay(var2);
+         return new SlotDisplay.WithRemainder(var1, var3);
+      } else {
+         return var1;
+      }
+   }
+
    // $FF: synthetic method
-   public boolean test(@Nullable final Object var1) {
+   public boolean test(final Object var1) {
       return this.test((ItemStack)var1);
    }
 
    static {
-      CONTENTS_STREAM_CODEC = ItemStack.LIST_STREAM_CODEC.map((var0) -> {
-         return fromValues(var0.stream().map(ItemValue::new));
+      CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM).map(Ingredient::new, (var0) -> {
+         return var0.values;
+      });
+      OPTIONAL_CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM).map((var0) -> {
+         return var0.size() == 0 ? Optional.empty() : Optional.of(new Ingredient(var0));
       }, (var0) -> {
-         return Arrays.asList(var0.getItems());
+         return (HolderSet)var0.map((var0x) -> {
+            return var0x.values;
+         }).orElse(HolderSet.direct());
       });
-      CODEC = codec(true);
-      CODEC_NONEMPTY = codec(false);
-   }
-
-   private interface Value {
-      Codec<Value> CODEC = Codec.xor(Ingredient.ItemValue.CODEC, Ingredient.TagValue.CODEC).xmap((var0) -> {
-         return (Value)var0.map((var0x) -> {
-            return var0x;
-         }, (var0x) -> {
-            return var0x;
-         });
-      }, (var0) -> {
-         if (var0 instanceof TagValue var1) {
-            return Either.right(var1);
-         } else if (var0 instanceof ItemValue var2) {
-            return Either.left(var2);
-         } else {
-            throw new UnsupportedOperationException("This is neither an item value nor a tag value.");
-         }
+      NON_AIR_HOLDER_SET_CODEC = HolderSetCodec.create(Registries.ITEM, Item.CODEC, false);
+      CODEC = ExtraCodecs.nonEmptyHolderSet(NON_AIR_HOLDER_SET_CODEC).xmap(Ingredient::new, (var0) -> {
+         return var0.values;
       });
-
-      Collection<ItemStack> getItems();
-   }
-
-   static record TagValue(TagKey<Item> tag) implements Value {
-      static final Codec<TagValue> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter((var0x) -> {
-            return var0x.tag;
-         })).apply(var0, TagValue::new);
-      });
-
-      TagValue(TagKey<Item> var1) {
-         super();
-         this.tag = var1;
-      }
-
-      public boolean equals(Object var1) {
-         if (var1 instanceof TagValue var2) {
-            return var2.tag.location().equals(this.tag.location());
-         } else {
-            return false;
-         }
-      }
-
-      public Collection<ItemStack> getItems() {
-         ArrayList var1 = Lists.newArrayList();
-         Iterator var2 = BuiltInRegistries.ITEM.getTagOrEmpty(this.tag).iterator();
-
-         while(var2.hasNext()) {
-            Holder var3 = (Holder)var2.next();
-            var1.add(new ItemStack(var3));
-         }
-
-         return var1;
-      }
-
-      public TagKey<Item> tag() {
-         return this.tag;
-      }
-   }
-
-   static record ItemValue(ItemStack item) implements Value {
-      static final Codec<ItemValue> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ItemStack.SIMPLE_ITEM_CODEC.fieldOf("item").forGetter((var0x) -> {
-            return var0x.item;
-         })).apply(var0, ItemValue::new);
-      });
-
-      private ItemValue(ItemStack var1) {
-         super();
-         this.item = var1;
-      }
-
-      public boolean equals(Object var1) {
-         if (!(var1 instanceof ItemValue var2)) {
-            return false;
-         } else {
-            return var2.item.getItem().equals(this.item.getItem()) && var2.item.getCount() == this.item.getCount();
-         }
-      }
-
-      public Collection<ItemStack> getItems() {
-         return Collections.singleton(this.item);
-      }
-
-      public ItemStack item() {
-         return this.item;
-      }
    }
 }

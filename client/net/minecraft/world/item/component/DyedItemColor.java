@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +35,7 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
 
    public static int getOrDefault(ItemStack var0, int var1) {
       DyedItemColor var2 = (DyedItemColor)var0.get(DataComponents.DYED_COLOR);
-      return var2 != null ? FastColor.ARGB32.opaque(var2.rgb()) : var1;
+      return var2 != null ? ARGB.opaque(var2.rgb()) : var1;
    }
 
    public static ItemStack applyDyes(ItemStack var0, List<DyeItem> var1) {
@@ -53,9 +53,9 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
          int var10;
          int var11;
          if (var8 != null) {
-            var9 = FastColor.ARGB32.red(var8.rgb());
-            var10 = FastColor.ARGB32.green(var8.rgb());
-            var11 = FastColor.ARGB32.blue(var8.rgb());
+            var9 = ARGB.red(var8.rgb());
+            var10 = ARGB.green(var8.rgb());
+            var11 = ARGB.blue(var8.rgb());
             var6 += Math.max(var9, Math.max(var10, var11));
             var3 += var9;
             var4 += var10;
@@ -67,9 +67,9 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
          for(Iterator var16 = var1.iterator(); var16.hasNext(); ++var7) {
             DyeItem var17 = (DyeItem)var16.next();
             var11 = var17.getDyeColor().getTextureDiffuseColor();
-            int var12 = FastColor.ARGB32.red(var11);
-            int var13 = FastColor.ARGB32.green(var11);
-            var14 = FastColor.ARGB32.blue(var11);
+            int var12 = ARGB.red(var11);
+            int var13 = ARGB.green(var11);
+            var14 = ARGB.blue(var11);
             var6 += Math.max(var12, Math.max(var13, var14));
             var3 += var12;
             var4 += var13;
@@ -84,7 +84,7 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
          var9 = (int)((float)var9 * var18 / var19);
          var10 = (int)((float)var10 * var18 / var19);
          var11 = (int)((float)var11 * var18 / var19);
-         var14 = FastColor.ARGB32.color(0, var9, var10, var11);
+         var14 = ARGB.color(0, var9, var10, var11);
          boolean var15 = var8 == null || var8.showInTooltip();
          var2.set(DataComponents.DYED_COLOR, new DyedItemColor(var14, var15));
          return var2;

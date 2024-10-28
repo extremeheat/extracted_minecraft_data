@@ -28,7 +28,7 @@ public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
                boolean var17 = var14 || var15;
                if (var7 >= var4 || var16 != var17) {
                   var5.setWithOffset(var3, var10, var7, var11);
-                  if (!var1.getBlockState(var5).isSolidRender(var1, var5)) {
+                  if (!var1.getBlockState(var5).isSolidRender()) {
                      BlockState var18 = var6.capProvider.getState(var2, var3);
                      if (var18.hasProperty(HugeMushroomBlock.WEST) && var18.hasProperty(HugeMushroomBlock.EAST) && var18.hasProperty(HugeMushroomBlock.NORTH) && var18.hasProperty(HugeMushroomBlock.SOUTH) && var18.hasProperty(HugeMushroomBlock.UP)) {
                         var18 = (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var18.setValue(HugeMushroomBlock.UP, var7 >= var4 - 1)).setValue(HugeMushroomBlock.WEST, var10 < -var9)).setValue(HugeMushroomBlock.EAST, var10 > var9)).setValue(HugeMushroomBlock.NORTH, var11 < -var9)).setValue(HugeMushroomBlock.SOUTH, var11 > var9);

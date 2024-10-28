@@ -3,16 +3,13 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
-import com.mojang.datafixers.RewriteResult;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
-import com.mojang.datafixers.View;
-import com.mojang.datafixers.functions.PointFreeRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import java.util.BitSet;
 import net.minecraft.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public abstract class NamedEntityWriteReadFix extends DataFix {
    private final String name;
@@ -32,7 +29,7 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
       Type var3 = this.getOutputSchema().getType(this.type);
       Type var4 = this.getOutputSchema().getChoiceType(this.type, this.entityName);
       OpticFinder var5 = DSL.namedChoice(this.entityName, var2);
-      Type var6 = var2.all(typePatcher(var1, var3), true, false).view().newType();
+      Type var6 = ExtraDataFixUtils.patchSubType(var2, var1, var3);
       return this.fix(var1, var3, var5, var4, var6);
    }
 
@@ -46,15 +43,6 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
             }).getValue();
          };
       });
-   }
-
-   private static <A, B> TypeRewriteRule typePatcher(Type<A> var0, Type<B> var1) {
-      RewriteResult var2 = RewriteResult.create(View.create("Patcher", var0, var1, (var0x) -> {
-         return (var0) -> {
-            throw new UnsupportedOperationException();
-         };
-      }), new BitSet());
-      return TypeRewriteRule.everywhere(TypeRewriteRule.ifSame(var0, var2), PointFreeRule.nop(), true, true);
    }
 
    protected abstract <T> Dynamic<T> fix(Dynamic<T> var1);

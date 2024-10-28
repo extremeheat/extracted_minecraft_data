@@ -6,9 +6,9 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
-public interface StrictQueue<T, F> {
+public interface StrictQueue<T extends Runnable> {
    @Nullable
-   F pop();
+   Runnable pop();
 
    boolean push(T var1);
 
@@ -16,7 +16,7 @@ public interface StrictQueue<T, F> {
 
    int size();
 
-   public static final class FixedPriorityQueue implements StrictQueue<IntRunnable, Runnable> {
+   public static final class FixedPriorityQueue implements StrictQueue<RunnableWithPriority> {
       private final Queue<Runnable>[] queues;
       private final AtomicInteger size = new AtomicInteger();
 
@@ -47,7 +47,7 @@ public interface StrictQueue<T, F> {
          return null;
       }
 
-      public boolean push(IntRunnable var1) {
+      public boolean push(RunnableWithPriority var1) {
          int var2 = var1.priority;
          if (var2 < this.queues.length && var2 >= 0) {
             this.queues[var2].add(var1);
@@ -65,19 +65,12 @@ public interface StrictQueue<T, F> {
       public int size() {
          return this.size.get();
       }
-
-      // $FF: synthetic method
-      @Nullable
-      public Object pop() {
-         return this.pop();
-      }
    }
 
-   public static final class IntRunnable implements Runnable {
+   public static record RunnableWithPriority(int priority, Runnable task) implements Runnable {
       final int priority;
-      private final Runnable task;
 
-      public IntRunnable(int var1, Runnable var2) {
+      public RunnableWithPriority(int var1, Runnable var2) {
          super();
          this.priority = var1;
          this.task = var2;
@@ -87,25 +80,29 @@ public interface StrictQueue<T, F> {
          this.task.run();
       }
 
-      public int getPriority() {
+      public int priority() {
          return this.priority;
+      }
+
+      public Runnable task() {
+         return this.task;
       }
    }
 
-   public static final class QueueStrictQueue<T> implements StrictQueue<T, T> {
-      private final Queue<T> queue;
+   public static final class QueueStrictQueue implements StrictQueue<Runnable> {
+      private final Queue<Runnable> queue;
 
-      public QueueStrictQueue(Queue<T> var1) {
+      public QueueStrictQueue(Queue<Runnable> var1) {
          super();
          this.queue = var1;
       }
 
       @Nullable
-      public T pop() {
-         return this.queue.poll();
+      public Runnable pop() {
+         return (Runnable)this.queue.poll();
       }
 
-      public boolean push(T var1) {
+      public boolean push(Runnable var1) {
          return this.queue.add(var1);
       }
 

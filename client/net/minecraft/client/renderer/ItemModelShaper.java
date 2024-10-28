@@ -1,56 +1,41 @@
 package net.minecraft.client.renderer;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.world.item.Item;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemModelShaper {
-   public final Int2ObjectMap<ModelResourceLocation> shapes = new Int2ObjectOpenHashMap(256);
-   private final Int2ObjectMap<BakedModel> shapesCache = new Int2ObjectOpenHashMap(256);
-   private final ModelManager modelManager;
+   private final Map<ResourceLocation, BakedModel> modelToBakedModel = new HashMap();
+   private final Supplier<BakedModel> missingModel;
+   private final Function<ResourceLocation, BakedModel> modelGetter;
 
    public ItemModelShaper(ModelManager var1) {
       super();
-      this.modelManager = var1;
+      Objects.requireNonNull(var1);
+      this.missingModel = var1::getMissingModel;
+      this.modelGetter = (var1x) -> {
+         return var1.getModel(ModelResourceLocation.inventory(var1x));
+      };
    }
 
    public BakedModel getItemModel(ItemStack var1) {
-      BakedModel var2 = this.getItemModel(var1.getItem());
-      return var2 == null ? this.modelManager.getMissingModel() : var2;
+      ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
+      return var2 == null ? (BakedModel)this.missingModel.get() : this.getItemModel(var2);
    }
 
-   @Nullable
-   public BakedModel getItemModel(Item var1) {
-      return (BakedModel)this.shapesCache.get(getIndex(var1));
+   public BakedModel getItemModel(ResourceLocation var1) {
+      return (BakedModel)this.modelToBakedModel.computeIfAbsent(var1, this.modelGetter);
    }
 
-   private static int getIndex(Item var0) {
-      return Item.getId(var0);
-   }
-
-   public void register(Item var1, ModelResourceLocation var2) {
-      this.shapes.put(getIndex(var1), var2);
-   }
-
-   public ModelManager getModelManager() {
-      return this.modelManager;
-   }
-
-   public void rebuildCache() {
-      this.shapesCache.clear();
-      ObjectIterator var1 = this.shapes.entrySet().iterator();
-
-      while(var1.hasNext()) {
-         Map.Entry var2 = (Map.Entry)var1.next();
-         this.shapesCache.put((Integer)var2.getKey(), this.modelManager.getModel((ModelResourceLocation)var2.getValue()));
-      }
-
+   public void invalidateCache() {
+      this.modelToBakedModel.clear();
    }
 }

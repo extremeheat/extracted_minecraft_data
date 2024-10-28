@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.client.Minecraft;
@@ -34,11 +34,11 @@ public class CubeMap {
       Tesselator var5 = Tesselator.getInstance();
       Matrix4f var6 = (new Matrix4f()).setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
       RenderSystem.backupProjectionMatrix();
-      RenderSystem.setProjectionMatrix(var6, VertexSorting.DISTANCE_TO_ORIGIN);
+      RenderSystem.setProjectionMatrix(var6, ProjectionType.PERSPECTIVE);
       Matrix4fStack var7 = RenderSystem.getModelViewStack();
       var7.pushMatrix();
       var7.rotationX(3.1415927F);
-      RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+      RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
       RenderSystem.enableBlend();
       RenderSystem.disableCull();
       RenderSystem.depthMask(false);
@@ -52,7 +52,6 @@ public class CubeMap {
          var7.translate(var10, var11, 0.0F);
          var7.rotateX(var2 * 0.017453292F);
          var7.rotateY(var3 * 0.017453292F);
-         RenderSystem.applyModelViewMatrix();
 
          for(int var13 = 0; var13 < 6; ++var13) {
             RenderSystem.setShaderTexture(0, this.images[var13]);
@@ -110,7 +109,6 @@ public class CubeMap {
       RenderSystem.colorMask(true, true, true, true);
       RenderSystem.restoreProjectionMatrix();
       var7.popMatrix();
-      RenderSystem.applyModelViewMatrix();
       RenderSystem.depthMask(true);
       RenderSystem.enableCull();
       RenderSystem.enableDepthTest();

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import java.util.Optional;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 
 public class OutlineBufferSource implements MultiBufferSource {
    private final MultiBufferSource.BufferSource bufferSource;
@@ -50,7 +50,7 @@ public class OutlineBufferSource implements MultiBufferSource {
 
    static record EntityOutlineGenerator(VertexConsumer delegate, int color) implements VertexConsumer {
       public EntityOutlineGenerator(VertexConsumer var1, int var2, int var3, int var4, int var5) {
-         this(var1, FastColor.ARGB32.color(var5, var2, var3, var4));
+         this(var1, ARGB.color(var5, var2, var3, var4));
       }
 
       private EntityOutlineGenerator(VertexConsumer var1, int var2) {

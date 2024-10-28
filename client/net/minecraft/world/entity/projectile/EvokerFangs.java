@@ -130,10 +130,10 @@ public class EvokerFangs extends Entity implements TraceableEntity {
             }
 
             DamageSource var3 = this.damageSources().indirectMagic(this, var2);
-            if (var1.hurt(var3, 6.0F)) {
-               Level var5 = this.level();
-               if (var5 instanceof ServerLevel) {
-                  ServerLevel var4 = (ServerLevel)var5;
+            Level var5 = this.level();
+            if (var5 instanceof ServerLevel) {
+               ServerLevel var4 = (ServerLevel)var5;
+               if (var1.hurtServer(var4, var3, 6.0F)) {
                   EnchantmentHelper.doPostAttackEffects(var4, var1, var3);
                }
             }
@@ -160,6 +160,10 @@ public class EvokerFangs extends Entity implements TraceableEntity {
          int var2 = this.lifeTicks - 2;
          return var2 <= 0 ? 1.0F : 1.0F - ((float)var2 - var1) / 20.0F;
       }
+   }
+
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
    }
 
    // $FF: synthetic method

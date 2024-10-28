@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Arrays;
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.Holder;
@@ -20,6 +18,7 @@ import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class JigsawBlockEntity extends BlockEntity {
    public static final String TARGET = "target";
@@ -117,9 +116,7 @@ public class JigsawBlockEntity extends BlockEntity {
       this.target = ResourceLocation.parse(var1.getString("target"));
       this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, ResourceLocation.parse(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
-      this.joint = (JointType)JigsawBlockEntity.JointType.byName(var1.getString("joint")).orElseGet(() -> {
-         return JigsawBlock.getFrontFacing(this.getBlockState()).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
-      });
+      this.joint = StructureTemplate.getJointType(var1, this.getBlockState());
       this.placementPriority = var1.getInt("placement_priority");
       this.selectionPriority = var1.getInt("selection_priority");
    }
@@ -134,8 +131,8 @@ public class JigsawBlockEntity extends BlockEntity {
 
    public void generate(ServerLevel var1, int var2, boolean var3) {
       BlockPos var4 = this.getBlockPos().relative(((FrontAndTop)this.getBlockState().getValue(JigsawBlock.ORIENTATION)).front());
-      Registry var5 = var1.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
-      Holder.Reference var6 = var5.getHolderOrThrow(this.pool);
+      Registry var5 = var1.registryAccess().lookupOrThrow(Registries.TEMPLATE_POOL);
+      Holder.Reference var6 = var5.getOrThrow(this.pool);
       JigsawPlacement.generateJigsaw(var1, var6, this.target, var2, var4, var3);
    }
 
@@ -148,6 +145,7 @@ public class JigsawBlockEntity extends BlockEntity {
       ROLLABLE("rollable"),
       ALIGNED("aligned");
 
+      public static final StringRepresentable.EnumCodec<JointType> CODEC = StringRepresentable.fromEnum(JointType::values);
       private final String name;
 
       private JointType(final String var3) {
@@ -156,12 +154,6 @@ public class JigsawBlockEntity extends BlockEntity {
 
       public String getSerializedName() {
          return this.name;
-      }
-
-      public static Optional<JointType> byName(String var0) {
-         return Arrays.stream(values()).filter((var1) -> {
-            return var1.getSerializedName().equals(var0);
-         }).findFirst();
       }
 
       public Component getTranslatedName() {

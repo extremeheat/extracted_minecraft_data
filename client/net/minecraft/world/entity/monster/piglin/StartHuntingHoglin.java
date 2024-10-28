@@ -18,9 +18,9 @@ public class StartHuntingHoglin {
                   return var0x.stream().anyMatch(StartHuntingHoglin::hasHuntedRecently);
                }).isPresent()) {
                   Hoglin var7 = (Hoglin)var0.get(var1);
-                  PiglinAi.setAngerTarget(var4x, var7);
+                  PiglinAi.setAngerTarget(var3x, var4x, var7);
                   PiglinAi.dontKillAnyMoreHoglinsForAWhile(var4x);
-                  PiglinAi.broadcastAngerTarget(var4x, var7);
+                  PiglinAi.broadcastAngerTarget(var3x, var4x, var7);
                   var0.tryGet(var4).ifPresent((var0x) -> {
                      var0x.forEach(PiglinAi::dontKillAnyMoreHoglinsForAWhile);
                   });

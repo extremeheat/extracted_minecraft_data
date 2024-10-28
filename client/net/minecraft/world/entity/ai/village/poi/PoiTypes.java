@@ -59,7 +59,7 @@ public class PoiTypes {
    private static PoiType register(Registry<PoiType> var0, ResourceKey<PoiType> var1, Set<BlockState> var2, int var3, int var4) {
       PoiType var5 = new PoiType(var2, var3, var4);
       Registry.register(var0, (ResourceKey)var1, var5);
-      registerBlockStates(var0.getHolderOrThrow(var1), var2);
+      registerBlockStates(var0.getOrThrow(var1), var2);
       return var5;
    }
 

@@ -19,10 +19,13 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.minecraft.world.level.Level;
 
 public class SessionSearchTrees {
    private static final Key RECIPE_COLLECTIONS = new Key();
@@ -62,25 +65,29 @@ public class SessionSearchTrees {
       });
    }
 
-   public void updateRecipes(ClientRecipeBook var1, RegistryAccess.Frozen var2) {
+   public void updateRecipes(ClientRecipeBook var1, Level var2) {
       this.register(RECIPE_COLLECTIONS, () -> {
          List var3 = var1.getCollections();
-         Registry var4 = var2.registryOrThrow(Registries.ITEM);
-         Item.TooltipContext var5 = Item.TooltipContext.of((HolderLookup.Provider)var2);
-         TooltipFlag.Default var6 = TooltipFlag.Default.NORMAL;
-         CompletableFuture var7 = this.recipeSearch;
+         RegistryAccess var4 = var2.registryAccess();
+         Registry var5 = var4.lookupOrThrow(Registries.ITEM);
+         Item.TooltipContext var6 = Item.TooltipContext.of((HolderLookup.Provider)var4);
+         ContextMap var7 = SlotDisplayContext.fromLevel(var2);
+         TooltipFlag.Default var8 = TooltipFlag.Default.NORMAL;
+         CompletableFuture var9 = this.recipeSearch;
          this.recipeSearch = CompletableFuture.supplyAsync(() -> {
             return new FullTextSearchTree((var3x) -> {
-               return getTooltipLines(var3x.getRecipes().stream().map((var1) -> {
-                  return var1.value().getResultItem(var2);
-               }), var5, var6);
-            }, (var2x) -> {
-               return var2x.getRecipes().stream().map((var2xx) -> {
-                  return var4.getKey(var2xx.value().getResultItem(var2).getItem());
+               return getTooltipLines(var3x.getRecipes().stream().flatMap((var1) -> {
+                  return var1.resultItems(var7).stream();
+               }), var6, var8);
+            }, (var2) -> {
+               return var2.getRecipes().stream().flatMap((var1) -> {
+                  return var1.resultItems(var7).stream();
+               }).map((var1) -> {
+                  return var5.getKey(var1.getItem());
                });
             }, var3);
          }, Util.backgroundExecutor());
-         var7.cancel(true);
+         var9.cancel(true);
       });
    }
 

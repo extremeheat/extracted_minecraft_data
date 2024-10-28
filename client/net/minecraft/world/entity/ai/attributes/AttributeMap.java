@@ -126,6 +126,16 @@ public class AttributeMap {
       });
    }
 
+   public void assignPermanentModifiers(AttributeMap var1) {
+      var1.attributes.values().forEach((var1x) -> {
+         AttributeInstance var2 = this.getInstance(var1x.getAttribute());
+         if (var2 != null) {
+            var2.addPermanentModifiers(var1x.getPermanentModifiers());
+         }
+
+      });
+   }
+
    public ListTag save() {
       ListTag var1 = new ListTag();
       Iterator var2 = this.attributes.values().iterator();
@@ -144,7 +154,7 @@ public class AttributeMap {
          String var4 = var3.getString("id");
          ResourceLocation var5 = ResourceLocation.tryParse(var4);
          if (var5 != null) {
-            Util.ifElse(BuiltInRegistries.ATTRIBUTE.getHolder(var5), (var2x) -> {
+            Util.ifElse(BuiltInRegistries.ATTRIBUTE.get(var5), (var2x) -> {
                AttributeInstance var3x = this.getInstance(var2x);
                if (var3x != null) {
                   var3x.load(var3);

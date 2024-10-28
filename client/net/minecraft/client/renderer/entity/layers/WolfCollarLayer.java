@@ -6,22 +6,24 @@ import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.item.DyeColor;
 
-public class WolfCollarLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
+public class WolfCollarLayer extends RenderLayer<WolfRenderState, WolfModel> {
    private static final ResourceLocation WOLF_COLLAR_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wolf/wolf_collar.png");
 
-   public WolfCollarLayer(RenderLayerParent<Wolf, WolfModel<Wolf>> var1) {
+   public WolfCollarLayer(RenderLayerParent<WolfRenderState, WolfModel> var1) {
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, Wolf var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if (var4.isTame() && !var4.isInvisible()) {
-         int var11 = var4.getCollarColor().getTextureDiffuseColor();
-         VertexConsumer var12 = var2.getBuffer(RenderType.entityCutoutNoCull(WOLF_COLLAR_LOCATION));
-         ((WolfModel)this.getParentModel()).renderToBuffer(var1, var12, var3, OverlayTexture.NO_OVERLAY, var11);
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, WolfRenderState var4, float var5, float var6) {
+      DyeColor var7 = var4.collarColor;
+      if (var7 != null && !var4.isInvisible) {
+         int var8 = var7.getTextureDiffuseColor();
+         VertexConsumer var9 = var2.getBuffer(RenderType.entityCutoutNoCull(WOLF_COLLAR_LOCATION));
+         ((WolfModel)this.getParentModel()).renderToBuffer(var1, var9, var3, OverlayTexture.NO_OVERLAY, var8);
       }
    }
 }

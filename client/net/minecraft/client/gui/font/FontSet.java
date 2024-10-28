@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
+import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -16,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.SpecialGlyphs;
@@ -24,8 +26,10 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import org.slf4j.Logger;
 
 public class FontSet implements AutoCloseable {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final RandomSource RANDOM = RandomSource.create();
    private static final float LARGE_FORWARD_ADVANCE = 32.0F;
    private final TextureManager textureManager;
@@ -46,6 +50,8 @@ public class FontSet implements AutoCloseable {
    });
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
+   private final IntFunction<GlyphInfoFilter> glyphInfoGetter = this::computeGlyphInfo;
+   private final IntFunction<BakedGlyph> glyphGetter = this::computeBakedGlyph;
 
    public FontSet(TextureManager var1, ResourceLocation var2) {
       super();
@@ -161,7 +167,7 @@ public class FontSet implements AutoCloseable {
    }
 
    public GlyphInfo getGlyphInfo(int var1, boolean var2) {
-      return ((GlyphInfoFilter)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo)).select(var2);
+      return ((GlyphInfoFilter)this.glyphInfos.computeIfAbsent(var1, this.glyphInfoGetter)).select(var2);
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
@@ -170,6 +176,7 @@ public class FontSet implements AutoCloseable {
       GlyphInfo var4;
       do {
          if (!var2.hasNext()) {
+            LOGGER.warn("Couldn't find glyph for character {} (\\u{})", Character.toString(var1), String.format("%04x", var1));
             return this.missingGlyph;
          }
 
@@ -181,7 +188,7 @@ public class FontSet implements AutoCloseable {
    }
 
    public BakedGlyph getGlyph(int var1) {
-      return (BakedGlyph)this.glyphs.computeIfAbsent(var1, this::computeBakedGlyph);
+      return (BakedGlyph)this.glyphs.computeIfAbsent(var1, this.glyphGetter);
    }
 
    private BakedGlyph stitch(SheetGlyphInfo var1) {

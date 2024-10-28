@@ -12,6 +12,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
@@ -36,32 +37,30 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    private final NonNullList<ItemStack> items;
    private final int[] cookingProgress;
    private final int[] cookingTime;
-   private final RecipeManager.CachedCheck<SingleRecipeInput, CampfireCookingRecipe> quickCheck;
 
    public CampfireBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CAMPFIRE, var1, var2);
       this.items = NonNullList.withSize(4, ItemStack.EMPTY);
       this.cookingProgress = new int[4];
       this.cookingTime = new int[4];
-      this.quickCheck = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);
    }
 
-   public static void cookTick(Level var0, BlockPos var1, BlockState var2, CampfireBlockEntity var3) {
-      boolean var4 = false;
+   public static void cookTick(ServerLevel var0, BlockPos var1, BlockState var2, CampfireBlockEntity var3, RecipeManager.CachedCheck<SingleRecipeInput, CampfireCookingRecipe> var4) {
+      boolean var5 = false;
 
-      for(int var5 = 0; var5 < var3.items.size(); ++var5) {
-         ItemStack var6 = (ItemStack)var3.items.get(var5);
-         if (!var6.isEmpty()) {
-            var4 = true;
-            int var10002 = var3.cookingProgress[var5]++;
-            if (var3.cookingProgress[var5] >= var3.cookingTime[var5]) {
-               SingleRecipeInput var7 = new SingleRecipeInput(var6);
-               ItemStack var8 = (ItemStack)var3.quickCheck.getRecipeFor(var7, var0).map((var2x) -> {
-                  return ((CampfireCookingRecipe)var2x.value()).assemble(var7, var0.registryAccess());
-               }).orElse(var6);
-               if (var8.isItemEnabled(var0.enabledFeatures())) {
-                  Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var8);
-                  var3.items.set(var5, ItemStack.EMPTY);
+      for(int var6 = 0; var6 < var3.items.size(); ++var6) {
+         ItemStack var7 = (ItemStack)var3.items.get(var6);
+         if (!var7.isEmpty()) {
+            var5 = true;
+            int var10002 = var3.cookingProgress[var6]++;
+            if (var3.cookingProgress[var6] >= var3.cookingTime[var6]) {
+               SingleRecipeInput var8 = new SingleRecipeInput(var7);
+               ItemStack var9 = (ItemStack)var4.getRecipeFor(var8, var0).map((var2x) -> {
+                  return ((CampfireCookingRecipe)var2x.value()).assemble(var8, var0.registryAccess());
+               }).orElse(var7);
+               if (var9.isItemEnabled(var0.enabledFeatures())) {
+                  Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var9);
+                  var3.items.set(var6, ItemStack.EMPTY);
                   var0.sendBlockUpdated(var1, var2, var2, 3);
                   var0.gameEvent(GameEvent.BLOCK_CHANGE, var1, GameEvent.Context.of(var2));
                }
@@ -69,7 +68,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
          }
       }
 
-      if (var4) {
+      if (var5) {
          setChanged(var0, var1, var2);
       }
 
@@ -156,18 +155,19 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       return var2;
    }
 
-   public Optional<RecipeHolder<CampfireCookingRecipe>> getCookableRecipe(ItemStack var1) {
-      return this.items.stream().noneMatch(ItemStack::isEmpty) ? Optional.empty() : this.quickCheck.getRecipeFor(new SingleRecipeInput(var1), this.level);
-   }
-
-   public boolean placeFood(@Nullable LivingEntity var1, ItemStack var2, int var3) {
+   public boolean placeFood(ServerLevel var1, @Nullable LivingEntity var2, ItemStack var3) {
       for(int var4 = 0; var4 < this.items.size(); ++var4) {
          ItemStack var5 = (ItemStack)this.items.get(var4);
          if (var5.isEmpty()) {
-            this.cookingTime[var4] = var3;
+            Optional var6 = var1.recipeAccess().getRecipeFor(RecipeType.CAMPFIRE_COOKING, new SingleRecipeInput(var3), var1);
+            if (var6.isEmpty()) {
+               return false;
+            }
+
+            this.cookingTime[var4] = ((CampfireCookingRecipe)((RecipeHolder)var6.get()).value()).cookingTime();
             this.cookingProgress[var4] = 0;
-            this.items.set(var4, var2.consumeAndReturn(1, var1));
-            this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(var1, this.getBlockState()));
+            this.items.set(var4, var3.consumeAndReturn(1, var2));
+            var1.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(var2, this.getBlockState()));
             this.markUpdated();
             return true;
          }

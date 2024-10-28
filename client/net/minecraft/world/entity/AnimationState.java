@@ -1,20 +1,17 @@
 package net.minecraft.world.entity;
 
 import java.util.function.Consumer;
-import net.minecraft.util.Mth;
 
 public class AnimationState {
-   private static final long STOPPED = 9223372036854775807L;
-   private long lastTime = 9223372036854775807L;
-   private long accumulatedTime;
+   private static final int STOPPED = -2147483648;
+   private int startTick = -2147483648;
 
    public AnimationState() {
       super();
    }
 
    public void start(int var1) {
-      this.lastTime = (long)var1 * 1000L / 20L;
-      this.accumulatedTime = 0L;
+      this.startTick = var1;
    }
 
    public void startIfStopped(int var1) {
@@ -34,7 +31,7 @@ public class AnimationState {
    }
 
    public void stop() {
-      this.lastTime = 9223372036854775807L;
+      this.startTick = -2147483648;
    }
 
    public void ifStarted(Consumer<AnimationState> var1) {
@@ -44,25 +41,22 @@ public class AnimationState {
 
    }
 
-   public void updateTime(float var1, float var2) {
-      if (this.isStarted()) {
-         long var3 = Mth.lfloor((double)(var1 * 1000.0F / 20.0F));
-         this.accumulatedTime += (long)((float)(var3 - this.lastTime) * var2);
-         this.lastTime = var3;
-      }
-   }
-
    public void fastForward(int var1, float var2) {
       if (this.isStarted()) {
-         this.accumulatedTime += (long)((float)(var1 * 1000) * var2) / 20L;
+         this.startTick -= (int)((float)var1 * var2);
       }
    }
 
-   public long getAccumulatedTime() {
-      return this.accumulatedTime;
+   public long getTimeInMillis(float var1) {
+      float var2 = var1 - (float)this.startTick;
+      return (long)(var2 * 50.0F);
    }
 
    public boolean isStarted() {
-      return this.lastTime != 9223372036854775807L;
+      return this.startTick != -2147483648;
+   }
+
+   public void copyFrom(AnimationState var1) {
+      this.startTick = var1.startTick;
    }
 }

@@ -6,13 +6,8 @@ import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Calendar;
+import net.minecraft.client.model.ChestModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
@@ -30,18 +25,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T> {
-   private static final String BOTTOM = "bottom";
-   private static final String LID = "lid";
-   private static final String LOCK = "lock";
-   private final ModelPart lid;
-   private final ModelPart bottom;
-   private final ModelPart lock;
-   private final ModelPart doubleLeftLid;
-   private final ModelPart doubleLeftBottom;
-   private final ModelPart doubleLeftLock;
-   private final ModelPart doubleRightLid;
-   private final ModelPart doubleRightBottom;
-   private final ModelPart doubleRightLock;
+   private final ChestModel singleModel;
+   private final ChestModel doubleLeftModel;
+   private final ChestModel doubleRightModel;
    private boolean xmasTextures;
 
    public ChestRenderer(BlockEntityRendererProvider.Context var1) {
@@ -51,45 +37,9 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
          this.xmasTextures = true;
       }
 
-      ModelPart var3 = var1.bakeLayer(ModelLayers.CHEST);
-      this.bottom = var3.getChild("bottom");
-      this.lid = var3.getChild("lid");
-      this.lock = var3.getChild("lock");
-      ModelPart var4 = var1.bakeLayer(ModelLayers.DOUBLE_CHEST_LEFT);
-      this.doubleLeftBottom = var4.getChild("bottom");
-      this.doubleLeftLid = var4.getChild("lid");
-      this.doubleLeftLock = var4.getChild("lock");
-      ModelPart var5 = var1.bakeLayer(ModelLayers.DOUBLE_CHEST_RIGHT);
-      this.doubleRightBottom = var5.getChild("bottom");
-      this.doubleRightLid = var5.getChild("lid");
-      this.doubleRightLock = var5.getChild("lock");
-   }
-
-   public static LayerDefinition createSingleBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 14.0F, 10.0F, 14.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 14.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -2.0F, 14.0F, 2.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      return LayerDefinition.create(var0, 64, 64);
-   }
-
-   public static LayerDefinition createDoubleBodyRightLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      return LayerDefinition.create(var0, 64, 64);
-   }
-
-   public static LayerDefinition createDoubleBodyLeftLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 19).addBox(0.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      return LayerDefinition.create(var0, 64, 64);
+      this.singleModel = new ChestModel(var1.bakeLayer(ModelLayers.CHEST));
+      this.doubleLeftModel = new ChestModel(var1.bakeLayer(ModelLayers.DOUBLE_CHEST_LEFT));
+      this.doubleRightModel = new ChestModel(var1.bakeLayer(ModelLayers.DOUBLE_CHEST_RIGHT));
    }
 
    public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
@@ -120,23 +70,20 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
          VertexConsumer var19 = var18.buffer(var4, RenderType::entityCutout);
          if (var13) {
             if (var10 == ChestType.LEFT) {
-               this.render(var3, var19, this.doubleLeftLid, this.doubleLeftLock, this.doubleLeftBottom, var16, var17, var6);
+               this.render(var3, var19, this.doubleLeftModel, var16, var17, var6);
             } else {
-               this.render(var3, var19, this.doubleRightLid, this.doubleRightLock, this.doubleRightBottom, var16, var17, var6);
+               this.render(var3, var19, this.doubleRightModel, var16, var17, var6);
             }
          } else {
-            this.render(var3, var19, this.lid, this.lock, this.bottom, var16, var17, var6);
+            this.render(var3, var19, this.singleModel, var16, var17, var6);
          }
 
          var3.popPose();
       }
    }
 
-   private void render(PoseStack var1, VertexConsumer var2, ModelPart var3, ModelPart var4, ModelPart var5, float var6, int var7, int var8) {
-      var3.xRot = -(var6 * 1.5707964F);
-      var4.xRot = var3.xRot;
-      var3.render(var1, var2, var7, var8);
-      var4.render(var1, var2, var7, var8);
-      var5.render(var1, var2, var7, var8);
+   private void render(PoseStack var1, VertexConsumer var2, ChestModel var3, float var4, int var5, int var6) {
+      var3.setupAnim(var4);
+      var3.renderToBuffer(var1, var2, var5, var6);
    }
 }

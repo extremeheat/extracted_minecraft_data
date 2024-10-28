@@ -15,15 +15,16 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
@@ -60,6 +62,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
+      this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Creaking.class, 8.0F, 1.0, 1.2));
       this.goalSelector.addGoal(2, new Raider.HoldGroundAttackGoal(this, 10.0F));
       this.goalSelector.addGoal(3, new RangedCrossbowAttackGoal(this, 1.0, 8.0F));
       this.goalSelector.addGoal(8, new RandomStrollGoal(this, 0.6));
@@ -126,7 +129,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
       this.populateDefaultEquipmentEnchantments(var1, var5, var2);
@@ -168,17 +171,17 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return this.inventory;
    }
 
-   protected void pickUpItem(ItemEntity var1) {
-      ItemStack var2 = var1.getItem();
-      if (var2.getItem() instanceof BannerItem) {
-         super.pickUpItem(var1);
-      } else if (this.wantsItem(var2)) {
-         this.onItemPickup(var1);
-         ItemStack var3 = this.inventory.addItem(var2);
-         if (var3.isEmpty()) {
-            var1.discard();
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
+      ItemStack var3 = var2.getItem();
+      if (var3.getItem() instanceof BannerItem) {
+         super.pickUpItem(var1, var2);
+      } else if (this.wantsItem(var3)) {
+         this.onItemPickup(var2);
+         ItemStack var4 = this.inventory.addItem(var3);
+         if (var4.isEmpty()) {
+            var2.discard();
          } else {
-            var2.setCount(var3.getCount());
+            var3.setCount(var4.getCount());
          }
       }
 

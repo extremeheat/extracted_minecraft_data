@@ -77,11 +77,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    @Nullable
    protected final Screen postDisconnectScreen;
    protected boolean isTransferring;
-   /** @deprecated */
-   @Deprecated(
-      forRemoval = true
-   )
-   protected final boolean strictErrorHandling;
    private final List<DeferredPacket> deferredPackets = new ArrayList();
    protected final Map<ResourceLocation, byte[]> serverCookies;
    protected Map<String, String> customReportDetails;
@@ -96,19 +91,15 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.telemetryManager = var3.telemetryManager();
       this.postDisconnectScreen = var3.postDisconnectScreen();
       this.serverCookies = var3.serverCookies();
-      this.strictErrorHandling = var3.strictErrorHandling();
       this.customReportDetails = var3.customReportDetails();
       this.serverLinks = var3.serverLinks();
    }
 
    public void onPacketError(Packet var1, Exception var2) {
-      LOGGER.error("Failed to handle packet {}", var1, var2);
+      LOGGER.error("Failed to handle packet {}, disconnecting", var1, var2);
       Optional var3 = this.storeDisconnectionReport(var1, var2);
       Optional var4 = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT).map(ServerLinks.Entry::link);
-      if (this.strictErrorHandling) {
-         this.connection.disconnect(new DisconnectionDetails(Component.translatable("disconnect.packetError"), var3, var4));
-      }
-
+      this.connection.disconnect(new DisconnectionDetails(Component.translatable("disconnect.packetError"), var3, var4));
    }
 
    public DisconnectionDetails createDisconnectionInfo(Component var1, Throwable var2) {
@@ -287,6 +278,9 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
+      var2.setDetail("Is Local", () -> {
+         return String.valueOf(this.connection.isMemoryConnection());
+      });
       var2.setDetail("Server type", () -> {
          return this.serverData != null ? this.serverData.type().toString() : "<none>";
       });

@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
 public class CompassItem extends Item {
+   private static final Component LODESTONE_COMPASS_NAME = Component.translatable("item.minecraft.lodestone_compass");
+
    public CompassItem(Item.Properties var1) {
       super(var1);
    }
@@ -65,11 +68,11 @@ public class CompassItem extends Item {
             }
          }
 
-         return InteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
-   public String getDescriptionId(ItemStack var1) {
-      return var1.has(DataComponents.LODESTONE_TRACKER) ? "item.minecraft.lodestone_compass" : super.getDescriptionId(var1);
+   public Component getName(ItemStack var1) {
+      return var1.has(DataComponents.LODESTONE_TRACKER) ? LODESTONE_COMPASS_NAME : super.getName(var1);
    }
 }

@@ -19,47 +19,25 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.redstone.NeighborUpdater;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 
-public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
+public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, ScheduledTickAccess {
    default long dayTime() {
       return this.getLevelData().getDayTime();
    }
 
    long nextSubTickCount();
 
-   LevelTickAccess<Block> getBlockTicks();
-
-   private <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
+   default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
       return new ScheduledTick(var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
    }
 
-   private <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
+   default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
       return new ScheduledTick(var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
-   }
-
-   default void scheduleTick(BlockPos var1, Block var2, int var3, TickPriority var4) {
-      this.getBlockTicks().schedule(this.createTick(var1, var2, var3, var4));
-   }
-
-   default void scheduleTick(BlockPos var1, Block var2, int var3) {
-      this.getBlockTicks().schedule(this.createTick(var1, var2, var3));
-   }
-
-   LevelTickAccess<Fluid> getFluidTicks();
-
-   default void scheduleTick(BlockPos var1, Fluid var2, int var3, TickPriority var4) {
-      this.getFluidTicks().schedule(this.createTick(var1, var2, var3, var4));
-   }
-
-   default void scheduleTick(BlockPos var1, Fluid var2, int var3) {
-      this.getFluidTicks().schedule(this.createTick(var1, var2, var3));
    }
 
    LevelData getLevelData();
@@ -84,7 +62,7 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    default void blockUpdated(BlockPos var1, Block var2) {
    }
 
-   default void neighborShapeChanged(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this, var1, var2, var3, var4, var5, var6 - 1);
    }
 
@@ -117,6 +95,6 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
    }
 
    default void gameEvent(ResourceKey<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
-      this.gameEvent((Holder)this.registryAccess().registryOrThrow(Registries.GAME_EVENT).getHolderOrThrow(var1), (BlockPos)var2, (GameEvent.Context)var3);
+      this.gameEvent((Holder)this.registryAccess().lookupOrThrow(Registries.GAME_EVENT).getOrThrow(var1), (BlockPos)var2, (GameEvent.Context)var3);
    }
 }

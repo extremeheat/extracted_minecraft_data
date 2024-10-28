@@ -1,6 +1,5 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,10 +7,10 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -32,12 +31,12 @@ public class CopyNameFunction extends LootItemConditionalFunction {
       return LootItemFunctions.COPY_NAME;
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(this.source.param);
+   public Set<ContextKey<?>> getReferencedContextParams() {
+      return Set.of(this.source.param);
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      Object var3 = var2.getParamOrNull(this.source.param);
+      Object var3 = var2.getOptionalParameter(this.source.param);
       if (var3 instanceof Nameable var4) {
          var1.set(DataComponents.CUSTOM_NAME, var4.getCustomName());
       }
@@ -59,9 +58,9 @@ public class CopyNameFunction extends LootItemConditionalFunction {
 
       public static final Codec<NameSource> CODEC = StringRepresentable.fromEnum(NameSource::values);
       private final String name;
-      final LootContextParam<?> param;
+      final ContextKey<?> param;
 
-      private NameSource(final String var3, final LootContextParam var4) {
+      private NameSource(final String var3, final ContextKey var4) {
          this.name = var3;
          this.param = var4;
       }

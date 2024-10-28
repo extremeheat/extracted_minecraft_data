@@ -1,18 +1,20 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.BossEvent;
 
 public class BossHealthOverlay {
@@ -32,28 +34,29 @@ public class BossHealthOverlay {
 
    public void render(GuiGraphics var1) {
       if (!this.events.isEmpty()) {
-         this.minecraft.getProfiler().push("bossHealth");
-         int var2 = var1.guiWidth();
-         int var3 = 12;
-         Iterator var4 = this.events.values().iterator();
+         ProfilerFiller var2 = Profiler.get();
+         var2.push("bossHealth");
+         int var3 = var1.guiWidth();
+         int var4 = 12;
+         Iterator var5 = this.events.values().iterator();
 
-         while(var4.hasNext()) {
-            LerpingBossEvent var5 = (LerpingBossEvent)var4.next();
-            int var6 = var2 / 2 - 91;
-            this.drawBar(var1, var6, var3, var5);
-            Component var8 = var5.getName();
-            int var9 = this.minecraft.font.width((FormattedText)var8);
-            int var10 = var2 / 2 - var9 / 2;
-            int var11 = var3 - 9;
-            var1.drawString(this.minecraft.font, var8, var10, var11, 16777215);
+         while(var5.hasNext()) {
+            LerpingBossEvent var6 = (LerpingBossEvent)var5.next();
+            int var7 = var3 / 2 - 91;
+            this.drawBar(var1, var7, var4, var6);
+            Component var9 = var6.getName();
+            int var10 = this.minecraft.font.width((FormattedText)var9);
+            int var11 = var3 / 2 - var10 / 2;
+            int var12 = var4 - 9;
+            var1.drawString(this.minecraft.font, var9, var11, var12, 16777215);
             Objects.requireNonNull(this.minecraft.font);
-            var3 += 10 + 9;
-            if (var3 >= var1.guiHeight() / 3) {
+            var4 += 10 + 9;
+            if (var4 >= var1.guiHeight() / 3) {
                break;
             }
          }
 
-         this.minecraft.getProfiler().pop();
+         var2.pop();
       }
    }
 
@@ -67,13 +70,11 @@ public class BossHealthOverlay {
    }
 
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
-      RenderSystem.enableBlend();
-      var1.blitSprite(var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
+      var1.blitSprite(RenderType::guiTextured, var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
-         var1.blitSprite(var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
+         var1.blitSprite(RenderType::guiTextured, var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
       }
 
-      RenderSystem.disableBlend();
    }
 
    public void update(ClientboundBossEventPacket var1) {

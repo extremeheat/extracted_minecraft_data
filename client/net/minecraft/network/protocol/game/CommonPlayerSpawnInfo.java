@@ -12,12 +12,12 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
-public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, ResourceKey<Level> dimension, long seed, GameType gameType, @Nullable GameType previousGameType, boolean isDebug, boolean isFlat, Optional<GlobalPos> lastDeathLocation, int portalCooldown) {
+public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, ResourceKey<Level> dimension, long seed, GameType gameType, @Nullable GameType previousGameType, boolean isDebug, boolean isFlat, Optional<GlobalPos> lastDeathLocation, int portalCooldown, int seaLevel) {
    public CommonPlayerSpawnInfo(RegistryFriendlyByteBuf var1) {
-      this((Holder)DimensionType.STREAM_CODEC.decode(var1), var1.readResourceKey(Registries.DIMENSION), var1.readLong(), GameType.byId(var1.readByte()), GameType.byNullableId(var1.readByte()), var1.readBoolean(), var1.readBoolean(), var1.readOptional(FriendlyByteBuf::readGlobalPos), var1.readVarInt());
+      this((Holder)DimensionType.STREAM_CODEC.decode(var1), var1.readResourceKey(Registries.DIMENSION), var1.readLong(), GameType.byId(var1.readByte()), GameType.byNullableId(var1.readByte()), var1.readBoolean(), var1.readBoolean(), var1.readOptional(FriendlyByteBuf::readGlobalPos), var1.readVarInt(), var1.readVarInt());
    }
 
-   public CommonPlayerSpawnInfo(Holder<DimensionType> var1, ResourceKey<Level> var2, long var3, GameType var5, @Nullable GameType var6, boolean var7, boolean var8, Optional<GlobalPos> var9, int var10) {
+   public CommonPlayerSpawnInfo(Holder<DimensionType> var1, ResourceKey<Level> var2, long var3, GameType var5, @Nullable GameType var6, boolean var7, boolean var8, Optional<GlobalPos> var9, int var10, int var11) {
       super();
       this.dimensionType = var1;
       this.dimension = var2;
@@ -28,6 +28,7 @@ public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, Resourc
       this.isFlat = var8;
       this.lastDeathLocation = var9;
       this.portalCooldown = var10;
+      this.seaLevel = var11;
    }
 
    public void write(RegistryFriendlyByteBuf var1) {
@@ -40,6 +41,7 @@ public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, Resourc
       var1.writeBoolean(this.isFlat);
       var1.writeOptional(this.lastDeathLocation, FriendlyByteBuf::writeGlobalPos);
       var1.writeVarInt(this.portalCooldown);
+      var1.writeVarInt(this.seaLevel);
    }
 
    public Holder<DimensionType> dimensionType() {
@@ -77,5 +79,9 @@ public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, Resourc
 
    public int portalCooldown() {
       return this.portalCooldown;
+   }
+
+   public int seaLevel() {
+      return this.seaLevel;
    }
 }

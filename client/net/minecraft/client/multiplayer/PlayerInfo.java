@@ -26,6 +26,7 @@ public class PlayerInfo {
    @Nullable
    private RemoteChatSession chatSession;
    private SignedMessageValidator messageValidator;
+   private int tabListOrder;
 
    public PlayerInfo(GameProfile var1, boolean var2) {
       super();
@@ -115,5 +116,13 @@ public class PlayerInfo {
    @Nullable
    public Component getTabListDisplayName() {
       return this.tabListDisplayName;
+   }
+
+   public void setTabListOrder(int var1) {
+      this.tabListOrder = var1;
+   }
+
+   public int getTabListOrder() {
+      return this.tabListOrder;
    }
 }

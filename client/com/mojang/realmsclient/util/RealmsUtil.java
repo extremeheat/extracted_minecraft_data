@@ -51,6 +51,6 @@ public class RealmsUtil {
       Minecraft var5 = Minecraft.getInstance();
       ProfileResult var6 = var5.getMinecraftSessionService().fetchProfile(var4, false);
       PlayerSkin var7 = var6 != null ? var5.getSkinManager().getInsecureSkin(var6.profile()) : DefaultPlayerSkin.get(var4);
-      PlayerFaceRenderer.draw(var0, var7.texture(), var1, var2, var3);
+      PlayerFaceRenderer.draw(var0, var7, var1, var2, var3);
    }
 }

@@ -5,7 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
@@ -39,8 +41,8 @@ public class ShotCrossbowTrigger extends SimpleCriterionTrigger<TriggerInstance>
          return CriteriaTriggers.SHOT_CROSSBOW.createCriterion(new TriggerInstance(Optional.empty(), var0));
       }
 
-      public static Criterion<TriggerInstance> shotCrossbow(ItemLike var0) {
-         return CriteriaTriggers.SHOT_CROSSBOW.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var0).build())));
+      public static Criterion<TriggerInstance> shotCrossbow(HolderGetter<Item> var0, ItemLike var1) {
+         return CriteriaTriggers.SHOT_CROSSBOW.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var0, var1).build())));
       }
 
       public boolean matches(ItemStack var1) {

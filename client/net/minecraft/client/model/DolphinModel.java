@@ -5,19 +5,19 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.DolphinRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class DolphinModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
+public class DolphinModel extends EntityModel<DolphinRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private final ModelPart body;
    private final ModelPart tail;
    private final ModelPart tailFin;
 
    public DolphinModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.body = var1.getChild("body");
       this.tail = this.body.getChild("tail");
       this.tailFin = this.tail.getChild("tail_fin");
@@ -39,18 +39,15 @@ public class DolphinModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.body.xRot = var6 * 0.017453292F;
-      this.body.yRot = var5 * 0.017453292F;
-      if (var1.getDeltaMovement().horizontalDistanceSqr() > 1.0E-7) {
+   public void setupAnim(DolphinRenderState var1) {
+      super.setupAnim(var1);
+      this.body.xRot = var1.xRot * 0.017453292F;
+      this.body.yRot = var1.yRot * 0.017453292F;
+      if (var1.isMoving) {
          ModelPart var10000 = this.body;
-         var10000.xRot += -0.05F - 0.05F * Mth.cos(var4 * 0.3F);
-         this.tail.xRot = -0.1F * Mth.cos(var4 * 0.3F);
-         this.tailFin.xRot = -0.2F * Mth.cos(var4 * 0.3F);
+         var10000.xRot += -0.05F - 0.05F * Mth.cos(var1.ageInTicks * 0.3F);
+         this.tail.xRot = -0.1F * Mth.cos(var1.ageInTicks * 0.3F);
+         this.tailFin.xRot = -0.2F * Mth.cos(var1.ageInTicks * 0.3F);
       }
 
    }

@@ -127,7 +127,7 @@ public class PoweredRailBlock extends BaseRailBlock {
       if (var6 != var5) {
          var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var6), 3);
          var2.updateNeighborsAt(var3.below(), this);
-         if (((RailShape)var1.getValue(SHAPE)).isAscending()) {
+         if (((RailShape)var1.getValue(SHAPE)).isSlope()) {
             var2.updateNeighborsAt(var3.above(), this);
          }
       }

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.animal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -25,10 +24,10 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -44,6 +43,7 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -68,7 +68,7 @@ public class PolarBear extends Animal implements NeutralMob {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.POLAR_BEAR.create(var1);
+      return (AgeableMob)EntityType.POLAR_BEAR.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -89,15 +89,15 @@ public class PolarBear extends Animal implements NeutralMob {
       this.targetSelector.addGoal(1, new PolarBearHurtByTargetGoal());
       this.targetSelector.addGoal(2, new PolarBearAttackPlayersGoal());
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
-      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, Fox.class, 10, true, true, (Predicate)null));
+      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, Fox.class, 10, true, true, (TargetingConditions.Selector)null));
       this.targetSelector.addGoal(5, new ResetUniversalAngerTargetGoal(this, false));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 30.0).add(Attributes.FOLLOW_RANGE, 20.0).add(Attributes.MOVEMENT_SPEED, 0.25).add(Attributes.ATTACK_DAMAGE, 6.0);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 30.0).add(Attributes.FOLLOW_RANGE, 20.0).add(Attributes.MOVEMENT_SPEED, 0.25).add(Attributes.ATTACK_DAMAGE, 6.0);
    }
 
-   public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkPolarBearSpawnRules(EntityType<PolarBear> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       Holder var5 = var1.getBiome(var3);
       if (!var5.is(BiomeTags.POLAR_BEARS_SPAWN_ON_ALTERNATE_BLOCKS)) {
          return checkAnimalSpawnRules(var0, var1, var2, var3, var4);
@@ -217,7 +217,7 @@ public class PolarBear extends Animal implements NeutralMob {
       return 0.98F;
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
@@ -238,7 +238,7 @@ public class PolarBear extends Animal implements NeutralMob {
       protected void checkAndPerformAttack(LivingEntity var1) {
          if (this.canPerformAttack(var1)) {
             this.resetAttackCooldown();
-            this.mob.doHurtTarget(var1);
+            this.mob.doHurtTarget(getServerLevel(this.mob), var1);
             PolarBear.this.setStanding(false);
          } else if (this.mob.distanceToSqr(var1) < (double)((var1.getBbWidth() + 3.0F) * (var1.getBbWidth() + 3.0F))) {
             if (this.isTimeToAttack()) {
@@ -287,7 +287,7 @@ public class PolarBear extends Animal implements NeutralMob {
 
    class PolarBearAttackPlayersGoal extends NearestAttackableTargetGoal<Player> {
       public PolarBearAttackPlayersGoal() {
-         super(PolarBear.this, Player.class, 20, true, true, (Predicate)null);
+         super(PolarBear.this, Player.class, 20, true, true, (TargetingConditions.Selector)null);
       }
 
       public boolean canUse() {

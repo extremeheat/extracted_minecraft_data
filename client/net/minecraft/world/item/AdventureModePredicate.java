@@ -30,24 +30,17 @@ public class AdventureModePredicate {
    private static final Component UNKNOWN_USE;
    private final List<BlockPredicate> predicates;
    private final boolean showInTooltip;
-   private final List<Component> tooltip;
+   @Nullable
+   private List<Component> cachedTooltip;
    @Nullable
    private BlockInWorld lastCheckedBlock;
    private boolean lastResult;
    private boolean checksBlockEntity;
 
-   private AdventureModePredicate(List<BlockPredicate> var1, boolean var2, List<Component> var3) {
-      super();
-      this.predicates = var1;
-      this.showInTooltip = var2;
-      this.tooltip = var3;
-   }
-
    public AdventureModePredicate(List<BlockPredicate> var1, boolean var2) {
       super();
       this.predicates = var1;
       this.showInTooltip = var2;
-      this.tooltip = computeTooltip(var1);
    }
 
    private static boolean areSameBlocks(BlockInWorld var0, @Nullable BlockInWorld var1, boolean var2) {
@@ -91,12 +84,20 @@ public class AdventureModePredicate {
       }
    }
 
+   private List<Component> tooltip() {
+      if (this.cachedTooltip == null) {
+         this.cachedTooltip = computeTooltip(this.predicates);
+      }
+
+      return this.cachedTooltip;
+   }
+
    public void addToTooltip(Consumer<Component> var1) {
-      this.tooltip.forEach(var1);
+      this.tooltip().forEach(var1);
    }
 
    public AdventureModePredicate withTooltip(boolean var1) {
-      return new AdventureModePredicate(this.predicates, var1, this.tooltip);
+      return new AdventureModePredicate(this.predicates, var1);
    }
 
    private static List<Component> computeTooltip(List<BlockPredicate> var0) {

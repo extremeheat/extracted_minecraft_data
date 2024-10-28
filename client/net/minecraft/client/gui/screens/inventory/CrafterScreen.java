@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -80,7 +81,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    }
 
    private void renderDisabledSlot(GuiGraphics var1, CrafterSlot var2) {
-      var1.blitSprite(DISABLED_SLOT_LOCATION_SPRITE, var2.x - 1, var2.y - 1, 18, 18);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_SLOT_LOCATION_SPRITE, var2.x - 1, var2.y - 1, 18, 18);
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -103,12 +104,12 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
          var4 = UNPOWERED_REDSTONE_LOCATION_SPRITE;
       }
 
-      var1.blitSprite(var4, var2, var3, 16, 16);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var4, var2, var3, 16, 16);
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(CONTAINER_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, CONTAINER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 }

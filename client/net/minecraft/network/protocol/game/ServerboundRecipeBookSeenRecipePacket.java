@@ -4,25 +4,14 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 
-public class ServerboundRecipeBookSeenRecipePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookSeenRecipePacket> STREAM_CODEC = Packet.codec(ServerboundRecipeBookSeenRecipePacket::write, ServerboundRecipeBookSeenRecipePacket::new);
-   private final ResourceLocation recipe;
+public record ServerboundRecipeBookSeenRecipePacket(RecipeDisplayId recipe) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookSeenRecipePacket> STREAM_CODEC;
 
-   public ServerboundRecipeBookSeenRecipePacket(RecipeHolder<?> var1) {
+   public ServerboundRecipeBookSeenRecipePacket(RecipeDisplayId var1) {
       super();
-      this.recipe = var1.id();
-   }
-
-   private ServerboundRecipeBookSeenRecipePacket(FriendlyByteBuf var1) {
-      super();
-      this.recipe = var1.readResourceLocation();
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeResourceLocation(this.recipe);
+      this.recipe = var1;
    }
 
    public PacketType<ServerboundRecipeBookSeenRecipePacket> type() {
@@ -33,7 +22,11 @@ public class ServerboundRecipeBookSeenRecipePacket implements Packet<ServerGameP
       var1.handleRecipeBookSeenRecipePacket(this);
    }
 
-   public ResourceLocation getRecipe() {
+   public RecipeDisplayId recipe() {
       return this.recipe;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(RecipeDisplayId.STREAM_CODEC, ServerboundRecipeBookSeenRecipePacket::recipe, ServerboundRecipeBookSeenRecipePacket::new);
    }
 }

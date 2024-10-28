@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.state.properties;
 import java.util.function.Predicate;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
+import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.entity.vault.VaultState;
 
@@ -25,6 +26,7 @@ public class BlockStateProperties {
    public static final BooleanProperty INVERTED = BooleanProperty.create("inverted");
    public static final BooleanProperty IN_WALL = BooleanProperty.create("in_wall");
    public static final BooleanProperty LIT = BooleanProperty.create("lit");
+   public static final BooleanProperty TIP = BooleanProperty.create("tip");
    public static final BooleanProperty LOCKED = BooleanProperty.create("locked");
    public static final BooleanProperty OCCUPIED = BooleanProperty.create("occupied");
    public static final BooleanProperty OPEN = BooleanProperty.create("open");
@@ -48,9 +50,9 @@ public class BlockStateProperties {
    public static final BooleanProperty EAST;
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
-   public static final DirectionProperty FACING;
-   public static final DirectionProperty FACING_HOPPER;
-   public static final DirectionProperty HORIZONTAL_FACING;
+   public static final EnumProperty<Direction> FACING;
+   public static final EnumProperty<Direction> FACING_HOPPER;
+   public static final EnumProperty<Direction> HORIZONTAL_FACING;
    public static final IntegerProperty FLOWER_AMOUNT;
    public static final EnumProperty<FrontAndTop> ORIENTATION;
    public static final EnumProperty<AttachFace> ATTACH_FACE;
@@ -123,7 +125,7 @@ public class BlockStateProperties {
    public static final EnumProperty<StructureMode> STRUCTUREBLOCK_MODE;
    public static final EnumProperty<BambooLeaves> BAMBOO_LEAVES;
    public static final EnumProperty<Tilt> TILT;
-   public static final DirectionProperty VERTICAL_DIRECTION;
+   public static final EnumProperty<Direction> VERTICAL_DIRECTION;
    public static final EnumProperty<DripstoneThickness> DRIPSTONE_THICKNESS;
    public static final EnumProperty<SculkSensorPhase> SCULK_SENSOR_PHASE;
    public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_0_OCCUPIED;
@@ -137,6 +139,7 @@ public class BlockStateProperties {
    public static final BooleanProperty CRAFTING;
    public static final EnumProperty<TrialSpawnerState> TRIAL_SPAWNER_STATE;
    public static final EnumProperty<VaultState> VAULT_STATE;
+   public static final EnumProperty<CreakingHeartBlock.CreakingHeartState> CREAKING;
    public static final BooleanProperty OMINOUS;
 
    public BlockStateProperties() {
@@ -152,11 +155,11 @@ public class BlockStateProperties {
       EAST = BooleanProperty.create("east");
       SOUTH = BooleanProperty.create("south");
       WEST = BooleanProperty.create("west");
-      FACING = DirectionProperty.create("facing", Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN);
-      FACING_HOPPER = DirectionProperty.create("facing", (var0) -> {
+      FACING = EnumProperty.create("facing", Direction.class, (Enum[])(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN));
+      FACING_HOPPER = EnumProperty.create("facing", Direction.class, (var0) -> {
          return var0 != Direction.UP;
       });
-      HORIZONTAL_FACING = DirectionProperty.create("facing", (Predicate)Direction.Plane.HORIZONTAL);
+      HORIZONTAL_FACING = EnumProperty.create("facing", Direction.class, (Predicate)Direction.Plane.HORIZONTAL);
       FLOWER_AMOUNT = IntegerProperty.create("flower_amount", 1, 4);
       ORIENTATION = EnumProperty.create("orientation", FrontAndTop.class);
       ATTACH_FACE = EnumProperty.create("face", AttachFace.class);
@@ -214,7 +217,7 @@ public class BlockStateProperties {
       STRUCTUREBLOCK_MODE = EnumProperty.create("mode", StructureMode.class);
       BAMBOO_LEAVES = EnumProperty.create("leaves", BambooLeaves.class);
       TILT = EnumProperty.create("tilt", Tilt.class);
-      VERTICAL_DIRECTION = DirectionProperty.create("vertical_direction", Direction.UP, Direction.DOWN);
+      VERTICAL_DIRECTION = EnumProperty.create("vertical_direction", Direction.class, (Enum[])(Direction.UP, Direction.DOWN));
       DRIPSTONE_THICKNESS = EnumProperty.create("thickness", DripstoneThickness.class);
       SCULK_SENSOR_PHASE = EnumProperty.create("sculk_sensor_phase", SculkSensorPhase.class);
       CHISELED_BOOKSHELF_SLOT_0_OCCUPIED = BooleanProperty.create("slot_0_occupied");
@@ -228,6 +231,7 @@ public class BlockStateProperties {
       CRAFTING = BooleanProperty.create("crafting");
       TRIAL_SPAWNER_STATE = EnumProperty.create("trial_spawner_state", TrialSpawnerState.class);
       VAULT_STATE = EnumProperty.create("vault_state", VaultState.class);
+      CREAKING = EnumProperty.create("creaking", CreakingHeartBlock.CreakingHeartState.class);
       OMINOUS = BooleanProperty.create("ominous");
    }
 }

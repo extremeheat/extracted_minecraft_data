@@ -71,7 +71,15 @@ public class WorldBorder {
    }
 
    public BlockPos clampToBounds(double var1, double var3, double var5) {
-      return BlockPos.containing(Mth.clamp(var1, this.getMinX(), this.getMaxX() - 1.0), var3, Mth.clamp(var5, this.getMinZ(), this.getMaxZ() - 1.0));
+      return BlockPos.containing(this.clampVec3ToBound(var1, var3, var5));
+   }
+
+   public Vec3 clampVec3ToBound(Vec3 var1) {
+      return this.clampVec3ToBound(var1.x, var1.y, var1.z);
+   }
+
+   public Vec3 clampVec3ToBound(double var1, double var3, double var5) {
+      return new Vec3(Mth.clamp(var1, this.getMinX(), this.getMaxX() - 9.999999747378752E-6), var3, Mth.clamp(var5, this.getMinZ(), this.getMaxZ() - 9.999999747378752E-6));
    }
 
    public double getDistanceToBorder(Entity var1) {

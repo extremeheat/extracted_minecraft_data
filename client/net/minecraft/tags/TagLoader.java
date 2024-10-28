@@ -1,7 +1,5 @@
 package net.minecraft.tags;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Either;
@@ -14,15 +12,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -31,17 +37,17 @@ import org.slf4j.Logger;
 
 public class TagLoader<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   final Function<ResourceLocation, Optional<? extends T>> idToValue;
+   final ElementLookup<T> elementLookup;
    private final String directory;
 
-   public TagLoader(Function<ResourceLocation, Optional<? extends T>> var1, String var2) {
+   public TagLoader(ElementLookup<T> var1, String var2) {
       super();
-      this.idToValue = var1;
+      this.elementLookup = var1;
       this.directory = var2;
    }
 
    public Map<ResourceLocation, List<EntryWithSource>> load(ResourceManager var1) {
-      HashMap var2 = Maps.newHashMap();
+      HashMap var2 = new HashMap();
       FileToIdConverter var3 = FileToIdConverter.json(this.directory);
       Iterator var4 = var3.listMatchingResourceStacks(var1).entrySet().iterator();
 
@@ -95,8 +101,8 @@ public class TagLoader<T> {
       return var2;
    }
 
-   private Either<Collection<EntryWithSource>, Collection<T>> build(TagEntry.Lookup<T> var1, List<EntryWithSource> var2) {
-      ImmutableSet.Builder var3 = ImmutableSet.builder();
+   private Either<List<EntryWithSource>, List<T>> tryBuildTag(TagEntry.Lookup<T> var1, List<EntryWithSource> var2) {
+      LinkedHashSet var3 = new LinkedHashSet();
       ArrayList var4 = new ArrayList();
       Iterator var5 = var2.iterator();
 
@@ -109,15 +115,15 @@ public class TagLoader<T> {
          }
       }
 
-      return var4.isEmpty() ? Either.right(var3.build()) : Either.left(var4);
+      return var4.isEmpty() ? Either.right(List.copyOf(var3)) : Either.left(var4);
    }
 
-   public Map<ResourceLocation, Collection<T>> build(Map<ResourceLocation, List<EntryWithSource>> var1) {
-      final HashMap var2 = Maps.newHashMap();
+   public Map<ResourceLocation, List<T>> build(Map<ResourceLocation, List<EntryWithSource>> var1) {
+      final HashMap var2 = new HashMap();
       TagEntry.Lookup var3 = new TagEntry.Lookup<T>() {
          @Nullable
-         public T element(ResourceLocation var1) {
-            return ((Optional)TagLoader.this.idToValue.apply(var1)).orElse((Object)null);
+         public T element(ResourceLocation var1, boolean var2x) {
+            return TagLoader.this.elementLookup.get(var1, var2x).orElse((Object)null);
          }
 
          @Nullable
@@ -130,7 +136,7 @@ public class TagLoader<T> {
          var4.addEntry(var1x, new SortingEntry(var2x));
       });
       var4.orderByDependencies((var3x, var4x) -> {
-         this.build(var3, var4x.entries).ifLeft((var1) -> {
+         this.tryBuildTag(var3, var4x.entries).ifLeft((var1) -> {
             LOGGER.error("Couldn't load tag {} as it is missing following references: {}", var3x, var1.stream().map(Objects::toString).collect(Collectors.joining(", ")));
          }).ifRight((var2x) -> {
             var2.put(var3x, var2x);
@@ -139,8 +145,79 @@ public class TagLoader<T> {
       return var2;
    }
 
-   public Map<ResourceLocation, Collection<T>> loadAndBuild(ResourceManager var1) {
-      return this.build(this.load(var1));
+   public static <T> void loadTagsFromNetwork(TagNetworkSerialization.NetworkPayload var0, WritableRegistry<T> var1) {
+      Map var10000 = var0.resolve(var1).tags;
+      Objects.requireNonNull(var1);
+      var10000.forEach(var1::bindTag);
+   }
+
+   public static List<Registry.PendingTags<?>> loadTagsForExistingRegistries(ResourceManager var0, RegistryAccess var1) {
+      return (List)var1.registries().map((var1x) -> {
+         return loadPendingTags(var0, var1x.value());
+      }).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+   }
+
+   public static <T> void loadTagsForRegistry(ResourceManager var0, WritableRegistry<T> var1) {
+      ResourceKey var2 = var1.key();
+      TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromWritableRegistry(var1), Registries.tagsDirPath(var2));
+      var3.build(var3.load(var0)).forEach((var2x, var3x) -> {
+         var1.bindTag(TagKey.create(var2, var2x), var3x);
+      });
+   }
+
+   private static <T> Map<TagKey<T>, List<Holder<T>>> wrapTags(ResourceKey<? extends Registry<T>> var0, Map<ResourceLocation, List<Holder<T>>> var1) {
+      return (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var1x) -> {
+         return TagKey.create(var0, (ResourceLocation)var1x.getKey());
+      }, Map.Entry::getValue));
+   }
+
+   private static <T> Optional<Registry.PendingTags<T>> loadPendingTags(ResourceManager var0, Registry<T> var1) {
+      ResourceKey var2 = var1.key();
+      TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromFrozenRegistry(var1), Registries.tagsDirPath(var2));
+      LoadResult var4 = new LoadResult(var2, wrapTags(var1.key(), var3.build(var3.load(var0))));
+      return var4.tags().isEmpty() ? Optional.empty() : Optional.of(var1.prepareTagReload(var4));
+   }
+
+   public static List<HolderLookup.RegistryLookup<?>> buildUpdatedLookups(RegistryAccess.Frozen var0, List<Registry.PendingTags<?>> var1) {
+      ArrayList var2 = new ArrayList();
+      var0.registries().forEach((var2x) -> {
+         Registry.PendingTags var3 = findTagsForRegistry(var1, var2x.key());
+         var2.add(var3 != null ? var3.lookup() : var2x.value());
+      });
+      return var2;
+   }
+
+   @Nullable
+   private static Registry.PendingTags<?> findTagsForRegistry(List<Registry.PendingTags<?>> var0, ResourceKey<? extends Registry<?>> var1) {
+      Iterator var2 = var0.iterator();
+
+      Registry.PendingTags var3;
+      do {
+         if (!var2.hasNext()) {
+            return null;
+         }
+
+         var3 = (Registry.PendingTags)var2.next();
+      } while(var3.key() != var1);
+
+      return var3;
+   }
+
+   public interface ElementLookup<T> {
+      Optional<? extends T> get(ResourceLocation var1, boolean var2);
+
+      static <T> ElementLookup<? extends Holder<T>> fromFrozenRegistry(Registry<T> var0) {
+         return (var1, var2) -> {
+            return var0.get(var1);
+         };
+      }
+
+      static <T> ElementLookup<Holder<T>> fromWritableRegistry(WritableRegistry<T> var0) {
+         HolderGetter var1 = var0.createRegistrationLookup();
+         return (var2, var3) -> {
+            return ((HolderGetter)(var3 ? var1 : var0)).get(ResourceKey.create(var0.key(), var2));
+         };
+      }
    }
 
    public static record EntryWithSource(TagEntry entry, String source) {
@@ -163,6 +240,24 @@ public class TagLoader<T> {
 
       public String source() {
          return this.source;
+      }
+   }
+
+   public static record LoadResult<T>(ResourceKey<? extends Registry<T>> key, Map<TagKey<T>, List<Holder<T>>> tags) {
+      final Map<TagKey<T>, List<Holder<T>>> tags;
+
+      public LoadResult(ResourceKey<? extends Registry<T>> var1, Map<TagKey<T>, List<Holder<T>>> var2) {
+         super();
+         this.key = var1;
+         this.tags = var2;
+      }
+
+      public ResourceKey<? extends Registry<T>> key() {
+         return this.key;
+      }
+
+      public Map<TagKey<T>, List<Holder<T>>> tags() {
+         return this.tags;
       }
    }
 

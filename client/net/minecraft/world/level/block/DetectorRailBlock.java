@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
 
 public class DetectorRailBlock extends BaseRailBlock {
@@ -117,7 +118,7 @@ public class DetectorRailBlock extends BaseRailBlock {
       while(var7.hasNext()) {
          BlockPos var8 = (BlockPos)var7.next();
          BlockState var9 = var1.getBlockState(var8);
-         var1.neighborChanged(var9, var8, var9.getBlock(), var2, false);
+         var1.neighborChanged(var9, var8, var9.getBlock(), (Orientation)null, false);
       }
 
    }

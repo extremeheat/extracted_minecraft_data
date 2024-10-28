@@ -26,10 +26,14 @@ public interface HolderLookup<T> extends HolderGetter<T> {
       return this.listTags().map(HolderSet.Named::key);
    }
 
-   public interface Provider {
-      Stream<ResourceKey<? extends Registry<?>>> listRegistries();
+   public interface Provider extends HolderGetter.Provider {
+      Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys();
 
-      <T> Optional<RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
+      default Stream<RegistryLookup<?>> listRegistries() {
+         return this.listRegistryKeys().map(this::lookupOrThrow);
+      }
+
+      <T> Optional<? extends RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
 
       default <T> RegistryLookup<T> lookupOrThrow(ResourceKey<? extends Registry<? extends T>> var1) {
          return (RegistryLookup)this.lookup(var1).orElseThrow(() -> {
@@ -41,22 +45,12 @@ public interface HolderLookup<T> extends HolderGetter<T> {
          return RegistryOps.create(var1, this);
       }
 
-      default HolderGetter.Provider asGetterLookup() {
-         return new HolderGetter.Provider() {
-            public <T> Optional<HolderGetter<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-               return Provider.this.lookup(var1).map((var0) -> {
-                  return var0;
-               });
-            }
-         };
-      }
-
       static Provider create(Stream<RegistryLookup<?>> var0) {
          final Map var1 = (Map)var0.collect(Collectors.toUnmodifiableMap(RegistryLookup::key, (var0x) -> {
             return var0x;
          }));
          return new Provider() {
-            public Stream<ResourceKey<? extends Registry<?>>> listRegistries() {
+            public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
                return var1.keySet().stream();
             }
 
@@ -64,6 +58,15 @@ public interface HolderLookup<T> extends HolderGetter<T> {
                return Optional.ofNullable((RegistryLookup)var1.get(var1x));
             }
          };
+      }
+
+      default Lifecycle allRegistriesLifecycle() {
+         return (Lifecycle)this.listRegistries().map(RegistryLookup::registryLifecycle).reduce(Lifecycle.stable(), Lifecycle::add);
+      }
+
+      // $FF: synthetic method
+      default HolderGetter lookupOrThrow(final ResourceKey var1) {
+         return this.lookupOrThrow(var1);
       }
    }
 

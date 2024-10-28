@@ -16,6 +16,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.WorldPresetTags;
 import net.minecraft.world.Difficulty;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 
@@ -52,7 +54,6 @@ public class WorldCreationUiState {
       this.difficulty = Difficulty.NORMAL;
       this.normalPresetList = new ArrayList();
       this.altPresetList = new ArrayList();
-      this.gameRules = new GameRules();
       this.savesFolder = var1;
       this.settings = var2;
       this.worldType = new WorldTypeEntry((Holder)findPreset(var2, var3).orElse((Object)null));
@@ -61,6 +62,20 @@ public class WorldCreationUiState {
       this.generateStructures = var2.options().generateStructures();
       this.bonusChest = var2.options().generateBonusChest();
       this.targetFolder = this.findResultFolder(this.name);
+      this.gameMode = var2.initialWorldCreationOptions().selectedGameMode();
+      this.gameRules = new GameRules(var2.dataConfiguration().enabledFeatures());
+      var2.initialWorldCreationOptions().disabledGameRules().forEach((var1x) -> {
+         ((GameRules.BooleanValue)this.gameRules.getRule(var1x)).set(false, (MinecraftServer)null);
+      });
+      Optional.ofNullable(var2.initialWorldCreationOptions().flatLevelPreset()).flatMap((var1x) -> {
+         return var2.worldgenLoadContext().lookup(Registries.FLAT_LEVEL_GENERATOR_PRESET).flatMap((var1) -> {
+            return var1.get(var1x);
+         });
+      }).map((var0) -> {
+         return ((FlatLevelGeneratorPreset)var0.value()).settings();
+      }).ifPresent((var1x) -> {
+         this.updateDimensions(PresetEditor.flatWorldConfigurator(var1x));
+      });
    }
 
    public void addListener(Consumer<WorldCreationUiState> var1) {
@@ -206,7 +221,7 @@ public class WorldCreationUiState {
    protected boolean tryUpdateDataConfiguration(WorldDataConfiguration var1) {
       WorldDataConfiguration var2 = this.settings.dataConfiguration();
       if (var2.dataPacks().getEnabled().equals(var1.dataPacks().getEnabled()) && var2.enabledFeatures().equals(var1.enabledFeatures())) {
-         this.settings = new WorldCreationContext(this.settings.options(), this.settings.datapackDimensions(), this.settings.selectedDimensions(), this.settings.worldgenRegistries(), this.settings.dataPackResources(), var1);
+         this.settings = new WorldCreationContext(this.settings.options(), this.settings.datapackDimensions(), this.settings.selectedDimensions(), this.settings.worldgenRegistries(), this.settings.dataPackResources(), var1, this.settings.initialWorldCreationOptions());
          return true;
       } else {
          return false;
@@ -247,28 +262,34 @@ public class WorldCreationUiState {
    }
 
    private void updatePresetLists() {
-      Registry var1 = this.getSettings().worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET);
+      Registry var1 = this.getSettings().worldgenLoadContext().lookupOrThrow(Registries.WORLD_PRESET);
       this.normalPresetList.clear();
       this.normalPresetList.addAll((Collection)getNonEmptyList(var1, WorldPresetTags.NORMAL).orElseGet(() -> {
-         return var1.holders().map(WorldTypeEntry::new).toList();
+         return var1.listElements().map(WorldTypeEntry::new).toList();
       }));
       this.altPresetList.clear();
       this.altPresetList.addAll((Collection)getNonEmptyList(var1, WorldPresetTags.EXTENDED).orElse(this.normalPresetList));
       Holder var2 = this.worldType.preset();
       if (var2 != null) {
-         this.worldType = (WorldTypeEntry)findPreset(this.getSettings(), var2.unwrapKey()).map(WorldTypeEntry::new).orElse((WorldTypeEntry)this.normalPresetList.get(0));
+         WorldTypeEntry var3 = (WorldTypeEntry)findPreset(this.getSettings(), var2.unwrapKey()).map(WorldTypeEntry::new).orElse((WorldTypeEntry)this.normalPresetList.getFirst());
+         boolean var4 = PresetEditor.EDITORS.get(var2.unwrapKey()) != null;
+         if (var4) {
+            this.worldType = var3;
+         } else {
+            this.setWorldType(var3);
+         }
       }
 
    }
 
    private static Optional<Holder<WorldPreset>> findPreset(WorldCreationContext var0, Optional<ResourceKey<WorldPreset>> var1) {
       return var1.flatMap((var1x) -> {
-         return var0.worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET).getHolder(var1x);
+         return var0.worldgenLoadContext().lookupOrThrow(Registries.WORLD_PRESET).get(var1x);
       });
    }
 
    private static Optional<List<WorldTypeEntry>> getNonEmptyList(Registry<WorldPreset> var0, TagKey<WorldPreset> var1) {
-      return var0.getTag(var1).map((var0x) -> {
+      return var0.get(var1).map((var0x) -> {
          return var0x.stream().map(WorldTypeEntry::new).toList();
       }).filter((var0x) -> {
          return !var0x.isEmpty();

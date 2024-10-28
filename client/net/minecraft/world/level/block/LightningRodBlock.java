@@ -11,7 +11,8 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 
 public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<LightningRodBlock> CODEC = simpleCodec(LightningRodBlock::new);
@@ -45,12 +47,12 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
       return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getClickedFace())).setValue(WATERLOGGED, var3);
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected FluidState getFluidState(BlockState var1) {
@@ -73,7 +75,8 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    private void updateNeighbours(BlockState var1, Level var2, BlockPos var3) {
-      var2.updateNeighborsAt(var3.relative(((Direction)var1.getValue(FACING)).getOpposite()), this);
+      Direction var4 = ((Direction)var1.getValue(FACING)).getOpposite();
+      var2.updateNeighborsAt(var3.relative(var4), this, ExperimentalRedstoneUtils.initialOrientation(var2, var4, (Direction)null));
    }
 
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {

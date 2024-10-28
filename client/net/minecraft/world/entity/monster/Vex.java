@@ -14,12 +14,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TraceableEntity;
@@ -63,9 +62,8 @@ public class Vex extends Monster implements TraceableEntity {
       return this.tickCount % TICKS_PER_FLAP == 0;
    }
 
-   public void move(MoverType var1, Vec3 var2) {
-      super.move(var1, var2);
-      this.checkInsideBlocks();
+   protected boolean isAffectedByBlocks() {
+      return !this.isRemoved();
    }
 
    public void tick() {
@@ -199,7 +197,7 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
       this.populateDefaultEquipmentSlots(var5, var2);
       this.populateDefaultEquipmentEnchantments(var1, var5, var2);
@@ -293,7 +291,7 @@ public class Vex extends Monster implements TraceableEntity {
          LivingEntity var1 = Vex.this.getTarget();
          if (var1 != null) {
             if (Vex.this.getBoundingBox().intersects(var1.getBoundingBox())) {
-               Vex.this.doHurtTarget(var1);
+               Vex.this.doHurtTarget(getServerLevel(Vex.this.level()), var1);
                Vex.this.setIsCharging(false);
             } else {
                double var2 = Vex.this.distanceToSqr(var1);

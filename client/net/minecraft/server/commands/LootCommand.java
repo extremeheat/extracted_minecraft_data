@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -57,8 +58,11 @@ public class LootCommand {
    private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType((var0) -> {
       return Component.translatableEscape("commands.drop.no_held_items", var0);
    });
-   private static final DynamicCommandExceptionType ERROR_NO_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.drop.no_loot_table", var0);
+   private static final DynamicCommandExceptionType ERROR_NO_ENTITY_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("commands.drop.no_loot_table.entity", var0);
+   });
+   private static final DynamicCommandExceptionType ERROR_NO_BLOCK_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("commands.drop.no_loot_table.block", var0);
    });
 
    public LootCommand() {
@@ -290,18 +294,23 @@ public class LootCommand {
       ServerLevel var5 = var4.getLevel();
       BlockState var6 = var5.getBlockState(var1);
       BlockEntity var7 = var5.getBlockEntity(var1);
-      LootParams.Builder var8 = (new LootParams.Builder(var5)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).withParameter(LootContextParams.BLOCK_STATE, var6).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var7).withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getEntity()).withParameter(LootContextParams.TOOL, var2);
-      List var9 = var6.getDrops(var8);
-      return var3.accept(var0, var9, (var2x) -> {
-         callback(var4, var2x, var6.getBlock().getLootTable());
-      });
+      Optional var8 = var6.getBlock().getLootTable();
+      if (var8.isEmpty()) {
+         throw ERROR_NO_BLOCK_LOOT_TABLE.create(var6.getBlock().getName());
+      } else {
+         LootParams.Builder var9 = (new LootParams.Builder(var5)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).withParameter(LootContextParams.BLOCK_STATE, var6).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var7).withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getEntity()).withParameter(LootContextParams.TOOL, var2);
+         List var10 = var6.getDrops(var9);
+         return var3.accept(var0, var10, (var2x) -> {
+            callback(var4, var2x, (ResourceKey)var8.get());
+         });
+      }
    }
 
    private static int dropKillLoot(CommandContext<CommandSourceStack> var0, Entity var1, DropConsumer var2) throws CommandSyntaxException {
-      if (!(var1 instanceof LivingEntity)) {
-         throw ERROR_NO_LOOT_TABLE.create(var1.getDisplayName());
+      Optional var3 = var1.getLootTable();
+      if (var3.isEmpty()) {
+         throw ERROR_NO_ENTITY_LOOT_TABLE.create(var1.getDisplayName());
       } else {
-         ResourceKey var3 = ((LivingEntity)var1).getLootTable();
          CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
          LootParams.Builder var5 = new LootParams.Builder(var4.getLevel());
          Entity var6 = var4.getEntity();
@@ -316,10 +325,10 @@ public class LootCommand {
          var5.withParameter(LootContextParams.THIS_ENTITY, var1);
          var5.withParameter(LootContextParams.ORIGIN, var4.getPosition());
          LootParams var10 = var5.create(LootContextParamSets.ENTITY);
-         LootTable var8 = var4.getServer().reloadableRegistries().getLootTable(var3);
+         LootTable var8 = var4.getServer().reloadableRegistries().getLootTable((ResourceKey)var3.get());
          ObjectArrayList var9 = var8.getRandomItems(var10);
          return var2.accept(var0, var9, (var2x) -> {
-            callback(var4, var2x, var3);
+            callback(var4, var2x, (ResourceKey)var3.get());
          });
       }
    }

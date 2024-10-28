@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import net.minecraft.Util;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
@@ -24,10 +23,10 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.RandomSequence;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.slf4j.Logger;
 
@@ -71,7 +70,7 @@ public class LootTableProvider implements DataProvider {
       });
       var3.freeze();
       ProblemReporter.Collector var5 = new ProblemReporter.Collector();
-      HolderGetter.Provider var6 = (new RegistryAccess.ImmutableRegistryAccess(List.of(var3))).freeze().asGetterLookup();
+      RegistryAccess.Frozen var6 = (new RegistryAccess.ImmutableRegistryAccess(List.of(var3))).freeze();
       ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, var6);
       Sets.SetView var8 = Sets.difference(this.requiredTables, var3.registryKeySet());
       Iterator var9 = var8.iterator();
@@ -81,8 +80,8 @@ public class LootTableProvider implements DataProvider {
          var5.report("Missing built-in table: " + String.valueOf(var10.location()));
       }
 
-      var3.holders().forEach((var1x) -> {
-         ((LootTable)var1x.value()).validate(var7.setParams(((LootTable)var1x.value()).getParamSet()).enterElement("{" + String.valueOf(var1x.key().location()) + "}", var1x.key()));
+      var3.listElements().forEach((var1x) -> {
+         ((LootTable)var1x.value()).validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement("{" + String.valueOf(var1x.key().location()) + "}", var1x.key()));
       });
       Multimap var11 = var5.get();
       if (!var11.isEmpty()) {
@@ -95,7 +94,7 @@ public class LootTableProvider implements DataProvider {
             ResourceKey var4 = (ResourceKey)var3x.getKey();
             LootTable var5 = (LootTable)var3x.getValue();
             Path var6 = this.pathProvider.json(var4.location());
-            return DataProvider.saveStable(var1, var2, LootTable.DIRECT_CODEC, var5, var6);
+            return DataProvider.saveStable(var1, (HolderLookup.Provider)var2, LootTable.DIRECT_CODEC, var5, var6);
          }).toArray((var0) -> {
             return new CompletableFuture[var0];
          }));
@@ -110,10 +109,10 @@ public class LootTableProvider implements DataProvider {
       return "Loot Tables";
    }
 
-   public static record SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, LootContextParamSet paramSet) {
-      final LootContextParamSet paramSet;
+   public static record SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> provider, ContextKeySet paramSet) {
+      final ContextKeySet paramSet;
 
-      public SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> var1, LootContextParamSet var2) {
+      public SubProviderEntry(Function<HolderLookup.Provider, LootTableSubProvider> var1, ContextKeySet var2) {
          super();
          this.provider = var1;
          this.paramSet = var2;
@@ -123,7 +122,7 @@ public class LootTableProvider implements DataProvider {
          return this.provider;
       }
 
-      public LootContextParamSet paramSet() {
+      public ContextKeySet paramSet() {
          return this.paramSet;
       }
    }

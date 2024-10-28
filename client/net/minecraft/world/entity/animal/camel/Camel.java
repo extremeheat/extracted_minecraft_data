@@ -17,6 +17,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,12 +27,10 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,7 +50,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddleable {
+public class Camel extends AbstractHorse {
    public static final float BABY_SCALE = 0.45F;
    public static final int DASH_COOLDOWN_TICKS = 55;
    public static final int MAX_HEAD_Y_ROT = 30;
@@ -107,7 +107,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
       var1.define(LAST_POSE_CHANGE_TICK, 0L);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       CamelAi.initMemories(this, var1.getRandom());
       this.resetLastPoseChangeTickToFullStand(var1.getLevel().getGameTime());
       return super.finalizeSpawn(var1, var2, var3, var4);
@@ -128,15 +128,16 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
       return var1 == Pose.SITTING ? SITTING_DIMENSIONS.scale(this.getAgeScale()) : super.getDefaultDimensions(var1);
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("camelBrain");
-      Brain var1 = this.getBrain();
-      var1.tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("camelActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("camelBrain");
+      Brain var3 = this.getBrain();
+      var3.tick(var1, this);
+      var2.pop();
+      var2.push("camelActivityUpdate");
       CamelAi.updateActivity(this);
-      this.level().getProfiler().pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    public void tick() {
@@ -201,7 +202,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
          var2 = 0.0F;
       }
 
-      this.walkAnimation.update(var2, 0.2F);
+      this.walkAnimation.update(var2, 0.2F, this.isBaby() ? 3.0F : 1.0F);
    }
 
    public void travel(Vec3 var1) {
@@ -310,7 +311,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
       ItemStack var3 = var1.getItemInHand(var2);
       if (var1.isSecondaryUseActive() && !this.isBaby()) {
          this.openCustomInventoryScreen(var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
          if (var4.consumesAction()) {
@@ -322,7 +323,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
                this.doPlayerRide(var1);
             }
 
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
          }
       }
    }
@@ -396,7 +397,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
 
    @Nullable
    public Camel getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Camel)EntityType.CAMEL.create(var1);
+      return (Camel)EntityType.CAMEL.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Nullable
@@ -404,9 +405,9 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
       return SoundEvents.CAMEL_EAT;
    }
 
-   protected void actuallyHurt(DamageSource var1, float var2) {
+   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
       this.standUpInstantly();
-      super.actuallyHurt(var1, var2);
+      super.actuallyHurt(var1, var2, var3);
    }
 
    protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {

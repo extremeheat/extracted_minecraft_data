@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +16,10 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot, Float> slotDropChances) {
    public static final Codec<Map<EquipmentSlot, Float>> DROP_CHANCES_CODEC;
    public static final Codec<EquipmentTable> CODEC;
+
+   public EquipmentTable(ResourceKey<LootTable> var1, float var2) {
+      this(var1, createForAllSlots(var2));
+   }
 
    public EquipmentTable(ResourceKey<LootTable> var1, Map<EquipmentSlot, Float> var2) {
       super();
@@ -53,7 +56,7 @@ public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot
          return (Map)var0.map(EquipmentTable::createForAllSlots, Function.identity());
       }, (var0) -> {
          boolean var1 = var0.values().stream().distinct().count() == 1L;
-         boolean var2 = var0.keySet().containsAll(Arrays.asList(EquipmentSlot.values()));
+         boolean var2 = var0.keySet().containsAll(EquipmentSlot.VALUES);
          return var1 && var2 ? Either.left((Float)var0.values().stream().findFirst().orElse(0.0F)) : Either.right(var0);
       });
       CODEC = RecordCodecBuilder.create((var0) -> {

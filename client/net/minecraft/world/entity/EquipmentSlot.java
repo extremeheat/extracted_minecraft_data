@@ -1,5 +1,11 @@
 package net.minecraft.world.entity;
 
+import io.netty.buffer.ByteBuf;
+import java.util.List;
+import java.util.function.IntFunction;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 
@@ -13,18 +19,25 @@ public enum EquipmentSlot implements StringRepresentable {
    BODY(EquipmentSlot.Type.ANIMAL_ARMOR, 0, 1, 6, "body");
 
    public static final int NO_COUNT_LIMIT = 0;
+   public static final List<EquipmentSlot> VALUES = List.of(values());
+   public static final IntFunction<EquipmentSlot> BY_ID = ByIdMap.continuous((var0) -> {
+      return var0.id;
+   }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.fromEnum(EquipmentSlot::values);
+   public static final StreamCodec<ByteBuf, EquipmentSlot> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> {
+      return var0.id;
+   });
    private final Type type;
    private final int index;
    private final int countLimit;
-   private final int filterFlag;
+   private final int id;
    private final String name;
 
    private EquipmentSlot(final Type var3, final int var4, final int var5, final int var6, final String var7) {
       this.type = var3;
       this.index = var4;
       this.countLimit = var5;
-      this.filterFlag = var6;
+      this.id = var6;
       this.name = var7;
    }
 
@@ -48,8 +61,12 @@ public enum EquipmentSlot implements StringRepresentable {
       return this.countLimit > 0 ? var1.split(this.countLimit) : var1;
    }
 
-   public int getFilterFlag() {
-      return this.filterFlag;
+   public int getId() {
+      return this.id;
+   }
+
+   public int getFilterBit(int var1) {
+      return this.id + var1;
    }
 
    public String getName() {

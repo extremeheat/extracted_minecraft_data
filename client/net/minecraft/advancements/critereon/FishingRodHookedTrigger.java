@@ -56,7 +56,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
          } else {
             if (this.item.isPresent()) {
                boolean var4 = false;
-               Entity var5 = (Entity)var2.getParamOrNull(LootContextParams.THIS_ENTITY);
+               Entity var5 = (Entity)var2.getOptionalParameter(LootContextParams.THIS_ENTITY);
                if (var5 instanceof ItemEntity) {
                   ItemEntity var6 = (ItemEntity)var5;
                   if (((ItemPredicate)this.item.get()).test(var6.getItem())) {

@@ -2,9 +2,9 @@ package net.minecraft.client.renderer;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -18,7 +18,6 @@ public abstract class DimensionSpecialEffects {
       var0.put(BuiltinDimensionTypes.NETHER_EFFECTS, new NetherEffects());
       var0.put(BuiltinDimensionTypes.END_EFFECTS, new EndEffects());
    });
-   private final float[] sunriseCol = new float[4];
    private final float cloudLevel;
    private final boolean hasGround;
    private final SkyType skyType;
@@ -38,23 +37,12 @@ public abstract class DimensionSpecialEffects {
       return (DimensionSpecialEffects)EFFECTS.get(var0.effectsLocation());
    }
 
-   @Nullable
-   public float[] getSunriseColor(float var1, float var2) {
-      float var3 = 0.4F;
-      float var4 = Mth.cos(var1 * 6.2831855F) - 0.0F;
-      float var5 = -0.0F;
-      if (var4 >= -0.4F && var4 <= 0.4F) {
-         float var6 = (var4 - -0.0F) / 0.4F * 0.5F + 0.5F;
-         float var7 = 1.0F - (1.0F - Mth.sin(var6 * 3.1415927F)) * 0.99F;
-         var7 *= var7;
-         this.sunriseCol[0] = var6 * 0.3F + 0.7F;
-         this.sunriseCol[1] = var6 * var6 * 0.7F + 0.2F;
-         this.sunriseCol[2] = var6 * var6 * 0.0F + 0.2F;
-         this.sunriseCol[3] = var7;
-         return this.sunriseCol;
-      } else {
-         return null;
-      }
+   public boolean isSunriseOrSunset(float var1) {
+      return false;
+   }
+
+   public int getSunriseOrSunsetColor(float var1) {
+      return 0;
    }
 
    public float getCloudHeight() {
@@ -83,7 +71,7 @@ public abstract class DimensionSpecialEffects {
 
    public static enum SkyType {
       NONE,
-      NORMAL,
+      OVERWORLD,
       END;
 
       private SkyType() {
@@ -91,15 +79,28 @@ public abstract class DimensionSpecialEffects {
 
       // $FF: synthetic method
       private static SkyType[] $values() {
-         return new SkyType[]{NONE, NORMAL, END};
+         return new SkyType[]{NONE, OVERWORLD, END};
       }
    }
 
    public static class OverworldEffects extends DimensionSpecialEffects {
       public static final int CLOUD_LEVEL = 192;
+      private static final float SUNRISE_AND_SUNSET_TIMESPAN = 0.4F;
 
       public OverworldEffects() {
-         super(192.0F, true, DimensionSpecialEffects.SkyType.NORMAL, false, false);
+         super(192.0F, true, DimensionSpecialEffects.SkyType.OVERWORLD, false, false);
+      }
+
+      public boolean isSunriseOrSunset(float var1) {
+         float var2 = Mth.cos(var1 * 6.2831855F);
+         return var2 >= -0.4F && var2 <= 0.4F;
+      }
+
+      public int getSunriseOrSunsetColor(float var1) {
+         float var2 = Mth.cos(var1 * 6.2831855F);
+         float var3 = var2 / 0.4F * 0.5F + 0.5F;
+         float var4 = Mth.square(1.0F - (1.0F - Mth.sin(var3 * 3.1415927F)) * 0.99F);
+         return ARGB.colorFromFloat(var4, var3 * 0.3F + 0.7F, var3 * var3 * 0.7F + 0.2F, 0.2F);
       }
 
       public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
@@ -136,11 +137,6 @@ public abstract class DimensionSpecialEffects {
 
       public boolean isFoggyAt(int var1, int var2) {
          return false;
-      }
-
-      @Nullable
-      public float[] getSunriseColor(float var1, float var2) {
-         return null;
       }
    }
 }

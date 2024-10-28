@@ -12,7 +12,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
@@ -33,7 +32,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
-public class MapItem extends ComplexItem {
+public class MapItem extends Item {
    public static final int IMAGE_WIDTH = 128;
    public static final int IMAGE_HEIGHT = 128;
 
@@ -117,16 +116,16 @@ public class MapItem extends ComplexItem {
                                  var11.set(var20 + var27, 0, var21 + var28);
                                  int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
                                  BlockState var30;
-                                 if (var29 <= var1.getMinBuildHeight() + 1) {
+                                 if (var29 <= var1.getMinY() + 1) {
                                     var30 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
                                        --var29;
                                        var11.setY(var29);
                                        var30 = var23.getBlockState(var11);
-                                    } while(var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinBuildHeight());
+                                    } while(var30.getMapColor(var1, var11) == MapColor.NONE && var29 > var1.getMinY());
 
-                                    if (var29 > var1.getMinBuildHeight() && !var30.getFluidState().isEmpty()) {
+                                    if (var29 > var1.getMinY() && !var30.getFluidState().isEmpty()) {
                                        int var31 = var29 - 1;
                                        var12.set(var11);
 
@@ -135,7 +134,7 @@ public class MapItem extends ComplexItem {
                                           var12.setY(var31--);
                                           var32 = var23.getBlockState(var12);
                                           ++var24;
-                                       } while(var31 > var1.getMinBuildHeight() && !var32.getFluidState().isEmpty());
+                                       } while(var31 > var1.getMinY() && !var32.getFluidState().isEmpty());
 
                                        var30 = this.getCorrectStateForFluidBlock(var1, var30, var11);
                                     }
@@ -289,13 +288,6 @@ public class MapItem extends ComplexItem {
       }
    }
 
-   @Nullable
-   public Packet<?> getUpdatePacket(ItemStack var1, Level var2, Player var3) {
-      MapId var4 = (MapId)var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var5 = getSavedData(var4, var2);
-      return var5 != null ? var5.getUpdatePacket(var4, var3) : null;
-   }
-
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
       MapPostProcessing var3 = (MapPostProcessing)var1.remove(DataComponents.MAP_POST_PROCESSING);
       if (var3 != null) {
@@ -367,7 +359,7 @@ public class MapItem extends ComplexItem {
             }
          }
 
-         return InteractionResult.sidedSuccess(var1.getLevel().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.useOn(var1);
       }

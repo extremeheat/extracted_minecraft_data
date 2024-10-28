@@ -15,6 +15,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -25,10 +26,10 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
@@ -265,7 +266,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setYRot(0.0F);
       this.yHeadRot = this.getYRot();
       this.setOldPosAndRot();
@@ -358,7 +359,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
          for(int var2 = 0; var2 < 5; ++var2) {
             BlockPos var3 = var1.offset(Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8));
-            if (var3.getY() > this.level().getMinBuildHeight() && this.level().isEmptyBlock(var3) && this.level().getWorldBorder().isWithinBounds(var3) && this.level().noCollision(this, (new AABB(var3)).deflate(1.0E-6))) {
+            if (var3.getY() > this.level().getMinY() && this.level().isEmptyBlock(var3) && this.level().getWorldBorder().isWithinBounds(var3) && this.level().noCollision(this, (new AABB(var3)).deflate(1.0E-6))) {
                Direction var4 = this.findAttachableSurface(var3);
                if (var4 != null) {
                   this.unRide();
@@ -385,23 +386,23 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       this.setRot(var7, var8);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      Entity var3;
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      Entity var4;
       if (this.isClosed()) {
-         var3 = var1.getDirectEntity();
-         if (var3 instanceof AbstractArrow) {
+         var4 = var2.getDirectEntity();
+         if (var4 instanceof AbstractArrow) {
             return false;
          }
       }
 
-      if (!super.hurt(var1, var2)) {
+      if (!super.hurtServer(var1, var2, var3)) {
          return false;
       } else {
          if ((double)this.getHealth() < (double)this.getMaxHealth() * 0.5 && this.random.nextInt(4) == 0) {
             this.teleportSomewhere();
-         } else if (var1.is(DamageTypeTags.IS_PROJECTILE)) {
-            var3 = var1.getDirectEntity();
-            if (var3 != null && var3.getType() == EntityType.SHULKER_BULLET) {
+         } else if (var2.is(DamageTypeTags.IS_PROJECTILE)) {
+            var4 = var2.getDirectEntity();
+            if (var4 != null && var4.getType() == EntityType.SHULKER_BULLET) {
                this.hitByShulkerBullet();
             }
          }
@@ -421,7 +422,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          int var3 = this.level().getEntities((EntityTypeTest)EntityType.SHULKER, var2.inflate(8.0), Entity::isAlive).size();
          float var4 = (float)(var3 - 1) / 5.0F;
          if (!(this.level().random.nextFloat() < var4)) {
-            Shulker var5 = (Shulker)EntityType.SHULKER.create(this.level());
+            Shulker var5 = (Shulker)EntityType.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
             if (var5 != null) {
                var5.setVariant(this.getVariant());
                var5.moveTo(var1);
@@ -493,17 +494,19 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    public void push(Entity var1) {
    }
 
-   public Optional<Vec3> getRenderPosition(float var1) {
+   @Nullable
+   public Vec3 getRenderPosition(float var1) {
       if (this.clientOldAttachPosition != null && this.clientSideTeleportInterpolation > 0) {
          double var2 = (double)((float)this.clientSideTeleportInterpolation - var1) / 6.0;
          var2 *= var2;
+         var2 *= (double)this.getScale();
          BlockPos var4 = this.blockPosition();
          double var5 = (double)(var4.getX() - this.clientOldAttachPosition.getX()) * var2;
          double var7 = (double)(var4.getY() - this.clientOldAttachPosition.getY()) * var2;
          double var9 = (double)(var4.getZ() - this.clientOldAttachPosition.getZ()) * var2;
-         return Optional.of(new Vec3(-var5, -var7, -var9));
+         return new Vec3(-var5, -var7, -var9);
       } else {
-         return Optional.empty();
+         return null;
       }
    }
 
@@ -538,7 +541,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       DATA_PEEK_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.BYTE);
       DATA_COLOR_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.BYTE);
       FORWARD = (Vector3f)Util.make(() -> {
-         Vec3i var0 = Direction.SOUTH.getNormal();
+         Vec3i var0 = Direction.SOUTH.getUnitVec3i();
          return new Vector3f((float)var0.getX(), (float)var0.getY(), (float)var0.getZ());
       });
    }
@@ -554,7 +557,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       protected Optional<Float> getYRotD() {
          Direction var1 = Shulker.this.getAttachFace().getOpposite();
          Vector3f var2 = var1.getRotation().transform(new Vector3f(Shulker.FORWARD));
-         Vec3i var3 = var1.getNormal();
+         Vec3i var3 = var1.getUnitVec3i();
          Vector3f var4 = new Vector3f((float)var3.getX(), (float)var3.getY(), (float)var3.getZ());
          var4.cross(var2);
          double var5 = this.wantedX - this.mob.getX();
@@ -677,7 +680,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    static class ShulkerDefenseAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public ShulkerDefenseAttackGoal(Shulker var1) {
-         super(var1, LivingEntity.class, 10, true, false, (var0) -> {
+         super(var1, LivingEntity.class, 10, true, false, (var0, var1x) -> {
             return var0 instanceof Enemy;
          });
       }

@@ -63,7 +63,7 @@ public enum TrialSpawnerState implements StringRepresentable {
             break;
          case 1:
             if (!var2.canSpawnInLevel(var3)) {
-               var4.reset();
+               var4.resetStatistics();
                var10000 = this;
             } else if (!var4.hasMobToSpawn(var2, var3.random)) {
                var10000 = INACTIVE;
@@ -74,7 +74,7 @@ public enum TrialSpawnerState implements StringRepresentable {
             break;
          case 2:
             if (!var2.canSpawnInLevel(var3)) {
-               var4.reset();
+               var4.resetStatistics();
                var10000 = WAITING_FOR_PLAYERS;
             } else if (!var4.hasMobToSpawn(var2, var3.random)) {
                var10000 = INACTIVE;

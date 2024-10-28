@@ -27,7 +27,7 @@ public enum EmptyBlockGetter implements BlockGetter {
       return Fluids.EMPTY.defaultFluidState();
    }
 
-   public int getMinBuildHeight() {
+   public int getMinY() {
       return 0;
    }
 

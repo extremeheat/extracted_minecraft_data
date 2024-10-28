@@ -3,6 +3,7 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
@@ -30,10 +31,10 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
       return EnderDragonPhase.HOLDING_PATTERN;
    }
 
-   public void doServerTick() {
-      double var1 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-      if (var1 < 100.0 || var1 > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
-         this.findNewTarget();
+   public void doServerTick(ServerLevel var1) {
+      double var2 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      if (var2 < 100.0 || var2 > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
+         this.findNewTarget(var1);
       }
 
    }
@@ -48,56 +49,56 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
       return this.targetLocation;
    }
 
-   private void findNewTarget() {
-      int var2;
+   private void findNewTarget(ServerLevel var1) {
+      int var3;
       if (this.currentPath != null && this.currentPath.isDone()) {
-         BlockPos var1 = this.dragon.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(EndPodiumFeature.getLocation(this.dragon.getFightOrigin())));
-         var2 = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
-         if (this.dragon.getRandom().nextInt(var2 + 3) == 0) {
+         BlockPos var2 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         var3 = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
+         if (this.dragon.getRandom().nextInt(var3 + 3) == 0) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.LANDING_APPROACH);
             return;
          }
 
-         Player var5 = this.dragon.level().getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
-         double var3;
-         if (var5 != null) {
-            var3 = var1.distToCenterSqr(var5.position()) / 512.0;
+         Player var6 = var1.getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
+         double var4;
+         if (var6 != null) {
+            var4 = var2.distToCenterSqr(var6.position()) / 512.0;
          } else {
-            var3 = 64.0;
+            var4 = 64.0;
          }
 
-         if (var5 != null && (this.dragon.getRandom().nextInt((int)(var3 + 2.0)) == 0 || this.dragon.getRandom().nextInt(var2 + 2) == 0)) {
-            this.strafePlayer(var5);
+         if (var6 != null && (this.dragon.getRandom().nextInt((int)(var4 + 2.0)) == 0 || this.dragon.getRandom().nextInt(var3 + 2) == 0)) {
+            this.strafePlayer(var6);
             return;
          }
       }
 
       if (this.currentPath == null || this.currentPath.isDone()) {
-         int var6 = this.dragon.findClosestNode();
-         var2 = var6;
+         int var7 = this.dragon.findClosestNode();
+         var3 = var7;
          if (this.dragon.getRandom().nextInt(8) == 0) {
             this.clockwise = !this.clockwise;
-            var2 = var6 + 6;
+            var3 = var7 + 6;
          }
 
          if (this.clockwise) {
-            ++var2;
+            ++var3;
          } else {
-            --var2;
+            --var3;
          }
 
          if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() >= 0) {
-            var2 %= 12;
-            if (var2 < 0) {
-               var2 += 12;
+            var3 %= 12;
+            if (var3 < 0) {
+               var3 += 12;
             }
          } else {
-            var2 -= 12;
-            var2 &= 7;
-            var2 += 12;
+            var3 -= 12;
+            var3 &= 7;
+            var3 += 12;
          }
 
-         this.currentPath = this.dragon.findPath(var6, var2, (Node)null);
+         this.currentPath = this.dragon.findPath(var7, var3, (Node)null);
          if (this.currentPath != null) {
             this.currentPath.advance();
          }

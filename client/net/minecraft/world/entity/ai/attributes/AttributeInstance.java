@@ -63,6 +63,10 @@ public class AttributeInstance {
       return ImmutableSet.copyOf(this.modifierById.values());
    }
 
+   public Set<AttributeModifier> getPermanentModifiers() {
+      return ImmutableSet.copyOf(this.permanentModifiers.values());
+   }
+
    @Nullable
    public AttributeModifier getModifier(ResourceLocation var1) {
       return (AttributeModifier)this.modifierById.get(var1);
@@ -103,6 +107,16 @@ public class AttributeInstance {
    public void addPermanentModifier(AttributeModifier var1) {
       this.addModifier(var1);
       this.permanentModifiers.put(var1.id(), var1);
+   }
+
+   public void addPermanentModifiers(Collection<AttributeModifier> var1) {
+      Iterator var2 = var1.iterator();
+
+      while(var2.hasNext()) {
+         AttributeModifier var3 = (AttributeModifier)var2.next();
+         this.addPermanentModifier(var3);
+      }
+
    }
 
    protected void setDirty() {

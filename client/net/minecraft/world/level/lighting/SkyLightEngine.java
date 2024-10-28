@@ -149,13 +149,13 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
                if (var15 > var14) {
                   this.mutablePos.set(var12);
                   BlockState var16 = this.getState(this.mutablePos);
-                  int var17 = var5 - this.getOpacity(var16, this.mutablePos);
+                  int var17 = var5 - this.getOpacity(var16);
                   if (var17 > var14) {
                      if (var6 == null) {
                         var6 = LightEngine.QueueEntry.isFromEmptyShape(var3) ? Blocks.AIR.defaultBlockState() : this.getState(this.mutablePos.set(var1));
                      }
 
-                     if (!this.shapeOccludes(var1, var6, var12, var16, var11)) {
+                     if (!this.shapeOccludes(var6, var16, var11)) {
                         ((SkyLightSectionStorage)this.storage).setStoredLevel(var12, var17);
                         if (var17 > 1) {
                            this.enqueueIncrease(var12, LightEngine.QueueEntry.increaseSkipOneDirection(var17, isEmptyShape(var16), var11.getOpposite()));

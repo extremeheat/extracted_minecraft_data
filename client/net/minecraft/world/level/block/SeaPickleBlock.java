@@ -10,8 +10,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -69,15 +69,15 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
       return this.mayPlaceOn(var2.getBlockState(var4), var2, var4);
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (!var1.canSurvive(var4, var5)) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (!var1.canSurvive(var2, var4)) {
          return Blocks.AIR.defaultBlockState();
       } else {
          if ((Boolean)var1.getValue(WATERLOGGED)) {
-            var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+            var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 
@@ -108,7 +108,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return true;
+      return !isDead(var3) && var1.getBlockState(var2.below()).is(BlockTags.CORAL_BLOCKS);
    }
 
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
@@ -116,43 +116,40 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      if (!isDead(var4) && var1.getBlockState(var3.below()).is(BlockTags.CORAL_BLOCKS)) {
-         boolean var5 = true;
-         int var6 = 1;
-         boolean var7 = true;
-         int var8 = 0;
-         int var9 = var3.getX() - 2;
-         int var10 = 0;
+      boolean var5 = true;
+      int var6 = 1;
+      boolean var7 = true;
+      int var8 = 0;
+      int var9 = var3.getX() - 2;
+      int var10 = 0;
 
-         for(int var11 = 0; var11 < 5; ++var11) {
-            for(int var12 = 0; var12 < var6; ++var12) {
-               int var13 = 2 + var3.getY() - 1;
+      for(int var11 = 0; var11 < 5; ++var11) {
+         for(int var12 = 0; var12 < var6; ++var12) {
+            int var13 = 2 + var3.getY() - 1;
 
-               for(int var14 = var13 - 2; var14 < var13; ++var14) {
-                  BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
-                  if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
-                     BlockState var16 = var1.getBlockState(var15.below());
-                     if (var16.is(BlockTags.CORAL_BLOCKS)) {
-                        var1.setBlock(var15, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, var2.nextInt(4) + 1), 3);
-                     }
+            for(int var14 = var13 - 2; var14 < var13; ++var14) {
+               BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
+               if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
+                  BlockState var16 = var1.getBlockState(var15.below());
+                  if (var16.is(BlockTags.CORAL_BLOCKS)) {
+                     var1.setBlock(var15, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, var2.nextInt(4) + 1), 3);
                   }
                }
             }
-
-            if (var8 < 2) {
-               var6 += 2;
-               ++var10;
-            } else {
-               var6 -= 2;
-               --var10;
-            }
-
-            ++var8;
          }
 
-         var1.setBlock(var3, (BlockState)var4.setValue(PICKLES, 4), 2);
+         if (var8 < 2) {
+            var6 += 2;
+            ++var10;
+         } else {
+            var6 -= 2;
+            --var10;
+         }
+
+         ++var8;
       }
 
+      var1.setBlock(var3, (BlockState)var4.setValue(PICKLES, 4), 2);
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {

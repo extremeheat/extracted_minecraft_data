@@ -13,8 +13,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.player.Player;
@@ -48,11 +48,15 @@ public class MobBucketItem extends BucketItem {
    }
 
    private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
-      Entity var4 = this.type.spawn(var1, var2, (Player)null, var3, MobSpawnType.BUCKET, true, false);
+      Entity var4 = this.type.create(var1, EntityType.createDefaultStackConfig(var1, var2, (Player)null), var3, EntitySpawnReason.BUCKET, true, false);
       if (var4 instanceof Bucketable var5) {
          CustomData var6 = (CustomData)var2.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
          var5.loadFromBucketTag(var6.copyTag());
          var5.setFromBucket(true);
+      }
+
+      if (var4 != null) {
+         var1.addFreshEntityWithPassengers(var4);
       }
 
    }

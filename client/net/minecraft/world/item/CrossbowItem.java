@@ -23,7 +23,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -61,19 +61,19 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return ARROW_ONLY;
    }
 
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       ChargedProjectiles var5 = (ChargedProjectiles)var4.get(DataComponents.CHARGED_PROJECTILES);
       if (var5 != null && !var5.isEmpty()) {
          this.performShooting(var1, var2, var3, var4, getShootingPower(var5), 1.0F, (LivingEntity)null);
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.CONSUME;
       } else if (!var2.getProjectile(var4).isEmpty()) {
          this.startSoundPlayed = false;
          this.midLoadSoundPlayed = false;
          var2.startUsingItem(var3);
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.CONSUME;
       } else {
-         return InteractionResultHolder.fail(var4);
+         return InteractionResult.FAIL;
       }
    }
 
@@ -81,7 +81,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return var0.contains(Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
    }
 
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       int var5 = this.getUseDuration(var1, var3) - var4;
       float var6 = getPowerForTime(var5, var1, var3);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
@@ -89,8 +89,10 @@ public class CrossbowItem extends ProjectileWeaponItem {
          var7.end().ifPresent((var2x) -> {
             var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)((SoundEvent)var2x.value()), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
          });
+         return true;
+      } else {
+         return false;
       }
-
    }
 
    private static boolean tryLoadProjectiles(LivingEntity var0, ItemStack var1) {
@@ -217,8 +219,8 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return Mth.floor(var2 * 20.0F);
    }
 
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.CROSSBOW;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.CROSSBOW;
    }
 
    ChargingSounds getChargingSounds(ItemStack var1) {
