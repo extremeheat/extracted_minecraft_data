@@ -1455,8 +1455,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          } catch (Throwable var22) {
             try {
                var26.close();
-            } catch (Throwable var19) {
-               var22.addSuppressed(var19);
+            } catch (Throwable var20) {
+               var22.addSuppressed(var20);
             }
 
             throw var22;
@@ -1473,8 +1473,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
                try {
                   FileUtils.forceDelete(var10.toFile());
-               } catch (IOException var20) {
-                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var20);
+               } catch (IOException var19) {
+                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var19);
                }
             }
 

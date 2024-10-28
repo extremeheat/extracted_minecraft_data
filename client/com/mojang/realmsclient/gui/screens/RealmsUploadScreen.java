@@ -256,7 +256,12 @@ public class RealmsUploadScreen extends RealmsScreen {
          RealmsClient var2 = RealmsClient.create();
 
          try {
-            if (UPLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
+            try {
+               if (!UPLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
+                  this.status = Component.translatable("mco.upload.close.failure");
+                  return;
+               }
+
                UploadInfo var3 = null;
 
                for(int var4 = 0; var4 < 20; ++var4) {
@@ -298,66 +303,62 @@ public class RealmsUploadScreen extends RealmsScreen {
                   return;
                }
 
-               if (this.verify(var1)) {
-                  this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
-                  FileUpload var24 = new FileUpload(var1, this.realmId, this.slotId, var3, this.minecraft.getUser(), SharedConstants.getCurrentVersion().getName(), this.selectedLevel.levelVersion().minecraftVersionName(), this.uploadStatus);
-                  var24.upload((var1x) -> {
-                     if (var1x.statusCode >= 200 && var1x.statusCode < 300) {
-                        this.uploadFinished = true;
-                        this.status = Component.translatable("mco.upload.done");
-                        if (this.backButton != null) {
-                           this.backButton.setMessage(CommonComponents.GUI_DONE);
-                        }
-
-                        UploadTokenCache.invalidate(this.realmId);
-                     } else if (var1x.statusCode == 400 && var1x.errorMessage != null) {
-                        this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.errorMessage));
-                     } else {
-                        this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.statusCode));
-                     }
-
-                  });
-
-                  while(!var24.isFinished()) {
-                     if (this.cancelled) {
-                        var24.cancel();
-                        this.uploadCancelled();
-                        return;
-                     }
-
-                     try {
-                        Thread.sleep(500L);
-                     } catch (InterruptedException var17) {
-                        LOGGER.error("Failed to check Realms file upload status");
-                     }
+               if (!this.verify(var1)) {
+                  long var24 = var1.length();
+                  Unit var7 = Unit.getLargest(var24);
+                  Unit var8 = Unit.getLargest(5368709120L);
+                  if (Unit.humanReadable(var24, var7).equals(Unit.humanReadable(5368709120L, var8)) && var7 != Unit.B) {
+                     Unit var9 = Unit.values()[var7.ordinal() - 1];
+                     this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var24, var9), Unit.humanReadable(5368709120L, var9)));
+                     return;
                   }
 
+                  this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var24, var7), Unit.humanReadable(5368709120L, var8)));
                   return;
                }
 
-               long var5 = var1.length();
-               Unit var7 = Unit.getLargest(var5);
-               Unit var8 = Unit.getLargest(5368709120L);
-               if (Unit.humanReadable(var5, var7).equals(Unit.humanReadable(5368709120L, var8)) && var7 != Unit.B) {
-                  Unit var9 = Unit.values()[var7.ordinal() - 1];
-                  this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var5, var9), Unit.humanReadable(5368709120L, var9)));
-                  return;
+               this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
+               FileUpload var5 = new FileUpload(var1, this.realmId, this.slotId, var3, this.minecraft.getUser(), SharedConstants.getCurrentVersion().getName(), this.selectedLevel.levelVersion().minecraftVersionName(), this.uploadStatus);
+               var5.upload((var1x) -> {
+                  if (var1x.statusCode >= 200 && var1x.statusCode < 300) {
+                     this.uploadFinished = true;
+                     this.status = Component.translatable("mco.upload.done");
+                     if (this.backButton != null) {
+                        this.backButton.setMessage(CommonComponents.GUI_DONE);
+                     }
+
+                     UploadTokenCache.invalidate(this.realmId);
+                  } else if (var1x.statusCode == 400 && var1x.errorMessage != null) {
+                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.errorMessage));
+                  } else {
+                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.statusCode));
+                  }
+
+               });
+
+               while(!var5.isFinished()) {
+                  if (this.cancelled) {
+                     var5.cancel();
+                     this.uploadCancelled();
+                     return;
+                  }
+
+                  try {
+                     Thread.sleep(500L);
+                  } catch (InterruptedException var17) {
+                     LOGGER.error("Failed to check Realms file upload status");
+                  }
                }
 
-               this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var5, var7), Unit.humanReadable(5368709120L, var8)));
                return;
+            } catch (IOException var19) {
+               this.setErrorMessage(Component.translatable("mco.upload.failed", var19.getMessage()));
+            } catch (RealmsServiceException var20) {
+               this.setErrorMessage(Component.translatable("mco.upload.failed", var20.realmsError.errorMessage()));
+            } catch (InterruptedException var21) {
+               LOGGER.error("Could not acquire upload lock");
             }
 
-            this.status = Component.translatable("mco.upload.close.failure");
-         } catch (IOException var19) {
-            this.setErrorMessage(Component.translatable("mco.upload.failed", var19.getMessage()));
-            return;
-         } catch (RealmsServiceException var20) {
-            this.setErrorMessage(Component.translatable("mco.upload.failed", var20.realmsError.errorMessage()));
-            return;
-         } catch (InterruptedException var21) {
-            LOGGER.error("Could not acquire upload lock");
-            return;
          } finally {
             this.uploadFinished = true;
             if (UPLOAD_LOCK.isHeldByCurrentThread()) {
@@ -376,11 +377,10 @@ public class RealmsUploadScreen extends RealmsScreen {
                   var1.delete();
                }
 
+            } else {
+               return;
             }
-
-            return;
          }
-
       })).start();
    }
 

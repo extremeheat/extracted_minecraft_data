@@ -41,23 +41,31 @@ public class GameProfileArgument implements ArgumentType<Result> {
       return new GameProfileArgument();
    }
 
+   public <S> Result parse(StringReader var1, S var2) throws CommandSyntaxException {
+      return parse(var1, EntitySelectorParser.allowSelectors(var2));
+   }
+
    public Result parse(StringReader var1) throws CommandSyntaxException {
-      if (var1.canRead() && var1.peek() == '@') {
-         EntitySelectorParser var4 = new EntitySelectorParser(var1);
+      return parse(var1, true);
+   }
+
+   private static Result parse(StringReader var0, boolean var1) throws CommandSyntaxException {
+      if (var0.canRead() && var0.peek() == '@') {
+         EntitySelectorParser var4 = new EntitySelectorParser(var0, var1);
          EntitySelector var5 = var4.parse();
          if (var5.includesEntities()) {
-            throw EntityArgument.ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(var1);
+            throw EntityArgument.ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(var0);
          } else {
             return new SelectorResult(var5);
          }
       } else {
-         int var2 = var1.getCursor();
+         int var2 = var0.getCursor();
 
-         while(var1.canRead() && var1.peek() != ' ') {
-            var1.skip();
+         while(var0.canRead() && var0.peek() != ' ') {
+            var0.skip();
          }
 
-         String var3 = var1.getString().substring(var2, var1.getCursor());
+         String var3 = var0.getString().substring(var2, var0.getCursor());
          return (var1x) -> {
             Optional var2 = var1x.getServer().getProfileCache().get(var3);
             SimpleCommandExceptionType var10001 = ERROR_UNKNOWN_PLAYER;
@@ -68,18 +76,19 @@ public class GameProfileArgument implements ArgumentType<Result> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      if (var1.getSource() instanceof SharedSuggestionProvider) {
-         StringReader var3 = new StringReader(var2.getInput());
-         var3.setCursor(var2.getStart());
-         EntitySelectorParser var4 = new EntitySelectorParser(var3);
+      Object var4 = var1.getSource();
+      if (var4 instanceof SharedSuggestionProvider var3) {
+         StringReader var8 = new StringReader(var2.getInput());
+         var8.setCursor(var2.getStart());
+         EntitySelectorParser var5 = new EntitySelectorParser(var8, EntitySelectorParser.allowSelectors(var3));
 
          try {
-            var4.parse();
-         } catch (CommandSyntaxException var6) {
+            var5.parse();
+         } catch (CommandSyntaxException var7) {
          }
 
-         return var4.fillSuggestions(var2, (var1x) -> {
-            SharedSuggestionProvider.suggest((Iterable)((SharedSuggestionProvider)var1.getSource()).getOnlinePlayerNames(), var1x);
+         return var5.fillSuggestions(var2, (var1x) -> {
+            SharedSuggestionProvider.suggest((Iterable)var3.getOnlinePlayerNames(), var1x);
          });
       } else {
          return Suggestions.empty();
@@ -88,6 +97,11 @@ public class GameProfileArgument implements ArgumentType<Result> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(final StringReader var1, final Object var2) throws CommandSyntaxException {
+      return this.parse(var1, var2);
    }
 
    // $FF: synthetic method

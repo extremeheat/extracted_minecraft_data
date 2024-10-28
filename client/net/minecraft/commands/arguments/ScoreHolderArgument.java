@@ -35,7 +35,7 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_SCORE_HOLDERS = (var0, var1) -> {
       StringReader var2 = new StringReader(var1.getInput());
       var2.setCursor(var1.getStart());
-      EntitySelectorParser var3 = new EntitySelectorParser(var2);
+      EntitySelectorParser var3 = new EntitySelectorParser(var2, EntitySelectorParser.allowSelectors((CommandSourceStack)var0.getSource()));
 
       try {
          var3.parse();
@@ -87,23 +87,31 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
    }
 
    public Result parse(StringReader var1) throws CommandSyntaxException {
+      return this.parse(var1, true);
+   }
+
+   public <S> Result parse(StringReader var1, S var2) throws CommandSyntaxException {
+      return this.parse(var1, EntitySelectorParser.allowSelectors(var2));
+   }
+
+   private Result parse(StringReader var1, boolean var2) throws CommandSyntaxException {
       if (var1.canRead() && var1.peek() == '@') {
-         EntitySelectorParser var7 = new EntitySelectorParser(var1);
-         EntitySelector var8 = var7.parse();
-         if (!this.multiple && var8.getMaxResults() > 1) {
+         EntitySelectorParser var8 = new EntitySelectorParser(var1, var2);
+         EntitySelector var9 = var8.parse();
+         if (!this.multiple && var9.getMaxResults() > 1) {
             throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.createWithContext(var1);
          } else {
-            return new SelectorResult(var8);
+            return new SelectorResult(var9);
          }
       } else {
-         int var2 = var1.getCursor();
+         int var3 = var1.getCursor();
 
          while(var1.canRead() && var1.peek() != ' ') {
             var1.skip();
          }
 
-         String var3 = var1.getString().substring(var2, var1.getCursor());
-         if (var3.equals("*")) {
+         String var4 = var1.getString().substring(var3, var1.getCursor());
+         if (var4.equals("*")) {
             return (var0, var1x) -> {
                Collection var2 = (Collection)var1x.get();
                if (var2.isEmpty()) {
@@ -113,50 +121,50 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
                }
             };
          } else {
-            List var4 = List.of(ScoreHolder.forNameOnly(var3));
-            if (var3.startsWith("#")) {
+            List var5 = List.of(ScoreHolder.forNameOnly(var4));
+            if (var4.startsWith("#")) {
                return (var1x, var2x) -> {
-                  return var4;
+                  return var5;
                };
             } else {
                try {
-                  UUID var5 = UUID.fromString(var3);
+                  UUID var6 = UUID.fromString(var4);
                   return (var2x, var3x) -> {
-                     MinecraftServer var4x = var2x.getServer();
+                     MinecraftServer var4 = var2x.getServer();
                      Entity var5x = null;
-                     ArrayList var6 = null;
-                     Iterator var7 = var4x.getAllLevels().iterator();
+                     ArrayList var6x = null;
+                     Iterator var7 = var4.getAllLevels().iterator();
 
                      while(var7.hasNext()) {
                         ServerLevel var8 = (ServerLevel)var7.next();
-                        Entity var9 = var8.getEntity(var5);
+                        Entity var9 = var8.getEntity(var6);
                         if (var9 != null) {
                            if (var5x == null) {
                               var5x = var9;
                            } else {
-                              if (var6 == null) {
-                                 var6 = new ArrayList();
-                                 var6.add(var5x);
+                              if (var6x == null) {
+                                 var6x = new ArrayList();
+                                 var6x.add(var5x);
                               }
 
-                              var6.add(var9);
+                              var6x.add(var9);
                            }
                         }
                      }
 
-                     if (var6 != null) {
-                        return var6;
+                     if (var6x != null) {
+                        return var6x;
                      } else if (var5x != null) {
                         return List.of(var5x);
                      } else {
-                        return var4;
+                        return var5;
                      }
                   };
-               } catch (IllegalArgumentException var6) {
+               } catch (IllegalArgumentException var7) {
                   return (var2x, var3x) -> {
                      MinecraftServer var4x = var2x.getServer();
-                     ServerPlayer var5 = var4x.getPlayerList().getPlayerByName(var3);
-                     return var5 != null ? List.of(var5) : var4;
+                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var4);
+                     return var5x != null ? List.of(var5x) : var5;
                   };
                }
             }
@@ -166,6 +174,11 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(final StringReader var1, final Object var2) throws CommandSyntaxException {
+      return this.parse(var1, var2);
    }
 
    // $FF: synthetic method

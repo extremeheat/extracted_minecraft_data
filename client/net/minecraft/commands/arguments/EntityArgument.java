@@ -92,10 +92,18 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
    }
 
    public EntitySelector parse(StringReader var1) throws CommandSyntaxException {
-      boolean var2 = false;
-      EntitySelectorParser var3 = new EntitySelectorParser(var1);
-      EntitySelector var4 = var3.parse();
-      if (var4.getMaxResults() > 1 && this.single) {
+      return this.parse(var1, true);
+   }
+
+   public <S> EntitySelector parse(StringReader var1, S var2) throws CommandSyntaxException {
+      return this.parse(var1, EntitySelectorParser.allowSelectors(var2));
+   }
+
+   private EntitySelector parse(StringReader var1, boolean var2) throws CommandSyntaxException {
+      boolean var3 = false;
+      EntitySelectorParser var4 = new EntitySelectorParser(var1, var2);
+      EntitySelector var5 = var4.parse();
+      if (var5.getMaxResults() > 1 && this.single) {
          if (this.playersOnly) {
             var1.setCursor(0);
             throw ERROR_NOT_SINGLE_PLAYER.createWithContext(var1);
@@ -103,11 +111,11 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
             var1.setCursor(0);
             throw ERROR_NOT_SINGLE_ENTITY.createWithContext(var1);
          }
-      } else if (var4.includesEntities() && this.playersOnly && !var4.isSelfSelector()) {
+      } else if (var5.includesEntities() && this.playersOnly && !var5.isSelfSelector()) {
          var1.setCursor(0);
          throw ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(var1);
       } else {
-         return var4;
+         return var5;
       }
    }
 
@@ -116,7 +124,7 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
       if (var4 instanceof SharedSuggestionProvider var3) {
          StringReader var8 = new StringReader(var2.getInput());
          var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.hasPermission(2));
+         EntitySelectorParser var5 = new EntitySelectorParser(var8, EntitySelectorParser.allowSelectors(var3));
 
          try {
             var5.parse();
@@ -135,6 +143,11 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   // $FF: synthetic method
+   public Object parse(final StringReader var1, final Object var2) throws CommandSyntaxException {
+      return this.parse(var1, var2);
    }
 
    // $FF: synthetic method

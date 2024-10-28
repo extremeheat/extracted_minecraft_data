@@ -194,7 +194,11 @@ public abstract class FlowingFluid extends Fluid {
          return this.getFlowing(8, true);
       } else {
          int var16 = var4 - this.getDropOff(var1);
-         return var16 <= 0 ? Fluids.EMPTY.defaultFluidState() : this.getFlowing(var16, false);
+         if (var16 <= 0) {
+            return Fluids.EMPTY.defaultFluidState();
+         } else {
+            return this.getFlowing(var16, false);
+         }
       }
    }
 

@@ -95,29 +95,29 @@ public class BlockTintCache {
 
       this.lock.writeLock().lock();
 
-      CacheData var7;
       try {
          var5 = (CacheData)this.cache.get(var3);
-         if (var5 != null) {
-            var6 = var5;
-            return var6;
-         }
-
-         var6 = new CacheData();
-         if (this.cache.size() >= 256) {
-            var7 = (CacheData)this.cache.removeFirst();
-            if (var7 != null) {
-               var7.invalidate();
+         if (var5 == null) {
+            var6 = new CacheData();
+            CacheData var7;
+            if (this.cache.size() >= 256) {
+               var7 = (CacheData)this.cache.removeFirst();
+               if (var7 != null) {
+                  var7.invalidate();
+               }
             }
+
+            this.cache.put(var3, var6);
+            var7 = var6;
+            return var7;
          }
 
-         this.cache.put(var3, var6);
-         var7 = var6;
+         var6 = var5;
       } finally {
          this.lock.writeLock().unlock();
       }
 
-      return var7;
+      return var6;
    }
 
    static class LatestCacheInfo {

@@ -97,12 +97,12 @@ public class FileDownload {
             CloseableHttpClient var5 = null;
             boolean var90 = false;
 
-            label1408: {
+            label1409: {
                CloseableHttpResponse var6;
                FileOutputStream var7;
                DownloadCountingOutputStream var9;
                ResourcePackProgressListener var106;
-               label1402: {
+               label1403: {
                   try {
                      var90 = true;
                      this.tempFile = File.createTempFile("backup", ".tar.gz");
@@ -114,7 +114,7 @@ public class FileDownload {
                         this.error = true;
                         this.request.abort();
                         var90 = false;
-                        break label1408;
+                        break label1409;
                      }
 
                      var7 = new FileOutputStream(this.tempFile);
@@ -123,7 +123,7 @@ public class FileDownload {
                      var9.setListener(var8);
                      IOUtils.copy(var6.getEntity().getContent(), var9);
                      var90 = false;
-                     break label1402;
+                     break label1403;
                   } catch (Exception var103) {
                      LOGGER.error("Caught exception while downloading: {}", var103.getMessage());
                      this.error = true;
