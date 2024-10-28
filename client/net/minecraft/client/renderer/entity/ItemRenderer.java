@@ -116,9 +116,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
          var8.getTransforms().getTransform(var2).apply(var3, var4);
          var4.translate(-0.5F, -0.5F, -0.5F);
-         if (var8.isCustomRenderer() || var1.is(Items.TRIDENT) && !var9) {
-            this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
-         } else {
+         if (!var8.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var9)) {
             boolean var10;
             label63: {
                if (var2 != ItemDisplayContext.GUI && !var2.firstPerson()) {
@@ -152,6 +150,8 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             }
 
             this.renderModelLists(var8, var1, var6, var7, var4, var16);
+         } else {
+            this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
          }
 
          var4.popPose();
