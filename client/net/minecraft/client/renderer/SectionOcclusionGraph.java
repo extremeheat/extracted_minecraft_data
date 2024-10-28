@@ -420,10 +420,10 @@ public class SectionOcclusionGraph {
          this(new GraphStorage(var1), new GraphEvents());
       }
 
-      private GraphState(GraphStorage var1, GraphEvents var2) {
+      private GraphState(GraphStorage storage, GraphEvents events) {
          super();
-         this.storage = var1;
-         this.events = var2;
+         this.storage = storage;
+         this.events = events;
       }
 
       public GraphStorage storage() {
@@ -509,10 +509,10 @@ public class SectionOcclusionGraph {
          this(new LongOpenHashSet(), new LinkedBlockingQueue());
       }
 
-      private GraphEvents(LongSet var1, BlockingQueue<SectionRenderDispatcher.RenderSection> var2) {
+      private GraphEvents(LongSet chunksWhichReceivedNeighbors, BlockingQueue<SectionRenderDispatcher.RenderSection> sectionsToPropagateFrom) {
          super();
-         this.chunksWhichReceivedNeighbors = var1;
-         this.sectionsToPropagateFrom = var2;
+         this.chunksWhichReceivedNeighbors = chunksWhichReceivedNeighbors;
+         this.sectionsToPropagateFrom = sectionsToPropagateFrom;
       }
 
       public LongSet chunksWhichReceivedNeighbors() {

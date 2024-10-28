@@ -5,6 +5,10 @@ public class FastColor {
       super();
    }
 
+   public static int as8BitChannel(float var0) {
+      return Mth.floor(var0 * 255.0F);
+   }
+
    public static class ABGR32 {
       public ABGR32() {
          super();
@@ -90,6 +94,10 @@ public class FastColor {
 
       public static int color(int var0, int var1) {
          return var0 << 24 | var1 & 16777215;
+      }
+
+      public static int colorFromFloat(float var0, float var1, float var2, float var3) {
+         return color(FastColor.as8BitChannel(var0), FastColor.as8BitChannel(var1), FastColor.as8BitChannel(var2), FastColor.as8BitChannel(var3));
       }
    }
 }

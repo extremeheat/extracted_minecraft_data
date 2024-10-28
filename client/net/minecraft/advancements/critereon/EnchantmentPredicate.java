@@ -19,10 +19,10 @@ public record EnchantmentPredicate(Optional<Holder<Enchantment>> enchantment, Mi
       this(Optional.of(var1.builtInRegistryHolder()), var2);
    }
 
-   public EnchantmentPredicate(Optional<Holder<Enchantment>> var1, MinMaxBounds.Ints var2) {
+   public EnchantmentPredicate(Optional<Holder<Enchantment>> enchantment, MinMaxBounds.Ints level) {
       super();
-      this.enchantment = var1;
-      this.level = var2;
+      this.enchantment = enchantment;
+      this.level = level;
    }
 
    public boolean containedIn(ItemEnchantments var1) {

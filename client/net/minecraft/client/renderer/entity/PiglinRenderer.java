@@ -46,12 +46,12 @@ public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
    }
 
    // $FF: synthetic method
-   protected boolean isShaking(LivingEntity var1) {
+   protected boolean isShaking(final LivingEntity var1) {
       return this.isShaking((Mob)var1);
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(Entity var1) {
+   public ResourceLocation getTextureLocation(final Entity var1) {
       return this.getTextureLocation((Mob)var1);
    }
 

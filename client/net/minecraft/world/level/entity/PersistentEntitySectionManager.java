@@ -380,7 +380,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       private long currentSectionKey;
       private EntitySection<T> currentSection;
 
-      Callback(T var2, long var3, EntitySection<T> var5) {
+      Callback(final T var2, final long var3, final EntitySection<T> var5) {
          super();
          this.entity = var2;
          this.currentSectionKey = var3;

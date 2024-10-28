@@ -100,13 +100,13 @@ public class DownloadQueue implements AutoCloseable {
          return var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(LogEntry::id), Codec.STRING.fieldOf("url").forGetter(LogEntry::url), ExtraCodecs.INSTANT_ISO8601.fieldOf("time").forGetter(LogEntry::time), Codec.STRING.optionalFieldOf("hash").forGetter(LogEntry::hash), Codec.mapEither(Codec.STRING.fieldOf("error"), DownloadQueue.FileInfoEntry.CODEC.fieldOf("file")).forGetter(LogEntry::errorOrFileInfo)).apply(var0, LogEntry::new);
       });
 
-      LogEntry(UUID var1, String var2, Instant var3, Optional<String> var4, Either<String, FileInfoEntry> var5) {
+      LogEntry(UUID id, String url, Instant time, Optional<String> hash, Either<String, FileInfoEntry> errorOrFileInfo) {
          super();
-         this.id = var1;
-         this.url = var2;
-         this.time = var3;
-         this.hash = var4;
-         this.errorOrFileInfo = var5;
+         this.id = id;
+         this.url = url;
+         this.time = time;
+         this.hash = hash;
+         this.errorOrFileInfo = errorOrFileInfo;
       }
 
       public UUID id() {
@@ -138,10 +138,10 @@ public class DownloadQueue implements AutoCloseable {
          this(new HashMap(), new HashSet());
       }
 
-      public BatchResult(Map<UUID, Path> var1, Set<UUID> var2) {
+      public BatchResult(Map<UUID, Path> downloaded, Set<UUID> failed) {
          super();
-         this.downloaded = var1;
-         this.failed = var2;
+         this.downloaded = downloaded;
+         this.failed = failed;
       }
 
       public Map<UUID, Path> downloaded() {
@@ -160,13 +160,13 @@ public class DownloadQueue implements AutoCloseable {
       final Proxy proxy;
       final HttpUtil.DownloadProgressListener listener;
 
-      public BatchConfig(HashFunction var1, int var2, Map<String, String> var3, Proxy var4, HttpUtil.DownloadProgressListener var5) {
+      public BatchConfig(HashFunction hashFunction, int maxSize, Map<String, String> headers, Proxy proxy, HttpUtil.DownloadProgressListener listener) {
          super();
-         this.hashFunction = var1;
-         this.maxSize = var2;
-         this.headers = var3;
-         this.proxy = var4;
-         this.listener = var5;
+         this.hashFunction = hashFunction;
+         this.maxSize = maxSize;
+         this.headers = headers;
+         this.proxy = proxy;
+         this.listener = listener;
       }
 
       public HashFunction hashFunction() {
@@ -195,10 +195,10 @@ public class DownloadQueue implements AutoCloseable {
          return var0.group(Codec.STRING.fieldOf("name").forGetter(FileInfoEntry::name), Codec.LONG.fieldOf("size").forGetter(FileInfoEntry::size)).apply(var0, FileInfoEntry::new);
       });
 
-      FileInfoEntry(String var1, long var2) {
+      FileInfoEntry(String name, long size) {
          super();
-         this.name = var1;
-         this.size = var2;
+         this.name = name;
+         this.size = size;
       }
 
       public String name() {
@@ -215,10 +215,10 @@ public class DownloadQueue implements AutoCloseable {
       @Nullable
       final HashCode hash;
 
-      public DownloadRequest(URL var1, @Nullable HashCode var2) {
+      public DownloadRequest(URL url, @Nullable HashCode hash) {
          super();
-         this.url = var1;
-         this.hash = var2;
+         this.url = url;
+         this.hash = hash;
       }
 
       public URL url() {

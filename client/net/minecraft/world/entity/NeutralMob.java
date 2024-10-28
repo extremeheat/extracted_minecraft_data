@@ -43,11 +43,15 @@ public interface NeutralMob {
             Entity var4 = ((ServerLevel)var1).getEntity(var3);
             if (var4 != null) {
                if (var4 instanceof Mob) {
-                  this.setLastHurtByMob((Mob)var4);
+                  Mob var5 = (Mob)var4;
+                  this.setTarget(var5);
+                  this.setLastHurtByMob(var5);
                }
 
-               if (var4.getType() == EntityType.PLAYER) {
-                  this.setLastHurtByPlayer((Player)var4);
+               if (var4 instanceof Player) {
+                  Player var6 = (Player)var4;
+                  this.setTarget(var6);
+                  this.setLastHurtByPlayer(var6);
                }
 
             }

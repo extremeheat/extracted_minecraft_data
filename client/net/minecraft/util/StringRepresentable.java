@@ -120,7 +120,7 @@ public interface StringRepresentable {
       }
 
       // $FF: synthetic method
-      public DataResult encode(Object var1, DynamicOps var2, Object var3) {
+      public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
          return this.encode((StringRepresentable)var1, var2, var3);
       }
    }

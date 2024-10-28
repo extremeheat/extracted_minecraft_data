@@ -32,11 +32,11 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<TriggerInstance
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceLocation.CODEC.fieldOf("recipe_id").forGetter(TriggerInstance::recipeId), ItemPredicate.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(TriggerInstance::ingredients)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceLocation var2, List<ItemPredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, ResourceLocation recipeId, List<ItemPredicate> ingredients) {
          super();
-         this.player = var1;
-         this.recipeId = var2;
-         this.ingredients = var3;
+         this.player = player;
+         this.recipeId = recipeId;
+         this.ingredients = ingredients;
       }
 
       public static Criterion<TriggerInstance> craftedItem(ResourceLocation var0, List<ItemPredicate.Builder> var1) {
@@ -69,7 +69,7 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<TriggerInstance
                Iterator var7 = var3.iterator();
 
                while(var7.hasNext()) {
-                  if (var5.matches((ItemStack)var7.next())) {
+                  if (var5.test((ItemStack)var7.next())) {
                      var7.remove();
                      var6 = true;
                      break;

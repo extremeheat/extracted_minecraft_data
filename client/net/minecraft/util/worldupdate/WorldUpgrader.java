@@ -158,7 +158,7 @@ public class WorldUpgrader {
    }
 
    private class EntityUpgrader extends SimpleRegionStorageUpgrader {
-      EntityUpgrader(WorldUpgrader var1) {
+      EntityUpgrader(final WorldUpgrader var1) {
          super(DataFixTypes.ENTITY_CHUNK, "entities", WorldUpgrader.STATUS_UPGRADING_ENTITIES, WorldUpgrader.STATUS_FINISHED_ENTITIES);
       }
 
@@ -168,7 +168,7 @@ public class WorldUpgrader {
    }
 
    private class PoiUpgrader extends SimpleRegionStorageUpgrader {
-      PoiUpgrader(WorldUpgrader var1) {
+      PoiUpgrader(final WorldUpgrader var1) {
          super(DataFixTypes.POI_CHUNK, "poi", WorldUpgrader.STATUS_UPGRADING_POI, WorldUpgrader.STATUS_FINISHED_POI);
       }
 
@@ -230,13 +230,13 @@ public class WorldUpgrader {
       }
 
       // $FF: synthetic method
-      protected AutoCloseable createStorage(RegionStorageInfo var1, Path var2) {
+      protected AutoCloseable createStorage(final RegionStorageInfo var1, final Path var2) {
          return this.createStorage(var1, var2);
       }
    }
 
    private abstract class SimpleRegionStorageUpgrader extends AbstractUpgrader<SimpleRegionStorage> {
-      SimpleRegionStorageUpgrader(DataFixTypes var2, String var3, MutableComponent var4, MutableComponent var5) {
+      SimpleRegionStorageUpgrader(final DataFixTypes var2, final String var3, final MutableComponent var4, final MutableComponent var5) {
          super(var2, var3, var3, var4, var5);
       }
 
@@ -266,7 +266,7 @@ public class WorldUpgrader {
       protected abstract CompoundTag upgradeTag(SimpleRegionStorage var1, CompoundTag var2);
 
       // $FF: synthetic method
-      protected AutoCloseable createStorage(RegionStorageInfo var1, Path var2) {
+      protected AutoCloseable createStorage(final RegionStorageInfo var1, final Path var2) {
          return this.createStorage(var1, var2);
       }
    }
@@ -280,7 +280,7 @@ public class WorldUpgrader {
       protected CompletableFuture<Void> previousWriteFuture;
       protected final DataFixTypes dataFixType;
 
-      AbstractUpgrader(DataFixTypes var2, String var3, String var4, MutableComponent var5, MutableComponent var6) {
+      AbstractUpgrader(final DataFixTypes var2, final String var3, final String var4, final MutableComponent var5, final MutableComponent var6) {
          super();
          this.dataFixType = var2;
          this.type = var3;
@@ -497,10 +497,10 @@ public class WorldUpgrader {
       final RegionFile file;
       final List<ChunkPos> chunksToUpgrade;
 
-      FileToUpgrade(RegionFile var1, List<ChunkPos> var2) {
+      FileToUpgrade(RegionFile file, List<ChunkPos> chunksToUpgrade) {
          super();
-         this.file = var1;
-         this.chunksToUpgrade = var2;
+         this.file = file;
+         this.chunksToUpgrade = chunksToUpgrade;
       }
 
       public RegionFile file() {
@@ -517,11 +517,11 @@ public class WorldUpgrader {
       final T storage;
       final ListIterator<FileToUpgrade> files;
 
-      DimensionToUpgrade(ResourceKey<Level> var1, T var2, ListIterator<FileToUpgrade> var3) {
+      DimensionToUpgrade(ResourceKey<Level> dimensionKey, T storage, ListIterator<FileToUpgrade> files) {
          super();
-         this.dimensionKey = var1;
-         this.storage = var2;
-         this.files = var3;
+         this.dimensionKey = dimensionKey;
+         this.storage = storage;
+         this.files = files;
       }
 
       public ResourceKey<Level> dimensionKey() {

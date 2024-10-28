@@ -92,7 +92,7 @@ public class ShapedRecipe implements CraftingRecipe {
             return var0x.category;
          }), ShapedRecipePattern.MAP_CODEC.forGetter((var0x) -> {
             return var0x.pattern;
-         }), ItemStack.CODEC.fieldOf("result").forGetter((var0x) -> {
+         }), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> {
             return var0x.result;
          }), Codec.BOOL.optionalFieldOf("show_notification", true).forGetter((var0x) -> {
             return var0x.showNotification;

@@ -66,7 +66,7 @@ public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
       return new FireworkExplosion(var3, var4, var5, var2, (Boolean)var10006.orElseGet(var1::hasTwinkle));
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetFireworkExplosionFunction> getType() {
       return LootItemFunctions.SET_FIREWORK_EXPLOSION;
    }
 

@@ -82,11 +82,11 @@ public class QuickPlayLog {
          return var0.group(QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayWorld::type), ExtraCodecs.ESCAPED_STRING.fieldOf("id").forGetter(QuickPlayWorld::id), Codec.STRING.fieldOf("name").forGetter(QuickPlayWorld::name)).apply(var0, QuickPlayWorld::new);
       });
 
-      QuickPlayWorld(Type var1, String var2, String var3) {
+      QuickPlayWorld(Type type, String id, String name) {
          super();
-         this.type = var1;
-         this.id = var2;
-         this.name = var3;
+         this.type = type;
+         this.id = id;
+         this.name = name;
       }
 
       public Type type() {
@@ -110,7 +110,7 @@ public class QuickPlayLog {
       static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
       private final String name;
 
-      private Type(String var3) {
+      private Type(final String var3) {
          this.name = var3;
       }
 
@@ -129,11 +129,11 @@ public class QuickPlayLog {
          return var0.group(QuickPlayLog.QuickPlayWorld.MAP_CODEC.forGetter(QuickPlayEntry::quickPlayWorld), ExtraCodecs.INSTANT_ISO8601.fieldOf("lastPlayedTime").forGetter(QuickPlayEntry::lastPlayedTime), GameType.CODEC.fieldOf("gamemode").forGetter(QuickPlayEntry::gamemode)).apply(var0, QuickPlayEntry::new);
       });
 
-      QuickPlayEntry(QuickPlayWorld var1, Instant var2, GameType var3) {
+      QuickPlayEntry(QuickPlayWorld quickPlayWorld, Instant lastPlayedTime, GameType gamemode) {
          super();
-         this.quickPlayWorld = var1;
-         this.lastPlayedTime = var2;
-         this.gamemode = var3;
+         this.quickPlayWorld = quickPlayWorld;
+         this.lastPlayedTime = lastPlayedTime;
+         this.gamemode = gamemode;
       }
 
       public QuickPlayWorld quickPlayWorld() {

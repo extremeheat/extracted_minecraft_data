@@ -15,7 +15,7 @@ public class V3083 extends NamespacedSchema {
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
       var1.register(var2, "minecraft:allay", () -> {
-         return DSL.optionalFields("ArmorItems", DSL.list(References.ITEM_STACK.in(var1)), "HandItems", DSL.list(References.ITEM_STACK.in(var1)), "Inventory", DSL.list(References.ITEM_STACK.in(var1)), "listener", DSL.optionalFields("event", DSL.optionalFields("game_event", References.GAME_EVENT_NAME.in(var1))));
+         return DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "listener", DSL.optionalFields("event", DSL.optionalFields("game_event", References.GAME_EVENT_NAME.in(var1))), V100.equipment(var1));
       });
       return var2;
    }

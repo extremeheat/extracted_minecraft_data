@@ -144,7 +144,7 @@ public class HashCache {
          }
 
          // $FF: synthetic method
-         public FileVisitResult visitFile(Object var1x, BasicFileAttributes var2x) throws IOException {
+         public FileVisitResult visitFile(final Object var1x, final BasicFileAttributes var2x) throws IOException {
             return this.visitFile((Path)var1x, var2x);
          }
       });
@@ -154,10 +154,10 @@ public class HashCache {
    static record ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
       final String version;
 
-      ProviderCache(String var1, ImmutableMap<Path, HashCode> var2) {
+      ProviderCache(String version, ImmutableMap<Path, HashCode> data) {
          super();
-         this.version = var1;
-         this.data = var2;
+         this.version = version;
+         this.data = data;
       }
 
       @Nullable
@@ -262,7 +262,7 @@ public class HashCache {
       private final AtomicInteger writes = new AtomicInteger();
       private volatile boolean closed;
 
-      CacheUpdater(HashCache var1, String var2, String var3, ProviderCache var4) {
+      CacheUpdater(final HashCache var1, final String var2, final String var3, final ProviderCache var4) {
          super();
          this.provider = var2;
          this.oldCache = var4;
@@ -299,11 +299,11 @@ public class HashCache {
    }
 
    public static record UpdateResult(String providerId, ProviderCache cache, int writes) {
-      public UpdateResult(String var1, ProviderCache var2, int var3) {
+      public UpdateResult(String providerId, ProviderCache cache, int writes) {
          super();
-         this.providerId = var1;
-         this.cache = var2;
-         this.writes = var3;
+         this.providerId = providerId;
+         this.cache = cache;
+         this.writes = writes;
       }
 
       public String providerId() {
@@ -324,10 +324,10 @@ public class HashCache {
          this(var1, new ConcurrentHashMap());
       }
 
-      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
+      private ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
          super();
-         this.version = var1;
-         this.data = var2;
+         this.version = version;
+         this.data = data;
       }
 
       public void put(Path var1, HashCode var2) {

@@ -1,7 +1,5 @@
 package net.minecraft.nbt;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -39,48 +37,25 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public <U> U convertTo(DynamicOps<U> var1, Tag var2) {
+      Object var10000;
       switch (var2.getId()) {
-         case 0 -> {
-            return var1.empty();
-         }
-         case 1 -> {
-            return var1.createByte(((NumericTag)var2).getAsByte());
-         }
-         case 2 -> {
-            return var1.createShort(((NumericTag)var2).getAsShort());
-         }
-         case 3 -> {
-            return var1.createInt(((NumericTag)var2).getAsInt());
-         }
-         case 4 -> {
-            return var1.createLong(((NumericTag)var2).getAsLong());
-         }
-         case 5 -> {
-            return var1.createFloat(((NumericTag)var2).getAsFloat());
-         }
-         case 6 -> {
-            return var1.createDouble(((NumericTag)var2).getAsDouble());
-         }
-         case 7 -> {
-            return var1.createByteList(ByteBuffer.wrap(((ByteArrayTag)var2).getAsByteArray()));
-         }
-         case 8 -> {
-            return var1.createString(var2.getAsString());
-         }
-         case 9 -> {
-            return this.convertList(var1, var2);
-         }
-         case 10 -> {
-            return this.convertMap(var1, var2);
-         }
-         case 11 -> {
-            return var1.createIntList(Arrays.stream(((IntArrayTag)var2).getAsIntArray()));
-         }
-         case 12 -> {
-            return var1.createLongList(Arrays.stream(((LongArrayTag)var2).getAsLongArray()));
-         }
+         case 0 -> var10000 = (Object)var1.empty();
+         case 1 -> var10000 = (Object)var1.createByte(((NumericTag)var2).getAsByte());
+         case 2 -> var10000 = (Object)var1.createShort(((NumericTag)var2).getAsShort());
+         case 3 -> var10000 = (Object)var1.createInt(((NumericTag)var2).getAsInt());
+         case 4 -> var10000 = (Object)var1.createLong(((NumericTag)var2).getAsLong());
+         case 5 -> var10000 = (Object)var1.createFloat(((NumericTag)var2).getAsFloat());
+         case 6 -> var10000 = (Object)var1.createDouble(((NumericTag)var2).getAsDouble());
+         case 7 -> var10000 = (Object)var1.createByteList(ByteBuffer.wrap(((ByteArrayTag)var2).getAsByteArray()));
+         case 8 -> var10000 = (Object)var1.createString(var2.getAsString());
+         case 9 -> var10000 = (Object)this.convertList(var1, var2);
+         case 10 -> var10000 = (Object)this.convertMap(var1, var2);
+         case 11 -> var10000 = (Object)var1.createIntList(Arrays.stream(((IntArrayTag)var2).getAsIntArray()));
+         case 12 -> var10000 = (Object)var1.createLongList(Arrays.stream(((LongArrayTag)var2).getAsLongArray()));
          default -> throw new IllegalStateException("Unknown tag type: " + String.valueOf(var2));
       }
+
+      return var10000;
    }
 
    public DataResult<Number> getNumberValue(Tag var1) {
@@ -169,14 +144,15 @@ public class NbtOps implements DynamicOps<Tag> {
             return "key is not a string: " + String.valueOf(var2);
          }, var1);
       } else {
-         CompoundTag var4 = new CompoundTag();
+         CompoundTag var10000;
          if (var1 instanceof CompoundTag) {
             CompoundTag var5 = (CompoundTag)var1;
-            var5.getAllKeys().forEach((var2x) -> {
-               var4.put(var2x, var5.get(var2x));
-            });
+            var10000 = var5.shallowCopy();
+         } else {
+            var10000 = new CompoundTag();
          }
 
+         CompoundTag var4 = var10000;
          var4.put(var2.getAsString(), var3);
          return DataResult.success(var4);
       }
@@ -188,15 +164,16 @@ public class NbtOps implements DynamicOps<Tag> {
             return "mergeToMap called with not a map: " + String.valueOf(var1);
          }, var1);
       } else {
-         CompoundTag var3 = new CompoundTag();
+         CompoundTag var10000;
          if (var1 instanceof CompoundTag) {
             CompoundTag var4 = (CompoundTag)var1;
-            var4.getAllKeys().forEach((var2x) -> {
-               var3.put(var2x, var4.get(var2x));
-            });
+            var10000 = var4.shallowCopy();
+         } else {
+            var10000 = new CompoundTag();
          }
 
-         ArrayList var5 = Lists.newArrayList();
+         CompoundTag var3 = var10000;
+         ArrayList var5 = new ArrayList();
          var2.entries().forEach((var2x) -> {
             Tag var3x = (Tag)var2x.getFirst();
             if (!(var3x instanceof StringTag)) {
@@ -211,10 +188,48 @@ public class NbtOps implements DynamicOps<Tag> {
       }
    }
 
+   public DataResult<Tag> mergeToMap(Tag var1, Map<Tag, Tag> var2) {
+      if (!(var1 instanceof CompoundTag) && !(var1 instanceof EndTag)) {
+         return DataResult.error(() -> {
+            return "mergeToMap called with not a map: " + String.valueOf(var1);
+         }, var1);
+      } else {
+         CompoundTag var10000;
+         if (var1 instanceof CompoundTag) {
+            CompoundTag var4 = (CompoundTag)var1;
+            var10000 = var4.shallowCopy();
+         } else {
+            var10000 = new CompoundTag();
+         }
+
+         CompoundTag var3 = var10000;
+         ArrayList var8 = new ArrayList();
+         Iterator var5 = var2.entrySet().iterator();
+
+         while(var5.hasNext()) {
+            Map.Entry var6 = (Map.Entry)var5.next();
+            Tag var7 = (Tag)var6.getKey();
+            if (var7 instanceof StringTag) {
+               var3.put(var7.getAsString(), (Tag)var6.getValue());
+            } else {
+               var8.add(var7);
+            }
+         }
+
+         if (!var8.isEmpty()) {
+            return DataResult.error(() -> {
+               return "some keys are not strings: " + String.valueOf(var8);
+            }, var3);
+         } else {
+            return DataResult.success(var3);
+         }
+      }
+   }
+
    public DataResult<Stream<Pair<Tag, Tag>>> getMapValues(Tag var1) {
       if (var1 instanceof CompoundTag var2) {
-         return DataResult.success(var2.getAllKeys().stream().map((var2x) -> {
-            return Pair.of(this.createString(var2x), var2.get(var2x));
+         return DataResult.success(var2.entrySet().stream().map((var1x) -> {
+            return Pair.of(this.createString((String)var1x.getKey()), (Tag)var1x.getValue());
          }));
       } else {
          return DataResult.error(() -> {
@@ -226,9 +241,13 @@ public class NbtOps implements DynamicOps<Tag> {
    public DataResult<Consumer<BiConsumer<Tag, Tag>>> getMapEntries(Tag var1) {
       if (var1 instanceof CompoundTag var2) {
          return DataResult.success((var2x) -> {
-            var2.getAllKeys().forEach((var3) -> {
-               var2x.accept(this.createString(var3), var2.get(var3));
-            });
+            Iterator var3 = var2.entrySet().iterator();
+
+            while(var3.hasNext()) {
+               Map.Entry var4 = (Map.Entry)var3.next();
+               var2x.accept(this.createString((String)var4.getKey()), (Tag)var4.getValue());
+            }
+
          });
       } else {
          return DataResult.error(() -> {
@@ -251,8 +270,8 @@ public class NbtOps implements DynamicOps<Tag> {
             }
 
             public Stream<Pair<Tag, Tag>> entries() {
-               return var2.getAllKeys().stream().map((var2x) -> {
-                  return Pair.of(NbtOps.this.createString(var2x), var2.get(var2x));
+               return var2.entrySet().stream().map((var1) -> {
+                  return Pair.of(NbtOps.this.createString((String)var1.getKey()), (Tag)var1.getValue());
                });
             }
 
@@ -262,13 +281,13 @@ public class NbtOps implements DynamicOps<Tag> {
 
             // $FF: synthetic method
             @Nullable
-            public Object get(String var1) {
+            public Object get(final String var1) {
                return this.get(var1);
             }
 
             // $FF: synthetic method
             @Nullable
-            public Object get(Object var1) {
+            public Object get(final Object var1) {
                return this.get((Tag)var1);
             }
          });
@@ -318,9 +337,13 @@ public class NbtOps implements DynamicOps<Tag> {
       if (var1 instanceof ListTag var3) {
          if (var3.getElementType() == 10) {
             return DataResult.success((var1x) -> {
-               var3.forEach((var1) -> {
-                  var1x.accept(tryUnwrap((CompoundTag)var1));
-               });
+               Iterator var2 = var3.iterator();
+
+               while(var2.hasNext()) {
+                  Tag var3x = (Tag)var2.next();
+                  var1x.accept(tryUnwrap((CompoundTag)var3x));
+               }
+
             });
          } else {
             Objects.requireNonNull(var3);
@@ -381,12 +404,8 @@ public class NbtOps implements DynamicOps<Tag> {
 
    public Tag remove(Tag var1, String var2) {
       if (var1 instanceof CompoundTag var3) {
-         CompoundTag var4 = new CompoundTag();
-         var3.getAllKeys().stream().filter((var1x) -> {
-            return !Objects.equals(var1x, var2);
-         }).forEach((var2x) -> {
-            var4.put(var2x, var3.get(var2x));
-         });
+         CompoundTag var4 = var3.shallowCopy();
+         var4.remove(var2);
          return var4;
       } else {
          return var1;
@@ -444,152 +463,157 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    // $FF: synthetic method
-   public Object remove(Object var1, String var2) {
+   public Object remove(final Object var1, final String var2) {
       return this.remove((Tag)var1, var2);
    }
 
    // $FF: synthetic method
-   public Object createLongList(LongStream var1) {
+   public Object createLongList(final LongStream var1) {
       return this.createLongList(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getLongStream(Object var1) {
+   public DataResult getLongStream(final Object var1) {
       return this.getLongStream((Tag)var1);
    }
 
    // $FF: synthetic method
-   public Object createIntList(IntStream var1) {
+   public Object createIntList(final IntStream var1) {
       return this.createIntList(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getIntStream(Object var1) {
+   public DataResult getIntStream(final Object var1) {
       return this.getIntStream((Tag)var1);
    }
 
    // $FF: synthetic method
-   public Object createByteList(ByteBuffer var1) {
+   public Object createByteList(final ByteBuffer var1) {
       return this.createByteList(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getByteBuffer(Object var1) {
+   public DataResult getByteBuffer(final Object var1) {
       return this.getByteBuffer((Tag)var1);
    }
 
    // $FF: synthetic method
-   public Object createList(Stream var1) {
+   public Object createList(final Stream var1) {
       return this.createList(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getList(Object var1) {
+   public DataResult getList(final Object var1) {
       return this.getList((Tag)var1);
    }
 
    // $FF: synthetic method
-   public DataResult getStream(Object var1) {
+   public DataResult getStream(final Object var1) {
       return this.getStream((Tag)var1);
    }
 
    // $FF: synthetic method
-   public DataResult getMap(Object var1) {
+   public DataResult getMap(final Object var1) {
       return this.getMap((Tag)var1);
    }
 
    // $FF: synthetic method
-   public Object createMap(Stream var1) {
+   public Object createMap(final Stream var1) {
       return this.createMap(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getMapEntries(Object var1) {
+   public DataResult getMapEntries(final Object var1) {
       return this.getMapEntries((Tag)var1);
    }
 
    // $FF: synthetic method
-   public DataResult getMapValues(Object var1) {
+   public DataResult getMapValues(final Object var1) {
       return this.getMapValues((Tag)var1);
    }
 
    // $FF: synthetic method
-   public DataResult mergeToMap(Object var1, MapLike var2) {
+   public DataResult mergeToMap(final Object var1, final MapLike var2) {
       return this.mergeToMap((Tag)var1, var2);
    }
 
    // $FF: synthetic method
-   public DataResult mergeToMap(Object var1, Object var2, Object var3) {
+   public DataResult mergeToMap(final Object var1, final Map var2) {
+      return this.mergeToMap((Tag)var1, var2);
+   }
+
+   // $FF: synthetic method
+   public DataResult mergeToMap(final Object var1, final Object var2, final Object var3) {
       return this.mergeToMap((Tag)var1, (Tag)var2, (Tag)var3);
    }
 
    // $FF: synthetic method
-   public DataResult mergeToList(Object var1, List var2) {
+   public DataResult mergeToList(final Object var1, final List var2) {
       return this.mergeToList((Tag)var1, var2);
    }
 
    // $FF: synthetic method
-   public DataResult mergeToList(Object var1, Object var2) {
+   public DataResult mergeToList(final Object var1, final Object var2) {
       return this.mergeToList((Tag)var1, (Tag)var2);
    }
 
    // $FF: synthetic method
-   public Object createString(String var1) {
+   public Object createString(final String var1) {
       return this.createString(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getStringValue(Object var1) {
+   public DataResult getStringValue(final Object var1) {
       return this.getStringValue((Tag)var1);
    }
 
    // $FF: synthetic method
-   public Object createBoolean(boolean var1) {
+   public Object createBoolean(final boolean var1) {
       return this.createBoolean(var1);
    }
 
    // $FF: synthetic method
-   public Object createDouble(double var1) {
+   public Object createDouble(final double var1) {
       return this.createDouble(var1);
    }
 
    // $FF: synthetic method
-   public Object createFloat(float var1) {
+   public Object createFloat(final float var1) {
       return this.createFloat(var1);
    }
 
    // $FF: synthetic method
-   public Object createLong(long var1) {
+   public Object createLong(final long var1) {
       return this.createLong(var1);
    }
 
    // $FF: synthetic method
-   public Object createInt(int var1) {
+   public Object createInt(final int var1) {
       return this.createInt(var1);
    }
 
    // $FF: synthetic method
-   public Object createShort(short var1) {
+   public Object createShort(final short var1) {
       return this.createShort(var1);
    }
 
    // $FF: synthetic method
-   public Object createByte(byte var1) {
+   public Object createByte(final byte var1) {
       return this.createByte(var1);
    }
 
    // $FF: synthetic method
-   public Object createNumeric(Number var1) {
+   public Object createNumeric(final Number var1) {
       return this.createNumeric(var1);
    }
 
    // $FF: synthetic method
-   public DataResult getNumberValue(Object var1) {
+   public DataResult getNumberValue(final Object var1) {
       return this.getNumberValue((Tag)var1);
    }
 
    // $FF: synthetic method
-   public Object convertTo(DynamicOps var1, Object var2) {
+   public Object convertTo(final DynamicOps var1, final Object var2) {
       return this.convertTo(var1, (Tag)var2);
    }
 
@@ -647,7 +671,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    class NbtRecordBuilder extends RecordBuilder.AbstractStringBuilder<Tag, CompoundTag> {
-      protected NbtRecordBuilder(NbtOps var1) {
+      protected NbtRecordBuilder(final NbtOps var1) {
          super(var1);
       }
 
@@ -668,8 +692,8 @@ public class NbtOps implements DynamicOps<Tag> {
                }, var2);
             } else {
                CompoundTag var3 = (CompoundTag)var2;
-               CompoundTag var4 = new CompoundTag(Maps.newHashMap(var3.entries()));
-               Iterator var5 = var1.entries().entrySet().iterator();
+               CompoundTag var4 = var3.shallowCopy();
+               Iterator var5 = var1.entrySet().iterator();
 
                while(var5.hasNext()) {
                   Map.Entry var6 = (Map.Entry)var5.next();
@@ -684,12 +708,12 @@ public class NbtOps implements DynamicOps<Tag> {
       }
 
       // $FF: synthetic method
-      protected Object append(String var1, Object var2, Object var3) {
+      protected Object append(final String var1, final Object var2, final Object var3) {
          return this.append(var1, (Tag)var2, (CompoundTag)var3);
       }
 
       // $FF: synthetic method
-      protected DataResult build(Object var1, Object var2) {
+      protected DataResult build(final Object var1, final Object var2) {
          return this.build((CompoundTag)var1, (Tag)var2);
       }
 

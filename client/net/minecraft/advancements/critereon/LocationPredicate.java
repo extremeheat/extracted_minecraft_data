@@ -20,16 +20,16 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
       return var0.group(LocationPredicate.PositionPredicate.CODEC.optionalFieldOf("position").forGetter(LocationPredicate::position), RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(LocationPredicate::biomes), RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(LocationPredicate::structures), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("dimension").forGetter(LocationPredicate::dimension), Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey), LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light), BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block), FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid)).apply(var0, LocationPredicate::new);
    });
 
-   public LocationPredicate(Optional<PositionPredicate> var1, Optional<HolderSet<Biome>> var2, Optional<HolderSet<Structure>> var3, Optional<ResourceKey<Level>> var4, Optional<Boolean> var5, Optional<LightPredicate> var6, Optional<BlockPredicate> var7, Optional<FluidPredicate> var8) {
+   public LocationPredicate(Optional<PositionPredicate> position, Optional<HolderSet<Biome>> biomes, Optional<HolderSet<Structure>> structures, Optional<ResourceKey<Level>> dimension, Optional<Boolean> smokey, Optional<LightPredicate> light, Optional<BlockPredicate> block, Optional<FluidPredicate> fluid) {
       super();
-      this.position = var1;
-      this.biomes = var2;
-      this.structures = var3;
-      this.dimension = var4;
-      this.smokey = var5;
-      this.light = var6;
-      this.block = var7;
-      this.fluid = var8;
+      this.position = position;
+      this.biomes = biomes;
+      this.structures = structures;
+      this.dimension = dimension;
+      this.smokey = smokey;
+      this.light = light;
+      this.block = block;
+      this.fluid = fluid;
    }
 
    public boolean matches(ServerLevel var1, double var2, double var4, double var6) {
@@ -97,11 +97,11 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          return var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("x", MinMaxBounds.Doubles.ANY).forGetter(PositionPredicate::x), MinMaxBounds.Doubles.CODEC.optionalFieldOf("y", MinMaxBounds.Doubles.ANY).forGetter(PositionPredicate::y), MinMaxBounds.Doubles.CODEC.optionalFieldOf("z", MinMaxBounds.Doubles.ANY).forGetter(PositionPredicate::z)).apply(var0, PositionPredicate::new);
       });
 
-      private PositionPredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, MinMaxBounds.Doubles var3) {
+      private PositionPredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z) {
          super();
-         this.x = var1;
-         this.y = var2;
-         this.z = var3;
+         this.x = x;
+         this.y = y;
+         this.z = z;
       }
 
       static Optional<PositionPredicate> of(MinMaxBounds.Doubles var0, MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2) {

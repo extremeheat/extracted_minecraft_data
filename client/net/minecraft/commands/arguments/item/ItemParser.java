@@ -28,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class ItemParser {
@@ -43,6 +44,9 @@ public class ItemParser {
    static final SimpleCommandExceptionType ERROR_EXPECTED_COMPONENT = new SimpleCommandExceptionType(Component.translatable("arguments.item.component.expected"));
    static final DynamicCommandExceptionType ERROR_REPEATED_COMPONENT = new DynamicCommandExceptionType((var0) -> {
       return Component.translatableEscape("arguments.item.component.repeated", var0);
+   });
+   private static final DynamicCommandExceptionType ERROR_MALFORMED_ITEM = new DynamicCommandExceptionType((var0) -> {
+      return Component.translatableEscape("arguments.item.malformed", var0);
    });
    public static final char SYNTAX_START_COMPONENTS = '[';
    public static final char SYNTAX_END_COMPONENTS = ']';
@@ -70,7 +74,18 @@ public class ItemParser {
             var3.set(var1, var2x);
          }
       });
-      return new ItemResult((Holder)Objects.requireNonNull((Holder)var2.getValue(), "Parser gave no item"), var3.build());
+      Holder var4 = (Holder)Objects.requireNonNull((Holder)var2.getValue(), "Parser gave no item");
+      DataComponentMap var5 = var3.build();
+      validateComponents(var1, var4, var5);
+      return new ItemResult(var4, var5);
+   }
+
+   private static void validateComponents(StringReader var0, Holder<Item> var1, DataComponentMap var2) throws CommandSyntaxException {
+      DataComponentMap var3 = DataComponentMap.composite(((Item)var1.value()).components(), var2);
+      DataResult var4 = ItemStack.validateComponents(var3);
+      var4.getOrThrow((var1x) -> {
+         return ERROR_MALFORMED_ITEM.createWithContext(var0, var1x);
+      });
    }
 
    public void parse(StringReader var1, Visitor var2) throws CommandSyntaxException {
@@ -110,10 +125,10 @@ public class ItemParser {
    }
 
    public static record ItemResult(Holder<Item> item, DataComponentMap components) {
-      public ItemResult(Holder<Item> var1, DataComponentMap var2) {
+      public ItemResult(Holder<Item> item, DataComponentMap components) {
          super();
-         this.item = var1;
-         this.components = var2;
+         this.item = item;
+         this.components = components;
       }
 
       public Holder<Item> item() {
@@ -129,7 +144,7 @@ public class ItemParser {
       private final StringReader reader;
       private final Visitor visitor;
 
-      State(StringReader var2, Visitor var3) {
+      State(final StringReader var2, final Visitor var3) {
          super();
          this.reader = var2;
          this.visitor = var3;

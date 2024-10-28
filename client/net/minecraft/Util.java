@@ -988,7 +988,7 @@ public class Util {
 
       private final String telemetryName;
 
-      OS(String var3) {
+      OS(final String var3) {
          this.telemetryName = var3;
       }
 

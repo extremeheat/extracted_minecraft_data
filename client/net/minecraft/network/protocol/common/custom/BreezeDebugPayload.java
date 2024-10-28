@@ -14,9 +14,9 @@ public record BreezeDebugPayload(BreezeInfo breezeInfo) implements CustomPacketP
       this(new BreezeInfo(var1));
    }
 
-   public BreezeDebugPayload(BreezeInfo var1) {
+   public BreezeDebugPayload(BreezeInfo breezeInfo) {
       super();
-      this.breezeInfo = var1;
+      this.breezeInfo = breezeInfo;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -36,12 +36,12 @@ public record BreezeDebugPayload(BreezeInfo breezeInfo) implements CustomPacketP
          this(var1.readUUID(), var1.readInt(), (Integer)var1.readNullable(FriendlyByteBuf::readInt), (BlockPos)var1.readNullable(BlockPos.STREAM_CODEC));
       }
 
-      public BreezeInfo(UUID var1, int var2, Integer var3, BlockPos var4) {
+      public BreezeInfo(UUID uuid, int id, Integer attackTarget, BlockPos jumpTarget) {
          super();
-         this.uuid = var1;
-         this.id = var2;
-         this.attackTarget = var3;
-         this.jumpTarget = var4;
+         this.uuid = uuid;
+         this.id = id;
+         this.attackTarget = attackTarget;
+         this.jumpTarget = jumpTarget;
       }
 
       public void write(FriendlyByteBuf var1) {

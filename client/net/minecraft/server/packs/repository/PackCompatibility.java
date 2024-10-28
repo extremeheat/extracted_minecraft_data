@@ -12,7 +12,7 @@ public enum PackCompatibility {
    private final Component description;
    private final Component confirmation;
 
-   private PackCompatibility(String var3) {
+   private PackCompatibility(final String var3) {
       this.description = Component.translatable("pack.incompatible." + var3).withStyle(ChatFormatting.GRAY);
       this.confirmation = Component.translatable("pack.incompatible.confirm." + var3);
    }

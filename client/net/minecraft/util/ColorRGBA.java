@@ -8,9 +8,9 @@ public record ColorRGBA(int rgba) {
    private static final String CUSTOM_COLOR_PREFIX = "#";
    public static final Codec<ColorRGBA> CODEC;
 
-   public ColorRGBA(int var1) {
+   public ColorRGBA(int rgba) {
       super();
-      this.rgba = var1;
+      this.rgba = rgba;
    }
 
    private String formatValue() {

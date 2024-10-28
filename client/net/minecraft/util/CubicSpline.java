@@ -30,11 +30,11 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
          Objects.requireNonNull(var1);
          return var1x.group(var10001, Codec.lazyInitialized(var1::getValue).fieldOf("value").forGetter(1Point::value), Codec.FLOAT.fieldOf("derivative").forGetter(1Point::derivative)).apply(var1x, (var0, var1xx, var2) -> {
             record 1Point<C, I extends ToFloatFunction<C>>(float location, CubicSpline<C, I> value, float derivative) {
-               _Point/* $FF was: 1Point*/(float var1, CubicSpline<C, I> var2, float var3) {
+               _Point/* $FF was: 1Point*/(float location, CubicSpline<C, I> value, float derivative) {
                   super();
-                  this.location = var1;
-                  this.value = var2;
-                  this.derivative = var3;
+                  this.location = location;
+                  this.value = value;
+                  this.derivative = derivative;
                }
 
                public float location() {
@@ -104,9 +104,9 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
 
    @VisibleForDebug
    public static record Constant<C, I extends ToFloatFunction<C>>(float value) implements CubicSpline<C, I> {
-      public Constant(float var1) {
+      public Constant(float value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public float apply(C var1) {
@@ -190,15 +190,15 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
    public static record Multipoint<C, I extends ToFloatFunction<C>>(I coordinate, float[] locations, List<CubicSpline<C, I>> values, float[] derivatives, float minValue, float maxValue) implements CubicSpline<C, I> {
       final float[] locations;
 
-      public Multipoint(I var1, float[] var2, List<CubicSpline<C, I>> var3, float[] var4, float var5, float var6) {
+      public Multipoint(I coordinate, float[] locations, List<CubicSpline<C, I>> values, float[] derivatives, float minValue, float maxValue) {
          super();
-         validateSizes(var2, var3, var4);
-         this.coordinate = var1;
-         this.locations = var2;
-         this.values = var3;
-         this.derivatives = var4;
-         this.minValue = var5;
-         this.maxValue = var6;
+         validateSizes(locations, values, derivatives);
+         this.coordinate = coordinate;
+         this.locations = locations;
+         this.values = values;
+         this.derivatives = derivatives;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
       }
 
       static <C, I extends ToFloatFunction<C>> Multipoint<C, I> create(I var0, float[] var1, List<CubicSpline<C, I>> var2, float[] var3) {

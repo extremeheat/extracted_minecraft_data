@@ -318,7 +318,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       private Path iconFile;
       private long lastClickTime;
 
-      public WorldListEntry(WorldSelectionList var2, LevelSummary var3) {
+      public WorldListEntry(final WorldSelectionList var2, final LevelSummary var3) {
          super();
          this.minecraft = var2.minecraft;
          this.screen = var2.getScreen();

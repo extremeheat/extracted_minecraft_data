@@ -144,10 +144,10 @@ public class ForceLoadCommand {
                      return Component.translatable("commands.forceload." + (var3 ? "added" : "removed") + ".single", Component.translationArg(var16), Component.translationArg(var15.location()));
                   }, true);
                } else {
-                  ChunkPos var21 = new ChunkPos(var8, var9);
-                  ChunkPos var22 = new ChunkPos(var10, var11);
+                  ChunkPos var22 = new ChunkPos(var8, var9);
+                  ChunkPos var21 = new ChunkPos(var10, var11);
                   var0.sendSuccess(() -> {
-                     return Component.translatable("commands.forceload." + (var3 ? "added" : "removed") + ".multiple", Component.translationArg(var16), Component.translationArg(var15.location()), Component.translationArg(var21), Component.translationArg(var22));
+                     return Component.translatable("commands.forceload." + (var3 ? "added" : "removed") + ".multiple", var17, Component.translationArg(var15.location()), Component.translationArg(var22), Component.translationArg(var21));
                   }, true);
                }
 

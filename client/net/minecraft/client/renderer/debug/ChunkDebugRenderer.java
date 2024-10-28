@@ -75,7 +75,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       final Map<ChunkPos, String> clientData;
       final CompletableFuture<Map<ChunkPos, String>> serverData;
 
-      ChunkData(ChunkDebugRenderer var1, IntegratedServer var2, double var3, double var5) {
+      ChunkData(final ChunkDebugRenderer var1, final IntegratedServer var2, final double var3, final double var5) {
          super();
          ClientLevel var7 = var1.minecraft.level;
          ResourceKey var8 = var7.dimension();

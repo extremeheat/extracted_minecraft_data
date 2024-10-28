@@ -403,7 +403,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
    // $FF: synthetic method
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -589,7 +589,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
+      private Variant(final int var3, final String var4) {
          this.id = var3;
          this.name = var4;
       }

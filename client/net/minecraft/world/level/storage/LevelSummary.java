@@ -190,7 +190,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    // $FF: synthetic method
-   public int compareTo(Object var1) {
+   public int compareTo(final Object var1) {
       return this.compareTo((LevelSummary)var1);
    }
 
@@ -203,7 +203,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       private final boolean severe;
       private final String translationKey;
 
-      private BackupStatus(boolean var3, boolean var4, String var5) {
+      private BackupStatus(final boolean var3, final boolean var4, final String var5) {
          this.shouldBackup = var3;
          this.severe = var4;
          this.translationKey = var5;
@@ -276,7 +276,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       }
 
       // $FF: synthetic method
-      public int compareTo(Object var1) {
+      public int compareTo(final Object var1) {
          return super.compareTo((LevelSummary)var1);
       }
    }
@@ -326,7 +326,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       }
 
       // $FF: synthetic method
-      public int compareTo(Object var1) {
+      public int compareTo(final Object var1) {
          return super.compareTo((LevelSummary)var1);
       }
    }

@@ -22,10 +22,10 @@ public interface GlyphProviderDefinition {
          return var0.group(GlyphProviderDefinition.MAP_CODEC.forGetter(Conditional::definition), FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(Conditional::filter)).apply(var0, Conditional::new);
       });
 
-      public Conditional(GlyphProviderDefinition var1, FontOption.Filter var2) {
+      public Conditional(GlyphProviderDefinition definition, FontOption.Filter filter) {
          super();
-         this.definition = var1;
-         this.filter = var2;
+         this.definition = definition;
+         this.filter = filter;
       }
 
       public GlyphProviderDefinition definition() {
@@ -38,9 +38,9 @@ public interface GlyphProviderDefinition {
    }
 
    public static record Reference(ResourceLocation id) {
-      public Reference(ResourceLocation var1) {
+      public Reference(ResourceLocation id) {
          super();
-         this.id = var1;
+         this.id = id;
       }
 
       public ResourceLocation id() {

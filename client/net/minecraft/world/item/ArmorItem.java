@@ -141,7 +141,7 @@ public class ArmorItem extends Item implements Equipable {
       private final String name;
       private final int durability;
 
-      private Type(EquipmentSlot var3, int var4, String var5) {
+      private Type(final EquipmentSlot var3, final int var4, final String var5) {
          this.slot = var3;
          this.name = var5;
          this.durability = var4;

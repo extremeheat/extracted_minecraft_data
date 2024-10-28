@@ -52,7 +52,7 @@ public class SetBookCoverFunction extends LootItemConditionalFunction {
       return new WrittenBookContent(var2, var3, (Integer)var10004.orElseGet(var1::generation), var1.pages(), var1.resolved());
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetBookCoverFunction> getType() {
       return LootItemFunctions.SET_BOOK_COVER;
    }
 }

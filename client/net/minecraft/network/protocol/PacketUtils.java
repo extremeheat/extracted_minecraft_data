@@ -2,6 +2,7 @@ package net.minecraft.network.protocol;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.network.PacketListener;
 import net.minecraft.server.RunningOnDifferentThreadException;
@@ -26,30 +27,15 @@ public class PacketUtils {
             if (var1.shouldHandleMessage(var0)) {
                try {
                   var0.handle(var1);
-               } catch (Exception var6) {
-                  label25: {
-                     if (var6 instanceof ReportedException) {
-                        ReportedException var3 = (ReportedException)var6;
-                        if (var3.getCause() instanceof OutOfMemoryError) {
-                           break label25;
-                        }
-                     }
-
-                     if (!var1.shouldPropagateHandlingExceptions()) {
-                        LOGGER.error("Failed to handle packet {}, suppressing error", var0, var6);
-                        return;
+               } catch (Exception var4) {
+                  if (var4 instanceof ReportedException) {
+                     ReportedException var3 = (ReportedException)var4;
+                     if (var3.getCause() instanceof OutOfMemoryError) {
+                        throw makeReportedException(var4, var0, var1);
                      }
                   }
 
-                  if (var6 instanceof ReportedException) {
-                     ReportedException var4 = (ReportedException)var6;
-                     var1.fillCrashReport(var4.getReport());
-                     throw var6;
-                  }
-
-                  CrashReport var5 = CrashReport.forThrowable(var6, "Main thread packet handler");
-                  var1.fillCrashReport(var5);
-                  throw new ReportedException(var5);
+                  var1.onPacketError(var0, var4);
                }
             } else {
                LOGGER.debug("Ignoring packet due to disconnection: {}", var0);
@@ -58,5 +44,30 @@ public class PacketUtils {
          });
          throw RunningOnDifferentThreadException.RUNNING_ON_DIFFERENT_THREAD;
       }
+   }
+
+   public static <T extends PacketListener> ReportedException makeReportedException(Exception var0, Packet<T> var1, T var2) {
+      if (var0 instanceof ReportedException var3) {
+         fillCrashReport(var3.getReport(), var2, var1);
+         return var3;
+      } else {
+         CrashReport var4 = CrashReport.forThrowable(var0, "Main thread packet handler");
+         fillCrashReport(var4, var2, var1);
+         return new ReportedException(var4);
+      }
+   }
+
+   private static <T extends PacketListener> void fillCrashReport(CrashReport var0, T var1, Packet<T> var2) {
+      CrashReportCategory var3 = var0.addCategory("Incoming Packet");
+      var3.setDetail("Type", () -> {
+         return var2.type().toString();
+      });
+      var3.setDetail("Is Terminal", () -> {
+         return Boolean.toString(var2.isTerminal());
+      });
+      var3.setDetail("Is Skippable", () -> {
+         return Boolean.toString(var2.isSkippable());
+      });
+      var1.fillCrashReport(var0);
    }
 }

@@ -89,6 +89,10 @@ public class EntitySubPredicates {
       return FROG.createPredicate(HolderSet.direct(var0));
    }
 
+   public static EntitySubPredicate wolfVariant(HolderSet<WolfVariant> var0) {
+      return WOLF.createPredicate(var0);
+   }
+
    static {
       LIGHTNING = register("lightning", LightningBoltPredicate.CODEC);
       FISHING_HOOK = register("fishing_hook", FishingHookPredicate.CODEC);
@@ -268,7 +272,7 @@ public class EntitySubPredicates {
       private class Instance implements EntitySubPredicate {
          final V variant;
 
-         Instance(V var2) {
+         Instance(final V var2) {
             super();
             this.variant = var2;
          }
@@ -313,7 +317,7 @@ public class EntitySubPredicates {
       private class Instance implements EntitySubPredicate {
          final HolderSet<V> variants;
 
-         Instance(HolderSet<V> var2) {
+         Instance(final HolderSet<V> var2) {
             super();
             this.variants = var2;
          }

@@ -29,11 +29,11 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
    });
    public static final StreamCodec<RegistryFriendlyByteBuf, BlockPredicate> STREAM_CODEC;
 
-   public BlockPredicate(Optional<HolderSet<Block>> var1, Optional<StatePropertiesPredicate> var2, Optional<NbtPredicate> var3) {
+   public BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt) {
       super();
-      this.blocks = var1;
-      this.properties = var2;
-      this.nbt = var3;
+      this.blocks = blocks;
+      this.properties = properties;
+      this.nbt = nbt;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {

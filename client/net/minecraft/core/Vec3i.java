@@ -229,7 +229,7 @@ public class Vec3i implements Comparable<Vec3i> {
    }
 
    // $FF: synthetic method
-   public int compareTo(Object var1) {
+   public int compareTo(final Object var1) {
       return this.compareTo((Vec3i)var1);
    }
 

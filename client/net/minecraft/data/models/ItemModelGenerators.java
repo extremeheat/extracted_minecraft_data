@@ -431,11 +431,11 @@ public class ItemModelGenerators {
    }
 
    private static record TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
-      TrimModelData(String var1, float var2, Map<Holder<ArmorMaterial>, String> var3) {
+      TrimModelData(String name, float itemModelIndex, Map<Holder<ArmorMaterial>, String> overrideArmorMaterials) {
          super();
-         this.name = var1;
-         this.itemModelIndex = var2;
-         this.overrideArmorMaterials = var3;
+         this.name = name;
+         this.itemModelIndex = itemModelIndex;
+         this.overrideArmorMaterials = overrideArmorMaterials;
       }
 
       public String name(Holder<ArmorMaterial> var1) {

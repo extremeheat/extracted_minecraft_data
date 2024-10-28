@@ -135,7 +135,7 @@ public class FillCommand {
 
       public final SetBlockCommand.Filter filter;
 
-      private Mode(SetBlockCommand.Filter var3) {
+      private Mode(final SetBlockCommand.Filter var3) {
          this.filter = var3;
       }
 

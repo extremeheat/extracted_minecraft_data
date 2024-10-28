@@ -12,10 +12,10 @@ public record PoiTicketCountDebugPayload(BlockPos pos, int freeTicketCount) impl
       this(var1.readBlockPos(), var1.readInt());
    }
 
-   public PoiTicketCountDebugPayload(BlockPos var1, int var2) {
+   public PoiTicketCountDebugPayload(BlockPos pos, int freeTicketCount) {
       super();
-      this.pos = var1;
-      this.freeTicketCount = var2;
+      this.pos = pos;
+      this.freeTicketCount = freeTicketCount;
    }
 
    private void write(FriendlyByteBuf var1) {

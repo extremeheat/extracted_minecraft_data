@@ -15,6 +15,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 
@@ -107,11 +108,11 @@ public class ArmorTrim implements TooltipProvider {
       return var1;
    }
 
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       if (this.showInTooltip) {
-         var1.accept(UPGRADE_TITLE);
-         var1.accept(CommonComponents.space().append(((TrimPattern)this.pattern.value()).copyWithStyle(this.material)));
-         var1.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
+         var2.accept(UPGRADE_TITLE);
+         var2.accept(CommonComponents.space().append(((TrimPattern)this.pattern.value()).copyWithStyle(this.material)));
+         var2.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
       }
    }
 

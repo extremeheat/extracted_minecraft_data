@@ -29,10 +29,10 @@ public class ShotCrossbowTrigger extends SimpleCriterionTrigger<TriggerInstance>
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item) {
          super();
-         this.player = var1;
-         this.item = var2;
+         this.player = player;
+         this.item = item;
       }
 
       public static Criterion<TriggerInstance> shotCrossbow(Optional<ItemPredicate> var0) {
@@ -44,7 +44,7 @@ public class ShotCrossbowTrigger extends SimpleCriterionTrigger<TriggerInstance>
       }
 
       public boolean matches(ItemStack var1) {
-         return this.item.isEmpty() || ((ItemPredicate)this.item.get()).matches(var1);
+         return this.item.isEmpty() || ((ItemPredicate)this.item.get()).test(var1);
       }
 
       public Optional<ContextAwarePredicate> player() {

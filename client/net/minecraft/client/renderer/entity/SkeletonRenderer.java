@@ -33,7 +33,7 @@ public class SkeletonRenderer<T extends AbstractSkeleton> extends HumanoidMobRen
    }
 
    // $FF: synthetic method
-   protected boolean isShaking(LivingEntity var1) {
+   protected boolean isShaking(final LivingEntity var1) {
       return this.isShaking((AbstractSkeleton)var1);
    }
 }

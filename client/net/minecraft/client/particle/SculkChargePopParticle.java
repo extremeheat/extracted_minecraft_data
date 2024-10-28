@@ -30,9 +30,9 @@ public class SculkChargePopParticle extends TextureSheetParticle {
    }
 
    public static record Provider(SpriteSet sprite) implements ParticleProvider<SimpleParticleType> {
-      public Provider(SpriteSet var1) {
+      public Provider(SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
@@ -48,7 +48,7 @@ public class SculkChargePopParticle extends TextureSheetParticle {
       }
 
       // $FF: synthetic method
-      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }

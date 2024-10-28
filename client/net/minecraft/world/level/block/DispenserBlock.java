@@ -44,6 +44,7 @@ public class DispenserBlock extends BaseEntityBlock {
    public static final MapCodec<DispenserBlock> CODEC = simpleCodec(DispenserBlock::new);
    public static final DirectionProperty FACING;
    public static final BooleanProperty TRIGGERED;
+   private static final DefaultDispenseItemBehavior DEFAULT_BEHAVIOR;
    public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY;
    private static final int TRIGGER_DURATION = 4;
 
@@ -94,7 +95,7 @@ public class DispenserBlock extends BaseEntityBlock {
             var1.gameEvent(GameEvent.BLOCK_ACTIVATE, var3, GameEvent.Context.of(var4.getBlockState()));
          } else {
             ItemStack var7 = var4.getItem(var6);
-            DispenseItemBehavior var8 = this.getDispenseMethod(var7);
+            DispenseItemBehavior var8 = this.getDispenseMethod(var1, var7);
             if (var8 != DispenseItemBehavior.NOOP) {
                var4.setItem(var6, var8.dispense(var5, var7));
             }
@@ -103,8 +104,8 @@ public class DispenserBlock extends BaseEntityBlock {
       }
    }
 
-   protected DispenseItemBehavior getDispenseMethod(ItemStack var1) {
-      return (DispenseItemBehavior)DISPENSER_REGISTRY.get(var1.getItem());
+   protected DispenseItemBehavior getDispenseMethod(Level var1, ItemStack var2) {
+      return (DispenseItemBehavior)(!var2.isItemEnabled(var1.enabledFeatures()) ? DEFAULT_BEHAVIOR : (DispenseItemBehavior)DISPENSER_REGISTRY.get(var2.getItem()));
    }
 
    protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
@@ -172,8 +173,9 @@ public class DispenserBlock extends BaseEntityBlock {
    static {
       FACING = DirectionalBlock.FACING;
       TRIGGERED = BlockStateProperties.TRIGGERED;
+      DEFAULT_BEHAVIOR = new DefaultDispenseItemBehavior();
       DISPENSER_REGISTRY = (Map)Util.make(new Object2ObjectOpenHashMap(), (var0) -> {
-         var0.defaultReturnValue(new DefaultDispenseItemBehavior());
+         var0.defaultReturnValue(DEFAULT_BEHAVIOR);
       });
    }
 }

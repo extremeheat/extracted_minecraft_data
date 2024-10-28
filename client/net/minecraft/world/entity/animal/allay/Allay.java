@@ -563,7 +563,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       private final PositionSource listenerSource;
       private final int listenerRadius;
 
-      public JukeboxListener(PositionSource var2, int var3) {
+      public JukeboxListener(final PositionSource var2, final int var3) {
          super();
          this.listenerSource = var2;
          this.listenerRadius = var3;

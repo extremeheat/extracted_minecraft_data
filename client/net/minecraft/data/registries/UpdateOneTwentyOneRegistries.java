@@ -9,6 +9,7 @@ import net.minecraft.data.worldgen.UpdateOneTwentyOnePools;
 import net.minecraft.data.worldgen.UpdateOneTwentyOneProcessorLists;
 import net.minecraft.data.worldgen.UpdateOneTwentyOneStructureSets;
 import net.minecraft.data.worldgen.UpdateOneTwentyOneStructures;
+import net.minecraft.data.worldgen.biome.UpdateOneTwentyOneBiomeData;
 import net.minecraft.world.item.armortrim.UpdateOneTwentyOneArmorTrims;
 import net.minecraft.world.level.block.entity.UpdateOneTwentyOneBannerPatterns;
 
@@ -24,6 +25,6 @@ public class UpdateOneTwentyOneRegistries {
    }
 
    static {
-      BUILDER = (new RegistrySetBuilder()).add(Registries.TEMPLATE_POOL, UpdateOneTwentyOnePools::bootstrap).add(Registries.STRUCTURE, UpdateOneTwentyOneStructures::bootstrap).add(Registries.STRUCTURE_SET, UpdateOneTwentyOneStructureSets::bootstrap).add(Registries.PROCESSOR_LIST, UpdateOneTwentyOneProcessorLists::bootstrap).add(Registries.DAMAGE_TYPE, UpdateOneTwentyOneDamageTypes::bootstrap).add(Registries.BANNER_PATTERN, UpdateOneTwentyOneBannerPatterns::bootstrap).add(Registries.TRIM_PATTERN, UpdateOneTwentyOneArmorTrims::bootstrap);
+      BUILDER = (new RegistrySetBuilder()).add(Registries.BIOME, UpdateOneTwentyOneBiomeData::bootstrap).add(Registries.TEMPLATE_POOL, UpdateOneTwentyOnePools::bootstrap).add(Registries.STRUCTURE, UpdateOneTwentyOneStructures::bootstrap).add(Registries.STRUCTURE_SET, UpdateOneTwentyOneStructureSets::bootstrap).add(Registries.PROCESSOR_LIST, UpdateOneTwentyOneProcessorLists::bootstrap).add(Registries.DAMAGE_TYPE, UpdateOneTwentyOneDamageTypes::bootstrap).add(Registries.BANNER_PATTERN, UpdateOneTwentyOneBannerPatterns::bootstrap).add(Registries.TRIM_PATTERN, UpdateOneTwentyOneArmorTrims::bootstrap);
    }
 }

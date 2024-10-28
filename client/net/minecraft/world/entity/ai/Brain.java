@@ -114,7 +114,7 @@ public class Brain<E extends LivingEntity> {
          }
 
          // $FF: synthetic method
-         public RecordBuilder encode(Object var1x, DynamicOps var2x, RecordBuilder var3) {
+         public RecordBuilder encode(final Object var1x, final DynamicOps var2x, final RecordBuilder var3) {
             return this.encode((Brain)var1x, var2x, var3);
          }
       }).fieldOf("memories").codec());

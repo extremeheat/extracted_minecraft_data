@@ -222,7 +222,7 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    class VexMoveControl extends MoveControl {
-      public VexMoveControl(Vex var2) {
+      public VexMoveControl(final Vex var2) {
          super(var2);
       }
 
@@ -344,7 +344,7 @@ public class Vex extends Monster implements TraceableEntity {
    class VexCopyOwnerTargetGoal extends TargetGoal {
       private final TargetingConditions copyOwnerTargeting = TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
 
-      public VexCopyOwnerTargetGoal(PathfinderMob var2) {
+      public VexCopyOwnerTargetGoal(final PathfinderMob var2) {
          super(var2, false);
       }
 

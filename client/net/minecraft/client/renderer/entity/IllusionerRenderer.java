@@ -53,7 +53,7 @@ public class IllusionerRenderer extends IllagerRenderer<Illusioner> {
    }
 
    // $FF: synthetic method
-   protected boolean isBodyVisible(LivingEntity var1) {
+   protected boolean isBodyVisible(final LivingEntity var1) {
       return this.isBodyVisible((Illusioner)var1);
    }
 }

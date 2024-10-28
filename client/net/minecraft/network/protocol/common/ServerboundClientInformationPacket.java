@@ -13,9 +13,9 @@ public record ServerboundClientInformationPacket(ClientInformation information) 
       this(new ClientInformation(var1));
    }
 
-   public ServerboundClientInformationPacket(ClientInformation var1) {
+   public ServerboundClientInformationPacket(ClientInformation information) {
       super();
-      this.information = var1;
+      this.information = information;
    }
 
    private void write(FriendlyByteBuf var1) {

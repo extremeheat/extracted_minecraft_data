@@ -12,11 +12,11 @@ public record PathfindingDebugPayload(int entityId, Path path, float maxNodeDist
       this(var1.readInt(), Path.createFromStream(var1), var1.readFloat());
    }
 
-   public PathfindingDebugPayload(int var1, Path var2, float var3) {
+   public PathfindingDebugPayload(int entityId, Path path, float maxNodeDistance) {
       super();
-      this.entityId = var1;
-      this.path = var2;
-      this.maxNodeDistance = var3;
+      this.entityId = entityId;
+      this.path = path;
+      this.maxNodeDistance = maxNodeDistance;
    }
 
    private void write(FriendlyByteBuf var1) {

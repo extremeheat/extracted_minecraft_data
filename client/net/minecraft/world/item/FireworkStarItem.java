@@ -15,7 +15,7 @@ public class FireworkStarItem extends Item {
       FireworkExplosion var5 = (FireworkExplosion)var1.get(DataComponents.FIREWORK_EXPLOSION);
       if (var5 != null) {
          Objects.requireNonNull(var3);
-         var5.addToTooltip(var3::add, var4);
+         var5.addToTooltip(var2, var3::add, var4);
       }
 
    }

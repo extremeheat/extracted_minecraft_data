@@ -52,7 +52,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
 
    default Frozen freeze() {
       class 1FrozenAccess extends ImmutableRegistryAccess implements Frozen {
-         protected _FrozenAccess/* $FF was: 1FrozenAccess*/(RegistryAccess var1, Stream var2) {
+         protected _FrozenAccess/* $FF was: 1FrozenAccess*/(final RegistryAccess var1, final Stream var2) {
             super(var2);
          }
       }
@@ -69,10 +69,10 @@ public interface RegistryAccess extends HolderLookup.Provider {
    public static record RegistryEntry<T>(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
       final Registry<T> value;
 
-      public RegistryEntry(ResourceKey<? extends Registry<T>> var1, Registry<T> var2) {
+      public RegistryEntry(ResourceKey<? extends Registry<T>> key, Registry<T> value) {
          super();
-         this.key = var1;
-         this.value = var2;
+         this.key = key;
+         this.value = value;
       }
 
       private static <T, R extends Registry<? extends T>> RegistryEntry<T> fromMapEntry(Map.Entry<? extends ResourceKey<? extends Registry<?>>, R> var0) {

@@ -8,10 +8,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 
 public record TagPredicate<T>(TagKey<T> tag, boolean expected) {
-   public TagPredicate(TagKey<T> var1, boolean var2) {
+   public TagPredicate(TagKey<T> tag, boolean expected) {
       super();
-      this.tag = var1;
-      this.expected = var2;
+      this.tag = tag;
+      this.expected = expected;
    }
 
    public static <T> Codec<TagPredicate<T>> codec(ResourceKey<? extends Registry<T>> var0) {

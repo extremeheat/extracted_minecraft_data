@@ -319,6 +319,11 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       DebugPackets.sendEntityBrain(this);
    }
 
+   @Nullable
+   public LivingEntity getTarget() {
+      return this.getTargetFromBrain();
+   }
+
    static {
       DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(Hoglin.class, EntityDataSerializers.BOOLEAN);
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ADULT, SensorType.HOGLIN_SPECIFIC_SENSOR);

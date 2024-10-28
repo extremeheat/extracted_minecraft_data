@@ -28,20 +28,20 @@ public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((RegistryFriendlyByteBuf)var1, (TypedDataComponent)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((RegistryFriendlyByteBuf)var1);
       }
    };
 
-   public TypedDataComponent(DataComponentType<T> var1, T var2) {
+   public TypedDataComponent(DataComponentType<T> type, T value) {
       super();
-      this.type = var1;
-      this.value = var2;
+      this.type = type;
+      this.value = value;
    }
 
    static TypedDataComponent<?> fromEntryUnchecked(Map.Entry<DataComponentType<?>, Object> var0) {

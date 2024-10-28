@@ -66,11 +66,11 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       public static final StreamCodec<ByteBuf, AttributeModifier> MODIFIER_STREAM_CODEC;
       public static final StreamCodec<RegistryFriendlyByteBuf, AttributeSnapshot> STREAM_CODEC;
 
-      public AttributeSnapshot(Holder<Attribute> var1, double var2, Collection<AttributeModifier> var4) {
+      public AttributeSnapshot(Holder<Attribute> attribute, double base, Collection<AttributeModifier> modifiers) {
          super();
-         this.attribute = var1;
-         this.base = var2;
-         this.modifiers = var4;
+         this.attribute = attribute;
+         this.base = base;
+         this.modifiers = modifiers;
       }
 
       public Holder<Attribute> attribute() {

@@ -1,13 +1,13 @@
 package net.minecraft.world.item.alchemy;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -16,87 +16,39 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 public class PotionBrewing {
    public static final int BREWING_TIME_SECONDS = 20;
-   private static final List<Mix<Potion>> POTION_MIXES = Lists.newArrayList();
-   private static final List<Mix<Item>> CONTAINER_MIXES = Lists.newArrayList();
-   private static final List<Ingredient> ALLOWED_CONTAINERS = Lists.newArrayList();
-   private static final Predicate<ItemStack> ALLOWED_CONTAINER = (var0) -> {
-      Iterator var1 = ALLOWED_CONTAINERS.iterator();
+   public static final PotionBrewing EMPTY = new PotionBrewing(List.of(), List.of(), List.of());
+   private final List<Ingredient> containers;
+   private final List<Mix<Potion>> potionMixes;
+   private final List<Mix<Item>> containerMixes;
 
-      Ingredient var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
-         }
-
-         var2 = (Ingredient)var1.next();
-      } while(!var2.test(var0));
-
-      return true;
-   };
-
-   public PotionBrewing() {
+   PotionBrewing(List<Ingredient> var1, List<Mix<Potion>> var2, List<Mix<Item>> var3) {
       super();
+      this.containers = var1;
+      this.potionMixes = var2;
+      this.containerMixes = var3;
    }
 
-   public static boolean isIngredient(ItemStack var0) {
-      return isContainerIngredient(var0) || isPotionIngredient(var0);
+   public boolean isIngredient(ItemStack var1) {
+      return this.isContainerIngredient(var1) || this.isPotionIngredient(var1);
    }
 
-   protected static boolean isContainerIngredient(ItemStack var0) {
-      Iterator var1 = CONTAINER_MIXES.iterator();
+   private boolean isContainer(ItemStack var1) {
+      Iterator var2 = this.containers.iterator();
 
-      Mix var2;
+      Ingredient var3;
       do {
-         if (!var1.hasNext()) {
+         if (!var2.hasNext()) {
             return false;
          }
 
-         var2 = (Mix)var1.next();
-      } while(!var2.ingredient.test(var0));
+         var3 = (Ingredient)var2.next();
+      } while(!var3.test(var1));
 
       return true;
    }
 
-   protected static boolean isPotionIngredient(ItemStack var0) {
-      Iterator var1 = POTION_MIXES.iterator();
-
-      Mix var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
-         }
-
-         var2 = (Mix)var1.next();
-      } while(!var2.ingredient.test(var0));
-
-      return true;
-   }
-
-   public static boolean isBrewablePotion(Holder<Potion> var0) {
-      Iterator var1 = POTION_MIXES.iterator();
-
-      Mix var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
-         }
-
-         var2 = (Mix)var1.next();
-      } while(!var2.to.is(var0));
-
-      return true;
-   }
-
-   public static boolean hasMix(ItemStack var0, ItemStack var1) {
-      if (!ALLOWED_CONTAINER.test(var0)) {
-         return false;
-      } else {
-         return hasContainerMix(var0, var1) || hasPotionMix(var0, var1);
-      }
-   }
-
-   protected static boolean hasContainerMix(ItemStack var0, ItemStack var1) {
-      Iterator var2 = CONTAINER_MIXES.iterator();
+   public boolean isContainerIngredient(ItemStack var1) {
+      Iterator var2 = this.containerMixes.iterator();
 
       Mix var3;
       do {
@@ -105,156 +57,182 @@ public class PotionBrewing {
          }
 
          var3 = (Mix)var2.next();
-      } while(!var0.is(var3.from) || !var3.ingredient.test(var1));
+      } while(!var3.ingredient.test(var1));
 
       return true;
    }
 
-   protected static boolean hasPotionMix(ItemStack var0, ItemStack var1) {
-      Optional var2 = ((PotionContents)var0.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
-      if (var2.isEmpty()) {
+   public boolean isPotionIngredient(ItemStack var1) {
+      Iterator var2 = this.potionMixes.iterator();
+
+      Mix var3;
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+
+         var3 = (Mix)var2.next();
+      } while(!var3.ingredient.test(var1));
+
+      return true;
+   }
+
+   public boolean isBrewablePotion(Holder<Potion> var1) {
+      Iterator var2 = this.potionMixes.iterator();
+
+      Mix var3;
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+
+         var3 = (Mix)var2.next();
+      } while(!var3.to.is(var1));
+
+      return true;
+   }
+
+   public boolean hasMix(ItemStack var1, ItemStack var2) {
+      if (!this.isContainer(var1)) {
          return false;
       } else {
-         Iterator var3 = POTION_MIXES.iterator();
+         return this.hasContainerMix(var1, var2) || this.hasPotionMix(var1, var2);
+      }
+   }
 
-         Mix var4;
+   public boolean hasContainerMix(ItemStack var1, ItemStack var2) {
+      Iterator var3 = this.containerMixes.iterator();
+
+      Mix var4;
+      do {
+         if (!var3.hasNext()) {
+            return false;
+         }
+
+         var4 = (Mix)var3.next();
+      } while(!var1.is(var4.from) || !var4.ingredient.test(var2));
+
+      return true;
+   }
+
+   public boolean hasPotionMix(ItemStack var1, ItemStack var2) {
+      Optional var3 = ((PotionContents)var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+      if (var3.isEmpty()) {
+         return false;
+      } else {
+         Iterator var4 = this.potionMixes.iterator();
+
+         Mix var5;
          do {
-            if (!var3.hasNext()) {
+            if (!var4.hasNext()) {
                return false;
             }
 
-            var4 = (Mix)var3.next();
-         } while(!var4.from.is((Holder)var2.get()) || !var4.ingredient.test(var1));
+            var5 = (Mix)var4.next();
+         } while(!var5.from.is((Holder)var3.get()) || !var5.ingredient.test(var2));
 
          return true;
       }
    }
 
-   public static ItemStack mix(ItemStack var0, ItemStack var1) {
-      if (var1.isEmpty()) {
-         return var1;
+   public ItemStack mix(ItemStack var1, ItemStack var2) {
+      if (var2.isEmpty()) {
+         return var2;
       } else {
-         Optional var2 = ((PotionContents)var1.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
-         if (var2.isEmpty()) {
-            return var1;
+         Optional var3 = ((PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+         if (var3.isEmpty()) {
+            return var2;
          } else {
-            Iterator var3 = CONTAINER_MIXES.iterator();
+            Iterator var4 = this.containerMixes.iterator();
 
-            Mix var4;
+            Mix var5;
             do {
-               if (!var3.hasNext()) {
-                  var3 = POTION_MIXES.iterator();
+               if (!var4.hasNext()) {
+                  var4 = this.potionMixes.iterator();
 
                   do {
-                     if (!var3.hasNext()) {
-                        return var1;
+                     if (!var4.hasNext()) {
+                        return var2;
                      }
 
-                     var4 = (Mix)var3.next();
-                  } while(!var4.from.is((Holder)var2.get()) || !var4.ingredient.test(var0));
+                     var5 = (Mix)var4.next();
+                  } while(!var5.from.is((Holder)var3.get()) || !var5.ingredient.test(var1));
 
-                  return PotionContents.createItemStack(var1.getItem(), var4.to);
+                  return PotionContents.createItemStack(var2.getItem(), var5.to);
                }
 
-               var4 = (Mix)var3.next();
-            } while(!var1.is(var4.from) || !var4.ingredient.test(var0));
+               var5 = (Mix)var4.next();
+            } while(!var2.is(var5.from) || !var5.ingredient.test(var1));
 
-            return PotionContents.createItemStack((Item)var4.to.value(), (Holder)var2.get());
+            return PotionContents.createItemStack((Item)var5.to.value(), (Holder)var3.get());
          }
       }
    }
 
-   public static void bootStrap() {
-      addContainer(Items.POTION);
-      addContainer(Items.SPLASH_POTION);
-      addContainer(Items.LINGERING_POTION);
-      addContainerRecipe(Items.POTION, Items.GUNPOWDER, Items.SPLASH_POTION);
-      addContainerRecipe(Items.SPLASH_POTION, Items.DRAGON_BREATH, Items.LINGERING_POTION);
-      addMix(Potions.WATER, Items.GLISTERING_MELON_SLICE, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.GHAST_TEAR, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.RABBIT_FOOT, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.BLAZE_POWDER, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.SPIDER_EYE, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.SUGAR, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.MAGMA_CREAM, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.BREEZE_ROD, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.SLIME_BLOCK, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.STONE, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.COBWEB, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.GLOWSTONE_DUST, Potions.THICK);
-      addMix(Potions.WATER, Items.REDSTONE, Potions.MUNDANE);
-      addMix(Potions.WATER, Items.NETHER_WART, Potions.AWKWARD);
-      addMix(Potions.AWKWARD, Items.BREEZE_ROD, Potions.WIND_CHARGED);
-      addMix(Potions.AWKWARD, Items.SLIME_BLOCK, Potions.OOZING);
-      addMix(Potions.AWKWARD, Items.STONE, Potions.INFESTED);
-      addMix(Potions.AWKWARD, Items.COBWEB, Potions.WEAVING);
-      addMix(Potions.AWKWARD, Items.GOLDEN_CARROT, Potions.NIGHT_VISION);
-      addMix(Potions.NIGHT_VISION, Items.REDSTONE, Potions.LONG_NIGHT_VISION);
-      addMix(Potions.NIGHT_VISION, Items.FERMENTED_SPIDER_EYE, Potions.INVISIBILITY);
-      addMix(Potions.LONG_NIGHT_VISION, Items.FERMENTED_SPIDER_EYE, Potions.LONG_INVISIBILITY);
-      addMix(Potions.INVISIBILITY, Items.REDSTONE, Potions.LONG_INVISIBILITY);
-      addMix(Potions.AWKWARD, Items.MAGMA_CREAM, Potions.FIRE_RESISTANCE);
-      addMix(Potions.FIRE_RESISTANCE, Items.REDSTONE, Potions.LONG_FIRE_RESISTANCE);
-      addMix(Potions.AWKWARD, Items.RABBIT_FOOT, Potions.LEAPING);
-      addMix(Potions.LEAPING, Items.REDSTONE, Potions.LONG_LEAPING);
-      addMix(Potions.LEAPING, Items.GLOWSTONE_DUST, Potions.STRONG_LEAPING);
-      addMix(Potions.LEAPING, Items.FERMENTED_SPIDER_EYE, Potions.SLOWNESS);
-      addMix(Potions.LONG_LEAPING, Items.FERMENTED_SPIDER_EYE, Potions.LONG_SLOWNESS);
-      addMix(Potions.SLOWNESS, Items.REDSTONE, Potions.LONG_SLOWNESS);
-      addMix(Potions.SLOWNESS, Items.GLOWSTONE_DUST, Potions.STRONG_SLOWNESS);
-      addMix(Potions.AWKWARD, Items.TURTLE_HELMET, Potions.TURTLE_MASTER);
-      addMix(Potions.TURTLE_MASTER, Items.REDSTONE, Potions.LONG_TURTLE_MASTER);
-      addMix(Potions.TURTLE_MASTER, Items.GLOWSTONE_DUST, Potions.STRONG_TURTLE_MASTER);
-      addMix(Potions.SWIFTNESS, Items.FERMENTED_SPIDER_EYE, Potions.SLOWNESS);
-      addMix(Potions.LONG_SWIFTNESS, Items.FERMENTED_SPIDER_EYE, Potions.LONG_SLOWNESS);
-      addMix(Potions.AWKWARD, Items.SUGAR, Potions.SWIFTNESS);
-      addMix(Potions.SWIFTNESS, Items.REDSTONE, Potions.LONG_SWIFTNESS);
-      addMix(Potions.SWIFTNESS, Items.GLOWSTONE_DUST, Potions.STRONG_SWIFTNESS);
-      addMix(Potions.AWKWARD, Items.PUFFERFISH, Potions.WATER_BREATHING);
-      addMix(Potions.WATER_BREATHING, Items.REDSTONE, Potions.LONG_WATER_BREATHING);
-      addMix(Potions.AWKWARD, Items.GLISTERING_MELON_SLICE, Potions.HEALING);
-      addMix(Potions.HEALING, Items.GLOWSTONE_DUST, Potions.STRONG_HEALING);
-      addMix(Potions.HEALING, Items.FERMENTED_SPIDER_EYE, Potions.HARMING);
-      addMix(Potions.STRONG_HEALING, Items.FERMENTED_SPIDER_EYE, Potions.STRONG_HARMING);
-      addMix(Potions.HARMING, Items.GLOWSTONE_DUST, Potions.STRONG_HARMING);
-      addMix(Potions.POISON, Items.FERMENTED_SPIDER_EYE, Potions.HARMING);
-      addMix(Potions.LONG_POISON, Items.FERMENTED_SPIDER_EYE, Potions.HARMING);
-      addMix(Potions.STRONG_POISON, Items.FERMENTED_SPIDER_EYE, Potions.STRONG_HARMING);
-      addMix(Potions.AWKWARD, Items.SPIDER_EYE, Potions.POISON);
-      addMix(Potions.POISON, Items.REDSTONE, Potions.LONG_POISON);
-      addMix(Potions.POISON, Items.GLOWSTONE_DUST, Potions.STRONG_POISON);
-      addMix(Potions.AWKWARD, Items.GHAST_TEAR, Potions.REGENERATION);
-      addMix(Potions.REGENERATION, Items.REDSTONE, Potions.LONG_REGENERATION);
-      addMix(Potions.REGENERATION, Items.GLOWSTONE_DUST, Potions.STRONG_REGENERATION);
-      addMix(Potions.AWKWARD, Items.BLAZE_POWDER, Potions.STRENGTH);
-      addMix(Potions.STRENGTH, Items.REDSTONE, Potions.LONG_STRENGTH);
-      addMix(Potions.STRENGTH, Items.GLOWSTONE_DUST, Potions.STRONG_STRENGTH);
-      addMix(Potions.WATER, Items.FERMENTED_SPIDER_EYE, Potions.WEAKNESS);
-      addMix(Potions.WEAKNESS, Items.REDSTONE, Potions.LONG_WEAKNESS);
-      addMix(Potions.AWKWARD, Items.PHANTOM_MEMBRANE, Potions.SLOW_FALLING);
-      addMix(Potions.SLOW_FALLING, Items.REDSTONE, Potions.LONG_SLOW_FALLING);
+   public static PotionBrewing bootstrap(FeatureFlagSet var0) {
+      Builder var1 = new Builder(var0);
+      addVanillaMixes(var1);
+      return var1.build();
    }
 
-   private static void addContainerRecipe(Item var0, Item var1, Item var2) {
-      if (!(var0 instanceof PotionItem)) {
-         throw new IllegalArgumentException("Expected a potion, got: " + String.valueOf(BuiltInRegistries.ITEM.getKey(var0)));
-      } else if (!(var2 instanceof PotionItem)) {
-         throw new IllegalArgumentException("Expected a potion, got: " + String.valueOf(BuiltInRegistries.ITEM.getKey(var2)));
-      } else {
-         CONTAINER_MIXES.add(new Mix(var0.builtInRegistryHolder(), Ingredient.of(var1), var2.builtInRegistryHolder()));
-      }
-   }
-
-   private static void addContainer(Item var0) {
-      if (!(var0 instanceof PotionItem)) {
-         throw new IllegalArgumentException("Expected a potion, got: " + String.valueOf(BuiltInRegistries.ITEM.getKey(var0)));
-      } else {
-         ALLOWED_CONTAINERS.add(Ingredient.of(var0));
-      }
-   }
-
-   private static void addMix(Holder<Potion> var0, Item var1, Holder<Potion> var2) {
-      POTION_MIXES.add(new Mix(var0, Ingredient.of(var1), var2));
+   public static void addVanillaMixes(Builder var0) {
+      var0.addContainer(Items.POTION);
+      var0.addContainer(Items.SPLASH_POTION);
+      var0.addContainer(Items.LINGERING_POTION);
+      var0.addContainerRecipe(Items.POTION, Items.GUNPOWDER, Items.SPLASH_POTION);
+      var0.addContainerRecipe(Items.SPLASH_POTION, Items.DRAGON_BREATH, Items.LINGERING_POTION);
+      var0.addMix(Potions.WATER, Items.GLOWSTONE_DUST, Potions.THICK);
+      var0.addMix(Potions.WATER, Items.REDSTONE, Potions.MUNDANE);
+      var0.addMix(Potions.WATER, Items.NETHER_WART, Potions.AWKWARD);
+      var0.addStartMix(Items.BREEZE_ROD, Potions.WIND_CHARGED);
+      var0.addStartMix(Items.SLIME_BLOCK, Potions.OOZING);
+      var0.addStartMix(Items.STONE, Potions.INFESTED);
+      var0.addStartMix(Items.COBWEB, Potions.WEAVING);
+      var0.addMix(Potions.AWKWARD, Items.GOLDEN_CARROT, Potions.NIGHT_VISION);
+      var0.addMix(Potions.NIGHT_VISION, Items.REDSTONE, Potions.LONG_NIGHT_VISION);
+      var0.addMix(Potions.NIGHT_VISION, Items.FERMENTED_SPIDER_EYE, Potions.INVISIBILITY);
+      var0.addMix(Potions.LONG_NIGHT_VISION, Items.FERMENTED_SPIDER_EYE, Potions.LONG_INVISIBILITY);
+      var0.addMix(Potions.INVISIBILITY, Items.REDSTONE, Potions.LONG_INVISIBILITY);
+      var0.addStartMix(Items.MAGMA_CREAM, Potions.FIRE_RESISTANCE);
+      var0.addMix(Potions.FIRE_RESISTANCE, Items.REDSTONE, Potions.LONG_FIRE_RESISTANCE);
+      var0.addStartMix(Items.RABBIT_FOOT, Potions.LEAPING);
+      var0.addMix(Potions.LEAPING, Items.REDSTONE, Potions.LONG_LEAPING);
+      var0.addMix(Potions.LEAPING, Items.GLOWSTONE_DUST, Potions.STRONG_LEAPING);
+      var0.addMix(Potions.LEAPING, Items.FERMENTED_SPIDER_EYE, Potions.SLOWNESS);
+      var0.addMix(Potions.LONG_LEAPING, Items.FERMENTED_SPIDER_EYE, Potions.LONG_SLOWNESS);
+      var0.addMix(Potions.SLOWNESS, Items.REDSTONE, Potions.LONG_SLOWNESS);
+      var0.addMix(Potions.SLOWNESS, Items.GLOWSTONE_DUST, Potions.STRONG_SLOWNESS);
+      var0.addMix(Potions.AWKWARD, Items.TURTLE_HELMET, Potions.TURTLE_MASTER);
+      var0.addMix(Potions.TURTLE_MASTER, Items.REDSTONE, Potions.LONG_TURTLE_MASTER);
+      var0.addMix(Potions.TURTLE_MASTER, Items.GLOWSTONE_DUST, Potions.STRONG_TURTLE_MASTER);
+      var0.addMix(Potions.SWIFTNESS, Items.FERMENTED_SPIDER_EYE, Potions.SLOWNESS);
+      var0.addMix(Potions.LONG_SWIFTNESS, Items.FERMENTED_SPIDER_EYE, Potions.LONG_SLOWNESS);
+      var0.addStartMix(Items.SUGAR, Potions.SWIFTNESS);
+      var0.addMix(Potions.SWIFTNESS, Items.REDSTONE, Potions.LONG_SWIFTNESS);
+      var0.addMix(Potions.SWIFTNESS, Items.GLOWSTONE_DUST, Potions.STRONG_SWIFTNESS);
+      var0.addMix(Potions.AWKWARD, Items.PUFFERFISH, Potions.WATER_BREATHING);
+      var0.addMix(Potions.WATER_BREATHING, Items.REDSTONE, Potions.LONG_WATER_BREATHING);
+      var0.addStartMix(Items.GLISTERING_MELON_SLICE, Potions.HEALING);
+      var0.addMix(Potions.HEALING, Items.GLOWSTONE_DUST, Potions.STRONG_HEALING);
+      var0.addMix(Potions.HEALING, Items.FERMENTED_SPIDER_EYE, Potions.HARMING);
+      var0.addMix(Potions.STRONG_HEALING, Items.FERMENTED_SPIDER_EYE, Potions.STRONG_HARMING);
+      var0.addMix(Potions.HARMING, Items.GLOWSTONE_DUST, Potions.STRONG_HARMING);
+      var0.addMix(Potions.POISON, Items.FERMENTED_SPIDER_EYE, Potions.HARMING);
+      var0.addMix(Potions.LONG_POISON, Items.FERMENTED_SPIDER_EYE, Potions.HARMING);
+      var0.addMix(Potions.STRONG_POISON, Items.FERMENTED_SPIDER_EYE, Potions.STRONG_HARMING);
+      var0.addStartMix(Items.SPIDER_EYE, Potions.POISON);
+      var0.addMix(Potions.POISON, Items.REDSTONE, Potions.LONG_POISON);
+      var0.addMix(Potions.POISON, Items.GLOWSTONE_DUST, Potions.STRONG_POISON);
+      var0.addStartMix(Items.GHAST_TEAR, Potions.REGENERATION);
+      var0.addMix(Potions.REGENERATION, Items.REDSTONE, Potions.LONG_REGENERATION);
+      var0.addMix(Potions.REGENERATION, Items.GLOWSTONE_DUST, Potions.STRONG_REGENERATION);
+      var0.addStartMix(Items.BLAZE_POWDER, Potions.STRENGTH);
+      var0.addMix(Potions.STRENGTH, Items.REDSTONE, Potions.LONG_STRENGTH);
+      var0.addMix(Potions.STRENGTH, Items.GLOWSTONE_DUST, Potions.STRONG_STRENGTH);
+      var0.addMix(Potions.WATER, Items.FERMENTED_SPIDER_EYE, Potions.WEAKNESS);
+      var0.addMix(Potions.WEAKNESS, Items.REDSTONE, Potions.LONG_WEAKNESS);
+      var0.addMix(Potions.AWKWARD, Items.PHANTOM_MEMBRANE, Potions.SLOW_FALLING);
+      var0.addMix(Potions.SLOW_FALLING, Items.REDSTONE, Potions.LONG_SLOW_FALLING);
    }
 
    static record Mix<T>(Holder<T> from, Ingredient ingredient, Holder<T> to) {
@@ -262,11 +240,11 @@ public class PotionBrewing {
       final Ingredient ingredient;
       final Holder<T> to;
 
-      Mix(Holder<T> var1, Ingredient var2, Holder<T> var3) {
+      Mix(Holder<T> from, Ingredient ingredient, Holder<T> to) {
          super();
-         this.from = var1;
-         this.ingredient = var2;
-         this.to = var3;
+         this.from = from;
+         this.ingredient = ingredient;
+         this.to = to;
       }
 
       public Holder<T> from() {
@@ -279,6 +257,58 @@ public class PotionBrewing {
 
       public Holder<T> to() {
          return this.to;
+      }
+   }
+
+   public static class Builder {
+      private final List<Ingredient> containers = new ArrayList();
+      private final List<Mix<Potion>> potionMixes = new ArrayList();
+      private final List<Mix<Item>> containerMixes = new ArrayList();
+      private final FeatureFlagSet enabledFeatures;
+
+      public Builder(FeatureFlagSet var1) {
+         super();
+         this.enabledFeatures = var1;
+      }
+
+      private static void expectPotion(Item var0) {
+         if (!(var0 instanceof PotionItem)) {
+            throw new IllegalArgumentException("Expected a potion, got: " + String.valueOf(BuiltInRegistries.ITEM.getKey(var0)));
+         }
+      }
+
+      public void addContainerRecipe(Item var1, Item var2, Item var3) {
+         if (var1.isEnabled(this.enabledFeatures) && var2.isEnabled(this.enabledFeatures) && var3.isEnabled(this.enabledFeatures)) {
+            expectPotion(var1);
+            expectPotion(var3);
+            this.containerMixes.add(new Mix(var1.builtInRegistryHolder(), Ingredient.of(var2), var3.builtInRegistryHolder()));
+         }
+      }
+
+      public void addContainer(Item var1) {
+         if (var1.isEnabled(this.enabledFeatures)) {
+            expectPotion(var1);
+            this.containers.add(Ingredient.of(var1));
+         }
+      }
+
+      public void addMix(Holder<Potion> var1, Item var2, Holder<Potion> var3) {
+         if (((Potion)var1.value()).isEnabled(this.enabledFeatures) && var2.isEnabled(this.enabledFeatures) && ((Potion)var3.value()).isEnabled(this.enabledFeatures)) {
+            this.potionMixes.add(new Mix(var1, Ingredient.of(var2), var3));
+         }
+
+      }
+
+      public void addStartMix(Item var1, Holder<Potion> var2) {
+         if (((Potion)var2.value()).isEnabled(this.enabledFeatures)) {
+            this.addMix(Potions.WATER, var1, Potions.MUNDANE);
+            this.addMix(Potions.AWKWARD, var1, var2);
+         }
+
+      }
+
+      public PotionBrewing build() {
+         return new PotionBrewing(List.copyOf(this.containers), List.copyOf(this.potionMixes), List.copyOf(this.containerMixes));
       }
    }
 }

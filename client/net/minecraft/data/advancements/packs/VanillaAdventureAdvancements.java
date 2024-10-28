@@ -32,6 +32,7 @@ import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.LootTableTrigger;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.PlayerHurtEntityTrigger;
+import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.PlayerPredicate;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.advancements.critereon.RecipeCraftedTrigger;
@@ -133,6 +134,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       AdvancementHolder var15 = craftingANewLook(Advancement.Builder.advancement()).parent(var3).display((ItemStack)(new ItemStack(Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE)), Component.translatable("advancements.adventure.trim_with_any_armor_pattern.title"), Component.translatable("advancements.adventure.trim_with_any_armor_pattern.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).save(var2, "adventure/trim_with_any_armor_pattern");
       smithingWithStyle(Advancement.Builder.advancement()).parent(var15).display((ItemStack)(new ItemStack(Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE)), Component.translatable("advancements.adventure.trim_with_all_exclusive_armor_patterns.title"), Component.translatable("advancements.adventure.trim_with_all_exclusive_armor_patterns.description"), (ResourceLocation)null, AdvancementType.CHALLENGE, true, true, false).rewards(AdvancementRewards.Builder.experience(150)).save(var2, "adventure/trim_with_all_exclusive_armor_patterns");
       Advancement.Builder.advancement().parent(var3).display((ItemLike)Items.CHISELED_BOOKSHELF, Component.translatable("advancements.adventure.read_power_from_chiseled_bookshelf.title"), Component.translatable("advancements.adventure.read_power_from_chiseled_bookshelf.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).requirements(AdvancementRequirements.Strategy.OR).addCriterion("chiseled_bookshelf", placedBlockReadByComparator(Blocks.CHISELED_BOOKSHELF)).addCriterion("comparator", placedComparatorReadingBlock(Blocks.CHISELED_BOOKSHELF)).save(var2, "adventure/read_power_of_chiseled_bookshelf");
+      Advancement.Builder.advancement().parent(var3).display((ItemLike)Items.ARMADILLO_SCUTE, Component.translatable("advancements.adventure.brush_armadillo.title"), Component.translatable("advancements.adventure.brush_armadillo.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("brush_armadillo", PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(ItemPredicate.Builder.item().of(Items.BRUSH), Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.ARMADILLO))))).save(var2, "adventure/brush_armadillo");
    }
 
    public static AdvancementHolder createMonsterHunterAdvancement(AdvancementHolder var0, Consumer<AdvancementHolder> var1, List<EntityType<?>> var2) {

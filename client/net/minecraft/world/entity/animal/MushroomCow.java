@@ -232,13 +232,13 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
 
    // $FF: synthetic method
    @Nullable
-   public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public Cow getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
    // $FF: synthetic method
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -259,7 +259,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
       final String type;
       final BlockState blockState;
 
-      private MushroomType(String var3, BlockState var4) {
+      private MushroomType(final String var3, final BlockState var4) {
          this.type = var3;
          this.blockState = var4;
       }

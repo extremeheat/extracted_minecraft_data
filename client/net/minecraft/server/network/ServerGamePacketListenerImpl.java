@@ -545,19 +545,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             CommandBlockEntity.Mode var8 = var3.getMode();
             BlockState var9 = this.player.level().getBlockState(var4);
             Direction var10 = (Direction)var9.getValue(CommandBlock.FACING);
-            BlockState var11;
+            BlockState var10000;
             switch (var1.getMode()) {
-               case SEQUENCE:
-                  var11 = Blocks.CHAIN_COMMAND_BLOCK.defaultBlockState();
-                  break;
-               case AUTO:
-                  var11 = Blocks.REPEATING_COMMAND_BLOCK.defaultBlockState();
-                  break;
-               case REDSTONE:
-               default:
-                  var11 = Blocks.COMMAND_BLOCK.defaultBlockState();
+               case SEQUENCE -> var10000 = Blocks.CHAIN_COMMAND_BLOCK.defaultBlockState();
+               case AUTO -> var10000 = Blocks.REPEATING_COMMAND_BLOCK.defaultBlockState();
+               default -> var10000 = Blocks.COMMAND_BLOCK.defaultBlockState();
             }
 
+            BlockState var11 = var10000;
             BlockState var12 = (BlockState)((BlockState)var11.setValue(CommandBlock.FACING, var10)).setValue(CommandBlock.CONDITIONAL, var1.isConditional());
             if (var12 != var9) {
                this.player.level().setBlock(var4, var12, 2);
@@ -1475,7 +1470,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                      ItemStack var4 = var3x.copy();
                      InteractionResult var5 = var2x.run(ServerGamePacketListenerImpl.this.player, var3, var1);
                      if (var5.consumesAction()) {
-                        CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(ServerGamePacketListenerImpl.this.player, var4, var3);
+                        CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(ServerGamePacketListenerImpl.this.player, var5.indicateItemUse() ? var4 : ItemStack.EMPTY, var3);
                         if (var5.shouldSwing()) {
                            ServerGamePacketListenerImpl.this.player.swing(var1, true);
                         }
@@ -1495,15 +1490,27 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                }
 
                public void onAttack() {
-                  if (!(var3 instanceof ItemEntity) && !(var3 instanceof ExperienceOrb) && !(var3 instanceof AbstractArrow) && var3 != ServerGamePacketListenerImpl.this.player) {
-                     ItemStack var1 = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
-                     if (var1.isItemEnabled(var2.enabledFeatures())) {
+                  if (!(var3 instanceof ItemEntity) && !(var3 instanceof ExperienceOrb) && var3 != ServerGamePacketListenerImpl.this.player) {
+                     label29: {
+                        if (var3 instanceof AbstractArrow) {
+                           AbstractArrow var1 = (AbstractArrow)var3;
+                           if (!var1.isAttackable()) {
+                              break label29;
+                           }
+                        }
+
+                        ItemStack var2x = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
+                        if (!var2x.isItemEnabled(var2.enabledFeatures())) {
+                           return;
+                        }
+
                         ServerGamePacketListenerImpl.this.player.attack(var3);
+                        return;
                      }
-                  } else {
-                     ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-                     ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
                   }
+
+                  ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                  ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
                }
             });
          }
@@ -1597,11 +1604,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleContainerButtonClick(ServerboundContainerButtonClickPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
       this.player.resetLastActionTime();
-      if (this.player.containerMenu.containerId == var1.getContainerId() && !this.player.isSpectator()) {
+      if (this.player.containerMenu.containerId == var1.containerId() && !this.player.isSpectator()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
             LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
          } else {
-            boolean var2 = this.player.containerMenu.clickMenuButton(this.player, var1.getButtonId());
+            boolean var2 = this.player.containerMenu.clickMenuButton(this.player, var1.buttonId());
             if (var2) {
                this.player.containerMenu.broadcastChanges();
             }
@@ -1613,8 +1620,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
       if (this.player.gameMode.isCreative()) {
-         boolean var2 = var1.getSlotNum() < 0;
-         ItemStack var3 = var1.getItem();
+         boolean var2 = var1.slotNum() < 0;
+         ItemStack var3 = var1.itemStack();
          if (!var3.isItemEnabled(this.player.level().enabledFeatures())) {
             return;
          }
@@ -1630,10 +1637,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             }
          }
 
-         boolean var7 = var1.getSlotNum() >= 1 && var1.getSlotNum() <= 45;
-         boolean var8 = var3.isEmpty() || var3.getDamageValue() >= 0 && var3.getCount() <= var3.getMaxStackSize() && !var3.isEmpty();
+         boolean var7 = var1.slotNum() >= 1 && var1.slotNum() <= 45;
+         boolean var8 = var3.isEmpty() || var3.getCount() <= var3.getMaxStackSize();
          if (var7 && var8) {
-            this.player.inventoryMenu.getSlot(var1.getSlotNum()).setByPlayer(var3);
+            this.player.inventoryMenu.getSlot(var1.slotNum()).setByPlayer(var3);
             this.player.inventoryMenu.broadcastChanges();
          } else if (var2 && var8 && this.dropSpamTickCount < 200) {
             this.dropSpamTickCount += 20;

@@ -267,43 +267,36 @@ public class TitleScreen extends Screen {
             var6 = Mth.clamp(var6, 0.0F, 1.0F);
             var5 = Mth.clampedMap(var6, 0.5F, 1.0F, 0.0F, 1.0F);
             this.panoramaFade = Mth.clampedMap(var6, 0.0F, 0.5F, 0.0F, 1.0F);
-            Iterator var7 = this.children().iterator();
-
-            while(var7.hasNext()) {
-               GuiEventListener var8 = (GuiEventListener)var7.next();
-               if (var8 instanceof AbstractWidget) {
-                  AbstractWidget var9 = (AbstractWidget)var8;
-                  var9.setAlpha(var5);
-               }
-            }
          }
+
+         this.fadeWidgets(var5);
       }
 
       this.renderPanorama(var1, var4);
-      int var10 = Mth.ceil(var5 * 255.0F) << 24;
-      if ((var10 & -67108864) != 0) {
+      int var8 = Mth.ceil(var5 * 255.0F) << 24;
+      if ((var8 & -67108864) != 0) {
          super.render(var1, var2, var3, var4);
          this.logoRenderer.renderLogo(var1, this.width, var5);
          if (this.warningLabel != null) {
-            this.warningLabel.render(var1, var10);
+            this.warningLabel.render(var1, var8);
          }
 
          if (this.splash != null && !(Boolean)this.minecraft.options.hideSplashTexts().get()) {
-            this.splash.render(var1, this.width, this.font, var10);
+            this.splash.render(var1, this.width, this.font, var8);
          }
 
-         String var11 = "Minecraft " + SharedConstants.getCurrentVersion().getName();
+         String var7 = "Minecraft " + SharedConstants.getCurrentVersion().getName();
          if (this.minecraft.isDemo()) {
-            var11 = var11 + " Demo";
+            var7 = var7 + " Demo";
          } else {
-            var11 = var11 + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType());
+            var7 = var7 + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType());
          }
 
          if (Minecraft.checkModStatus().shouldReportAsModified()) {
-            var11 = var11 + I18n.get("menu.modded");
+            var7 = var7 + I18n.get("menu.modded");
          }
 
-         var1.drawString(this.font, (String)var11, 2, this.height - 10, 16777215 | var10);
+         var1.drawString(this.font, (String)var7, 2, this.height - 10, 16777215 | var8);
          if (this.realmsNotificationsEnabled() && var5 >= 1.0F) {
             RenderSystem.enableDepthTest();
             this.realmsNotificationsScreen.render(var1, var2, var3, var4);
@@ -312,11 +305,23 @@ public class TitleScreen extends Screen {
       }
    }
 
+   private void fadeWidgets(float var1) {
+      Iterator var2 = this.children().iterator();
+
+      while(var2.hasNext()) {
+         GuiEventListener var3 = (GuiEventListener)var2.next();
+         if (var3 instanceof AbstractWidget var4) {
+            var4.setAlpha(var1);
+         }
+      }
+
+   }
+
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, var2);
+      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, this.advancePanoramaTime());
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -374,12 +379,12 @@ public class TitleScreen extends Screen {
    }
 
    private static record WarningLabel(Font font, MultiLineLabel label, int x, int y) {
-      private WarningLabel(Font var1, MultiLineLabel var2, int var3, int var4) {
+      private WarningLabel(Font font, MultiLineLabel label, int x, int y) {
          super();
-         this.font = var1;
-         this.label = var2;
-         this.x = var3;
-         this.y = var4;
+         this.font = font;
+         this.label = label;
+         this.x = x;
+         this.y = y;
       }
 
       public void render(GuiGraphics var1, int var2) {

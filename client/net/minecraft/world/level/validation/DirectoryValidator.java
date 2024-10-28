@@ -81,12 +81,12 @@ public class DirectoryValidator {
          }
 
          // $FF: synthetic method
-         public FileVisitResult visitFile(Object var1, BasicFileAttributes var2x) throws IOException {
+         public FileVisitResult visitFile(final Object var1, final BasicFileAttributes var2x) throws IOException {
             return this.visitFile((Path)var1, var2x);
          }
 
          // $FF: synthetic method
-         public FileVisitResult preVisitDirectory(Object var1, BasicFileAttributes var2x) throws IOException {
+         public FileVisitResult preVisitDirectory(final Object var1, final BasicFileAttributes var2x) throws IOException {
             return this.preVisitDirectory((Path)var1, var2x);
          }
       });

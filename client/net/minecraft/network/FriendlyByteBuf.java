@@ -1505,7 +1505,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    // $FF: synthetic method
-   public ByteBuf touch(Object var1) {
+   public ByteBuf touch(final Object var1) {
       return this.touch(var1);
    }
 
@@ -1520,287 +1520,287 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    // $FF: synthetic method
-   public ByteBuf retain(int var1) {
+   public ByteBuf retain(final int var1) {
       return this.retain(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeZero(int var1) {
+   public ByteBuf writeZero(final int var1) {
       return this.writeZero(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBytes(ByteBuffer var1) {
+   public ByteBuf writeBytes(final ByteBuffer var1) {
       return this.writeBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBytes(byte[] var1, int var2, int var3) {
+   public ByteBuf writeBytes(final byte[] var1, final int var2, final int var3) {
       return this.writeBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBytes(byte[] var1) {
+   public ByteBuf writeBytes(final byte[] var1) {
       return this.writeBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBytes(ByteBuf var1, int var2, int var3) {
+   public ByteBuf writeBytes(final ByteBuf var1, final int var2, final int var3) {
       return this.writeBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBytes(ByteBuf var1, int var2) {
+   public ByteBuf writeBytes(final ByteBuf var1, final int var2) {
       return this.writeBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBytes(ByteBuf var1) {
+   public ByteBuf writeBytes(final ByteBuf var1) {
       return this.writeBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeDouble(double var1) {
+   public ByteBuf writeDouble(final double var1) {
       return this.writeDouble(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeFloat(float var1) {
+   public ByteBuf writeFloat(final float var1) {
       return this.writeFloat(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeChar(int var1) {
+   public ByteBuf writeChar(final int var1) {
       return this.writeChar(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeLongLE(long var1) {
+   public ByteBuf writeLongLE(final long var1) {
       return this.writeLongLE(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeLong(long var1) {
+   public ByteBuf writeLong(final long var1) {
       return this.writeLong(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeIntLE(int var1) {
+   public ByteBuf writeIntLE(final int var1) {
       return this.writeIntLE(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeInt(int var1) {
+   public ByteBuf writeInt(final int var1) {
       return this.writeInt(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeMediumLE(int var1) {
+   public ByteBuf writeMediumLE(final int var1) {
       return this.writeMediumLE(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeMedium(int var1) {
+   public ByteBuf writeMedium(final int var1) {
       return this.writeMedium(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeShortLE(int var1) {
+   public ByteBuf writeShortLE(final int var1) {
       return this.writeShortLE(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeShort(int var1) {
+   public ByteBuf writeShort(final int var1) {
       return this.writeShort(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeByte(int var1) {
+   public ByteBuf writeByte(final int var1) {
       return this.writeByte(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf writeBoolean(boolean var1) {
+   public ByteBuf writeBoolean(final boolean var1) {
       return this.writeBoolean(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf skipBytes(int var1) {
+   public ByteBuf skipBytes(final int var1) {
       return this.skipBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(OutputStream var1, int var2) throws IOException {
+   public ByteBuf readBytes(final OutputStream var1, final int var2) throws IOException {
       return this.readBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(ByteBuffer var1) {
+   public ByteBuf readBytes(final ByteBuffer var1) {
       return this.readBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(byte[] var1, int var2, int var3) {
+   public ByteBuf readBytes(final byte[] var1, final int var2, final int var3) {
       return this.readBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(byte[] var1) {
+   public ByteBuf readBytes(final byte[] var1) {
       return this.readBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(ByteBuf var1, int var2, int var3) {
+   public ByteBuf readBytes(final ByteBuf var1, final int var2, final int var3) {
       return this.readBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(ByteBuf var1, int var2) {
+   public ByteBuf readBytes(final ByteBuf var1, final int var2) {
       return this.readBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf readBytes(ByteBuf var1) {
+   public ByteBuf readBytes(final ByteBuf var1) {
       return this.readBytes(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf setZero(int var1, int var2) {
+   public ByteBuf setZero(final int var1, final int var2) {
       return this.setZero(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBytes(int var1, ByteBuffer var2) {
+   public ByteBuf setBytes(final int var1, final ByteBuffer var2) {
       return this.setBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBytes(int var1, byte[] var2, int var3, int var4) {
+   public ByteBuf setBytes(final int var1, final byte[] var2, final int var3, final int var4) {
       return this.setBytes(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBytes(int var1, byte[] var2) {
+   public ByteBuf setBytes(final int var1, final byte[] var2) {
       return this.setBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBytes(int var1, ByteBuf var2, int var3, int var4) {
+   public ByteBuf setBytes(final int var1, final ByteBuf var2, final int var3, final int var4) {
       return this.setBytes(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBytes(int var1, ByteBuf var2, int var3) {
+   public ByteBuf setBytes(final int var1, final ByteBuf var2, final int var3) {
       return this.setBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBytes(int var1, ByteBuf var2) {
+   public ByteBuf setBytes(final int var1, final ByteBuf var2) {
       return this.setBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setDouble(int var1, double var2) {
+   public ByteBuf setDouble(final int var1, final double var2) {
       return this.setDouble(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setFloat(int var1, float var2) {
+   public ByteBuf setFloat(final int var1, final float var2) {
       return this.setFloat(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setChar(int var1, int var2) {
+   public ByteBuf setChar(final int var1, final int var2) {
       return this.setChar(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setLongLE(int var1, long var2) {
+   public ByteBuf setLongLE(final int var1, final long var2) {
       return this.setLongLE(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setLong(int var1, long var2) {
+   public ByteBuf setLong(final int var1, final long var2) {
       return this.setLong(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setIntLE(int var1, int var2) {
+   public ByteBuf setIntLE(final int var1, final int var2) {
       return this.setIntLE(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setInt(int var1, int var2) {
+   public ByteBuf setInt(final int var1, final int var2) {
       return this.setInt(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setMediumLE(int var1, int var2) {
+   public ByteBuf setMediumLE(final int var1, final int var2) {
       return this.setMediumLE(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setMedium(int var1, int var2) {
+   public ByteBuf setMedium(final int var1, final int var2) {
       return this.setMedium(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setShortLE(int var1, int var2) {
+   public ByteBuf setShortLE(final int var1, final int var2) {
       return this.setShortLE(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setShort(int var1, int var2) {
+   public ByteBuf setShort(final int var1, final int var2) {
       return this.setShort(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setByte(int var1, int var2) {
+   public ByteBuf setByte(final int var1, final int var2) {
       return this.setByte(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf setBoolean(int var1, boolean var2) {
+   public ByteBuf setBoolean(final int var1, final boolean var2) {
       return this.setBoolean(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, OutputStream var2, int var3) throws IOException {
+   public ByteBuf getBytes(final int var1, final OutputStream var2, final int var3) throws IOException {
       return this.getBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, ByteBuffer var2) {
+   public ByteBuf getBytes(final int var1, final ByteBuffer var2) {
       return this.getBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, byte[] var2, int var3, int var4) {
+   public ByteBuf getBytes(final int var1, final byte[] var2, final int var3, final int var4) {
       return this.getBytes(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, byte[] var2) {
+   public ByteBuf getBytes(final int var1, final byte[] var2) {
       return this.getBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, ByteBuf var2, int var3, int var4) {
+   public ByteBuf getBytes(final int var1, final ByteBuf var2, final int var3, final int var4) {
       return this.getBytes(var1, var2, var3, var4);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, ByteBuf var2, int var3) {
+   public ByteBuf getBytes(final int var1, final ByteBuf var2, final int var3) {
       return this.getBytes(var1, var2, var3);
    }
 
    // $FF: synthetic method
-   public ByteBuf getBytes(int var1, ByteBuf var2) {
+   public ByteBuf getBytes(final int var1, final ByteBuf var2) {
       return this.getBytes(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf ensureWritable(int var1) {
+   public ByteBuf ensureWritable(final int var1) {
       return this.ensureWritable(var1);
    }
 
@@ -1840,27 +1840,27 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    // $FF: synthetic method
-   public ByteBuf setIndex(int var1, int var2) {
+   public ByteBuf setIndex(final int var1, final int var2) {
       return this.setIndex(var1, var2);
    }
 
    // $FF: synthetic method
-   public ByteBuf writerIndex(int var1) {
+   public ByteBuf writerIndex(final int var1) {
       return this.writerIndex(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf readerIndex(int var1) {
+   public ByteBuf readerIndex(final int var1) {
       return this.readerIndex(var1);
    }
 
    // $FF: synthetic method
-   public ByteBuf capacity(int var1) {
+   public ByteBuf capacity(final int var1) {
       return this.capacity(var1);
    }
 
    // $FF: synthetic method
-   public ReferenceCounted touch(Object var1) {
+   public ReferenceCounted touch(final Object var1) {
       return this.touch(var1);
    }
 
@@ -1870,7 +1870,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    // $FF: synthetic method
-   public ReferenceCounted retain(int var1) {
+   public ReferenceCounted retain(final int var1) {
       return this.retain(var1);
    }
 

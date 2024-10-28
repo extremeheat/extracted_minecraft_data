@@ -43,6 +43,7 @@ public class TagParser {
    private static final Pattern SHORT_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)s", 2);
    private static final Pattern INT_PATTERN = Pattern.compile("[-+]?(?:0|[1-9][0-9]*)");
    public static final Codec<CompoundTag> AS_CODEC;
+   public static final Codec<CompoundTag> LENIENT_CODEC;
    private final StringReader reader;
 
    public static CompoundTag parseTag(String var0) throws CommandSyntaxException {
@@ -293,5 +294,6 @@ public class TagParser {
             return DataResult.error(var2::getMessage);
          }
       }, CompoundTag::toString);
+      LENIENT_CODEC = Codec.withAlternative(AS_CODEC, CompoundTag.CODEC);
    }
 }

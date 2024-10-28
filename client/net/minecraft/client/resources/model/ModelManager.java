@@ -290,13 +290,13 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       final Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations;
       final CompletableFuture<Void> readyForUpload;
 
-      ReloadState(ModelBakery var1, BakedModel var2, Map<BlockState, BakedModel> var3, Map<ResourceLocation, AtlasSet.StitchResult> var4, CompletableFuture<Void> var5) {
+      ReloadState(ModelBakery modelBakery, BakedModel missingModel, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, CompletableFuture<Void> readyForUpload) {
          super();
-         this.modelBakery = var1;
-         this.missingModel = var2;
-         this.modelCache = var3;
-         this.atlasPreparations = var4;
-         this.readyForUpload = var5;
+         this.modelBakery = modelBakery;
+         this.missingModel = missingModel;
+         this.modelCache = modelCache;
+         this.atlasPreparations = atlasPreparations;
+         this.readyForUpload = readyForUpload;
       }
 
       public ModelBakery modelBakery() {

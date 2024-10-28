@@ -18,9 +18,9 @@ public interface StringReaderTerms {
    }
 
    public static record TerminalWord(String value) implements Term<StringReader> {
-      public TerminalWord(String var1) {
+      public TerminalWord(String value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public boolean parse(ParseState<StringReader> var1, Scope var2, Control var3) {
@@ -43,9 +43,9 @@ public interface StringReaderTerms {
    }
 
    public static record TerminalCharacter(char value) implements Term<StringReader> {
-      public TerminalCharacter(char var1) {
+      public TerminalCharacter(char value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public boolean parse(ParseState<StringReader> var1, Scope var2, Control var3) {

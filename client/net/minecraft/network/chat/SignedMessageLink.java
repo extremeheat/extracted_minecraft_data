@@ -16,11 +16,11 @@ public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
       return var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index), UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender), UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)).apply(var0, SignedMessageLink::new);
    });
 
-   public SignedMessageLink(int var1, UUID var2, UUID var3) {
+   public SignedMessageLink(int index, UUID sender, UUID sessionId) {
       super();
-      this.index = var1;
-      this.sender = var2;
-      this.sessionId = var3;
+      this.index = index;
+      this.sender = sender;
+      this.sessionId = sessionId;
    }
 
    public static SignedMessageLink unsigned(UUID var0) {

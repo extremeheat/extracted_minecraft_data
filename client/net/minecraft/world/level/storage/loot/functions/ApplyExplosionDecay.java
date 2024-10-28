@@ -18,7 +18,7 @@ public class ApplyExplosionDecay extends LootItemConditionalFunction {
       super(var1);
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<ApplyExplosionDecay> getType() {
       return LootItemFunctions.EXPLOSION_DECAY;
    }
 

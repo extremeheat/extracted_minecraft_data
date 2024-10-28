@@ -30,10 +30,10 @@ public class SummonedEntityTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> entity) {
          super();
-         this.player = var1;
-         this.entity = var2;
+         this.player = player;
+         this.entity = entity;
       }
 
       public static Criterion<TriggerInstance> summonedEntity(EntityPredicate.Builder var0) {

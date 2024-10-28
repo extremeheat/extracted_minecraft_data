@@ -714,11 +714,11 @@ public class Gui {
             final Component score;
             final int scoreWidth;
 
-            _DisplayEntry/* $FF was: 1DisplayEntry*/(Component var1, Component var2, int var3) {
+            _DisplayEntry/* $FF was: 1DisplayEntry*/(Component name, Component score, int scoreWidth) {
                super();
-               this.name = var1;
-               this.score = var2;
-               this.scoreWidth = var3;
+               this.name = name;
+               this.score = score;
+               this.scoreWidth = scoreWidth;
             }
 
             public Component name() {
@@ -1349,7 +1349,7 @@ public class Gui {
       private final ResourceLocation hardcoreHalf;
       private final ResourceLocation hardcoreHalfBlinking;
 
-      private HeartType(ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7, ResourceLocation var8, ResourceLocation var9, ResourceLocation var10) {
+      private HeartType(final ResourceLocation var3, final ResourceLocation var4, final ResourceLocation var5, final ResourceLocation var6, final ResourceLocation var7, final ResourceLocation var8, final ResourceLocation var9, final ResourceLocation var10) {
          this.full = var3;
          this.fullBlinking = var4;
          this.half = var5;

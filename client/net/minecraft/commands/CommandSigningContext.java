@@ -16,9 +16,9 @@ public interface CommandSigningContext {
    PlayerChatMessage getArgument(String var1);
 
    public static record SignedArguments(Map<String, PlayerChatMessage> arguments) implements CommandSigningContext {
-      public SignedArguments(Map<String, PlayerChatMessage> var1) {
+      public SignedArguments(Map<String, PlayerChatMessage> arguments) {
          super();
-         this.arguments = var1;
+         this.arguments = arguments;
       }
 
       @Nullable

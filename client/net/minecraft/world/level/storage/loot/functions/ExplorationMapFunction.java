@@ -47,7 +47,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
       this.skipKnownStructures = var6;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<ExplorationMapFunction> getType() {
       return LootItemFunctions.EXPLORATION_MAP;
    }
 

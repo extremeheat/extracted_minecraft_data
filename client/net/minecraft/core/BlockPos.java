@@ -472,27 +472,27 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i cross(Vec3i var1) {
+   public Vec3i cross(final Vec3i var1) {
       return this.cross(var1);
    }
 
    // $FF: synthetic method
-   public Vec3i relative(Direction.Axis var1, int var2) {
+   public Vec3i relative(final Direction.Axis var1, final int var2) {
       return this.relative(var1, var2);
    }
 
    // $FF: synthetic method
-   public Vec3i relative(Direction var1, int var2) {
+   public Vec3i relative(final Direction var1, final int var2) {
       return this.relative(var1, var2);
    }
 
    // $FF: synthetic method
-   public Vec3i relative(Direction var1) {
+   public Vec3i relative(final Direction var1) {
       return this.relative(var1);
    }
 
    // $FF: synthetic method
-   public Vec3i east(int var1) {
+   public Vec3i east(final int var1) {
       return this.east(var1);
    }
 
@@ -502,7 +502,7 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i west(int var1) {
+   public Vec3i west(final int var1) {
       return this.west(var1);
    }
 
@@ -512,7 +512,7 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i south(int var1) {
+   public Vec3i south(final int var1) {
       return this.south(var1);
    }
 
@@ -522,7 +522,7 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i north(int var1) {
+   public Vec3i north(final int var1) {
       return this.north(var1);
    }
 
@@ -532,7 +532,7 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i below(int var1) {
+   public Vec3i below(final int var1) {
       return this.below(var1);
    }
 
@@ -542,7 +542,7 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i above(int var1) {
+   public Vec3i above(final int var1) {
       return this.above(var1);
    }
 
@@ -552,22 +552,22 @@ public class BlockPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i multiply(int var1) {
+   public Vec3i multiply(final int var1) {
       return this.multiply(var1);
    }
 
    // $FF: synthetic method
-   public Vec3i subtract(Vec3i var1) {
+   public Vec3i subtract(final Vec3i var1) {
       return this.subtract(var1);
    }
 
    // $FF: synthetic method
-   public Vec3i offset(Vec3i var1) {
+   public Vec3i offset(final Vec3i var1) {
       return this.offset(var1);
    }
 
    // $FF: synthetic method
-   public Vec3i offset(int var1, int var2, int var3) {
+   public Vec3i offset(final int var1, final int var2, final int var3) {
       return this.offset(var1, var2, var3);
    }
 
@@ -589,12 +589,12 @@ public class BlockPos extends Vec3i {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (BlockPos)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };
@@ -729,27 +729,27 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i cross(Vec3i var1) {
+      public Vec3i cross(final Vec3i var1) {
          return super.cross(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i relative(Direction.Axis var1, int var2) {
+      public Vec3i relative(final Direction.Axis var1, final int var2) {
          return this.relative(var1, var2);
       }
 
       // $FF: synthetic method
-      public Vec3i relative(Direction var1, int var2) {
+      public Vec3i relative(final Direction var1, final int var2) {
          return this.relative(var1, var2);
       }
 
       // $FF: synthetic method
-      public Vec3i relative(Direction var1) {
+      public Vec3i relative(final Direction var1) {
          return super.relative(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i east(int var1) {
+      public Vec3i east(final int var1) {
          return super.east(var1);
       }
 
@@ -759,7 +759,7 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i west(int var1) {
+      public Vec3i west(final int var1) {
          return super.west(var1);
       }
 
@@ -769,7 +769,7 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i south(int var1) {
+      public Vec3i south(final int var1) {
          return super.south(var1);
       }
 
@@ -779,7 +779,7 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i north(int var1) {
+      public Vec3i north(final int var1) {
          return super.north(var1);
       }
 
@@ -789,7 +789,7 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i below(int var1) {
+      public Vec3i below(final int var1) {
          return super.below(var1);
       }
 
@@ -799,7 +799,7 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i above(int var1) {
+      public Vec3i above(final int var1) {
          return super.above(var1);
       }
 
@@ -809,37 +809,37 @@ public class BlockPos extends Vec3i {
       }
 
       // $FF: synthetic method
-      public Vec3i multiply(int var1) {
+      public Vec3i multiply(final int var1) {
          return this.multiply(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i subtract(Vec3i var1) {
+      public Vec3i subtract(final Vec3i var1) {
          return super.subtract(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i offset(Vec3i var1) {
+      public Vec3i offset(final Vec3i var1) {
          return super.offset(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i offset(int var1, int var2, int var3) {
+      public Vec3i offset(final int var1, final int var2, final int var3) {
          return this.offset(var1, var2, var3);
       }
 
       // $FF: synthetic method
-      public Vec3i setZ(int var1) {
+      public Vec3i setZ(final int var1) {
          return this.setZ(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i setY(int var1) {
+      public Vec3i setY(final int var1) {
          return this.setY(var1);
       }
 
       // $FF: synthetic method
-      public Vec3i setX(int var1) {
+      public Vec3i setX(final int var1) {
          return this.setX(var1);
       }
    }

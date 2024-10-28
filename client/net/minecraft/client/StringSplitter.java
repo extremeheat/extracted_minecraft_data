@@ -295,7 +295,7 @@ public class StringSplitter {
       private float maxWidth;
       private int position;
 
-      public WidthLimitedCharSink(float var2) {
+      public WidthLimitedCharSink(final float var2) {
          super();
          this.maxWidth = var2;
       }
@@ -330,7 +330,7 @@ public class StringSplitter {
       private int nextChar;
       private int offset;
 
-      public LineBreakFinder(float var2) {
+      public LineBreakFinder(final float var2) {
          super();
          this.lineBreakStyle = Style.EMPTY;
          this.lastSpace = -1;

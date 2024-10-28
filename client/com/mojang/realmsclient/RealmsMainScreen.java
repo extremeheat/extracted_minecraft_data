@@ -827,7 +827,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
       private final RealmsServer parent;
 
-      public AvailableSnapshotEntry(RealmsServer var2) {
+      public AvailableSnapshotEntry(final RealmsServer var2) {
          super();
          this.parent = var2;
          this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.tooltip")));
@@ -873,7 +873,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final RealmsServer server;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-      public ParentEntry(RealmsServer var2) {
+      public ParentEntry(final RealmsServer var2) {
          super();
          this.server = var2;
          if (!var2.expired) {
@@ -913,7 +913,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final RealmsServer serverData;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-      public ServerEntry(RealmsServer var2) {
+      public ServerEntry(final RealmsServer var2) {
          super();
          this.serverData = var2;
          boolean var3 = RealmsMainScreen.this.isSelfOwnedServer(var2);
@@ -1127,7 +1127,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final FrameLayout textFrame;
       private int lastEntryWidth = -1;
 
-      public NotificationMessageEntry(Component var2, int var3, RealmsNotification var4) {
+      public NotificationMessageEntry(final Component var2, final int var3, final RealmsNotification var4) {
          super();
          this.text = var2;
          this.frameItemHeight = var3;
@@ -1200,7 +1200,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    class EmptyEntry extends Entry {
-      EmptyEntry(RealmsMainScreen var1) {
+      EmptyEntry(final RealmsMainScreen var1) {
          super();
       }
 
@@ -1215,7 +1215,7 @@ public class RealmsMainScreen extends RealmsScreen {
    class ButtonEntry extends Entry {
       private final Button button;
 
-      public ButtonEntry(Button var2) {
+      public ButtonEntry(final Button var2) {
          super();
          this.button = var2;
       }

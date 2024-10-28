@@ -277,12 +277,12 @@ public final class Biome {
          })).apply(var0, ClimateSettings::new);
       });
 
-      ClimateSettings(boolean var1, float var2, TemperatureModifier var3, float var4) {
+      ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
          super();
-         this.hasPrecipitation = var1;
-         this.temperature = var2;
-         this.temperatureModifier = var3;
-         this.downfall = var4;
+         this.hasPrecipitation = hasPrecipitation;
+         this.temperature = temperature;
+         this.temperatureModifier = temperatureModifier;
+         this.downfall = downfall;
       }
 
       public boolean hasPrecipitation() {
@@ -310,7 +310,7 @@ public final class Biome {
       public static final Codec<Precipitation> CODEC = StringRepresentable.fromEnum(Precipitation::values);
       private final String name;
 
-      private Precipitation(String var3) {
+      private Precipitation(final String var3) {
          this.name = var3;
       }
 
@@ -351,7 +351,7 @@ public final class Biome {
 
       public abstract float modifyTemperature(BlockPos var1, float var2);
 
-      TemperatureModifier(String var3) {
+      TemperatureModifier(final String var3) {
          this.name = var3;
       }
 

@@ -919,6 +919,10 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.END_ROD);
          var1.accept((ItemLike)Items.SEA_LANTERN);
          var1.accept((ItemLike)Items.REDSTONE_LAMP);
+         var1.accept((ItemLike)Items.COPPER_BULB);
+         var1.accept((ItemLike)Items.EXPOSED_COPPER_BULB);
+         var1.accept((ItemLike)Items.WEATHERED_COPPER_BULB);
+         var1.accept((ItemLike)Items.OXIDIZED_COPPER_BULB);
          var1.accept((ItemLike)Items.WAXED_COPPER_BULB);
          var1.accept((ItemLike)Items.WAXED_EXPOSED_COPPER_BULB);
          var1.accept((ItemLike)Items.WAXED_WEATHERED_COPPER_BULB);

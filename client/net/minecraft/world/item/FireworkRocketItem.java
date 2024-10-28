@@ -62,7 +62,7 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
       Fireworks var5 = (Fireworks)var1.get(DataComponents.FIREWORKS);
       if (var5 != null) {
          Objects.requireNonNull(var3);
-         var5.addToTooltip(var3::add, var4);
+         var5.addToTooltip(var2, var3::add, var4);
       }
 
    }
@@ -72,7 +72,7 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder().positionFunction(FireworkRocketItem::getEntityPokingOutOfBlockPos).uncertainty(0.5F).power(1.0F).overrideDispenseEvent(1004).build();
+      return ProjectileItem.DispenseConfig.builder().positionFunction(FireworkRocketItem::getEntityPokingOutOfBlockPos).uncertainty(1.0F).power(0.5F).overrideDispenseEvent(1004).build();
    }
 
    private static Vec3 getEntityPokingOutOfBlockPos(BlockSource var0, Direction var1) {

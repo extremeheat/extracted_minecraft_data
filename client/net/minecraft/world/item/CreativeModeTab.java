@@ -286,11 +286,11 @@ public class CreativeModeTab {
    public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
       final FeatureFlagSet enabledFeatures;
 
-      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+      public ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
          super();
-         this.enabledFeatures = var1;
-         this.hasPermissions = var2;
-         this.holders = var3;
+         this.enabledFeatures = enabledFeatures;
+         this.hasPermissions = hasPermissions;
+         this.holders = holders;
       }
 
       public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {

@@ -253,9 +253,9 @@ public class BookViewScreen extends Screen {
    }
 
    public static record BookAccess(List<Component> pages) {
-      public BookAccess(List<Component> var1) {
+      public BookAccess(List<Component> pages) {
          super();
-         this.pages = var1;
+         this.pages = pages;
       }
 
       public int getPageCount() {

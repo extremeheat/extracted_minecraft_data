@@ -167,7 +167,11 @@ public class BoundingBox {
    }
 
    public BoundingBox inflatedBy(int var1) {
-      return new BoundingBox(this.minX() - var1, this.minY() - var1, this.minZ() - var1, this.maxX() + var1, this.maxY() + var1, this.maxZ() + var1);
+      return this.inflatedBy(var1, var1, var1);
+   }
+
+   public BoundingBox inflatedBy(int var1, int var2, int var3) {
+      return new BoundingBox(this.minX() - var1, this.minY() - var2, this.minZ() - var3, this.maxX() + var1, this.maxY() + var2, this.maxZ() + var3);
    }
 
    public boolean isInside(Vec3i var1) {

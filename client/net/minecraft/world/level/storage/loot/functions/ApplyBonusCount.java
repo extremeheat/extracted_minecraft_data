@@ -38,7 +38,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       this.formula = var3;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<ApplyBonusCount> getType() {
       return LootItemFunctions.APPLY_BONUS;
    }
 
@@ -111,9 +111,9 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       });
       public static final FormulaType TYPE;
 
-      UniformBonusCount(int var1) {
+      UniformBonusCount(int bonusMultiplier) {
          super();
-         this.bonusMultiplier = var1;
+         this.bonusMultiplier = bonusMultiplier;
       }
 
       public int calculateNewCount(RandomSource var1, int var2, int var3) {
@@ -169,10 +169,10 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       });
       public static final FormulaType TYPE;
 
-      BinomialWithBonusCount(int var1, float var2) {
+      BinomialWithBonusCount(int extraRounds, float probability) {
          super();
-         this.extraRounds = var1;
-         this.probability = var2;
+         this.extraRounds = extraRounds;
+         this.probability = probability;
       }
 
       public int calculateNewCount(RandomSource var1, int var2, int var3) {
@@ -203,10 +203,10 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    }
 
    private static record FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
-      FormulaType(ResourceLocation var1, Codec<? extends Formula> var2) {
+      FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
          super();
-         this.id = var1;
-         this.codec = var2;
+         this.id = id;
+         this.codec = codec;
       }
 
       public ResourceLocation id() {

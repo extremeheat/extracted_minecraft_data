@@ -13,19 +13,20 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BannerPattern;
 
-public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<ItemPredicate> chest, Optional<ItemPredicate> legs, Optional<ItemPredicate> feet, Optional<ItemPredicate> mainhand, Optional<ItemPredicate> offhand) {
+public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<ItemPredicate> chest, Optional<ItemPredicate> legs, Optional<ItemPredicate> feet, Optional<ItemPredicate> body, Optional<ItemPredicate> mainhand, Optional<ItemPredicate> offhand) {
    public static final Codec<EntityEquipmentPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ItemPredicate.CODEC.optionalFieldOf("head").forGetter(EntityEquipmentPredicate::head), ItemPredicate.CODEC.optionalFieldOf("chest").forGetter(EntityEquipmentPredicate::chest), ItemPredicate.CODEC.optionalFieldOf("legs").forGetter(EntityEquipmentPredicate::legs), ItemPredicate.CODEC.optionalFieldOf("feet").forGetter(EntityEquipmentPredicate::feet), ItemPredicate.CODEC.optionalFieldOf("mainhand").forGetter(EntityEquipmentPredicate::mainhand), ItemPredicate.CODEC.optionalFieldOf("offhand").forGetter(EntityEquipmentPredicate::offhand)).apply(var0, EntityEquipmentPredicate::new);
+      return var0.group(ItemPredicate.CODEC.optionalFieldOf("head").forGetter(EntityEquipmentPredicate::head), ItemPredicate.CODEC.optionalFieldOf("chest").forGetter(EntityEquipmentPredicate::chest), ItemPredicate.CODEC.optionalFieldOf("legs").forGetter(EntityEquipmentPredicate::legs), ItemPredicate.CODEC.optionalFieldOf("feet").forGetter(EntityEquipmentPredicate::feet), ItemPredicate.CODEC.optionalFieldOf("body").forGetter(EntityEquipmentPredicate::body), ItemPredicate.CODEC.optionalFieldOf("mainhand").forGetter(EntityEquipmentPredicate::mainhand), ItemPredicate.CODEC.optionalFieldOf("offhand").forGetter(EntityEquipmentPredicate::offhand)).apply(var0, EntityEquipmentPredicate::new);
    });
 
-   public EntityEquipmentPredicate(Optional<ItemPredicate> var1, Optional<ItemPredicate> var2, Optional<ItemPredicate> var3, Optional<ItemPredicate> var4, Optional<ItemPredicate> var5, Optional<ItemPredicate> var6) {
+   public EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<ItemPredicate> chest, Optional<ItemPredicate> legs, Optional<ItemPredicate> feet, Optional<ItemPredicate> body, Optional<ItemPredicate> mainhand, Optional<ItemPredicate> offhand) {
       super();
-      this.head = var1;
-      this.chest = var2;
-      this.legs = var3;
-      this.feet = var4;
-      this.mainhand = var5;
-      this.offhand = var6;
+      this.head = head;
+      this.chest = chest;
+      this.legs = legs;
+      this.feet = feet;
+      this.body = body;
+      this.mainhand = mainhand;
+      this.offhand = offhand;
    }
 
    public static EntityEquipmentPredicate captainPredicate(HolderGetter<BannerPattern> var0) {
@@ -34,18 +35,20 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
 
    public boolean matches(@Nullable Entity var1) {
       if (var1 instanceof LivingEntity var2) {
-         if (this.head.isPresent() && !((ItemPredicate)this.head.get()).matches(var2.getItemBySlot(EquipmentSlot.HEAD))) {
+         if (this.head.isPresent() && !((ItemPredicate)this.head.get()).test(var2.getItemBySlot(EquipmentSlot.HEAD))) {
             return false;
-         } else if (this.chest.isPresent() && !((ItemPredicate)this.chest.get()).matches(var2.getItemBySlot(EquipmentSlot.CHEST))) {
+         } else if (this.chest.isPresent() && !((ItemPredicate)this.chest.get()).test(var2.getItemBySlot(EquipmentSlot.CHEST))) {
             return false;
-         } else if (this.legs.isPresent() && !((ItemPredicate)this.legs.get()).matches(var2.getItemBySlot(EquipmentSlot.LEGS))) {
+         } else if (this.legs.isPresent() && !((ItemPredicate)this.legs.get()).test(var2.getItemBySlot(EquipmentSlot.LEGS))) {
             return false;
-         } else if (this.feet.isPresent() && !((ItemPredicate)this.feet.get()).matches(var2.getItemBySlot(EquipmentSlot.FEET))) {
+         } else if (this.feet.isPresent() && !((ItemPredicate)this.feet.get()).test(var2.getItemBySlot(EquipmentSlot.FEET))) {
             return false;
-         } else if (this.mainhand.isPresent() && !((ItemPredicate)this.mainhand.get()).matches(var2.getItemBySlot(EquipmentSlot.MAINHAND))) {
+         } else if (this.body.isPresent() && !((ItemPredicate)this.body.get()).test(var2.getItemBySlot(EquipmentSlot.BODY))) {
+            return false;
+         } else if (this.mainhand.isPresent() && !((ItemPredicate)this.mainhand.get()).test(var2.getItemBySlot(EquipmentSlot.MAINHAND))) {
             return false;
          } else {
-            return !this.offhand.isPresent() || ((ItemPredicate)this.offhand.get()).matches(var2.getItemBySlot(EquipmentSlot.OFFHAND));
+            return !this.offhand.isPresent() || ((ItemPredicate)this.offhand.get()).test(var2.getItemBySlot(EquipmentSlot.OFFHAND));
          }
       } else {
          return false;
@@ -68,6 +71,10 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
       return this.feet;
    }
 
+   public Optional<ItemPredicate> body() {
+      return this.body;
+   }
+
    public Optional<ItemPredicate> mainhand() {
       return this.mainhand;
    }
@@ -81,6 +88,7 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
       private Optional<ItemPredicate> chest = Optional.empty();
       private Optional<ItemPredicate> legs = Optional.empty();
       private Optional<ItemPredicate> feet = Optional.empty();
+      private Optional<ItemPredicate> body = Optional.empty();
       private Optional<ItemPredicate> mainhand = Optional.empty();
       private Optional<ItemPredicate> offhand = Optional.empty();
 
@@ -112,6 +120,11 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
          return this;
       }
 
+      public Builder body(ItemPredicate.Builder var1) {
+         this.body = Optional.of(var1.build());
+         return this;
+      }
+
       public Builder mainhand(ItemPredicate.Builder var1) {
          this.mainhand = Optional.of(var1.build());
          return this;
@@ -123,7 +136,7 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
       }
 
       public EntityEquipmentPredicate build() {
-         return new EntityEquipmentPredicate(this.head, this.chest, this.legs, this.feet, this.mainhand, this.offhand);
+         return new EntityEquipmentPredicate(this.head, this.chest, this.legs, this.feet, this.body, this.mainhand, this.offhand);
       }
    }
 }

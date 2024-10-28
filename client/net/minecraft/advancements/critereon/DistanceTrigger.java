@@ -30,11 +30,11 @@ public class DistanceTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance) {
          super();
-         this.player = var1;
-         this.startPosition = var2;
-         this.distance = var3;
+         this.player = player;
+         this.startPosition = startPosition;
+         this.distance = distance;
       }
 
       public static Criterion<TriggerInstance> fallFromHeight(EntityPredicate.Builder var0, DistancePredicate var1, LocationPredicate.Builder var2) {

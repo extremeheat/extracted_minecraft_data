@@ -8,10 +8,10 @@ import net.minecraft.util.SignatureValidator;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 
 public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
-   public RemoteChatSession(UUID var1, ProfilePublicKey var2) {
+   public RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKey) {
       super();
-      this.sessionId = var1;
-      this.profilePublicKey = var2;
+      this.sessionId = sessionId;
+      this.profilePublicKey = profilePublicKey;
    }
 
    public SignedMessageValidator createMessageValidator(Duration var1) {
@@ -41,10 +41,10 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
    }
 
    public static record Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
-      public Data(UUID var1, ProfilePublicKey.Data var2) {
+      public Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
          super();
-         this.sessionId = var1;
-         this.profilePublicKey = var2;
+         this.sessionId = sessionId;
+         this.profilePublicKey = profilePublicKey;
       }
 
       public static Data read(FriendlyByteBuf var0) {

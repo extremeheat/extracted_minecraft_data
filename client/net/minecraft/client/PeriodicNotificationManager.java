@@ -129,7 +129,7 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
    }
 
    // $FF: synthetic method
-   protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
       return this.prepare(var1, var2);
    }
 
@@ -186,12 +186,12 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
       final String title;
       final String message;
 
-      public Notification(long var1, long var3, String var5, String var6) {
+      public Notification(final long delay, final long period, final String title, final String message) {
          super();
-         this.delay = var1 != 0L ? var1 : var3;
-         this.period = var3;
-         this.title = var5;
-         this.message = var6;
+         this.delay = delay != 0L ? delay : period;
+         this.period = period;
+         this.title = title;
+         this.message = message;
       }
 
       public long delay() {

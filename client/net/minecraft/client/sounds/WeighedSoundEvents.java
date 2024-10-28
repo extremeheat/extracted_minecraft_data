@@ -72,7 +72,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
    }
 
    // $FF: synthetic method
-   public Object getSound(RandomSource var1) {
+   public Object getSound(final RandomSource var1) {
       return this.getSound(var1);
    }
 }

@@ -666,14 +666,15 @@ public abstract class AbstractContainerMenu {
             var8 = var7.getItem();
             if (!var8.isEmpty() && ItemStack.isSameItemSameComponents(var1, var8)) {
                var9 = var8.getCount() + var1.getCount();
-               if (var9 <= var1.getMaxStackSize()) {
+               int var10 = var7.getMaxStackSize(var8);
+               if (var9 <= var10) {
                   var1.setCount(0);
                   var8.setCount(var9);
                   var7.setChanged();
                   var5 = true;
-               } else if (var8.getCount() < var1.getMaxStackSize()) {
-                  var1.shrink(var1.getMaxStackSize() - var8.getCount());
-                  var8.setCount(var1.getMaxStackSize());
+               } else if (var8.getCount() < var10) {
+                  var1.shrink(var10 - var8.getCount());
+                  var8.setCount(var10);
                   var7.setChanged();
                   var5 = true;
                }

@@ -88,7 +88,7 @@ public class ComponentSerialization {
          }
 
          // $FF: synthetic method
-         public DataResult encode(Object var1x, DynamicOps var2, Object var3) {
+         public DataResult encode(final Object var1x, final DynamicOps var2, final Object var3) {
             return this.encode((Component)var1x, var2, var3);
          }
       };

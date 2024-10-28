@@ -23,12 +23,12 @@ public class EndermiteRenderer extends MobRenderer<Endermite, EndermiteModel<End
    }
 
    // $FF: synthetic method
-   protected float getFlipDegrees(LivingEntity var1) {
+   protected float getFlipDegrees(final LivingEntity var1) {
       return this.getFlipDegrees((Endermite)var1);
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(Entity var1) {
+   public ResourceLocation getTextureLocation(final Entity var1) {
       return this.getTextureLocation((Endermite)var1);
    }
 }

@@ -14,13 +14,13 @@ public record MapDecorationType(ResourceLocation assetId, boolean showOnItemFram
    public static final Codec<Holder<MapDecorationType>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<MapDecorationType>> STREAM_CODEC;
 
-   public MapDecorationType(ResourceLocation var1, boolean var2, int var3, boolean var4, boolean var5) {
+   public MapDecorationType(ResourceLocation assetId, boolean showOnItemFrame, int mapColor, boolean explorationMapElement, boolean trackCount) {
       super();
-      this.assetId = var1;
-      this.showOnItemFrame = var2;
-      this.mapColor = var3;
-      this.explorationMapElement = var4;
-      this.trackCount = var5;
+      this.assetId = assetId;
+      this.showOnItemFrame = showOnItemFrame;
+      this.mapColor = mapColor;
+      this.explorationMapElement = explorationMapElement;
+      this.trackCount = trackCount;
    }
 
    public boolean hasMapColor() {

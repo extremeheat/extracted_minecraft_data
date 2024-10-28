@@ -11,9 +11,9 @@ public record LockCode(String key) {
    public static final Codec<LockCode> CODEC;
    public static final String TAG_LOCK = "Lock";
 
-   public LockCode(String var1) {
+   public LockCode(String key) {
       super();
-      this.key = var1;
+      this.key = key;
    }
 
    public boolean unlocksWith(ItemStack var1) {

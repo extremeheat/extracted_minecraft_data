@@ -17,6 +17,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle) implements TooltipProvider {
@@ -27,18 +28,18 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
    public static final StreamCodec<ByteBuf, FireworkExplosion> STREAM_CODEC;
    private static final Component CUSTOM_COLOR_NAME;
 
-   public FireworkExplosion(Shape var1, IntList var2, IntList var3, boolean var4, boolean var5) {
+   public FireworkExplosion(Shape shape, IntList colors, IntList fadeColors, boolean hasTrail, boolean hasTwinkle) {
       super();
-      this.shape = var1;
-      this.colors = var2;
-      this.fadeColors = var3;
-      this.hasTrail = var4;
-      this.hasTwinkle = var5;
+      this.shape = shape;
+      this.colors = colors;
+      this.fadeColors = fadeColors;
+      this.hasTrail = hasTrail;
+      this.hasTwinkle = hasTwinkle;
    }
 
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
-      this.addShapeNameTooltip(var1);
-      this.addAdditionalTooltip(var1);
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+      this.addShapeNameTooltip(var2);
+      this.addAdditionalTooltip(var2);
    }
 
    public void addShapeNameTooltip(Consumer<Component> var1) {
@@ -129,7 +130,7 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
       private final int id;
       private final String name;
 
-      private Shape(int var3, String var4) {
+      private Shape(final int var3, final String var4) {
          this.id = var3;
          this.name = var4;
       }

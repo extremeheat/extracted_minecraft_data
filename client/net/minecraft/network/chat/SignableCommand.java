@@ -13,9 +13,9 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.SignedArgument;
 
 public record SignableCommand<S>(List<Argument<S>> arguments) {
-   public SignableCommand(List<Argument<S>> var1) {
+   public SignableCommand(List<Argument<S>> arguments) {
       super();
-      this.arguments = var1;
+      this.arguments = arguments;
    }
 
    public static <S> boolean hasSignableArguments(ParseResults<S> var0) {
@@ -78,10 +78,10 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
    }
 
    public static record Argument<S>(ArgumentCommandNode<S, ?> node, String value) {
-      public Argument(ArgumentCommandNode<S, ?> var1, String var2) {
+      public Argument(ArgumentCommandNode<S, ?> node, String value) {
          super();
-         this.node = var1;
-         this.value = var2;
+         this.node = node;
+         this.value = value;
       }
 
       public String name() {

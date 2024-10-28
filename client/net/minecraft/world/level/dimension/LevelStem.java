@@ -16,10 +16,10 @@ public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
    public static final ResourceKey<LevelStem> NETHER;
    public static final ResourceKey<LevelStem> END;
 
-   public LevelStem(Holder<DimensionType> var1, ChunkGenerator var2) {
+   public LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
       super();
-      this.type = var1;
-      this.generator = var2;
+      this.type = type;
+      this.generator = generator;
    }
 
    public Holder<DimensionType> type() {

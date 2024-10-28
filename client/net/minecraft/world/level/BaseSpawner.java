@@ -148,7 +148,7 @@ public abstract class BaseSpawner {
                         ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, (SpawnGroupData)null);
                      }
 
-                     Optional var10000 = var5.getEquipmentLootTable();
+                     Optional var10000 = var5.getEquipment();
                      Objects.requireNonNull(var20);
                      var10000.ifPresent(var20::equip);
                   }

@@ -100,8 +100,9 @@ public class TestFinder<T> implements StructureBlockPosFinder, TestFunctionFinde
 
       public T radius(CommandContext<CommandSourceStack> var1, int var2) {
          CommandSourceStack var3 = (CommandSourceStack)var1.getSource();
+         BlockPos var4 = BlockPos.containing(var3.getPosition());
          return this.build(var3, TestFinder.NO_FUNCTIONS, () -> {
-            return StructureUtils.radiusStructureBlockPos(var2, var3.getPosition(), var3.getLevel());
+            return StructureUtils.findStructureBlocks(var4, var2, var3.getLevel());
          });
       }
 
@@ -156,6 +157,14 @@ public class TestFinder<T> implements StructureBlockPosFinder, TestFunctionFinde
          return this.build((CommandSourceStack)var1.getSource(), () -> {
             return Stream.of(TestFunctionArgument.getTestFunction(var1, var2));
          }, TestFinder.NO_STRUCTURES);
+      }
+
+      public T locateByName(CommandContext<CommandSourceStack> var1, String var2) {
+         CommandSourceStack var3 = (CommandSourceStack)var1.getSource();
+         BlockPos var4 = BlockPos.containing(var3.getPosition());
+         return this.build(var3, TestFinder.NO_FUNCTIONS, () -> {
+            return StructureUtils.findStructureByTestFunction(var4, 1024, var3.getLevel(), var2);
+         });
       }
 
       public T failedTests(CommandContext<CommandSourceStack> var1) {

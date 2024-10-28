@@ -31,7 +31,7 @@ public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
       this.treasure = var3;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<EnchantWithLevelsFunction> getType() {
       return LootItemFunctions.ENCHANT_WITH_LEVELS;
    }
 

@@ -79,10 +79,10 @@ public class RegistrySynchronization {
    public static record PackedRegistryEntry(ResourceLocation id, Optional<Tag> data) {
       public static final StreamCodec<ByteBuf, PackedRegistryEntry> STREAM_CODEC;
 
-      public PackedRegistryEntry(ResourceLocation var1, Optional<Tag> var2) {
+      public PackedRegistryEntry(ResourceLocation id, Optional<Tag> data) {
          super();
-         this.id = var1;
-         this.data = var2;
+         this.id = id;
+         this.data = data;
       }
 
       public ResourceLocation id() {

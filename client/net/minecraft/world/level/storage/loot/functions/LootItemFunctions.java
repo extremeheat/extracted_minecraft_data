@@ -21,48 +21,52 @@ public class LootItemFunctions {
    public static final Codec<LootItemFunction> TYPED_CODEC;
    public static final Codec<LootItemFunction> ROOT_CODEC;
    public static final Codec<Holder<LootItemFunction>> CODEC;
-   public static final LootItemFunctionType SET_COUNT;
-   public static final LootItemFunctionType ENCHANT_WITH_LEVELS;
-   public static final LootItemFunctionType ENCHANT_RANDOMLY;
-   public static final LootItemFunctionType SET_ENCHANTMENTS;
-   public static final LootItemFunctionType SET_CUSTOM_DATA;
-   public static final LootItemFunctionType SET_COMPONENTS;
-   public static final LootItemFunctionType FURNACE_SMELT;
-   public static final LootItemFunctionType LOOTING_ENCHANT;
-   public static final LootItemFunctionType SET_DAMAGE;
-   public static final LootItemFunctionType SET_ATTRIBUTES;
-   public static final LootItemFunctionType SET_NAME;
-   public static final LootItemFunctionType EXPLORATION_MAP;
-   public static final LootItemFunctionType SET_STEW_EFFECT;
-   public static final LootItemFunctionType COPY_NAME;
-   public static final LootItemFunctionType SET_CONTENTS;
-   public static final LootItemFunctionType LIMIT_COUNT;
-   public static final LootItemFunctionType APPLY_BONUS;
-   public static final LootItemFunctionType SET_LOOT_TABLE;
-   public static final LootItemFunctionType EXPLOSION_DECAY;
-   public static final LootItemFunctionType SET_LORE;
-   public static final LootItemFunctionType FILL_PLAYER_HEAD;
-   public static final LootItemFunctionType COPY_CUSTOM_DATA;
-   public static final LootItemFunctionType COPY_STATE;
-   public static final LootItemFunctionType SET_BANNER_PATTERN;
-   public static final LootItemFunctionType SET_POTION;
-   public static final LootItemFunctionType SET_INSTRUMENT;
-   public static final LootItemFunctionType REFERENCE;
-   public static final LootItemFunctionType SEQUENCE;
-   public static final LootItemFunctionType COPY_COMPONENTS;
-   public static final LootItemFunctionType SET_FIREWORKS;
-   public static final LootItemFunctionType SET_FIREWORK_EXPLOSION;
-   public static final LootItemFunctionType SET_BOOK_COVER;
-   public static final LootItemFunctionType SET_WRITTEN_BOOK_PAGES;
-   public static final LootItemFunctionType SET_WRITABLE_BOOK_PAGES;
-   public static final LootItemFunctionType TOGGLE_TOOLTIPS;
-   public static final LootItemFunctionType SET_OMINOUS_BOTTLE_AMPLIFIER;
+   public static final LootItemFunctionType<SetItemCountFunction> SET_COUNT;
+   public static final LootItemFunctionType<SetItemFunction> SET_ITEM;
+   public static final LootItemFunctionType<EnchantWithLevelsFunction> ENCHANT_WITH_LEVELS;
+   public static final LootItemFunctionType<EnchantRandomlyFunction> ENCHANT_RANDOMLY;
+   public static final LootItemFunctionType<SetEnchantmentsFunction> SET_ENCHANTMENTS;
+   public static final LootItemFunctionType<SetCustomDataFunction> SET_CUSTOM_DATA;
+   public static final LootItemFunctionType<SetComponentsFunction> SET_COMPONENTS;
+   public static final LootItemFunctionType<SmeltItemFunction> FURNACE_SMELT;
+   public static final LootItemFunctionType<LootingEnchantFunction> LOOTING_ENCHANT;
+   public static final LootItemFunctionType<SetItemDamageFunction> SET_DAMAGE;
+   public static final LootItemFunctionType<SetAttributesFunction> SET_ATTRIBUTES;
+   public static final LootItemFunctionType<SetNameFunction> SET_NAME;
+   public static final LootItemFunctionType<ExplorationMapFunction> EXPLORATION_MAP;
+   public static final LootItemFunctionType<SetStewEffectFunction> SET_STEW_EFFECT;
+   public static final LootItemFunctionType<CopyNameFunction> COPY_NAME;
+   public static final LootItemFunctionType<SetContainerContents> SET_CONTENTS;
+   public static final LootItemFunctionType<ModifyContainerContents> MODIFY_CONTENTS;
+   public static final LootItemFunctionType<FilteredFunction> FILTERED;
+   public static final LootItemFunctionType<LimitCount> LIMIT_COUNT;
+   public static final LootItemFunctionType<ApplyBonusCount> APPLY_BONUS;
+   public static final LootItemFunctionType<SetContainerLootTable> SET_LOOT_TABLE;
+   public static final LootItemFunctionType<ApplyExplosionDecay> EXPLOSION_DECAY;
+   public static final LootItemFunctionType<SetLoreFunction> SET_LORE;
+   public static final LootItemFunctionType<FillPlayerHead> FILL_PLAYER_HEAD;
+   public static final LootItemFunctionType<CopyCustomDataFunction> COPY_CUSTOM_DATA;
+   public static final LootItemFunctionType<CopyBlockState> COPY_STATE;
+   public static final LootItemFunctionType<SetBannerPatternFunction> SET_BANNER_PATTERN;
+   public static final LootItemFunctionType<SetPotionFunction> SET_POTION;
+   public static final LootItemFunctionType<SetInstrumentFunction> SET_INSTRUMENT;
+   public static final LootItemFunctionType<FunctionReference> REFERENCE;
+   public static final LootItemFunctionType<SequenceFunction> SEQUENCE;
+   public static final LootItemFunctionType<CopyComponentsFunction> COPY_COMPONENTS;
+   public static final LootItemFunctionType<SetFireworksFunction> SET_FIREWORKS;
+   public static final LootItemFunctionType<SetFireworkExplosionFunction> SET_FIREWORK_EXPLOSION;
+   public static final LootItemFunctionType<SetBookCoverFunction> SET_BOOK_COVER;
+   public static final LootItemFunctionType<SetWrittenBookPagesFunction> SET_WRITTEN_BOOK_PAGES;
+   public static final LootItemFunctionType<SetWritableBookPagesFunction> SET_WRITABLE_BOOK_PAGES;
+   public static final LootItemFunctionType<ToggleTooltips> TOGGLE_TOOLTIPS;
+   public static final LootItemFunctionType<SetOminousBottleAmplifierFunction> SET_OMINOUS_BOTTLE_AMPLIFIER;
+   public static final LootItemFunctionType<SetCustomModelDataFunction> SET_CUSTOM_MODEL_DATA;
 
    public LootItemFunctions() {
       super();
    }
 
-   private static LootItemFunctionType register(String var0, MapCodec<? extends LootItemFunction> var1) {
+   private static <T extends LootItemFunction> LootItemFunctionType<T> register(String var0, MapCodec<T> var1) {
       return (LootItemFunctionType)Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, (ResourceLocation)(new ResourceLocation(var0)), new LootItemFunctionType(var1));
    }
 
@@ -104,6 +108,7 @@ public class LootItemFunctions {
       });
       CODEC = RegistryFileCodec.create(Registries.ITEM_MODIFIER, ROOT_CODEC);
       SET_COUNT = register("set_count", SetItemCountFunction.CODEC);
+      SET_ITEM = register("set_item", SetItemFunction.CODEC);
       ENCHANT_WITH_LEVELS = register("enchant_with_levels", EnchantWithLevelsFunction.CODEC);
       ENCHANT_RANDOMLY = register("enchant_randomly", EnchantRandomlyFunction.CODEC);
       SET_ENCHANTMENTS = register("set_enchantments", SetEnchantmentsFunction.CODEC);
@@ -118,6 +123,8 @@ public class LootItemFunctions {
       SET_STEW_EFFECT = register("set_stew_effect", SetStewEffectFunction.CODEC);
       COPY_NAME = register("copy_name", CopyNameFunction.CODEC);
       SET_CONTENTS = register("set_contents", SetContainerContents.CODEC);
+      MODIFY_CONTENTS = register("modify_contents", ModifyContainerContents.CODEC);
+      FILTERED = register("filtered", FilteredFunction.CODEC);
       LIMIT_COUNT = register("limit_count", LimitCount.CODEC);
       APPLY_BONUS = register("apply_bonus", ApplyBonusCount.CODEC);
       SET_LOOT_TABLE = register("set_loot_table", SetContainerLootTable.CODEC);
@@ -139,5 +146,6 @@ public class LootItemFunctions {
       SET_WRITABLE_BOOK_PAGES = register("set_writable_book_pages", SetWritableBookPagesFunction.CODEC);
       TOGGLE_TOOLTIPS = register("toggle_tooltips", ToggleTooltips.CODEC);
       SET_OMINOUS_BOTTLE_AMPLIFIER = register("set_ominous_bottle_amplifier", SetOminousBottleAmplifierFunction.CODEC);
+      SET_CUSTOM_MODEL_DATA = register("set_custom_model_data", SetCustomModelDataFunction.CODEC);
    }
 }

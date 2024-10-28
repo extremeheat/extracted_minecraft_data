@@ -78,7 +78,7 @@ public class ShapelessRecipe implements CraftingRecipe {
             return var0x.group;
          }), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> {
             return var0x.category;
-         }), ItemStack.CODEC.fieldOf("result").forGetter((var0x) -> {
+         }), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> {
             return var0x.result;
          }), Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap((var0x) -> {
             Ingredient[] var1 = (Ingredient[])var0x.stream().filter((var0) -> {

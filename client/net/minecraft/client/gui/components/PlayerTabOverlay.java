@@ -374,12 +374,12 @@ public class PlayerTabOverlay {
       final Component formattedScore;
       final int scoreWidth;
 
-      ScoreDisplayEntry(Component var1, int var2, @Nullable Component var3, int var4) {
+      ScoreDisplayEntry(Component name, int score, @Nullable Component formattedScore, int scoreWidth) {
          super();
-         this.name = var1;
-         this.score = var2;
-         this.formattedScore = var3;
-         this.scoreWidth = var4;
+         this.name = name;
+         this.score = score;
+         this.formattedScore = formattedScore;
+         this.scoreWidth = scoreWidth;
       }
 
       public Component name() {

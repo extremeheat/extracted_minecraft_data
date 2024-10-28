@@ -134,7 +134,7 @@ public class VertexFormatElement {
       private final SetupState setupState;
       private final ClearState clearState;
 
-      private Usage(String var3, SetupState var4, ClearState var5) {
+      private Usage(final String var3, final SetupState var4, final ClearState var5) {
          this.name = var3;
          this.setupState = var4;
          this.clearState = var5;
@@ -181,7 +181,7 @@ public class VertexFormatElement {
       private final String name;
       private final int glType;
 
-      private Type(int var3, String var4, int var5) {
+      private Type(final int var3, final String var4, final int var5) {
          this.size = var3;
          this.name = var4;
          this.glType = var5;

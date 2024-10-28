@@ -46,7 +46,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
       this.target = var4;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetNameFunction> getType() {
       return LootItemFunctions.SET_NAME;
    }
 
@@ -103,7 +103,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
       public static final Codec<Target> CODEC = StringRepresentable.fromEnum(Target::values);
       private final String name;
 
-      private Target(String var3) {
+      private Target(final String var3) {
          this.name = var3;
       }
 

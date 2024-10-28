@@ -590,11 +590,11 @@ public class EntitySelectorOptions {
       final Predicate<EntitySelectorParser> canUse;
       final Component description;
 
-      Option(Modifier var1, Predicate<EntitySelectorParser> var2, Component var3) {
+      Option(Modifier modifier, Predicate<EntitySelectorParser> canUse, Component description) {
          super();
-         this.modifier = var1;
-         this.canUse = var2;
-         this.description = var3;
+         this.modifier = modifier;
+         this.canUse = canUse;
+         this.description = description;
       }
 
       public Modifier modifier() {

@@ -351,7 +351,7 @@ public class ItemStackComponentizationFix extends DataFix {
       }
 
       if (var3 != -1) {
-         var4 = Math.min(var2, var3);
+         var4 = Math.min(var4, var3);
       }
 
       String var5 = var1.substring(0, var4);
@@ -590,18 +590,16 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static Dynamic<?> fixFireworkExplosion(Dynamic<?> var0) {
-      var0 = var0.renameAndFixField("Type", "shape", (var0x) -> {
-         String var10001;
-         switch (var0x.asInt(0)) {
-            case 1 -> var10001 = "large_ball";
-            case 2 -> var10001 = "star";
-            case 3 -> var10001 = "creeper";
-            case 4 -> var10001 = "burst";
-            default -> var10001 = "small_ball";
-         }
+      String var10003;
+      switch (var0.get("Type").asInt(0)) {
+         case 1 -> var10003 = "large_ball";
+         case 2 -> var10003 = "star";
+         case 3 -> var10003 = "creeper";
+         case 4 -> var10003 = "burst";
+         default -> var10003 = "small_ball";
+      }
 
-         return var0x.createString(var10001);
-      });
+      var0 = var0.set("shape", var0.createString(var10003)).remove("Type");
       var0 = var0.renameField("Colors", "colors");
       var0 = var0.renameField("FadeColors", "fade_colors");
       var0 = var0.renameField("Trail", "has_trail");

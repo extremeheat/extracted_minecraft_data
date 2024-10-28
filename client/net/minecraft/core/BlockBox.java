@@ -18,20 +18,20 @@ public record BlockBox(BlockPos min, BlockPos max) implements Iterable<BlockPos>
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (BlockBox)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
 
-   public BlockBox(BlockPos var1, BlockPos var2) {
+   public BlockBox(final BlockPos min, final BlockPos max) {
       super();
-      this.min = BlockPos.min(var1, var2);
-      this.max = BlockPos.max(var1, var2);
+      this.min = BlockPos.min(min, max);
+      this.max = BlockPos.max(min, max);
    }
 
    public static BlockBox of(BlockPos var0) {

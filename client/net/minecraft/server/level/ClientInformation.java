@@ -12,16 +12,16 @@ public record ClientInformation(String language, int viewDistance, ChatVisiblity
       this(var1.readUtf(16), var1.readByte(), (ChatVisiblity)var1.readEnum(ChatVisiblity.class), var1.readBoolean(), var1.readUnsignedByte(), (HumanoidArm)var1.readEnum(HumanoidArm.class), var1.readBoolean(), var1.readBoolean());
    }
 
-   public ClientInformation(String var1, int var2, ChatVisiblity var3, boolean var4, int var5, HumanoidArm var6, boolean var7, boolean var8) {
+   public ClientInformation(String language, int viewDistance, ChatVisiblity chatVisibility, boolean chatColors, int modelCustomisation, HumanoidArm mainHand, boolean textFilteringEnabled, boolean allowsListing) {
       super();
-      this.language = var1;
-      this.viewDistance = var2;
-      this.chatVisibility = var3;
-      this.chatColors = var4;
-      this.modelCustomisation = var5;
-      this.mainHand = var6;
-      this.textFilteringEnabled = var7;
-      this.allowsListing = var8;
+      this.language = language;
+      this.viewDistance = viewDistance;
+      this.chatVisibility = chatVisibility;
+      this.chatColors = chatColors;
+      this.modelCustomisation = modelCustomisation;
+      this.mainHand = mainHand;
+      this.textFilteringEnabled = textFilteringEnabled;
+      this.allowsListing = allowsListing;
    }
 
    public void write(FriendlyByteBuf var1) {

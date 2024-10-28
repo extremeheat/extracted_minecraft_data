@@ -239,12 +239,12 @@ public abstract class Particle {
    public static record LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
       public static final LifetimeAlpha ALWAYS_OPAQUE = new LifetimeAlpha(1.0F, 1.0F, 0.0F, 1.0F);
 
-      public LifetimeAlpha(float var1, float var2, float var3, float var4) {
+      public LifetimeAlpha(float startAlpha, float endAlpha, float startAtNormalizedAge, float endAtNormalizedAge) {
          super();
-         this.startAlpha = var1;
-         this.endAlpha = var2;
-         this.startAtNormalizedAge = var3;
-         this.endAtNormalizedAge = var4;
+         this.startAlpha = startAlpha;
+         this.endAlpha = endAlpha;
+         this.startAtNormalizedAge = startAtNormalizedAge;
+         this.endAtNormalizedAge = endAtNormalizedAge;
       }
 
       public boolean isOpaque() {

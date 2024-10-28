@@ -123,11 +123,11 @@ public class PalettedPermutations implements SpriteSource {
    }
 
    static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) implements SpriteSource.SpriteSupplier {
-      PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, ResourceLocation var3) {
+      PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, ResourceLocation permutationLocation) {
          super();
-         this.baseImage = var1;
-         this.palette = var2;
-         this.permutationLocation = var3;
+         this.baseImage = baseImage;
+         this.palette = palette;
+         this.permutationLocation = permutationLocation;
       }
 
       @Nullable
@@ -165,7 +165,7 @@ public class PalettedPermutations implements SpriteSource {
 
       // $FF: synthetic method
       @Nullable
-      public Object apply(Object var1) {
+      public Object apply(final Object var1) {
          return this.apply((SpriteResourceLoader)var1);
       }
    }

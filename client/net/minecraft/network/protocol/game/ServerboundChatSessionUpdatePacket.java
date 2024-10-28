@@ -13,9 +13,9 @@ public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSess
       this(RemoteChatSession.Data.read(var1));
    }
 
-   public ServerboundChatSessionUpdatePacket(RemoteChatSession.Data var1) {
+   public ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSession) {
       super();
-      this.chatSession = var1;
+      this.chatSession = chatSession;
    }
 
    private void write(FriendlyByteBuf var1) {

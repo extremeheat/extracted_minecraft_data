@@ -57,15 +57,18 @@ import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class ExtraCodecs {
    public static final Codec<JsonElement> JSON;
    public static final Codec<Object> JAVA;
    public static final Codec<Vector3f> VECTOR3F;
+   public static final Codec<Vector4f> VECTOR4F;
    public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS;
    public static final Codec<AxisAngle4f> AXISANGLE4F;
    public static final Codec<Quaternionf> QUATERNIONF;
    public static Codec<Matrix4f> MATRIX4F;
+   public static final Codec<Integer> ARGB_COLOR_CODEC;
    public static final Codec<Integer> UNSIGNED_BYTE;
    public static final Codec<Integer> NON_NEGATIVE_INT;
    public static final Codec<Integer> POSITIVE_INT;
@@ -416,7 +419,7 @@ public class ExtraCodecs {
          }
 
          // $FF: synthetic method
-         public DataResult encode(Object var1, DynamicOps var2, Object var3) {
+         public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
             return this.encode((Optional)var1, var2, var3);
          }
       };
@@ -431,6 +434,13 @@ public class ExtraCodecs {
          });
       }, (var0) -> {
          return List.of(var0.x(), var0.y(), var0.z());
+      });
+      VECTOR4F = Codec.FLOAT.listOf().comapFlatMap((var0) -> {
+         return Util.fixedSize((List)var0, 4).map((var0x) -> {
+            return new Vector4f((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3));
+         });
+      }, (var0) -> {
+         return List.of(var0.x(), var0.y(), var0.z(), var0.w());
       });
       QUATERNIONF_COMPONENTS = Codec.FLOAT.listOf().comapFlatMap((var0) -> {
          return Util.fixedSize((List)var0, 4).map((var0x) -> {
@@ -465,6 +475,9 @@ public class ExtraCodecs {
          }
 
          return var1;
+      });
+      ARGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR4F, (var0) -> {
+         return FastColor.ARGB32.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z());
       });
       UNSIGNED_BYTE = Codec.BYTE.flatComapMap(UnsignedBytes::toInt, (var0) -> {
          return var0 > 255 ? DataResult.error(() -> {
@@ -589,10 +602,10 @@ public class ExtraCodecs {
    }
 
    public static record StrictUnboundedMapCodec<K, V>(Codec<K> keyCodec, Codec<V> elementCodec) implements Codec<Map<K, V>>, BaseMapCodec<K, V> {
-      public StrictUnboundedMapCodec(Codec<K> var1, Codec<V> var2) {
+      public StrictUnboundedMapCodec(Codec<K> keyCodec, Codec<V> elementCodec) {
          super();
-         this.keyCodec = var1;
-         this.elementCodec = var2;
+         this.keyCodec = keyCodec;
+         this.elementCodec = elementCodec;
       }
 
       public <T> DataResult<Map<K, V>> decode(DynamicOps<T> var1, MapLike<T> var2) {
@@ -657,16 +670,16 @@ public class ExtraCodecs {
       }
 
       // $FF: synthetic method
-      public DataResult encode(Object var1, DynamicOps var2, Object var3) {
+      public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
          return this.encode((Map)var1, var2, var3);
       }
    }
 
    public static record TagOrElementLocation(ResourceLocation id, boolean tag) {
-      public TagOrElementLocation(ResourceLocation var1, boolean var2) {
+      public TagOrElementLocation(ResourceLocation id, boolean tag) {
          super();
-         this.id = var1;
-         this.tag = var2;
+         this.id = id;
+         this.tag = tag;
       }
 
       public String toString() {

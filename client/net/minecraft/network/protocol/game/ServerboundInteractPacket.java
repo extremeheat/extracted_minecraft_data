@@ -159,7 +159,7 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
 
       final Function<FriendlyByteBuf, Action> reader;
 
-      private ActionType(Function var3) {
+      private ActionType(final Function var3) {
          this.reader = var3;
       }
 

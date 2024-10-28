@@ -42,10 +42,10 @@ public final class IoSummary<T> {
       final long totalSize;
       static final Comparator<CountAndSize> SIZE_THEN_COUNT = Comparator.comparing(CountAndSize::totalSize).thenComparing(CountAndSize::totalCount).reversed();
 
-      public CountAndSize(long var1, long var3) {
+      public CountAndSize(long totalCount, long totalSize) {
          super();
-         this.totalCount = var1;
-         this.totalSize = var3;
+         this.totalCount = totalCount;
+         this.totalSize = totalSize;
       }
 
       CountAndSize add(CountAndSize var1) {

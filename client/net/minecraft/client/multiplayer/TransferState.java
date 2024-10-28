@@ -4,9 +4,9 @@ import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 
 public record TransferState(Map<ResourceLocation, byte[]> cookies) {
-   public TransferState(Map<ResourceLocation, byte[]> var1) {
+   public TransferState(Map<ResourceLocation, byte[]> cookies) {
       super();
-      this.cookies = var1;
+      this.cookies = cookies;
    }
 
    public Map<ResourceLocation, byte[]> cookies() {

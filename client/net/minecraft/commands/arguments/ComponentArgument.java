@@ -48,7 +48,7 @@ public class ComponentArgument implements ArgumentType<Component> {
    }
 
    // $FF: synthetic method
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 }

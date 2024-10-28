@@ -13,11 +13,11 @@ public record GoalDebugPayload(int entityId, BlockPos pos, List<DebugGoal> goals
       this(var1.readInt(), var1.readBlockPos(), var1.readList(DebugGoal::new));
    }
 
-   public GoalDebugPayload(int var1, BlockPos var2, List<DebugGoal> var3) {
+   public GoalDebugPayload(int entityId, BlockPos pos, List<DebugGoal> goals) {
       super();
-      this.entityId = var1;
-      this.pos = var2;
-      this.goals = var3;
+      this.entityId = entityId;
+      this.pos = pos;
+      this.goals = goals;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -49,11 +49,11 @@ public record GoalDebugPayload(int entityId, BlockPos pos, List<DebugGoal> goals
          this(var1.readInt(), var1.readBoolean(), var1.readUtf(255));
       }
 
-      public DebugGoal(int var1, boolean var2, String var3) {
+      public DebugGoal(int priority, boolean isRunning, String name) {
          super();
-         this.priority = var1;
-         this.isRunning = var2;
-         this.name = var3;
+         this.priority = priority;
+         this.isRunning = isRunning;
+         this.name = name;
       }
 
       public void write(FriendlyByteBuf var1) {

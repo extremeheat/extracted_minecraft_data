@@ -42,7 +42,7 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
       this.add = var3;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetEnchantmentsFunction> getType() {
       return LootItemFunctions.SET_ENCHANTMENTS;
    }
 

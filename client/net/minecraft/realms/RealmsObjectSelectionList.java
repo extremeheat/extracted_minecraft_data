@@ -56,7 +56,7 @@ public abstract class RealmsObjectSelectionList<E extends ObjectSelectionList.En
    }
 
    // $FF: synthetic method
-   public int addEntry(AbstractSelectionList.Entry var1) {
+   public int addEntry(final AbstractSelectionList.Entry var1) {
       return this.addEntry((ObjectSelectionList.Entry)var1);
    }
 }

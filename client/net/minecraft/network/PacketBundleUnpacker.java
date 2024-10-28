@@ -26,7 +26,7 @@ public class PacketBundleUnpacker extends MessageToMessageEncoder<Packet<?>> {
    }
 
    // $FF: synthetic method
-   protected void encode(ChannelHandlerContext var1, Object var2, List var3) throws Exception {
+   protected void encode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
       this.encode(var1, (Packet)var2, var3);
    }
 }

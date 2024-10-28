@@ -30,10 +30,10 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance>
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), BuiltInRegistries.POTION.holderByNameCodec().optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Potion>> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion) {
          super();
-         this.player = var1;
-         this.potion = var2;
+         this.player = player;
+         this.potion = potion;
       }
 
       public static Criterion<TriggerInstance> brewedPotion() {

@@ -76,6 +76,14 @@ public final class FeatureFlagSet {
       }
    }
 
+   public boolean intersects(FeatureFlagSet var1) {
+      if (this.universe != null && var1.universe != null && this.universe == var1.universe) {
+         return (this.mask & var1.mask) != 0L;
+      } else {
+         return false;
+      }
+   }
+
    public FeatureFlagSet join(FeatureFlagSet var1) {
       if (this.universe == null) {
          return var1;
@@ -86,6 +94,20 @@ public final class FeatureFlagSet {
          throw new IllegalArgumentException("Mismatched set elements: '" + var10002 + "' != '" + String.valueOf(var1.universe) + "'");
       } else {
          return new FeatureFlagSet(this.universe, this.mask | var1.mask);
+      }
+   }
+
+   public FeatureFlagSet subtract(FeatureFlagSet var1) {
+      if (this.universe != null && var1.universe != null) {
+         if (this.universe != var1.universe) {
+            String var10002 = String.valueOf(this.universe);
+            throw new IllegalArgumentException("Mismatched set elements: '" + var10002 + "' != '" + String.valueOf(var1.universe) + "'");
+         } else {
+            long var2 = this.mask & ~var1.mask;
+            return var2 == 0L ? EMPTY : new FeatureFlagSet(this.universe, var2);
+         }
+      } else {
+         return this;
       }
    }
 

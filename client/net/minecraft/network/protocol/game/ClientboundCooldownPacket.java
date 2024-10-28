@@ -11,10 +11,10 @@ import net.minecraft.world.item.Item;
 public record ClientboundCooldownPacket(Item item, int duration) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC;
 
-   public ClientboundCooldownPacket(Item var1, int var2) {
+   public ClientboundCooldownPacket(Item item, int duration) {
       super();
-      this.item = var1;
-      this.duration = var2;
+      this.item = item;
+      this.duration = duration;
    }
 
    public PacketType<ClientboundCooldownPacket> type() {

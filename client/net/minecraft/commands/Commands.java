@@ -514,7 +514,7 @@ public class Commands {
       final boolean includeIntegrated;
       final boolean includeDedicated;
 
-      private CommandSelection(boolean var3, boolean var4) {
+      private CommandSelection(final boolean var3, final boolean var4) {
          this.includeIntegrated = var3;
          this.includeDedicated = var4;
       }

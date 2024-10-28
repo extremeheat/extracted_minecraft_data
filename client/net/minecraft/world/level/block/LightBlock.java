@@ -62,7 +62,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return true;
+      return var1.getFluidState().isEmpty();
    }
 
    protected RenderShape getRenderShape(BlockState var1) {

@@ -384,11 +384,11 @@ public class JigsawPlacement {
       final MutableObject<VoxelShape> free;
       final int depth;
 
-      PieceState(PoolElementStructurePiece var1, MutableObject<VoxelShape> var2, int var3) {
+      PieceState(PoolElementStructurePiece piece, MutableObject<VoxelShape> free, int depth) {
          super();
-         this.piece = var1;
-         this.free = var2;
-         this.depth = var3;
+         this.piece = piece;
+         this.free = free;
+         this.depth = depth;
       }
 
       public PoolElementStructurePiece piece() {

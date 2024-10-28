@@ -141,11 +141,11 @@ public class Stitcher<T extends Entry> {
          this(var1, Stitcher.smallestFittingMinTexel(var1.width(), var2), Stitcher.smallestFittingMinTexel(var1.height(), var2));
       }
 
-      private Holder(T var1, int var2, int var3) {
+      private Holder(T entry, int width, int height) {
          super();
-         this.entry = var1;
-         this.width = var2;
-         this.height = var3;
+         this.entry = entry;
+         this.width = width;
+         this.height = height;
       }
 
       public T entry() {

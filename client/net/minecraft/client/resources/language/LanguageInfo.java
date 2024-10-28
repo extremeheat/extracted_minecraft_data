@@ -10,11 +10,11 @@ public record LanguageInfo(String region, String name, boolean bidirectional) {
       return var0.group(ExtraCodecs.NON_EMPTY_STRING.fieldOf("region").forGetter(LanguageInfo::region), ExtraCodecs.NON_EMPTY_STRING.fieldOf("name").forGetter(LanguageInfo::name), Codec.BOOL.optionalFieldOf("bidirectional", false).forGetter(LanguageInfo::bidirectional)).apply(var0, LanguageInfo::new);
    });
 
-   public LanguageInfo(String var1, String var2, boolean var3) {
+   public LanguageInfo(String region, String name, boolean bidirectional) {
       super();
-      this.region = var1;
-      this.name = var2;
-      this.bidirectional = var3;
+      this.region = region;
+      this.name = name;
+      this.bidirectional = bidirectional;
    }
 
    public Component toComponent() {

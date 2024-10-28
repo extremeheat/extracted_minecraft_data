@@ -105,7 +105,7 @@ public final class EntitySelector {
       }
 
       // $FF: synthetic method
-      public boolean test(@Nullable Object var1) {
+      public boolean test(@Nullable final Object var1) {
          return this.test((Entity)var1);
       }
    }

@@ -10,9 +10,9 @@ public record FrogVariant(ResourceLocation texture) {
    public static final ResourceKey<FrogVariant> WARM = createKey("warm");
    public static final ResourceKey<FrogVariant> COLD = createKey("cold");
 
-   public FrogVariant(ResourceLocation var1) {
+   public FrogVariant(ResourceLocation texture) {
       super();
-      this.texture = var1;
+      this.texture = texture;
    }
 
    private static ResourceKey<FrogVariant> createKey(String var0) {

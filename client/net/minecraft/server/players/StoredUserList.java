@@ -126,7 +126,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
       BufferedWriter var2 = Files.newWriter(this.file, StandardCharsets.UTF_8);
 
       try {
-         GSON.toJson(var1, var2);
+         GSON.toJson(var1, GSON.newJsonWriter(var2));
       } catch (Throwable var6) {
          if (var2 != null) {
             try {

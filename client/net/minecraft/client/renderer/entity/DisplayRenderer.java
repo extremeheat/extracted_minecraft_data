@@ -174,7 +174,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
 
       // $FF: synthetic method
       @Nullable
-      protected Object getSubState(Display var1) {
+      protected Object getSubState(final Display var1) {
          return this.getSubState((Display.TextDisplay)var1);
       }
    }
@@ -199,7 +199,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
 
       // $FF: synthetic method
       @Nullable
-      protected Object getSubState(Display var1) {
+      protected Object getSubState(final Display var1) {
          return this.getSubState((Display.ItemDisplay)var1);
       }
    }
@@ -223,7 +223,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
 
       // $FF: synthetic method
       @Nullable
-      protected Object getSubState(Display var1) {
+      protected Object getSubState(final Display var1) {
          return this.getSubState((Display.BlockDisplay)var1);
       }
    }

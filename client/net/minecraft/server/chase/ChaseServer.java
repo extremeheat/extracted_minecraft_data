@@ -147,14 +147,14 @@ public class ChaseServer {
    }
 
    private static record PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
-      PlayerPosition(String var1, double var2, double var4, double var6, float var8, float var9) {
+      PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
          super();
-         this.dimensionName = var1;
-         this.x = var2;
-         this.y = var4;
-         this.z = var6;
-         this.yRot = var8;
-         this.xRot = var9;
+         this.dimensionName = dimensionName;
+         this.x = x;
+         this.y = y;
+         this.z = z;
+         this.yRot = yRot;
+         this.xRot = xRot;
       }
 
       String format() {

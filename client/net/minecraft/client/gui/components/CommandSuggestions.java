@@ -406,7 +406,7 @@ public class CommandSuggestions {
       boolean tabCycles;
       private int lastNarratedEntry;
 
-      SuggestionsList(int var2, int var3, int var4, List<Suggestion> var5, boolean var6) {
+      SuggestionsList(final int var2, final int var3, final int var4, final List<Suggestion> var5, final boolean var6) {
          super();
          this.lastMouse = Vec2.ZERO;
          int var7 = var2 - (CommandSuggestions.this.input.isBordered() ? 0 : 1);

@@ -294,7 +294,7 @@ public class WorldCreationUiState {
       public final Component displayName;
       private final Component info;
 
-      private SelectedGameMode(String var3, GameType var4) {
+      private SelectedGameMode(final String var3, final GameType var4) {
          this.gameType = var4;
          this.displayName = Component.translatable("selectWorld.gameMode." + var3);
          this.info = Component.translatable("selectWorld.gameMode." + var3 + ".info");
@@ -313,9 +313,9 @@ public class WorldCreationUiState {
    public static record WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
       private static final Component CUSTOM_WORLD_DESCRIPTION = Component.translatable("generator.custom");
 
-      public WorldTypeEntry(@Nullable Holder<WorldPreset> var1) {
+      public WorldTypeEntry(@Nullable Holder<WorldPreset> preset) {
          super();
-         this.preset = var1;
+         this.preset = preset;
       }
 
       public Component describePreset() {

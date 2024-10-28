@@ -100,7 +100,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    }
 
    // $FF: synthetic method
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -113,9 +113,9 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    }
 
    private static record TagResult<T>(HolderSet.Named<T> tag) implements Result<T> {
-      TagResult(HolderSet.Named<T> var1) {
+      TagResult(HolderSet.Named<T> tag) {
          super();
-         this.tag = var1;
+         this.tag = tag;
       }
 
       public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
@@ -139,15 +139,15 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       }
 
       // $FF: synthetic method
-      public boolean test(Object var1) {
+      public boolean test(final Object var1) {
          return this.test((Holder)var1);
       }
    }
 
    static record ResourceResult<T>(Holder.Reference<T> value) implements Result<T> {
-      ResourceResult(Holder.Reference<T> var1) {
+      ResourceResult(Holder.Reference<T> value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
@@ -171,7 +171,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       }
 
       // $FF: synthetic method
-      public boolean test(Object var1) {
+      public boolean test(final Object var1) {
          return this.test((Holder)var1);
       }
    }
@@ -198,14 +198,14 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       }
 
       // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
          return this.deserializeFromNetwork(var1);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<ResourceOrTagArgument<T>> {
          final ResourceKey<? extends Registry<T>> registryKey;
 
-         Template(ResourceKey<? extends Registry<T>> var2) {
+         Template(final ResourceKey<? extends Registry<T>> var2) {
             super();
             this.registryKey = var2;
          }
@@ -219,7 +219,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
          }
 
          // $FF: synthetic method
-         public ArgumentType instantiate(CommandBuildContext var1) {
+         public ArgumentType instantiate(final CommandBuildContext var1) {
             return this.instantiate(var1);
          }
       }

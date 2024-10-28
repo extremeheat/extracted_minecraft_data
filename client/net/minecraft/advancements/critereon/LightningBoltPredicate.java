@@ -14,10 +14,10 @@ public record LightningBoltPredicate(MinMaxBounds.Ints blocksSetOnFire, Optional
       return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("blocks_set_on_fire", MinMaxBounds.Ints.ANY).forGetter(LightningBoltPredicate::blocksSetOnFire), EntityPredicate.CODEC.optionalFieldOf("entity_struck").forGetter(LightningBoltPredicate::entityStruck)).apply(var0, LightningBoltPredicate::new);
    });
 
-   public LightningBoltPredicate(MinMaxBounds.Ints var1, Optional<EntityPredicate> var2) {
+   public LightningBoltPredicate(MinMaxBounds.Ints blocksSetOnFire, Optional<EntityPredicate> entityStruck) {
       super();
-      this.blocksSetOnFire = var1;
-      this.entityStruck = var2;
+      this.blocksSetOnFire = blocksSetOnFire;
+      this.entityStruck = entityStruck;
    }
 
    public static LightningBoltPredicate blockSetOnFire(MinMaxBounds.Ints var0) {

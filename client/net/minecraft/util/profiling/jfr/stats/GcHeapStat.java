@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 import jdk.jfr.consumer.RecordedEvent;
 
 public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
-   public GcHeapStat(Instant var1, long var2, Timing var4) {
+   public GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
       super();
-      this.timestamp = var1;
-      this.heapUsed = var2;
-      this.timing = var4;
+      this.timestamp = timestamp;
+      this.heapUsed = heapUsed;
+      this.timing = timing;
    }
 
    public static GcHeapStat from(RecordedEvent var0) {
@@ -67,12 +67,12 @@ public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
    }
 
    public static record Summary(Duration duration, Duration gcTotalDuration, int totalGCs, double allocationRateBytesPerSecond) {
-      public Summary(Duration var1, Duration var2, int var3, double var4) {
+      public Summary(Duration duration, Duration gcTotalDuration, int totalGCs, double allocationRateBytesPerSecond) {
          super();
-         this.duration = var1;
-         this.gcTotalDuration = var2;
-         this.totalGCs = var3;
-         this.allocationRateBytesPerSecond = var4;
+         this.duration = duration;
+         this.gcTotalDuration = gcTotalDuration;
+         this.totalGCs = totalGCs;
+         this.allocationRateBytesPerSecond = allocationRateBytesPerSecond;
       }
 
       public float gcOverHead() {

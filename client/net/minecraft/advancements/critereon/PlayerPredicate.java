@@ -49,14 +49,14 @@ public record PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameTy
       return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(PlayerPredicate::level), GameType.CODEC.optionalFieldOf("gamemode").forGetter(PlayerPredicate::gameType), PlayerPredicate.StatMatcher.CODEC.listOf().optionalFieldOf("stats", List.of()).forGetter(PlayerPredicate::stats), ExtraCodecs.object2BooleanMap(ResourceLocation.CODEC).optionalFieldOf("recipes", Object2BooleanMaps.emptyMap()).forGetter(PlayerPredicate::recipes), Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC).optionalFieldOf("advancements", Map.of()).forGetter(PlayerPredicate::advancements), EntityPredicate.CODEC.optionalFieldOf("looking_at").forGetter(PlayerPredicate::lookingAt)).apply(var0, PlayerPredicate::new);
    });
 
-   public PlayerPredicate(MinMaxBounds.Ints var1, Optional<GameType> var2, List<StatMatcher<?>> var3, Object2BooleanMap<ResourceLocation> var4, Map<ResourceLocation, AdvancementPredicate> var5, Optional<EntityPredicate> var6) {
+   public PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameType, List<StatMatcher<?>> stats, Object2BooleanMap<ResourceLocation> recipes, Map<ResourceLocation, AdvancementPredicate> advancements, Optional<EntityPredicate> lookingAt) {
       super();
-      this.level = var1;
-      this.gameType = var2;
-      this.stats = var3;
-      this.recipes = var4;
-      this.advancements = var5;
-      this.lookingAt = var6;
+      this.level = level;
+      this.gameType = gameType;
+      this.stats = stats;
+      this.recipes = recipes;
+      this.advancements = advancements;
+      this.lookingAt = lookingAt;
    }
 
    public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
@@ -159,12 +159,12 @@ public record PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameTy
          }));
       }
 
-      private StatMatcher(StatType<T> var1, Holder<T> var2, MinMaxBounds.Ints var3, Supplier<Stat<T>> var4) {
+      private StatMatcher(StatType<T> type, Holder<T> value, MinMaxBounds.Ints range, Supplier<Stat<T>> stat) {
          super();
-         this.type = var1;
-         this.value = var2;
-         this.range = var3;
-         this.stat = var4;
+         this.type = type;
+         this.value = value;
+         this.range = range;
+         this.stat = stat;
       }
 
       private static <T> MapCodec<StatMatcher<T>> createTypedCodec(StatType<T> var0) {
@@ -277,9 +277,9 @@ public record PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameTy
    private static record AdvancementCriterionsPredicate(Object2BooleanMap<String> criterions) implements AdvancementPredicate {
       public static final Codec<AdvancementCriterionsPredicate> CODEC;
 
-      AdvancementCriterionsPredicate(Object2BooleanMap<String> var1) {
+      AdvancementCriterionsPredicate(Object2BooleanMap<String> criterions) {
          super();
-         this.criterions = var1;
+         this.criterions = criterions;
       }
 
       public boolean test(AdvancementProgress var1) {
@@ -304,7 +304,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameTy
       }
 
       // $FF: synthetic method
-      public boolean test(Object var1) {
+      public boolean test(final Object var1) {
          return this.test((AdvancementProgress)var1);
       }
 
@@ -316,9 +316,9 @@ public record PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameTy
    private static record AdvancementDonePredicate(boolean state) implements AdvancementPredicate {
       public static final Codec<AdvancementDonePredicate> CODEC;
 
-      AdvancementDonePredicate(boolean var1) {
+      AdvancementDonePredicate(boolean state) {
          super();
-         this.state = var1;
+         this.state = state;
       }
 
       public boolean test(AdvancementProgress var1) {
@@ -330,7 +330,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, Optional<GameType> gameTy
       }
 
       // $FF: synthetic method
-      public boolean test(Object var1) {
+      public boolean test(final Object var1) {
          return this.test((AdvancementProgress)var1);
       }
 

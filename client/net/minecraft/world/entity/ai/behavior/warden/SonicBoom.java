@@ -68,10 +68,12 @@ public class SonicBoom extends Behavior<Warden> {
             }
 
             var2.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
-            var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F);
-            double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-            double var9 = 2.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-            var2x.push(var5.x() * var9, var5.y() * var11, var5.z() * var9);
+            if (var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F)) {
+               double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+               double var9 = 2.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+               var2x.push(var5.x() * var9, var5.y() * var11, var5.z() * var9);
+            }
+
          });
       }
    }
@@ -85,12 +87,12 @@ public class SonicBoom extends Behavior<Warden> {
    }
 
    // $FF: synthetic method
-   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.stop(var1, (Warden)var2, var3);
    }
 
    // $FF: synthetic method
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.start(var1, (Warden)var2, var3);
    }
 }

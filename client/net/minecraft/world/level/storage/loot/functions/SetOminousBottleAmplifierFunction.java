@@ -3,9 +3,12 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -23,12 +26,17 @@ public class SetOminousBottleAmplifierFunction extends LootItemConditionalFuncti
       this.amplifierGenerator = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public Set<LootContextParam<?>> getReferencedContextParams() {
+      return this.amplifierGenerator.getReferencedContextParams();
+   }
+
+   public LootItemFunctionType<SetOminousBottleAmplifierFunction> getType() {
       return LootItemFunctions.SET_OMINOUS_BOTTLE_AMPLIFIER;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      var1.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, this.amplifierGenerator.getInt(var2));
+      int var3 = Mth.clamp(this.amplifierGenerator.getInt(var2), 0, 4);
+      var1.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var3);
       return var1;
    }
 

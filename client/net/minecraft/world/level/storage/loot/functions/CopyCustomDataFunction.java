@@ -42,7 +42,7 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       this.operations = List.copyOf(var3);
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<CopyCustomDataFunction> getType() {
       return LootItemFunctions.COPY_CUSTOM_DATA;
    }
 
@@ -126,11 +126,11 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
          return var0.group(NbtPathArgument.NbtPath.CODEC.fieldOf("source").forGetter(CopyOperation::sourcePath), NbtPathArgument.NbtPath.CODEC.fieldOf("target").forGetter(CopyOperation::targetPath), CopyCustomDataFunction.MergeStrategy.CODEC.fieldOf("op").forGetter(CopyOperation::op)).apply(var0, CopyOperation::new);
       });
 
-      CopyOperation(NbtPathArgument.NbtPath var1, NbtPathArgument.NbtPath var2, MergeStrategy var3) {
+      CopyOperation(NbtPathArgument.NbtPath sourcePath, NbtPathArgument.NbtPath targetPath, MergeStrategy op) {
          super();
-         this.sourcePath = var1;
-         this.targetPath = var2;
-         this.op = var3;
+         this.sourcePath = sourcePath;
+         this.targetPath = targetPath;
+         this.op = op;
       }
 
       public void apply(Supplier<Tag> var1, Tag var2) {
@@ -198,7 +198,7 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
 
       public abstract void merge(Tag var1, NbtPathArgument.NbtPath var2, List<Tag> var3) throws CommandSyntaxException;
 
-      MergeStrategy(String var3) {
+      MergeStrategy(final String var3) {
          this.name = var3;
       }
 

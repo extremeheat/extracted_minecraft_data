@@ -71,7 +71,7 @@ public class StringWidget extends AbstractStringWidget {
    }
 
    // $FF: synthetic method
-   public AbstractStringWidget setColor(int var1) {
+   public AbstractStringWidget setColor(final int var1) {
       return this.setColor(var1);
    }
 }

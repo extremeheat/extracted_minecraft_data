@@ -10,9 +10,9 @@ public record CustomModelData(int value) {
    public static final Codec<CustomModelData> CODEC;
    public static final StreamCodec<ByteBuf, CustomModelData> STREAM_CODEC;
 
-   public CustomModelData(int var1) {
+   public CustomModelData(int value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    public int value() {

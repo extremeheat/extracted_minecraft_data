@@ -457,7 +457,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
 
    // $FF: synthetic method
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -467,7 +467,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    }
 
    // $FF: synthetic method
-   public void setVariant(Object var1) {
+   public void setVariant(final Object var1) {
       this.setVariant((Holder)var1);
    }
 

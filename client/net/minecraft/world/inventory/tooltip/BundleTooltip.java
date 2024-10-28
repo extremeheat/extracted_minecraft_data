@@ -3,9 +3,9 @@ package net.minecraft.world.inventory.tooltip;
 import net.minecraft.world.item.component.BundleContents;
 
 public record BundleTooltip(BundleContents contents) implements TooltipComponent {
-   public BundleTooltip(BundleContents var1) {
+   public BundleTooltip(BundleContents contents) {
       super();
-      this.contents = var1;
+      this.contents = contents;
    }
 
    public BundleContents contents() {

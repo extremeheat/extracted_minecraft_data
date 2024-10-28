@@ -245,6 +245,7 @@ public class GameTestServer extends MinecraftServer {
       TEST_GAME_RULES = (GameRules)Util.make(new GameRules(), (var0) -> {
          ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_DOMOBSPAWNING)).set(false, (MinecraftServer)null);
          ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_WEATHER_CYCLE)).set(false, (MinecraftServer)null);
+         ((GameRules.IntegerValue)var0.getRule(GameRules.RULE_RANDOMTICKING)).set(0, (MinecraftServer)null);
       });
       WORLD_OPTIONS = new WorldOptions(0L, false, false);
    }

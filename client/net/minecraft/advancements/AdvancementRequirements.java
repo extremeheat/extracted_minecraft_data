@@ -21,9 +21,9 @@ public record AdvancementRequirements(List<List<String>> requirements) {
       }));
    }
 
-   public AdvancementRequirements(List<List<String>> var1) {
+   public AdvancementRequirements(List<List<String>> requirements) {
       super();
-      this.requirements = var1;
+      this.requirements = requirements;
    }
 
    public void write(FriendlyByteBuf var1) {

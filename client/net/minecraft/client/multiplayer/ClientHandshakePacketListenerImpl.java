@@ -168,7 +168,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void handleGameProfile(ClientboundGameProfilePacket var1) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
       GameProfile var2 = var1.gameProfile();
-      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null)));
+      this.connection.setupInboundProtocol(ConfigurationProtocols.CLIENTBOUND, new ClientConfigurationPacketListenerImpl(this.minecraft, this.connection, new CommonListenerCookie(var2, this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName), ClientRegistryLayer.createRegistryAccess().compositeAccess(), FeatureFlags.DEFAULT_FLAGS, (String)null, this.serverData, this.parent, this.cookies, (ChatComponent.State)null, var1.strictErrorHandling())));
       this.connection.send(ServerboundLoginAcknowledgedPacket.INSTANCE);
       this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
       this.connection.send(new ServerboundCustomPayloadPacket(new BrandPayload(ClientBrandRetriever.getClientModName())));
@@ -231,7 +231,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       final Component message;
       final Set<State> fromStates;
 
-      private State(Component var3, Set var4) {
+      private State(final Component var3, final Set var4) {
          this.message = var3;
          this.fromStates = var4;
       }

@@ -287,10 +287,10 @@ public interface CauldronInteraction {
    }
 
    public static record InteractionMap(String name, Map<Item, CauldronInteraction> map) {
-      public InteractionMap(String var1, Map<Item, CauldronInteraction> var2) {
+      public InteractionMap(String name, Map<Item, CauldronInteraction> map) {
          super();
-         this.name = var1;
-         this.map = var2;
+         this.name = name;
+         this.map = map;
       }
 
       public String name() {

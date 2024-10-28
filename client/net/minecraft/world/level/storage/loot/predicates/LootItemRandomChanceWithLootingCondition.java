@@ -17,10 +17,10 @@ public record LootItemRandomChanceWithLootingCondition(float percent, float loot
       return var0.group(Codec.FLOAT.fieldOf("chance").forGetter(LootItemRandomChanceWithLootingCondition::percent), Codec.FLOAT.fieldOf("looting_multiplier").forGetter(LootItemRandomChanceWithLootingCondition::lootingMultiplier)).apply(var0, LootItemRandomChanceWithLootingCondition::new);
    });
 
-   public LootItemRandomChanceWithLootingCondition(float var1, float var2) {
+   public LootItemRandomChanceWithLootingCondition(float percent, float lootingMultiplier) {
       super();
-      this.percent = var1;
-      this.lootingMultiplier = var2;
+      this.percent = percent;
+      this.lootingMultiplier = lootingMultiplier;
    }
 
    public LootItemConditionType getType() {
@@ -56,7 +56,7 @@ public record LootItemRandomChanceWithLootingCondition(float percent, float loot
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

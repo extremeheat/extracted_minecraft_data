@@ -24,9 +24,9 @@ public record BannerPatternLayers(List<Layer> layers) {
    public static final Codec<BannerPatternLayers> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, BannerPatternLayers> STREAM_CODEC;
 
-   public BannerPatternLayers(List<Layer> var1) {
+   public BannerPatternLayers(List<Layer> layers) {
       super();
-      this.layers = var1;
+      this.layers = layers;
    }
 
    public BannerPatternLayers removeLast() {
@@ -48,10 +48,10 @@ public record BannerPatternLayers(List<Layer> layers) {
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, Layer> STREAM_CODEC;
 
-      public Layer(Holder<BannerPattern> var1, DyeColor var2) {
+      public Layer(Holder<BannerPattern> pattern, DyeColor color) {
          super();
-         this.pattern = var1;
-         this.color = var2;
+         this.pattern = pattern;
+         this.color = color;
       }
 
       public MutableComponent description() {

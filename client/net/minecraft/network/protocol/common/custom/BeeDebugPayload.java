@@ -21,9 +21,9 @@ public record BeeDebugPayload(BeeInfo beeInfo) implements CustomPacketPayload {
       this(new BeeInfo(var1));
    }
 
-   public BeeDebugPayload(BeeInfo var1) {
+   public BeeDebugPayload(BeeInfo beeInfo) {
       super();
-      this.beeInfo = var1;
+      this.beeInfo = beeInfo;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -43,17 +43,17 @@ public record BeeDebugPayload(BeeInfo beeInfo) implements CustomPacketPayload {
          this(var1.readUUID(), var1.readInt(), var1.readVec3(), (Path)var1.readNullable(Path::createFromStream), (BlockPos)var1.readNullable(BlockPos.STREAM_CODEC), (BlockPos)var1.readNullable(BlockPos.STREAM_CODEC), var1.readInt(), (Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readUtf), var1.readList(BlockPos.STREAM_CODEC));
       }
 
-      public BeeInfo(UUID var1, int var2, Vec3 var3, @Nullable Path var4, @Nullable BlockPos var5, @Nullable BlockPos var6, int var7, Set<String> var8, List<BlockPos> var9) {
+      public BeeInfo(UUID uuid, int id, Vec3 pos, @Nullable Path path, @Nullable BlockPos hivePos, @Nullable BlockPos flowerPos, int travelTicks, Set<String> goals, List<BlockPos> blacklistedHives) {
          super();
-         this.uuid = var1;
-         this.id = var2;
-         this.pos = var3;
-         this.path = var4;
-         this.hivePos = var5;
-         this.flowerPos = var6;
-         this.travelTicks = var7;
-         this.goals = var8;
-         this.blacklistedHives = var9;
+         this.uuid = uuid;
+         this.id = id;
+         this.pos = pos;
+         this.path = path;
+         this.hivePos = hivePos;
+         this.flowerPos = flowerPos;
+         this.travelTicks = travelTicks;
+         this.goals = goals;
+         this.blacklistedHives = blacklistedHives;
       }
 
       public void write(FriendlyByteBuf var1) {

@@ -17,10 +17,10 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
       return var0.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(var0, LootItemEntityPropertyCondition::new);
    });
 
-   public LootItemEntityPropertyCondition(Optional<EntityPredicate> var1, LootContext.EntityTarget var2) {
+   public LootItemEntityPropertyCondition(Optional<EntityPredicate> predicate, LootContext.EntityTarget entityTarget) {
       super();
-      this.predicate = var1;
-      this.entityTarget = var2;
+      this.predicate = predicate;
+      this.entityTarget = entityTarget;
    }
 
    public LootItemConditionType getType() {
@@ -62,7 +62,7 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

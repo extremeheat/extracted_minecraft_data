@@ -303,6 +303,11 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       return new FrogPathNavigation(this, var1);
    }
 
+   @Nullable
+   public LivingEntity getTarget() {
+      return this.getTargetFromBrain();
+   }
+
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.FROG_FOOD);
    }
@@ -317,7 +322,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    // $FF: synthetic method
-   public void setVariant(Object var1) {
+   public void setVariant(final Object var1) {
       this.setVariant((Holder)var1);
    }
 
@@ -330,7 +335,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    private class FrogLookControl extends LookControl {
-      FrogLookControl(Mob var2) {
+      FrogLookControl(final Mob var2) {
          super(var2);
       }
 

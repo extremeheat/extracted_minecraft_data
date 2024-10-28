@@ -108,7 +108,7 @@ public class EntityDataSerializers {
          }
 
          // $FF: synthetic method
-         public Object copy(Object var1) {
+         public Object copy(final Object var1) {
             return this.copy((ItemStack)var1);
          }
       };
@@ -129,12 +129,12 @@ public class EntityDataSerializers {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (Optional)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };
@@ -158,7 +158,7 @@ public class EntityDataSerializers {
          }
 
          // $FF: synthetic method
-         public Object copy(Object var1) {
+         public Object copy(final Object var1) {
             return this.copy((CompoundTag)var1);
          }
       };
@@ -174,12 +174,12 @@ public class EntityDataSerializers {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (OptionalInt)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };

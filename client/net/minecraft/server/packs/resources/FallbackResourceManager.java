@@ -165,11 +165,11 @@ public class FallbackResourceManager implements ResourceManager {
                   final IoSupplier<InputStream> resource;
                   final int packIndex;
 
-                  _ResourceWithSourceAndIndex/* $FF was: 1ResourceWithSourceAndIndex*/(PackResources var1, IoSupplier<InputStream> var2, int var3) {
+                  _ResourceWithSourceAndIndex/* $FF was: 1ResourceWithSourceAndIndex*/(PackResources packResources, IoSupplier<InputStream> resource, int packIndex) {
                      super();
-                     this.packResources = var1;
-                     this.resource = var2;
-                     this.packIndex = var3;
+                     this.packResources = packResources;
+                     this.resource = resource;
+                     this.packIndex = packIndex;
                   }
 
                   public PackResources packResources() {
@@ -353,11 +353,11 @@ public class FallbackResourceManager implements ResourceManager {
       @Nullable
       final PackResources resources;
 
-      PackEntry(String var1, @Nullable PackResources var2, @Nullable Predicate<ResourceLocation> var3) {
+      PackEntry(String name, @Nullable PackResources resources, @Nullable Predicate<ResourceLocation> filter) {
          super();
-         this.name = var1;
-         this.resources = var2;
-         this.filter = var3;
+         this.name = name;
+         this.resources = resources;
+         this.filter = filter;
       }
 
       public void filterAll(Collection<ResourceLocation> var1) {
@@ -395,12 +395,12 @@ public class FallbackResourceManager implements ResourceManager {
          this(var1, FallbackResourceManager.getMetadataLocation(var1), new ArrayList(), new Object2ObjectArrayMap());
       }
 
-      private EntryStack(ResourceLocation var1, ResourceLocation var2, List<ResourceWithSource> var3, Map<PackResources, IoSupplier<InputStream>> var4) {
+      private EntryStack(ResourceLocation fileLocation, ResourceLocation metadataLocation, List<ResourceWithSource> fileSources, Map<PackResources, IoSupplier<InputStream>> metaSources) {
          super();
-         this.fileLocation = var1;
-         this.metadataLocation = var2;
-         this.fileSources = var3;
-         this.metaSources = var4;
+         this.fileLocation = fileLocation;
+         this.metadataLocation = metadataLocation;
+         this.fileSources = fileSources;
+         this.metaSources = metaSources;
       }
 
       public ResourceLocation fileLocation() {
@@ -424,10 +424,10 @@ public class FallbackResourceManager implements ResourceManager {
       final PackResources source;
       final IoSupplier<InputStream> resource;
 
-      ResourceWithSource(PackResources var1, IoSupplier<InputStream> var2) {
+      ResourceWithSource(PackResources source, IoSupplier<InputStream> resource) {
          super();
-         this.source = var1;
-         this.resource = var2;
+         this.source = source;
+         this.resource = resource;
       }
 
       public PackResources source() {

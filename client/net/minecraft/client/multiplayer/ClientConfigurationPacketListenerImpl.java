@@ -124,7 +124,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
       RegistryAccess.Frozen var2 = (RegistryAccess.Frozen)this.runWithResources((var1x) -> {
          return this.registryDataCollector.collectGameRegistries(var1x, this.receivedRegistries, this.connection.isMemoryConnection());
       });
-      this.connection.setupInboundProtocol(GameProtocols.CLIENTBOUND.bind(RegistryFriendlyByteBuf.decorator(var2)), new ClientPacketListener(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, var2, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, this.chatState)));
+      this.connection.setupInboundProtocol(GameProtocols.CLIENTBOUND.bind(RegistryFriendlyByteBuf.decorator(var2)), new ClientPacketListener(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, var2, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, this.chatState, this.strictErrorHandling)));
       this.connection.send(ServerboundFinishConfigurationPacket.INSTANCE);
       this.connection.setupOutboundProtocol(GameProtocols.SERVERBOUND.bind(RegistryFriendlyByteBuf.decorator(var2)));
    }

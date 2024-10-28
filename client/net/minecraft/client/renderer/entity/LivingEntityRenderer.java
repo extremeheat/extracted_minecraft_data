@@ -294,7 +294,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(Entity var1) {
+   protected float getShadowRadius(final Entity var1) {
       return this.getShadowRadius((LivingEntity)var1);
    }
 }

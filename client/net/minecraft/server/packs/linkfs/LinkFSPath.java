@@ -407,7 +407,7 @@ class LinkFSPath implements Path {
    }
 
    // $FF: synthetic method
-   public Path toRealPath(LinkOption[] var1) throws IOException {
+   public Path toRealPath(final LinkOption[] var1) throws IOException {
       return this.toRealPath(var1);
    }
 
@@ -417,12 +417,12 @@ class LinkFSPath implements Path {
    }
 
    // $FF: synthetic method
-   public Path relativize(Path var1) {
+   public Path relativize(final Path var1) {
       return this.relativize(var1);
    }
 
    // $FF: synthetic method
-   public Path resolve(Path var1) {
+   public Path resolve(final Path var1) {
       return this.resolve(var1);
    }
 
@@ -432,12 +432,12 @@ class LinkFSPath implements Path {
    }
 
    // $FF: synthetic method
-   public Path subpath(int var1, int var2) {
+   public Path subpath(final int var1, final int var2) {
       return this.subpath(var1, var2);
    }
 
    // $FF: synthetic method
-   public Path getName(int var1) {
+   public Path getName(final int var1) {
       return this.getName(var1);
    }
 

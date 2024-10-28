@@ -196,10 +196,10 @@ public class RealmsNotification {
       private static final String URL = "url";
       private static final String URL_TEXT = "urlText";
 
-      private UrlButton(String var1, RealmsText var2) {
+      private UrlButton(String url, RealmsText urlText) {
          super();
-         this.url = var1;
-         this.urlText = var2;
+         this.url = url;
+         this.urlText = urlText;
       }
 
       public static UrlButton parse(JsonObject var0) {

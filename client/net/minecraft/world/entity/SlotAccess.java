@@ -1,6 +1,8 @@
 package net.minecraft.world.entity;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
@@ -14,6 +16,19 @@ public interface SlotAccess {
          return false;
       }
    };
+
+   static SlotAccess of(final Supplier<ItemStack> var0, final Consumer<ItemStack> var1) {
+      return new SlotAccess() {
+         public ItemStack get() {
+            return (ItemStack)var0.get();
+         }
+
+         public boolean set(ItemStack var1x) {
+            var1.accept(var1x);
+            return true;
+         }
+      };
+   }
 
    static SlotAccess forContainer(final Container var0, final int var1, final Predicate<ItemStack> var2) {
       return new SlotAccess() {

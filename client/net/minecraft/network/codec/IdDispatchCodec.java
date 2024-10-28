@@ -62,12 +62,12 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
    }
 
    // $FF: synthetic method
-   public void encode(Object var1, Object var2) {
+   public void encode(final Object var1, final Object var2) {
       this.encode((ByteBuf)var1, var2);
    }
 
    // $FF: synthetic method
-   public Object decode(Object var1) {
+   public Object decode(final Object var1) {
       return this.decode((ByteBuf)var1);
    }
 
@@ -75,10 +75,10 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
       final StreamCodec<? super B, ? extends V> serializer;
       final T type;
 
-      Entry(StreamCodec<? super B, ? extends V> var1, T var2) {
+      Entry(StreamCodec<? super B, ? extends V> serializer, T type) {
          super();
-         this.serializer = var1;
-         this.type = var2;
+         this.serializer = serializer;
+         this.type = type;
       }
 
       public StreamCodec<? super B, ? extends V> serializer() {

@@ -87,7 +87,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+      return this.saveWithoutMetadata(var1);
    }
 
    public BannerPatternLayers getPatterns() {

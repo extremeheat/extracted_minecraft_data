@@ -24,7 +24,7 @@ public class SetInstrumentFunction extends LootItemConditionalFunction {
       this.options = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetInstrumentFunction> getType() {
       return LootItemFunctions.SET_INSTRUMENT;
    }
 

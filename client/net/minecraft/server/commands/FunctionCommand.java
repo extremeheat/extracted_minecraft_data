@@ -249,7 +249,7 @@ public class FunctionCommand {
       }
 
       // $FF: synthetic method
-      public void runGuarded(ExecutionCommandSource var1, ContextChain var2, ChainModifiers var3, ExecutionControl var4) throws CommandSyntaxException {
+      public void runGuarded(final ExecutionCommandSource var1, final ContextChain var2, final ChainModifiers var3, final ExecutionControl var4) throws CommandSyntaxException {
          this.runGuarded((CommandSourceStack)var1, var2, var3, var4);
       }
    }

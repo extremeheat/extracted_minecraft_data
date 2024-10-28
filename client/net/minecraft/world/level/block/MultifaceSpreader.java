@@ -192,10 +192,10 @@ public class MultifaceSpreader {
    }
 
    public static record SpreadPos(BlockPos pos, Direction face) {
-      public SpreadPos(BlockPos var1, Direction var2) {
+      public SpreadPos(BlockPos pos, Direction face) {
          super();
-         this.pos = var1;
-         this.face = var2;
+         this.pos = pos;
+         this.face = face;
       }
 
       public BlockPos pos() {

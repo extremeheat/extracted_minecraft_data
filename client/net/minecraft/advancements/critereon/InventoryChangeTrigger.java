@@ -56,11 +56,11 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), InventoryChangeTrigger.TriggerInstance.Slots.CODEC.optionalFieldOf("slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY).forGetter(TriggerInstance::slots), ItemPredicate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(TriggerInstance::items)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Slots var2, List<ItemPredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Slots slots, List<ItemPredicate> items) {
          super();
-         this.player = var1;
-         this.slots = var2;
-         this.items = var3;
+         this.player = player;
+         this.slots = slots;
+         this.items = items;
       }
 
       public static Criterion<TriggerInstance> hasItems(ItemPredicate.Builder... var0) {
@@ -100,14 +100,14 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
                ItemStack var9 = var1.getItem(var8);
                if (!var9.isEmpty()) {
                   var6.removeIf((var1x) -> {
-                     return var1x.matches(var9);
+                     return var1x.test(var9);
                   });
                }
             }
 
             return var6.isEmpty();
          } else {
-            return !var2.isEmpty() && ((ItemPredicate)this.items.get(0)).matches(var2);
+            return !var2.isEmpty() && ((ItemPredicate)this.items.get(0)).test(var2);
          }
       }
 
@@ -129,11 +129,11 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
          });
          public static final Slots ANY;
 
-         public Slots(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, MinMaxBounds.Ints var3) {
+         public Slots(MinMaxBounds.Ints occupied, MinMaxBounds.Ints full, MinMaxBounds.Ints empty) {
             super();
-            this.occupied = var1;
-            this.full = var2;
-            this.empty = var3;
+            this.occupied = occupied;
+            this.full = full;
+            this.empty = empty;
          }
 
          public boolean matches(int var1, int var2, int var3) {

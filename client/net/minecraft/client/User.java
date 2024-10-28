@@ -67,7 +67,7 @@ public class User {
       }, Function.identity()));
       private final String name;
 
-      private Type(String var3) {
+      private Type(final String var3) {
          this.name = var3;
       }
 

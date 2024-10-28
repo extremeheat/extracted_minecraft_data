@@ -8,7 +8,7 @@ public enum BedPart implements StringRepresentable {
 
    private final String name;
 
-   private BedPart(String var3) {
+   private BedPart(final String var3) {
       this.name = var3;
    }
 

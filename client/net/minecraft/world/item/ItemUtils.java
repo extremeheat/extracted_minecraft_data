@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.stream.Stream;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -43,7 +42,7 @@ public class ItemUtils {
       return createFilledResult(var0, var1, var2, true);
    }
 
-   public static void onContainerDestroyed(ItemEntity var0, Stream<ItemStack> var1) {
+   public static void onContainerDestroyed(ItemEntity var0, Iterable<ItemStack> var1) {
       Level var2 = var0.level();
       if (!var2.isClientSide) {
          var1.forEach((var2x) -> {

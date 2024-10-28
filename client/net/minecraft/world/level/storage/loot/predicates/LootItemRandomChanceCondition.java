@@ -10,9 +10,9 @@ public record LootItemRandomChanceCondition(float probability) implements LootIt
       return var0.group(Codec.FLOAT.fieldOf("chance").forGetter(LootItemRandomChanceCondition::probability)).apply(var0, LootItemRandomChanceCondition::new);
    });
 
-   public LootItemRandomChanceCondition(float var1) {
+   public LootItemRandomChanceCondition(float probability) {
       super();
-      this.probability = var1;
+      this.probability = probability;
    }
 
    public LootItemConditionType getType() {
@@ -34,7 +34,7 @@ public record LootItemRandomChanceCondition(float probability) implements LootIt
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

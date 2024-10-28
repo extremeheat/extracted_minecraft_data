@@ -114,6 +114,9 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
             case BEARD_BOX:
                var10000 = Math.max(0, Math.max(var12 - var3, var3 - var8.maxY()));
                break;
+            case ENCAPSULATE:
+               var10000 = Math.max(0, Math.max(var8.minY() - var3, var3 - var8.maxY()));
+               break;
             default:
                throw new MatchException((String)null, (Throwable)null);
          }
@@ -124,11 +127,14 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
                var10001 = 0.0;
                break;
             case BURY:
-               var10001 = getBuryContribution(var10, var14, var11);
+               var10001 = getBuryContribution((double)var10, (double)var14 / 2.0, (double)var11);
                break;
             case BEARD_THIN:
             case BEARD_BOX:
                var10001 = getBeardContribution(var10, var14, var11, var13) * 0.8;
+               break;
+            case ENCAPSULATE:
+               var10001 = getBuryContribution((double)var10 / 2.0, (double)var14 / 2.0, (double)var11 / 2.0) * 0.8;
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
@@ -157,9 +163,9 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       return 1.0 / 0.0;
    }
 
-   private static double getBuryContribution(int var0, int var1, int var2) {
-      double var3 = Mth.length((double)var0, (double)var1 / 2.0, (double)var2);
-      return Mth.clampedMap(var3, 0.0, 6.0, 1.0, 0.0);
+   private static double getBuryContribution(double var0, double var2, double var4) {
+      double var6 = Mth.length(var0, var2, var4);
+      return Mth.clampedMap(var6, 0.0, 6.0, 1.0, 0.0);
    }
 
    private static double getBeardContribution(int var0, int var1, int var2, int var3) {
@@ -192,11 +198,11 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
 
    @VisibleForTesting
    public static record Rigid(BoundingBox box, TerrainAdjustment terrainAdjustment, int groundLevelDelta) {
-      public Rigid(BoundingBox var1, TerrainAdjustment var2, int var3) {
+      public Rigid(BoundingBox box, TerrainAdjustment terrainAdjustment, int groundLevelDelta) {
          super();
-         this.box = var1;
-         this.terrainAdjustment = var2;
-         this.groundLevelDelta = var3;
+         this.box = box;
+         this.terrainAdjustment = terrainAdjustment;
+         this.groundLevelDelta = groundLevelDelta;
       }
 
       public BoundingBox box() {

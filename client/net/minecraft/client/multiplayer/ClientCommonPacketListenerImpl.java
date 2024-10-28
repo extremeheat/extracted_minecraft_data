@@ -67,7 +67,12 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final WorldSessionTelemetryManager telemetryManager;
    @Nullable
    protected final Screen postDisconnectScreen;
-   protected boolean keepResourcePacks;
+   protected boolean isTransferring;
+   /** @deprecated */
+   @Deprecated(
+      forRemoval = true
+   )
+   protected final boolean strictErrorHandling;
    private final List<DeferredPacket> deferredPackets = new ArrayList();
    protected final Map<ResourceLocation, byte[]> serverCookies;
 
@@ -80,6 +85,23 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.telemetryManager = var3.telemetryManager();
       this.postDisconnectScreen = var3.postDisconnectScreen();
       this.serverCookies = var3.serverCookies();
+      this.strictErrorHandling = var3.strictErrorHandling();
+   }
+
+   public void onPacketError(Packet var1, Exception var2) {
+      LOGGER.error("Failed to handle packet {}", var1, var2);
+      if (this.strictErrorHandling) {
+         this.connection.disconnect(Component.translatable("disconnect.packetError"));
+      }
+
+   }
+
+   public boolean shouldHandleMessage(Packet<?> var1) {
+      if (ClientCommonPacketListener.super.shouldHandleMessage(var1)) {
+         return true;
+      } else {
+         return this.isTransferring && (var1 instanceof ClientboundStoreCookiePacket || var1 instanceof ClientboundTransferPacket);
+      }
    }
 
    public void handleKeepAlive(ClientboundKeepAlivePacket var1) {
@@ -164,11 +186,11 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleTransfer(ClientboundTransferPacket var1) {
+      this.isTransferring = true;
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       if (this.serverData == null) {
          throw new IllegalStateException("Cannot transfer to server from singleplayer");
       } else {
-         this.keepResourcePacks = true;
          this.connection.disconnect(Component.translatable("disconnect.transfer"));
          this.connection.setReadOnly();
          this.connection.handleDisconnection();
@@ -202,7 +224,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void onDisconnect(Component var1) {
       this.telemetryManager.onDisconnect();
-      this.minecraft.disconnect(this.createDisconnectScreen(var1), this.keepResourcePacks);
+      this.minecraft.disconnect(this.createDisconnectScreen(var1), this.isTransferring);
       LOGGER.warn("Client disconnected with reason: {}", var1.getString());
    }
 
@@ -248,11 +270,11 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    private static record DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
       final Packet<? extends ServerboundPacketListener> packet;
 
-      DeferredPacket(Packet<? extends ServerboundPacketListener> var1, BooleanSupplier var2, long var3) {
+      DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
          super();
-         this.packet = var1;
-         this.sendCondition = var2;
-         this.expirationTime = var3;
+         this.packet = packet;
+         this.sendCondition = sendCondition;
+         this.expirationTime = expirationTime;
       }
 
       public Packet<? extends ServerboundPacketListener> packet() {
@@ -273,7 +295,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       @Nullable
       private final Screen parentScreen;
 
-      PackConfirmScreen(Minecraft var2, @Nullable Screen var3, List<PendingRequest> var4, boolean var5, @Nullable Component var6) {
+      PackConfirmScreen(final Minecraft var2, @Nullable final Screen var3, final List<PendingRequest> var4, final boolean var5, @Nullable final Component var6) {
          super((var5x) -> {
             var2.setScreen(var3);
             DownloadedPackSource var6 = var2.getDownloadedPackSource();
@@ -318,11 +340,11 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          final URL url;
          final String hash;
 
-         PendingRequest(UUID var1, URL var2, String var3) {
+         PendingRequest(UUID id, URL url, String hash) {
             super();
-            this.id = var1;
-            this.url = var2;
-            this.hash = var3;
+            this.id = id;
+            this.url = url;
+            this.hash = hash;
          }
 
          public UUID id() {

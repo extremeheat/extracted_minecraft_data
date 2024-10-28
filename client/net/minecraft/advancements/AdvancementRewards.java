@@ -29,12 +29,12 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
    });
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
-   public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceLocation> var3, Optional<CacheableFunction> var4) {
+   public AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceLocation> recipes, Optional<CacheableFunction> function) {
       super();
-      this.experience = var1;
-      this.loot = var2;
-      this.recipes = var3;
-      this.function = var4;
+      this.experience = experience;
+      this.loot = loot;
+      this.recipes = recipes;
+      this.function = function;
    }
 
    public void grant(ServerPlayer var1) {

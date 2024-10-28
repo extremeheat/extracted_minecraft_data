@@ -47,12 +47,12 @@ public interface CustomPacketPayload {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2x) {
+         public void encode(final Object var1, final Object var2x) {
             this.encode((FriendlyByteBuf)var1, (CustomPacketPayload)var2x);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((FriendlyByteBuf)var1);
          }
       };
@@ -61,9 +61,9 @@ public interface CustomPacketPayload {
    public static record Type<T extends CustomPacketPayload>(ResourceLocation id) {
       final ResourceLocation id;
 
-      public Type(ResourceLocation var1) {
+      public Type(ResourceLocation id) {
          super();
-         this.id = var1;
+         this.id = id;
       }
 
       public ResourceLocation id() {
@@ -76,10 +76,10 @@ public interface CustomPacketPayload {
    }
 
    public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(Type<T> type, StreamCodec<B, T> codec) {
-      public TypeAndCodec(Type<T> var1, StreamCodec<B, T> var2) {
+      public TypeAndCodec(Type<T> type, StreamCodec<B, T> codec) {
          super();
-         this.type = var1;
-         this.codec = var2;
+         this.type = type;
+         this.codec = codec;
       }
 
       public Type<T> type() {

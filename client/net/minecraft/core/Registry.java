@@ -210,7 +210,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
          // $FF: synthetic method
          @Nullable
-         public Object byId(int var1) {
+         public Object byId(final int var1) {
             return this.byId(var1);
          }
       };

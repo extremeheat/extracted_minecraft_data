@@ -33,22 +33,22 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
       }
 
       // $FF: synthetic method
-      public boolean equals(@Nullable Object var1, @Nullable Object var2) {
+      public boolean equals(@Nullable final Object var1, @Nullable final Object var2) {
          return this.equals((SavedTick)var1, (SavedTick)var2);
       }
 
       // $FF: synthetic method
-      public int hashCode(Object var1) {
+      public int hashCode(final Object var1) {
          return this.hashCode((SavedTick)var1);
       }
    };
 
-   public SavedTick(T var1, BlockPos var2, int var3, TickPriority var4) {
+   public SavedTick(T type, BlockPos pos, int delay, TickPriority priority) {
       super();
-      this.type = var1;
-      this.pos = var2;
-      this.delay = var3;
-      this.priority = var4;
+      this.type = type;
+      this.pos = pos;
+      this.delay = delay;
+      this.priority = priority;
    }
 
    public static <T> void loadTickList(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2, Consumer<SavedTick<T>> var3) {

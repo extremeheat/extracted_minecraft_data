@@ -152,7 +152,7 @@ public class UpgradeData {
          boolean var10 = var3.size() == 1;
          ChunkPos var11 = var0.getPos();
          int var12 = var11.getMinBlockX() + (var10 && (var9 || var8) ? 1 : (var7 ? 0 : 15));
-         int var13 = var11.getMinBlockX() + (!var10 || !var9 && !var8 ? (var7 ? 0 : 15) : 14);
+         int var13 = var11.getMinBlockX() + (var10 && (var9 || var8) ? 14 : (var7 ? 0 : 15));
          int var14 = var11.getMinBlockZ() + (!var10 || !var6 && !var7 ? (var9 ? 0 : 15) : 1);
          int var15 = var11.getMinBlockZ() + (!var10 || !var6 && !var7 ? (var9 ? 0 : 15) : 14);
          Direction[] var16 = Direction.values();
@@ -418,11 +418,11 @@ public class UpgradeData {
 
       public static final Direction[] DIRECTIONS = Direction.values();
 
-      BlockFixers(Block... var3) {
+      BlockFixers(final Block... var3) {
          this(false, var3);
       }
 
-      BlockFixers(boolean var3, Block... var4) {
+      BlockFixers(final boolean var3, final Block... var4) {
          Block[] var5 = var4;
          int var6 = var4.length;
 

@@ -101,12 +101,12 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    }
 
    // $FF: synthetic method
-   public RecipeBuilder group(@Nullable String var1) {
+   public RecipeBuilder group(@Nullable final String var1) {
       return this.group(var1);
    }
 
    // $FF: synthetic method
-   public RecipeBuilder unlockedBy(String var1, Criterion var2) {
+   public RecipeBuilder unlockedBy(final String var1, final Criterion var2) {
       return this.unlockedBy(var1, var2);
    }
 }

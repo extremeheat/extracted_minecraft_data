@@ -46,11 +46,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       this(Optional.of(var1), Optional.empty(), List.of());
    }
 
-   public PotionContents(Optional<Holder<Potion>> var1, Optional<Integer> var2, List<MobEffectInstance> var3) {
+   public PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects) {
       super();
-      this.potion = var1;
-      this.customColor = var2;
-      this.customEffects = var3;
+      this.potion = potion;
+      this.customColor = customColor;
+      this.customEffects = customEffects;
    }
 
    public static ItemStack createItemStack(Item var0, Holder<Potion> var1) {
@@ -101,14 +101,6 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public int getColor() {
-      if (this.customColor.isPresent()) {
-         return (Integer)this.customColor.get();
-      } else {
-         return this.potion.isEmpty() ? -524040 : getColor(this.getAllEffects());
-      }
-   }
-
-   public int getColorForArrow() {
       return this.customColor.isPresent() ? (Integer)this.customColor.get() : getColor(this.getAllEffects());
    }
 

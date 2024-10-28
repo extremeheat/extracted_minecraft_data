@@ -11,11 +11,11 @@ public record ChatTypeDecoration(String translationKey, List<Parameter> paramete
       return var0.group(Codec.STRING.fieldOf("translation_key").forGetter(ChatTypeDecoration::translationKey), ChatTypeDecoration.Parameter.CODEC.listOf().fieldOf("parameters").forGetter(ChatTypeDecoration::parameters), Style.Serializer.CODEC.optionalFieldOf("style", Style.EMPTY).forGetter(ChatTypeDecoration::style)).apply(var0, ChatTypeDecoration::new);
    });
 
-   public ChatTypeDecoration(String var1, List<Parameter> var2, Style var3) {
+   public ChatTypeDecoration(String translationKey, List<Parameter> parameters, Style style) {
       super();
-      this.translationKey = var1;
-      this.parameters = var2;
-      this.style = var3;
+      this.translationKey = translationKey;
+      this.parameters = parameters;
+      this.style = style;
    }
 
    public static ChatTypeDecoration withSender(String var0) {
@@ -79,7 +79,7 @@ public record ChatTypeDecoration(String translationKey, List<Parameter> paramete
       private final String name;
       private final Selector selector;
 
-      private Parameter(String var3, Selector var4) {
+      private Parameter(final String var3, final Selector var4) {
          this.name = var3;
          this.selector = var4;
       }

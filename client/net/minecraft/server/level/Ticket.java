@@ -63,7 +63,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
    }
 
    // $FF: synthetic method
-   public int compareTo(Object var1) {
+   public int compareTo(final Object var1) {
       return this.compareTo((Ticket)var1);
    }
 }

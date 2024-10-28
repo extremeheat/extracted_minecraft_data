@@ -67,7 +67,7 @@ public class PackSelectionModel {
    }
 
    class SelectedPackEntry extends EntryBase {
-      public SelectedPackEntry(Pack var2) {
+      public SelectedPackEntry(final Pack var2) {
          super(var2);
       }
 
@@ -92,7 +92,7 @@ public class PackSelectionModel {
    }
 
    class UnselectedPackEntry extends EntryBase {
-      public UnselectedPackEntry(Pack var2) {
+      public UnselectedPackEntry(final Pack var2) {
          super(var2);
       }
 
@@ -119,7 +119,7 @@ public class PackSelectionModel {
    private abstract class EntryBase implements Entry {
       private final Pack pack;
 
-      public EntryBase(Pack var2) {
+      public EntryBase(final Pack var2) {
          super();
          this.pack = var2;
       }

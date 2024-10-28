@@ -189,11 +189,11 @@ public class MobEffect implements FeatureElement {
    }
 
    static record AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
-      AttributeTemplate(UUID var1, double var2, AttributeModifier.Operation var4) {
+      AttributeTemplate(UUID id, double amount, AttributeModifier.Operation operation) {
          super();
-         this.id = var1;
-         this.amount = var2;
-         this.operation = var4;
+         this.id = id;
+         this.amount = amount;
+         this.operation = operation;
       }
 
       public AttributeModifier create(String var1, int var2) {

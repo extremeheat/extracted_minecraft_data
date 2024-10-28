@@ -75,7 +75,7 @@ public class TimeArgument implements ArgumentType<Integer> {
    }
 
    // $FF: synthetic method
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -109,14 +109,14 @@ public class TimeArgument implements ArgumentType<Integer> {
       }
 
       // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
          return this.deserializeFromNetwork(var1);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<TimeArgument> {
          final int min;
 
-         Template(int var2) {
+         Template(final int var2) {
             super();
             this.min = var2;
          }
@@ -130,7 +130,7 @@ public class TimeArgument implements ArgumentType<Integer> {
          }
 
          // $FF: synthetic method
-         public ArgumentType instantiate(CommandBuildContext var1) {
+         public ArgumentType instantiate(final CommandBuildContext var1) {
             return this.instantiate(var1);
          }
       }

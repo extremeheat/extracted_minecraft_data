@@ -38,7 +38,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       this.resolutionContext = var4;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetLoreFunction> getType() {
       return LootItemFunctions.SET_LORE;
    }
 

@@ -108,6 +108,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
@@ -1343,8 +1344,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
          if (var3 != null) {
             try {
                ((Writer)var3).close();
-            } catch (Throwable var14) {
-               var22.addSuppressed(var14);
+            } catch (Throwable var13) {
+               var22.addSuppressed(var13);
             }
          }
 
@@ -1361,16 +1362,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          ((Writer)var24).write(var23.getFriendlyReport());
-      } catch (Throwable var18) {
+      } catch (Throwable var21) {
          if (var24 != null) {
             try {
                ((Writer)var24).close();
-            } catch (Throwable var12) {
-               var18.addSuppressed(var12);
+            } catch (Throwable var16) {
+               var21.addSuppressed(var16);
             }
          }
 
-         throw var18;
+         throw var21;
       }
 
       if (var24 != null) {
@@ -1382,16 +1383,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          var2.dumpChunks(var26);
-      } catch (Throwable var20) {
+      } catch (Throwable var19) {
          if (var26 != null) {
             try {
                ((Writer)var26).close();
-            } catch (Throwable var15) {
-               var20.addSuppressed(var15);
+            } catch (Throwable var14) {
+               var19.addSuppressed(var14);
             }
          }
 
-         throw var20;
+         throw var19;
       }
 
       if (var26 != null) {
@@ -1403,16 +1404,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.entityManager.dumpSections(var28);
-      } catch (Throwable var19) {
+      } catch (Throwable var20) {
          if (var28 != null) {
             try {
                ((Writer)var28).close();
-            } catch (Throwable var13) {
-               var19.addSuppressed(var13);
+            } catch (Throwable var15) {
+               var20.addSuppressed(var15);
             }
          }
 
-         throw var19;
+         throw var20;
       }
 
       if (var28 != null) {
@@ -1424,16 +1425,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          dumpEntities(var7, this.getEntities().getAll());
-      } catch (Throwable var21) {
+      } catch (Throwable var18) {
          if (var7 != null) {
             try {
                ((Writer)var7).close();
-            } catch (Throwable var16) {
-               var21.addSuppressed(var16);
+            } catch (Throwable var11) {
+               var18.addSuppressed(var11);
             }
          }
 
-         throw var21;
+         throw var18;
       }
 
       if (var7 != null) {
@@ -1449,8 +1450,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
          if (var8 != null) {
             try {
                ((Writer)var8).close();
-            } catch (Throwable var11) {
-               var17.addSuppressed(var11);
+            } catch (Throwable var12) {
+               var17.addSuppressed(var12);
             }
          }
 
@@ -1631,6 +1632,10 @@ public class ServerLevel extends Level implements WorldGenLevel {
       return this.server.getWorldData().enabledFeatures();
    }
 
+   public PotionBrewing potionBrewing() {
+      return this.server.potionBrewing();
+   }
+
    public RandomSource getRandomSequence(ResourceLocation var1) {
       return this.randomSequences.get(var1);
    }
@@ -1750,32 +1755,32 @@ public class ServerLevel extends Level implements WorldGenLevel {
       }
 
       // $FF: synthetic method
-      public void onSectionChange(Object var1) {
+      public void onSectionChange(final Object var1) {
          this.onSectionChange((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onTrackingEnd(Object var1) {
+      public void onTrackingEnd(final Object var1) {
          this.onTrackingEnd((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onTrackingStart(Object var1) {
+      public void onTrackingStart(final Object var1) {
          this.onTrackingStart((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onTickingStart(Object var1) {
+      public void onTickingStart(final Object var1) {
          this.onTickingStart((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onDestroyed(Object var1) {
+      public void onDestroyed(final Object var1) {
          this.onDestroyed((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onCreated(Object var1) {
+      public void onCreated(final Object var1) {
          this.onCreated((Entity)var1);
       }
    }

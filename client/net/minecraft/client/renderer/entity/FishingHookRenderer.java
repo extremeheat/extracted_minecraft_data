@@ -40,57 +40,46 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook> {
          vertex(var9, var8, var6, 1.0F, 1, 1, 0);
          vertex(var9, var8, var6, 0.0F, 1, 0, 0);
          var4.popPose();
-         int var10 = var7.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
-         ItemStack var11 = var7.getMainHandItem();
-         if (!var11.is(Items.FISHING_ROD)) {
-            var10 = -var10;
-         }
+         float var10 = var7.getAttackAnim(var3);
+         float var11 = Mth.sin(Mth.sqrt(var10) * 3.1415927F);
+         Vec3 var12 = this.getPlayerHandPos(var7, var11, var3);
+         Vec3 var13 = var1.getPosition(var3).add(0.0, 0.25, 0.0);
+         float var14 = (float)(var12.x - var13.x);
+         float var15 = (float)(var12.y - var13.y);
+         float var16 = (float)(var12.z - var13.z);
+         VertexConsumer var17 = var5.getBuffer(RenderType.lineStrip());
+         PoseStack.Pose var18 = var4.last();
+         boolean var19 = true;
 
-         float var12 = var7.getAttackAnim(var3);
-         float var13 = Mth.sin(Mth.sqrt(var12) * 3.1415927F);
-         float var14 = Mth.lerp(var3, var7.yBodyRotO, var7.yBodyRot) * 0.017453292F;
-         double var15 = (double)Mth.sin(var14);
-         double var17 = (double)Mth.cos(var14);
-         double var19 = (double)var10 * 0.35;
-         double var21 = 0.8;
-         double var23;
-         double var25;
-         double var27;
-         float var29;
-         double var30;
-         if ((this.entityRenderDispatcher.options == null || this.entityRenderDispatcher.options.getCameraType().isFirstPerson()) && var7 == Minecraft.getInstance().player) {
-            var30 = 960.0 / (double)(Integer)this.entityRenderDispatcher.options.fov().get();
-            Vec3 var32 = this.entityRenderDispatcher.camera.getNearPlane().getPointOnPlane((float)var10 * 0.525F, -0.1F);
-            var32 = var32.scale(var30);
-            var32 = var32.yRot(var13 * 0.5F);
-            var32 = var32.xRot(-var13 * 0.7F);
-            var23 = Mth.lerp((double)var3, var7.xo, var7.getX()) + var32.x;
-            var25 = Mth.lerp((double)var3, var7.yo, var7.getY()) + var32.y;
-            var27 = Mth.lerp((double)var3, var7.zo, var7.getZ()) + var32.z;
-            var29 = var7.getEyeHeight();
-         } else {
-            var23 = Mth.lerp((double)var3, var7.xo, var7.getX()) - var17 * var19 - var15 * 0.8;
-            var25 = var7.yo + (double)var7.getEyeHeight() + (var7.getY() - var7.yo) * (double)var3 - 0.45;
-            var27 = Mth.lerp((double)var3, var7.zo, var7.getZ()) - var15 * var19 + var17 * 0.8;
-            var29 = var7.isCrouching() ? -0.1875F : 0.0F;
-         }
-
-         var30 = Mth.lerp((double)var3, var1.xo, var1.getX());
-         double var43 = Mth.lerp((double)var3, var1.yo, var1.getY()) + 0.25;
-         double var34 = Mth.lerp((double)var3, var1.zo, var1.getZ());
-         float var36 = (float)(var23 - var30);
-         float var37 = (float)(var25 - var43) + var29;
-         float var38 = (float)(var27 - var34);
-         VertexConsumer var39 = var5.getBuffer(RenderType.lineStrip());
-         PoseStack.Pose var40 = var4.last();
-         boolean var41 = true;
-
-         for(int var42 = 0; var42 <= 16; ++var42) {
-            stringVertex(var36, var37, var38, var39, var40, fraction(var42, 16), fraction(var42 + 1, 16));
+         for(int var20 = 0; var20 <= 16; ++var20) {
+            stringVertex(var14, var15, var16, var17, var18, fraction(var20, 16), fraction(var20 + 1, 16));
          }
 
          var4.popPose();
          super.render(var1, var2, var3, var4, var5, var6);
+      }
+   }
+
+   private Vec3 getPlayerHandPos(Player var1, float var2, float var3) {
+      int var4 = var1.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
+      ItemStack var5 = var1.getMainHandItem();
+      if (!var5.is(Items.FISHING_ROD)) {
+         var4 = -var4;
+      }
+
+      if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && var1 == Minecraft.getInstance().player) {
+         double var17 = 960.0 / (double)(Integer)this.entityRenderDispatcher.options.fov().get();
+         Vec3 var8 = this.entityRenderDispatcher.camera.getNearPlane().getPointOnPlane((float)var4 * 0.525F, -0.1F).scale(var17).yRot(var2 * 0.5F).xRot(-var2 * 0.7F);
+         return var1.getEyePosition(var3).add(var8);
+      } else {
+         float var6 = Mth.lerp(var3, var1.yBodyRotO, var1.yBodyRot) * 0.017453292F;
+         double var7 = (double)Mth.sin(var6);
+         double var9 = (double)Mth.cos(var6);
+         float var11 = var1.getScale();
+         double var12 = (double)var4 * 0.35 * (double)var11;
+         double var14 = 0.8 * (double)var11;
+         float var16 = var1.isCrouching() ? -0.1875F : 0.0F;
+         return var1.getEyePosition(var3).add(-var9 * var12 - var7 * var14, (double)var16 - 0.45 * (double)var11, -var7 * var12 + var9 * var14);
       }
    }
 

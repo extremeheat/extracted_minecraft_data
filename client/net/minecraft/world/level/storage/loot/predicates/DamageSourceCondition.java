@@ -17,9 +17,9 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) i
       return var0.group(DamageSourcePredicate.CODEC.optionalFieldOf("predicate").forGetter(DamageSourceCondition::predicate)).apply(var0, DamageSourceCondition::new);
    });
 
-   public DamageSourceCondition(Optional<DamageSourcePredicate> var1) {
+   public DamageSourceCondition(Optional<DamageSourcePredicate> predicate) {
       super();
-      this.predicate = var1;
+      this.predicate = predicate;
    }
 
    public LootItemConditionType getType() {
@@ -51,7 +51,7 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) i
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

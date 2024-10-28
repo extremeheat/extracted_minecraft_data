@@ -919,10 +919,10 @@ public class VanillaRecipeProvider extends RecipeProvider {
    }
 
    public static record TrimTemplate(Item template, ResourceLocation id) {
-      public TrimTemplate(Item var1, ResourceLocation var2) {
+      public TrimTemplate(Item template, ResourceLocation id) {
          super();
-         this.template = var1;
-         this.id = var2;
+         this.template = template;
+         this.id = id;
       }
 
       public Item template() {

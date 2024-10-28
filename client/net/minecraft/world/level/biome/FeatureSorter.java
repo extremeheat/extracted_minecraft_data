@@ -40,11 +40,11 @@ public class FeatureSorter {
       int var12;
 
       record 1FeatureData(int featureIndex, int step, PlacedFeature feature) {
-         _FeatureData/* $FF was: 1FeatureData*/(int var1, int var2, PlacedFeature var3) {
+         _FeatureData/* $FF was: 1FeatureData*/(int featureIndex, int step, PlacedFeature feature) {
             super();
-            this.featureIndex = var1;
-            this.step = var2;
-            this.feature = var3;
+            this.featureIndex = featureIndex;
+            this.step = step;
+            this.feature = feature;
          }
 
          public int featureIndex() {
@@ -150,10 +150,10 @@ public class FeatureSorter {
          this(var1, Util.createIndexIdentityLookup(var1));
       }
 
-      public StepFeatureData(List<PlacedFeature> var1, ToIntFunction<PlacedFeature> var2) {
+      public StepFeatureData(List<PlacedFeature> features, ToIntFunction<PlacedFeature> indexMapping) {
          super();
-         this.features = var1;
-         this.indexMapping = var2;
+         this.features = features;
+         this.indexMapping = indexMapping;
       }
 
       public List<PlacedFeature> features() {

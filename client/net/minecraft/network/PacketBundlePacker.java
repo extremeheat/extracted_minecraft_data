@@ -48,7 +48,7 @@ public class PacketBundlePacker extends MessageToMessageDecoder<Packet<?>> {
    }
 
    // $FF: synthetic method
-   protected void decode(ChannelHandlerContext var1, Object var2, List var3) throws Exception {
+   protected void decode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
       this.decode(var1, (Packet)var2, var3);
    }
 }

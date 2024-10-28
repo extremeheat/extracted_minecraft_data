@@ -22,7 +22,7 @@ public class HoglinRenderer extends MobRenderer<Hoglin, HoglinModel<Hoglin>> {
    }
 
    // $FF: synthetic method
-   protected boolean isShaking(LivingEntity var1) {
+   protected boolean isShaking(final LivingEntity var1) {
       return this.isShaking((Hoglin)var1);
    }
 }

@@ -20,13 +20,13 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
       return var0.group(ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description), ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players), ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version), ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon), Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)).apply(var0, ServerStatus::new);
    });
 
-   public ServerStatus(Component var1, Optional<Players> var2, Optional<Version> var3, Optional<Favicon> var4, boolean var5) {
+   public ServerStatus(Component description, Optional<Players> players, Optional<Version> version, Optional<Favicon> favicon, boolean enforcesSecureChat) {
       super();
-      this.description = var1;
-      this.players = var2;
-      this.version = var3;
-      this.favicon = var4;
-      this.enforcesSecureChat = var5;
+      this.description = description;
+      this.players = players;
+      this.version = version;
+      this.favicon = favicon;
+      this.enforcesSecureChat = enforcesSecureChat;
    }
 
    public Component description() {
@@ -57,11 +57,11 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
          return var0.group(Codec.INT.fieldOf("max").forGetter(Players::max), Codec.INT.fieldOf("online").forGetter(Players::online), PROFILE_CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(Players::sample)).apply(var0, Players::new);
       });
 
-      public Players(int var1, int var2, List<GameProfile> var3) {
+      public Players(int max, int online, List<GameProfile> sample) {
          super();
-         this.max = var1;
-         this.online = var2;
-         this.sample = var3;
+         this.max = max;
+         this.online = online;
+         this.sample = sample;
       }
 
       public int max() {
@@ -82,10 +82,10 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
          return var0.group(Codec.STRING.fieldOf("name").forGetter(Version::name), Codec.INT.fieldOf("protocol").forGetter(Version::protocol)).apply(var0, Version::new);
       });
 
-      public Version(String var1, int var2) {
+      public Version(String name, int protocol) {
          super();
-         this.name = var1;
-         this.protocol = var2;
+         this.name = name;
+         this.protocol = protocol;
       }
 
       public static Version current() {
@@ -106,9 +106,9 @@ public record ServerStatus(Component description, Optional<Players> players, Opt
       private static final String PREFIX = "data:image/png;base64,";
       public static final Codec<Favicon> CODEC;
 
-      public Favicon(byte[] var1) {
+      public Favicon(byte[] iconBytes) {
          super();
-         this.iconBytes = var1;
+         this.iconBytes = iconBytes;
       }
 
       public byte[] iconBytes() {

@@ -10,10 +10,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundTabListPacket(Component header, Component footer) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTabListPacket> STREAM_CODEC;
 
-   public ClientboundTabListPacket(Component var1, Component var2) {
+   public ClientboundTabListPacket(Component header, Component footer) {
       super();
-      this.header = var1;
-      this.footer = var2;
+      this.header = header;
+      this.footer = footer;
    }
 
    public PacketType<ClientboundTabListPacket> type() {

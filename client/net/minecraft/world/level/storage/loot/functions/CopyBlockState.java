@@ -48,7 +48,7 @@ public class CopyBlockState extends LootItemConditionalFunction {
       this(var1, var2, (Set)var10003.map(var10004::getProperty).filter(Objects::nonNull).collect(Collectors.toSet()));
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<CopyBlockState> getType() {
       return LootItemFunctions.COPY_STATE;
    }
 

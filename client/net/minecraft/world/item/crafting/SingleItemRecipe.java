@@ -77,7 +77,7 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
                return var0.group;
             }), Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter((var0) -> {
                return var0.ingredient;
-            }), ItemStack.CODEC.fieldOf("result").forGetter((var0) -> {
+            }), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0) -> {
                return var0.result;
             }));
             Objects.requireNonNull(var1);

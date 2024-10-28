@@ -88,7 +88,7 @@ public class DownloadCacheCleaner {
             }
 
             // $FF: synthetic method
-            public FileVisitResult visitFile(Object var1x, BasicFileAttributes var2) throws IOException {
+            public FileVisitResult visitFile(final Object var1x, final BasicFileAttributes var2) throws IOException {
                return this.visitFile((Path)var1x, var2);
             }
          });
@@ -116,10 +116,10 @@ public class DownloadCacheCleaner {
       final Path path;
       public static final Comparator<PathAndTime> NEWEST_FIRST = Comparator.comparing(PathAndTime::modifiedTime).reversed();
 
-      PathAndTime(Path var1, FileTime var2) {
+      PathAndTime(Path path, FileTime modifiedTime) {
          super();
-         this.path = var1;
-         this.modifiedTime = var2;
+         this.path = path;
+         this.modifiedTime = modifiedTime;
       }
 
       public Path path() {
@@ -136,10 +136,10 @@ public class DownloadCacheCleaner {
       final int removalPriority;
       public static final Comparator<PathAndPriority> HIGHEST_PRIORITY_FIRST = Comparator.comparing(PathAndPriority::removalPriority).reversed();
 
-      PathAndPriority(Path var1, int var2) {
+      PathAndPriority(Path path, int removalPriority) {
          super();
-         this.path = var1;
-         this.removalPriority = var2;
+         this.path = path;
+         this.removalPriority = removalPriority;
       }
 
       public Path path() {

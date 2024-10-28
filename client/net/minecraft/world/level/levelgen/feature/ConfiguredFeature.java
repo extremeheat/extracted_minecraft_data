@@ -19,10 +19,10 @@ public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Featu
    public static final Codec<Holder<ConfiguredFeature<?, ?>>> CODEC;
    public static final Codec<HolderSet<ConfiguredFeature<?, ?>>> LIST_CODEC;
 
-   public ConfiguredFeature(F var1, FC var2) {
+   public ConfiguredFeature(F feature, FC config) {
       super();
-      this.feature = var1;
-      this.config = var2;
+      this.feature = feature;
+      this.config = config;
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {

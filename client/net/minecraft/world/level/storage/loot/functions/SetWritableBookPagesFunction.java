@@ -37,7 +37,7 @@ public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
       return var1.withReplacedPages(var2);
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetWritableBookPagesFunction> getType() {
       return LootItemFunctions.SET_WRITABLE_BOOK_PAGES;
    }
 }

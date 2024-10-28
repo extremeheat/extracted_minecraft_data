@@ -79,7 +79,7 @@ public class GhostRecipe {
       private final int x;
       private final int y;
 
-      public GhostIngredient(Ingredient var2, int var3, int var4) {
+      public GhostIngredient(final Ingredient var2, final int var3, final int var4) {
          super();
          this.ingredient = var2;
          this.x = var3;

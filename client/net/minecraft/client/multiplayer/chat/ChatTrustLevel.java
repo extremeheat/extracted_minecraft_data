@@ -18,7 +18,7 @@ public enum ChatTrustLevel implements StringRepresentable {
    public static final Codec<ChatTrustLevel> CODEC = StringRepresentable.fromEnum(ChatTrustLevel::values);
    private final String serializedName;
 
-   private ChatTrustLevel(String var3) {
+   private ChatTrustLevel(final String var3) {
       this.serializedName = var3;
    }
 

@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 
 public record StringTemplate(List<String> segments, List<String> variables) {
-   public StringTemplate(List<String> var1, List<String> var2) {
+   public StringTemplate(List<String> segments, List<String> variables) {
       super();
-      this.segments = var1;
-      this.variables = var2;
+      this.segments = segments;
+      this.variables = variables;
    }
 
    public static StringTemplate fromString(String var0, int var1) {

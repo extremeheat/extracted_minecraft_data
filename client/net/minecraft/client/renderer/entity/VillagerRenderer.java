@@ -37,12 +37,12 @@ public class VillagerRenderer extends MobRenderer<Villager, VillagerModel<Villag
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(LivingEntity var1) {
+   protected float getShadowRadius(final LivingEntity var1) {
       return this.getShadowRadius((Villager)var1);
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(Entity var1) {
+   protected float getShadowRadius(final Entity var1) {
       return this.getShadowRadius((Villager)var1);
    }
 }

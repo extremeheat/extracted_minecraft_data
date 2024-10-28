@@ -103,10 +103,10 @@ class SwitchGrid {
       final int maxInfoRows;
       final boolean alwaysMaxHeight;
 
-      InfoUnderneathSettings(int var1, boolean var2) {
+      InfoUnderneathSettings(int maxInfoRows, boolean alwaysMaxHeight) {
          super();
-         this.maxInfoRows = var1;
-         this.alwaysMaxHeight = var2;
+         this.maxInfoRows = maxInfoRows;
+         this.alwaysMaxHeight = alwaysMaxHeight;
       }
 
       public int maxInfoRows() {
@@ -119,11 +119,11 @@ class SwitchGrid {
    }
 
    static record LabeledSwitch(CycleButton<Boolean> button, BooleanSupplier stateSupplier, @Nullable BooleanSupplier isActiveCondition) {
-      LabeledSwitch(CycleButton<Boolean> var1, BooleanSupplier var2, @Nullable BooleanSupplier var3) {
+      LabeledSwitch(CycleButton<Boolean> button, BooleanSupplier stateSupplier, @Nullable BooleanSupplier isActiveCondition) {
          super();
-         this.button = var1;
-         this.stateSupplier = var2;
-         this.isActiveCondition = var3;
+         this.button = button;
+         this.stateSupplier = stateSupplier;
+         this.isActiveCondition = isActiveCondition;
       }
 
       public void refreshState() {

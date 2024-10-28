@@ -13,6 +13,7 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -133,6 +134,7 @@ import net.minecraft.world.entity.npc.WanderingTraderSpawner;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.DataPackConfig;
@@ -253,6 +255,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final StructureTemplateManager structureTemplateManager;
    private final ServerTickRateManager tickRateManager;
    protected final WorldData worldData;
+   private final PotionBrewing potionBrewing;
    private volatile boolean isSaving;
 
    public static <S extends MinecraftServer> S spin(Function<Thread, S> var0) {
@@ -318,6 +321,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.structureTemplateManager = new StructureTemplateManager(var4.resourceManager(), var2, var6, var9);
          this.serverThread = var1;
          this.executor = Util.backgroundExecutor();
+         this.potionBrewing = PotionBrewing.bootstrap(this.worldData.enabledFeatures());
       }
    }
 
@@ -1139,11 +1143,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          });
       }
 
-      var1.setDetail("Data Packs", () -> {
-         return (String)this.packRepository.getSelectedPacks().stream().map((var0) -> {
-            String var10000 = var0.getId();
-            return var10000 + (var0.getCompatibility().isCompatible() ? "" : " (incompatible)");
-         }).collect(Collectors.joining(", "));
+      var1.setDetail("Active Data Packs", () -> {
+         return PackRepository.displayPackList(this.packRepository.getSelectedPacks());
+      });
+      var1.setDetail("Available Data Packs", () -> {
+         return PackRepository.displayPackList(this.packRepository.getAvailablePacks());
       });
       var1.setDetail("Enabled Feature Flags", () -> {
          return (String)FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(ResourceLocation::toString).collect(Collectors.joining(", "));
@@ -1477,7 +1481,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.resources.close();
          this.resources = var2x;
          this.packRepository.setSelected(var1);
-         WorldDataConfiguration var3 = new WorldDataConfiguration(getSelectedPacks(this.packRepository), this.worldData.enabledFeatures());
+         WorldDataConfiguration var3 = new WorldDataConfiguration(getSelectedPacks(this.packRepository, true), this.worldData.enabledFeatures());
          this.worldData.setDataConfiguration(var3);
          this.resources.managers.updateRegistryTags();
          this.getPlayerList().saveAll();
@@ -1493,79 +1497,105 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return var2;
    }
 
-   public static WorldDataConfiguration configurePackRepository(PackRepository var0, DataPackConfig var1, boolean var2, FeatureFlagSet var3) {
+   public static WorldDataConfiguration configurePackRepository(PackRepository var0, WorldDataConfiguration var1, boolean var2, boolean var3) {
+      DataPackConfig var4 = var1.dataPacks();
+      FeatureFlagSet var5 = var2 ? FeatureFlagSet.of() : var1.enabledFeatures();
+      FeatureFlagSet var6 = var2 ? FeatureFlags.REGISTRY.allFlags() : var1.enabledFeatures();
       var0.reload();
-      if (var2) {
-         var0.setSelected(Collections.singleton("vanilla"));
-         return WorldDataConfiguration.DEFAULT;
+      if (var3) {
+         return configureRepositoryWithSelection(var0, List.of("vanilla"), var5, false);
       } else {
-         LinkedHashSet var4 = Sets.newLinkedHashSet();
-         Iterator var5 = var1.getEnabled().iterator();
+         LinkedHashSet var7 = Sets.newLinkedHashSet();
+         Iterator var8 = var4.getEnabled().iterator();
 
-         while(var5.hasNext()) {
-            String var6 = (String)var5.next();
-            if (var0.isAvailable(var6)) {
-               var4.add(var6);
+         while(var8.hasNext()) {
+            String var9 = (String)var8.next();
+            if (var0.isAvailable(var9)) {
+               var7.add(var9);
             } else {
-               LOGGER.warn("Missing data pack {}", var6);
+               LOGGER.warn("Missing data pack {}", var9);
             }
          }
 
-         var5 = var0.getAvailablePacks().iterator();
+         var8 = var0.getAvailablePacks().iterator();
 
-         while(true) {
-            String var7;
-            FeatureFlagSet var8;
-            Pack var12;
-            do {
-               if (!var5.hasNext()) {
-                  if (var4.isEmpty()) {
-                     LOGGER.info("No datapacks selected, forcing vanilla");
-                     var4.add("vanilla");
+         while(var8.hasNext()) {
+            Pack var13 = (Pack)var8.next();
+            String var10 = var13.getId();
+            if (!var4.getDisabled().contains(var10)) {
+               FeatureFlagSet var11 = var13.getRequestedFeatures();
+               boolean var12 = var7.contains(var10);
+               if (!var12 && var13.getPackSource().shouldAddAutomatically()) {
+                  if (var11.isSubsetOf(var6)) {
+                     LOGGER.info("Found new data pack {}, loading it automatically", var10);
+                     var7.add(var10);
+                  } else {
+                     LOGGER.info("Found new data pack {}, but can't load it due to missing features {}", var10, FeatureFlags.printMissingFlags(var6, var11));
                   }
-
-                  var0.setSelected(var4);
-                  DataPackConfig var11 = getSelectedPacks(var0);
-                  FeatureFlagSet var13 = var0.getRequestedFeatureFlags();
-                  return new WorldDataConfiguration(var11, var13);
                }
 
-               var12 = (Pack)var5.next();
-               var7 = var12.getId();
-               var8 = var12.getRequestedFeatures();
-               FeatureFlagSet var9 = var0.getRequestedFeatureFlags();
-               if (var12.getPackSource() == PackSource.FEATURE && !var8.isEmpty() && var8.isSubsetOf(var9) && !var4.contains(var7)) {
-                  LOGGER.info("Found feature pack for requested feature, forcing to enabled");
-                  var4.add(var7);
-                  break;
+               if (var12 && !var11.isSubsetOf(var6)) {
+                  LOGGER.warn("Pack {} requires features {} that are not enabled for this world, disabling pack.", var10, FeatureFlags.printMissingFlags(var6, var11));
+                  var7.remove(var10);
                }
-            } while(var1.getDisabled().contains(var7));
-
-            boolean var10 = var4.contains(var7);
-            if (!var10 && var12.getPackSource().shouldAddAutomatically()) {
-               if (var8.isSubsetOf(var3)) {
-                  LOGGER.info("Found new data pack {}, loading it automatically", var7);
-                  var4.add(var7);
-               } else {
-                  LOGGER.info("Found new data pack {}, but can't load it due to missing features {}", var7, FeatureFlags.printMissingFlags(var3, var8));
-               }
-            }
-
-            if (var10 && !var8.isSubsetOf(var3)) {
-               LOGGER.warn("Pack {} requires features {} that are not enabled for this world, disabling pack.", var7, FeatureFlags.printMissingFlags(var3, var8));
-               var4.remove(var7);
             }
          }
+
+         if (var7.isEmpty()) {
+            LOGGER.info("No datapacks selected, forcing vanilla");
+            var7.add("vanilla");
+         }
+
+         return configureRepositoryWithSelection(var0, var7, var5, true);
       }
    }
 
-   private static DataPackConfig getSelectedPacks(PackRepository var0) {
-      Collection var1 = var0.getSelectedIds();
-      ImmutableList var2 = ImmutableList.copyOf(var1);
-      List var3 = (List)var0.getAvailableIds().stream().filter((var1x) -> {
-         return !var1.contains(var1x);
-      }).collect(ImmutableList.toImmutableList());
-      return new DataPackConfig(var2, var3);
+   private static WorldDataConfiguration configureRepositoryWithSelection(PackRepository var0, Collection<String> var1, FeatureFlagSet var2, boolean var3) {
+      var0.setSelected(var1);
+      enableForcedFeaturePacks(var0, var2);
+      DataPackConfig var4 = getSelectedPacks(var0, var3);
+      FeatureFlagSet var5 = var0.getRequestedFeatureFlags().join(var2);
+      return new WorldDataConfiguration(var4, var5);
+   }
+
+   private static void enableForcedFeaturePacks(PackRepository var0, FeatureFlagSet var1) {
+      FeatureFlagSet var2 = var0.getRequestedFeatureFlags();
+      FeatureFlagSet var3 = var1.subtract(var2);
+      if (!var3.isEmpty()) {
+         ObjectArraySet var4 = new ObjectArraySet(var0.getSelectedIds());
+         Iterator var5 = var0.getAvailablePacks().iterator();
+
+         while(var5.hasNext()) {
+            Pack var6 = (Pack)var5.next();
+            if (var3.isEmpty()) {
+               break;
+            }
+
+            if (var6.getPackSource() == PackSource.FEATURE) {
+               String var7 = var6.getId();
+               FeatureFlagSet var8 = var6.getRequestedFeatures();
+               if (!var8.isEmpty() && var8.intersects(var3) && var8.isSubsetOf(var1)) {
+                  if (!var4.add(var7)) {
+                     throw new IllegalStateException("Tried to force '" + var7 + "', but it was already enabled");
+                  }
+
+                  LOGGER.info("Found feature pack ('{}') for requested feature, forcing to enabled", var7);
+                  var3 = var3.subtract(var8);
+               }
+            }
+         }
+
+         var0.setSelected(var4);
+      }
+   }
+
+   private static DataPackConfig getSelectedPacks(PackRepository var0, boolean var1) {
+      Collection var2 = var0.getSelectedIds();
+      ImmutableList var3 = ImmutableList.copyOf(var2);
+      List var4 = var1 ? var0.getAvailableIds().stream().filter((var1x) -> {
+         return !var2.contains(var1x);
+      }).toList() : List.of();
+      return new DataPackConfig(var3, var4);
    }
 
    public void kickUnlistedPlayers(CommandSourceStack var1) {
@@ -2036,18 +2066,22 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public void reportChunkSaveFailure(ChunkPos var1) {
    }
 
+   public PotionBrewing potionBrewing() {
+      return this.potionBrewing;
+   }
+
    // $FF: synthetic method
-   public void doRunTask(Runnable var1) {
+   public void doRunTask(final Runnable var1) {
       this.doRunTask((TickTask)var1);
    }
 
    // $FF: synthetic method
-   public boolean shouldRun(Runnable var1) {
+   public boolean shouldRun(final Runnable var1) {
       return this.shouldRun((TickTask)var1);
    }
 
    // $FF: synthetic method
-   public Runnable wrapRunnable(Runnable var1) {
+   public Runnable wrapRunnable(final Runnable var1) {
       return this.wrapRunnable(var1);
    }
 
@@ -2064,10 +2098,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       final CloseableResourceManager resourceManager;
       final ReloadableServerResources managers;
 
-      ReloadableResources(CloseableResourceManager var1, ReloadableServerResources var2) {
+      ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) {
          super();
-         this.resourceManager = var1;
-         this.managers = var2;
+         this.resourceManager = resourceManager;
+         this.managers = managers;
       }
 
       public void close() {
@@ -2127,13 +2161,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
-      public ServerResourcePackInfo(UUID var1, String var2, String var3, boolean var4, @Nullable Component var5) {
+      public ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
          super();
-         this.id = var1;
-         this.url = var2;
-         this.hash = var3;
-         this.isRequired = var4;
-         this.prompt = var5;
+         this.id = id;
+         this.url = url;
+         this.hash = hash;
+         this.isRequired = isRequired;
+         this.prompt = prompt;
       }
 
       public UUID id() {

@@ -14,11 +14,11 @@ public record PackMetadataSection(Component description, int packFormat, Optiona
    });
    public static final MetadataSectionType<PackMetadataSection> TYPE;
 
-   public PackMetadataSection(Component var1, int var2, Optional<InclusiveRange<Integer>> var3) {
+   public PackMetadataSection(Component description, int packFormat, Optional<InclusiveRange<Integer>> supportedFormats) {
       super();
-      this.description = var1;
-      this.packFormat = var2;
-      this.supportedFormats = var3;
+      this.description = description;
+      this.packFormat = packFormat;
+      this.supportedFormats = supportedFormats;
    }
 
    public Component description() {

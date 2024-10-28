@@ -58,6 +58,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
@@ -813,6 +814,10 @@ public class ClientLevel extends Level {
       return this.connection.enabledFeatures();
    }
 
+   public PotionBrewing potionBrewing() {
+      return this.connection.potionBrewing();
+   }
+
    // $FF: synthetic method
    public LevelData getLevelData() {
       return this.getLevelData();
@@ -862,32 +867,32 @@ public class ClientLevel extends Level {
       }
 
       // $FF: synthetic method
-      public void onSectionChange(Object var1) {
+      public void onSectionChange(final Object var1) {
          this.onSectionChange((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onTrackingEnd(Object var1) {
+      public void onTrackingEnd(final Object var1) {
          this.onTrackingEnd((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onTrackingStart(Object var1) {
+      public void onTrackingStart(final Object var1) {
          this.onTrackingStart((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onTickingStart(Object var1) {
+      public void onTickingStart(final Object var1) {
          this.onTickingStart((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onDestroyed(Object var1) {
+      public void onDestroyed(final Object var1) {
          this.onDestroyed((Entity)var1);
       }
 
       // $FF: synthetic method
-      public void onCreated(Object var1) {
+      public void onCreated(final Object var1) {
          this.onCreated((Entity)var1);
       }
    }

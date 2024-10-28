@@ -41,7 +41,7 @@ public enum SymmetricGroup3 {
 
    });
 
-   private SymmetricGroup3(int var3, int var4, int var5) {
+   private SymmetricGroup3(final int var3, final int var4, final int var5) {
       this.permutation = new int[]{var3, var4, var5};
       this.transformation = new Matrix3f();
       this.transformation.set(this.permutation(0), 0, 1.0F);

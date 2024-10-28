@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
@@ -30,7 +29,7 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
       this.add = var3;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetItemCountFunction> getType() {
       return LootItemFunctions.SET_COUNT;
    }
 
@@ -40,7 +39,7 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
 
    public ItemStack run(ItemStack var1, LootContext var2) {
       int var3 = this.add ? var1.getCount() : 0;
-      var1.setCount(Mth.clamp(var3 + this.value.getInt(var2), 0, var1.getMaxStackSize()));
+      var1.setCount(var3 + this.value.getInt(var2));
       return var1;
    }
 

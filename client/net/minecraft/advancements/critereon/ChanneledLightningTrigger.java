@@ -36,10 +36,10 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims) {
          super();
-         this.player = var1;
-         this.victims = var2;
+         this.player = player;
+         this.victims = victims;
       }
 
       public static Criterion<TriggerInstance> channeledLightning(EntityPredicate.Builder... var0) {

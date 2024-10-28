@@ -104,13 +104,13 @@ public class MobEffects {
       RAID_OMEN = register("raid_omen", (new RaidOmenMobEffect(MobEffectCategory.NEUTRAL, 14565464, ParticleTypes.RAID_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_RAID_OMEN).requiredFeatures(FeatureFlags.UPDATE_1_21));
       WIND_CHARGED = register("wind_charged", (new WindChargedMobEffect(MobEffectCategory.HARMFUL, 12438015)).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
       WEAVING = register("weaving", (new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, (var0) -> {
-         return Mth.randomBetweenInclusive(var0, 1, 3);
+         return Mth.randomBetweenInclusive(var0, 2, 3);
       })).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
       OOZING = register("oozing", (new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (var0) -> {
          return 2;
       })).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
-      INFESTED = register("infested", (new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.05F, (var0) -> {
-         return Mth.randomBetweenInclusive(var0, 1, 3);
+      INFESTED = register("infested", (new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (var0) -> {
+         return Mth.randomBetweenInclusive(var0, 1, 2);
       })).requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21}));
    }
 }

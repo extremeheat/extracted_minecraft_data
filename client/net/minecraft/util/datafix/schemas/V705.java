@@ -41,7 +41,9 @@ public class V705 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       HashMap var2 = Maps.newHashMap();
-      var1.registerSimple(var2, "minecraft:area_effect_cloud");
+      var1.register(var2, "minecraft:area_effect_cloud", (var1x) -> {
+         return DSL.optionalFields("Particle", References.PARTICLE.in(var1));
+      });
       registerMob(var1, var2, "minecraft:armor_stand");
       var1.register(var2, "minecraft:arrow", (var1x) -> {
          return DSL.optionalFields("inTile", References.BLOCK_NAME.in(var1));
@@ -143,7 +145,7 @@ public class V705 extends NamespacedSchema {
          return DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1));
       });
       var1.register(var2, "minecraft:villager", (var1x) -> {
-         return DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1)))), V100.equipment(var1));
+         return DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1));
       });
       registerMob(var1, var2, "minecraft:villager_golem");
       registerMob(var1, var2, "minecraft:witch");
@@ -158,7 +160,9 @@ public class V705 extends NamespacedSchema {
          return DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1));
       });
       registerMob(var1, var2, "minecraft:zombie_pigman");
-      registerMob(var1, var2, "minecraft:zombie_villager");
+      var1.register(var2, "minecraft:zombie_villager", (var1x) -> {
+         return DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1));
+      });
       var1.registerSimple(var2, "minecraft:evocation_fangs");
       registerMob(var1, var2, "minecraft:evocation_illager");
       var1.registerSimple(var2, "minecraft:illusion_illager");

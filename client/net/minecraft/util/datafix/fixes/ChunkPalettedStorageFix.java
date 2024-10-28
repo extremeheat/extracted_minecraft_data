@@ -777,7 +777,7 @@ public class ChunkPalettedStorageFix extends DataFix {
       private final Axis axis;
       private final AxisDirection axisDirection;
 
-      private Direction(AxisDirection var3, Axis var4) {
+      private Direction(final AxisDirection var3, final Axis var4) {
          this.axis = var4;
          this.axisDirection = var3;
       }
@@ -815,7 +815,7 @@ public class ChunkPalettedStorageFix extends DataFix {
 
          private final int step;
 
-         private AxisDirection(int var3) {
+         private AxisDirection(final int var3) {
             this.step = var3;
          }
 

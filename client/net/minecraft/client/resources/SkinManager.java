@@ -63,7 +63,7 @@ public class SkinManager {
          }
 
          // $FF: synthetic method
-         public Object load(Object var1) throws Exception {
+         public Object load(final Object var1) throws Exception {
             return this.load((CacheKey)var1);
          }
       });
@@ -161,10 +161,10 @@ public class SkinManager {
    }
 
    private static record CacheKey(UUID profileId, @Nullable Property packedTextures) {
-      CacheKey(UUID var1, @Nullable Property var2) {
+      CacheKey(UUID profileId, @Nullable Property packedTextures) {
          super();
-         this.profileId = var1;
-         this.packedTextures = var2;
+         this.profileId = profileId;
+         this.packedTextures = packedTextures;
       }
 
       public UUID profileId() {

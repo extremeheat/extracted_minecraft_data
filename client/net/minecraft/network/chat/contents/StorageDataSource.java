@@ -13,9 +13,9 @@ public record StorageDataSource(ResourceLocation id) implements DataSource {
    });
    public static final DataSource.Type<StorageDataSource> TYPE;
 
-   public StorageDataSource(ResourceLocation var1) {
+   public StorageDataSource(ResourceLocation id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public Stream<CompoundTag> getData(CommandSourceStack var1) {

@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.Iterator;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -1124,6 +1125,12 @@ public class Blocks {
       };
    }
 
+   private static Function<BlockState, MapColor> waterloggedMapColor(MapColor var0) {
+      return (var1) -> {
+         return (Boolean)var1.getValue(BlockStateProperties.WATERLOGGED) ? MapColor.WATER : var0;
+      };
+   }
+
    private static Boolean never(BlockState var0, BlockGetter var1, BlockPos var2, EntityType<?> var3) {
       return false;
    }
@@ -1582,7 +1589,7 @@ public class Blocks {
       NETHER_BRICK_FENCE = register((String)"nether_brick_fence", new FenceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.NETHER).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(2.0F, 6.0F).sound(SoundType.NETHER_BRICKS)));
       NETHER_BRICK_STAIRS = register("nether_brick_stairs", legacyStair(NETHER_BRICKS));
       NETHER_WART = register((String)"nether_wart", new NetherWartBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).noCollission().randomTicks().sound(SoundType.NETHER_WART).pushReaction(PushReaction.DESTROY)));
-      ENCHANTING_TABLE = register((String)"enchanting_table", new EnchantmentTableBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((var0x) -> {
+      ENCHANTING_TABLE = register((String)"enchanting_table", new EnchantingTableBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((var0x) -> {
          return 7;
       }).strength(5.0F, 1200.0F)));
       BREWING_STAND = register((String)"brewing_stand", new BrewingStandBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(0.5F).lightLevel((var0x) -> {
@@ -1733,8 +1740,8 @@ public class Blocks {
       BAMBOO_STAIRS = register("bamboo_stairs", legacyStair(BAMBOO_PLANKS));
       BAMBOO_MOSAIC_STAIRS = register("bamboo_mosaic_stairs", legacyStair(BAMBOO_MOSAIC));
       SLIME_BLOCK = register((String)"slime_block", new SlimeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.GRASS).friction(0.8F).sound(SoundType.SLIME_BLOCK).noOcclusion()));
-      BARRIER = register((String)"barrier", new BarrierBlock(BlockBehaviour.Properties.of().strength(-1.0F, 3600000.8F).noLootTable().noOcclusion().isValidSpawn(Blocks::never).noTerrainParticles().pushReaction(PushReaction.BLOCK)));
-      LIGHT = register((String)"light", new LightBlock(BlockBehaviour.Properties.of().replaceable().strength(-1.0F, 3600000.8F).noLootTable().noOcclusion().lightLevel(LightBlock.LIGHT_EMISSION)));
+      BARRIER = register((String)"barrier", new BarrierBlock(BlockBehaviour.Properties.of().strength(-1.0F, 3600000.8F).mapColor(waterloggedMapColor(MapColor.NONE)).noLootTable().noOcclusion().isValidSpawn(Blocks::never).noTerrainParticles().pushReaction(PushReaction.BLOCK)));
+      LIGHT = register((String)"light", new LightBlock(BlockBehaviour.Properties.of().replaceable().strength(-1.0F, 3600000.8F).mapColor(waterloggedMapColor(MapColor.NONE)).noLootTable().noOcclusion().lightLevel(LightBlock.LIGHT_EMISSION)));
       IRON_TRAPDOOR = register((String)"iron_trapdoor", new TrapDoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of().mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(5.0F).noOcclusion().isValidSpawn(Blocks::never)));
       PRISMARINE = register("prismarine", new Block(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.5F, 6.0F)));
       PRISMARINE_BRICKS = register("prismarine_bricks", new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DIAMOND).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.5F, 6.0F)));

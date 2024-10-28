@@ -43,7 +43,7 @@ public class ExecuteCommand<T extends ExecutionCommandSource<T>> implements Unbo
    }
 
    // $FF: synthetic method
-   public void execute(Object var1, ExecutionContext var2, Frame var3) {
+   public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
       this.execute((ExecutionCommandSource)var1, var2, var3);
    }
 }

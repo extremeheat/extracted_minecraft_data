@@ -9,11 +9,11 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       this(new ScreenPosition(var1, var2), var3, var4);
    }
 
-   public ScreenRectangle(ScreenPosition var1, int var2, int var3) {
+   public ScreenRectangle(ScreenPosition position, int width, int height) {
       super();
-      this.position = var1;
-      this.width = var2;
-      this.height = var3;
+      this.position = position;
+      this.width = width;
+      this.height = height;
    }
 
    public static ScreenRectangle empty() {

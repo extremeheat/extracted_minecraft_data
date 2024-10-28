@@ -17,9 +17,9 @@ public record ArgumentSignatures(List<Entry> entries) {
       this((List)var1.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 8), Entry::new));
    }
 
-   public ArgumentSignatures(List<Entry> var1) {
+   public ArgumentSignatures(List<Entry> entries) {
       super();
-      this.entries = var1;
+      this.entries = entries;
    }
 
    public void write(FriendlyByteBuf var1) {
@@ -51,10 +51,10 @@ public record ArgumentSignatures(List<Entry> entries) {
          this(var1.readUtf(16), MessageSignature.read(var1));
       }
 
-      public Entry(String var1, MessageSignature var2) {
+      public Entry(String name, MessageSignature signature) {
          super();
-         this.name = var1;
-         this.signature = var2;
+         this.name = name;
+         this.signature = signature;
       }
 
       public void write(FriendlyByteBuf var1) {

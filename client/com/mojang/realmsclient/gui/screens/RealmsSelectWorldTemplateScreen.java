@@ -257,7 +257,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          this(Collections.emptyList());
       }
 
-      public WorldTemplateList(Iterable<WorldTemplate> var2) {
+      public WorldTemplateList(final Iterable<WorldTemplate> var2) {
          super(RealmsSelectWorldTemplateScreen.this.width, RealmsSelectWorldTemplateScreen.this.height - 33 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), RealmsSelectWorldTemplateScreen.this.getHeaderHeight(), 46);
          var2.forEach(this::addEntry);
       }
@@ -312,7 +312,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       @Nullable
       private ImageButton trailerButton;
 
-      public Entry(WorldTemplate var2) {
+      public Entry(final WorldTemplate var2) {
          super();
          this.template = var2;
          if (!var2.link.isBlank()) {

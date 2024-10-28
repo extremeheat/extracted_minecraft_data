@@ -3,9 +3,11 @@ package net.minecraft.world.level.storage;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
+import com.mojang.serialization.OptionalDynamic;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -114,8 +116,11 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
 
    public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
       long var5 = var0.get("Time").asLong(0L);
-      CompoundTag var10002 = (CompoundTag)CompoundTag.CODEC.parse(var0.get("Player").orElseEmptyMap()).result().orElse((Object)null);
-      boolean var10003 = var0.get("WasModded").asBoolean(false);
+      OptionalDynamic var10002 = var0.get("Player");
+      Codec var10003 = CompoundTag.CODEC;
+      Objects.requireNonNull(var10003);
+      CompoundTag var7 = (CompoundTag)var10002.flatMap(var10003::parse).result().orElse((Object)null);
+      boolean var8 = var0.get("WasModded").asBoolean(false);
       BlockPos var10004 = new BlockPos(var0.get("SpawnX").asInt(0), var0.get("SpawnY").asInt(0), var0.get("SpawnZ").asInt(0));
       float var10005 = var0.get("SpawnAngle").asFloat(0.0F);
       long var10007 = var0.get("DayTime").asLong(var5);
@@ -142,7 +147,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       DataResult var10024 = var0.get("DragonFight").read(EndDragonFight.Data.CODEC);
       Logger var10025 = LOGGER;
       Objects.requireNonNull(var10025);
-      return new PrimaryLevelData(var10002, var10003, var10004, var10005, var5, var10007, var10008, var10009, var10010, var10011, var10012, var10013, var10014, var10015, var10016, var10017, var10018, var10019, var10020, var10021, var10022, var10023, (EndDragonFight.Data)var10024.resultOrPartial(var10025::error).orElse(EndDragonFight.Data.DEFAULT), var1, var3, var2, var4);
+      return new PrimaryLevelData(var7, var8, var10004, var10005, var5, var10007, var10008, var10009, var10010, var10011, var10012, var10013, var10014, var10015, var10016, var10017, var10018, var10019, var10020, var10021, var10022, var10023, (EndDragonFight.Data)var10024.resultOrPartial(var10025::error).orElse(EndDragonFight.Data.DEFAULT), var1, var3, var2, var4);
    }
 
    public CompoundTag createTag(RegistryAccess var1, @Nullable CompoundTag var2) {

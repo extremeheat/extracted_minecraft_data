@@ -23,9 +23,9 @@ public record PiecesContainer(List<StructurePiece> pieces) {
    private static final ResourceLocation JIGSAW_RENAME = new ResourceLocation("jigsaw");
    private static final Map<ResourceLocation, ResourceLocation> RENAMES;
 
-   public PiecesContainer(List<StructurePiece> var1) {
+   public PiecesContainer(final List<StructurePiece> pieces) {
       super();
-      this.pieces = List.copyOf(var1);
+      this.pieces = List.copyOf(pieces);
    }
 
    public boolean isEmpty() {

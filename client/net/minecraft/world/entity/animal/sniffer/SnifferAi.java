@@ -86,12 +86,12 @@ public class SnifferAi {
          }
 
          // $FF: synthetic method
-         protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
+         protected void start(final ServerLevel var1, final PathfinderMob var2, final long var3) {
             this.start(var1, (Sniffer)var2, var3);
          }
 
          // $FF: synthetic method
-         protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+         protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
             this.start(var1, (Sniffer)var2, var3);
          }
       }, new MoveToTargetSink(500, 700), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS)));
@@ -113,7 +113,7 @@ public class SnifferAi {
          }
 
          // $FF: synthetic method
-         protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+         protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
             this.start(var1, (Animal)var2, var3);
          }
       }), Pair.of(1, new FollowTemptation((var0x) -> {
@@ -127,7 +127,7 @@ public class SnifferAi {
          }
 
          // $FF: synthetic method
-         protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+         protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
             this.start(var1, (PathfinderMob)var2, var3);
          }
       }), Pair.of(2, new LookAtTargetSink(45, 90)), Pair.of(3, new FeelingHappy(40, 100)), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new Scenting(40, 80), 1), Pair.of(new Sniffing(40, 80), 1), Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 6.0F), 1), Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(new DoNothing(5, 20), 2))))), Set.of(Pair.of(MemoryModuleType.SNIFFER_DIGGING, MemoryStatus.VALUE_ABSENT)));
@@ -176,12 +176,12 @@ public class SnifferAi {
       }
 
       // $FF: synthetic method
-      protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.stop(var1, (Sniffer)var2, var3);
       }
 
       // $FF: synthetic method
-      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.start(var1, (Sniffer)var2, var3);
       }
    }
@@ -214,12 +214,12 @@ public class SnifferAi {
       }
 
       // $FF: synthetic method
-      protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.stop(var1, (Sniffer)var2, var3);
       }
 
       // $FF: synthetic method
-      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.start(var1, (Sniffer)var2, var3);
       }
    }
@@ -249,12 +249,12 @@ public class SnifferAi {
       }
 
       // $FF: synthetic method
-      protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.stop(var1, (Sniffer)var2, var3);
       }
 
       // $FF: synthetic method
-      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.start(var1, (Sniffer)var2, var3);
       }
    }
@@ -278,12 +278,12 @@ public class SnifferAi {
       }
 
       // $FF: synthetic method
-      protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.stop(var1, (Sniffer)var2, var3);
       }
 
       // $FF: synthetic method
-      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.start(var1, (Sniffer)var2, var3);
       }
    }
@@ -310,12 +310,12 @@ public class SnifferAi {
       }
 
       // $FF: synthetic method
-      protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.stop(var1, (Sniffer)var2, var3);
       }
 
       // $FF: synthetic method
-      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.start(var1, (Sniffer)var2, var3);
       }
    }
@@ -350,12 +350,12 @@ public class SnifferAi {
       }
 
       // $FF: synthetic method
-      protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.stop(var1, (Sniffer)var2, var3);
       }
 
       // $FF: synthetic method
-      protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
          this.start(var1, (Sniffer)var2, var3);
       }
    }

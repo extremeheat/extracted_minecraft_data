@@ -160,7 +160,7 @@ public class BuiltInRegistries {
    public static final Registry<Schedule> SCHEDULE;
    public static final Registry<Activity> ACTIVITY;
    public static final Registry<LootPoolEntryType> LOOT_POOL_ENTRY_TYPE;
-   public static final Registry<LootItemFunctionType> LOOT_FUNCTION_TYPE;
+   public static final Registry<LootItemFunctionType<?>> LOOT_FUNCTION_TYPE;
    public static final Registry<LootItemConditionType> LOOT_CONDITION_TYPE;
    public static final Registry<LootNumberProviderType> LOOT_NUMBER_PROVIDER_TYPE;
    public static final Registry<LootNbtProviderType> LOOT_NBT_PROVIDER_TYPE;

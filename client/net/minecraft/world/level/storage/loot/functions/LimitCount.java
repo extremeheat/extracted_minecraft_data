@@ -23,7 +23,7 @@ public class LimitCount extends LootItemConditionalFunction {
       this.limiter = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<LimitCount> getType() {
       return LootItemFunctions.LIMIT_COUNT;
    }
 

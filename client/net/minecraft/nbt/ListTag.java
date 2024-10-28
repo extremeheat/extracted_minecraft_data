@@ -125,7 +125,7 @@ public class ListTag extends CollectionTag<Tag> {
       }
 
       // $FF: synthetic method
-      public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
          return this.load(var1, var2);
       }
    };
@@ -421,22 +421,22 @@ public class ListTag extends CollectionTag<Tag> {
    }
 
    // $FF: synthetic method
-   public Object remove(int var1) {
+   public Object remove(final int var1) {
       return this.remove(var1);
    }
 
    // $FF: synthetic method
-   public void add(int var1, Object var2) {
+   public void add(final int var1, final Object var2) {
       this.add(var1, (Tag)var2);
    }
 
    // $FF: synthetic method
-   public Object set(int var1, Object var2) {
+   public Object set(final int var1, final Object var2) {
       return this.set(var1, (Tag)var2);
    }
 
    // $FF: synthetic method
-   public Object get(int var1) {
+   public Object get(final int var1) {
       return this.get(var1);
    }
 }

@@ -22,12 +22,12 @@ public class SetComponentsFunction extends LootItemConditionalFunction {
       this.components = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetComponentsFunction> getType() {
       return LootItemFunctions.SET_COMPONENTS;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      var1.applyComponents(this.components);
+      var1.applyComponentsAndValidate(this.components);
       return var1;
    }
 

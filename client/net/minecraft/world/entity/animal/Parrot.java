@@ -365,7 +365,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable Object var1) {
+         public boolean test(@Nullable final Object var1) {
             return this.test((Mob)var1);
          }
       };
@@ -421,7 +421,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
+      private Variant(final int var3, final String var4) {
          this.id = var3;
          this.name = var4;
       }

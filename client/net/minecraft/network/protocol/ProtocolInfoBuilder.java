@@ -94,10 +94,10 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    }
 
    private static record CodecEntry<T extends PacketListener, P extends Packet<? super T>, B extends ByteBuf>(PacketType<P> type, StreamCodec<? super B, P> serializer) {
-      CodecEntry(PacketType<P> var1, StreamCodec<? super B, P> var2) {
+      CodecEntry(PacketType<P> type, StreamCodec<? super B, P> serializer) {
          super();
-         this.type = var1;
-         this.serializer = var2;
+         this.type = type;
+         this.serializer = serializer;
       }
 
       public void addToBuilder(ProtocolCodecBuilder<ByteBuf, T> var1, Function<ByteBuf, B> var2) {
@@ -115,12 +115,12 @@ public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf> {
    }
 
    static record Implementation<L extends PacketListener>(ConnectionProtocol id, PacketFlow flow, StreamCodec<ByteBuf, Packet<? super L>> codec, @Nullable BundlerInfo bundlerInfo) implements ProtocolInfo<L> {
-      Implementation(ConnectionProtocol var1, PacketFlow var2, StreamCodec<ByteBuf, Packet<? super L>> var3, @Nullable BundlerInfo var4) {
+      Implementation(ConnectionProtocol id, PacketFlow flow, StreamCodec<ByteBuf, Packet<? super L>> codec, @Nullable BundlerInfo bundlerInfo) {
          super();
-         this.id = var1;
-         this.flow = var2;
-         this.codec = var3;
-         this.bundlerInfo = var4;
+         this.id = id;
+         this.flow = flow;
+         this.codec = codec;
+         this.bundlerInfo = bundlerInfo;
       }
 
       @Nullable

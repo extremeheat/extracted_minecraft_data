@@ -283,7 +283,7 @@ public class SectionPos extends Vec3i {
    }
 
    // $FF: synthetic method
-   public Vec3i offset(int var1, int var2, int var3) {
+   public Vec3i offset(final int var1, final int var2, final int var3) {
       return this.offset(var1, var2, var3);
    }
 }

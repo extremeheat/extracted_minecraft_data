@@ -304,7 +304,7 @@ public class GameRules {
 
       private final String descriptionId;
 
-      private Category(String var3) {
+      private Category(final String var3) {
          this.descriptionId = var3;
       }
 

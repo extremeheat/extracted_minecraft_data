@@ -575,10 +575,10 @@ public class ModelBakery {
       final String source;
       final JsonElement data;
 
-      public LoadedJson(String var1, JsonElement var2) {
+      public LoadedJson(String source, JsonElement data) {
          super();
-         this.source = var1;
-         this.data = var2;
+         this.source = source;
+         this.data = data;
       }
 
       public String source() {
@@ -593,7 +593,7 @@ public class ModelBakery {
    private class ModelBakerImpl implements ModelBaker {
       private final Function<Material, TextureAtlasSprite> modelTextureGetter;
 
-      ModelBakerImpl(BiFunction<ResourceLocation, Material, TextureAtlasSprite> var2, ResourceLocation var3) {
+      ModelBakerImpl(final BiFunction<ResourceLocation, Material, TextureAtlasSprite> var2, final ResourceLocation var3) {
          super();
          this.modelTextureGetter = (var2x) -> {
             return (TextureAtlasSprite)var2.apply(var3, var2x);
@@ -626,11 +626,11 @@ public class ModelBakery {
    }
 
    private static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
-      BakedCacheKey(ResourceLocation var1, Transformation var2, boolean var3) {
+      BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
          super();
-         this.id = var1;
-         this.transformation = var2;
-         this.isUvLocked = var3;
+         this.id = id;
+         this.transformation = transformation;
+         this.isUvLocked = isUvLocked;
       }
 
       public ResourceLocation id() {

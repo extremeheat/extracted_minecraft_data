@@ -5,11 +5,11 @@ import net.minecraft.world.phys.Vec3;
 public record ListenerTransform(Vec3 position, Vec3 forward, Vec3 up) {
    public static final ListenerTransform INITIAL;
 
-   public ListenerTransform(Vec3 var1, Vec3 var2, Vec3 var3) {
+   public ListenerTransform(Vec3 position, Vec3 forward, Vec3 up) {
       super();
-      this.position = var1;
-      this.forward = var2;
-      this.up = var3;
+      this.position = position;
+      this.forward = forward;
+      this.up = up;
    }
 
    public Vec3 right() {

@@ -607,6 +607,13 @@ public class GameTestHelper {
       }
    }
 
+   public void assertEntityNotPresent(EntityType<?> var1, Vec3 var2, Vec3 var3) {
+      List var4 = this.getLevel().getEntities(var1, new AABB(var2, var3), Entity::isAlive);
+      if (!var4.isEmpty()) {
+         throw new GameTestAssertPosException("Did not expect " + var1.toShortString() + " between ", BlockPos.containing(var2), BlockPos.containing(var3), this.testInfo.getTick());
+      }
+   }
+
    public void assertEntityTouching(EntityType<?> var1, double var2, double var4, double var6) {
       Vec3 var8 = new Vec3(var2, var4, var6);
       Vec3 var9 = this.absoluteVec(var8);

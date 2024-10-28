@@ -1,10 +1,10 @@
 package net.minecraft.commands.execution;
 
 public record CommandQueueEntry<T>(Frame frame, EntryAction<T> action) {
-   public CommandQueueEntry(Frame var1, EntryAction<T> var2) {
+   public CommandQueueEntry(Frame frame, EntryAction<T> action) {
       super();
-      this.frame = var1;
-      this.action = var2;
+      this.frame = frame;
+      this.action = action;
    }
 
    public void execute(ExecutionContext<T> var1) {

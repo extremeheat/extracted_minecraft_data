@@ -14,9 +14,9 @@ public record FixedScoreboardNameProvider(String name) implements ScoreboardName
       return var0.group(Codec.STRING.fieldOf("name").forGetter(FixedScoreboardNameProvider::name)).apply(var0, FixedScoreboardNameProvider::new);
    });
 
-   public FixedScoreboardNameProvider(String var1) {
+   public FixedScoreboardNameProvider(String name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    public static ScoreboardNameProvider forName(String var0) {

@@ -50,7 +50,7 @@ public class FloatArgumentInfo implements ArgumentTypeInfo<FloatArgumentType, Te
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
       return this.deserializeFromNetwork(var1);
    }
 
@@ -58,7 +58,7 @@ public class FloatArgumentInfo implements ArgumentTypeInfo<FloatArgumentType, Te
       final float min;
       final float max;
 
-      Template(float var2, float var3) {
+      Template(final float var2, final float var3) {
          super();
          this.min = var2;
          this.max = var3;
@@ -73,7 +73,7 @@ public class FloatArgumentInfo implements ArgumentTypeInfo<FloatArgumentType, Te
       }
 
       // $FF: synthetic method
-      public ArgumentType instantiate(CommandBuildContext var1) {
+      public ArgumentType instantiate(final CommandBuildContext var1) {
          return this.instantiate(var1);
       }
    }

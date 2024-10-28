@@ -18,10 +18,10 @@ public record BannerPattern(ResourceLocation assetId, String translationKey) {
    public static final Codec<Holder<BannerPattern>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<BannerPattern>> STREAM_CODEC;
 
-   public BannerPattern(ResourceLocation var1, String var2) {
+   public BannerPattern(ResourceLocation assetId, String translationKey) {
       super();
-      this.assetId = var1;
-      this.translationKey = var2;
+      this.assetId = assetId;
+      this.translationKey = translationKey;
    }
 
    public ResourceLocation assetId() {

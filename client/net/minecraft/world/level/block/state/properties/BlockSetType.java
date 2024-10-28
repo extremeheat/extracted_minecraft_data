@@ -34,22 +34,22 @@ public record BlockSetType(String name, boolean canOpenByHand, boolean canOpenBy
       this(var1, true, true, true, BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.WOOD, SoundEvents.WOODEN_DOOR_CLOSE, SoundEvents.WOODEN_DOOR_OPEN, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundEvents.WOODEN_TRAPDOOR_OPEN, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_OFF, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_ON, SoundEvents.WOODEN_BUTTON_CLICK_OFF, SoundEvents.WOODEN_BUTTON_CLICK_ON);
    }
 
-   public BlockSetType(String var1, boolean var2, boolean var3, boolean var4, PressurePlateSensitivity var5, SoundType var6, SoundEvent var7, SoundEvent var8, SoundEvent var9, SoundEvent var10, SoundEvent var11, SoundEvent var12, SoundEvent var13, SoundEvent var14) {
+   public BlockSetType(String name, boolean canOpenByHand, boolean canOpenByWindCharge, boolean canButtonBeActivatedByArrows, PressurePlateSensitivity pressurePlateSensitivity, SoundType soundType, SoundEvent doorClose, SoundEvent doorOpen, SoundEvent trapdoorClose, SoundEvent trapdoorOpen, SoundEvent pressurePlateClickOff, SoundEvent pressurePlateClickOn, SoundEvent buttonClickOff, SoundEvent buttonClickOn) {
       super();
-      this.name = var1;
-      this.canOpenByHand = var2;
-      this.canOpenByWindCharge = var3;
-      this.canButtonBeActivatedByArrows = var4;
-      this.pressurePlateSensitivity = var5;
-      this.soundType = var6;
-      this.doorClose = var7;
-      this.doorOpen = var8;
-      this.trapdoorClose = var9;
-      this.trapdoorOpen = var10;
-      this.pressurePlateClickOff = var11;
-      this.pressurePlateClickOn = var12;
-      this.buttonClickOff = var13;
-      this.buttonClickOn = var14;
+      this.name = name;
+      this.canOpenByHand = canOpenByHand;
+      this.canOpenByWindCharge = canOpenByWindCharge;
+      this.canButtonBeActivatedByArrows = canButtonBeActivatedByArrows;
+      this.pressurePlateSensitivity = pressurePlateSensitivity;
+      this.soundType = soundType;
+      this.doorClose = doorClose;
+      this.doorOpen = doorOpen;
+      this.trapdoorClose = trapdoorClose;
+      this.trapdoorOpen = trapdoorOpen;
+      this.pressurePlateClickOff = pressurePlateClickOff;
+      this.pressurePlateClickOn = pressurePlateClickOn;
+      this.buttonClickOff = buttonClickOff;
+      this.buttonClickOn = buttonClickOn;
    }
 
    private static BlockSetType register(BlockSetType var0) {

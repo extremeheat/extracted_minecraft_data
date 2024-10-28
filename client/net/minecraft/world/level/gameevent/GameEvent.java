@@ -72,9 +72,9 @@ public record GameEvent(int notificationRadius) {
    public static final Holder.Reference<GameEvent> RESONATE_15 = register("resonate_15");
    public static final int DEFAULT_NOTIFICATION_RADIUS = 16;
 
-   public GameEvent(int var1) {
+   public GameEvent(int notificationRadius) {
       super();
-      this.notificationRadius = var1;
+      this.notificationRadius = notificationRadius;
    }
 
    public static Holder<GameEvent> bootstrap(Registry<GameEvent> var0) {
@@ -130,16 +130,16 @@ public record GameEvent(int notificationRadius) {
       }
 
       // $FF: synthetic method
-      public int compareTo(Object var1) {
+      public int compareTo(final Object var1) {
          return this.compareTo((ListenerInfo)var1);
       }
    }
 
    public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
-      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
+      public Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
          super();
-         this.sourceEntity = var1;
-         this.affectedState = var2;
+         this.sourceEntity = sourceEntity;
+         this.affectedState = affectedState;
       }
 
       public static Context of(@Nullable Entity var0) {

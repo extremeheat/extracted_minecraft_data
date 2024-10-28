@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) implements TooltipProvider {
@@ -21,24 +22,28 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
    });
    public static final StreamCodec<ByteBuf, Fireworks> STREAM_CODEC;
 
-   public Fireworks(int var1, List<FireworkExplosion> var2) {
+   public Fireworks(int flightDuration, List<FireworkExplosion> explosions) {
       super();
-      this.flightDuration = var1;
-      this.explosions = var2;
+      if (explosions.size() > 256) {
+         throw new IllegalArgumentException("Got " + explosions.size() + " explosions, but maximum is 256");
+      } else {
+         this.flightDuration = flightDuration;
+         this.explosions = explosions;
+      }
    }
 
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       if (this.flightDuration > 0) {
-         var1.accept(Component.translatable("item.minecraft.firework_rocket.flight").append(CommonComponents.SPACE).append(String.valueOf(this.flightDuration)).withStyle(ChatFormatting.GRAY));
+         var2.accept(Component.translatable("item.minecraft.firework_rocket.flight").append(CommonComponents.SPACE).append(String.valueOf(this.flightDuration)).withStyle(ChatFormatting.GRAY));
       }
 
-      Iterator var3 = this.explosions.iterator();
+      Iterator var4 = this.explosions.iterator();
 
-      while(var3.hasNext()) {
-         FireworkExplosion var4 = (FireworkExplosion)var3.next();
-         var4.addShapeNameTooltip(var1);
-         var4.addAdditionalTooltip((var1x) -> {
-            var1.accept(Component.literal("  ").append(var1x));
+      while(var4.hasNext()) {
+         FireworkExplosion var5 = (FireworkExplosion)var4.next();
+         var5.addShapeNameTooltip(var2);
+         var5.addAdditionalTooltip((var1x) -> {
+            var2.accept(Component.literal("  ").append(var1x));
          });
       }
 

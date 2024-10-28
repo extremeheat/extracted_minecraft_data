@@ -15,10 +15,10 @@ public record GameEventDebugPayload(ResourceKey<GameEvent> gameEventType, Vec3 p
       this(var1.readResourceKey(Registries.GAME_EVENT), var1.readVec3());
    }
 
-   public GameEventDebugPayload(ResourceKey<GameEvent> var1, Vec3 var2) {
+   public GameEventDebugPayload(ResourceKey<GameEvent> gameEventType, Vec3 pos) {
       super();
-      this.gameEventType = var1;
-      this.pos = var2;
+      this.gameEventType = gameEventType;
+      this.pos = pos;
    }
 
    private void write(FriendlyByteBuf var1) {

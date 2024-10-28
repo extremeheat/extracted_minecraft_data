@@ -22,7 +22,7 @@ public class BlockPredicate implements Predicate<BlockState> {
    }
 
    // $FF: synthetic method
-   public boolean test(@Nullable Object var1) {
+   public boolean test(@Nullable final Object var1) {
       return this.test((BlockState)var1);
    }
 }

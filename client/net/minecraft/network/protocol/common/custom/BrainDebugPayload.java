@@ -19,9 +19,9 @@ public record BrainDebugPayload(BrainDump brainDump) implements CustomPacketPayl
       this(new BrainDump(var1));
    }
 
-   public BrainDebugPayload(BrainDump var1) {
+   public BrainDebugPayload(BrainDump brainDump) {
       super();
-      this.brainDump = var1;
+      this.brainDump = brainDump;
    }
 
    private void write(FriendlyByteBuf var1) {
@@ -41,26 +41,26 @@ public record BrainDebugPayload(BrainDump brainDump) implements CustomPacketPayl
          this(var1.readUUID(), var1.readInt(), var1.readUtf(), var1.readUtf(), var1.readInt(), var1.readFloat(), var1.readFloat(), var1.readVec3(), var1.readUtf(), (Path)var1.readNullable(Path::createFromStream), var1.readBoolean(), var1.readInt(), var1.readList(FriendlyByteBuf::readUtf), var1.readList(FriendlyByteBuf::readUtf), var1.readList(FriendlyByteBuf::readUtf), var1.readList(FriendlyByteBuf::readUtf), (Set)var1.readCollection(HashSet::new, BlockPos.STREAM_CODEC), (Set)var1.readCollection(HashSet::new, BlockPos.STREAM_CODEC));
       }
 
-      public BrainDump(UUID var1, int var2, String var3, String var4, int var5, float var6, float var7, Vec3 var8, String var9, @Nullable Path var10, boolean var11, int var12, List<String> var13, List<String> var14, List<String> var15, List<String> var16, Set<BlockPos> var17, Set<BlockPos> var18) {
+      public BrainDump(UUID uuid, int id, String name, String profession, int xp, float health, float maxHealth, Vec3 pos, String inventory, @Nullable Path path, boolean wantsGolem, int angerLevel, List<String> activities, List<String> behaviors, List<String> memories, List<String> gossips, Set<BlockPos> pois, Set<BlockPos> potentialPois) {
          super();
-         this.uuid = var1;
-         this.id = var2;
-         this.name = var3;
-         this.profession = var4;
-         this.xp = var5;
-         this.health = var6;
-         this.maxHealth = var7;
-         this.pos = var8;
-         this.inventory = var9;
-         this.path = var10;
-         this.wantsGolem = var11;
-         this.angerLevel = var12;
-         this.activities = var13;
-         this.behaviors = var14;
-         this.memories = var15;
-         this.gossips = var16;
-         this.pois = var17;
-         this.potentialPois = var18;
+         this.uuid = uuid;
+         this.id = id;
+         this.name = name;
+         this.profession = profession;
+         this.xp = xp;
+         this.health = health;
+         this.maxHealth = maxHealth;
+         this.pos = pos;
+         this.inventory = inventory;
+         this.path = path;
+         this.wantsGolem = wantsGolem;
+         this.angerLevel = angerLevel;
+         this.activities = activities;
+         this.behaviors = behaviors;
+         this.memories = memories;
+         this.gossips = gossips;
+         this.pois = pois;
+         this.potentialPois = potentialPois;
       }
 
       public void write(FriendlyByteBuf var1) {

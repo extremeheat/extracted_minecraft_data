@@ -15,9 +15,9 @@ import net.minecraft.world.item.alchemy.PotionContents;
 public record ItemPotionsPredicate(HolderSet<Potion> potions) implements SingleComponentItemPredicate<PotionContents> {
    public static final Codec<ItemPotionsPredicate> CODEC;
 
-   public ItemPotionsPredicate(HolderSet<Potion> var1) {
+   public ItemPotionsPredicate(HolderSet<Potion> potions) {
       super();
-      this.potions = var1;
+      this.potions = potions;
    }
 
    public DataComponentType<PotionContents> componentType() {

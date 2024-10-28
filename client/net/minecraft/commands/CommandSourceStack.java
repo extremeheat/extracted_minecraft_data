@@ -373,7 +373,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    // $FF: synthetic method
-   public ExecutionCommandSource withCallback(CommandResultCallback var1) {
+   public ExecutionCommandSource withCallback(final CommandResultCallback var1) {
       return this.withCallback(var1);
    }
 }

@@ -25,9 +25,9 @@ public final class UUIDUtil {
    public static final Codec<Set<UUID>> CODEC_SET;
    public static final Codec<Set<UUID>> CODEC_LINKED_SET;
    public static final Codec<UUID> STRING_CODEC;
-   public static Codec<UUID> AUTHLIB_CODEC;
-   public static Codec<UUID> LENIENT_CODEC;
-   public static StreamCodec<ByteBuf, UUID> STREAM_CODEC;
+   public static final Codec<UUID> AUTHLIB_CODEC;
+   public static final Codec<UUID> LENIENT_CODEC;
+   public static final StreamCodec<ByteBuf, UUID> STREAM_CODEC;
    public static final int UUID_BYTES = 16;
    private static final String UUID_PREFIX_OFFLINE_PLAYER = "OfflinePlayer:";
 
@@ -110,12 +110,12 @@ public final class UUIDUtil {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (UUID)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };

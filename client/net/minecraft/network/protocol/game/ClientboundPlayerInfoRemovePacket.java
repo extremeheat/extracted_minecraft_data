@@ -15,9 +15,9 @@ public record ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) implement
       this(var1.readList(UUIDUtil.STREAM_CODEC));
    }
 
-   public ClientboundPlayerInfoRemovePacket(List<UUID> var1) {
+   public ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) {
       super();
-      this.profileIds = var1;
+      this.profileIds = profileIds;
    }
 
    private void write(FriendlyByteBuf var1) {

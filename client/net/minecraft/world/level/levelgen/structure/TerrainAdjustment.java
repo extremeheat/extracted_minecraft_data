@@ -7,12 +7,13 @@ public enum TerrainAdjustment implements StringRepresentable {
    NONE("none"),
    BURY("bury"),
    BEARD_THIN("beard_thin"),
-   BEARD_BOX("beard_box");
+   BEARD_BOX("beard_box"),
+   ENCAPSULATE("encapsulate");
 
    public static final Codec<TerrainAdjustment> CODEC = StringRepresentable.fromEnum(TerrainAdjustment::values);
    private final String id;
 
-   private TerrainAdjustment(String var3) {
+   private TerrainAdjustment(final String var3) {
       this.id = var3;
    }
 
@@ -22,6 +23,6 @@ public enum TerrainAdjustment implements StringRepresentable {
 
    // $FF: synthetic method
    private static TerrainAdjustment[] $values() {
-      return new TerrainAdjustment[]{NONE, BURY, BEARD_THIN, BEARD_BOX};
+      return new TerrainAdjustment[]{NONE, BURY, BEARD_THIN, BEARD_BOX, ENCAPSULATE};
    }
 }

@@ -250,12 +250,12 @@ public interface Component extends Message, FormattedText {
       }
 
       // $FF: synthetic method
-      public JsonElement serialize(Object var1, Type var2, JsonSerializationContext var3) {
+      public JsonElement serialize(final Object var1, final Type var2, final JsonSerializationContext var3) {
          return this.serialize((Component)var1, var2, var3);
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
          return this.deserialize(var1, var2, var3);
       }
    }

@@ -22,12 +22,12 @@ public record ShapedRecipePattern(int width, int height, NonNullList<Ingredient>
    public static final MapCodec<ShapedRecipePattern> MAP_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipePattern> STREAM_CODEC;
 
-   public ShapedRecipePattern(int var1, int var2, NonNullList<Ingredient> var3, Optional<Data> var4) {
+   public ShapedRecipePattern(int width, int height, NonNullList<Ingredient> ingredients, Optional<Data> data) {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.ingredients = var3;
-      this.data = var4;
+      this.width = width;
+      this.height = height;
+      this.ingredients = ingredients;
+      this.data = data;
    }
 
    public static ShapedRecipePattern of(Map<Character, Ingredient> var0, String... var1) {
@@ -219,10 +219,10 @@ public record ShapedRecipePattern(int width, int height, NonNullList<Ingredient>
       private static final Codec<Character> SYMBOL_CODEC;
       public static final MapCodec<Data> MAP_CODEC;
 
-      public Data(Map<Character, Ingredient> var1, List<String> var2) {
+      public Data(Map<Character, Ingredient> key, List<String> pattern) {
          super();
-         this.key = var1;
-         this.pattern = var2;
+         this.key = key;
+         this.pattern = pattern;
       }
 
       public Map<Character, Ingredient> key() {

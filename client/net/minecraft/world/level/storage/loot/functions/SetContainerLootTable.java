@@ -38,7 +38,7 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
       this.type = var5;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetContainerLootTable> getType() {
       return LootItemFunctions.SET_LOOT_TABLE;
    }
 

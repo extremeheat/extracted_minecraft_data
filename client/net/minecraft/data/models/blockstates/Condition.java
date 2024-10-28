@@ -138,7 +138,7 @@ public interface Condition extends Supplier<JsonElement> {
 
       final String id;
 
-      private Operation(String var3) {
+      private Operation(final String var3) {
          this.id = var3;
       }
 

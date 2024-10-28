@@ -6,9 +6,9 @@ import net.minecraft.world.item.ItemStack;
 public record ItemCustomDataPredicate(NbtPredicate value) implements ItemSubPredicate {
    public static final Codec<ItemCustomDataPredicate> CODEC;
 
-   public ItemCustomDataPredicate(NbtPredicate var1) {
+   public ItemCustomDataPredicate(NbtPredicate value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    public boolean matches(ItemStack var1) {

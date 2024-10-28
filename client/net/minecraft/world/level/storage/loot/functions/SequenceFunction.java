@@ -42,12 +42,12 @@ public class SequenceFunction implements LootItemFunction {
 
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SequenceFunction> getType() {
       return LootItemFunctions.SEQUENCE;
    }
 
    // $FF: synthetic method
-   public Object apply(Object var1, Object var2) {
+   public Object apply(final Object var1, final Object var2) {
       return this.apply((ItemStack)var1, (LootContext)var2);
    }
 

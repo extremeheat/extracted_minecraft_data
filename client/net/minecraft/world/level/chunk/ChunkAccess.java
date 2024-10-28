@@ -467,10 +467,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    }
 
    public static record TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
-      public TicksToSave(SerializableTickContainer<Block> var1, SerializableTickContainer<Fluid> var2) {
+      public TicksToSave(SerializableTickContainer<Block> blocks, SerializableTickContainer<Fluid> fluids) {
          super();
-         this.blocks = var1;
-         this.fluids = var2;
+         this.blocks = blocks;
+         this.fluids = fluids;
       }
 
       public SerializableTickContainer<Block> blocks() {

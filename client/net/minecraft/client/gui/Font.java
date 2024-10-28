@@ -238,7 +238,7 @@ public class Font {
          this.effects.add(var1);
       }
 
-      public StringRenderOutput(MultiBufferSource var2, float var3, float var4, int var5, boolean var6, Matrix4f var7, DisplayMode var8, int var9) {
+      public StringRenderOutput(final MultiBufferSource var2, final float var3, final float var4, final int var5, final boolean var6, final Matrix4f var7, final DisplayMode var8, final int var9) {
          super();
          this.bufferSource = var2;
          this.x = var3;

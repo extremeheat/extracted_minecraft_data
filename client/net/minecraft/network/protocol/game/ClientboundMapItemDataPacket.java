@@ -21,13 +21,13 @@ public record ClientboundMapItemDataPacket(MapId mapId, byte scale, boolean lock
       this(var1, var2, var3, var4 != null ? Optional.of(List.copyOf(var4)) : Optional.empty(), Optional.ofNullable(var5));
    }
 
-   public ClientboundMapItemDataPacket(MapId var1, byte var2, boolean var3, Optional<List<MapDecoration>> var4, Optional<MapItemSavedData.MapPatch> var5) {
+   public ClientboundMapItemDataPacket(MapId mapId, byte scale, boolean locked, Optional<List<MapDecoration>> decorations, Optional<MapItemSavedData.MapPatch> colorPatch) {
       super();
-      this.mapId = var1;
-      this.scale = var2;
-      this.locked = var3;
-      this.decorations = var4;
-      this.colorPatch = var5;
+      this.mapId = mapId;
+      this.scale = scale;
+      this.locked = locked;
+      this.decorations = decorations;
+      this.colorPatch = colorPatch;
    }
 
    public PacketType<ClientboundMapItemDataPacket> type() {

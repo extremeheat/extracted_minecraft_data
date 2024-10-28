@@ -50,7 +50,7 @@ public class LongArgumentInfo implements ArgumentTypeInfo<LongArgumentType, Temp
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
       return this.deserializeFromNetwork(var1);
    }
 
@@ -58,7 +58,7 @@ public class LongArgumentInfo implements ArgumentTypeInfo<LongArgumentType, Temp
       final long min;
       final long max;
 
-      Template(long var2, long var4) {
+      Template(final long var2, final long var4) {
          super();
          this.min = var2;
          this.max = var4;
@@ -73,7 +73,7 @@ public class LongArgumentInfo implements ArgumentTypeInfo<LongArgumentType, Temp
       }
 
       // $FF: synthetic method
-      public ArgumentType instantiate(CommandBuildContext var1) {
+      public ArgumentType instantiate(final CommandBuildContext var1) {
          return this.instantiate(var1);
       }
    }

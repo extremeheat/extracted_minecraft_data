@@ -17,9 +17,9 @@ import net.minecraft.world.entity.LivingEntity;
 public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> effectMap) {
    public static final Codec<MobEffectsPredicate> CODEC;
 
-   public MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> var1) {
+   public MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> effectMap) {
       super();
-      this.effectMap = var1;
+      this.effectMap = effectMap;
    }
 
    public boolean matches(Entity var1) {
@@ -73,12 +73,12 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
          this(MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, Optional.empty(), Optional.empty());
       }
 
-      public MobEffectInstancePredicate(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, Optional<Boolean> var3, Optional<Boolean> var4) {
+      public MobEffectInstancePredicate(MinMaxBounds.Ints amplifier, MinMaxBounds.Ints duration, Optional<Boolean> ambient, Optional<Boolean> visible) {
          super();
-         this.amplifier = var1;
-         this.duration = var2;
-         this.ambient = var3;
-         this.visible = var4;
+         this.amplifier = amplifier;
+         this.duration = duration;
+         this.ambient = ambient;
+         this.visible = visible;
       }
 
       public boolean matches(@Nullable MobEffectInstance var1) {

@@ -18,10 +18,10 @@ public interface GlyphProvider extends AutoCloseable {
    IntSet getSupportedGlyphs();
 
    public static record Conditional(GlyphProvider provider, FontOption.Filter filter) implements AutoCloseable {
-      public Conditional(GlyphProvider var1, FontOption.Filter var2) {
+      public Conditional(GlyphProvider provider, FontOption.Filter filter) {
          super();
-         this.provider = var1;
-         this.filter = var2;
+         this.provider = provider;
+         this.filter = filter;
       }
 
       public void close() {

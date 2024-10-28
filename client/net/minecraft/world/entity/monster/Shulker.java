@@ -544,7 +544,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    class ShulkerLookControl extends LookControl {
-      public ShulkerLookControl(Mob var2) {
+      public ShulkerLookControl(final Mob var2) {
          super(var2);
       }
 
@@ -657,7 +657,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    class ShulkerNearestAttackGoal extends NearestAttackableTargetGoal<Player> {
-      public ShulkerNearestAttackGoal(Shulker var2) {
+      public ShulkerNearestAttackGoal(final Shulker var2) {
          super(var2, Player.class, true);
       }
 

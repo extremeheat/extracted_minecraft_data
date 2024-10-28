@@ -106,7 +106,7 @@ public class ObjectiveCriteria {
       private final String id;
       public static final StringRepresentable.EnumCodec<RenderType> CODEC = StringRepresentable.fromEnum(RenderType::values);
 
-      private RenderType(String var3) {
+      private RenderType(final String var3) {
          this.id = var3;
       }
 

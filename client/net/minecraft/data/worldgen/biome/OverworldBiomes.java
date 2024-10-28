@@ -1,5 +1,6 @@
 package net.minecraft.data.worldgen.biome;
 
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
@@ -474,42 +475,42 @@ public class OverworldBiomes {
       return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.7F).downfall(0.8F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(4159204).waterFogColor(329011).fogColor(12638463).skyColor(calculateSkyColor(0.7F)).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(var4).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
    }
 
-   public static Biome swamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var2);
-      BiomeDefaultFeatures.commonSpawns(var2);
-      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
-      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 50, 4, 4));
-      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
-      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
-      BiomeDefaultFeatures.addFossilDecoration(var3);
-      globalOverworldGeneration(var3);
-      BiomeDefaultFeatures.addDefaultOres(var3);
-      BiomeDefaultFeatures.addSwampClayDisk(var3);
-      BiomeDefaultFeatures.addSwampVegetation(var3);
-      BiomeDefaultFeatures.addDefaultMushrooms(var3);
-      BiomeDefaultFeatures.addSwampExtraVegetation(var3);
-      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
-      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
-      return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.8F).downfall(0.9F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).waterFogColor(2302743).fogColor(12638463).skyColor(calculateSkyColor(0.8F)).foliageColorOverride(6975545).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(var4).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
+   public static Biome swamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, Consumer<MobSpawnSettings.Builder> var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var3);
+      BiomeDefaultFeatures.commonSpawns(var3);
+      var3.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
+      var2.accept(var3);
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
+      BiomeDefaultFeatures.addFossilDecoration(var4);
+      globalOverworldGeneration(var4);
+      BiomeDefaultFeatures.addDefaultOres(var4);
+      BiomeDefaultFeatures.addSwampClayDisk(var4);
+      BiomeDefaultFeatures.addSwampVegetation(var4);
+      BiomeDefaultFeatures.addDefaultMushrooms(var4);
+      BiomeDefaultFeatures.addSwampExtraVegetation(var4);
+      var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
+      Music var5 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
+      return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.8F).downfall(0.9F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(6388580).waterFogColor(2302743).fogColor(12638463).skyColor(calculateSkyColor(0.8F)).foliageColorOverride(6975545).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(var5).build()).mobSpawnSettings(var3.build()).generationSettings(var4.build()).build();
    }
 
-   public static Biome mangroveSwamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.commonSpawns(var2);
-      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
-      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 50, 4, 4));
-      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
-      var2.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
-      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
-      BiomeDefaultFeatures.addFossilDecoration(var3);
-      globalOverworldGeneration(var3);
-      BiomeDefaultFeatures.addDefaultOres(var3);
-      BiomeDefaultFeatures.addMangroveSwampDisks(var3);
-      BiomeDefaultFeatures.addMangroveSwampVegetation(var3);
-      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
-      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
-      return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.8F).downfall(0.9F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).waterFogColor(5077600).fogColor(12638463).skyColor(calculateSkyColor(0.8F)).foliageColorOverride(9285927).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(var4).build()).mobSpawnSettings(var2.build()).generationSettings(var3.build()).build();
+   public static Biome mangroveSwamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, Consumer<MobSpawnSettings.Builder> var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.commonSpawns(var3);
+      var3.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
+      var3.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
+      var2.accept(var3);
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
+      BiomeDefaultFeatures.addFossilDecoration(var4);
+      globalOverworldGeneration(var4);
+      BiomeDefaultFeatures.addDefaultOres(var4);
+      BiomeDefaultFeatures.addMangroveSwampDisks(var4);
+      BiomeDefaultFeatures.addMangroveSwampVegetation(var4);
+      var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
+      Music var5 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
+      return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.8F).downfall(0.9F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3832426).waterFogColor(5077600).fogColor(12638463).skyColor(calculateSkyColor(0.8F)).foliageColorOverride(9285927).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(var5).build()).mobSpawnSettings(var3.build()).generationSettings(var4.build()).build();
    }
 
    public static Biome river(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {

@@ -29,10 +29,10 @@ public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
    public static final ResourceKey<ChatType> TEAM_MSG_COMMAND_OUTGOING = create("team_msg_command_outgoing");
    public static final ResourceKey<ChatType> EMOTE_COMMAND = create("emote_command");
 
-   public ChatType(ChatTypeDecoration var1, ChatTypeDecoration var2) {
+   public ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
       super();
-      this.chat = var1;
-      this.narration = var2;
+      this.chat = chat;
+      this.narration = narration;
    }
 
    private static ResourceKey<ChatType> create(String var0) {
@@ -77,11 +77,11 @@ public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
          this(var1, var2, Optional.empty());
       }
 
-      public Bound(Holder<ChatType> var1, Component var2, Optional<Component> var3) {
+      public Bound(Holder<ChatType> chatType, Component name, Optional<Component> targetName) {
          super();
-         this.chatType = var1;
-         this.name = var2;
-         this.targetName = var3;
+         this.chatType = chatType;
+         this.name = name;
+         this.targetName = targetName;
       }
 
       public Component decorate(Component var1) {

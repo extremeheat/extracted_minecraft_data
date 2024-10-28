@@ -29,7 +29,7 @@ public class FunctionTagCallback implements TimerCallback<MinecraftServer> {
    }
 
    // $FF: synthetic method
-   public void handle(Object var1, TimerQueue var2, long var3) {
+   public void handle(final Object var1, final TimerQueue var2, final long var3) {
       this.handle((MinecraftServer)var1, var2, var3);
    }
 
@@ -48,7 +48,7 @@ public class FunctionTagCallback implements TimerCallback<MinecraftServer> {
       }
 
       // $FF: synthetic method
-      public TimerCallback deserialize(CompoundTag var1) {
+      public TimerCallback deserialize(final CompoundTag var1) {
          return this.deserialize(var1);
       }
    }

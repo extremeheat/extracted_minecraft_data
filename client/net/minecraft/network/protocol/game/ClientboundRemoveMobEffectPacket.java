@@ -15,10 +15,10 @@ import net.minecraft.world.level.Level;
 public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC;
 
-   public ClientboundRemoveMobEffectPacket(int var1, Holder<MobEffect> var2) {
+   public ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) {
       super();
-      this.entityId = var1;
-      this.effect = var2;
+      this.entityId = entityId;
+      this.effect = effect;
    }
 
    public PacketType<ClientboundRemoveMobEffectPacket> type() {

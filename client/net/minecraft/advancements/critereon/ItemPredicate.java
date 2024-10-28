@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.component.DataComponentHolder;
@@ -17,20 +18,20 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates) {
+public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates) implements Predicate<ItemStack> {
    public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
       return var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items), MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components), ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)).apply(var0, ItemPredicate::new);
    });
 
-   public ItemPredicate(Optional<HolderSet<Item>> var1, MinMaxBounds.Ints var2, DataComponentPredicate var3, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> var4) {
+   public ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates) {
       super();
-      this.items = var1;
-      this.count = var2;
-      this.components = var3;
-      this.subPredicates = var4;
+      this.items = items;
+      this.count = count;
+      this.components = components;
+      this.subPredicates = subPredicates;
    }
 
-   public boolean matches(ItemStack var1) {
+   public boolean test(ItemStack var1) {
       if (this.items.isPresent() && !var1.is((HolderSet)this.items.get())) {
          return false;
       } else if (!this.count.matches(var1.getCount())) {
@@ -67,6 +68,11 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
 
    public Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates() {
       return this.subPredicates;
+   }
+
+   // $FF: synthetic method
+   public boolean test(final Object var1) {
+      return this.test((ItemStack)var1);
    }
 
    public static class Builder {

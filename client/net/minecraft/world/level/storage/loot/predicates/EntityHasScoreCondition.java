@@ -23,10 +23,10 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
       return var0.group(Codec.unboundedMap(Codec.STRING, IntRange.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)).apply(var0, EntityHasScoreCondition::new);
    });
 
-   public EntityHasScoreCondition(Map<String, IntRange> var1, LootContext.EntityTarget var2) {
+   public EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.EntityTarget entityTarget) {
       super();
-      this.scores = var1;
-      this.entityTarget = var2;
+      this.scores = scores;
+      this.entityTarget = entityTarget;
    }
 
    public LootItemConditionType getType() {
@@ -83,7 +83,7 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 

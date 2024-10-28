@@ -539,22 +539,22 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
       }
 
       // $FF: synthetic method
-      public Object remove(int var1) {
+      public Object remove(final int var1) {
          return this.remove(var1);
       }
 
       // $FF: synthetic method
-      public void add(int var1, Object var2) {
+      public void add(final int var1, final Object var2) {
          this.add(var1, (Entry)var2);
       }
 
       // $FF: synthetic method
-      public Object set(int var1, Object var2) {
+      public Object set(final int var1, final Object var2) {
          return this.set(var1, (Entry)var2);
       }
 
       // $FF: synthetic method
-      public Object get(int var1) {
+      public Object get(final int var1) {
          return this.get(var1);
       }
    }

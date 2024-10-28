@@ -42,7 +42,7 @@ public class ExplosionCondition implements LootItemCondition {
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 

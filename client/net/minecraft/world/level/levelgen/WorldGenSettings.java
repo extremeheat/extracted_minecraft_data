@@ -12,10 +12,10 @@ public record WorldGenSettings(WorldOptions options, WorldDimensions dimensions)
       return var0.group(WorldOptions.CODEC.forGetter(WorldGenSettings::options), WorldDimensions.CODEC.forGetter(WorldGenSettings::dimensions)).apply(var0, var0.stable(WorldGenSettings::new));
    });
 
-   public WorldGenSettings(WorldOptions var1, WorldDimensions var2) {
+   public WorldGenSettings(WorldOptions options, WorldDimensions dimensions) {
       super();
-      this.options = var1;
-      this.dimensions = var2;
+      this.options = options;
+      this.dimensions = dimensions;
    }
 
    public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, WorldDimensions var2) {

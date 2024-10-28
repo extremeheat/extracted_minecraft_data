@@ -24,7 +24,6 @@ import net.minecraft.world.entity.player.Player;
 public record WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) implements BookContent<Component, WrittenBookContent> {
    public static final WrittenBookContent EMPTY = new WrittenBookContent(Filterable.passThrough(""), "", 0, List.of(), true);
    public static final int PAGE_LENGTH = 32767;
-   public static final int MAX_PAGES = 100;
    public static final int TITLE_LENGTH = 16;
    public static final int TITLE_MAX_LENGTH = 32;
    public static final int MAX_GENERATION = 3;
@@ -34,13 +33,17 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    public static final Codec<WrittenBookContent> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, WrittenBookContent> STREAM_CODEC;
 
-   public WrittenBookContent(Filterable<String> var1, String var2, int var3, List<Filterable<Component>> var4, boolean var5) {
+   public WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) {
       super();
-      this.title = var1;
-      this.author = var2;
-      this.generation = var3;
-      this.pages = var4;
-      this.resolved = var5;
+      if (generation >= 0 && generation <= 3) {
+         this.title = title;
+         this.author = author;
+         this.generation = generation;
+         this.pages = pages;
+         this.resolved = resolved;
+      } else {
+         throw new IllegalArgumentException("Generation was " + generation + ", but must be between 0 and 3");
+      }
    }
 
    private static Codec<Filterable<Component>> pageCodec(Codec<Component> var0) {
@@ -48,7 +51,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    }
 
    public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
-      return pageCodec(var0).sizeLimitedListOf(100);
+      return pageCodec(var0).listOf();
    }
 
    @Nullable
@@ -128,7 +131,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    }
 
    // $FF: synthetic method
-   public Object withReplacedPages(List var1) {
+   public Object withReplacedPages(final List var1) {
       return this.withReplacedPages(var1);
    }
 
@@ -137,6 +140,6 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
       CODEC = RecordCodecBuilder.create((var0) -> {
          return var0.group(Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title), Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation), PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages), Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)).apply(var0, WrittenBookContent::new);
       });
-      STREAM_CODEC = StreamCodec.composite(Filterable.streamCodec(ByteBufCodecs.stringUtf8(32)), WrittenBookContent::title, ByteBufCodecs.STRING_UTF8, WrittenBookContent::author, ByteBufCodecs.VAR_INT, WrittenBookContent::generation, Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list(100)), WrittenBookContent::pages, ByteBufCodecs.BOOL, WrittenBookContent::resolved, WrittenBookContent::new);
+      STREAM_CODEC = StreamCodec.composite(Filterable.streamCodec(ByteBufCodecs.stringUtf8(32)), WrittenBookContent::title, ByteBufCodecs.STRING_UTF8, WrittenBookContent::author, ByteBufCodecs.VAR_INT, WrittenBookContent::generation, Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list()), WrittenBookContent::pages, ByteBufCodecs.BOOL, WrittenBookContent::resolved, WrittenBookContent::new);
    }
 }

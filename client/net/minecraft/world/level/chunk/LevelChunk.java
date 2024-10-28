@@ -697,7 +697,7 @@ public class LevelChunk extends ChunkAccess {
    class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
       private TickingBlockEntity ticker;
 
-      RebindableTickingBlockEntityWrapper(LevelChunk var1, TickingBlockEntity var2) {
+      RebindableTickingBlockEntityWrapper(final LevelChunk var1, final TickingBlockEntity var2) {
          super();
          this.ticker = var2;
       }
@@ -732,7 +732,7 @@ public class LevelChunk extends ChunkAccess {
       private final BlockEntityTicker<T> ticker;
       private boolean loggedInvalidBlockState;
 
-      BoundTickingBlockEntity(T var2, BlockEntityTicker<T> var3) {
+      BoundTickingBlockEntity(final T var2, final BlockEntityTicker<T> var3) {
          super();
          this.blockEntity = var2;
          this.ticker = var3;

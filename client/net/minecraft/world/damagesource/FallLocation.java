@@ -18,9 +18,9 @@ public record FallLocation(String id) {
    public static final FallLocation OTHER_CLIMBABLE = new FallLocation("other_climbable");
    public static final FallLocation WATER = new FallLocation("water");
 
-   public FallLocation(String var1) {
+   public FallLocation(String id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public static FallLocation blockToFallLocation(BlockState var0) {

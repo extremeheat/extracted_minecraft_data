@@ -93,7 +93,7 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
    }
 
    // $FF: synthetic method
-   public DataResult encode(Object var1, DynamicOps var2, Object var3) {
+   public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
       return this.encode((Holder)var1, var2, var3);
    }
 }

@@ -16,10 +16,10 @@ record Random(ResourceKey<StructureTemplatePool> alias, SimpleWeightedRandomList
       return var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Random::alias), SimpleWeightedRandomList.wrappedCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(Random::targets)).apply(var0, Random::new);
    });
 
-   Random(ResourceKey<StructureTemplatePool> var1, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> var2) {
+   Random(ResourceKey<StructureTemplatePool> alias, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> targets) {
       super();
-      this.alias = var1;
-      this.targets = var2;
+      this.alias = alias;
+      this.targets = targets;
    }
 
    public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {

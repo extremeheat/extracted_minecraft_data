@@ -1,30 +1,18 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public class ServerboundContainerButtonClickPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundContainerButtonClickPacket> STREAM_CODEC = Packet.codec(ServerboundContainerButtonClickPacket::write, ServerboundContainerButtonClickPacket::new);
-   private final int containerId;
-   private final int buttonId;
+public record ServerboundContainerButtonClickPacket(int containerId, int buttonId) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundContainerButtonClickPacket> STREAM_CODEC;
 
-   public ServerboundContainerButtonClickPacket(int var1, int var2) {
+   public ServerboundContainerButtonClickPacket(int containerId, int buttonId) {
       super();
-      this.containerId = var1;
-      this.buttonId = var2;
-   }
-
-   private ServerboundContainerButtonClickPacket(FriendlyByteBuf var1) {
-      super();
-      this.containerId = var1.readByte();
-      this.buttonId = var1.readByte();
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
-      var1.writeByte(this.buttonId);
+      this.containerId = containerId;
+      this.buttonId = buttonId;
    }
 
    public PacketType<ServerboundContainerButtonClickPacket> type() {
@@ -35,11 +23,15 @@ public class ServerboundContainerButtonClickPacket implements Packet<ServerGameP
       var1.handleContainerButtonClick(this);
    }
 
-   public int getContainerId() {
+   public int containerId() {
       return this.containerId;
    }
 
-   public int getButtonId() {
+   public int buttonId() {
       return this.buttonId;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundContainerButtonClickPacket::containerId, ByteBufCodecs.VAR_INT, ServerboundContainerButtonClickPacket::buttonId, ServerboundContainerButtonClickPacket::new);
    }
 }

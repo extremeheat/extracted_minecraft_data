@@ -615,7 +615,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    // $FF: synthetic method
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -811,7 +811,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    private class BeeLookControl extends LookControl {
-      BeeLookControl(Mob var2) {
+      BeeLookControl(final Mob var2) {
          super(var2);
       }
 
@@ -827,7 +827,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    private class BeeAttackGoal extends MeleeAttackGoal {
-      BeeAttackGoal(PathfinderMob var2, double var3, boolean var5) {
+      BeeAttackGoal(final PathfinderMob var2, final double var3, final boolean var5) {
          super(var2, var3, var5);
       }
 
@@ -1189,7 +1189,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    class BeeHurtByOtherGoal extends HurtByTargetGoal {
-      BeeHurtByOtherGoal(Bee var2) {
+      BeeHurtByOtherGoal(final Bee var2) {
          super(var2);
       }
 

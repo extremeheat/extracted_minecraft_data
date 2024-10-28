@@ -18,6 +18,7 @@ import net.minecraft.advancements.critereon.BredAnimalsTrigger;
 import net.minecraft.advancements.critereon.ConsumeItemTrigger;
 import net.minecraft.advancements.critereon.EffectsChangedTrigger;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
+import net.minecraft.advancements.critereon.EntityEquipmentPredicate;
 import net.minecraft.advancements.critereon.EntityFlagsPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.EntitySubPredicates;
@@ -34,10 +35,16 @@ import net.minecraft.advancements.critereon.PickedUpItemTrigger;
 import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.StartRidingTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
@@ -74,6 +81,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       AdvancementHolder var9 = Advancement.Builder.advancement().parent(var8).requirements(AdvancementRequirements.Strategy.OR).addCriterion(BuiltInRegistries.ITEM.getKey(Items.AXOLOTL_BUCKET).getPath(), FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(Items.AXOLOTL_BUCKET))).display((ItemLike)Items.AXOLOTL_BUCKET, Component.translatable("advancements.husbandry.axolotl_in_a_bucket.title"), Component.translatable("advancements.husbandry.axolotl_in_a_bucket.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).save(var2, "husbandry/axolotl_in_a_bucket");
       Advancement.Builder.advancement().parent(var9).addCriterion("kill_axolotl_target", EffectsChangedTrigger.TriggerInstance.gotEffectsFrom(EntityPredicate.Builder.entity().of(EntityType.AXOLOTL))).display((ItemLike)Items.TROPICAL_FISH_BUCKET, Component.translatable("advancements.husbandry.kill_axolotl_target.title"), Component.translatable("advancements.husbandry.kill_axolotl_target.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).save(var2, "husbandry/kill_axolotl_target");
       addCatVariants(Advancement.Builder.advancement()).parent(var6).display((ItemLike)Items.COD, Component.translatable("advancements.husbandry.complete_catalogue.title"), Component.translatable("advancements.husbandry.complete_catalogue.description"), (ResourceLocation)null, AdvancementType.CHALLENGE, true, true, false).rewards(AdvancementRewards.Builder.experience(50)).save(var2, "husbandry/complete_catalogue");
+      addTamedWolfVariants(Advancement.Builder.advancement(), var1).parent(var6).display((ItemLike)Items.BONE, Component.translatable("advancements.husbandry.whole_pack.title"), Component.translatable("advancements.husbandry.whole_pack.description"), (ResourceLocation)null, AdvancementType.CHALLENGE, true, true, false).rewards(AdvancementRewards.Builder.experience(50)).save(var2, "husbandry/whole_pack");
       AdvancementHolder var10 = Advancement.Builder.advancement().parent(var3).addCriterion("safely_harvest_honey", ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(BlockTags.BEEHIVES)).setSmokey(true), ItemPredicate.Builder.item().of(Items.GLASS_BOTTLE))).display((ItemLike)Items.HONEY_BOTTLE, Component.translatable("advancements.husbandry.safely_harvest_honey.title"), Component.translatable("advancements.husbandry.safely_harvest_honey.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).save(var2, "husbandry/safely_harvest_honey");
       AdvancementHolder var11 = Advancement.Builder.advancement().parent(var10).display((ItemLike)Items.HONEYCOMB, Component.translatable("advancements.husbandry.wax_on.title"), Component.translatable("advancements.husbandry.wax_on.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("wax_on", ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of((Collection)((BiMap)HoneycombItem.WAXABLES.get()).keySet())), ItemPredicate.Builder.item().of(Items.HONEYCOMB))).save(var2, "husbandry/wax_on");
       Advancement.Builder.advancement().parent(var11).display((ItemLike)Items.STONE_AXE, Component.translatable("advancements.husbandry.wax_off.title"), Component.translatable("advancements.husbandry.wax_off.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("wax_off", ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of((Collection)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).keySet())), ItemPredicate.Builder.item().of((ItemLike[])WAX_SCRAPING_TOOLS))).save(var2, "husbandry/wax_off");
@@ -88,6 +96,8 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       AdvancementHolder var15 = Advancement.Builder.advancement().parent(var3).display((ItemLike)Items.SNIFFER_EGG, Component.translatable("advancements.husbandry.obtain_sniffer_egg.title"), Component.translatable("advancements.husbandry.obtain_sniffer_egg.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, true).addCriterion("obtain_sniffer_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.SNIFFER_EGG)).save(var2, "husbandry/obtain_sniffer_egg");
       AdvancementHolder var16 = Advancement.Builder.advancement().parent(var15).display((ItemLike)Items.TORCHFLOWER_SEEDS, Component.translatable("advancements.husbandry.feed_snifflet.title"), Component.translatable("advancements.husbandry.feed_snifflet.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, true).addCriterion("feed_snifflet", PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(ItemPredicate.Builder.item().of(ItemTags.SNIFFER_FOOD), Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.SNIFFER).flags(EntityFlagsPredicate.Builder.flags().setIsBaby(true)))))).save(var2, "husbandry/feed_snifflet");
       Advancement.Builder.advancement().parent(var16).display((ItemLike)Items.PITCHER_POD, Component.translatable("advancements.husbandry.plant_any_sniffer_seed.title"), Component.translatable("advancements.husbandry.plant_any_sniffer_seed.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, true).requirements(AdvancementRequirements.Strategy.OR).addCriterion("torchflower", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.TORCHFLOWER_CROP)).addCriterion("pitcher_pod", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.PITCHER_CROP)).save(var2, "husbandry/plant_any_sniffer_seed");
+      Advancement.Builder.advancement().parent(var6).display((ItemLike)Items.SHEARS, Component.translatable("advancements.husbandry.remove_wolf_armor.title"), Component.translatable("advancements.husbandry.remove_wolf_armor.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("remove_wolf_armor", PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(ItemPredicate.Builder.item().of(Items.SHEARS), Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.WOLF))))).save(var2, "husbandry/remove_wolf_armor");
+      Advancement.Builder.advancement().parent(var6).display((ItemLike)Items.WOLF_ARMOR, Component.translatable("advancements.husbandry.repair_wolf_armor.title"), Component.translatable("advancements.husbandry.repair_wolf_armor.description"), (ResourceLocation)null, AdvancementType.TASK, true, true, false).addCriterion("repair_wolf_armor", PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(ItemPredicate.Builder.item().of(Items.ARMADILLO_SCUTE), Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.WOLF).equipment(EntityEquipmentPredicate.Builder.equipment().body(ItemPredicate.Builder.item().of(Items.WOLF_ARMOR).hasComponents(DataComponentPredicate.builder().expect(DataComponents.DAMAGE, 0).build()))))))).save(var2, "husbandry/repair_wolf_armor");
    }
 
    public static AdvancementHolder createBreedAllAnimalsAdvancement(AdvancementHolder var0, Consumer<AdvancementHolder> var1, Stream<EntityType<?>> var2, Stream<EntityType<?>> var3) {
@@ -152,6 +162,15 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          return var0x.key().location();
       })).forEach((var1) -> {
          var0.addCriterion(var1.key().location().toString(), TameAnimalTrigger.TriggerInstance.tamedAnimal(EntityPredicate.Builder.entity().subPredicate(EntitySubPredicates.catVariant(var1))));
+      });
+      return var0;
+   }
+
+   private static Advancement.Builder addTamedWolfVariants(Advancement.Builder var0, HolderLookup.Provider var1) {
+      HolderLookup.RegistryLookup var2 = var1.lookupOrThrow(Registries.WOLF_VARIANT);
+      var2.listElementIds().sorted(Comparator.comparing(ResourceKey::location)).forEach((var2x) -> {
+         Holder.Reference var3 = var2.getOrThrow(var2x);
+         var0.addCriterion(var2x.location().toString(), TameAnimalTrigger.TriggerInstance.tamedAnimal(EntityPredicate.Builder.entity().subPredicate(EntitySubPredicates.wolfVariant(HolderSet.direct(var3)))));
       });
       return var0;
    }

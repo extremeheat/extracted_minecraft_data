@@ -160,7 +160,7 @@ public class Heightmap {
       private final Usage usage;
       private final Predicate<BlockState> isOpaque;
 
-      private Types(String var3, Usage var4, Predicate var5) {
+      private Types(final String var3, final Usage var4, final Predicate var5) {
          this.serializationKey = var3;
          this.usage = var4;
          this.isOpaque = var5;

@@ -46,7 +46,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_FLOWER_POS = "flower_pos";
    private static final String BEES = "bees";
-   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "ArmorDropChances", "ArmorItems", "Brain", "CanPickUpLoot", "DeathTime", "FallDistance", "FallFlying", "Fire", "HandDropChances", "HandItems", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
+   static final List<String> IGNORED_BEE_TAGS = Arrays.asList("Air", "ArmorDropChances", "ArmorItems", "Brain", "CanPickUpLoot", "DeathTime", "FallDistance", "FallFlying", "Fire", "HandDropChances", "HandItems", "HurtByTimestamp", "HurtTime", "LeftHanded", "Motion", "NoGravity", "OnGround", "PortalCooldown", "Pos", "Rotation", "SleepingX", "SleepingY", "SleepingZ", "CannotEnterHiveTicks", "TicksSincePollination", "CropsGrownSincePollination", "hive_pos", "Passengers", "leash", "UUID");
    public static final int MAX_OCCUPANTS = 3;
    private static final int MIN_TICKS_BEFORE_REENTERING_HIVE = 400;
    private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
@@ -330,11 +330,11 @@ public class BeehiveBlockEntity extends BlockEntity {
       public static final Codec<List<Occupant>> LIST_CODEC;
       public static final StreamCodec<ByteBuf, Occupant> STREAM_CODEC;
 
-      public Occupant(CustomData var1, int var2, int var3) {
+      public Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
          super();
-         this.entityData = var1;
-         this.ticksInHive = var2;
-         this.minTicksInHive = var3;
+         this.entityData = entityData;
+         this.ticksInHive = ticksInHive;
+         this.minTicksInHive = minTicksInHive;
       }
 
       public static Occupant of(Entity var0) {

@@ -26,6 +26,8 @@ public class References {
    public static final DSL.TypeReference BLOCK_STATE = reference("block_state");
    public static final DSL.TypeReference FLAT_BLOCK_STATE = reference("flat_block_state");
    public static final DSL.TypeReference DATA_COMPONENTS = reference("data_components");
+   public static final DSL.TypeReference VILLAGER_TRADE = reference("villager_trade");
+   public static final DSL.TypeReference PARTICLE = reference("particle");
    public static final DSL.TypeReference ENTITY_NAME = reference("entity_name");
    public static final DSL.TypeReference ENTITY_TREE = reference("entity_tree");
    public static final DSL.TypeReference ENTITY = reference("entity");

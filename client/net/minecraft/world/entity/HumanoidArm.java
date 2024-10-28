@@ -16,7 +16,7 @@ public enum HumanoidArm implements OptionEnum, StringRepresentable {
    private final String name;
    private final String translationKey;
 
-   private HumanoidArm(int var3, String var4, String var5) {
+   private HumanoidArm(final int var3, final String var4, final String var5) {
       this.id = var3;
       this.name = var4;
       this.translationKey = var5;

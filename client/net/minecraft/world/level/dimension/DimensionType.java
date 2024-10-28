@@ -34,34 +34,34 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
    public static final float[] MOON_BRIGHTNESS_PER_PHASE;
    public static final Codec<Holder<DimensionType>> CODEC;
 
-   public DimensionType(OptionalLong var1, boolean var2, boolean var3, boolean var4, boolean var5, double var6, boolean var8, boolean var9, int var10, int var11, int var12, TagKey<Block> var13, ResourceLocation var14, float var15, MonsterSettings var16) {
+   public DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean hasCeiling, boolean ultraWarm, boolean natural, double coordinateScale, boolean bedWorks, boolean respawnAnchorWorks, int minY, int height, int logicalHeight, TagKey<Block> infiniburn, ResourceLocation effectsLocation, float ambientLight, MonsterSettings monsterSettings) {
       super();
-      if (var11 < 16) {
+      if (height < 16) {
          throw new IllegalStateException("height has to be at least 16");
-      } else if (var10 + var11 > MAX_Y + 1) {
+      } else if (minY + height > MAX_Y + 1) {
          throw new IllegalStateException("min_y + height cannot be higher than: " + (MAX_Y + 1));
-      } else if (var12 > var11) {
+      } else if (logicalHeight > height) {
          throw new IllegalStateException("logical_height cannot be higher than height");
-      } else if (var11 % 16 != 0) {
+      } else if (height % 16 != 0) {
          throw new IllegalStateException("height has to be multiple of 16");
-      } else if (var10 % 16 != 0) {
+      } else if (minY % 16 != 0) {
          throw new IllegalStateException("min_y has to be a multiple of 16");
       } else {
-         this.fixedTime = var1;
-         this.hasSkyLight = var2;
-         this.hasCeiling = var3;
-         this.ultraWarm = var4;
-         this.natural = var5;
-         this.coordinateScale = var6;
-         this.bedWorks = var8;
-         this.respawnAnchorWorks = var9;
-         this.minY = var10;
-         this.height = var11;
-         this.logicalHeight = var12;
-         this.infiniburn = var13;
-         this.effectsLocation = var14;
-         this.ambientLight = var15;
-         this.monsterSettings = var16;
+         this.fixedTime = fixedTime;
+         this.hasSkyLight = hasSkyLight;
+         this.hasCeiling = hasCeiling;
+         this.ultraWarm = ultraWarm;
+         this.natural = natural;
+         this.coordinateScale = coordinateScale;
+         this.bedWorks = bedWorks;
+         this.respawnAnchorWorks = respawnAnchorWorks;
+         this.minY = minY;
+         this.height = height;
+         this.logicalHeight = logicalHeight;
+         this.infiniburn = infiniburn;
+         this.effectsLocation = effectsLocation;
+         this.ambientLight = ambientLight;
+         this.monsterSettings = monsterSettings;
       }
    }
 
@@ -212,12 +212,12 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
          return var0.group(Codec.BOOL.fieldOf("piglin_safe").forGetter(MonsterSettings::piglinSafe), Codec.BOOL.fieldOf("has_raids").forGetter(MonsterSettings::hasRaids), IntProvider.codec(0, 15).fieldOf("monster_spawn_light_level").forGetter(MonsterSettings::monsterSpawnLightTest), Codec.intRange(0, 15).fieldOf("monster_spawn_block_light_limit").forGetter(MonsterSettings::monsterSpawnBlockLightLimit)).apply(var0, MonsterSettings::new);
       });
 
-      public MonsterSettings(boolean var1, boolean var2, IntProvider var3, int var4) {
+      public MonsterSettings(boolean piglinSafe, boolean hasRaids, IntProvider monsterSpawnLightTest, int monsterSpawnBlockLightLimit) {
          super();
-         this.piglinSafe = var1;
-         this.hasRaids = var2;
-         this.monsterSpawnLightTest = var3;
-         this.monsterSpawnBlockLightLimit = var4;
+         this.piglinSafe = piglinSafe;
+         this.hasRaids = hasRaids;
+         this.monsterSpawnLightTest = monsterSpawnLightTest;
+         this.monsterSpawnBlockLightLimit = monsterSpawnBlockLightLimit;
       }
 
       public boolean piglinSafe() {

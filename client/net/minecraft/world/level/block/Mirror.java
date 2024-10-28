@@ -16,7 +16,7 @@ public enum Mirror implements StringRepresentable {
    private final Component symbol;
    private final OctahedralGroup rotation;
 
-   private Mirror(String var3, OctahedralGroup var4) {
+   private Mirror(final String var3, final OctahedralGroup var4) {
       this.id = var3;
       this.symbol = Component.translatable("mirror." + var3);
       this.rotation = var4;

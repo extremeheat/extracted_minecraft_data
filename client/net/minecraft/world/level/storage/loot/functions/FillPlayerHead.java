@@ -27,7 +27,7 @@ public class FillPlayerHead extends LootItemConditionalFunction {
       this.entityTarget = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<FillPlayerHead> getType() {
       return LootItemFunctions.FILL_PLAYER_HEAD;
    }
 

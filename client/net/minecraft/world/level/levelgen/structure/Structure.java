@@ -117,6 +117,11 @@ public abstract class Structure {
       return new int[]{var5.getFirstOccupiedHeight(var1, var3, Heightmap.Types.WORLD_SURFACE_WG, var6, var7), var5.getFirstOccupiedHeight(var1, var3 + var4, Heightmap.Types.WORLD_SURFACE_WG, var6, var7), var5.getFirstOccupiedHeight(var1 + var2, var3, Heightmap.Types.WORLD_SURFACE_WG, var6, var7), var5.getFirstOccupiedHeight(var1 + var2, var3 + var4, Heightmap.Types.WORLD_SURFACE_WG, var6, var7)};
    }
 
+   public static int getMeanFirstOccupiedHeight(GenerationContext var0, int var1, int var2, int var3, int var4) {
+      int[] var5 = getCornerHeights(var0, var1, var2, var3, var4);
+      return (var5[0] + var5[1] + var5[2] + var5[3]) / 4;
+   }
+
    protected static int getLowestY(GenerationContext var0, int var1, int var2) {
       ChunkPos var3 = var0.chunkPos();
       int var4 = var3.getMinBlockX();
@@ -173,12 +178,12 @@ public abstract class Structure {
          return var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", TerrainAdjustment.NONE).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new);
       });
 
-      public StructureSettings(HolderSet<Biome> var1, Map<MobCategory, StructureSpawnOverride> var2, GenerationStep.Decoration var3, TerrainAdjustment var4) {
+      public StructureSettings(HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation) {
          super();
-         this.biomes = var1;
-         this.spawnOverrides = var2;
-         this.step = var3;
-         this.terrainAdaptation = var4;
+         this.biomes = biomes;
+         this.spawnOverrides = spawnOverrides;
+         this.step = step;
+         this.terrainAdaptation = terrainAdaptation;
       }
 
       public HolderSet<Biome> biomes() {
@@ -207,18 +212,18 @@ public abstract class Structure {
          this(var1, var2, var3, var4, var5, makeRandom(var6, var8), var6, var8, var9, var10);
       }
 
-      public GenerationContext(RegistryAccess var1, ChunkGenerator var2, BiomeSource var3, RandomState var4, StructureTemplateManager var5, WorldgenRandom var6, long var7, ChunkPos var9, LevelHeightAccessor var10, Predicate<Holder<Biome>> var11) {
+      public GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
          super();
-         this.registryAccess = var1;
-         this.chunkGenerator = var2;
-         this.biomeSource = var3;
-         this.randomState = var4;
-         this.structureTemplateManager = var5;
-         this.random = var6;
-         this.seed = var7;
-         this.chunkPos = var9;
-         this.heightAccessor = var10;
-         this.validBiome = var11;
+         this.registryAccess = registryAccess;
+         this.chunkGenerator = chunkGenerator;
+         this.biomeSource = biomeSource;
+         this.randomState = randomState;
+         this.structureTemplateManager = structureTemplateManager;
+         this.random = random;
+         this.seed = seed;
+         this.chunkPos = chunkPos;
+         this.heightAccessor = heightAccessor;
+         this.validBiome = validBiome;
       }
 
       private static WorldgenRandom makeRandom(long var0, ChunkPos var2) {
@@ -273,10 +278,10 @@ public abstract class Structure {
          this(var1, Either.left(var2));
       }
 
-      public GenerationStub(BlockPos var1, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> var2) {
+      public GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
          super();
-         this.position = var1;
-         this.generator = var2;
+         this.position = position;
+         this.generator = generator;
       }
 
       public StructurePiecesBuilder getPiecesBuilder() {

@@ -28,6 +28,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.EnchantedBookItem;
@@ -36,7 +37,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -143,9 +143,9 @@ public class VillagerTrades {
    }
 
    private static record TypeSpecificTrade(Map<VillagerType, ItemListing> trades) implements ItemListing {
-      TypeSpecificTrade(Map<VillagerType, ItemListing> var1) {
+      TypeSpecificTrade(Map<VillagerType, ItemListing> trades) {
          super();
-         this.trades = var1;
+         this.trades = trades;
       }
 
       public static TypeSpecificTrade oneTradeInBiomes(ItemListing var0, VillagerType... var1) {
@@ -196,8 +196,15 @@ public class VillagerTrades {
          this.tradeableEnchantments = Arrays.asList(var4);
       }
 
+      private Enchantment getEnchantment(RandomSource var1, FeatureFlagSet var2) {
+         List var3 = this.tradeableEnchantments.stream().filter((var1x) -> {
+            return var1x.isEnabled(var2);
+         }).toList();
+         return (Enchantment)var3.get(var1.nextInt(var3.size()));
+      }
+
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         Enchantment var3 = (Enchantment)this.tradeableEnchantments.get(var2.nextInt(this.tradeableEnchantments.size()));
+         Enchantment var3 = this.getEnchantment(var2, var1.level().enabledFeatures());
          int var4 = Math.max(var3.getMinLevel(), this.minLevel);
          int var5 = Math.min(var3.getMaxLevel(), this.maxLevel);
          int var6 = Mth.nextInt(var2, var4, var5);
@@ -430,8 +437,8 @@ public class VillagerTrades {
 
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemCost var3 = new ItemCost(Items.EMERALD, this.emeraldCost);
-         List var4 = (List)BuiltInRegistries.POTION.holders().filter((var0) -> {
-            return !((Potion)var0.value()).getEffects().isEmpty() && PotionBrewing.isBrewablePotion(var0);
+         List var4 = (List)BuiltInRegistries.POTION.holders().filter((var1x) -> {
+            return !((Potion)var1x.value()).getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x);
          }).collect(Collectors.toList());
          Holder var5 = (Holder)Util.getRandom(var4, var2);
          ItemStack var6 = new ItemStack(this.toItem.getItem(), this.toCount);

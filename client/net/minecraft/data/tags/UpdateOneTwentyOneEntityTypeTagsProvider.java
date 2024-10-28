@@ -23,5 +23,6 @@ public class UpdateOneTwentyOneEntityTypeTagsProvider extends IntrinsicHolderTag
       this.tag(EntityTypeTags.SKELETONS).add((Object)EntityType.BOGGED);
       this.tag(EntityTypeTags.IMMUNE_TO_INFESTED).add((Object)EntityType.SILVERFISH);
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add((Object)EntityType.SLIME);
+      this.tag(EntityTypeTags.REDIRECTABLE_PROJECTILE).add((Object[])(EntityType.WIND_CHARGE, EntityType.BREEZE_WIND_CHARGE));
    }
 }

@@ -44,6 +44,10 @@ public class AnimalArmorItem extends ArmorItem {
       return this.bodyType.breakingSound;
    }
 
+   public boolean isEnchantable(ItemStack var1) {
+      return false;
+   }
+
    public static enum BodyType {
       EQUESTRIAN((var0) -> {
          return var0.withPath((var0x) -> {
@@ -57,7 +61,7 @@ public class AnimalArmorItem extends ArmorItem {
       final Function<ResourceLocation, ResourceLocation> textureLocator;
       final SoundEvent breakingSound;
 
-      private BodyType(Function var3, SoundEvent var4) {
+      private BodyType(final Function var3, final SoundEvent var4) {
          this.textureLocator = var3;
          this.breakingSound = var4;
       }

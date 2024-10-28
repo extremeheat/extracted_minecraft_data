@@ -23,7 +23,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, M extends ZombieM
    }
 
    // $FF: synthetic method
-   protected boolean isShaking(LivingEntity var1) {
+   protected boolean isShaking(final LivingEntity var1) {
       return this.isShaking((Zombie)var1);
    }
 }

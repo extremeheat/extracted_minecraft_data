@@ -18,9 +18,9 @@ public record SuspiciousStewEffects(List<Entry> effects) {
    public static final Codec<SuspiciousStewEffects> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, SuspiciousStewEffects> STREAM_CODEC;
 
-   public SuspiciousStewEffects(List<Entry> var1) {
+   public SuspiciousStewEffects(List<Entry> effects) {
       super();
-      this.effects = var1;
+      this.effects = effects;
    }
 
    public SuspiciousStewEffects withEffectAdded(Entry var1) {
@@ -42,10 +42,10 @@ public record SuspiciousStewEffects(List<Entry> effects) {
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(Holder<MobEffect> var1, int var2) {
+      public Entry(Holder<MobEffect> effect, int duration) {
          super();
-         this.effect = var1;
-         this.duration = var2;
+         this.effect = effect;
+         this.duration = duration;
       }
 
       public MobEffectInstance createEffectInstance() {

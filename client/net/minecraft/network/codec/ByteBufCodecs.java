@@ -55,12 +55,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Boolean)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -74,12 +74,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Byte)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -93,12 +93,31 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Short)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
+         return this.decode((ByteBuf)var1);
+      }
+   };
+   StreamCodec<ByteBuf, Integer> UNSIGNED_SHORT = new StreamCodec<ByteBuf, Integer>() {
+      public Integer decode(ByteBuf var1) {
+         return var1.readUnsignedShort();
+      }
+
+      public void encode(ByteBuf var1, Integer var2) {
+         var1.writeShort(var2);
+      }
+
+      // $FF: synthetic method
+      public void encode(final Object var1, final Object var2) {
+         this.encode((ByteBuf)var1, (Integer)var2);
+      }
+
+      // $FF: synthetic method
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -112,12 +131,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Integer)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -131,12 +150,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Integer)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -150,12 +169,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Long)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -169,12 +188,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Float)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -188,12 +207,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Double)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -207,12 +226,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (byte[])var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -235,12 +254,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Optional)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -254,12 +273,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Vector3f)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -273,12 +292,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (Quaternionf)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -321,12 +340,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (PropertyMap)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -346,12 +365,12 @@ public interface ByteBufCodecs {
       }
 
       // $FF: synthetic method
-      public void encode(Object var1, Object var2) {
+      public void encode(final Object var1, final Object var2) {
          this.encode((ByteBuf)var1, (GameProfile)var2);
       }
 
       // $FF: synthetic method
-      public Object decode(Object var1) {
+      public Object decode(final Object var1) {
          return this.decode((ByteBuf)var1);
       }
    };
@@ -371,12 +390,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (byte[])var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };
@@ -393,12 +412,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (String)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };
@@ -424,12 +443,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (Tag)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };
@@ -499,12 +518,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2x) {
+         public void encode(final Object var1, final Object var2x) {
             this.encode((RegistryFriendlyByteBuf)var1, var2x);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((RegistryFriendlyByteBuf)var1);
          }
       };
@@ -527,12 +546,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((ByteBuf)var1, (Optional)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((ByteBuf)var1);
          }
       };
@@ -584,12 +603,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2x) {
+         public void encode(final Object var1x, final Object var2x) {
             this.encode((ByteBuf)var1x, (Collection)var2x);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((ByteBuf)var1x);
          }
       };
@@ -641,12 +660,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2x) {
+         public void encode(final Object var1x, final Object var2x) {
             this.encode((ByteBuf)var1x, (Map)var2x);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((ByteBuf)var1x);
          }
       };
@@ -669,12 +688,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2) {
+         public void encode(final Object var1x, final Object var2) {
             this.encode((ByteBuf)var1x, (Either)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((ByteBuf)var1x);
          }
       };
@@ -693,12 +712,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2) {
+         public void encode(final Object var1x, final Object var2) {
             this.encode((ByteBuf)var1x, var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((ByteBuf)var1x);
          }
       };
@@ -728,12 +747,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2) {
+         public void encode(final Object var1x, final Object var2) {
             this.encode((RegistryFriendlyByteBuf)var1x, var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((RegistryFriendlyByteBuf)var1x);
          }
       };
@@ -776,12 +795,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2) {
+         public void encode(final Object var1x, final Object var2) {
             this.encode((RegistryFriendlyByteBuf)var1x, (Holder)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((RegistryFriendlyByteBuf)var1x);
          }
       };
@@ -826,12 +845,12 @@ public interface ByteBufCodecs {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((RegistryFriendlyByteBuf)var1, (HolderSet)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((RegistryFriendlyByteBuf)var1);
          }
       };

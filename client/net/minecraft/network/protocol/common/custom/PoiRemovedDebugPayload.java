@@ -12,9 +12,9 @@ public record PoiRemovedDebugPayload(BlockPos pos) implements CustomPacketPayloa
       this(var1.readBlockPos());
    }
 
-   public PoiRemovedDebugPayload(BlockPos var1) {
+   public PoiRemovedDebugPayload(BlockPos pos) {
       super();
-      this.pos = var1;
+      this.pos = pos;
    }
 
    private void write(FriendlyByteBuf var1) {

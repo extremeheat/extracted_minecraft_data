@@ -24,9 +24,9 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
    public static final Codec<StatePropertiesPredicate> CODEC;
    public static final StreamCodec<ByteBuf, StatePropertiesPredicate> STREAM_CODEC;
 
-   public StatePropertiesPredicate(List<PropertyMatcher> var1) {
+   public StatePropertiesPredicate(List<PropertyMatcher> properties) {
       super();
-      this.properties = var1;
+      this.properties = properties;
    }
 
    public <S extends StateHolder<?, S>> boolean matches(StateDefinition<?, S> var1, S var2) {
@@ -87,10 +87,10 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
    private static record PropertyMatcher(String name, ValueMatcher valueMatcher) {
       public static final StreamCodec<ByteBuf, PropertyMatcher> STREAM_CODEC;
 
-      PropertyMatcher(String var1, ValueMatcher var2) {
+      PropertyMatcher(String name, ValueMatcher valueMatcher) {
          super();
-         this.name = var1;
-         this.valueMatcher = var2;
+         this.name = name;
+         this.valueMatcher = valueMatcher;
       }
 
       public <S extends StateHolder<?, S>> boolean match(StateDefinition<?, S> var1, S var2) {
@@ -178,10 +178,10 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
       });
       public static final StreamCodec<ByteBuf, RangedMatcher> STREAM_CODEC;
 
-      private RangedMatcher(Optional<String> var1, Optional<String> var2) {
+      private RangedMatcher(Optional<String> minValue, Optional<String> maxValue) {
          super();
-         this.minValue = var1;
-         this.maxValue = var2;
+         this.minValue = minValue;
+         this.maxValue = maxValue;
       }
 
       public <T extends Comparable<T>> boolean match(StateHolder<?, ?> var1, Property<T> var2) {
@@ -221,9 +221,9 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
       public static final Codec<ExactMatcher> CODEC;
       public static final StreamCodec<ByteBuf, ExactMatcher> STREAM_CODEC;
 
-      ExactMatcher(String var1) {
+      ExactMatcher(String value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public <T extends Comparable<T>> boolean match(StateHolder<?, ?> var1, Property<T> var2) {

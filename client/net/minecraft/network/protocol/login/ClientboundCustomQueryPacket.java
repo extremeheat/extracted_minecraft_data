@@ -16,10 +16,10 @@ public record ClientboundCustomQueryPacket(int transactionId, CustomQueryPayload
       this(var1.readVarInt(), readPayload(var1.readResourceLocation(), var1));
    }
 
-   public ClientboundCustomQueryPacket(int var1, CustomQueryPayload var2) {
+   public ClientboundCustomQueryPacket(int transactionId, CustomQueryPayload payload) {
       super();
-      this.transactionId = var1;
-      this.payload = var2;
+      this.transactionId = transactionId;
+      this.payload = payload;
    }
 
    private static CustomQueryPayload readPayload(ResourceLocation var0, FriendlyByteBuf var1) {

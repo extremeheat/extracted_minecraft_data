@@ -48,10 +48,10 @@ public interface RealmsError {
       public static final CustomError SERVICE_BUSY = new CustomError(429, Component.translatable("mco.errorMessage.serviceBusy"));
       public static final Component RETRY_MESSAGE = Component.translatable("mco.errorMessage.retry");
 
-      public CustomError(int var1, @Nullable Component var2) {
+      public CustomError(int httpCode, @Nullable Component payload) {
          super();
-         this.httpCode = var1;
-         this.payload = var2;
+         this.httpCode = httpCode;
+         this.payload = payload;
       }
 
       public static CustomError unknownCompatibilityResponse(String var0) {
@@ -93,12 +93,12 @@ public interface RealmsError {
    }
 
    public static record ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) implements RealmsError {
-      public ErrorWithJsonPayload(int var1, int var2, @Nullable String var3, @Nullable String var4) {
+      public ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) {
          super();
-         this.httpCode = var1;
-         this.code = var2;
-         this.reason = var3;
-         this.message = var4;
+         this.httpCode = httpCode;
+         this.code = code;
+         this.reason = reason;
+         this.message = message;
       }
 
       public int errorCode() {
@@ -145,10 +145,10 @@ public interface RealmsError {
    }
 
    public static record ErrorWithRawPayload(int httpCode, String payload) implements RealmsError {
-      public ErrorWithRawPayload(int var1, String var2) {
+      public ErrorWithRawPayload(int httpCode, String payload) {
          super();
-         this.httpCode = var1;
-         this.payload = var2;
+         this.httpCode = httpCode;
+         this.payload = payload;
       }
 
       public int errorCode() {
@@ -175,9 +175,9 @@ public interface RealmsError {
    public static record AuthenticationError(String message) implements RealmsError {
       public static final int ERROR_CODE = 401;
 
-      public AuthenticationError(String var1) {
+      public AuthenticationError(String message) {
          super();
-         this.message = var1;
+         this.message = message;
       }
 
       public int errorCode() {

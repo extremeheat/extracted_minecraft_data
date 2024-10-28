@@ -10,9 +10,9 @@ public record LightPredicate(MinMaxBounds.Ints composite) {
       return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite)).apply(var0, LightPredicate::new);
    });
 
-   public LightPredicate(MinMaxBounds.Ints var1) {
+   public LightPredicate(MinMaxBounds.Ints composite) {
       super();
-      this.composite = var1;
+      this.composite = composite;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {

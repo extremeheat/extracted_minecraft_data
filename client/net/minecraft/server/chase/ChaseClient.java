@@ -181,11 +181,11 @@ public class ChaseClient {
       final Vec3 pos;
       final Vec2 rot;
 
-      TeleportTarget(ResourceKey<Level> var1, Vec3 var2, Vec2 var3) {
+      TeleportTarget(ResourceKey<Level> level, Vec3 pos, Vec2 rot) {
          super();
-         this.level = var1;
-         this.pos = var2;
-         this.rot = var3;
+         this.level = level;
+         this.pos = pos;
+         this.rot = rot;
       }
 
       public ResourceKey<Level> level() {

@@ -895,6 +895,10 @@ public class EnderDragon extends Mob implements Enemy {
       return var1.canBeSeenAsEnemy();
    }
 
+   protected float sanitizeScale(float var1) {
+      return 1.0F;
+   }
+
    static {
       DATA_PHASE = SynchedEntityData.defineId(EnderDragon.class, EntityDataSerializers.INT);
       CRYSTAL_DESTROY_TARGETING = TargetingConditions.forCombat().range(64.0);

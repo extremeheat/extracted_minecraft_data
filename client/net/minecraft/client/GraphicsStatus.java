@@ -13,7 +13,7 @@ public enum GraphicsStatus implements OptionEnum {
    private final int id;
    private final String key;
 
-   private GraphicsStatus(int var3, String var4) {
+   private GraphicsStatus(final int var3, final String var4) {
       this.id = var3;
       this.key = var4;
    }

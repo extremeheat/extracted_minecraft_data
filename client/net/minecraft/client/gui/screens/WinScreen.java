@@ -309,7 +309,7 @@ public class WinScreen extends Screen {
    }
 
    public boolean isPauseScreen() {
-      return false;
+      return !this.poem;
    }
 
    public void removed() {

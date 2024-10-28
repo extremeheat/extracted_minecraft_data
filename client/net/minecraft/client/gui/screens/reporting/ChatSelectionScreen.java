@@ -121,7 +121,7 @@ public class ChatSelectionScreen extends Screen {
       @Nullable
       private Heading previousHeading;
 
-      public ChatSelectionList(Minecraft var2, int var3) {
+      public ChatSelectionList(final Minecraft var2, final int var3) {
          super(var2, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - var3 - 80, 40, 16);
       }
 
@@ -218,7 +218,7 @@ public class ChatSelectionScreen extends Screen {
 
       // $FF: synthetic method
       @Nullable
-      protected AbstractSelectionList.Entry nextEntry(ScreenDirection var1) {
+      protected AbstractSelectionList.Entry nextEntry(final ScreenDirection var1) {
          return this.nextEntry(var1);
       }
 
@@ -239,7 +239,7 @@ public class ChatSelectionScreen extends Screen {
          private final boolean canReport;
          private final boolean playerMessage;
 
-         public MessageEntry(int var2, Component var3, Component var4, @Nullable GuiMessageTag var5, boolean var6, boolean var7) {
+         public MessageEntry(final int var2, final Component var3, final Component var4, @Nullable final GuiMessageTag var5, final boolean var6, final boolean var7) {
             super(ChatSelectionList.this);
             this.chatId = var2;
             this.tagIcon = (GuiMessageTag.Icon)Optionull.map(var5, GuiMessageTag::icon);
@@ -346,7 +346,7 @@ public class ChatSelectionScreen extends Screen {
          private final Supplier<PlayerSkin> skin;
          private final boolean canReport;
 
-         public MessageHeadingEntry(GameProfile var2, Component var3, boolean var4) {
+         public MessageHeadingEntry(final GameProfile var2, final Component var3, final boolean var4) {
             super(ChatSelectionList.this);
             this.heading = var3;
             this.canReport = var4;
@@ -365,10 +365,10 @@ public class ChatSelectionScreen extends Screen {
       }
 
       private static record Heading(UUID sender, Entry entry) {
-         Heading(UUID var1, Entry var2) {
+         Heading(UUID sender, Entry entry) {
             super();
-            this.sender = var1;
-            this.entry = var2;
+            this.sender = sender;
+            this.entry = entry;
          }
 
          public boolean canCombine(Heading var1) {
@@ -385,7 +385,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public abstract class Entry extends ObjectSelectionList.Entry<Entry> {
-         public Entry(ChatSelectionList var1) {
+         public Entry(final ChatSelectionList var1) {
             super();
          }
 
@@ -407,7 +407,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public class PaddingEntry extends Entry {
-         public PaddingEntry(ChatSelectionList var1) {
+         public PaddingEntry(final ChatSelectionList var1) {
             super(var1);
          }
 
@@ -419,7 +419,7 @@ public class ChatSelectionScreen extends Screen {
          private static final int COLOR = -6250336;
          private final Component text;
 
-         public DividerEntry(Component var2) {
+         public DividerEntry(final Component var2) {
             super(ChatSelectionList.this);
             this.text = var2;
          }

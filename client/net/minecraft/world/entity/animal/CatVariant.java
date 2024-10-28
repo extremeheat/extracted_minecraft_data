@@ -18,9 +18,9 @@ public record CatVariant(ResourceLocation texture) {
    public static final ResourceKey<CatVariant> JELLIE = createKey("jellie");
    public static final ResourceKey<CatVariant> ALL_BLACK = createKey("all_black");
 
-   public CatVariant(ResourceLocation var1) {
+   public CatVariant(ResourceLocation texture) {
       super();
-      this.texture = var1;
+      this.texture = texture;
    }
 
    private static ResourceKey<CatVariant> createKey(String var0) {

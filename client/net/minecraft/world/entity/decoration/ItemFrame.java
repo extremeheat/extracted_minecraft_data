@@ -278,16 +278,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public SlotAccess getSlot(int var1) {
-      return var1 == 0 ? new SlotAccess() {
-         public ItemStack get() {
-            return ItemFrame.this.getItem();
-         }
-
-         public boolean set(ItemStack var1) {
-            ItemFrame.this.setItem(var1);
-            return true;
-         }
-      } : super.getSlot(var1);
+      return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {

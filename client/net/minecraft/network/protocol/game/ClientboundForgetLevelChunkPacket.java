@@ -13,9 +13,9 @@ public record ClientboundForgetLevelChunkPacket(ChunkPos pos) implements Packet<
       this(var1.readChunkPos());
    }
 
-   public ClientboundForgetLevelChunkPacket(ChunkPos var1) {
+   public ClientboundForgetLevelChunkPacket(ChunkPos pos) {
       super();
-      this.pos = var1;
+      this.pos = pos;
    }
 
    private void write(FriendlyByteBuf var1) {

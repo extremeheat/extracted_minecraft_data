@@ -36,12 +36,12 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("rod").forGetter(TriggerInstance::rod), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, Optional<ContextAwarePredicate> var3, Optional<ItemPredicate> var4) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> rod, Optional<ContextAwarePredicate> entity, Optional<ItemPredicate> item) {
          super();
-         this.player = var1;
-         this.rod = var2;
-         this.entity = var3;
-         this.item = var4;
+         this.player = player;
+         this.rod = rod;
+         this.entity = entity;
+         this.item = item;
       }
 
       public static Criterion<TriggerInstance> fishedItem(Optional<ItemPredicate> var0, Optional<EntityPredicate> var1, Optional<ItemPredicate> var2) {
@@ -49,7 +49,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
       }
 
       public boolean matches(ItemStack var1, LootContext var2, Collection<ItemStack> var3) {
-         if (this.rod.isPresent() && !((ItemPredicate)this.rod.get()).matches(var1)) {
+         if (this.rod.isPresent() && !((ItemPredicate)this.rod.get()).test(var1)) {
             return false;
          } else if (this.entity.isPresent() && !((ContextAwarePredicate)this.entity.get()).matches(var2)) {
             return false;
@@ -59,7 +59,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
                Entity var5 = (Entity)var2.getParamOrNull(LootContextParams.THIS_ENTITY);
                if (var5 instanceof ItemEntity) {
                   ItemEntity var6 = (ItemEntity)var5;
-                  if (((ItemPredicate)this.item.get()).matches(var6.getItem())) {
+                  if (((ItemPredicate)this.item.get()).test(var6.getItem())) {
                      var4 = true;
                   }
                }
@@ -68,7 +68,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
 
                while(var8.hasNext()) {
                   ItemStack var7 = (ItemStack)var8.next();
-                  if (((ItemPredicate)this.item.get()).matches(var7)) {
+                  if (((ItemPredicate)this.item.get()).test(var7)) {
                      var4 = true;
                      break;
                   }

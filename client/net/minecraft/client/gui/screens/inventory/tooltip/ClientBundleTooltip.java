@@ -89,7 +89,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       public final int w;
       public final int h;
 
-      private Texture(ResourceLocation var3, int var4, int var5) {
+      private Texture(final ResourceLocation var3, final int var4, final int var5) {
          this.sprite = var3;
          this.w = var4;
          this.h = var5;

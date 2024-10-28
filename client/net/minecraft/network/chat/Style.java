@@ -266,7 +266,7 @@ public class Style {
       class 1Collector {
          private boolean isNotFirst;
 
-         _Collector/* $FF was: 1Collector*/(Style var1x) {
+         _Collector/* $FF was: 1Collector*/(final Style var1x) {
             super();
          }
 

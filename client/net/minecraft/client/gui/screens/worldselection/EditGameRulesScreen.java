@@ -168,7 +168,7 @@ public class EditGameRulesScreen extends Screen {
    public class IntegerRuleEntry extends GameRuleEntry {
       private final EditBox input;
 
-      public IntegerRuleEntry(Component var2, List<FormattedCharSequence> var3, String var4, GameRules.IntegerValue var5) {
+      public IntegerRuleEntry(final Component var2, final List<FormattedCharSequence> var3, final String var4, final GameRules.IntegerValue var5) {
          super(var3, var2);
          this.input = new EditBox(EditGameRulesScreen.this.minecraft.font, 10, 5, 44, 20, var2.copy().append("\n").append(var4).append("\n"));
          this.input.setValue(Integer.toString(var5.get()));
@@ -196,7 +196,7 @@ public class EditGameRulesScreen extends Screen {
    public class BooleanRuleEntry extends GameRuleEntry {
       private final CycleButton<Boolean> checkbox;
 
-      public BooleanRuleEntry(EditGameRulesScreen var1, Component var2, List var3, String var4, GameRules.BooleanValue var5) {
+      public BooleanRuleEntry(final EditGameRulesScreen var1, final Component var2, final List var3, final String var4, final GameRules.BooleanValue var5) {
          super(var3, var2);
          this.checkbox = CycleButton.onOffBuilder(var5.get()).displayOnlyValue().withCustomNarration((var1x) -> {
             return var1x.createDefaultNarrationMessage().append("\n").append(var4);
@@ -218,7 +218,7 @@ public class EditGameRulesScreen extends Screen {
       private final List<FormattedCharSequence> label;
       protected final List<AbstractWidget> children = Lists.newArrayList();
 
-      public GameRuleEntry(@Nullable List<FormattedCharSequence> var2, Component var3) {
+      public GameRuleEntry(@Nullable final List<FormattedCharSequence> var2, final Component var3) {
          super(var2);
          this.label = EditGameRulesScreen.this.minecraft.font.split(var3, 175);
       }
@@ -250,7 +250,7 @@ public class EditGameRulesScreen extends Screen {
    public class CategoryRuleEntry extends RuleEntry {
       final Component label;
 
-      public CategoryRuleEntry(Component var2) {
+      public CategoryRuleEntry(final Component var2) {
          super((List)null);
          this.label = var2;
       }

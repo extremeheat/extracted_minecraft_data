@@ -186,7 +186,7 @@ public class LootPool {
       }
 
       // $FF: synthetic method
-      public FunctionUserBuilder apply(LootItemFunction.Builder var1) {
+      public FunctionUserBuilder apply(final LootItemFunction.Builder var1) {
          return this.apply(var1);
       }
 
@@ -196,7 +196,7 @@ public class LootPool {
       }
 
       // $FF: synthetic method
-      public ConditionUserBuilder when(LootItemCondition.Builder var1) {
+      public ConditionUserBuilder when(final LootItemCondition.Builder var1) {
          return this.when(var1);
       }
    }

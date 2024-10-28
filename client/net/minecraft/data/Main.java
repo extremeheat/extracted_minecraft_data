@@ -56,10 +56,12 @@ import net.minecraft.data.tags.UpdateOneTwentyOneBannerPatternTagsProvider;
 import net.minecraft.data.tags.UpdateOneTwentyOneBiomeTagsProvider;
 import net.minecraft.data.tags.UpdateOneTwentyOneBlockTagsProvider;
 import net.minecraft.data.tags.UpdateOneTwentyOneDamageTypeTagsProvider;
+import net.minecraft.data.tags.UpdateOneTwentyOneEnchantmentTagsProvider;
 import net.minecraft.data.tags.UpdateOneTwentyOneEntityTypeTagsProvider;
 import net.minecraft.data.tags.UpdateOneTwentyOneItemTagsProvider;
 import net.minecraft.data.tags.UpdateOneTwentyOneStructureTagsProvider;
 import net.minecraft.data.tags.VanillaBlockTagsProvider;
+import net.minecraft.data.tags.VanillaEnchantmentTagsProvider;
 import net.minecraft.data.tags.VanillaItemTagsProvider;
 import net.minecraft.data.tags.WorldPresetTagsProvider;
 import net.minecraft.network.chat.Component;
@@ -140,6 +142,7 @@ public class Main {
       var16.addProvider(bindRegistries(PaintingVariantTagsProvider::new, var20));
       var16.addProvider(bindRegistries(PoiTypeTagsProvider::new, var20));
       var16.addProvider(bindRegistries(WorldPresetTagsProvider::new, var20));
+      var16.addProvider(bindRegistries(VanillaEnchantmentTagsProvider::new, var20));
       var16 = var9.getVanillaPack(var4);
       var16.addProvider((var1x) -> {
          return new NbtToSnbt(var1x, var1);
@@ -188,6 +191,7 @@ public class Main {
       var18.addProvider((var2x) -> {
          return new UpdateOneTwentyOneStructureTagsProvider(var2x, var17, var15.contentsGetter());
       });
+      var18.addProvider(bindRegistries(UpdateOneTwentyOneEnchantmentTagsProvider::new, var17));
       return var9;
    }
 }

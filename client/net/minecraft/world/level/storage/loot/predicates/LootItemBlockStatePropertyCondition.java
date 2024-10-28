@@ -19,10 +19,10 @@ public record LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<
       return var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(LootItemBlockStatePropertyCondition::block), StatePropertiesPredicate.CODEC.optionalFieldOf("properties").forGetter(LootItemBlockStatePropertyCondition::properties)).apply(var0, LootItemBlockStatePropertyCondition::new);
    }).validate(LootItemBlockStatePropertyCondition::validate);
 
-   public LootItemBlockStatePropertyCondition(Holder<Block> var1, Optional<StatePropertiesPredicate> var2) {
+   public LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<StatePropertiesPredicate> properties) {
       super();
-      this.block = var1;
-      this.properties = var2;
+      this.block = block;
+      this.properties = properties;
    }
 
    private static DataResult<LootItemBlockStatePropertyCondition> validate(LootItemBlockStatePropertyCondition var0) {
@@ -62,7 +62,7 @@ public record LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 

@@ -120,7 +120,7 @@ public class StructureTemplatePool {
       private final String name;
       private final ImmutableList<StructureProcessor> processors;
 
-      private Projection(String var3, ImmutableList var4) {
+      private Projection(final String var3, final ImmutableList var4) {
          this.name = var3;
          this.processors = var4;
       }

@@ -108,10 +108,10 @@ public class PopupScreen extends Screen {
    }
 
    static record ButtonOption(Component message, Consumer<PopupScreen> action) {
-      ButtonOption(Component var1, Consumer<PopupScreen> var2) {
+      ButtonOption(Component message, Consumer<PopupScreen> action) {
          super();
-         this.message = var1;
-         this.action = var2;
+         this.message = message;
+         this.action = action;
       }
 
       public Component message() {

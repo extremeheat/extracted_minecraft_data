@@ -12,10 +12,10 @@ public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThun
       return var0.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(var0, WeatherCheck::new);
    });
 
-   public WeatherCheck(Optional<Boolean> var1, Optional<Boolean> var2) {
+   public WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThundering) {
       super();
-      this.isRaining = var1;
-      this.isThundering = var2;
+      this.isRaining = isRaining;
+      this.isThundering = isThundering;
    }
 
    public LootItemConditionType getType() {
@@ -44,7 +44,7 @@ public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThun
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 

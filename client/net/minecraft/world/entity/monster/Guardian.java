@@ -464,7 +464,7 @@ public class Guardian extends Monster {
       }
 
       // $FF: synthetic method
-      public boolean test(@Nullable Object var1) {
+      public boolean test(@Nullable final Object var1) {
          return this.test((LivingEntity)var1);
       }
    }

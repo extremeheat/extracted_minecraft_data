@@ -561,7 +561,7 @@ public class ItemInHandRenderer {
       final boolean renderMainHand;
       final boolean renderOffHand;
 
-      private HandRenderSelection(boolean var3, boolean var4) {
+      private HandRenderSelection(final boolean var3, final boolean var4) {
          this.renderMainHand = var3;
          this.renderOffHand = var4;
       }

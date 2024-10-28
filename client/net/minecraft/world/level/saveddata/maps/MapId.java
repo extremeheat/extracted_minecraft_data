@@ -9,9 +9,9 @@ public record MapId(int id) {
    public static final Codec<MapId> CODEC;
    public static final StreamCodec<ByteBuf, MapId> STREAM_CODEC;
 
-   public MapId(int var1) {
+   public MapId(int id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public String key() {

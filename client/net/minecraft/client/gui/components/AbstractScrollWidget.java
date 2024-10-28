@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
@@ -143,7 +144,9 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
       int var2 = this.getScrollBarHeight();
       int var3 = this.getX() + this.width;
       int var4 = Math.max(this.getY(), (int)this.scrollAmount * (this.height - var2) / this.getMaxScrollAmount() + this.getY());
+      RenderSystem.enableBlend();
       var1.blitSprite(SCROLLER_SPRITE, var3, var4, 8, var2);
+      RenderSystem.disableBlend();
    }
 
    protected boolean withinContentAreaTopBottom(int var1, int var2) {

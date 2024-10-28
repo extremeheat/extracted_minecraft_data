@@ -202,7 +202,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    // $FF: synthetic method
-   public int compareTo(Object var1) {
+   public int compareTo(final Object var1) {
       return this.compareTo((KeyMapping)var1);
    }
 }

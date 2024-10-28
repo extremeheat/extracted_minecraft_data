@@ -15,10 +15,10 @@ public record ServerboundCookieResponsePacket(ResourceLocation key, @Nullable by
       this(var1.readResourceLocation(), (byte[])var1.readNullable(ClientboundStoreCookiePacket.PAYLOAD_STREAM_CODEC));
    }
 
-   public ServerboundCookieResponsePacket(ResourceLocation var1, @Nullable byte[] var2) {
+   public ServerboundCookieResponsePacket(ResourceLocation key, @Nullable byte[] payload) {
       super();
-      this.key = var1;
-      this.payload = var2;
+      this.key = key;
+      this.payload = payload;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -219,7 +219,7 @@ public class PresetFlatWorldScreen extends Screen {
       var1.pose().translate(0.0F, 0.0F, 400.0F);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 8, 16777215);
       var1.drawString(this.font, (Component)this.shareText, 51, 30, 10526880);
-      var1.drawString(this.font, (Component)this.listText, 51, 70, 10526880);
+      var1.drawString(this.font, (Component)this.listText, 51, 68, 10526880);
       var1.pose().popPose();
       this.export.render(var1, var2, var3, var4);
    }
@@ -234,7 +234,7 @@ public class PresetFlatWorldScreen extends Screen {
    }
 
    private class PresetsList extends ObjectSelectionList<Entry> {
-      public PresetsList(RegistryAccess var2, FeatureFlagSet var3) {
+      public PresetsList(final RegistryAccess var2, final FeatureFlagSet var3) {
          super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
          Iterator var4 = var2.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE).iterator();
 
@@ -278,7 +278,7 @@ public class PresetFlatWorldScreen extends Screen {
          private final FlatLevelGeneratorPreset preset;
          private final Component name;
 
-         public Entry(Holder<FlatLevelGeneratorPreset> var2) {
+         public Entry(final Holder<FlatLevelGeneratorPreset> var2) {
             super();
             this.preset = (FlatLevelGeneratorPreset)var2.value();
             this.name = (Component)var2.unwrapKey().map((var0) -> {

@@ -1240,6 +1240,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
          if (var16) {
             this.lastDamageSource = var1;
             this.lastDamageStamp = this.level().getGameTime();
+            Iterator var17 = this.getActiveEffects().iterator();
+
+            while(var17.hasNext()) {
+               MobEffectInstance var19 = (MobEffectInstance)var17.next();
+               var19.onMobHurt(this, var1, var2);
+            }
          }
 
          if (this instanceof ServerPlayer) {
@@ -1251,13 +1257,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          if (var13 instanceof ServerPlayer) {
             CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)var13, this, var1, var3, var2, var4);
-         }
-
-         Iterator var17 = this.getActiveEffects().iterator();
-
-         while(var17.hasNext()) {
-            MobEffectInstance var19 = (MobEffectInstance)var17.next();
-            var19.onMobHurt(this, var1, var2);
          }
 
          return var16;
@@ -2070,14 +2069,17 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void jumpFromGround() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x, (double)this.getJumpPower(), var1.z);
-      if (this.isSprinting()) {
-         float var2 = this.getYRot() * 0.017453292F;
-         this.setDeltaMovement(this.getDeltaMovement().add((double)(-Mth.sin(var2) * 0.2F), 0.0, (double)(Mth.cos(var2) * 0.2F)));
-      }
+      float var1 = this.getJumpPower();
+      if (!(var1 <= 1.0E-5F)) {
+         Vec3 var2 = this.getDeltaMovement();
+         this.setDeltaMovement(var2.x, (double)var1, var2.z);
+         if (this.isSprinting()) {
+            float var3 = this.getYRot() * 0.017453292F;
+            this.addDeltaMovement(new Vec3((double)(-Mth.sin(var3)) * 0.2, 0.0, (double)Mth.cos(var3) * 0.2));
+         }
 
-      this.hasImpulse = true;
+         this.hasImpulse = true;
+      }
    }
 
    protected void goDownInWater() {
@@ -3468,7 +3470,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       if (this.isSpectator()) {
          return false;
       } else {
-         boolean var1 = !this.getItemBySlot(EquipmentSlot.HEAD).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.CHEST).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.LEGS).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.FEET).is(ItemTags.FREEZE_IMMUNE_WEARABLES);
+         boolean var1 = !this.getItemBySlot(EquipmentSlot.HEAD).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.CHEST).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.LEGS).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.FEET).is(ItemTags.FREEZE_IMMUNE_WEARABLES) && !this.getItemBySlot(EquipmentSlot.BODY).is(ItemTags.FREEZE_IMMUNE_WEARABLES);
          return var1 && super.canFreeze();
       }
    }
@@ -3536,10 +3538,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public static record Fallsounds(SoundEvent small, SoundEvent big) {
-      public Fallsounds(SoundEvent var1, SoundEvent var2) {
+      public Fallsounds(SoundEvent small, SoundEvent big) {
          super();
-         this.small = var1;
-         this.big = var2;
+         this.small = small;
+         this.big = big;
       }
 
       public SoundEvent small() {

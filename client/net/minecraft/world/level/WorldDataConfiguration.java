@@ -12,10 +12,10 @@ public record WorldDataConfiguration(DataPackConfig dataPacks, FeatureFlagSet en
    });
    public static final WorldDataConfiguration DEFAULT;
 
-   public WorldDataConfiguration(DataPackConfig var1, FeatureFlagSet var2) {
+   public WorldDataConfiguration(DataPackConfig dataPacks, FeatureFlagSet enabledFeatures) {
       super();
-      this.dataPacks = var1;
-      this.enabledFeatures = var2;
+      this.dataPacks = dataPacks;
+      this.enabledFeatures = enabledFeatures;
    }
 
    public WorldDataConfiguration expandFeatures(FeatureFlagSet var1) {

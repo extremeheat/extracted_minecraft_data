@@ -31,11 +31,11 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Ints var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Ints signalStrength, Optional<ContextAwarePredicate> projectile) {
          super();
-         this.player = var1;
-         this.signalStrength = var2;
-         this.projectile = var3;
+         this.player = player;
+         this.signalStrength = signalStrength;
+         this.projectile = projectile;
       }
 
       public static Criterion<TriggerInstance> targetHit(MinMaxBounds.Ints var0, Optional<ContextAwarePredicate> var1) {

@@ -80,12 +80,12 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
          }
 
          // $FF: synthetic method
-         public void encode(Object var1x, Object var2) {
+         public void encode(final Object var1x, final Object var2) {
             this.encode((ByteBuf)var1x, var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1x) {
+         public Object decode(final Object var1x) {
             return this.decode((ByteBuf)var1x);
          }
       };

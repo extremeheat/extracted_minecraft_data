@@ -30,10 +30,10 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<Placem
    public static final Codec<HolderSet<PlacedFeature>> LIST_CODEC;
    public static final Codec<List<HolderSet<PlacedFeature>>> LIST_OF_LISTS_CODEC;
 
-   public PlacedFeature(Holder<ConfiguredFeature<?, ?>> var1, List<PlacementModifier> var2) {
+   public PlacedFeature(Holder<ConfiguredFeature<?, ?>> feature, List<PlacementModifier> placement) {
       super();
-      this.feature = var1;
-      this.placement = var2;
+      this.feature = feature;
+      this.placement = placement;
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, RandomSource var3, BlockPos var4) {

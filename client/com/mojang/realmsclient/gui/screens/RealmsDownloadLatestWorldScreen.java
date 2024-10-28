@@ -218,55 +218,53 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                return;
             }
 
-            if (!this.cancelled) {
-               this.status = Component.translatable("mco.download.downloading", this.worldName);
-               FileDownload var1 = new FileDownload();
-               var1.contentLength(this.worldDownload.downloadLink);
-               var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
-
-               while(!var1.isFinished()) {
-                  if (var1.isError()) {
-                     var1.cancel();
-                     this.errorMessage = Component.translatable("mco.download.failed");
-                     this.cancelButton.setMessage(CommonComponents.GUI_DONE);
-                     return;
-                  }
-
-                  if (var1.isExtracting()) {
-                     if (!this.extracting) {
-                        this.status = Component.translatable("mco.download.extracting");
-                     }
-
-                     this.extracting = true;
-                  }
-
-                  if (this.cancelled) {
-                     var1.cancel();
-                     this.downloadCancelled();
-                     return;
-                  }
-
-                  try {
-                     Thread.sleep(500L);
-                  } catch (InterruptedException var8) {
-                     LOGGER.error("Failed to check Realms backup download status");
-                  }
-               }
-
-               this.finished = true;
-               this.status = Component.translatable("mco.download.done");
-               this.cancelButton.setMessage(CommonComponents.GUI_DONE);
+            if (this.cancelled) {
+               this.downloadCancelled();
                return;
             }
 
-            this.downloadCancelled();
+            this.status = Component.translatable("mco.download.downloading", this.worldName);
+            FileDownload var1 = new FileDownload();
+            var1.contentLength(this.worldDownload.downloadLink);
+            var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
+
+            while(!var1.isFinished()) {
+               if (var1.isError()) {
+                  var1.cancel();
+                  this.errorMessage = Component.translatable("mco.download.failed");
+                  this.cancelButton.setMessage(CommonComponents.GUI_DONE);
+                  return;
+               }
+
+               if (var1.isExtracting()) {
+                  if (!this.extracting) {
+                     this.status = Component.translatable("mco.download.extracting");
+                  }
+
+                  this.extracting = true;
+               }
+
+               if (this.cancelled) {
+                  var1.cancel();
+                  this.downloadCancelled();
+                  return;
+               }
+
+               try {
+                  Thread.sleep(500L);
+               } catch (InterruptedException var8) {
+                  LOGGER.error("Failed to check Realms backup download status");
+               }
+            }
+
+            this.finished = true;
+            this.status = Component.translatable("mco.download.done");
+            this.cancelButton.setMessage(CommonComponents.GUI_DONE);
          } catch (InterruptedException var9) {
             LOGGER.error("Could not acquire upload lock");
-            return;
          } catch (Exception var10) {
             this.errorMessage = Component.translatable("mco.download.failed");
             LOGGER.info("Exception while downloading world", var10);
-            return;
          } finally {
             if (!DOWNLOAD_LOCK.isHeldByCurrentThread()) {
                return;

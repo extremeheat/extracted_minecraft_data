@@ -23,7 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EnchantmentTableBlock;
+import net.minecraft.world.level.block.EnchantingTableBlock;
 
 public class EnchantmentMenu extends AbstractContainerMenu {
    static final ResourceLocation EMPTY_SLOT_LAPIS_LAZULI = new ResourceLocation("item/empty_slot_lapis_lazuli");
@@ -97,11 +97,11 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          if (!var2.isEmpty() && var2.isEnchantable()) {
             this.access.execute((var2x, var3x) -> {
                int var4 = 0;
-               Iterator var5 = EnchantmentTableBlock.BOOKSHELF_OFFSETS.iterator();
+               Iterator var5 = EnchantingTableBlock.BOOKSHELF_OFFSETS.iterator();
 
                while(var5.hasNext()) {
                   BlockPos var6 = (BlockPos)var5.next();
-                  if (EnchantmentTableBlock.isValidBookShelf(var2x, var3x, var6)) {
+                  if (EnchantingTableBlock.isValidBookShelf(var2x, var3x, var6)) {
                      ++var4;
                   }
                }

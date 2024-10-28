@@ -122,7 +122,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
 
       final StreamDecoder<RegistryFriendlyByteBuf, Operation> reader;
 
-      private OperationType(StreamDecoder var3) {
+      private OperationType(final StreamDecoder var3) {
          this.reader = var3;
       }
 
@@ -186,9 +186,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this(var1.readFloat());
       }
 
-      UpdateProgressOperation(float var1) {
+      UpdateProgressOperation(float progress) {
          super();
-         this.progress = var1;
+         this.progress = progress;
       }
 
       public OperationType getType() {
@@ -213,9 +213,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this((Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1));
       }
 
-      UpdateNameOperation(Component var1) {
+      UpdateNameOperation(Component name) {
          super();
-         this.name = var1;
+         this.name = name;
       }
 
       public OperationType getType() {

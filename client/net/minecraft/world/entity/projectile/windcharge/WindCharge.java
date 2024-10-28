@@ -3,6 +3,7 @@ package net.minecraft.world.entity.projectile.windcharge;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -32,7 +33,7 @@ public class WindCharge extends AbstractWindCharge {
          super();
       }
 
-      public float getKnockbackMultiplier() {
+      public float getKnockbackMultiplier(Entity var1) {
          return 1.1F;
       }
    }

@@ -44,6 +44,7 @@ import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.biome.Biome;
@@ -894,8 +895,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.damageSources;
    }
 
+   public abstract PotionBrewing potionBrewing();
+
    // $FF: synthetic method
-   public ChunkAccess getChunk(int var1, int var2) {
+   public ChunkAccess getChunk(final int var1, final int var2) {
       return this.getChunk(var1, var2);
    }
 

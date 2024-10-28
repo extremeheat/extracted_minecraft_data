@@ -2,19 +2,17 @@ package net.minecraft.world.item.crafting;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +36,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
    private static final Logger LOGGER = LogUtils.getLogger();
    private final HolderLookup.Provider registries;
-   private Map<RecipeType<?>, Map<ResourceLocation, RecipeHolder<?>>> recipes = ImmutableMap.of();
+   private Multimap<RecipeType<?>, RecipeHolder<?>> byType = ImmutableMultimap.of();
    private Map<ResourceLocation, RecipeHolder<?>> byName = ImmutableMap.of();
    private boolean hasErrors;
 
@@ -50,7 +47,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
 
    protected void apply(Map<ResourceLocation, JsonElement> var1, ResourceManager var2, ProfilerFiller var3) {
       this.hasErrors = false;
-      HashMap var4 = Maps.newHashMap();
+      ImmutableMultimap.Builder var4 = ImmutableMultimap.builder();
       ImmutableMap.Builder var5 = ImmutableMap.builder();
       RegistryOps var6 = this.registries.createSerializationContext(JsonOps.INSTANCE);
       Iterator var7 = var1.entrySet().iterator();
@@ -60,23 +57,18 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
          ResourceLocation var9 = (ResourceLocation)var8.getKey();
 
          try {
-            JsonObject var10 = GsonHelper.convertToJsonObject((JsonElement)var8.getValue(), "top element");
-            Recipe var11 = (Recipe)Recipe.CODEC.parse(var6, var10).getOrThrow(JsonParseException::new);
-            RecipeHolder var12 = new RecipeHolder(var9, var11);
-            ((ImmutableMap.Builder)var4.computeIfAbsent(var11.getType(), (var0) -> {
-               return ImmutableMap.builder();
-            })).put(var9, var12);
-            var5.put(var9, var12);
-         } catch (IllegalArgumentException | JsonParseException var13) {
-            LOGGER.error("Parsing error loading recipe {}", var9, var13);
+            Recipe var10 = (Recipe)Recipe.CODEC.parse(var6, (JsonElement)var8.getValue()).getOrThrow(JsonParseException::new);
+            RecipeHolder var11 = new RecipeHolder(var9, var10);
+            var4.put(var10.getType(), var11);
+            var5.put(var9, var11);
+         } catch (IllegalArgumentException | JsonParseException var12) {
+            LOGGER.error("Parsing error loading recipe {}", var9, var12);
          }
       }
 
-      this.recipes = (Map)var4.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> {
-         return ((ImmutableMap.Builder)var0.getValue()).build();
-      }));
+      this.byType = var4.build();
       this.byName = var5.build();
-      LOGGER.info("Loaded {} recipes", var4.size());
+      LOGGER.info("Loaded {} recipes", this.byType.size());
    }
 
    public boolean hadErrorsLoading() {
@@ -84,41 +76,38 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
    }
 
    public <C extends Container, T extends Recipe<C>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, C var2, Level var3) {
-      return this.byType(var1).values().stream().filter((var2x) -> {
+      return this.byType(var1).stream().filter((var2x) -> {
          return var2x.value().matches(var2, var3);
       }).findFirst();
    }
 
-   public <C extends Container, T extends Recipe<C>> Optional<Pair<ResourceLocation, RecipeHolder<T>>> getRecipeFor(RecipeType<T> var1, C var2, Level var3, @Nullable ResourceLocation var4) {
-      Map var5 = this.byType(var1);
+   public <C extends Container, T extends Recipe<C>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, C var2, Level var3, @Nullable ResourceLocation var4) {
       if (var4 != null) {
-         RecipeHolder var6 = (RecipeHolder)var5.get(var4);
-         if (var6 != null && var6.value().matches(var2, var3)) {
-            return Optional.of(Pair.of(var4, var6));
+         RecipeHolder var5 = this.byKeyTyped(var1, var4);
+         if (var5 != null && var5.value().matches(var2, var3)) {
+            return Optional.of(var5);
          }
       }
 
-      return var5.entrySet().stream().filter((var2x) -> {
-         return ((RecipeHolder)var2x.getValue()).value().matches(var2, var3);
-      }).findFirst().map((var0) -> {
-         return Pair.of((ResourceLocation)var0.getKey(), (RecipeHolder)var0.getValue());
-      });
+      return this.byType(var1).stream().filter((var2x) -> {
+         return var2x.value().matches(var2, var3);
+      }).findFirst();
    }
 
    public <C extends Container, T extends Recipe<C>> List<RecipeHolder<T>> getAllRecipesFor(RecipeType<T> var1) {
-      return List.copyOf(this.byType(var1).values());
+      return List.copyOf(this.byType(var1));
    }
 
    public <C extends Container, T extends Recipe<C>> List<RecipeHolder<T>> getRecipesFor(RecipeType<T> var1, C var2, Level var3) {
-      return (List)this.byType(var1).values().stream().filter((var2x) -> {
+      return (List)this.byType(var1).stream().filter((var2x) -> {
          return var2x.value().matches(var2, var3);
       }).sorted(Comparator.comparing((var1x) -> {
          return var1x.value().getResultItem(var3.registryAccess()).getDescriptionId();
       })).collect(Collectors.toList());
    }
 
-   private <C extends Container, T extends Recipe<C>> Map<ResourceLocation, RecipeHolder<T>> byType(RecipeType<T> var1) {
-      return (Map)this.recipes.getOrDefault(var1, Collections.emptyMap());
+   private <C extends Container, T extends Recipe<C>> Collection<RecipeHolder<T>> byType(RecipeType<T> var1) {
+      return this.byType.get(var1);
    }
 
    public <C extends Container, T extends Recipe<C>> NonNullList<ItemStack> getRemainingItemsFor(RecipeType<T> var1, C var2, Level var3) {
@@ -140,16 +129,22 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       return Optional.ofNullable((RecipeHolder)this.byName.get(var1));
    }
 
+   @Nullable
+   private <T extends Recipe<?>> RecipeHolder<T> byKeyTyped(RecipeType<T> var1, ResourceLocation var2) {
+      RecipeHolder var3 = (RecipeHolder)this.byName.get(var2);
+      return var3 != null && var3.value().getType().equals(var1) ? var3 : null;
+   }
+
+   public Collection<RecipeHolder<?>> getOrderedRecipes() {
+      return this.byType.values();
+   }
+
    public Collection<RecipeHolder<?>> getRecipes() {
-      return (Collection)this.recipes.values().stream().flatMap((var0) -> {
-         return var0.values().stream();
-      }).collect(Collectors.toSet());
+      return this.byName.values();
    }
 
    public Stream<ResourceLocation> getRecipeIds() {
-      return this.recipes.values().stream().flatMap((var0) -> {
-         return var0.keySet().stream();
-      });
+      return this.byName.keySet().stream();
    }
 
    @VisibleForTesting
@@ -160,20 +155,18 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
 
    public void replaceRecipes(Iterable<RecipeHolder<?>> var1) {
       this.hasErrors = false;
-      HashMap var2 = Maps.newHashMap();
+      ImmutableMultimap.Builder var2 = ImmutableMultimap.builder();
       ImmutableMap.Builder var3 = ImmutableMap.builder();
-      var1.forEach((var2x) -> {
-         Map var3x = (Map)var2.computeIfAbsent(var2x.value().getType(), (var0) -> {
-            return Maps.newHashMap();
-         });
-         ResourceLocation var4 = var2x.id();
-         RecipeHolder var5 = (RecipeHolder)var3x.put(var4, var2x);
-         var3.put(var4, var2x);
-         if (var5 != null) {
-            throw new IllegalStateException("Duplicate recipe ignored with ID " + String.valueOf(var4));
-         }
-      });
-      this.recipes = ImmutableMap.copyOf(var2);
+      Iterator var4 = var1.iterator();
+
+      while(var4.hasNext()) {
+         RecipeHolder var5 = (RecipeHolder)var4.next();
+         RecipeType var6 = var5.value().getType();
+         var2.put(var6, var5);
+         var3.put(var5.id(), var5);
+      }
+
+      this.byType = var2.build();
       this.byName = var3.build();
    }
 
@@ -186,9 +179,9 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
             RecipeManager var3 = var2.getRecipeManager();
             Optional var4 = var3.getRecipeFor(var0, var1, var2, this.lastRecipe);
             if (var4.isPresent()) {
-               Pair var5 = (Pair)var4.get();
-               this.lastRecipe = (ResourceLocation)var5.getFirst();
-               return Optional.of((RecipeHolder)var5.getSecond());
+               RecipeHolder var5 = (RecipeHolder)var4.get();
+               this.lastRecipe = var5.id();
+               return Optional.of(var5);
             } else {
                return Optional.empty();
             }

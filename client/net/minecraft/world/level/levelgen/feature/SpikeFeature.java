@@ -206,7 +206,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       }
 
       // $FF: synthetic method
-      public Object load(Object var1) throws Exception {
+      public Object load(final Object var1) throws Exception {
          return this.load((Long)var1);
       }
    }

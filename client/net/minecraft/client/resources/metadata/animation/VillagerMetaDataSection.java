@@ -28,7 +28,7 @@ public class VillagerMetaDataSection {
       }));
       private final String name;
 
-      private Hat(String var3) {
+      private Hat(final String var3) {
          this.name = var3;
       }
 

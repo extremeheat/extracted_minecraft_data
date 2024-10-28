@@ -30,10 +30,10 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemAttributeModifiers> STREAM_CODEC;
    public static final DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
-   public ItemAttributeModifiers(List<Entry> var1, boolean var2) {
+   public ItemAttributeModifiers(List<Entry> modifiers, boolean showInTooltip) {
       super();
-      this.modifiers = var1;
-      this.showInTooltip = var2;
+      this.modifiers = modifiers;
+      this.showInTooltip = showInTooltip;
    }
 
    public ItemAttributeModifiers withTooltip(boolean var1) {
@@ -138,11 +138,11 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
       });
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3) {
+      public Entry(Holder<Attribute> attribute, AttributeModifier modifier, EquipmentSlotGroup slot) {
          super();
-         this.attribute = var1;
-         this.modifier = var2;
-         this.slot = var3;
+         this.attribute = attribute;
+         this.modifier = modifier;
+         this.slot = slot;
       }
 
       public Holder<Attribute> attribute() {

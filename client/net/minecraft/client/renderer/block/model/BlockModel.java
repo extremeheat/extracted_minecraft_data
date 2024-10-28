@@ -282,7 +282,7 @@ public class BlockModel implements UnbakedModel {
 
       private final String name;
 
-      private GuiLight(String var3) {
+      private GuiLight(final String var3) {
          this.name = var3;
       }
 
@@ -405,7 +405,7 @@ public class BlockModel implements UnbakedModel {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
          return this.deserialize(var1, var2, var3);
       }
    }

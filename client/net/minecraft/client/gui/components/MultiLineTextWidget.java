@@ -79,7 +79,7 @@ public class MultiLineTextWidget extends AbstractStringWidget {
    }
 
    // $FF: synthetic method
-   public AbstractStringWidget setColor(int var1) {
+   public AbstractStringWidget setColor(final int var1) {
       return this.setColor(var1);
    }
 
@@ -88,11 +88,11 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       final int maxWidth;
       final OptionalInt maxRows;
 
-      CacheKey(Component var1, int var2, OptionalInt var3) {
+      CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
          super();
-         this.message = var1;
-         this.maxWidth = var2;
-         this.maxRows = var3;
+         this.message = message;
+         this.maxWidth = maxWidth;
+         this.maxRows = maxRows;
       }
 
       public Component message() {

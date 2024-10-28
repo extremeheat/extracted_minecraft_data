@@ -9,16 +9,16 @@ public record ServerboundChatCommandPacket(String command) implements Packet<Ser
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandPacket> STREAM_CODEC = Packet.codec(ServerboundChatCommandPacket::write, ServerboundChatCommandPacket::new);
 
    private ServerboundChatCommandPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(256));
+      this(var1.readUtf());
    }
 
-   public ServerboundChatCommandPacket(String var1) {
+   public ServerboundChatCommandPacket(String command) {
       super();
-      this.command = var1;
+      this.command = command;
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.command, 256);
+      var1.writeUtf(this.command);
    }
 
    public PacketType<ServerboundChatCommandPacket> type() {

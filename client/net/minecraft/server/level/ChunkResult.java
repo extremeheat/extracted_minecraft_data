@@ -41,9 +41,9 @@ public interface ChunkResult<T> {
    <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E;
 
    public static record Success<T>(T value) implements ChunkResult<T> {
-      public Success(T var1) {
+      public Success(T value) {
          super();
-         this.value = var1;
+         this.value = value;
       }
 
       public boolean isSuccess() {
@@ -78,9 +78,9 @@ public interface ChunkResult<T> {
    }
 
    public static record Fail<T>(Supplier<String> error) implements ChunkResult<T> {
-      public Fail(Supplier<String> var1) {
+      public Fail(Supplier<String> error) {
          super();
-         this.error = var1;
+         this.error = error;
       }
 
       public boolean isSuccess() {

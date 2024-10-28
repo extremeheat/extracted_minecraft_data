@@ -189,7 +189,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    // $FF: synthetic method
-   public void setVariant(Object var1) {
+   public void setVariant(final Object var1) {
       this.setVariant((Holder)var1);
    }
 

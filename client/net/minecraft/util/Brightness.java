@@ -10,10 +10,10 @@ public record Brightness(int block, int sky) {
    });
    public static Brightness FULL_BRIGHT = new Brightness(15, 15);
 
-   public Brightness(int var1, int var2) {
+   public Brightness(int block, int sky) {
       super();
-      this.block = var1;
-      this.sky = var2;
+      this.block = block;
+      this.sky = sky;
    }
 
    public int pack() {

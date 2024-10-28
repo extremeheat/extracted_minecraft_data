@@ -25,22 +25,22 @@ public class TurtleRenderer extends MobRenderer<Turtle, TurtleModel<Turtle>> {
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(Mob var1) {
+   protected float getShadowRadius(final Mob var1) {
       return this.getShadowRadius((Turtle)var1);
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(LivingEntity var1) {
+   protected float getShadowRadius(final LivingEntity var1) {
       return this.getShadowRadius((Turtle)var1);
    }
 
    // $FF: synthetic method
-   public ResourceLocation getTextureLocation(Entity var1) {
+   public ResourceLocation getTextureLocation(final Entity var1) {
       return this.getTextureLocation((Turtle)var1);
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(Entity var1) {
+   protected float getShadowRadius(final Entity var1) {
       return this.getShadowRadius((Turtle)var1);
    }
 }

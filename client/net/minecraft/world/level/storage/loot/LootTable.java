@@ -276,7 +276,7 @@ public class LootTable {
       }
 
       // $FF: synthetic method
-      public FunctionUserBuilder apply(LootItemFunction.Builder var1) {
+      public FunctionUserBuilder apply(final LootItemFunction.Builder var1) {
          return this.apply(var1);
       }
    }

@@ -32,11 +32,11 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerIn
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("zombie").forGetter(TriggerInstance::zombie), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> zombie, Optional<ContextAwarePredicate> villager) {
          super();
-         this.player = var1;
-         this.zombie = var2;
-         this.villager = var3;
+         this.player = player;
+         this.zombie = zombie;
+         this.villager = villager;
       }
 
       public static Criterion<TriggerInstance> curedZombieVillager() {

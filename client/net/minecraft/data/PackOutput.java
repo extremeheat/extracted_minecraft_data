@@ -30,7 +30,7 @@ public class PackOutput {
 
       final String directory;
 
-      private Target(String var3) {
+      private Target(final String var3) {
          this.directory = var3;
       }
 

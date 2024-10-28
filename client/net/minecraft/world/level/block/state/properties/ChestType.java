@@ -9,7 +9,7 @@ public enum ChestType implements StringRepresentable {
 
    private final String name;
 
-   private ChestType(String var3) {
+   private ChestType(final String var3) {
       this.name = var3;
    }
 

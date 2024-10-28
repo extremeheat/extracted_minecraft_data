@@ -52,12 +52,12 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
    public static final TelemetryProperty<String> ADVANCEMENT_ID;
    public static final TelemetryProperty<Long> ADVANCEMENT_GAME_TIME;
 
-   public TelemetryProperty(String var1, String var2, Codec<T> var3, Exporter<T> var4) {
+   public TelemetryProperty(String id, String exportKey, Codec<T> codec, Exporter<T> exporter) {
       super();
-      this.id = var1;
-      this.exportKey = var2;
-      this.codec = var3;
-      this.exporter = var4;
+      this.id = id;
+      this.exportKey = exportKey;
+      this.codec = codec;
+      this.exporter = exporter;
    }
 
    public static <T> TelemetryProperty<T> create(String var0, String var1, Codec<T> var2, Exporter<T> var3) {
@@ -188,7 +188,7 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
       private final String key;
       private final int id;
 
-      private GameMode(String var3, int var4) {
+      private GameMode(final String var3, final int var4) {
          this.key = var3;
          this.id = var4;
       }
@@ -215,7 +215,7 @@ public record TelemetryProperty<T>(String id, String exportKey, Codec<T> codec, 
       public static final Codec<ServerType> CODEC = StringRepresentable.fromEnum(ServerType::values);
       private final String key;
 
-      private ServerType(String var3) {
+      private ServerType(final String var3) {
          this.key = var3;
       }
 

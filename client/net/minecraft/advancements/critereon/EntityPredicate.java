@@ -30,22 +30,22 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
    });
    public static final Codec<ContextAwarePredicate> ADVANCEMENT_CODEC;
 
-   public EntityPredicate(Optional<EntityTypePredicate> var1, Optional<DistancePredicate> var2, Optional<LocationPredicate> var3, Optional<LocationPredicate> var4, Optional<MobEffectsPredicate> var5, Optional<NbtPredicate> var6, Optional<EntityFlagsPredicate> var7, Optional<EntityEquipmentPredicate> var8, Optional<EntitySubPredicate> var9, Optional<EntityPredicate> var10, Optional<EntityPredicate> var11, Optional<EntityPredicate> var12, Optional<String> var13, Optional<SlotsPredicate> var14) {
+   public EntityPredicate(Optional<EntityTypePredicate> entityType, Optional<DistancePredicate> distanceToPlayer, Optional<LocationPredicate> location, Optional<LocationPredicate> steppingOnLocation, Optional<MobEffectsPredicate> effects, Optional<NbtPredicate> nbt, Optional<EntityFlagsPredicate> flags, Optional<EntityEquipmentPredicate> equipment, Optional<EntitySubPredicate> subPredicate, Optional<EntityPredicate> vehicle, Optional<EntityPredicate> passenger, Optional<EntityPredicate> targetedEntity, Optional<String> team, Optional<SlotsPredicate> slots) {
       super();
-      this.entityType = var1;
-      this.distanceToPlayer = var2;
-      this.location = var3;
-      this.steppingOnLocation = var4;
-      this.effects = var5;
-      this.nbt = var6;
-      this.flags = var7;
-      this.equipment = var8;
-      this.subPredicate = var9;
-      this.vehicle = var10;
-      this.passenger = var11;
-      this.targetedEntity = var12;
-      this.team = var13;
-      this.slots = var14;
+      this.entityType = entityType;
+      this.distanceToPlayer = distanceToPlayer;
+      this.location = location;
+      this.steppingOnLocation = steppingOnLocation;
+      this.effects = effects;
+      this.nbt = nbt;
+      this.flags = flags;
+      this.equipment = equipment;
+      this.subPredicate = subPredicate;
+      this.vehicle = vehicle;
+      this.passenger = passenger;
+      this.targetedEntity = targetedEntity;
+      this.team = team;
+      this.slots = slots;
    }
 
    public static ContextAwarePredicate wrap(Builder var0) {
@@ -117,12 +117,10 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
                   }
                }
 
-               if (this.nbt.isPresent() && !((NbtPredicate)this.nbt.get()).matches(var3)) {
-                  return false;
-               } else if (this.slots.isPresent() && !((SlotsPredicate)this.slots.get()).matches(var3)) {
+               if (this.slots.isPresent() && !((SlotsPredicate)this.slots.get()).matches(var3)) {
                   return false;
                } else {
-                  return true;
+                  return !this.nbt.isPresent() || ((NbtPredicate)this.nbt.get()).matches(var3);
                }
             }
          }

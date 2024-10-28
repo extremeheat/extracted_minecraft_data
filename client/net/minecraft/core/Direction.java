@@ -60,7 +60,7 @@ public enum Direction implements StringRepresentable {
       return new Direction[var0];
    });
 
-   private Direction(int var3, int var4, int var5, String var6, AxisDirection var7, Axis var8, Vec3i var9) {
+   private Direction(final int var3, final int var4, final int var5, final String var6, final AxisDirection var7, final Axis var8, final Vec3i var9) {
       this.data3d = var3;
       this.data2d = var5;
       this.oppositeIndex = var4;
@@ -456,7 +456,7 @@ public enum Direction implements StringRepresentable {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable Object var1) {
+         public boolean test(@Nullable final Object var1) {
             return super.test((Direction)var1);
          }
       },
@@ -470,7 +470,7 @@ public enum Direction implements StringRepresentable {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable Object var1) {
+         public boolean test(@Nullable final Object var1) {
             return super.test((Direction)var1);
          }
       },
@@ -484,7 +484,7 @@ public enum Direction implements StringRepresentable {
          }
 
          // $FF: synthetic method
-         public boolean test(@Nullable Object var1) {
+         public boolean test(@Nullable final Object var1) {
             return super.test((Direction)var1);
          }
       };
@@ -493,7 +493,7 @@ public enum Direction implements StringRepresentable {
       public static final StringRepresentable.EnumCodec<Axis> CODEC = StringRepresentable.fromEnum(Axis::values);
       private final String name;
 
-      Axis(String var3) {
+      Axis(final String var3) {
          this.name = var3;
       }
 
@@ -552,7 +552,7 @@ public enum Direction implements StringRepresentable {
       public abstract double choose(double var1, double var3, double var5);
 
       // $FF: synthetic method
-      public boolean test(@Nullable Object var1) {
+      public boolean test(@Nullable final Object var1) {
          return this.test((Direction)var1);
       }
 
@@ -569,7 +569,7 @@ public enum Direction implements StringRepresentable {
       private final int step;
       private final String name;
 
-      private AxisDirection(int var3, String var4) {
+      private AxisDirection(final int var3, final String var4) {
          this.step = var3;
          this.name = var4;
       }
@@ -603,7 +603,7 @@ public enum Direction implements StringRepresentable {
       private final Direction[] faces;
       private final Axis[] axis;
 
-      private Plane(Direction[] var3, Axis[] var4) {
+      private Plane(final Direction[] var3, final Axis[] var4) {
          this.faces = var3;
          this.axis = var4;
       }
@@ -637,7 +637,7 @@ public enum Direction implements StringRepresentable {
       }
 
       // $FF: synthetic method
-      public boolean test(@Nullable Object var1) {
+      public boolean test(@Nullable final Object var1) {
          return this.test((Direction)var1);
       }
 

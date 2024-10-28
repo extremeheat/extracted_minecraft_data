@@ -65,7 +65,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
    }
 
    // $FF: synthetic method
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -124,7 +124,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
       }
 
       // $FF: synthetic method
-      public boolean test(Object var1) {
+      public boolean test(final Object var1) {
          return this.test((BlockInWorld)var1);
       }
    }
@@ -170,7 +170,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
       }
 
       // $FF: synthetic method
-      public boolean test(Object var1) {
+      public boolean test(final Object var1) {
          return this.test((BlockInWorld)var1);
       }
    }

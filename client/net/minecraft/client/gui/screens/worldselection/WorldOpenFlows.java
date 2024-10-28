@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -145,11 +146,11 @@ public class WorldOpenFlows {
             final WorldOptions options;
             final Registry<LevelStem> existingDimensions;
 
-            _Data/* $FF was: 1Data*/(LevelSettings var1, WorldOptions var2, Registry<LevelStem> var3) {
+            _Data/* $FF was: 1Data*/(LevelSettings levelSettings, WorldOptions options, Registry<LevelStem> existingDimensions) {
                super();
-               this.levelSettings = var1;
-               this.options = var2;
-               this.existingDimensions = var3;
+               this.levelSettings = levelSettings;
+               this.options = options;
+               this.existingDimensions = existingDimensions;
             }
 
             public LevelSettings levelSettings() {
@@ -304,8 +305,14 @@ public class WorldOpenFlows {
       WorldStem var6;
       try {
          var6 = this.loadWorldStem(var2, var3, var5);
-      } catch (Exception var8) {
-         LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var8);
+         Iterator var7 = var6.registries().compositeAccess().registryOrThrow(Registries.LEVEL_STEM).iterator();
+
+         while(var7.hasNext()) {
+            LevelStem var8 = (LevelStem)var7.next();
+            var8.generator().validate();
+         }
+      } catch (Exception var9) {
+         LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var9);
          if (!var3) {
             this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> {
                var1.safeClose();

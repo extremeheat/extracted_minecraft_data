@@ -37,7 +37,7 @@ public enum FrontAndTop implements StringRepresentable {
       return var1.ordinal() << 3 | var0.ordinal();
    }
 
-   private FrontAndTop(String var3, Direction var4, Direction var5) {
+   private FrontAndTop(final String var3, final Direction var4, final Direction var5) {
       this.name = var3;
       this.front = var4;
       this.top = var5;

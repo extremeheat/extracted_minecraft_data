@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,7 +45,7 @@ public enum TrialSpawnerState implements StringRepresentable {
    private final ParticleEmission particleEmission;
    private final boolean isCapableOfSpawning;
 
-   private TrialSpawnerState(String var3, int var4, ParticleEmission var5, double var6, boolean var8) {
+   private TrialSpawnerState(final String var3, final int var4, final ParticleEmission var5, final double var6, final boolean var8) {
       this.name = var3;
       this.lightLevel = var4;
       this.particleEmission = var5;
@@ -178,27 +179,32 @@ public enum TrialSpawnerState implements StringRepresentable {
          return Optional.empty();
       } else {
          Entity var5 = selectEntityToSpawnItemAbove(var4, var3.currentMobs, var2, var1, var0);
-         return calculatePositionAbove(var5, var0);
+         return var5 == null ? Optional.empty() : calculatePositionAbove(var5, var0);
       }
    }
 
    private static Optional<Vec3> calculatePositionAbove(Entity var0, ServerLevel var1) {
       Vec3 var2 = var0.position();
-      Vec3 var3 = var2.relative(Direction.UP, (double)(var0.getBbHeight() + 2.0F + (float)var1.random.nextInt(4))).relative(Direction.Plane.HORIZONTAL.getRandomDirection(var1.random), (double)var1.random.nextInt(5));
+      Vec3 var3 = var2.relative(Direction.UP, (double)(var0.getBbHeight() + 2.0F + (float)var1.random.nextInt(4)));
       BlockHitResult var4 = var1.clip(new ClipContext(var2, var3, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
       Vec3 var5 = var4.getBlockPos().getCenter().relative(Direction.DOWN, 1.0);
       BlockPos var6 = BlockPos.containing(var5);
       return !var1.getBlockState(var6).getCollisionShape(var1, var6).isEmpty() ? Optional.empty() : Optional.of(var5);
    }
 
+   @Nullable
    private static Entity selectEntityToSpawnItemAbove(List<Player> var0, Set<UUID> var1, TrialSpawner var2, BlockPos var3, ServerLevel var4) {
       Stream var10000 = var1.stream();
       Objects.requireNonNull(var4);
       Stream var5 = var10000.map(var4::getEntity).filter(Objects::nonNull).filter((var2x) -> {
          return var2x.isAlive() && var2x.distanceToSqr(var3.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange());
       });
-      List var6 = Stream.concat(var0.stream(), var5).toList();
-      return (Entity)Util.getRandom(var6, var4.random);
+      List var6 = var4.random.nextBoolean() ? var5.toList() : var0;
+      if (var6.isEmpty()) {
+         return null;
+      } else {
+         return var6.size() == 1 ? (Entity)var6.getFirst() : (Entity)Util.getRandom(var6, var4.random);
+      }
    }
 
    private boolean timeToSpawnItemSpawner(ServerLevel var1, TrialSpawnerData var2) {

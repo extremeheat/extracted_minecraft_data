@@ -271,7 +271,7 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    class PolarBearPanicGoal extends PanicGoal {
-      public PolarBearPanicGoal(PolarBear var1) {
+      public PolarBearPanicGoal(final PolarBear var1) {
          super(var1, 2.0);
       }
 

@@ -114,7 +114,7 @@ public class LevelChunkSection {
          public int tickingBlockCount;
          public int tickingFluidCount;
 
-         _BlockCounter/* $FF was: 1BlockCounter*/(LevelChunkSection var1) {
+         _BlockCounter/* $FF was: 1BlockCounter*/(final LevelChunkSection var1) {
             super();
          }
 
@@ -137,7 +137,7 @@ public class LevelChunkSection {
          }
 
          // $FF: synthetic method
-         public void accept(Object var1, int var2) {
+         public void accept(final Object var1, final int var2) {
             this.accept((BlockState)var1, var2);
          }
       }

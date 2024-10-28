@@ -104,22 +104,22 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(LivingEntity var1) {
+   protected float getShadowRadius(final LivingEntity var1) {
       return this.getShadowRadius((Mob)var1);
    }
 
    // $FF: synthetic method
-   protected boolean shouldShowName(LivingEntity var1) {
+   protected boolean shouldShowName(final LivingEntity var1) {
       return this.shouldShowName((Mob)var1);
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(Entity var1) {
+   protected float getShadowRadius(final Entity var1) {
       return this.getShadowRadius((Mob)var1);
    }
 
    // $FF: synthetic method
-   protected boolean shouldShowName(Entity var1) {
+   protected boolean shouldShowName(final Entity var1) {
       return this.shouldShowName((Mob)var1);
    }
 }

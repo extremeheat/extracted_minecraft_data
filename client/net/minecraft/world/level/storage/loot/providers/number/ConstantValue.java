@@ -11,9 +11,9 @@ public record ConstantValue(float value) implements NumberProvider {
    });
    public static final Codec<ConstantValue> INLINE_CODEC;
 
-   public ConstantValue(float var1) {
+   public ConstantValue(float value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    public LootNumberProviderType getType() {

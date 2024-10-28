@@ -121,7 +121,7 @@ public abstract class StructurePlacement {
       private final String name;
       private final FrequencyReducer reducer;
 
-      private FrequencyReductionMethod(String var3, FrequencyReducer var4) {
+      private FrequencyReductionMethod(final String var3, final FrequencyReducer var4) {
          this.name = var3;
          this.reducer = var4;
       }
@@ -147,10 +147,10 @@ public abstract class StructurePlacement {
          return var0.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(var0, ExclusionZone::new);
       });
 
-      public ExclusionZone(Holder<StructureSet> var1, int var2) {
+      public ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
          super();
-         this.otherSet = var1;
-         this.chunkCount = var2;
+         this.otherSet = otherSet;
+         this.chunkCount = chunkCount;
       }
 
       boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {

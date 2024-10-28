@@ -12,10 +12,10 @@ public record PngInfo(int width, int height) {
    private static final int IHDR_TYPE = 1229472850;
    private static final int IHDR_SIZE = 13;
 
-   public PngInfo(int var1, int var2) {
+   public PngInfo(int width, int height) {
       super();
-      this.width = var1;
-      this.height = var2;
+      this.width = width;
+      this.height = height;
    }
 
    public static PngInfo fromStream(InputStream var0) throws IOException {

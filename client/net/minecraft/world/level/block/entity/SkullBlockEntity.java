@@ -75,7 +75,7 @@ public class SkullBlockEntity extends BlockEntity {
          }
 
          // $FF: synthetic method
-         public Object load(Object var1) throws Exception {
+         public Object load(final Object var1) throws Exception {
             return this.load((String)var1);
          }
       });
@@ -85,7 +85,7 @@ public class SkullBlockEntity extends BlockEntity {
          }
 
          // $FF: synthetic method
-         public Object load(Object var1) throws Exception {
+         public Object load(final Object var1) throws Exception {
             return this.load((UUID)var1);
          }
       });

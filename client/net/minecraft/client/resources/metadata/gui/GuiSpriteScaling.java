@@ -24,7 +24,7 @@ public interface GuiSpriteScaling {
       private final String key;
       private final MapCodec<? extends GuiSpriteScaling> codec;
 
-      private Type(String var3, MapCodec var4) {
+      private Type(final String var3, final MapCodec var4) {
          this.key = var3;
          this.codec = var4;
       }
@@ -60,11 +60,11 @@ public interface GuiSpriteScaling {
          return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(NineSlice::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(NineSlice::height), GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(NineSlice::border)).apply(var0, NineSlice::new);
       }).validate(NineSlice::validate);
 
-      public NineSlice(int var1, int var2, Border var3) {
+      public NineSlice(int width, int height, Border border) {
          super();
-         this.width = var1;
-         this.height = var2;
-         this.border = var3;
+         this.width = width;
+         this.height = height;
+         this.border = border;
       }
 
       private static DataResult<NineSlice> validate(NineSlice var0) {
@@ -103,12 +103,12 @@ public interface GuiSpriteScaling {
          private static final Codec<Border> RECORD_CODEC;
          static final Codec<Border> CODEC;
 
-         public Border(int var1, int var2, int var3, int var4) {
+         public Border(int left, int top, int right, int bottom) {
             super();
-            this.left = var1;
-            this.top = var2;
-            this.right = var3;
-            this.bottom = var4;
+            this.left = left;
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
          }
 
          private OptionalInt unpackValue() {
@@ -155,10 +155,10 @@ public interface GuiSpriteScaling {
          return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(Tile::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(Tile::height)).apply(var0, Tile::new);
       });
 
-      public Tile(int var1, int var2) {
+      public Tile(int width, int height) {
          super();
-         this.width = var1;
-         this.height = var2;
+         this.width = width;
+         this.height = height;
       }
 
       public Type type() {

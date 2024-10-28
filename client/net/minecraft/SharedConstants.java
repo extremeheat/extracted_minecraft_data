@@ -14,31 +14,31 @@ import net.minecraft.world.level.ChunkPos;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = true;
+   public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 3827;
+   public static final int WORLD_VERSION = 3837;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "24w14a";
+   public static final String VERSION_STRING = "1.20.5";
    /** @deprecated */
    @Deprecated
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 766;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 184;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 191;
    public static final int SNBT_NAG_VERSION = 3798;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = true;
+   public static final boolean CRASH_EAGERLY = false;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 31;
+   public static final int RESOURCE_PACK_FORMAT = 32;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 38;
+   public static final int DATA_PACK_FORMAT = 41;
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -182,7 +182,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742008;
+      return 766;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

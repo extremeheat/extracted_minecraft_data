@@ -13,15 +13,15 @@ import net.minecraft.world.item.crafting.Ingredient;
 public record ArmorMaterial(Map<ArmorItem.Type, Integer> defense, int enchantmentValue, Holder<SoundEvent> equipSound, Supplier<Ingredient> repairIngredient, List<Layer> layers, float toughness, float knockbackResistance) {
    public static final Codec<Holder<ArmorMaterial>> CODEC;
 
-   public ArmorMaterial(Map<ArmorItem.Type, Integer> var1, int var2, Holder<SoundEvent> var3, Supplier<Ingredient> var4, List<Layer> var5, float var6, float var7) {
+   public ArmorMaterial(Map<ArmorItem.Type, Integer> defense, int enchantmentValue, Holder<SoundEvent> equipSound, Supplier<Ingredient> repairIngredient, List<Layer> layers, float toughness, float knockbackResistance) {
       super();
-      this.defense = var1;
-      this.enchantmentValue = var2;
-      this.equipSound = var3;
-      this.repairIngredient = var4;
-      this.layers = var5;
-      this.toughness = var6;
-      this.knockbackResistance = var7;
+      this.defense = defense;
+      this.enchantmentValue = enchantmentValue;
+      this.equipSound = equipSound;
+      this.repairIngredient = repairIngredient;
+      this.layers = layers;
+      this.toughness = toughness;
+      this.knockbackResistance = knockbackResistance;
    }
 
    public int getDefense(ArmorItem.Type var1) {

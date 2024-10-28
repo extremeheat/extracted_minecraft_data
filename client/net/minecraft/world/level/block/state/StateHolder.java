@@ -36,7 +36,7 @@ public abstract class StateHolder<O, S> {
       }
 
       // $FF: synthetic method
-      public Object apply(@Nullable Object var1) {
+      public Object apply(@Nullable final Object var1) {
          return this.apply((Map.Entry)var1);
       }
    };

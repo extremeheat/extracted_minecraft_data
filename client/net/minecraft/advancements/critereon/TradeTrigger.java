@@ -31,11 +31,11 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ItemPredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> villager, Optional<ItemPredicate> item) {
          super();
-         this.player = var1;
-         this.villager = var2;
-         this.item = var3;
+         this.player = player;
+         this.villager = villager;
+         this.item = item;
       }
 
       public static Criterion<TriggerInstance> tradedWithVillager() {
@@ -50,7 +50,7 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          if (this.villager.isPresent() && !((ContextAwarePredicate)this.villager.get()).matches(var1)) {
             return false;
          } else {
-            return !this.item.isPresent() || ((ItemPredicate)this.item.get()).matches(var2);
+            return !this.item.isPresent() || ((ItemPredicate)this.item.get()).test(var2);
          }
       }
 

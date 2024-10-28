@@ -146,8 +146,8 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
          var1.run();
       } catch (Exception var3) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var3);
-         throw var3;
       }
+
    }
 
    public List<MetricSampler> profiledMetrics() {
@@ -155,7 +155,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
    }
 
    // $FF: synthetic method
-   public void tell(Object var1) {
+   public void tell(final Object var1) {
       this.tell((Runnable)var1);
    }
 }

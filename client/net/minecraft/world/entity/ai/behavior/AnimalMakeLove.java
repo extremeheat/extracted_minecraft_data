@@ -103,17 +103,17 @@ public class AnimalMakeLove extends Behavior<Animal> {
    }
 
    // $FF: synthetic method
-   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+   protected boolean canStillUse(final ServerLevel var1, final LivingEntity var2, final long var3) {
       return this.canStillUse(var1, (Animal)var2, var3);
    }
 
    // $FF: synthetic method
-   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.stop(var1, (Animal)var2, var3);
    }
 
    // $FF: synthetic method
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.start(var1, (Animal)var2, var3);
    }
 }

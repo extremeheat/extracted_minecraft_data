@@ -7,7 +7,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextUser;
 
 public interface LootItemFunction extends LootContextUser, BiFunction<ItemStack, LootContext, ItemStack> {
-   LootItemFunctionType getType();
+   LootItemFunctionType<? extends LootItemFunction> getType();
 
    static Consumer<ItemStack> decorate(BiFunction<ItemStack, LootContext, ItemStack> var0, Consumer<ItemStack> var1, LootContext var2) {
       return (var3) -> {

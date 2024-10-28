@@ -75,7 +75,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       final Component name;
       private final int width;
 
-      public CategoryEntry(Component var2) {
+      public CategoryEntry(final Component var2) {
          super();
          this.name = var2;
          this.width = KeyBindsList.this.minecraft.font.width((FormattedText)this.name);
@@ -124,7 +124,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       private final Button resetButton;
       private boolean hasCollision = false;
 
-      KeyEntry(KeyMapping var2, Component var3) {
+      KeyEntry(final KeyMapping var2, final Component var3) {
          super();
          this.key = var2;
          this.name = var3;

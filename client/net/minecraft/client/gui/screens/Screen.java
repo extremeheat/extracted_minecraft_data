@@ -77,6 +77,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public int width;
    public int height;
    private final List<Renderable> renderables = Lists.newArrayList();
+   private long lastPanoramaRenderTime = Util.getMillis();
    protected Font font;
    @Nullable
    private URI clickedLink;
@@ -390,8 +391,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.minecraft.getMainRenderTarget().bindWrite(false);
    }
 
+   protected float advancePanoramaTime() {
+      long var1 = Util.getMillis();
+      long var3 = 50L;
+      float var5 = (float)(var1 - this.lastPanoramaRenderTime) / 50.0F;
+      this.lastPanoramaRenderTime = var1;
+      return var5 > 7.0F ? 0.5F : var5;
+   }
+
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, 1.0F, var2);
+      PANORAMA.render(var1, this.width, this.height, 1.0F, this.advancePanoramaTime());
    }
 
    protected void renderMenuBackground(GuiGraphics var1) {
@@ -623,6 +632,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
    }
 
+   protected void clearTooltipForNextRenderPass() {
+      this.deferredTooltipRendering = null;
+   }
+
    public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1) {
       this.setTooltipForNextRenderPass(var1, DefaultTooltipPositioner.INSTANCE, true);
    }
@@ -664,10 +677,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    private static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
+      DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
          super();
-         this.tooltip = var1;
-         this.positioner = var2;
+         this.tooltip = tooltip;
+         this.positioner = positioner;
       }
 
       public List<FormattedCharSequence> tooltip() {

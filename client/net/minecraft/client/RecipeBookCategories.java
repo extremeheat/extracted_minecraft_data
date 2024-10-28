@@ -36,7 +36,7 @@ public enum RecipeBookCategories {
    public static final Map<RecipeBookCategories, List<RecipeBookCategories>> AGGREGATE_CATEGORIES = ImmutableMap.of(CRAFTING_SEARCH, ImmutableList.of(CRAFTING_EQUIPMENT, CRAFTING_BUILDING_BLOCKS, CRAFTING_MISC, CRAFTING_REDSTONE), FURNACE_SEARCH, ImmutableList.of(FURNACE_FOOD, FURNACE_BLOCKS, FURNACE_MISC), BLAST_FURNACE_SEARCH, ImmutableList.of(BLAST_FURNACE_BLOCKS, BLAST_FURNACE_MISC), SMOKER_SEARCH, ImmutableList.of(SMOKER_FOOD));
    private final List<ItemStack> itemIcons;
 
-   private RecipeBookCategories(ItemStack... var3) {
+   private RecipeBookCategories(final ItemStack... var3) {
       this.itemIcons = ImmutableList.copyOf(var3);
    }
 

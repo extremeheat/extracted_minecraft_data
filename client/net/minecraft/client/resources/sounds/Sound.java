@@ -83,7 +83,7 @@ public class Sound implements Weighted<Sound> {
    }
 
    // $FF: synthetic method
-   public Object getSound(RandomSource var1) {
+   public Object getSound(final RandomSource var1) {
       return this.getSound(var1);
    }
 
@@ -93,7 +93,7 @@ public class Sound implements Weighted<Sound> {
 
       private final String name;
 
-      private Type(String var3) {
+      private Type(final String var3) {
          this.name = var3;
       }
 

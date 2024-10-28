@@ -17,7 +17,7 @@ public enum AdvancementType implements StringRepresentable {
    private final ChatFormatting chatColor;
    private final Component displayName;
 
-   private AdvancementType(String var3, ChatFormatting var4) {
+   private AdvancementType(final String var3, final ChatFormatting var4) {
       this.name = var3;
       this.chatColor = var4;
       this.displayName = Component.translatable("advancements.toast." + var3);

@@ -25,7 +25,7 @@ public class VariantProperty<T> {
    public class Value {
       private final T value;
 
-      public Value(T var2) {
+      public Value(final T var2) {
          super();
          this.value = var2;
       }

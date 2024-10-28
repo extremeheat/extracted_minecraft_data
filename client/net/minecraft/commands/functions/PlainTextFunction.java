@@ -9,10 +9,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public record PlainTextFunction<T>(ResourceLocation id, List<UnboundEntryAction<T>> entries) implements CommandFunction<T>, InstantiatedFunction<T> {
-   public PlainTextFunction(ResourceLocation var1, List<UnboundEntryAction<T>> var2) {
+   public PlainTextFunction(ResourceLocation id, List<UnboundEntryAction<T>> entries) {
       super();
-      this.id = var1;
-      this.entries = var2;
+      this.id = id;
+      this.entries = entries;
    }
 
    public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException {

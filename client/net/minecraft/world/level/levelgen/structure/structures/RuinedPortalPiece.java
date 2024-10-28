@@ -267,7 +267,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       public static final StringRepresentable.EnumCodec<VerticalPlacement> CODEC = StringRepresentable.fromEnum(VerticalPlacement::values);
       private final String name;
 
-      private VerticalPlacement(String var3) {
+      private VerticalPlacement(final String var3) {
          this.name = var3;
       }
 

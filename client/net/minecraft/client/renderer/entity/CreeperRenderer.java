@@ -38,7 +38,7 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperModel<Creeper>>
    }
 
    // $FF: synthetic method
-   protected float getWhiteOverlayProgress(LivingEntity var1, float var2) {
+   protected float getWhiteOverlayProgress(final LivingEntity var1, final float var2) {
       return this.getWhiteOverlayProgress((Creeper)var1, var2);
    }
 }

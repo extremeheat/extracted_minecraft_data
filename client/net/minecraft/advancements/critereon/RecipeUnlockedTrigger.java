@@ -33,10 +33,10 @@ public class RecipeUnlockedTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceLocation.CODEC.fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceLocation var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, ResourceLocation recipe) {
          super();
-         this.player = var1;
-         this.recipe = var2;
+         this.player = player;
+         this.recipe = recipe;
       }
 
       public boolean matches(RecipeHolder<?> var1) {

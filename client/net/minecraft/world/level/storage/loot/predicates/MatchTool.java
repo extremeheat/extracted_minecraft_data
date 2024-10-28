@@ -16,9 +16,9 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
       return var0.group(ItemPredicate.CODEC.optionalFieldOf("predicate").forGetter(MatchTool::predicate)).apply(var0, MatchTool::new);
    });
 
-   public MatchTool(Optional<ItemPredicate> var1) {
+   public MatchTool(Optional<ItemPredicate> predicate) {
       super();
-      this.predicate = var1;
+      this.predicate = predicate;
    }
 
    public LootItemConditionType getType() {
@@ -31,7 +31,7 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
 
    public boolean test(LootContext var1) {
       ItemStack var2 = (ItemStack)var1.getParamOrNull(LootContextParams.TOOL);
-      return var2 != null && (this.predicate.isEmpty() || ((ItemPredicate)this.predicate.get()).matches(var2));
+      return var2 != null && (this.predicate.isEmpty() || ((ItemPredicate)this.predicate.get()).test(var2));
    }
 
    public static LootItemCondition.Builder toolMatches(ItemPredicate.Builder var0) {
@@ -45,7 +45,7 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

@@ -19,7 +19,7 @@ public enum Variant implements StringRepresentable {
    private final int id;
    private final String name;
 
-   private Variant(int var3, String var4) {
+   private Variant(final int var3, final String var4) {
       this.id = var3;
       this.name = var4;
    }

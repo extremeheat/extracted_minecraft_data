@@ -4,9 +4,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 public record DiscardedQueryPayload(ResourceLocation id) implements CustomQueryPayload {
-   public DiscardedQueryPayload(ResourceLocation var1) {
+   public DiscardedQueryPayload(ResourceLocation id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public void write(FriendlyByteBuf var1) {

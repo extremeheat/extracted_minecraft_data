@@ -18,10 +18,10 @@ public record FlatLevelGeneratorPreset(Holder<Item> displayItem, FlatLevelGenera
    });
    public static final Codec<Holder<FlatLevelGeneratorPreset>> CODEC;
 
-   public FlatLevelGeneratorPreset(Holder<Item> var1, FlatLevelGeneratorSettings var2) {
+   public FlatLevelGeneratorPreset(Holder<Item> displayItem, FlatLevelGeneratorSettings settings) {
       super();
-      this.displayItem = var1;
-      this.settings = var2;
+      this.displayItem = displayItem;
+      this.settings = settings;
    }
 
    public Holder<Item> displayItem() {

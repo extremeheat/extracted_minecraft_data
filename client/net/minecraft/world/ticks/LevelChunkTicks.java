@@ -150,7 +150,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    }
 
    // $FF: synthetic method
-   public Tag save(long var1, Function var3) {
+   public Tag save(final long var1, final Function var3) {
       return this.save(var1, var3);
    }
 }

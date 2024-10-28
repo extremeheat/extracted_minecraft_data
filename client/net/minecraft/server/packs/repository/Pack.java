@@ -183,12 +183,12 @@ public class Pack {
    public static record Metadata(Component description, PackCompatibility compatibility, FeatureFlagSet requestedFeatures, List<String> overlays) {
       final Component description;
 
-      public Metadata(Component var1, PackCompatibility var2, FeatureFlagSet var3, List<String> var4) {
+      public Metadata(Component description, PackCompatibility compatibility, FeatureFlagSet requestedFeatures, List<String> overlays) {
          super();
-         this.description = var1;
-         this.compatibility = var2;
-         this.requestedFeatures = var3;
-         this.overlays = var4;
+         this.description = description;
+         this.compatibility = compatibility;
+         this.requestedFeatures = requestedFeatures;
+         this.overlays = overlays;
       }
 
       public Component description() {

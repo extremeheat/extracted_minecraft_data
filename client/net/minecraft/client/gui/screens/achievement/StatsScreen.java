@@ -163,7 +163,7 @@ public class StatsScreen extends Screen {
    }
 
    private class GeneralStatisticsList extends ObjectSelectionList<Entry> {
-      public GeneralStatisticsList(Minecraft var2) {
+      public GeneralStatisticsList(final Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
          var3.sort(Comparator.comparing((var0) -> {
@@ -186,7 +186,7 @@ public class StatsScreen extends Screen {
          private final Stat<ResourceLocation> stat;
          private final Component statDisplay;
 
-         Entry(Stat<ResourceLocation> var2) {
+         Entry(final Stat<ResourceLocation> var2) {
             super();
             this.stat = var2;
             this.statDisplay = Component.translatable(StatsScreen.getTranslationKey(var2));
@@ -228,7 +228,7 @@ public class StatsScreen extends Screen {
       protected int headerPressed = -1;
       protected int sortOrder;
 
-      public ItemStatisticsList(Minecraft var2) {
+      public ItemStatisticsList(final Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22);
          this.blockColumns.add(Stats.BLOCK_MINED);
          this.itemColumns = Lists.newArrayList(new StatType[]{Stats.ITEM_BROKEN, Stats.ITEM_CRAFTED, Stats.ITEM_USED, Stats.ITEM_PICKED_UP, Stats.ITEM_DROPPED});
@@ -428,7 +428,7 @@ public class StatsScreen extends Screen {
          }
 
          // $FF: synthetic method
-         public int compare(Object var1, Object var2) {
+         public int compare(final Object var1, final Object var2) {
             return this.compare((ItemRow)var1, (ItemRow)var2);
          }
       }
@@ -436,7 +436,7 @@ public class StatsScreen extends Screen {
       private class ItemRow extends ObjectSelectionList.Entry<ItemRow> {
          private final Item item;
 
-         ItemRow(Item var2) {
+         ItemRow(final Item var2) {
             super();
             this.item = var2;
          }
@@ -491,7 +491,7 @@ public class StatsScreen extends Screen {
    }
 
    private class MobsStatisticsList extends ObjectSelectionList<MobRow> {
-      public MobsStatisticsList(Minecraft var2) {
+      public MobsStatisticsList(final Minecraft var2) {
          int var10002 = StatsScreen.this.width;
          int var10003 = StatsScreen.this.height - 33 - 58;
          Objects.requireNonNull(StatsScreen.this.font);
@@ -523,7 +523,7 @@ public class StatsScreen extends Screen {
          private final boolean hasKills;
          private final boolean wasKilledBy;
 
-         public MobRow(EntityType<?> var2) {
+         public MobRow(final EntityType<?> var2) {
             super();
             this.mobName = var2.getDescription();
             int var3 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var2));

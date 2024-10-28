@@ -157,11 +157,11 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       final ResourceKey<GameEvent> gameEvent;
       final Vec3 position;
 
-      TrackedGameEvent(long var1, ResourceKey<GameEvent> var3, Vec3 var4) {
+      TrackedGameEvent(long timeStamp, ResourceKey<GameEvent> gameEvent, Vec3 position) {
          super();
-         this.timeStamp = var1;
-         this.gameEvent = var3;
-         this.position = var4;
+         this.timeStamp = timeStamp;
+         this.gameEvent = gameEvent;
+         this.position = position;
       }
 
       public boolean isExpired() {

@@ -40,19 +40,19 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template unpack(ArgumentType var1) {
+   public ArgumentTypeInfo.Template unpack(final ArgumentType var1) {
       return this.unpack(var1);
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
       return this.deserializeFromNetwork(var1);
    }
 
    public final class Template implements ArgumentTypeInfo.Template<A> {
       private final Function<CommandBuildContext, A> constructor;
 
-      public Template(Function<CommandBuildContext, A> var2) {
+      public Template(final Function<CommandBuildContext, A> var2) {
          super();
          this.constructor = var2;
       }

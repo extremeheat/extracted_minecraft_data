@@ -65,10 +65,10 @@ public abstract class TagsProvider<T> implements DataProvider {
             final HolderLookup.Provider contents;
             final TagLookup<T> parent;
 
-            _CombinedData/* $FF was: 1CombinedData*/(HolderLookup.Provider var1, TagLookup<T> var2) {
+            _CombinedData/* $FF was: 1CombinedData*/(HolderLookup.Provider contents, TagLookup<T> parent) {
                super();
-               this.contents = var1;
-               this.parent = var2;
+               this.contents = contents;
+               this.parent = parent;
             }
 
             public HolderLookup.Provider contents() {

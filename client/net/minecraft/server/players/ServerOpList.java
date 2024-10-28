@@ -30,7 +30,7 @@ public class ServerOpList extends StoredUserList<GameProfile, ServerOpListEntry>
    }
 
    // $FF: synthetic method
-   protected String getKeyForUser(Object var1) {
+   protected String getKeyForUser(final Object var1) {
       return this.getKeyForUser((GameProfile)var1);
    }
 }

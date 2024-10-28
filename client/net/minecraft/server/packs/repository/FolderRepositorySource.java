@@ -134,13 +134,13 @@ public class FolderRepositorySource implements RepositorySource {
       }
 
       // $FF: synthetic method
-      protected Object createDirectoryPack(Path var1) throws IOException {
+      protected Object createDirectoryPack(final Path var1) throws IOException {
          return this.createDirectoryPack(var1);
       }
 
       // $FF: synthetic method
       @Nullable
-      protected Object createZipPack(Path var1) throws IOException {
+      protected Object createZipPack(final Path var1) throws IOException {
          return this.createZipPack(var1);
       }
    }

@@ -18,7 +18,7 @@ public class VillagerMetadataSectionSerializer implements MetadataSectionSeriali
    }
 
    // $FF: synthetic method
-   public Object fromJson(JsonObject var1) {
+   public Object fromJson(final JsonObject var1) {
       return this.fromJson(var1);
    }
 }

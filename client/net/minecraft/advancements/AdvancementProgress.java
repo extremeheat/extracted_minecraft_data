@@ -196,7 +196,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    // $FF: synthetic method
-   public int compareTo(Object var1) {
+   public int compareTo(final Object var1) {
       return this.compareTo((AdvancementProgress)var1);
    }
 

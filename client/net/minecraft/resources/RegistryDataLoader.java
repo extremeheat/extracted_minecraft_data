@@ -261,11 +261,11 @@ public class RegistryDataLoader {
    static record Loader<T>(RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
       final WritableRegistry<T> registry;
 
-      Loader(RegistryData<T> var1, WritableRegistry<T> var2, Map<ResourceKey<?>, Exception> var3) {
+      Loader(RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
          super();
-         this.data = var1;
-         this.registry = var2;
-         this.loadingErrors = var3;
+         this.data = data;
+         this.registry = registry;
+         this.loadingErrors = loadingErrors;
       }
 
       public void loadFromResources(ResourceManager var1, RegistryOps.RegistryInfoLookup var2) {
@@ -292,10 +292,10 @@ public class RegistryDataLoader {
    public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
       final Codec<T> elementCodec;
 
-      public RegistryData(ResourceKey<? extends Registry<T>> var1, Codec<T> var2) {
+      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
          super();
-         this.key = var1;
-         this.elementCodec = var2;
+         this.key = key;
+         this.elementCodec = elementCodec;
       }
 
       Loader<T> create(Lifecycle var1, Map<ResourceKey<?>, Exception> var2) {

@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 public class SpellParticle extends TextureSheetParticle {
    private static final RandomSource RANDOM = RandomSource.create();
    private final SpriteSet sprites;
+   private float originalAlpha = 1.0F;
 
    SpellParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
       super(var1, var2, var4, var6, 0.5 - RANDOM.nextDouble(), var10, 0.5 - RANDOM.nextDouble());
@@ -43,11 +44,16 @@ public class SpellParticle extends TextureSheetParticle {
       super.tick();
       this.setSpriteFromAge(this.sprites);
       if (this.isCloseToScopingPlayer()) {
-         this.setAlpha(0.0F);
+         this.alpha = 0.0F;
       } else {
-         this.setAlpha(Mth.lerp(0.05F, this.alpha, 1.0F));
+         this.alpha = Mth.lerp(0.05F, this.alpha, this.originalAlpha);
       }
 
+   }
+
+   protected void setAlpha(float var1) {
+      super.setAlpha(var1);
+      this.originalAlpha = var1;
    }
 
    private boolean isCloseToScopingPlayer() {
@@ -69,7 +75,7 @@ public class SpellParticle extends TextureSheetParticle {
       }
 
       // $FF: synthetic method
-      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
@@ -90,7 +96,7 @@ public class SpellParticle extends TextureSheetParticle {
       }
 
       // $FF: synthetic method
-      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
@@ -111,7 +117,7 @@ public class SpellParticle extends TextureSheetParticle {
       }
 
       // $FF: synthetic method
-      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((ColorParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
@@ -129,7 +135,7 @@ public class SpellParticle extends TextureSheetParticle {
       }
 
       // $FF: synthetic method
-      public Particle createParticle(ParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }

@@ -24,7 +24,7 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
       super(var1);
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SmeltItemFunction> getType() {
       return LootItemFunctions.FURNACE_SMELT;
    }
 

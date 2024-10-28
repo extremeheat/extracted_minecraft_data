@@ -255,11 +255,11 @@ public class GossipContainer {
       });
       public static final Codec<List<GossipEntry>> LIST_CODEC;
 
-      GossipEntry(UUID var1, GossipType var2, int var3) {
+      GossipEntry(UUID target, GossipType type, int value) {
          super();
-         this.target = var1;
-         this.type = var2;
-         this.value = var3;
+         this.target = target;
+         this.type = type;
+         this.value = value;
       }
 
       public int weightedValue() {

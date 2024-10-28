@@ -264,7 +264,7 @@ public class SectionRenderDispatcher {
       private final BlockPos.MutableBlockPos[] relativeOrigins;
       private boolean playerChanged;
 
-      public RenderSection(int var2, int var3, int var4, int var5) {
+      public RenderSection(final int var2, final int var3, final int var4, final int var5) {
          super();
          this.compiled = new AtomicReference(SectionRenderDispatcher.CompiledSection.UNCOMPILED);
          this.initialCompilationCancelCount = new AtomicInteger(0);
@@ -452,7 +452,7 @@ public class SectionRenderDispatcher {
       private class ResortTransparencyTask extends CompileTask {
          private final CompiledSection compiledSection;
 
-         public ResortTransparencyTask(double var2, CompiledSection var4) {
+         public ResortTransparencyTask(final double var2, final CompiledSection var4) {
             super(RenderSection.this, var2, true);
             this.compiledSection = var4;
          }
@@ -513,7 +513,7 @@ public class SectionRenderDispatcher {
          protected final AtomicBoolean isCancelled = new AtomicBoolean(false);
          protected final boolean isHighPriority;
 
-         public CompileTask(RenderSection var1, double var2, boolean var4) {
+         public CompileTask(final RenderSection var1, final double var2, final boolean var4) {
             super();
             this.distAtCreation = var2;
             this.isHighPriority = var4;
@@ -530,7 +530,7 @@ public class SectionRenderDispatcher {
          }
 
          // $FF: synthetic method
-         public int compareTo(Object var1) {
+         public int compareTo(final Object var1) {
             return this.compareTo((CompileTask)var1);
          }
       }
@@ -539,7 +539,7 @@ public class SectionRenderDispatcher {
          @Nullable
          protected RenderChunkRegion region;
 
-         public RebuildTask(double var2, @Nullable RenderChunkRegion var4, boolean var5) {
+         public RebuildTask(final double var2, @Nullable final RenderChunkRegion var4, final boolean var5) {
             super(RenderSection.this, var2, var5);
             this.region = var4;
          }

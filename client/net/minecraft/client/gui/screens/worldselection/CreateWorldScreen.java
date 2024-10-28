@@ -12,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,6 +73,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
@@ -359,10 +361,19 @@ public class CreateWorldScreen extends Screen {
       }, (var0, var1x, var2x, var3x) -> {
          var0.close();
          return new WorldCreationContext(var3x.worldGenSettings(), var2x, var1x, var3x.dataConfiguration());
-      }, Util.backgroundExecutor(), this.minecraft);
+      }, Util.backgroundExecutor(), this.minecraft).thenApplyAsync((var0) -> {
+         Iterator var1 = var0.datapackDimensions().iterator();
+
+         while(var1.hasNext()) {
+            LevelStem var2 = (LevelStem)var1.next();
+            var2.generator().validate();
+         }
+
+         return var0;
+      });
       WorldCreationUiState var10001 = this.uiState;
       Objects.requireNonNull(var10001);
-      var10000.thenAcceptAsync(var10001::setSettings, this.minecraft).handle((var2x, var3x) -> {
+      var10000.thenAcceptAsync(var10001::setSettings, this.minecraft).handleAsync((var2x, var3x) -> {
          if (var3x != null) {
             LOGGER.warn("Failed to validate datapack", var3x);
             this.minecraft.setScreen(new ConfirmScreen((var2) -> {
@@ -378,7 +389,7 @@ public class CreateWorldScreen extends Screen {
          }
 
          return null;
-      });
+      }, this.minecraft);
    }
 
    private static WorldLoader.InitConfig createDefaultLoadConfig(PackRepository var0, WorldDataConfiguration var1) {
@@ -739,10 +750,10 @@ public class CreateWorldScreen extends Screen {
    }
 
    static record DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
-      DataPackReloadCookie(WorldGenSettings var1, WorldDataConfiguration var2) {
+      DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataConfiguration dataConfiguration) {
          super();
-         this.worldGenSettings = var1;
-         this.dataConfiguration = var2;
+         this.worldGenSettings = worldGenSettings;
+         this.dataConfiguration = dataConfiguration;
       }
 
       public WorldGenSettings worldGenSettings() {

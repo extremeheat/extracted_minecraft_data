@@ -22,12 +22,12 @@ public record TrimPattern(ResourceLocation assetId, Holder<Item> templateItem, C
    public static final Codec<Holder<TrimPattern>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<TrimPattern>> STREAM_CODEC;
 
-   public TrimPattern(ResourceLocation var1, Holder<Item> var2, Component var3, boolean var4) {
+   public TrimPattern(ResourceLocation assetId, Holder<Item> templateItem, Component description, boolean decal) {
       super();
-      this.assetId = var1;
-      this.templateItem = var2;
-      this.description = var3;
-      this.decal = var4;
+      this.assetId = assetId;
+      this.templateItem = templateItem;
+      this.description = description;
+      this.decal = decal;
    }
 
    public Component copyWithStyle(Holder<TrimMaterial> var1) {

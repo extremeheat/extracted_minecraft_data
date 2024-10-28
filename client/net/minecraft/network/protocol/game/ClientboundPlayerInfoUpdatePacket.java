@@ -107,15 +107,15 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
          this(var1.getUUID(), var1.getGameProfile(), true, var1.connection.latency(), var1.gameMode.getGameModeForPlayer(), var1.getTabListDisplayName(), (RemoteChatSession.Data)Optionull.map(var1.getChatSession(), RemoteChatSession::asData));
       }
 
-      public Entry(UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, @Nullable RemoteChatSession.Data var7) {
+      public Entry(UUID profileId, @Nullable GameProfile profile, boolean listed, int latency, GameType gameMode, @Nullable Component displayName, @Nullable RemoteChatSession.Data chatSession) {
          super();
-         this.profileId = var1;
-         this.profile = var2;
-         this.listed = var3;
-         this.latency = var4;
-         this.gameMode = var5;
-         this.displayName = var6;
-         this.chatSession = var7;
+         this.profileId = profileId;
+         this.profile = profile;
+         this.listed = listed;
+         this.latency = latency;
+         this.gameMode = gameMode;
+         this.displayName = displayName;
+         this.chatSession = chatSession;
       }
 
       public UUID profileId() {
@@ -189,7 +189,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       final Reader reader;
       final Writer writer;
 
-      private Action(Reader var3, Writer var4) {
+      private Action(final Reader var3, final Writer var4) {
          this.reader = var3;
          this.writer = var4;
       }

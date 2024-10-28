@@ -83,7 +83,7 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
       }
 
       // $FF: synthetic method
-      public ConditionUserBuilder when(LootItemCondition.Builder var1) {
+      public ConditionUserBuilder when(final LootItemCondition.Builder var1) {
          return this.when(var1);
       }
    }

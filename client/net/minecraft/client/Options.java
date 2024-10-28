@@ -491,9 +491,7 @@ public class Options {
    }
 
    private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
-      return new OptionInstance(var1, OptionInstance.noTooltip(), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> {
+      return new OptionInstance(var1, OptionInstance.noTooltip(), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var1x) -> {
          Minecraft.getInstance().getSoundManager().updateSourceVolume(var2, var1x.floatValue());
       });
    }
@@ -688,7 +686,7 @@ public class Options {
       });
       this.chatLineSpacing = new OptionInstance("options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, (var0) -> {
       });
-      this.menuBackgroundBlurriness = new OptionInstance("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
+      this.menuBackgroundBlurriness = new OptionInstance("options.accessibility.menu_background_blurriness", OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
       });
       this.textBackgroundOpacity = new OptionInstance("options.accessibility.text_background_opacity", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
          Minecraft.getInstance().gui.getChat().rescaleChat();
@@ -763,7 +761,7 @@ public class Options {
       this.biomeBlendRadius = new OptionInstance("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
          int var2 = var1x * 2 + 1;
          return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2));
-      }, new OptionInstance.IntRange(0, 7), 2, (var0) -> {
+      }, new OptionInstance.IntRange(0, 7, false), 2, (var0) -> {
          Minecraft.getInstance().levelRenderer.allChanged();
       });
       this.mouseWheelSensitivity = new OptionInstance("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (var0, var1x) -> {
@@ -905,28 +903,16 @@ public class Options {
          }
       }, false, (var0) -> {
       });
-      this.screenEffectScale = new OptionInstance("options.screenEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
+      this.screenEffectScale = new OptionInstance("options.screenEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
       });
-      this.fovEffectScale = new OptionInstance("options.fovEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_FOV_EFFECT), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), Codec.doubleRange(0.0, 1.0), 1.0, (var0) -> {
+      this.fovEffectScale = new OptionInstance("options.fovEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_FOV_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), Codec.doubleRange(0.0, 1.0), 1.0, (var0) -> {
       });
-      this.darknessEffectScale = new OptionInstance("options.darknessEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), 1.0, (var0) -> {
+      this.darknessEffectScale = new OptionInstance("options.darknessEffectScale", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARKNESS_EFFECT), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE.xmap(Mth::square, Math::sqrt), 1.0, (var0) -> {
       });
-      this.glintSpeed = new OptionInstance("options.glintSpeed", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
+      this.glintSpeed = new OptionInstance("options.glintSpeed", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.5, (var0) -> {
       });
-      this.glintStrength = new OptionInstance("options.glintStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE, 0.75, RenderSystem::setShaderGlintAlpha);
-      this.damageTiltStrength = new OptionInstance("options.damageTiltStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH), (var0, var1x) -> {
-         return var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x);
-      }, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
+      this.glintStrength = new OptionInstance("options.glintStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 0.75, RenderSystem::setShaderGlintAlpha);
+      this.damageTiltStrength = new OptionInstance("options.damageTiltStrength", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH), Options::percentValueOrOffLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, (var0) -> {
       });
       this.gamma = new OptionInstance("options.gamma", OptionInstance.noTooltip(), (var0, var1x) -> {
          int var2 = (int)(var1x * 100.0);
@@ -976,12 +962,12 @@ public class Options {
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
       this.renderDistance = new OptionInstance("options.renderDistance", OptionInstance.noTooltip(), (var0, var1x) -> {
          return genericValueLabel(var0, Component.translatable("options.chunks", var1x));
-      }, new OptionInstance.IntRange(2, var3 ? 32 : 16), 12, (var0) -> {
+      }, new OptionInstance.IntRange(2, var3 ? 32 : 16, false), 12, (var0) -> {
          Minecraft.getInstance().levelRenderer.needsUpdate();
       });
       this.simulationDistance = new OptionInstance("options.simulationDistance", OptionInstance.noTooltip(), (var0, var1x) -> {
          return genericValueLabel(var0, Component.translatable("options.chunks", var1x));
-      }, new OptionInstance.IntRange(5, var3 ? 32 : 16), 12, (var0) -> {
+      }, new OptionInstance.IntRange(5, var3 ? 32 : 16, false), 12, (var0) -> {
       });
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
@@ -1491,6 +1477,10 @@ public class Options {
 
    public static Component genericValueLabel(Component var0, Component var1) {
       return Component.translatable("options.generic_value", var0, var1);
+   }
+
+   private static Component percentValueOrOffLabel(Component var0, double var1) {
+      return var1 == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1);
    }
 
    public static Component genericValueLabel(Component var0, int var1) {

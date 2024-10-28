@@ -15,10 +15,10 @@ public record RaiderPredicate(boolean hasRaid, boolean isCaptain) implements Ent
    });
    public static final RaiderPredicate CAPTAIN_WITHOUT_RAID = new RaiderPredicate(false, true);
 
-   public RaiderPredicate(boolean var1, boolean var2) {
+   public RaiderPredicate(boolean hasRaid, boolean isCaptain) {
       super();
-      this.hasRaid = var1;
-      this.isCaptain = var2;
+      this.hasRaid = hasRaid;
+      this.isCaptain = isCaptain;
    }
 
    public MapCodec<RaiderPredicate> codec() {

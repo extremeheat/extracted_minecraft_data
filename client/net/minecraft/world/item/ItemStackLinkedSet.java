@@ -16,12 +16,12 @@ public class ItemStackLinkedSet {
       }
 
       // $FF: synthetic method
-      public boolean equals(@Nullable Object var1, @Nullable Object var2) {
+      public boolean equals(@Nullable final Object var1, @Nullable final Object var2) {
          return this.equals((ItemStack)var1, (ItemStack)var2);
       }
 
       // $FF: synthetic method
-      public int hashCode(@Nullable Object var1) {
+      public int hashCode(@Nullable final Object var1) {
          return this.hashCode((ItemStack)var1);
       }
    };

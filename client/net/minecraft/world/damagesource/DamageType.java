@@ -24,13 +24,13 @@ public record DamageType(String msgId, DamageScaling scaling, float exhaustion, 
       this(var1, DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, var2);
    }
 
-   public DamageType(String var1, DamageScaling var2, float var3, DamageEffects var4, DeathMessageType var5) {
+   public DamageType(String msgId, DamageScaling scaling, float exhaustion, DamageEffects effects, DeathMessageType deathMessageType) {
       super();
-      this.msgId = var1;
-      this.scaling = var2;
-      this.exhaustion = var3;
-      this.effects = var4;
-      this.deathMessageType = var5;
+      this.msgId = msgId;
+      this.scaling = scaling;
+      this.exhaustion = exhaustion;
+      this.effects = effects;
+      this.deathMessageType = deathMessageType;
    }
 
    public String msgId() {

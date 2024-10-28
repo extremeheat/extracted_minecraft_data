@@ -12,20 +12,20 @@ public record ServerboundChatCommandSignedPacket(String command, Instant timeSta
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandSignedPacket> STREAM_CODEC = Packet.codec(ServerboundChatCommandSignedPacket::write, ServerboundChatCommandSignedPacket::new);
 
    private ServerboundChatCommandSignedPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(256), var1.readInstant(), var1.readLong(), new ArgumentSignatures(var1), new LastSeenMessages.Update(var1));
+      this(var1.readUtf(), var1.readInstant(), var1.readLong(), new ArgumentSignatures(var1), new LastSeenMessages.Update(var1));
    }
 
-   public ServerboundChatCommandSignedPacket(String var1, Instant var2, long var3, ArgumentSignatures var5, LastSeenMessages.Update var6) {
+   public ServerboundChatCommandSignedPacket(String command, Instant timeStamp, long salt, ArgumentSignatures argumentSignatures, LastSeenMessages.Update lastSeenMessages) {
       super();
-      this.command = var1;
-      this.timeStamp = var2;
-      this.salt = var3;
-      this.argumentSignatures = var5;
-      this.lastSeenMessages = var6;
+      this.command = command;
+      this.timeStamp = timeStamp;
+      this.salt = salt;
+      this.argumentSignatures = argumentSignatures;
+      this.lastSeenMessages = lastSeenMessages;
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.command, 256);
+      var1.writeUtf(this.command);
       var1.writeInstant(this.timeStamp);
       var1.writeLong(this.salt);
       this.argumentSignatures.write(var1);

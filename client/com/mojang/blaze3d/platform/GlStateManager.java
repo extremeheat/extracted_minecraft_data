@@ -966,7 +966,7 @@ public class GlStateManager {
 
       public final int value;
 
-      private DestFactor(int var3) {
+      private DestFactor(final int var3) {
          this.value = var3;
       }
 
@@ -996,7 +996,7 @@ public class GlStateManager {
 
       public final int value;
 
-      private SourceFactor(int var3) {
+      private SourceFactor(final int var3) {
          this.value = var3;
       }
 
@@ -1026,7 +1026,7 @@ public class GlStateManager {
 
       public final int value;
 
-      private LogicOp(int var3) {
+      private LogicOp(final int var3) {
          this.value = var3;
       }
 

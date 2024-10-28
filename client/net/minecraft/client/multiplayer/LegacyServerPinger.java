@@ -68,7 +68,7 @@ public class LegacyServerPinger extends SimpleChannelInboundHandler<ByteBuf> {
    }
 
    // $FF: synthetic method
-   protected void channelRead0(ChannelHandlerContext var1, Object var2) throws Exception {
+   protected void channelRead0(final ChannelHandlerContext var1, final Object var2) throws Exception {
       this.channelRead0(var1, (ByteBuf)var2);
    }
 

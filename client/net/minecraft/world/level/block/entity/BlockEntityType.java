@@ -34,7 +34,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<SpawnerBlockEntity> MOB_SPAWNER;
    public static final BlockEntityType<PistonMovingBlockEntity> PISTON;
    public static final BlockEntityType<BrewingStandBlockEntity> BREWING_STAND;
-   public static final BlockEntityType<EnchantmentTableBlockEntity> ENCHANTING_TABLE;
+   public static final BlockEntityType<EnchantingTableBlockEntity> ENCHANTING_TABLE;
    public static final BlockEntityType<TheEndPortalBlockEntity> END_PORTAL;
    public static final BlockEntityType<BeaconBlockEntity> BEACON;
    public static final BlockEntityType<SkullBlockEntity> SKULL;
@@ -126,7 +126,7 @@ public class BlockEntityType<T extends BlockEntity> {
       MOB_SPAWNER = register("mob_spawner", BlockEntityType.Builder.of(SpawnerBlockEntity::new, Blocks.SPAWNER));
       PISTON = register("piston", BlockEntityType.Builder.of(PistonMovingBlockEntity::new, Blocks.MOVING_PISTON));
       BREWING_STAND = register("brewing_stand", BlockEntityType.Builder.of(BrewingStandBlockEntity::new, Blocks.BREWING_STAND));
-      ENCHANTING_TABLE = register("enchanting_table", BlockEntityType.Builder.of(EnchantmentTableBlockEntity::new, Blocks.ENCHANTING_TABLE));
+      ENCHANTING_TABLE = register("enchanting_table", BlockEntityType.Builder.of(EnchantingTableBlockEntity::new, Blocks.ENCHANTING_TABLE));
       END_PORTAL = register("end_portal", BlockEntityType.Builder.of(TheEndPortalBlockEntity::new, Blocks.END_PORTAL));
       BEACON = register("beacon", BlockEntityType.Builder.of(BeaconBlockEntity::new, Blocks.BEACON));
       SKULL = register("skull", BlockEntityType.Builder.of(SkullBlockEntity::new, Blocks.SKELETON_SKULL, Blocks.SKELETON_WALL_SKULL, Blocks.CREEPER_HEAD, Blocks.CREEPER_WALL_HEAD, Blocks.DRAGON_HEAD, Blocks.DRAGON_WALL_HEAD, Blocks.ZOMBIE_HEAD, Blocks.ZOMBIE_WALL_HEAD, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL, Blocks.PLAYER_HEAD, Blocks.PLAYER_WALL_HEAD, Blocks.PIGLIN_HEAD, Blocks.PIGLIN_WALL_HEAD));

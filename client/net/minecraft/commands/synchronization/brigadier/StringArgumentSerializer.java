@@ -38,14 +38,14 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
       return this.deserializeFromNetwork(var1);
    }
 
    public final class Template implements ArgumentTypeInfo.Template<StringArgumentType> {
       final StringArgumentType.StringType type;
 
-      public Template(StringArgumentType.StringType var2) {
+      public Template(final StringArgumentType.StringType var2) {
          super();
          this.type = var2;
       }
@@ -67,7 +67,7 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
       }
 
       // $FF: synthetic method
-      public ArgumentType instantiate(CommandBuildContext var1) {
+      public ArgumentType instantiate(final CommandBuildContext var1) {
          return this.instantiate(var1);
       }
    }

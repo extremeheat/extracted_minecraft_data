@@ -12,15 +12,15 @@ public interface PieceGenerator<C extends FeatureConfiguration> {
    void generatePieces(StructurePiecesBuilder var1, Context<C> var2);
 
    public static record Context<C extends FeatureConfiguration>(C config, ChunkGenerator chunkGenerator, StructureTemplateManager structureTemplateManager, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, WorldgenRandom random, long seed) {
-      public Context(C var1, ChunkGenerator var2, StructureTemplateManager var3, ChunkPos var4, LevelHeightAccessor var5, WorldgenRandom var6, long var7) {
+      public Context(C config, ChunkGenerator chunkGenerator, StructureTemplateManager structureTemplateManager, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, WorldgenRandom random, long seed) {
          super();
-         this.config = var1;
-         this.chunkGenerator = var2;
-         this.structureTemplateManager = var3;
-         this.chunkPos = var4;
-         this.heightAccessor = var5;
-         this.random = var6;
-         this.seed = var7;
+         this.config = config;
+         this.chunkGenerator = chunkGenerator;
+         this.structureTemplateManager = structureTemplateManager;
+         this.chunkPos = chunkPos;
+         this.heightAccessor = heightAccessor;
+         this.random = random;
+         this.seed = seed;
       }
 
       public C config() {

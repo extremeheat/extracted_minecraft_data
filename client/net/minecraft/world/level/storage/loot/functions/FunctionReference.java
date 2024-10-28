@@ -27,7 +27,7 @@ public class FunctionReference extends LootItemConditionalFunction {
       this.name = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<FunctionReference> getType() {
       return LootItemFunctions.REFERENCE;
    }
 

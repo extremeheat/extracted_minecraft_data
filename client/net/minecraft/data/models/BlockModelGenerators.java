@@ -2277,7 +2277,7 @@ public class BlockModelGenerators {
       private ResourceLocation fullBlock;
       private final Set<Block> skipGeneratingModelsFor = new HashSet();
 
-      public BlockFamilyProvider(TextureMapping var2) {
+      public BlockFamilyProvider(final TextureMapping var2) {
          super();
          this.mapping = var2;
       }
@@ -2448,7 +2448,7 @@ public class BlockModelGenerators {
    class WoodProvider {
       private final TextureMapping logMapping;
 
-      public WoodProvider(TextureMapping var2) {
+      public WoodProvider(final TextureMapping var2) {
          super();
          this.logMapping = var2;
       }
@@ -2503,7 +2503,7 @@ public class BlockModelGenerators {
    private class BlockEntityModelGenerator {
       private final ResourceLocation baseModel;
 
-      public BlockEntityModelGenerator(ResourceLocation var2, Block var3) {
+      public BlockEntityModelGenerator(final ResourceLocation var2, final Block var3) {
          super();
          this.baseModel = ModelTemplates.PARTICLE_ONLY.create(var2, TextureMapping.particle(var3), BlockModelGenerators.this.modelOutput);
       }
@@ -2546,10 +2546,10 @@ public class BlockModelGenerators {
    }
 
    private static record BookSlotModelCacheKey(ModelTemplate template, String modelSuffix) {
-      BookSlotModelCacheKey(ModelTemplate var1, String var2) {
+      BookSlotModelCacheKey(ModelTemplate template, String modelSuffix) {
          super();
-         this.template = var1;
-         this.modelSuffix = var2;
+         this.template = template;
+         this.modelSuffix = modelSuffix;
       }
 
       public ModelTemplate template() {

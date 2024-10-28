@@ -61,11 +61,11 @@ public interface DensityFunction {
    }
 
    public static record SinglePointContext(int blockX, int blockY, int blockZ) implements FunctionContext {
-      public SinglePointContext(int var1, int var2, int var3) {
+      public SinglePointContext(int blockX, int blockY, int blockZ) {
          super();
-         this.blockX = var1;
-         this.blockY = var2;
-         this.blockZ = var3;
+         this.blockX = blockX;
+         this.blockY = blockY;
+         this.blockZ = blockZ;
       }
 
       public int blockX() {
@@ -118,10 +118,10 @@ public interface DensityFunction {
          this(var1, (NormalNoise)null);
       }
 
-      public NoiseHolder(Holder<NormalNoise.NoiseParameters> var1, @Nullable NormalNoise var2) {
+      public NoiseHolder(Holder<NormalNoise.NoiseParameters> noiseData, @Nullable NormalNoise noise) {
          super();
-         this.noiseData = var1;
-         this.noise = var2;
+         this.noiseData = noiseData;
+         this.noise = noise;
       }
 
       public double getValue(double var1, double var3, double var5) {

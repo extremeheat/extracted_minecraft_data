@@ -13,10 +13,10 @@ public record UniformGenerator(NumberProvider min, NumberProvider max) implement
       return var0.group(NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(var0, UniformGenerator::new);
    });
 
-   public UniformGenerator(NumberProvider var1, NumberProvider var2) {
+   public UniformGenerator(NumberProvider min, NumberProvider max) {
       super();
-      this.min = var1;
-      this.max = var2;
+      this.min = min;
+      this.max = max;
    }
 
    public LootNumberProviderType getType() {

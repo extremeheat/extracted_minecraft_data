@@ -9,13 +9,13 @@ public record DistancePredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, 
       return var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("x", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::x), MinMaxBounds.Doubles.CODEC.optionalFieldOf("y", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::y), MinMaxBounds.Doubles.CODEC.optionalFieldOf("z", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::z), MinMaxBounds.Doubles.CODEC.optionalFieldOf("horizontal", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::horizontal), MinMaxBounds.Doubles.CODEC.optionalFieldOf("absolute", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::absolute)).apply(var0, DistancePredicate::new);
    });
 
-   public DistancePredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, MinMaxBounds.Doubles var3, MinMaxBounds.Doubles var4, MinMaxBounds.Doubles var5) {
+   public DistancePredicate(MinMaxBounds.Doubles x, MinMaxBounds.Doubles y, MinMaxBounds.Doubles z, MinMaxBounds.Doubles horizontal, MinMaxBounds.Doubles absolute) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.horizontal = var4;
-      this.absolute = var5;
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.horizontal = horizontal;
+      this.absolute = absolute;
    }
 
    public static DistancePredicate horizontal(MinMaxBounds.Doubles var0) {

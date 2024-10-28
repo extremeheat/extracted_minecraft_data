@@ -100,6 +100,7 @@ import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Overlay;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
+import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
@@ -172,7 +173,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -237,7 +237,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -266,7 +265,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public static final ResourceLocation ALT_FONT;
    private static final ResourceLocation REGIONAL_COMPLIANCIES;
    private static final CompletableFuture<Unit> RESOURCE_RELOAD_INITIAL_TASK;
-   private static final Component NBT_TOOLTIP;
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE;
    public static final String UPDATE_DRIVERS_ADVICE = "Please make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).";
    private final long canary = Double.doubleToLongBits(3.141592653589793);
@@ -1510,8 +1508,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          } catch (Throwable var22) {
             try {
                var26.close();
-            } catch (Throwable var19) {
-               var22.addSuppressed(var19);
+            } catch (Throwable var20) {
+               var22.addSuppressed(var20);
             }
 
             throw var22;
@@ -1528,8 +1526,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
                try {
                   FileUtils.forceDelete(var10.toFile());
-               } catch (IOException var20) {
-                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var20);
+               } catch (IOException var19) {
+                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var19);
                }
             }
 
@@ -2194,10 +2192,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.pendingConnection = var9;
    }
 
-   public void setLevel(ClientLevel var1) {
-      ProgressScreen var2 = new ProgressScreen(true);
-      var2.progressStartNoAbort(Component.translatable("connect.joining"));
-      this.updateScreenAndTick(var2);
+   public void setLevel(ClientLevel var1, ReceivingLevelScreen.Reason var2) {
+      this.updateScreenAndTick(new ReceivingLevelScreen(() -> {
+         return false;
+      }, var2));
       this.level = var1;
       this.updateLevelInEngines(var1);
       if (!this.isLocalServer) {
@@ -2470,7 +2468,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       var2.removeComponentsFromTag(var4);
       BlockItem.setBlockEntityData(var1, var2.getType(), var4);
       var1.applyComponents(var2.collectComponents());
-      var1.update(DataComponents.LORE, ItemLore.EMPTY, NBT_TOOLTIP, ItemLore::withLineAdded);
    }
 
    public CrashReport fillReport(CrashReport var1) {
@@ -2552,23 +2549,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var0.setDetail("Graphics mode", ((GraphicsStatus)var4.graphicsMode().get()).toString());
          int var10002 = var4.getEffectiveRenderDistance();
          var0.setDetail("Render Distance", "" + var10002 + "/" + String.valueOf(var4.renderDistance().get()) + " chunks");
+      }
+
+      if (var1 != null) {
          var0.setDetail("Resource Packs", () -> {
-            StringBuilder var1 = new StringBuilder();
-            Iterator var2 = var4.resourcePacks.iterator();
-
-            while(var2.hasNext()) {
-               String var3 = (String)var2.next();
-               if (var1.length() > 0) {
-                  var1.append(", ");
-               }
-
-               var1.append(var3);
-               if (var4.incompatibleResourcePacks.contains(var3)) {
-                  var1.append(" (incompatible)");
-               }
-            }
-
-            return var1.toString();
+            return PackRepository.displayPackList(var1.getResourcePackRepository().getSelectedPacks());
          });
       }
 
@@ -3069,15 +3054,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       ALT_FONT = new ResourceLocation("alt");
       REGIONAL_COMPLIANCIES = new ResourceLocation("regional_compliancies.json");
       RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
-      NBT_TOOLTIP = Component.literal("(+NBT)");
       SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
    }
 
    static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
-      GameLoadCookie(RealmsClient var1, GameConfig.QuickPlayData var2) {
+      GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
          super();
-         this.realmsClient = var1;
-         this.quickPlayData = var2;
+         this.realmsClient = realmsClient;
+         this.quickPlayData = quickPlayData;
       }
 
       public RealmsClient realmsClient() {
@@ -3114,7 +3098,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       static final Component INFO_DISABLED_BY_PROFILE = Component.translatable("chat.disabled.profile.moreInfo");
       private final Component message;
 
-      ChatStatus(Component var3) {
+      ChatStatus(final Component var3) {
          this.message = var3;
       }
 

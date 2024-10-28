@@ -79,10 +79,10 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       final Component title;
       final Component detail;
 
-      ErrorMessage(Component var1, Component var2) {
+      ErrorMessage(Component title, Component detail) {
          super();
-         this.title = var1;
-         this.detail = var2;
+         this.title = title;
+         this.detail = detail;
       }
 
       public Component title() {

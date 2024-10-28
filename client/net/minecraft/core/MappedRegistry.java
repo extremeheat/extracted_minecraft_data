@@ -45,6 +45,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    @Nullable
    private Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
    private final HolderLookup.RegistryLookup<T> lookup;
+   private final Object tagAdditionLock;
 
    public MappedRegistry(ResourceKey<? extends Registry<T>> var1, Lifecycle var2) {
       this(var1, var2, false);
@@ -86,6 +87,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
             return MappedRegistry.this.getTags().map(Pair::getSecond);
          }
       };
+      this.tagAdditionLock = new Object();
       this.key = var1;
       this.registryLifecycle = var2;
       if (var3) {
@@ -256,14 +258,22 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    public HolderSet.Named<T> getOrCreateTag(TagKey<T> var1) {
       HolderSet.Named var2 = (HolderSet.Named)this.tags.get(var1);
-      if (var2 == null) {
-         var2 = this.createTag(var1);
-         IdentityHashMap var3 = new IdentityHashMap(this.tags);
-         var3.put(var1, var2);
-         this.tags = var3;
+      if (var2 != null) {
+         return var2;
+      } else {
+         synchronized(this.tagAdditionLock) {
+            var2 = (HolderSet.Named)this.tags.get(var1);
+            if (var2 != null) {
+               return var2;
+            } else {
+               var2 = this.createTag(var1);
+               IdentityHashMap var4 = new IdentityHashMap(this.tags);
+               var4.put(var1, var2);
+               this.tags = var4;
+               return var2;
+            }
+         }
       }
-
-      return var2;
    }
 
    private HolderSet.Named<T> createTag(TagKey<T> var1) {
@@ -368,12 +378,14 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          }).sorted().collect(Collectors.joining(", ")));
       }
 
-      IdentityHashMap var4 = new IdentityHashMap(this.tags);
-      var1.forEach((var2x, var3x) -> {
-         ((HolderSet.Named)var4.computeIfAbsent(var2x, this::createTag)).bind(var3x);
-      });
-      var2.forEach(Holder.Reference::bindTags);
-      this.tags = var4;
+      synchronized(this.tagAdditionLock) {
+         IdentityHashMap var5 = new IdentityHashMap(this.tags);
+         var1.forEach((var2x, var3x) -> {
+            ((HolderSet.Named)var5.computeIfAbsent(var2x, this::createTag)).bind(var3x);
+         });
+         var2.forEach(Holder.Reference::bindTags);
+         this.tags = var5;
+      }
    }
 
    public void resetTags() {

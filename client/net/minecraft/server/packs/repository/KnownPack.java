@@ -9,11 +9,11 @@ public record KnownPack(String namespace, String id, String version) {
    public static final StreamCodec<ByteBuf, KnownPack> STREAM_CODEC;
    public static final String VANILLA_NAMESPACE = "minecraft";
 
-   public KnownPack(String var1, String var2, String var3) {
+   public KnownPack(String namespace, String id, String version) {
       super();
-      this.namespace = var1;
-      this.id = var2;
-      this.version = var3;
+      this.namespace = namespace;
+      this.id = id;
+      this.version = version;
    }
 
    public static KnownPack vanilla(String var0) {

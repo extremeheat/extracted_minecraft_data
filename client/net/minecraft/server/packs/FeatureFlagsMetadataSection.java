@@ -12,9 +12,9 @@ public record FeatureFlagsMetadataSection(FeatureFlagSet flags) {
    });
    public static final MetadataSectionType<FeatureFlagsMetadataSection> TYPE;
 
-   public FeatureFlagsMetadataSection(FeatureFlagSet var1) {
+   public FeatureFlagsMetadataSection(FeatureFlagSet flags) {
       super();
-      this.flags = var1;
+      this.flags = flags;
    }
 
    public FeatureFlagSet flags() {

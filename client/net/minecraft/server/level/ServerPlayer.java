@@ -36,6 +36,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -370,20 +371,24 @@ public class ServerPlayer extends Player {
          this.respawnForced = var1.getBoolean("SpawnForced");
          this.respawnAngle = var1.getFloat("SpawnAngle");
          if (var1.contains("SpawnDimension")) {
-            DataResult var3 = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, var1.get("SpawnDimension"));
+            DataResult var4 = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, var1.get("SpawnDimension"));
             Logger var10002 = LOGGER;
             Objects.requireNonNull(var10002);
-            this.respawnDimension = (ResourceKey)var3.resultOrPartial(var10002::error).orElse(Level.OVERWORLD);
+            this.respawnDimension = (ResourceKey)var4.resultOrPartial(var10002::error).orElse(Level.OVERWORLD);
          }
       }
 
       this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
-      var10000 = BlockPos.CODEC.parse(NbtOps.INSTANCE, var1.get("raid_omen_position"));
-      var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         this.raidOmenPosition = var1x;
-      });
+      Tag var3 = var1.get("raid_omen_position");
+      if (var3 != null) {
+         var10000 = BlockPos.CODEC.parse(NbtOps.INSTANCE, var3);
+         var10001 = LOGGER;
+         Objects.requireNonNull(var10001);
+         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+            this.raidOmenPosition = var1x;
+         });
+      }
+
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

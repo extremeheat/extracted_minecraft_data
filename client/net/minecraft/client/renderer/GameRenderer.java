@@ -258,6 +258,10 @@ public class GameRenderer implements AutoCloseable {
       this.overlayTexture.close();
       this.shutdownEffect();
       this.shutdownShaders();
+      if (this.blurEffect != null) {
+         this.blurEffect.close();
+      }
+
       if (this.blitShader != null) {
          this.blitShader.close();
       }
@@ -327,18 +331,18 @@ public class GameRenderer implements AutoCloseable {
 
    }
 
-   public void loadBlurEffect() {
+   private void loadBlurEffect(ResourceProvider var1) {
       if (this.blurEffect != null) {
          this.blurEffect.close();
       }
 
       try {
-         this.blurEffect = new PostChain(this.minecraft.getTextureManager(), this.resourceManager, this.minecraft.getMainRenderTarget(), BLUR_LOCATION);
+         this.blurEffect = new PostChain(this.minecraft.getTextureManager(), var1, this.minecraft.getMainRenderTarget(), BLUR_LOCATION);
          this.blurEffect.resize(this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to load shader: {}", BLUR_LOCATION, var2);
-      } catch (JsonSyntaxException var3) {
-         LOGGER.warn("Failed to parse shader: {}", BLUR_LOCATION, var3);
+      } catch (IOException var3) {
+         LOGGER.warn("Failed to load shader: {}", BLUR_LOCATION, var3);
+      } catch (JsonSyntaxException var4) {
+         LOGGER.warn("Failed to parse shader: {}", BLUR_LOCATION, var4);
       }
 
    }
@@ -410,7 +414,7 @@ public class GameRenderer implements AutoCloseable {
          }
 
          // $FF: synthetic method
-         protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+         protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
             return this.prepare(var1, var2);
          }
       };
@@ -630,7 +634,7 @@ public class GameRenderer implements AutoCloseable {
          var3.add(Pair.of(new ShaderInstance(var1, "rendertype_breeze_wind", DefaultVertexFormat.NEW_ENTITY), (var0) -> {
             rendertypeBreezeWindShader = var0;
          }));
-         this.loadBlurEffect();
+         this.loadBlurEffect(var1);
       } catch (IOException var5) {
          var3.forEach((var0) -> {
             ((ShaderInstance)var0.getFirst()).close();
@@ -1552,10 +1556,10 @@ public class GameRenderer implements AutoCloseable {
    }
 
    public static record ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) implements ResourceProvider {
-      public ResourceCache(ResourceProvider var1, Map<ResourceLocation, Resource> var2) {
+      public ResourceCache(ResourceProvider original, Map<ResourceLocation, Resource> cache) {
          super();
-         this.original = var1;
-         this.cache = var2;
+         this.original = original;
+         this.cache = cache;
       }
 
       public Optional<Resource> getResource(ResourceLocation var1) {

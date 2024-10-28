@@ -59,7 +59,7 @@ public class ClipContext {
 
       private final ShapeGetter shapeGetter;
 
-      private Block(ShapeGetter var3) {
+      private Block(final ShapeGetter var3) {
          this.shapeGetter = var3;
       }
 
@@ -87,7 +87,7 @@ public class ClipContext {
 
       private final Predicate<FluidState> canPick;
 
-      private Fluid(Predicate var3) {
+      private Fluid(final Predicate var3) {
          this.canPick = var3;
       }
 

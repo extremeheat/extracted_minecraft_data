@@ -12,9 +12,9 @@ public record ClientboundStatusResponsePacket(ServerStatus status) implements Pa
       this((ServerStatus)var1.readJsonWithCodec(ServerStatus.CODEC));
    }
 
-   public ClientboundStatusResponsePacket(ServerStatus var1) {
+   public ClientboundStatusResponsePacket(ServerStatus status) {
       super();
-      this.status = var1;
+      this.status = status;
    }
 
    private void write(FriendlyByteBuf var1) {

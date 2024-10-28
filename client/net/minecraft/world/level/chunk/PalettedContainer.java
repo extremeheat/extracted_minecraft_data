@@ -382,11 +382,11 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       final BitStorage storage;
       final Palette<T> palette;
 
-      Data(Configuration<T> var1, BitStorage var2, Palette<T> var3) {
+      Data(Configuration<T> configuration, BitStorage storage, Palette<T> palette) {
          super();
-         this.configuration = var1;
-         this.storage = var2;
-         this.palette = var3;
+         this.configuration = configuration;
+         this.storage = storage;
+         this.palette = palette;
       }
 
       public void copyFrom(Palette<T> var1, BitStorage var2) {
@@ -425,10 +425,10 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    }
 
    private static record Configuration<T>(Palette.Factory factory, int bits) {
-      Configuration(Palette.Factory var1, int var2) {
+      Configuration(Palette.Factory factory, int bits) {
          super();
-         this.factory = var1;
-         this.bits = var2;
+         this.factory = factory;
+         this.bits = bits;
       }
 
       public Data<T> createData(IdMap<T> var1, PaletteResize<T> var2, int var3) {

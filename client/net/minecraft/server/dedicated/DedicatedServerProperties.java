@@ -234,17 +234,17 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    }
 
    // $FF: synthetic method
-   protected Settings reload(RegistryAccess var1, Properties var2) {
+   protected Settings reload(final RegistryAccess var1, final Properties var2) {
       return this.reload(var1, var2);
    }
 
    static record WorldDimensionData(JsonObject generatorSettings, String levelType) {
       private static final Map<String, ResourceKey<WorldPreset>> LEGACY_PRESET_NAMES;
 
-      WorldDimensionData(JsonObject var1, String var2) {
+      WorldDimensionData(JsonObject generatorSettings, String levelType) {
          super();
-         this.generatorSettings = var1;
-         this.levelType = var2;
+         this.generatorSettings = generatorSettings;
+         this.levelType = levelType;
       }
 
       public WorldDimensions create(RegistryAccess var1) {

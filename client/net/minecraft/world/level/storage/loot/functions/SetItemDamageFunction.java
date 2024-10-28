@@ -33,7 +33,7 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
       this.add = var3;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetItemDamageFunction> getType() {
       return LootItemFunctions.SET_DAMAGE;
    }
 

@@ -12,9 +12,9 @@ public record ClientboundPongResponsePacket(long time) implements Packet<ClientP
       this(var1.readLong());
    }
 
-   public ClientboundPongResponsePacket(long var1) {
+   public ClientboundPongResponsePacket(long time) {
       super();
-      this.time = var1;
+      this.time = time;
    }
 
    private void write(FriendlyByteBuf var1) {

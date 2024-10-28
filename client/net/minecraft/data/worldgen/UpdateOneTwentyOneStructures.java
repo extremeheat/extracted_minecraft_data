@@ -30,6 +30,6 @@ public class UpdateOneTwentyOneStructures {
          return var0x;
       }, (var0x) -> {
          return new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedRandomList.create());
-      })), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.BURY), var2.getOrThrow(TrialChambersStructurePools.START), Optional.empty(), 20, UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)), false, Optional.empty(), 116, TrialChambersStructurePools.ALIAS_BINDINGS));
+      })), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.ENCAPSULATE), var2.getOrThrow(TrialChambersStructurePools.START), Optional.empty(), 20, UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)), false, Optional.empty(), 116, TrialChambersStructurePools.ALIAS_BINDINGS));
    }
 }

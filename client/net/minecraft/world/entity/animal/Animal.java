@@ -67,13 +67,9 @@ public abstract class Animal extends AgeableMob {
 
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else {
-         this.inLove = 0;
-         return super.hurt(var1, var2);
-      }
+   protected void actuallyHurt(DamageSource var1, float var2) {
+      this.resetLove();
+      super.actuallyHurt(var1, var2);
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {

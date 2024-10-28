@@ -200,7 +200,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       @Nullable
       private Component statusIconTooltip;
 
-      protected OnlineServerEntry(JoinMultiplayerScreen var2, ServerData var3) {
+      protected OnlineServerEntry(final JoinMultiplayerScreen var2, final ServerData var3) {
          super();
          this.screen = var2;
          this.serverData = var3;

@@ -29,12 +29,12 @@ public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<
       this(List.of(var1, var2, var3, var4));
    }
 
-   public PotDecorations(Optional<Item> var1, Optional<Item> var2, Optional<Item> var3, Optional<Item> var4) {
+   public PotDecorations(Optional<Item> back, Optional<Item> left, Optional<Item> right, Optional<Item> front) {
       super();
-      this.back = var1;
-      this.left = var2;
-      this.right = var3;
-      this.front = var4;
+      this.back = back;
+      this.left = left;
+      this.right = right;
+      this.front = front;
    }
 
    private static Optional<Item> getItem(List<Item> var0, int var1) {

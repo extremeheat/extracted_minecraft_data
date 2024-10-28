@@ -109,7 +109,7 @@ public class RamTarget extends Behavior<Goat> {
    }
 
    // $FF: synthetic method
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.start(var1, (Goat)var2, var3);
    }
 }

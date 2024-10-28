@@ -38,11 +38,11 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       });
       private static final DateTimeFormatter TIME_FORMATTER;
 
-      public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {
+      public Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) {
          super();
-         this.profile = var1;
-         this.message = var2;
-         this.trustLevel = var3;
+         this.profile = profile;
+         this.message = message;
+         this.trustLevel = trustLevel;
       }
 
       public Component toContentComponent() {
@@ -104,10 +104,10 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          return var0.group(ComponentSerialization.CODEC.fieldOf("message").forGetter(System::message), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(System::timeStamp)).apply(var0, System::new);
       });
 
-      public System(Component var1, Instant var2) {
+      public System(Component message, Instant timeStamp) {
          super();
-         this.message = var1;
-         this.timeStamp = var2;
+         this.message = message;
+         this.timeStamp = timeStamp;
       }
 
       public Component toContentComponent() {

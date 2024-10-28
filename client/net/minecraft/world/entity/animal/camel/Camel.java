@@ -565,7 +565,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
 
    // $FF: synthetic method
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -603,7 +603,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Saddl
    }
 
    class CamelBodyRotationControl extends BodyRotationControl {
-      public CamelBodyRotationControl(Camel var2) {
+      public CamelBodyRotationControl(final Camel var2) {
          super(var2);
       }
 

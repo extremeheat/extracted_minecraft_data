@@ -39,7 +39,7 @@ public class ToggleTooltips extends LootItemConditionalFunction {
       return var1;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<ToggleTooltips> getType() {
       return LootItemFunctions.TOGGLE_TOOLTIPS;
    }
 
@@ -61,10 +61,10 @@ public class ToggleTooltips extends LootItemConditionalFunction {
    }
 
    private static record ComponentToggle<T>(DataComponentType<T> type, TooltipWither<T> setter) {
-      ComponentToggle(DataComponentType<T> var1, TooltipWither<T> var2) {
+      ComponentToggle(DataComponentType<T> type, TooltipWither<T> setter) {
          super();
-         this.type = var1;
-         this.setter = var2;
+         this.type = type;
+         this.setter = setter;
       }
 
       public void applyIfPresent(ItemStack var1, boolean var2) {

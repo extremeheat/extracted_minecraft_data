@@ -190,7 +190,7 @@ public class BlockPattern {
       }
 
       // $FF: synthetic method
-      public Object load(Object var1) throws Exception {
+      public Object load(final Object var1) throws Exception {
          return this.load((BlockPos)var1);
       }
    }

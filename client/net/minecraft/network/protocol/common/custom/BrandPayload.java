@@ -11,9 +11,9 @@ public record BrandPayload(String brand) implements CustomPacketPayload {
       this(var1.readUtf());
    }
 
-   public BrandPayload(String var1) {
+   public BrandPayload(String brand) {
       super();
-      this.brand = var1;
+      this.brand = brand;
    }
 
    private void write(FriendlyByteBuf var1) {

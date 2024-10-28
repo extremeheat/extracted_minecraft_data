@@ -6,7 +6,7 @@ public enum PackType {
 
    private final String directory;
 
-   private PackType(String var3) {
+   private PackType(final String var3) {
       this.directory = var3;
    }
 

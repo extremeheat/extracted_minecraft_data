@@ -478,7 +478,7 @@ public class MapItemSavedData extends SavedData {
       private int tick;
       public int step;
 
-      HoldingPlayer(Player var2) {
+      HoldingPlayer(final Player var2) {
          super();
          this.player = var2;
       }
@@ -544,13 +544,13 @@ public class MapItemSavedData extends SavedData {
    public static record MapPatch(int startX, int startY, int width, int height, byte[] mapColors) {
       public static final StreamCodec<ByteBuf, Optional<MapPatch>> STREAM_CODEC = StreamCodec.of(MapPatch::write, MapPatch::read);
 
-      public MapPatch(int var1, int var2, int var3, int var4, byte[] var5) {
+      public MapPatch(int startX, int startY, int width, int height, byte[] mapColors) {
          super();
-         this.startX = var1;
-         this.startY = var2;
-         this.width = var3;
-         this.height = var4;
-         this.mapColors = var5;
+         this.startX = startX;
+         this.startY = startY;
+         this.width = width;
+         this.height = height;
+         this.mapColors = mapColors;
       }
 
       private static void write(ByteBuf var0, Optional<MapPatch> var1) {

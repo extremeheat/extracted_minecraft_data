@@ -9,10 +9,10 @@ public interface TooltipFlag {
    boolean isCreative();
 
    public static record Default(boolean advanced, boolean creative) implements TooltipFlag {
-      public Default(boolean var1, boolean var2) {
+      public Default(boolean advanced, boolean creative) {
          super();
-         this.advanced = var1;
-         this.creative = var2;
+         this.advanced = advanced;
+         this.creative = creative;
       }
 
       public boolean isAdvanced() {

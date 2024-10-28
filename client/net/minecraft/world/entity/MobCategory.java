@@ -21,7 +21,7 @@ public enum MobCategory implements StringRepresentable {
    private final int noDespawnDistance = 32;
    private final int despawnDistance;
 
-   private MobCategory(String var3, int var4, boolean var5, boolean var6, int var7) {
+   private MobCategory(final String var3, final int var4, final boolean var5, final boolean var6, final int var7) {
       this.name = var3;
       this.max = var4;
       this.isFriendly = var5;

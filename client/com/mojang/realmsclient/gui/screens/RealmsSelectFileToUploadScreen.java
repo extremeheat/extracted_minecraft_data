@@ -145,7 +145,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       private final Component id;
       private final Component info;
 
-      public Entry(LevelSummary var2) {
+      public Entry(final LevelSummary var2) {
          super();
          this.levelSummary = var2;
          this.name = var2.getLevelName();

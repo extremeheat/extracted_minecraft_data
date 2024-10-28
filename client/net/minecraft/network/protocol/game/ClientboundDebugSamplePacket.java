@@ -13,10 +13,10 @@ public record ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType 
       this(var1.readLongArray(), (RemoteDebugSampleType)var1.readEnum(RemoteDebugSampleType.class));
    }
 
-   public ClientboundDebugSamplePacket(long[] var1, RemoteDebugSampleType var2) {
+   public ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) {
       super();
-      this.sample = var1;
-      this.debugSampleType = var2;
+      this.sample = sample;
+      this.debugSampleType = debugSampleType;
    }
 
    private void write(FriendlyByteBuf var1) {

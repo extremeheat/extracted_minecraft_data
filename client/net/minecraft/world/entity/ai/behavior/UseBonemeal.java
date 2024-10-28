@@ -121,17 +121,17 @@ public class UseBonemeal extends Behavior<Villager> {
    }
 
    // $FF: synthetic method
-   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.stop(var1, (Villager)var2, var3);
    }
 
    // $FF: synthetic method
-   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.tick(var1, (Villager)var2, var3);
    }
 
    // $FF: synthetic method
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
+   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.start(var1, (Villager)var2, var3);
    }
 }

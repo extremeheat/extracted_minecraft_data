@@ -52,10 +52,10 @@ public class RealmsDataFetcher {
    }
 
    public static record ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
-      public ServerListData(List<RealmsServer> var1, List<RealmsServer> var2) {
+      public ServerListData(List<RealmsServer> serverList, List<RealmsServer> availableSnapshotServers) {
          super();
-         this.serverList = var1;
-         this.availableSnapshotServers = var2;
+         this.serverList = serverList;
+         this.availableSnapshotServers = availableSnapshotServers;
       }
 
       public List<RealmsServer> serverList() {

@@ -50,7 +50,7 @@ public class DoubleArgumentInfo implements ArgumentTypeInfo<DoubleArgumentType, 
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
       return this.deserializeFromNetwork(var1);
    }
 
@@ -58,7 +58,7 @@ public class DoubleArgumentInfo implements ArgumentTypeInfo<DoubleArgumentType, 
       final double min;
       final double max;
 
-      Template(double var2, double var4) {
+      Template(final double var2, final double var4) {
          super();
          this.min = var2;
          this.max = var4;
@@ -73,7 +73,7 @@ public class DoubleArgumentInfo implements ArgumentTypeInfo<DoubleArgumentType, 
       }
 
       // $FF: synthetic method
-      public ArgumentType instantiate(CommandBuildContext var1) {
+      public ArgumentType instantiate(final CommandBuildContext var1) {
          return this.instantiate(var1);
       }
    }

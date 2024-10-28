@@ -416,7 +416,7 @@ public class RealmsServer extends ValueObject {
       }
 
       // $FF: synthetic method
-      public int compare(Object var1, Object var2) {
+      public int compare(final Object var1, final Object var2) {
          return this.compare((RealmsServer)var1, (RealmsServer)var2);
       }
    }

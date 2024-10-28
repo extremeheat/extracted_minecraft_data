@@ -16,9 +16,9 @@ public record ContextScoreboardNameProvider(LootContext.EntityTarget target) imp
    });
    public static final Codec<ContextScoreboardNameProvider> INLINE_CODEC;
 
-   public ContextScoreboardNameProvider(LootContext.EntityTarget var1) {
+   public ContextScoreboardNameProvider(LootContext.EntityTarget target) {
       super();
-      this.target = var1;
+      this.target = target;
    }
 
    public static ScoreboardNameProvider forTarget(LootContext.EntityTarget var0) {

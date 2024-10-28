@@ -53,7 +53,7 @@ public class DataFetcher {
       SuccessfulComputationResult<T> lastResult;
       private long nextUpdate = -1L;
 
-      Task(String var2, Callable<T> var3, long var4, RepeatedDelayStrategy var6) {
+      Task(final String var2, final Callable<T> var3, final long var4, final RepeatedDelayStrategy var6) {
          super();
          this.id = var2;
          this.updater = var3;
@@ -152,7 +152,7 @@ public class DataFetcher {
       private final Consumer<T> output;
       private long lastCheckTime = -1L;
 
-      SubscribedTask(DataFetcher var1, Task var2, Consumer var3) {
+      SubscribedTask(final DataFetcher var1, final Task var2, final Consumer var3) {
          super();
          this.task = var2;
          this.output = var3;
@@ -191,10 +191,10 @@ public class DataFetcher {
       final T value;
       final long time;
 
-      SuccessfulComputationResult(T var1, long var2) {
+      SuccessfulComputationResult(T value, long time) {
          super();
-         this.value = var1;
-         this.time = var2;
+         this.value = value;
+         this.time = time;
       }
 
       public T value() {
@@ -209,10 +209,10 @@ public class DataFetcher {
    private static record ComputationResult<T>(Either<T, Exception> value, long time) {
       final long time;
 
-      ComputationResult(Either<T, Exception> var1, long var2) {
+      ComputationResult(Either<T, Exception> value, long time) {
          super();
-         this.value = var1;
-         this.time = var2;
+         this.value = value;
+         this.time = time;
       }
 
       public Either<T, Exception> value() {

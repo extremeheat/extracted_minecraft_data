@@ -110,7 +110,7 @@ public enum OctahedralGroup implements StringRepresentable {
       return new OctahedralGroup[var0];
    });
 
-   private OctahedralGroup(String var3, SymmetricGroup3 var4, boolean var5, boolean var6, boolean var7) {
+   private OctahedralGroup(final String var3, final SymmetricGroup3 var4, final boolean var5, final boolean var6, final boolean var7) {
       this.name = var3;
       this.invertX = var5;
       this.invertY = var6;

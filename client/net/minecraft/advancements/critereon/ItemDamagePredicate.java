@@ -11,10 +11,10 @@ public record ItemDamagePredicate(MinMaxBounds.Ints durability, MinMaxBounds.Int
       return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::durability), MinMaxBounds.Ints.CODEC.optionalFieldOf("damage", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::damage)).apply(var0, ItemDamagePredicate::new);
    });
 
-   public ItemDamagePredicate(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2) {
+   public ItemDamagePredicate(MinMaxBounds.Ints durability, MinMaxBounds.Ints damage) {
       super();
-      this.durability = var1;
-      this.damage = var2;
+      this.durability = durability;
+      this.damage = damage;
    }
 
    public DataComponentType<Integer> componentType() {

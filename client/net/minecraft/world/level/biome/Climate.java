@@ -70,14 +70,14 @@ public class Climate {
       final long depth;
       final long weirdness;
 
-      public TargetPoint(long var1, long var3, long var5, long var7, long var9, long var11) {
+      public TargetPoint(long temperature, long humidity, long continentalness, long erosion, long depth, long weirdness) {
          super();
-         this.temperature = var1;
-         this.humidity = var3;
-         this.continentalness = var5;
-         this.erosion = var7;
-         this.depth = var9;
-         this.weirdness = var11;
+         this.temperature = temperature;
+         this.humidity = humidity;
+         this.continentalness = continentalness;
+         this.erosion = erosion;
+         this.depth = depth;
+         this.weirdness = weirdness;
       }
 
       @VisibleForTesting
@@ -129,15 +129,15 @@ public class Climate {
          })).apply(var0, ParameterPoint::new);
       });
 
-      public ParameterPoint(Parameter var1, Parameter var2, Parameter var3, Parameter var4, Parameter var5, Parameter var6, long var7) {
+      public ParameterPoint(Parameter temperature, Parameter humidity, Parameter continentalness, Parameter erosion, Parameter depth, Parameter weirdness, long offset) {
          super();
-         this.temperature = var1;
-         this.humidity = var2;
-         this.continentalness = var3;
-         this.erosion = var4;
-         this.depth = var5;
-         this.weirdness = var6;
-         this.offset = var7;
+         this.temperature = temperature;
+         this.humidity = humidity;
+         this.continentalness = continentalness;
+         this.erosion = erosion;
+         this.depth = depth;
+         this.weirdness = weirdness;
+         this.offset = offset;
       }
 
       long fitness(TargetPoint var1) {
@@ -188,10 +188,10 @@ public class Climate {
          return Climate.unquantizeCoord(var0.max());
       });
 
-      public Parameter(long var1, long var3) {
+      public Parameter(long min, long max) {
          super();
-         this.min = var1;
-         this.max = var3;
+         this.min = min;
+         this.max = max;
       }
 
       public static Parameter point(float var0) {
@@ -245,15 +245,15 @@ public class Climate {
    }
 
    public static record Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness, List<ParameterPoint> spawnTarget) {
-      public Sampler(DensityFunction var1, DensityFunction var2, DensityFunction var3, DensityFunction var4, DensityFunction var5, DensityFunction var6, List<ParameterPoint> var7) {
+      public Sampler(DensityFunction temperature, DensityFunction humidity, DensityFunction continentalness, DensityFunction erosion, DensityFunction depth, DensityFunction weirdness, List<ParameterPoint> spawnTarget) {
          super();
-         this.temperature = var1;
-         this.humidity = var2;
-         this.continentalness = var3;
-         this.erosion = var4;
-         this.depth = var5;
-         this.weirdness = var6;
-         this.spawnTarget = var7;
+         this.temperature = temperature;
+         this.humidity = humidity;
+         this.continentalness = continentalness;
+         this.erosion = erosion;
+         this.depth = depth;
+         this.weirdness = weirdness;
+         this.spawnTarget = spawnTarget;
       }
 
       public TargetPoint sample(int var1, int var2, int var3) {
@@ -346,10 +346,10 @@ public class Climate {
       }
 
       private static record Result(BlockPos location, long fitness) {
-         Result(BlockPos var1, long var2) {
+         Result(BlockPos location, long fitness) {
             super();
-            this.location = var1;
-            this.fitness = var2;
+            this.location = location;
+            this.fitness = fitness;
          }
 
          public BlockPos location() {

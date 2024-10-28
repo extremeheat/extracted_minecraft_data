@@ -75,7 +75,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          if (var3 == 0) {
             return null;
          } else {
-            FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(var2, var3, 4194312), "Loading glyph");
+            FreeTypeUtil.assertError(FreeType.FT_Load_Glyph(var2, var3, 4194312), "Loading glyph");
             FT_GlyphSlot var4 = (FT_GlyphSlot)Objects.requireNonNull(var2.glyph(), "Glyph not initialized");
             float var5 = FreeTypeUtil.x(var4.advance());
             FT_Bitmap var6 = var4.bitmap();
@@ -100,7 +100,10 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
    public void close() {
       if (this.face != null) {
-         FreeTypeUtil.checkError(FreeType.FT_Done_Face(this.face), "Deleting face");
+         synchronized(FreeTypeUtil.LIBRARY_LOCK) {
+            FreeTypeUtil.checkError(FreeType.FT_Done_Face(this.face), "Deleting face");
+         }
+
          this.face = null;
       }
 
@@ -147,7 +150,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       private final float advance;
       final int index;
 
-      Glyph(float var2, float var3, int var4, int var5, float var6, int var7) {
+      Glyph(final float var2, final float var3, final int var4, final int var5, final float var6, final int var7) {
          super();
          this.width = var4;
          this.height = var5;
@@ -186,8 +189,12 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
             public void upload(int var1, int var2) {
                FT_Face var3 = TrueTypeGlyphProvider.this.validateFontOpen();
                NativeImage var4 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
-               var4.copyFromFont(var3, Glyph.this.index);
-               var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
+               if (var4.copyFromFont(var3, Glyph.this.index)) {
+                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
+               } else {
+                  var4.close();
+               }
+
             }
 
             public boolean isColored() {

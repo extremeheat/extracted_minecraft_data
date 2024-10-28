@@ -11,7 +11,7 @@ public enum EntityAttachment {
 
    private final Fallback fallback;
 
-   private EntityAttachment(Fallback var3) {
+   private EntityAttachment(final Fallback var3) {
       this.fallback = var3;
    }
 

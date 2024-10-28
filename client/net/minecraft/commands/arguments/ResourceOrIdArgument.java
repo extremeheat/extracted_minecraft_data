@@ -117,7 +117,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    // $FF: synthetic method
    @Nullable
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -128,7 +128,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
       // $FF: synthetic method
       @Nullable
-      public Object parse(StringReader var1) throws CommandSyntaxException {
+      public Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }
@@ -140,7 +140,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
       // $FF: synthetic method
       @Nullable
-      public Object parse(StringReader var1) throws CommandSyntaxException {
+      public Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }
@@ -152,7 +152,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
       // $FF: synthetic method
       @Nullable
-      public Object parse(StringReader var1) throws CommandSyntaxException {
+      public Object parse(final StringReader var1) throws CommandSyntaxException {
          return super.parse(var1);
       }
    }

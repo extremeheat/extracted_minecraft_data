@@ -90,10 +90,10 @@ public class LootContext {
    }
 
    public static record VisitedEntry<T>(LootDataType<T> type, T value) {
-      public VisitedEntry(LootDataType<T> var1, T var2) {
+      public VisitedEntry(LootDataType<T> type, T value) {
          super();
-         this.type = var1;
-         this.value = var2;
+         this.type = type;
+         this.value = value;
       }
 
       public LootDataType<T> type() {
@@ -115,7 +115,7 @@ public class LootContext {
       private final String name;
       private final LootContextParam<? extends Entity> param;
 
-      private EntityTarget(String var3, LootContextParam var4) {
+      private EntityTarget(final String var3, final LootContextParam var4) {
          this.name = var3;
          this.param = var4;
       }

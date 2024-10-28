@@ -507,14 +507,14 @@ public abstract class Display extends Entity {
       final FloatInterpolator shadowRadius;
       final FloatInterpolator shadowStrength;
 
-      public RenderState(GenericInterpolator<Transformation> var1, BillboardConstraints var2, int var3, FloatInterpolator var4, FloatInterpolator var5, int var6) {
+      public RenderState(GenericInterpolator<Transformation> transformation, BillboardConstraints billboardConstraints, int brightnessOverride, FloatInterpolator shadowRadius, FloatInterpolator shadowStrength, int glowColorOverride) {
          super();
-         this.transformation = var1;
-         this.billboardConstraints = var2;
-         this.brightnessOverride = var3;
-         this.shadowRadius = var4;
-         this.shadowStrength = var5;
-         this.glowColorOverride = var6;
+         this.transformation = transformation;
+         this.billboardConstraints = billboardConstraints;
+         this.brightnessOverride = brightnessOverride;
+         this.shadowRadius = shadowRadius;
+         this.shadowStrength = shadowStrength;
+         this.glowColorOverride = glowColorOverride;
       }
 
       public GenericInterpolator<Transformation> transformation() {
@@ -581,7 +581,7 @@ public abstract class Display extends Entity {
       private final byte id;
       private final String name;
 
-      private BillboardConstraints(byte var3, String var4) {
+      private BillboardConstraints(final byte var3, final String var4) {
          this.name = var4;
          this.id = var3;
       }
@@ -623,10 +623,10 @@ public abstract class Display extends Entity {
    }
 
    static record TransformationInterpolator(Transformation previous, Transformation current) implements GenericInterpolator<Transformation> {
-      TransformationInterpolator(Transformation var1, Transformation var2) {
+      TransformationInterpolator(Transformation previous, Transformation current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       public Transformation get(float var1) {
@@ -642,16 +642,16 @@ public abstract class Display extends Entity {
       }
 
       // $FF: synthetic method
-      public Object get(float var1) {
+      public Object get(final float var1) {
          return this.get(var1);
       }
    }
 
    static record LinearFloatInterpolator(float previous, float current) implements FloatInterpolator {
-      LinearFloatInterpolator(float var1, float var2) {
+      LinearFloatInterpolator(float previous, float current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       public float get(float var1) {
@@ -668,10 +668,10 @@ public abstract class Display extends Entity {
    }
 
    static record ColorInterpolator(int previous, int current) implements IntInterpolator {
-      ColorInterpolator(int var1, int var2) {
+      ColorInterpolator(int previous, int current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       public int get(float var1) {
@@ -688,10 +688,10 @@ public abstract class Display extends Entity {
    }
 
    static record LinearIntInterpolator(int previous, int current) implements IntInterpolator {
-      LinearIntInterpolator(int var1, int var2) {
+      LinearIntInterpolator(int previous, int current) {
          super();
-         this.previous = var1;
-         this.current = var2;
+         this.previous = previous;
+         this.current = current;
       }
 
       public int get(float var1) {
@@ -944,7 +944,7 @@ public abstract class Display extends Entity {
          public static final Codec<Align> CODEC = StringRepresentable.fromEnum(Align::values);
          private final String name;
 
-         private Align(String var3) {
+         private Align(final String var3) {
             this.name = var3;
          }
 
@@ -962,13 +962,13 @@ public abstract class Display extends Entity {
          final IntInterpolator textOpacity;
          final IntInterpolator backgroundColor;
 
-         public TextRenderState(Component var1, int var2, IntInterpolator var3, IntInterpolator var4, byte var5) {
+         public TextRenderState(Component text, int lineWidth, IntInterpolator textOpacity, IntInterpolator backgroundColor, byte flags) {
             super();
-            this.text = var1;
-            this.lineWidth = var2;
-            this.textOpacity = var3;
-            this.backgroundColor = var4;
-            this.flags = var5;
+            this.text = text;
+            this.lineWidth = lineWidth;
+            this.textOpacity = textOpacity;
+            this.backgroundColor = backgroundColor;
+            this.flags = flags;
          }
 
          public Component text() {
@@ -993,10 +993,10 @@ public abstract class Display extends Entity {
       }
 
       public static record CachedInfo(List<CachedLine> lines, int width) {
-         public CachedInfo(List<CachedLine> var1, int var2) {
+         public CachedInfo(List<CachedLine> lines, int width) {
             super();
-            this.lines = var1;
-            this.width = var2;
+            this.lines = lines;
+            this.width = width;
          }
 
          public List<CachedLine> lines() {
@@ -1014,10 +1014,10 @@ public abstract class Display extends Entity {
       }
 
       public static record CachedLine(FormattedCharSequence contents, int width) {
-         public CachedLine(FormattedCharSequence var1, int var2) {
+         public CachedLine(FormattedCharSequence contents, int width) {
             super();
-            this.contents = var1;
-            this.width = var2;
+            this.contents = contents;
+            this.width = width;
          }
 
          public FormattedCharSequence contents() {
@@ -1085,9 +1085,9 @@ public abstract class Display extends Entity {
       }
 
       public static record BlockRenderState(BlockState blockState) {
-         public BlockRenderState(BlockState var1) {
+         public BlockRenderState(BlockState blockState) {
             super();
-            this.blockState = var1;
+            this.blockState = blockState;
          }
 
          public BlockState blockState() {
@@ -1101,16 +1101,7 @@ public abstract class Display extends Entity {
       private static final String TAG_ITEM_DISPLAY = "item_display";
       private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK_ID;
       private static final EntityDataAccessor<Byte> DATA_ITEM_DISPLAY_ID;
-      private final SlotAccess slot = new SlotAccess() {
-         public ItemStack get() {
-            return ItemDisplay.this.getItemStack();
-         }
-
-         public boolean set(ItemStack var1) {
-            ItemDisplay.this.setItemStack(var1);
-            return true;
-         }
-      };
+      private final SlotAccess slot = SlotAccess.of(this::getItemStack, this::setItemStack);
       @Nullable
       private ItemRenderState itemRenderState;
 
@@ -1132,11 +1123,11 @@ public abstract class Display extends Entity {
 
       }
 
-      ItemStack getItemStack() {
+      private ItemStack getItemStack() {
          return (ItemStack)this.entityData.get(DATA_ITEM_STACK_ID);
       }
 
-      void setItemStack(ItemStack var1) {
+      private void setItemStack(ItemStack var1) {
          this.entityData.set(DATA_ITEM_STACK_ID, var1);
       }
 
@@ -1199,10 +1190,10 @@ public abstract class Display extends Entity {
       }
 
       public static record ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
-         public ItemRenderState(ItemStack var1, ItemDisplayContext var2) {
+         public ItemRenderState(ItemStack itemStack, ItemDisplayContext itemTransform) {
             super();
-            this.itemStack = var1;
-            this.itemTransform = var2;
+            this.itemStack = itemStack;
+            this.itemTransform = itemTransform;
          }
 
          public ItemStack itemStack() {

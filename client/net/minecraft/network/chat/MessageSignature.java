@@ -16,10 +16,10 @@ public record MessageSignature(byte[] bytes) {
    public static final Codec<MessageSignature> CODEC;
    public static final int BYTES = 256;
 
-   public MessageSignature(byte[] var1) {
+   public MessageSignature(byte[] bytes) {
       super();
-      Preconditions.checkState(var1.length == 256, "Invalid message signature size");
-      this.bytes = var1;
+      Preconditions.checkState(bytes.length == 256, "Invalid message signature size");
+      this.bytes = bytes;
    }
 
    public static MessageSignature read(FriendlyByteBuf var0) {
@@ -92,10 +92,10 @@ public record MessageSignature(byte[] bytes) {
          this(var1, (MessageSignature)null);
       }
 
-      public Packed(int var1, @Nullable MessageSignature var2) {
+      public Packed(int id, @Nullable MessageSignature fullSignature) {
          super();
-         this.id = var1;
-         this.fullSignature = var2;
+         this.id = id;
+         this.fullSignature = fullSignature;
       }
 
       public static Packed read(FriendlyByteBuf var0) {

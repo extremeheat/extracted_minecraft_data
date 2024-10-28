@@ -74,7 +74,7 @@ public class TelemetryPropertyMap {
          }
 
          // $FF: synthetic method
-         public RecordBuilder encode(Object var1, DynamicOps var2, RecordBuilder var3) {
+         public RecordBuilder encode(final Object var1, final DynamicOps var2, final RecordBuilder var3) {
             return this.encode((TelemetryPropertyMap)var1, var2, var3);
          }
       };

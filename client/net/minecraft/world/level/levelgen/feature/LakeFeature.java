@@ -148,10 +148,10 @@ public class LakeFeature extends Feature<Configuration> {
          return var0.group(BlockStateProvider.CODEC.fieldOf("fluid").forGetter(Configuration::fluid), BlockStateProvider.CODEC.fieldOf("barrier").forGetter(Configuration::barrier)).apply(var0, Configuration::new);
       });
 
-      public Configuration(BlockStateProvider var1, BlockStateProvider var2) {
+      public Configuration(BlockStateProvider fluid, BlockStateProvider barrier) {
          super();
-         this.fluid = var1;
-         this.barrier = var2;
+         this.fluid = fluid;
+         this.barrier = barrier;
       }
 
       public BlockStateProvider fluid() {

@@ -56,7 +56,7 @@ public class OceanRuinStructure extends Structure {
       public static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
       private final String name;
 
-      private Type(String var3) {
+      private Type(final String var3) {
          this.name = var3;
       }
 

@@ -29,13 +29,13 @@ public record ClientboundDamageEventPacket(int entityId, Holder<DamageType> sour
       }));
    }
 
-   public ClientboundDamageEventPacket(int var1, Holder<DamageType> var2, int var3, int var4, Optional<Vec3> var5) {
+   public ClientboundDamageEventPacket(int entityId, Holder<DamageType> sourceType, int sourceCauseId, int sourceDirectId, Optional<Vec3> sourcePosition) {
       super();
-      this.entityId = var1;
-      this.sourceType = var2;
-      this.sourceCauseId = var3;
-      this.sourceDirectId = var4;
-      this.sourcePosition = var5;
+      this.entityId = entityId;
+      this.sourceType = sourceType;
+      this.sourceCauseId = sourceCauseId;
+      this.sourceDirectId = sourceDirectId;
+      this.sourcePosition = sourcePosition;
    }
 
    private static void writeOptionalEntityId(FriendlyByteBuf var0, int var1) {

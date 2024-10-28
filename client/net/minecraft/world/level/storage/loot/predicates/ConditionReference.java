@@ -16,9 +16,9 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
       return var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new);
    });
 
-   public ConditionReference(ResourceKey<LootItemCondition> var1) {
+   public ConditionReference(ResourceKey<LootItemCondition> name) {
       super();
-      this.name = var1;
+      this.name = name;
    }
 
    public LootItemConditionType getType() {
@@ -72,7 +72,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

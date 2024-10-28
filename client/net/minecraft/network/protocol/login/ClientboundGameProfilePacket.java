@@ -7,12 +7,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundGameProfilePacket(GameProfile gameProfile) implements Packet<ClientLoginPacketListener> {
+public record ClientboundGameProfilePacket(GameProfile gameProfile, boolean strictErrorHandling) implements Packet<ClientLoginPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundGameProfilePacket> STREAM_CODEC;
 
-   public ClientboundGameProfilePacket(GameProfile var1) {
+   public ClientboundGameProfilePacket(GameProfile gameProfile, @Deprecated(forRemoval = true) boolean strictErrorHandling) {
       super();
-      this.gameProfile = var1;
+      this.gameProfile = gameProfile;
+      this.strictErrorHandling = strictErrorHandling;
    }
 
    public PacketType<ClientboundGameProfilePacket> type() {
@@ -31,7 +32,15 @@ public record ClientboundGameProfilePacket(GameProfile gameProfile) implements P
       return this.gameProfile;
    }
 
+   /** @deprecated */
+   @Deprecated(
+      forRemoval = true
+   )
+   public boolean strictErrorHandling() {
+      return this.strictErrorHandling;
+   }
+
    static {
-      STREAM_CODEC = ByteBufCodecs.GAME_PROFILE.map(ClientboundGameProfilePacket::new, ClientboundGameProfilePacket::gameProfile);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.GAME_PROFILE, ClientboundGameProfilePacket::gameProfile, ByteBufCodecs.BOOL, ClientboundGameProfilePacket::strictErrorHandling, ClientboundGameProfilePacket::new);
    }
 }

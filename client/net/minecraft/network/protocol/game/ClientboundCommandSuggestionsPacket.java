@@ -24,12 +24,12 @@ public record ClientboundCommandSuggestionsPacket(int id, int start, int length,
       }).toList());
    }
 
-   public ClientboundCommandSuggestionsPacket(int var1, int var2, int var3, List<Entry> var4) {
+   public ClientboundCommandSuggestionsPacket(int id, int start, int length, List<Entry> suggestions) {
       super();
-      this.id = var1;
-      this.start = var2;
-      this.length = var3;
-      this.suggestions = var4;
+      this.id = id;
+      this.start = start;
+      this.length = length;
+      this.suggestions = suggestions;
    }
 
    public PacketType<ClientboundCommandSuggestionsPacket> type() {
@@ -70,10 +70,10 @@ public record ClientboundCommandSuggestionsPacket(int id, int start, int length,
    public static record Entry(String text, Optional<Component> tooltip) {
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(String var1, Optional<Component> var2) {
+      public Entry(String text, Optional<Component> tooltip) {
          super();
-         this.text = var1;
-         this.tooltip = var2;
+         this.text = text;
+         this.tooltip = tooltip;
       }
 
       public String text() {

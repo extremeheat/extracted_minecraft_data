@@ -11,10 +11,10 @@ public interface WeightedEntry {
    }
 
    public static record Wrapper<T>(T data, Weight weight) implements WeightedEntry {
-      public Wrapper(T var1, Weight var2) {
+      public Wrapper(T data, Weight weight) {
          super();
-         this.data = var1;
-         this.weight = var2;
+         this.data = data;
+         this.weight = weight;
       }
 
       public Weight getWeight() {

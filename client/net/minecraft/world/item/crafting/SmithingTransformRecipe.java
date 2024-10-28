@@ -66,7 +66,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
             return var0x.base;
          }), Ingredient.CODEC.fieldOf("addition").forGetter((var0x) -> {
             return var0x.addition;
-         }), ItemStack.CODEC.fieldOf("result").forGetter((var0x) -> {
+         }), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> {
             return var0x.result;
          })).apply(var0, SmithingTransformRecipe::new);
       });

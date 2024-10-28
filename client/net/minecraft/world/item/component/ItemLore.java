@@ -13,6 +13,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record ItemLore(List<Component> lines, List<Component> styledLines) implements TooltipProvider {
@@ -28,18 +29,22 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
       }));
    }
 
-   public ItemLore(List<Component> var1, List<Component> var2) {
+   public ItemLore(List<Component> lines, List<Component> styledLines) {
       super();
-      this.lines = var1;
-      this.styledLines = var2;
+      if (lines.size() > 256) {
+         throw new IllegalArgumentException("Got " + lines.size() + " lines, but maximum is 256");
+      } else {
+         this.lines = lines;
+         this.styledLines = styledLines;
+      }
    }
 
    public ItemLore withLineAdded(Component var1) {
       return new ItemLore(Util.copyAndAdd((List)this.lines, (Object)var1));
    }
 
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
-      this.styledLines.forEach(var1);
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+      this.styledLines.forEach(var2);
    }
 
    public List<Component> lines() {

@@ -16,10 +16,10 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePr
       return var0.group(RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)).apply(var0, FluidPredicate::new);
    });
 
-   public FluidPredicate(Optional<HolderSet<Fluid>> var1, Optional<StatePropertiesPredicate> var2) {
+   public FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePropertiesPredicate> properties) {
       super();
-      this.fluids = var1;
-      this.properties = var2;
+      this.fluids = fluids;
+      this.properties = properties;
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {

@@ -24,6 +24,8 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       this.compositePredicates = Util.allOf(var1);
    }
 
+   public abstract LootItemFunctionType<? extends LootItemConditionalFunction> getType();
+
    protected static <T extends LootItemConditionalFunction> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(RecordCodecBuilder.Instance<T> var0) {
       return var0.group(LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
          return var0x.predicates;
@@ -50,7 +52,7 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
    }
 
    // $FF: synthetic method
-   public Object apply(Object var1, Object var2) {
+   public Object apply(final Object var1, final Object var2) {
       return this.apply((ItemStack)var1, (LootContext)var2);
    }
 
@@ -104,7 +106,7 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       }
 
       // $FF: synthetic method
-      public ConditionUserBuilder when(LootItemCondition.Builder var1) {
+      public ConditionUserBuilder when(final LootItemCondition.Builder var1) {
          return this.when(var1);
       }
    }

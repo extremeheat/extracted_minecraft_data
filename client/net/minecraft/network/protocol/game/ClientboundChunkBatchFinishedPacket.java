@@ -12,9 +12,9 @@ public record ClientboundChunkBatchFinishedPacket(int batchSize) implements Pack
       this(var1.readVarInt());
    }
 
-   public ClientboundChunkBatchFinishedPacket(int var1) {
+   public ClientboundChunkBatchFinishedPacket(int batchSize) {
       super();
-      this.batchSize = var1;
+      this.batchSize = batchSize;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -31,7 +31,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       this.enchantments = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<EnchantRandomlyFunction> getType() {
       return LootItemFunctions.ENCHANT_RANDOMLY;
    }
 

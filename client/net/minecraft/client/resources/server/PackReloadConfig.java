@@ -16,10 +16,10 @@ public interface PackReloadConfig {
    }
 
    public static record IdAndPath(UUID id, Path path) {
-      public IdAndPath(UUID var1, Path var2) {
+      public IdAndPath(UUID id, Path path) {
          super();
-         this.id = var1;
-         this.path = var2;
+         this.id = id;
+         this.path = path;
       }
 
       public UUID id() {

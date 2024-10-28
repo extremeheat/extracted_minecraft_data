@@ -149,62 +149,62 @@ public interface LayoutSettings {
       }
 
       // $FF: synthetic method
-      public LayoutSettings alignVertically(float var1) {
+      public LayoutSettings alignVertically(final float var1) {
          return this.alignVertically(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings alignHorizontally(float var1) {
+      public LayoutSettings alignHorizontally(final float var1) {
          return this.alignHorizontally(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings align(float var1, float var2) {
+      public LayoutSettings align(final float var1, final float var2) {
          return this.align(var1, var2);
       }
 
       // $FF: synthetic method
-      public LayoutSettings paddingVertical(int var1) {
+      public LayoutSettings paddingVertical(final int var1) {
          return this.paddingVertical(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings paddingHorizontal(int var1) {
+      public LayoutSettings paddingHorizontal(final int var1) {
          return this.paddingHorizontal(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings paddingBottom(int var1) {
+      public LayoutSettings paddingBottom(final int var1) {
          return this.paddingBottom(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings paddingRight(int var1) {
+      public LayoutSettings paddingRight(final int var1) {
          return this.paddingRight(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings paddingTop(int var1) {
+      public LayoutSettings paddingTop(final int var1) {
          return this.paddingTop(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings paddingLeft(int var1) {
+      public LayoutSettings paddingLeft(final int var1) {
          return this.paddingLeft(var1);
       }
 
       // $FF: synthetic method
-      public LayoutSettings padding(int var1, int var2, int var3, int var4) {
+      public LayoutSettings padding(final int var1, final int var2, final int var3, final int var4) {
          return this.padding(var1, var2, var3, var4);
       }
 
       // $FF: synthetic method
-      public LayoutSettings padding(int var1, int var2) {
+      public LayoutSettings padding(final int var1, final int var2) {
          return this.padding(var1, var2);
       }
 
       // $FF: synthetic method
-      public LayoutSettings padding(int var1) {
+      public LayoutSettings padding(final int var1) {
          return this.padding(var1);
       }
    }

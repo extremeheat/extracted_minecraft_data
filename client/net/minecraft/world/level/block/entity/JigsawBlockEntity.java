@@ -150,7 +150,7 @@ public class JigsawBlockEntity extends BlockEntity {
 
       private final String name;
 
-      private JointType(String var3) {
+      private JointType(final String var3) {
          this.name = var3;
       }
 

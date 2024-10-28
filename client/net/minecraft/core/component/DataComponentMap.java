@@ -53,6 +53,20 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
    });
 
+   static DataComponentMap composite(final DataComponentMap var0, final DataComponentMap var1) {
+      return new DataComponentMap() {
+         @Nullable
+         public <T> T get(DataComponentType<? extends T> var1x) {
+            Object var2 = var1.get(var1x);
+            return var2 != null ? var2 : var0.get(var1x);
+         }
+
+         public Set<DataComponentType<?>> keySet() {
+            return Sets.union(var0.keySet(), var1.keySet());
+         }
+      };
+   }
+
    static Builder builder() {
       return new Builder();
    }
@@ -156,9 +170,9 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
 
       private static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
-         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> var1) {
+         SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) {
             super();
-            this.map = var1;
+            this.map = map;
          }
 
          @Nullable

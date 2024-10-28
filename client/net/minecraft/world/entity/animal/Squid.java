@@ -211,7 +211,7 @@ public class Squid extends WaterAnimal {
    private class SquidRandomMovementGoal extends Goal {
       private final Squid squid;
 
-      public SquidRandomMovementGoal(Squid var1, Squid var2) {
+      public SquidRandomMovementGoal(final Squid var1, final Squid var2) {
          super();
          this.squid = var2;
       }

@@ -25,10 +25,10 @@ public record BlockDataSource(String posPattern, @Nullable Coordinates compiledP
       this(var1, compilePos(var1));
    }
 
-   public BlockDataSource(String var1, @Nullable Coordinates var2) {
+   public BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) {
       super();
-      this.posPattern = var1;
-      this.compiledPos = var2;
+      this.posPattern = posPattern;
+      this.compiledPos = compiledPos;
    }
 
    @Nullable

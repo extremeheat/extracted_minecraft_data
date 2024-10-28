@@ -61,6 +61,7 @@ public final class JigsawStructure extends Structure {
          case BURY:
          case BEARD_THIN:
          case BEARD_BOX:
+         case ENCAPSULATE:
             var10000 = 12;
             break;
          default:

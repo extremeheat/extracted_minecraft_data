@@ -17,10 +17,10 @@ public record ClientboundStoreCookiePacket(ResourceLocation key, byte[] payload)
       this(var1.readResourceLocation(), (byte[])PAYLOAD_STREAM_CODEC.decode(var1));
    }
 
-   public ClientboundStoreCookiePacket(ResourceLocation var1, byte[] var2) {
+   public ClientboundStoreCookiePacket(ResourceLocation key, byte[] payload) {
       super();
-      this.key = var1;
-      this.payload = var2;
+      this.key = key;
+      this.payload = payload;
    }
 
    private void write(FriendlyByteBuf var1) {

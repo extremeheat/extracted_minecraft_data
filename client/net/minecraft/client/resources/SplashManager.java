@@ -87,7 +87,7 @@ public class SplashManager extends SimplePreparableReloadListener<List<String>> 
    }
 
    // $FF: synthetic method
-   protected Object prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
       return this.prepare(var1, var2);
    }
 }

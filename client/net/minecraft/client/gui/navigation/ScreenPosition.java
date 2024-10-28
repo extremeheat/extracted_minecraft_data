@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.navigation;
 
 public record ScreenPosition(int x, int y) {
-   public ScreenPosition(int var1, int var2) {
+   public ScreenPosition(int x, int y) {
       super();
-      this.x = var1;
-      this.y = var2;
+      this.x = x;
+      this.y = y;
    }
 
    public static ScreenPosition of(ScreenAxis var0, int var1, int var2) {

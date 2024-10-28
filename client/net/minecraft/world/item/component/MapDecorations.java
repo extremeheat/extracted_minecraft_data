@@ -11,9 +11,9 @@ public record MapDecorations(Map<String, Entry> decorations) {
    public static final MapDecorations EMPTY = new MapDecorations(Map.of());
    public static final Codec<MapDecorations> CODEC;
 
-   public MapDecorations(Map<String, Entry> var1) {
+   public MapDecorations(Map<String, Entry> decorations) {
       super();
-      this.decorations = var1;
+      this.decorations = decorations;
    }
 
    public MapDecorations withDecoration(String var1, Entry var2) {
@@ -33,12 +33,12 @@ public record MapDecorations(Map<String, Entry> decorations) {
          return var0.group(MapDecorationType.CODEC.fieldOf("type").forGetter(Entry::type), Codec.DOUBLE.fieldOf("x").forGetter(Entry::x), Codec.DOUBLE.fieldOf("z").forGetter(Entry::z), Codec.FLOAT.fieldOf("rotation").forGetter(Entry::rotation)).apply(var0, Entry::new);
       });
 
-      public Entry(Holder<MapDecorationType> var1, double var2, double var4, float var6) {
+      public Entry(Holder<MapDecorationType> type, double x, double z, float rotation) {
          super();
-         this.type = var1;
-         this.x = var2;
-         this.z = var4;
-         this.rotation = var6;
+         this.type = type;
+         this.x = x;
+         this.z = z;
+         this.rotation = rotation;
       }
 
       public Holder<MapDecorationType> type() {

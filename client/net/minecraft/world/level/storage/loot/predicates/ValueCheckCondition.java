@@ -15,10 +15,10 @@ public record ValueCheckCondition(NumberProvider provider, IntRange range) imple
       return var0.group(NumberProviders.CODEC.fieldOf("value").forGetter(ValueCheckCondition::provider), IntRange.CODEC.fieldOf("range").forGetter(ValueCheckCondition::range)).apply(var0, ValueCheckCondition::new);
    });
 
-   public ValueCheckCondition(NumberProvider var1, IntRange var2) {
+   public ValueCheckCondition(NumberProvider provider, IntRange range) {
       super();
-      this.provider = var1;
-      this.range = var2;
+      this.provider = provider;
+      this.range = range;
    }
 
    public LootItemConditionType getType() {
@@ -48,7 +48,7 @@ public record ValueCheckCondition(NumberProvider provider, IntRange range) imple
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

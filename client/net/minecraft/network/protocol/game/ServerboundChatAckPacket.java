@@ -12,9 +12,9 @@ public record ServerboundChatAckPacket(int offset) implements Packet<ServerGameP
       this(var1.readVarInt());
    }
 
-   public ServerboundChatAckPacket(int var1) {
+   public ServerboundChatAckPacket(int offset) {
       super();
-      this.offset = var1;
+      this.offset = offset;
    }
 
    private void write(FriendlyByteBuf var1) {

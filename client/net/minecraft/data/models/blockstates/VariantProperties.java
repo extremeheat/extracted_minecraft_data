@@ -28,7 +28,7 @@ public class VariantProperties {
 
       final int value;
 
-      private Rotation(int var3) {
+      private Rotation(final int var3) {
          this.value = var3;
       }
 

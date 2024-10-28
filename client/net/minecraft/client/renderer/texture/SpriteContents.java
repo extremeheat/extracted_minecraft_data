@@ -197,7 +197,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       private final int frameRowSize;
       private final boolean interpolateFrames;
 
-      AnimatedTexture(List<FrameInfo> var2, int var3, boolean var4) {
+      AnimatedTexture(final List<FrameInfo> var2, final int var3, final boolean var4) {
          super();
          this.frames = var2;
          this.frameRowSize = var3;
@@ -251,7 +251,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       @Nullable
       private final InterpolationData interpolationData;
 
-      Ticker(SpriteContents var1, @Nullable AnimatedTexture var2, InterpolationData var3) {
+      Ticker(final SpriteContents var1, @Nullable final AnimatedTexture var2, final InterpolationData var3) {
          super();
          this.animationInfo = var2;
          this.interpolationData = var3;

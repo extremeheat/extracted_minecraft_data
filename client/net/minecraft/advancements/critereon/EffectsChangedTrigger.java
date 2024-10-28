@@ -32,11 +32,11 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(TriggerInstance::effects), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("source").forGetter(TriggerInstance::source)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<MobEffectsPredicate> var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<MobEffectsPredicate> effects, Optional<ContextAwarePredicate> source) {
          super();
-         this.player = var1;
-         this.effects = var2;
-         this.source = var3;
+         this.player = player;
+         this.effects = effects;
+         this.source = source;
       }
 
       public static Criterion<TriggerInstance> hasEffects(MobEffectsPredicate.Builder var0) {

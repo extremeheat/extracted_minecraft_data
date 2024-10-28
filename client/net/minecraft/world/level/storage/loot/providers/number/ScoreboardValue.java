@@ -20,11 +20,11 @@ public record ScoreboardValue(ScoreboardNameProvider target, String score, float
       return var0.group(ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target), Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score), Codec.FLOAT.fieldOf("scale").orElse(1.0F).forGetter(ScoreboardValue::scale)).apply(var0, ScoreboardValue::new);
    });
 
-   public ScoreboardValue(ScoreboardNameProvider var1, String var2, float var3) {
+   public ScoreboardValue(ScoreboardNameProvider target, String score, float scale) {
       super();
-      this.target = var1;
-      this.score = var2;
-      this.scale = var3;
+      this.target = target;
+      this.score = score;
+      this.scale = scale;
    }
 
    public LootNumberProviderType getType() {

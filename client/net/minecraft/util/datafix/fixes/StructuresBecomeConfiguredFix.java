@@ -118,10 +118,10 @@ public class StructuresBecomeConfiguredFix extends DataFix {
    static record Conversion(Map<String, String> biomeMapping, String fallback) {
       final String fallback;
 
-      private Conversion(Map<String, String> var1, String var2) {
+      private Conversion(Map<String, String> biomeMapping, String fallback) {
          super();
-         this.biomeMapping = var1;
-         this.fallback = var2;
+         this.biomeMapping = biomeMapping;
+         this.fallback = fallback;
       }
 
       public static Conversion trivial(String var0) {

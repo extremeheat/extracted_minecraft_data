@@ -46,11 +46,11 @@ public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<TriggerInsta
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2, MinMaxBounds.Ints var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims, MinMaxBounds.Ints uniqueEntityTypes) {
          super();
-         this.player = var1;
-         this.victims = var2;
-         this.uniqueEntityTypes = var3;
+         this.player = player;
+         this.victims = victims;
+         this.uniqueEntityTypes = uniqueEntityTypes;
       }
 
       public static Criterion<TriggerInstance> crossbowKilled(EntityPredicate.Builder... var0) {

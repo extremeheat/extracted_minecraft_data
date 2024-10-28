@@ -15,9 +15,9 @@ public record StorageNbtProvider(ResourceLocation id) implements NbtProvider {
       return var0.group(ResourceLocation.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(var0, StorageNbtProvider::new);
    });
 
-   public StorageNbtProvider(ResourceLocation var1) {
+   public StorageNbtProvider(ResourceLocation id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public LootNbtProviderType getType() {

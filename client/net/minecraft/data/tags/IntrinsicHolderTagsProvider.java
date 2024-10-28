@@ -29,7 +29,7 @@ public abstract class IntrinsicHolderTagsProvider<T> extends TagsProvider<T> {
    }
 
    // $FF: synthetic method
-   protected TagsProvider.TagAppender tag(TagKey var1) {
+   protected TagsProvider.TagAppender tag(final TagKey var1) {
       return this.tag(var1);
    }
 
@@ -58,7 +58,7 @@ public abstract class IntrinsicHolderTagsProvider<T> extends TagsProvider<T> {
       }
 
       // $FF: synthetic method
-      public TagsProvider.TagAppender addTag(TagKey var1) {
+      public TagsProvider.TagAppender addTag(final TagKey var1) {
          return this.addTag(var1);
       }
    }

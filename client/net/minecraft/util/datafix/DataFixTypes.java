@@ -38,7 +38,7 @@ public enum DataFixTypes {
    public static final Set<DSL.TypeReference> TYPES_FOR_LEVEL_LIST = Set.of(LEVEL.type);
    private final DSL.TypeReference type;
 
-   private DataFixTypes(DSL.TypeReference var3) {
+   private DataFixTypes(final DSL.TypeReference var3) {
       this.type = var3;
    }
 

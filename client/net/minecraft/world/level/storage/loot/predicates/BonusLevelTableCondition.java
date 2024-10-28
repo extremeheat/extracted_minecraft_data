@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -18,13 +19,13 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Float> values) implements LootItemCondition {
    public static final MapCodec<BonusLevelTableCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.ENCHANTMENT.holderByNameCodec().fieldOf("enchantment").forGetter(BonusLevelTableCondition::enchantment), Codec.FLOAT.listOf().fieldOf("chances").forGetter(BonusLevelTableCondition::values)).apply(var0, BonusLevelTableCondition::new);
+      return var0.group(BuiltInRegistries.ENCHANTMENT.holderByNameCodec().fieldOf("enchantment").forGetter(BonusLevelTableCondition::enchantment), ExtraCodecs.nonEmptyList(Codec.FLOAT.listOf()).fieldOf("chances").forGetter(BonusLevelTableCondition::values)).apply(var0, BonusLevelTableCondition::new);
    });
 
-   public BonusLevelTableCondition(Holder<Enchantment> var1, List<Float> var2) {
+   public BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Float> values) {
       super();
-      this.enchantment = var1;
-      this.values = var2;
+      this.enchantment = enchantment;
+      this.values = values;
    }
 
    public LootItemConditionType getType() {
@@ -66,7 +67,7 @@ public record BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Flo
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1) {
+   public boolean test(final Object var1) {
       return this.test((LootContext)var1);
    }
 }

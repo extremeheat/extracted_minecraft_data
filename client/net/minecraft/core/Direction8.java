@@ -17,7 +17,7 @@ public enum Direction8 {
    private final Set<Direction> directions;
    private final Vec3i step;
 
-   private Direction8(Direction... var3) {
+   private Direction8(final Direction... var3) {
       this.directions = Sets.immutableEnumSet(Arrays.asList(var3));
       this.step = new Vec3i(0, 0, 0);
       Direction[] var4 = var3;

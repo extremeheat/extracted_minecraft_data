@@ -16,7 +16,7 @@ enum AdvancementTabType {
    private final int height;
    private final int max;
 
-   private AdvancementTabType(Sprites var3, Sprites var4, int var5, int var6, int var7) {
+   private AdvancementTabType(final Sprites var3, final Sprites var4, final int var5, final int var6, final int var7) {
       this.selectedSprites = var3;
       this.unselectedSprites = var4;
       this.width = var5;
@@ -114,11 +114,11 @@ enum AdvancementTabType {
    }
 
    private static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
-      Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
+      Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
          super();
-         this.first = var1;
-         this.middle = var2;
-         this.last = var3;
+         this.first = first;
+         this.middle = middle;
+         this.last = last;
       }
 
       public ResourceLocation first() {

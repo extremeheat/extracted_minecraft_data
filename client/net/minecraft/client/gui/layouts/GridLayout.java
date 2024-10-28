@@ -193,7 +193,7 @@ public class GridLayout extends AbstractLayout {
       private final int columns;
       private int index;
 
-      RowHelper(int var2) {
+      RowHelper(final int var2) {
          super();
          this.columns = var2;
       }

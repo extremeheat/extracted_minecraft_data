@@ -114,7 +114,7 @@ public class GateBehavior<E extends LivingEntity> implements BehaviorControl<E> 
 
       private final Consumer<ShufflingList<?>> consumer;
 
-      private OrderPolicy(Consumer var3) {
+      private OrderPolicy(final Consumer var3) {
          this.consumer = var3;
       }
 

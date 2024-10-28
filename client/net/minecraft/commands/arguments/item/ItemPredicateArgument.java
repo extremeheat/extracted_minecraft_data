@@ -96,7 +96,7 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
    }
 
    // $FF: synthetic method
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -211,32 +211,32 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
       }
 
       // $FF: synthetic method
-      public Object anyOf(List var1) {
+      public Object anyOf(final List var1) {
          return this.anyOf(var1);
       }
 
       // $FF: synthetic method
-      public Object createPredicateTest(ImmutableStringReader var1, Object var2, Tag var3) throws CommandSyntaxException {
+      public Object createPredicateTest(final ImmutableStringReader var1, final Object var2, final Tag var3) throws CommandSyntaxException {
          return this.createPredicateTest(var1, (PredicateWrapper)var2, var3);
       }
 
       // $FF: synthetic method
-      public Object lookupPredicateType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public Object lookupPredicateType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
          return this.lookupPredicateType(var1, var2);
       }
 
       // $FF: synthetic method
-      public Object lookupComponentType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public Object lookupComponentType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
          return this.lookupComponentType(var1, var2);
       }
 
       // $FF: synthetic method
-      public Object forTagType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public Object forTagType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
          return this.forTagType(var1, var2);
       }
 
       // $FF: synthetic method
-      public Object forElementType(ImmutableStringReader var1, ResourceLocation var2) throws CommandSyntaxException {
+      public Object forElementType(final ImmutableStringReader var1, final ResourceLocation var2) throws CommandSyntaxException {
          return this.forElementType(var1, var2);
       }
    }
@@ -247,11 +247,11 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
    private static record ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
       final Predicate<ItemStack> presenceChecker;
 
-      ComponentWrapper(ResourceLocation var1, Predicate<ItemStack> var2, Decoder<? extends Predicate<ItemStack>> var3) {
+      ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
          super();
-         this.id = var1;
-         this.presenceChecker = var2;
-         this.valueChecker = var3;
+         this.id = id;
+         this.presenceChecker = presenceChecker;
+         this.valueChecker = valueChecker;
       }
 
       public static <T> ComponentWrapper create(ImmutableStringReader var0, ResourceLocation var1, DataComponentType<T> var2) throws CommandSyntaxException {
@@ -298,10 +298,10 @@ public class ItemPredicateArgument implements ArgumentType<Result> {
          }));
       }
 
-      PredicateWrapper(ResourceLocation var1, Decoder<? extends Predicate<ItemStack>> var2) {
+      PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
          super();
-         this.id = var1;
-         this.type = var2;
+         this.id = id;
+         this.type = type;
       }
 
       public Predicate<ItemStack> decode(ImmutableStringReader var1, RegistryOps<Tag> var2, Tag var3) throws CommandSyntaxException {

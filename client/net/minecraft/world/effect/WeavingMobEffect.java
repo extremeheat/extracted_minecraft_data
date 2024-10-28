@@ -1,6 +1,7 @@
 package net.minecraft.world.effect;
 
-import java.util.ArrayList;
+import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
@@ -9,6 +10,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
@@ -21,22 +24,22 @@ class WeavingMobEffect extends MobEffect {
    }
 
    public void onMobRemoved(LivingEntity var1, int var2, Entity.RemovalReason var3) {
-      if (var3 == Entity.RemovalReason.KILLED) {
+      if (var3 == Entity.RemovalReason.KILLED && (var1 instanceof Player || var1.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) {
          this.spawnCobwebsRandomlyAround(var1.level(), var1.getRandom(), var1.getOnPos());
       }
 
    }
 
    private void spawnCobwebsRandomlyAround(Level var1, RandomSource var2, BlockPos var3) {
-      ArrayList var4 = new ArrayList();
+      HashSet var4 = Sets.newHashSet();
       int var5 = this.maxCobwebs.applyAsInt(var2);
-      Iterator var6 = BlockPos.randomInCube(var2, 10, var3, 3).iterator();
+      Iterator var6 = BlockPos.randomInCube(var2, 15, var3, 1).iterator();
 
       BlockPos var7;
       while(var6.hasNext()) {
          var7 = (BlockPos)var6.next();
          BlockPos var8 = var7.below();
-         if (var1.getBlockState(var7).isAir() && var1.getBlockState(var8).isFaceSturdy(var1, var8, Direction.UP)) {
+         if (!var4.contains(var7) && var1.getBlockState(var7).canBeReplaced() && var1.getBlockState(var8).isFaceSturdy(var1, var8, Direction.UP)) {
             var4.add(var7.immutable());
             if (var4.size() >= var5) {
                break;

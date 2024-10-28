@@ -3,6 +3,7 @@ package net.minecraft.server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParseException;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
@@ -145,10 +146,10 @@ public class PlayerAdvancements {
             }
 
             var2.close();
-         } catch (JsonParseException var7) {
-            LOGGER.error("Couldn't parse player advancements in {}", this.playerSavePath, var7);
-         } catch (IOException var8) {
-            LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, var8);
+         } catch (JsonIOException | IOException var7) {
+            LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, var7);
+         } catch (JsonParseException var8) {
+            LOGGER.error("Couldn't parse player advancements in {}", this.playerSavePath, var8);
          }
       }
 
@@ -164,7 +165,7 @@ public class PlayerAdvancements {
          BufferedWriter var2 = Files.newBufferedWriter(this.playerSavePath, StandardCharsets.UTF_8);
 
          try {
-            GSON.toJson(var1, var2);
+            GSON.toJson(var1, GSON.newJsonWriter(var2));
          } catch (Throwable var6) {
             if (var2 != null) {
                try {
@@ -389,9 +390,9 @@ public class PlayerAdvancements {
    private static record Data(Map<ResourceLocation, AdvancementProgress> map) {
       public static final Codec<Data> CODEC;
 
-      Data(Map<ResourceLocation, AdvancementProgress> var1) {
+      Data(Map<ResourceLocation, AdvancementProgress> map) {
          super();
-         this.map = var1;
+         this.map = map;
       }
 
       public void forEach(BiConsumer<ResourceLocation, AdvancementProgress> var1) {

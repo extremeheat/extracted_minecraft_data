@@ -214,7 +214,7 @@ public final class TrialSpawner {
                         }
 
                         var18.setPersistenceRequired();
-                        Optional var10000 = var4.getEquipmentLootTable();
+                        Optional var10000 = var4.getEquipment();
                         Objects.requireNonNull(var18);
                         var10000.ifPresent(var18::equip);
                      }
@@ -392,7 +392,7 @@ public final class TrialSpawner {
 
       public final SimpleParticleType particleType;
 
-      private FlameParticle(SimpleParticleType var3) {
+      private FlameParticle(final SimpleParticleType var3) {
          this.particleType = var3;
       }
 

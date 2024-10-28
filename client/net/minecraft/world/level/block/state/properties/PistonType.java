@@ -8,7 +8,7 @@ public enum PistonType implements StringRepresentable {
 
    private final String name;
 
-   private PistonType(String var3) {
+   private PistonType(final String var3) {
       this.name = var3;
    }
 

@@ -11,13 +11,13 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnFire, Optional<Boolean>
       return var0.group(Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby)).apply(var0, EntityFlagsPredicate::new);
    });
 
-   public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5) {
+   public EntityFlagsPredicate(Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isBaby) {
       super();
-      this.isOnFire = var1;
-      this.isCrouching = var2;
-      this.isSprinting = var3;
-      this.isSwimming = var4;
-      this.isBaby = var5;
+      this.isOnFire = isOnFire;
+      this.isCrouching = isCrouching;
+      this.isSprinting = isSprinting;
+      this.isSwimming = isSwimming;
+      this.isBaby = isBaby;
    }
 
    public boolean matches(Entity var1) {

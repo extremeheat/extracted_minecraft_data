@@ -16,10 +16,10 @@ public record RuleBasedBlockStateProvider(BlockStateProvider fallback, List<Rule
       return var0.group(BlockStateProvider.CODEC.fieldOf("fallback").forGetter(RuleBasedBlockStateProvider::fallback), RuleBasedBlockStateProvider.Rule.CODEC.listOf().fieldOf("rules").forGetter(RuleBasedBlockStateProvider::rules)).apply(var0, RuleBasedBlockStateProvider::new);
    });
 
-   public RuleBasedBlockStateProvider(BlockStateProvider var1, List<Rule> var2) {
+   public RuleBasedBlockStateProvider(BlockStateProvider fallback, List<Rule> rules) {
       super();
-      this.fallback = var1;
-      this.rules = var2;
+      this.fallback = fallback;
+      this.rules = rules;
    }
 
    public static RuleBasedBlockStateProvider simple(BlockStateProvider var0) {
@@ -58,10 +58,10 @@ public record RuleBasedBlockStateProvider(BlockStateProvider fallback, List<Rule
          return var0.group(BlockPredicate.CODEC.fieldOf("if_true").forGetter(Rule::ifTrue), BlockStateProvider.CODEC.fieldOf("then").forGetter(Rule::then)).apply(var0, Rule::new);
       });
 
-      public Rule(BlockPredicate var1, BlockStateProvider var2) {
+      public Rule(BlockPredicate ifTrue, BlockStateProvider then) {
          super();
-         this.ifTrue = var1;
-         this.then = var2;
+         this.ifTrue = ifTrue;
+         this.then = then;
       }
 
       public BlockPredicate ifTrue() {

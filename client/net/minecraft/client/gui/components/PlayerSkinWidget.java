@@ -74,10 +74,10 @@ public class PlayerSkinWidget extends AbstractWidget {
    }
 
    static record Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
-      private Model(PlayerModel<?> var1, PlayerModel<?> var2) {
+      private Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
          super();
-         this.wideModel = var1;
-         this.slimModel = var2;
+         this.wideModel = wideModel;
+         this.slimModel = slimModel;
       }
 
       public static Model bake(EntityModelSet var0) {

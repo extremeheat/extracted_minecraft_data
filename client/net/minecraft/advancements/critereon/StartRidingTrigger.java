@@ -27,9 +27,9 @@ public class StartRidingTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player) {
          super();
-         this.player = var1;
+         this.player = player;
       }
 
       public static Criterion<TriggerInstance> playerStartsRiding(EntityPredicate.Builder var0) {

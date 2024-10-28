@@ -14,8 +14,6 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.WorldDataConfiguration;
 import org.slf4j.Logger;
 
@@ -64,11 +62,11 @@ public class WorldLoader {
    public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
       final PackConfig packConfig;
 
-      public InitConfig(PackConfig var1, Commands.CommandSelection var2, int var3) {
+      public InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
          super();
-         this.packConfig = var1;
-         this.commandSelection = var2;
-         this.functionCompilationLevel = var3;
+         this.packConfig = packConfig;
+         this.commandSelection = commandSelection;
+         this.functionCompilationLevel = functionCompilationLevel;
       }
 
       public PackConfig packConfig() {
@@ -85,24 +83,19 @@ public class WorldLoader {
    }
 
    public static record PackConfig(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean safeMode, boolean initMode) {
-      public PackConfig(PackRepository var1, WorldDataConfiguration var2, boolean var3, boolean var4) {
+      public PackConfig(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean safeMode, boolean initMode) {
          super();
-         this.packRepository = var1;
-         this.initialDataConfig = var2;
-         this.safeMode = var3;
-         this.initMode = var4;
+         this.packRepository = packRepository;
+         this.initialDataConfig = initialDataConfig;
+         this.safeMode = safeMode;
+         this.initMode = initMode;
       }
 
       public Pair<WorldDataConfiguration, CloseableResourceManager> createResourceManager() {
-         FeatureFlagSet var1 = this.initMode ? FeatureFlags.REGISTRY.allFlags() : this.initialDataConfig.enabledFeatures();
-         WorldDataConfiguration var2 = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig.dataPacks(), this.safeMode, var1);
-         if (!this.initMode) {
-            var2 = var2.expandFeatures(this.initialDataConfig.enabledFeatures());
-         }
-
-         List var3 = this.packRepository.openAllSelected();
-         MultiPackResourceManager var4 = new MultiPackResourceManager(PackType.SERVER_DATA, var3);
-         return Pair.of(var2, var4);
+         WorldDataConfiguration var1 = MinecraftServer.configurePackRepository(this.packRepository, this.initialDataConfig, this.initMode, this.safeMode);
+         List var2 = this.packRepository.openAllSelected();
+         MultiPackResourceManager var3 = new MultiPackResourceManager(PackType.SERVER_DATA, var2);
+         return Pair.of(var1, var3);
       }
 
       public PackRepository packRepository() {
@@ -123,12 +116,12 @@ public class WorldLoader {
    }
 
    public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, RegistryAccess.Frozen datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
-      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, RegistryAccess.Frozen var3, RegistryAccess.Frozen var4) {
+      public DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, RegistryAccess.Frozen datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
          super();
-         this.resources = var1;
-         this.dataConfiguration = var2;
-         this.datapackWorldgen = var3;
-         this.datapackDimensions = var4;
+         this.resources = resources;
+         this.dataConfiguration = dataConfiguration;
+         this.datapackWorldgen = datapackWorldgen;
+         this.datapackDimensions = datapackDimensions;
       }
 
       public ResourceManager resources() {
@@ -157,10 +150,10 @@ public class WorldLoader {
       final D cookie;
       final RegistryAccess.Frozen finalDimensions;
 
-      public DataLoadOutput(D var1, RegistryAccess.Frozen var2) {
+      public DataLoadOutput(D cookie, RegistryAccess.Frozen finalDimensions) {
          super();
-         this.cookie = var1;
-         this.finalDimensions = var2;
+         this.cookie = cookie;
+         this.finalDimensions = finalDimensions;
       }
 
       public D cookie() {

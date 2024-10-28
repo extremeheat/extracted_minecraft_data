@@ -2,13 +2,13 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 
-public record LootItemFunctionType(MapCodec<? extends LootItemFunction> codec) {
-   public LootItemFunctionType(MapCodec<? extends LootItemFunction> var1) {
+public record LootItemFunctionType<T extends LootItemFunction>(MapCodec<T> codec) {
+   public LootItemFunctionType(MapCodec<T> codec) {
       super();
-      this.codec = var1;
+      this.codec = codec;
    }
 
-   public MapCodec<? extends LootItemFunction> codec() {
+   public MapCodec<T> codec() {
       return this.codec;
    }
 }

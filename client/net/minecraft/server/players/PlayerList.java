@@ -193,7 +193,7 @@ public abstract class PlayerList {
       var13.send(new ClientboundChangeDifficultyPacket(var12.getDifficulty(), var12.isDifficultyLocked()));
       var13.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
       var13.send(new ClientboundSetCarriedItemPacket(var2.getInventory().selected));
-      var13.send(new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getRecipes()));
+      var13.send(new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getOrderedRecipes()));
       this.sendPlayerPermissionLevel(var2);
       var2.getStats().markAllDirty();
       var2.getRecipeBook().sendInitialRecipeBook(var2);
@@ -921,7 +921,7 @@ public abstract class PlayerList {
       }
 
       this.broadcastAll(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
-      ClientboundUpdateRecipesPacket var4 = new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getRecipes());
+      ClientboundUpdateRecipesPacket var4 = new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getOrderedRecipes());
       Iterator var5 = this.players.iterator();
 
       while(var5.hasNext()) {

@@ -128,7 +128,7 @@ public class VertexFormat {
       public final int primitiveStride;
       public final boolean connectedPrimitives;
 
-      private Mode(int var3, int var4, int var5, boolean var6) {
+      private Mode(final int var3, final int var4, final int var5, final boolean var6) {
          this.asGLMode = var3;
          this.primitiveLength = var4;
          this.primitiveStride = var5;
@@ -170,7 +170,7 @@ public class VertexFormat {
       public final int asGLType;
       public final int bytes;
 
-      private IndexType(int var3, int var4) {
+      private IndexType(final int var3, final int var4) {
          this.asGLType = var3;
          this.bytes = var4;
       }

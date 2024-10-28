@@ -54,7 +54,7 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       this.bakedPredicate = Util.allOf(var5);
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<CopyComponentsFunction> getType() {
       return LootItemFunctions.COPY_COMPONENTS;
    }
 
@@ -78,7 +78,7 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       public static final Codec<Source> CODEC = StringRepresentable.fromValues(Source::values);
       private final String name;
 
-      private Source(String var3) {
+      private Source(final String var3) {
          this.name = var3;
       }
 

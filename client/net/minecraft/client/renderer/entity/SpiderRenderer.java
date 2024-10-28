@@ -29,7 +29,7 @@ public class SpiderRenderer<T extends Spider> extends MobRenderer<T, SpiderModel
    }
 
    // $FF: synthetic method
-   protected float getFlipDegrees(LivingEntity var1) {
+   protected float getFlipDegrees(final LivingEntity var1) {
       return this.getFlipDegrees((Spider)var1);
    }
 }

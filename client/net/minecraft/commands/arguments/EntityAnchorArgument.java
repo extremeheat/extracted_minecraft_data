@@ -60,7 +60,7 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
    }
 
    // $FF: synthetic method
-   public Object parse(StringReader var1) throws CommandSyntaxException {
+   public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
    }
 
@@ -85,7 +85,7 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
       private final String name;
       private final BiFunction<Vec3, Entity, Vec3> transform;
 
-      private Anchor(String var3, BiFunction var4) {
+      private Anchor(final String var3, final BiFunction var4) {
          this.name = var3;
          this.transform = var4;
       }

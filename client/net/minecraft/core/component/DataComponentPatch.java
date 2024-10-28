@@ -251,12 +251,12 @@ public final class DataComponentPatch {
          }
 
          // $FF: synthetic method
-         public void encode(Object var1, Object var2) {
+         public void encode(final Object var1, final Object var2) {
             this.encode((RegistryFriendlyByteBuf)var1, (DataComponentPatch)var2);
          }
 
          // $FF: synthetic method
-         public Object decode(Object var1) {
+         public Object decode(final Object var1) {
             return this.decode((RegistryFriendlyByteBuf)var1);
          }
       };
@@ -291,10 +291,10 @@ public final class DataComponentPatch {
    public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
       public static final SplitResult EMPTY;
 
-      public SplitResult(DataComponentMap var1, Set<DataComponentType<?>> var2) {
+      public SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
          super();
-         this.added = var1;
-         this.removed = var2;
+         this.added = added;
+         this.removed = removed;
       }
 
       public DataComponentMap added() {
@@ -313,14 +313,14 @@ public final class DataComponentPatch {
    static record PatchKey(DataComponentType<?> type, boolean removed) {
       public static final Codec<PatchKey> CODEC;
 
-      PatchKey(DataComponentType<?> var1, boolean var2) {
+      PatchKey(DataComponentType<?> type, boolean removed) {
          super();
-         this.type = var1;
-         this.removed = var2;
+         this.type = type;
+         this.removed = removed;
       }
 
       public Codec<?> valueCodec() {
-         return this.removed ? Codec.unit(Unit.INSTANCE) : this.type.codecOrThrow();
+         return this.removed ? Codec.EMPTY.codec() : this.type.codecOrThrow();
       }
 
       public DataComponentType<?> type() {

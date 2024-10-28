@@ -19,10 +19,10 @@ import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.SuggestionSupplier;
 
 public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
-   public Grammar(Dictionary<StringReader> var1, Atom<T> var2) {
+   public Grammar(Dictionary<StringReader> rules, Atom<T> top) {
       super();
-      this.rules = var1;
-      this.top = var2;
+      this.rules = rules;
+      this.top = top;
    }
 
    public Optional<T> parse(ParseState<StringReader> var1) {

@@ -13,10 +13,10 @@ public record ServerboundResourcePackPacket(UUID id, Action action) implements P
       this(var1.readUUID(), (Action)var1.readEnum(Action.class));
    }
 
-   public ServerboundResourcePackPacket(UUID var1, Action var2) {
+   public ServerboundResourcePackPacket(UUID id, Action action) {
       super();
-      this.id = var1;
-      this.action = var2;
+      this.id = id;
+      this.action = action;
    }
 
    private void write(FriendlyByteBuf var1) {

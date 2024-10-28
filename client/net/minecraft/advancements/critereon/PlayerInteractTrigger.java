@@ -31,11 +31,11 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<TriggerInstanc
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, Optional<ContextAwarePredicate> entity) {
          super();
-         this.player = var1;
-         this.item = var2;
-         this.entity = var3;
+         this.player = player;
+         this.item = item;
+         this.entity = entity;
       }
 
       public static Criterion<TriggerInstance> itemUsedOnEntity(Optional<ContextAwarePredicate> var0, ItemPredicate.Builder var1, Optional<ContextAwarePredicate> var2) {
@@ -47,7 +47,7 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<TriggerInstanc
       }
 
       public boolean matches(ItemStack var1, LootContext var2) {
-         if (this.item.isPresent() && !((ItemPredicate)this.item.get()).matches(var1)) {
+         if (this.item.isPresent() && !((ItemPredicate)this.item.get()).test(var1)) {
             return false;
          } else {
             return this.entity.isEmpty() || ((ContextAwarePredicate)this.entity.get()).matches(var2);

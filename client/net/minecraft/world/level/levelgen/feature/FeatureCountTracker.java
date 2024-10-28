@@ -79,17 +79,17 @@ public class FeatureCountTracker {
          }
 
          // $FF: synthetic method
-         public Object load(Object var1) throws Exception {
+         public Object load(final Object var1) throws Exception {
             return this.load((ServerLevel)var1);
          }
       });
    }
 
    static record LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
-      LevelData(Object2IntMap<FeatureData> var1, MutableInt var2) {
+      LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
          super();
-         this.featureData = var1;
-         this.chunksWithFeatures = var2;
+         this.featureData = featureData;
+         this.chunksWithFeatures = chunksWithFeatures;
       }
 
       public Object2IntMap<FeatureData> featureData() {
@@ -102,10 +102,10 @@ public class FeatureCountTracker {
    }
 
    private static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
-      FeatureData(ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
+      FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
          super();
-         this.feature = var1;
-         this.topFeature = var2;
+         this.feature = feature;
+         this.topFeature = topFeature;
       }
 
       public ConfiguredFeature<?, ?> feature() {

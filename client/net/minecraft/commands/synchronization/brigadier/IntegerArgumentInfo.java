@@ -50,7 +50,7 @@ public class IntegerArgumentInfo implements ArgumentTypeInfo<IntegerArgumentType
    }
 
    // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
       return this.deserializeFromNetwork(var1);
    }
 
@@ -58,7 +58,7 @@ public class IntegerArgumentInfo implements ArgumentTypeInfo<IntegerArgumentType
       final int min;
       final int max;
 
-      Template(int var2, int var3) {
+      Template(final int var2, final int var3) {
          super();
          this.min = var2;
          this.max = var3;
@@ -73,7 +73,7 @@ public class IntegerArgumentInfo implements ArgumentTypeInfo<IntegerArgumentType
       }
 
       // $FF: synthetic method
-      public ArgumentType instantiate(CommandBuildContext var1) {
+      public ArgumentType instantiate(final CommandBuildContext var1) {
          return this.instantiate(var1);
       }
    }

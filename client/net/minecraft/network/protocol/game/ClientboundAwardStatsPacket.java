@@ -13,9 +13,9 @@ public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) implemen
    private static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Stat<?>>> STAT_VALUES_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAwardStatsPacket> STREAM_CODEC;
 
-   public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> var1) {
+   public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) {
       super();
-      this.stats = var1;
+      this.stats = stats;
    }
 
    public PacketType<ClientboundAwardStatsPacket> type() {

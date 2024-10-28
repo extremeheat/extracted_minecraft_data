@@ -11,10 +11,10 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundPlayerCombatKillPacket(int playerId, Component message) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerCombatKillPacket> STREAM_CODEC;
 
-   public ClientboundPlayerCombatKillPacket(int var1, Component var2) {
+   public ClientboundPlayerCombatKillPacket(int playerId, Component message) {
       super();
-      this.playerId = var1;
-      this.message = var2;
+      this.playerId = playerId;
+      this.message = message;
    }
 
    public PacketType<ClientboundPlayerCombatKillPacket> type() {

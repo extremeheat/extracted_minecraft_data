@@ -132,7 +132,7 @@ public class ExperienceCommand {
       public final String name;
       final ToIntFunction<ServerPlayer> query;
 
-      private Type(String var3, BiConsumer var4, BiPredicate var5, ToIntFunction var6) {
+      private Type(final String var3, final BiConsumer var4, final BiPredicate var5, final ToIntFunction var6) {
          this.add = var4;
          this.name = var3;
          this.set = var5;

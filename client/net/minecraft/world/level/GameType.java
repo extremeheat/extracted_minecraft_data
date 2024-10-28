@@ -23,7 +23,7 @@ public enum GameType implements StringRepresentable {
    private final Component shortName;
    private final Component longName;
 
-   private GameType(int var3, String var4) {
+   private GameType(final int var3, final String var4) {
       this.id = var3;
       this.name = var4;
       this.shortName = Component.translatable("selectWorld.gameMode." + var4);

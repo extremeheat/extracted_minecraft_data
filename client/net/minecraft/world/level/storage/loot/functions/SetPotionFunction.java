@@ -25,7 +25,7 @@ public class SetPotionFunction extends LootItemConditionalFunction {
       this.potion = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetPotionFunction> getType() {
       return LootItemFunctions.SET_POTION;
    }
 

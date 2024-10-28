@@ -8,13 +8,13 @@ public record EntityDimensions(float width, float height, float eyeHeight, Entit
       this(var1, var2, defaultEyeHeight(var2), EntityAttachments.createDefault(var1, var2), var3);
    }
 
-   public EntityDimensions(float var1, float var2, float var3, EntityAttachments var4, boolean var5) {
+   public EntityDimensions(float width, float height, float eyeHeight, EntityAttachments attachments, boolean fixed) {
       super();
-      this.width = var1;
-      this.height = var2;
-      this.eyeHeight = var3;
-      this.attachments = var4;
-      this.fixed = var5;
+      this.width = width;
+      this.height = height;
+      this.eyeHeight = eyeHeight;
+      this.attachments = attachments;
+      this.fixed = fixed;
    }
 
    private static float defaultEyeHeight(float var0) {

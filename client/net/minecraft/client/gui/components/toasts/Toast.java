@@ -35,7 +35,7 @@ public interface Toast {
 
       private final SoundEvent soundEvent;
 
-      private Visibility(SoundEvent var3) {
+      private Visibility(final SoundEvent var3) {
          this.soundEvent = var3;
       }
 

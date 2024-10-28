@@ -93,7 +93,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
          setChanged(var0, var1, var2);
       }
 
-      boolean var5 = isBrewable(var3.items);
+      boolean var5 = isBrewable(var0.potionBrewing(), var3.items);
       boolean var6 = var3.brewTime > 0;
       ItemStack var7 = (ItemStack)var3.items.get(3);
       if (var6) {
@@ -142,16 +142,16 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
       return var1;
    }
 
-   private static boolean isBrewable(NonNullList<ItemStack> var0) {
-      ItemStack var1 = (ItemStack)var0.get(3);
-      if (var1.isEmpty()) {
+   private static boolean isBrewable(PotionBrewing var0, NonNullList<ItemStack> var1) {
+      ItemStack var2 = (ItemStack)var1.get(3);
+      if (var2.isEmpty()) {
          return false;
-      } else if (!PotionBrewing.isIngredient(var1)) {
+      } else if (!var0.isIngredient(var2)) {
          return false;
       } else {
-         for(int var2 = 0; var2 < 3; ++var2) {
-            ItemStack var3 = (ItemStack)var0.get(var2);
-            if (!var3.isEmpty() && PotionBrewing.hasMix(var3, var1)) {
+         for(int var3 = 0; var3 < 3; ++var3) {
+            ItemStack var4 = (ItemStack)var1.get(var3);
+            if (!var4.isEmpty() && var0.hasMix(var4, var2)) {
                return true;
             }
          }
@@ -162,18 +162,19 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
 
    private static void doBrew(Level var0, BlockPos var1, NonNullList<ItemStack> var2) {
       ItemStack var3 = (ItemStack)var2.get(3);
+      PotionBrewing var4 = var0.potionBrewing();
 
-      for(int var4 = 0; var4 < 3; ++var4) {
-         var2.set(var4, PotionBrewing.mix(var3, (ItemStack)var2.get(var4)));
+      for(int var5 = 0; var5 < 3; ++var5) {
+         var2.set(var5, var4.mix(var3, (ItemStack)var2.get(var5)));
       }
 
       var3.shrink(1);
       if (var3.getItem().hasCraftingRemainingItem()) {
-         ItemStack var5 = new ItemStack(var3.getItem().getCraftingRemainingItem());
+         ItemStack var6 = new ItemStack(var3.getItem().getCraftingRemainingItem());
          if (var3.isEmpty()) {
-            var3 = var5;
+            var3 = var6;
          } else {
-            Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var5);
+            Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var6);
          }
       }
 
@@ -198,7 +199,8 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
 
    public boolean canPlaceItem(int var1, ItemStack var2) {
       if (var1 == 3) {
-         return PotionBrewing.isIngredient(var2);
+         PotionBrewing var3 = this.level != null ? this.level.potionBrewing() : PotionBrewing.EMPTY;
+         return var3.isIngredient(var2);
       } else if (var1 == 4) {
          return var2.is(Items.BLAZE_POWDER);
       } else {

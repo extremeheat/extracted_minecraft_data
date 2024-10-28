@@ -204,7 +204,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       private final Base base;
       private final int packedId;
 
-      private Pattern(String var3, Base var4, int var5) {
+      private Pattern(final String var3, final Base var4, final int var5) {
          this.name = var3;
          this.base = var4;
          this.packedId = var4.id | var5 << 8;
@@ -253,11 +253,11 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
          this(TropicalFish.getPattern(var1), TropicalFish.getBaseColor(var1), TropicalFish.getPatternColor(var1));
       }
 
-      public Variant(Pattern var1, DyeColor var2, DyeColor var3) {
+      public Variant(Pattern pattern, DyeColor baseColor, DyeColor patternColor) {
          super();
-         this.pattern = var1;
-         this.baseColor = var2;
-         this.patternColor = var3;
+         this.pattern = pattern;
+         this.baseColor = baseColor;
+         this.patternColor = patternColor;
       }
 
       public int getPackedId() {
@@ -287,7 +287,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
       final int id;
 
-      private Base(int var3) {
+      private Base(final int var3) {
          this.id = var3;
       }
 

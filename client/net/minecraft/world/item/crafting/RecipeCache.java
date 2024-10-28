@@ -73,10 +73,10 @@ public class RecipeCache {
    }
 
    static record Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
-      Entry(NonNullList<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
+      Entry(NonNullList<ItemStack> key, @Nullable RecipeHolder<CraftingRecipe> value) {
          super();
-         this.key = var1;
-         this.value = var2;
+         this.key = key;
+         this.value = value;
       }
 
       public boolean matches(List<ItemStack> var1) {

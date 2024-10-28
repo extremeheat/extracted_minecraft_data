@@ -15,7 +15,7 @@ public class GenerationStep {
       public static final Codec<Carving> CODEC = StringRepresentable.fromEnum(Carving::values);
       private final String name;
 
-      private Carving(String var3) {
+      private Carving(final String var3) {
          this.name = var3;
       }
 
@@ -49,7 +49,7 @@ public class GenerationStep {
       public static final Codec<Decoration> CODEC = StringRepresentable.fromEnum(Decoration::values);
       private final String name;
 
-      private Decoration(String var3) {
+      private Decoration(final String var3) {
          this.name = var3;
       }
 

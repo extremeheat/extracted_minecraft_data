@@ -24,7 +24,7 @@ public class NamespacedSchema extends Schema {
       }
 
       // $FF: synthetic method
-      public Object write(DynamicOps var1, Object var2) {
+      public Object write(final DynamicOps var1, final Object var2) {
          return this.write(var1, (String)var2);
       }
    };

@@ -13,12 +13,12 @@ public record BlockColumnConfiguration(List<Layer> layers, Direction direction, 
       return var0.group(BlockColumnConfiguration.Layer.CODEC.listOf().fieldOf("layers").forGetter(BlockColumnConfiguration::layers), Direction.CODEC.fieldOf("direction").forGetter(BlockColumnConfiguration::direction), BlockPredicate.CODEC.fieldOf("allowed_placement").forGetter(BlockColumnConfiguration::allowedPlacement), Codec.BOOL.fieldOf("prioritize_tip").forGetter(BlockColumnConfiguration::prioritizeTip)).apply(var0, BlockColumnConfiguration::new);
    });
 
-   public BlockColumnConfiguration(List<Layer> var1, Direction var2, BlockPredicate var3, boolean var4) {
+   public BlockColumnConfiguration(List<Layer> layers, Direction direction, BlockPredicate allowedPlacement, boolean prioritizeTip) {
       super();
-      this.layers = var1;
-      this.direction = var2;
-      this.allowedPlacement = var3;
-      this.prioritizeTip = var4;
+      this.layers = layers;
+      this.direction = direction;
+      this.allowedPlacement = allowedPlacement;
+      this.prioritizeTip = prioritizeTip;
    }
 
    public static Layer layer(IntProvider var0, BlockStateProvider var1) {
@@ -50,10 +50,10 @@ public record BlockColumnConfiguration(List<Layer> layers, Direction direction, 
          return var0.group(IntProvider.NON_NEGATIVE_CODEC.fieldOf("height").forGetter(Layer::height), BlockStateProvider.CODEC.fieldOf("provider").forGetter(Layer::state)).apply(var0, Layer::new);
       });
 
-      public Layer(IntProvider var1, BlockStateProvider var2) {
+      public Layer(IntProvider height, BlockStateProvider state) {
          super();
-         this.height = var1;
-         this.state = var2;
+         this.height = height;
+         this.state = state;
       }
 
       public IntProvider height() {

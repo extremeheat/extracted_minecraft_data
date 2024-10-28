@@ -12,9 +12,9 @@ public interface OutgoingChatMessage {
    }
 
    public static record Disguised(Component content) implements OutgoingChatMessage {
-      public Disguised(Component var1) {
+      public Disguised(Component content) {
          super();
-         this.content = var1;
+         this.content = content;
       }
 
       public Component content() {
@@ -27,9 +27,9 @@ public interface OutgoingChatMessage {
    }
 
    public static record Player(PlayerChatMessage message) implements OutgoingChatMessage {
-      public Player(PlayerChatMessage var1) {
+      public Player(PlayerChatMessage message) {
          super();
-         this.message = var1;
+         this.message = message;
       }
 
       public Component content() {

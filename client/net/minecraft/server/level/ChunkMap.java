@@ -55,6 +55,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtException;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
@@ -619,8 +620,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
       Throwable var9 = var10000;
       boolean var10 = var9 instanceof Error;
-      boolean var6 = var9 instanceof IOException || var9 instanceof ChunkSerializer.ChunkReadException;
-      if (!var10 && var6) {
+      boolean var6 = var9 instanceof IOException || var9 instanceof NbtException;
+      if (!var10) {
+         if (!var6) {
+         }
+
          LOGGER.error("Couldn't load chunk {}", var2, var9);
          this.level.getServer().reportChunkLoadFailure(var2);
          return this.createEmptyChunk(var2);
@@ -1347,7 +1351,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    class DistanceManager extends net.minecraft.server.level.DistanceManager {
-      protected DistanceManager(Executor var2, Executor var3) {
+      protected DistanceManager(final Executor var2, final Executor var3) {
          super(var2, var3);
       }
 
@@ -1373,7 +1377,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       SectionPos lastSectionPos;
       private final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
 
-      public TrackedEntity(Entity var2, int var3, int var4, boolean var5) {
+      public TrackedEntity(final Entity var2, final int var3, final int var4, final boolean var5) {
          super();
          this.serverEntity = new ServerEntity(ChunkMap.this.level, var2, var4, var5, this::broadcast);
          this.entity = var2;

@@ -69,10 +69,10 @@ public class RealmsTextureManager {
    public static record RealmsTexture(String image, ResourceLocation textureId) {
       final ResourceLocation textureId;
 
-      public RealmsTexture(String var1, ResourceLocation var2) {
+      public RealmsTexture(String image, ResourceLocation textureId) {
          super();
-         this.image = var1;
-         this.textureId = var2;
+         this.image = image;
+         this.textureId = textureId;
       }
 
       public String image() {

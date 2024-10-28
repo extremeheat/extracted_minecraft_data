@@ -71,10 +71,10 @@ public class MultiNoiseBiomeSourceParameterList {
       static final Map<ResourceLocation, Preset> BY_NAME;
       public static final Codec<Preset> CODEC;
 
-      public Preset(ResourceLocation var1, SourceProvider var2) {
+      public Preset(ResourceLocation id, SourceProvider provider) {
          super();
-         this.id = var1;
-         this.provider = var2;
+         this.id = id;
+         this.provider = provider;
       }
 
       static <T> Climate.ParameterList<T> generateOverworldBiomes(Function<ResourceKey<Biome>, T> var0) {

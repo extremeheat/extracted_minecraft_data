@@ -162,7 +162,7 @@ public final class Ingredient implements Predicate<ItemStack> {
    }
 
    // $FF: synthetic method
-   public boolean test(@Nullable Object var1) {
+   public boolean test(@Nullable final Object var1) {
       return this.test((ItemStack)var1);
    }
 
@@ -203,9 +203,9 @@ public final class Ingredient implements Predicate<ItemStack> {
          })).apply(var0, TagValue::new);
       });
 
-      TagValue(TagKey<Item> var1) {
+      TagValue(TagKey<Item> tag) {
          super();
-         this.tag = var1;
+         this.tag = tag;
       }
 
       public boolean equals(Object var1) {
@@ -240,9 +240,9 @@ public final class Ingredient implements Predicate<ItemStack> {
          })).apply(var0, ItemValue::new);
       });
 
-      private ItemValue(ItemStack var1) {
+      private ItemValue(ItemStack item) {
          super();
-         this.item = var1;
+         this.item = item;
       }
 
       public boolean equals(Object var1) {

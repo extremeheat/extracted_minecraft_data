@@ -32,12 +32,12 @@ public record AttributeModifier(UUID id, String name, double amount, Operation o
       this(Mth.createInsecureUUID(RandomSource.createNewThreadLocalInstance()), var1, var2, var4);
    }
 
-   public AttributeModifier(UUID var1, String var2, double var3, Operation var5) {
+   public AttributeModifier(UUID id, String name, double amount, Operation operation) {
       super();
-      this.id = var1;
-      this.name = var2;
-      this.amount = var3;
-      this.operation = var5;
+      this.id = id;
+      this.name = name;
+      this.amount = amount;
+      this.operation = operation;
    }
 
    public CompoundTag save() {
@@ -95,7 +95,7 @@ public record AttributeModifier(UUID id, String name, double amount, Operation o
       private final String name;
       private final int id;
 
-      private Operation(String var3, int var4) {
+      private Operation(final String var3, final int var4) {
          this.name = var3;
          this.id = var4;
       }

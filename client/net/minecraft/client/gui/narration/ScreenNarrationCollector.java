@@ -37,7 +37,7 @@ public class ScreenNarrationCollector {
          }
 
          // $FF: synthetic method
-         public void accept(Object var1) {
+         public void accept(final Object var1) {
             this.accept((String)var1);
          }
       };
@@ -54,7 +54,7 @@ public class ScreenNarrationCollector {
    class Output implements NarrationElementOutput {
       private final int depth;
 
-      Output(int var2) {
+      Output(final int var2) {
          super();
          this.depth = var2;
       }

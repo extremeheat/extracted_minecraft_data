@@ -168,7 +168,7 @@ public class ClientChunkCache extends ChunkSource {
 
    // $FF: synthetic method
    @Nullable
-   public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
+   public ChunkAccess getChunk(final int var1, final int var2, final ChunkStatus var3, final boolean var4) {
       return this.getChunk(var1, var2, var3, var4);
    }
 
@@ -180,7 +180,7 @@ public class ClientChunkCache extends ChunkSource {
       volatile int viewCenterZ;
       int chunkCount;
 
-      Storage(int var2) {
+      Storage(final int var2) {
          super();
          this.chunkRadius = var2;
          this.viewRange = var2 * 2 + 1;

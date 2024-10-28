@@ -38,14 +38,14 @@ public record VillagerProfession(String name, Predicate<Holder<PoiType>> heldJob
    public static final VillagerProfession TOOLSMITH;
    public static final VillagerProfession WEAPONSMITH;
 
-   public VillagerProfession(String var1, Predicate<Holder<PoiType>> var2, Predicate<Holder<PoiType>> var3, ImmutableSet<Item> var4, ImmutableSet<Block> var5, @Nullable SoundEvent var6) {
+   public VillagerProfession(String name, Predicate<Holder<PoiType>> heldJobSite, Predicate<Holder<PoiType>> acquirableJobSite, ImmutableSet<Item> requestedItems, ImmutableSet<Block> secondaryPoi, @Nullable SoundEvent workSound) {
       super();
-      this.name = var1;
-      this.heldJobSite = var2;
-      this.acquirableJobSite = var3;
-      this.requestedItems = var4;
-      this.secondaryPoi = var5;
-      this.workSound = var6;
+      this.name = name;
+      this.heldJobSite = heldJobSite;
+      this.acquirableJobSite = acquirableJobSite;
+      this.requestedItems = requestedItems;
+      this.secondaryPoi = secondaryPoi;
+      this.workSound = workSound;
    }
 
    public String toString() {

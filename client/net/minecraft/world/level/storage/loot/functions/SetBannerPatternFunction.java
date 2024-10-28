@@ -42,7 +42,7 @@ public class SetBannerPatternFunction extends LootItemConditionalFunction {
       return var1;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetBannerPatternFunction> getType() {
       return LootItemFunctions.SET_BANNER_PATTERN;
    }
 

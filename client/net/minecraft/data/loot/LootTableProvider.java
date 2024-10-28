@@ -113,10 +113,10 @@ public class LootTableProvider implements DataProvider {
    public static record SubProviderEntry(Supplier<LootTableSubProvider> provider, LootContextParamSet paramSet) {
       final LootContextParamSet paramSet;
 
-      public SubProviderEntry(Supplier<LootTableSubProvider> var1, LootContextParamSet var2) {
+      public SubProviderEntry(Supplier<LootTableSubProvider> provider, LootContextParamSet paramSet) {
          super();
-         this.provider = var1;
-         this.paramSet = var2;
+         this.provider = provider;
+         this.paramSet = paramSet;
       }
 
       public Supplier<LootTableSubProvider> provider() {

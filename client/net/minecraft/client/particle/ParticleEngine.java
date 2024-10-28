@@ -234,10 +234,10 @@ public class ParticleEngine implements PreparableReloadListener {
             ResourceLocation var5x = PARTICLE_LISTER.fileToId(var3x);
             var3.add(CompletableFuture.supplyAsync(() -> {
                record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
-                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
+                  _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
                      super();
-                     this.id = var1;
-                     this.sprites = var2;
+                     this.id = id;
+                     this.sprites = sprites;
                   }
 
                   public ResourceLocation id() {

@@ -19,9 +19,9 @@ public record ClientboundChunksBiomesPacket(List<ChunkBiomeData> chunkBiomeData)
       this(var1.readList(ChunkBiomeData::new));
    }
 
-   public ClientboundChunksBiomesPacket(List<ChunkBiomeData> var1) {
+   public ClientboundChunksBiomesPacket(List<ChunkBiomeData> chunkBiomeData) {
       super();
-      this.chunkBiomeData = var1;
+      this.chunkBiomeData = chunkBiomeData;
    }
 
    public static ClientboundChunksBiomesPacket forChunks(List<LevelChunk> var0) {
@@ -56,10 +56,10 @@ public record ClientboundChunksBiomesPacket(List<ChunkBiomeData> chunkBiomeData)
          this(var1.readChunkPos(), var1.readByteArray(2097152));
       }
 
-      public ChunkBiomeData(ChunkPos var1, byte[] var2) {
+      public ChunkBiomeData(ChunkPos pos, byte[] buffer) {
          super();
-         this.pos = var1;
-         this.buffer = var2;
+         this.pos = pos;
+         this.buffer = buffer;
       }
 
       private static int calculateChunkSize(LevelChunk var0) {

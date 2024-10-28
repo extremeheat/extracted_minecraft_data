@@ -30,10 +30,10 @@ public class LootTableTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(TriggerInstance::lootTable)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<LootTable> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<LootTable> lootTable) {
          super();
-         this.player = var1;
-         this.lootTable = var2;
+         this.player = player;
+         this.lootTable = lootTable;
       }
 
       public static Criterion<TriggerInstance> lootTableUsed(ResourceKey<LootTable> var0) {

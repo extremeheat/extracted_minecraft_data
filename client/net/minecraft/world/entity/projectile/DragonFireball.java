@@ -63,10 +63,6 @@ public class DragonFireball extends AbstractHurtingProjectile {
       }
    }
 
-   public boolean isPickable() {
-      return false;
-   }
-
    public boolean hurt(DamageSource var1, float var2) {
       return false;
    }

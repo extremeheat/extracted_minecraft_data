@@ -5,9 +5,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
 public record DiscardedPayload(ResourceLocation id) implements CustomPacketPayload {
-   public DiscardedPayload(ResourceLocation var1) {
+   public DiscardedPayload(ResourceLocation id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public static <T extends FriendlyByteBuf> StreamCodec<T, DiscardedPayload> codec(ResourceLocation var0, int var1) {

@@ -72,6 +72,8 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> TRIAL_CHAMBERS_WATER_DISPENSER;
    public static final ResourceKey<LootTable> TRIAL_CHAMBERS_CORRIDOR_POT;
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER;
+   public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER_RANGED;
+   public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER_MELEE;
    public static final ResourceKey<LootTable> SHEEP_WHITE;
    public static final ResourceKey<LootTable> SHEEP_ORANGE;
    public static final ResourceKey<LootTable> SHEEP_MAGENTA;
@@ -206,6 +208,8 @@ public class BuiltInLootTables {
       TRIAL_CHAMBERS_WATER_DISPENSER = register("dispensers/trial_chambers/water");
       TRIAL_CHAMBERS_CORRIDOR_POT = register("pots/trial_chambers/corridor");
       EQUIPMENT_TRIAL_CHAMBER = register("equipment/trial_chamber");
+      EQUIPMENT_TRIAL_CHAMBER_RANGED = register("equipment/trial_chamber_ranged");
+      EQUIPMENT_TRIAL_CHAMBER_MELEE = register("equipment/trial_chamber_melee");
       SHEEP_WHITE = register("entities/sheep/white");
       SHEEP_ORANGE = register("entities/sheep/orange");
       SHEEP_MAGENTA = register("entities/sheep/magenta");

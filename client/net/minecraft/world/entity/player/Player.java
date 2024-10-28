@@ -45,6 +45,7 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
@@ -79,6 +80,8 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
@@ -92,7 +95,6 @@ import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameRules;
@@ -1023,64 +1025,57 @@ public abstract class Player extends LivingEntity {
    }
 
    protected Vec3 maybeBackOffFromEdge(Vec3 var1, MoverType var2) {
-      if (!this.abilities.flying && var1.y <= 0.0 && (var2 == MoverType.SELF || var2 == MoverType.PLAYER) && this.isStayingOnGroundSurface() && this.isAboveGround()) {
-         double var3 = var1.x;
-         double var5 = var1.z;
-         double var7 = 0.05;
+      float var3 = this.maxUpStep();
+      if (!this.abilities.flying && !(var1.y > 0.0) && (var2 == MoverType.SELF || var2 == MoverType.PLAYER) && this.isStayingOnGroundSurface() && this.isAboveGround(var3)) {
+         double var4 = var1.x;
+         double var6 = var1.z;
+         double var8 = 0.05;
+         double var10 = Math.signum(var4) * 0.05;
 
-         while(true) {
-            while(var3 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), 0.0))) {
-               if (var3 < 0.05 && var3 >= -0.05) {
-                  var3 = 0.0;
-               } else if (var3 > 0.0) {
-                  var3 -= 0.05;
-               } else {
-                  var3 += 0.05;
-               }
-            }
-
-            while(true) {
-               while(var5 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(0.0, (double)(-this.maxUpStep()), var5))) {
-                  if (var5 < 0.05 && var5 >= -0.05) {
-                     var5 = 0.0;
-                  } else if (var5 > 0.0) {
-                     var5 -= 0.05;
-                  } else {
-                     var5 += 0.05;
-                  }
-               }
-
-               while(true) {
-                  while(var3 != 0.0 && var5 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), var5))) {
-                     if (var3 < 0.05 && var3 >= -0.05) {
-                        var3 = 0.0;
-                     } else if (var3 > 0.0) {
-                        var3 -= 0.05;
-                     } else {
-                        var3 += 0.05;
-                     }
-
-                     if (var5 < 0.05 && var5 >= -0.05) {
-                        var5 = 0.0;
-                     } else if (var5 > 0.0) {
-                        var5 -= 0.05;
-                     } else {
-                        var5 += 0.05;
-                     }
-                  }
-
-                  var1 = new Vec3(var3, var1.y, var5);
-                  return var1;
-               }
+         double var12;
+         for(var12 = Math.signum(var6) * 0.05; var4 != 0.0 && this.canFallAtLeast(var4, 0.0, var3); var4 -= var10) {
+            if (Math.abs(var4) <= 0.05) {
+               var4 = 0.0;
+               break;
             }
          }
+
+         while(var6 != 0.0 && this.canFallAtLeast(0.0, var6, var3)) {
+            if (Math.abs(var6) <= 0.05) {
+               var6 = 0.0;
+               break;
+            }
+
+            var6 -= var12;
+         }
+
+         while(var4 != 0.0 && var6 != 0.0 && this.canFallAtLeast(var4, var6, var3)) {
+            if (Math.abs(var4) <= 0.05) {
+               var4 = 0.0;
+            } else {
+               var4 -= var10;
+            }
+
+            if (Math.abs(var6) <= 0.05) {
+               var6 = 0.0;
+            } else {
+               var6 -= var12;
+            }
+         }
+
+         return new Vec3(var4, var1.y, var6);
       } else {
          return var1;
       }
    }
 
-   private boolean isAboveGround() {
-      return this.onGround() || this.fallDistance < this.maxUpStep() && !this.level().noCollision(this, this.getBoundingBox().move(0.0, (double)(this.fallDistance - this.maxUpStep()), 0.0));
+   private boolean isAboveGround(float var1) {
+      return this.onGround() || this.fallDistance < var1 && !this.canFallAtLeast(0.0, 0.0, var1 - this.fallDistance);
+   }
+
+   private boolean canFallAtLeast(double var1, double var3, float var5) {
+      AABB var6 = this.getBoundingBox();
+      return this.level().noCollision(this, new AABB(var6.minX + var1, var6.minY - (double)var5 - 9.999999747378752E-6, var6.minZ + var3, var6.maxX + var1, var6.minY, var6.maxZ + var3));
    }
 
    public void attack(Entity var1) {
@@ -1092,155 +1087,158 @@ public abstract class Player extends LivingEntity {
             var2 *= 0.2F + var4 * var4 * 0.8F;
             var3 *= var4;
             this.resetAttackStrengthTicker();
-            if (var2 > 0.0F || var3 > 0.0F) {
-               boolean var5 = var4 > 0.9F;
-               boolean var6 = false;
-               int var7 = 0;
-               var7 += EnchantmentHelper.getKnockbackBonus(this);
-               if (this.isSprinting() && var5) {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
-                  ++var7;
-                  var6 = true;
-               }
-
-               var2 += this.getItemInHand(InteractionHand.MAIN_HAND).getItem().getAttackDamageBonus(this, var2);
-               boolean var8 = var5 && this.fallDistance > 0.0F && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
-               if (var8) {
-                  var2 *= 1.5F;
-               }
-
-               var2 += var3;
-               boolean var9 = false;
-               double var10 = (double)(this.walkDist - this.walkDistO);
-               if (var5 && !var8 && !var6 && this.onGround() && var10 < (double)this.getSpeed()) {
-                  ItemStack var12 = this.getItemInHand(InteractionHand.MAIN_HAND);
-                  if (var12.getItem() instanceof SwordItem) {
-                     var9 = true;
+            if (var1.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var1 instanceof Projectile) {
+               Projectile var21 = (Projectile)var1;
+               var21.deflect(ProjectileDeflection.AIM_DEFLECT, this, this, true);
+            } else {
+               if (var2 > 0.0F || var3 > 0.0F) {
+                  boolean var5 = var4 > 0.9F;
+                  boolean var6 = false;
+                  int var7 = 0;
+                  var7 += EnchantmentHelper.getKnockbackBonus(this);
+                  if (this.isSprinting() && var5) {
+                     this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
+                     ++var7;
+                     var6 = true;
                   }
-               }
 
-               float var22 = 0.0F;
-               boolean var13 = false;
-               int var14 = EnchantmentHelper.getFireAspect(this);
-               if (var1 instanceof LivingEntity) {
-                  var22 = ((LivingEntity)var1).getHealth();
-                  if (var14 > 0 && !var1.isOnFire()) {
-                     var13 = true;
-                     var1.igniteForSeconds(1);
+                  var2 += this.getItemInHand(InteractionHand.MAIN_HAND).getItem().getAttackDamageBonus(this, var2);
+                  boolean var8 = var5 && this.fallDistance > 0.0F && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
+                  if (var8) {
+                     var2 *= 1.5F;
                   }
-               }
 
-               Vec3 var15 = var1.getDeltaMovement();
-               boolean var16 = var1.hurt(this.damageSources().playerAttack(this), var2);
-               if (var16) {
-                  if (var7 > 0) {
-                     if (var1 instanceof LivingEntity) {
-                        ((LivingEntity)var1).knockback((double)((float)var7 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
-                     } else {
-                        var1.push((double)(-Mth.sin(this.getYRot() * 0.017453292F) * (float)var7 * 0.5F), 0.1, (double)(Mth.cos(this.getYRot() * 0.017453292F) * (float)var7 * 0.5F));
+                  var2 += var3;
+                  boolean var9 = false;
+                  double var10 = (double)(this.walkDist - this.walkDistO);
+                  if (var5 && !var8 && !var6 && this.onGround() && var10 < (double)this.getSpeed()) {
+                     ItemStack var12 = this.getItemInHand(InteractionHand.MAIN_HAND);
+                     if (var12.getItem() instanceof SwordItem) {
+                        var9 = true;
+                     }
+                  }
+
+                  float var22 = 0.0F;
+                  boolean var13 = false;
+                  int var14 = EnchantmentHelper.getFireAspect(this);
+                  if (var1 instanceof LivingEntity) {
+                     var22 = ((LivingEntity)var1).getHealth();
+                     if (var14 > 0 && !var1.isOnFire()) {
+                        var13 = true;
+                        var1.igniteForSeconds(1);
+                     }
+                  }
+
+                  Vec3 var15 = var1.getDeltaMovement();
+                  boolean var16 = var1.hurt(this.damageSources().playerAttack(this), var2);
+                  if (var16) {
+                     if (var7 > 0) {
+                        if (var1 instanceof LivingEntity) {
+                           ((LivingEntity)var1).knockback((double)((float)var7 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+                        } else {
+                           var1.push((double)(-Mth.sin(this.getYRot() * 0.017453292F) * (float)var7 * 0.5F), 0.1, (double)(Mth.cos(this.getYRot() * 0.017453292F) * (float)var7 * 0.5F));
+                        }
+
+                        this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
+                        this.setSprinting(false);
                      }
 
-                     this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
-                     this.setSprinting(false);
-                  }
+                     if (var9) {
+                        float var17 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(this) * var2;
+                        List var18 = this.level().getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0));
+                        Iterator var19 = var18.iterator();
 
-                  if (var9) {
-                     float var17 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(this) * var2;
-                     List var18 = this.level().getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0));
-                     Iterator var19 = var18.iterator();
-
-                     label159:
-                     while(true) {
-                        LivingEntity var20;
-                        do {
+                        label164:
+                        while(true) {
+                           LivingEntity var20;
                            do {
                               do {
                                  do {
-                                    if (!var19.hasNext()) {
-                                       this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, this.getSoundSource(), 1.0F, 1.0F);
-                                       this.sweepAttack();
-                                       break label159;
-                                    }
+                                    do {
+                                       if (!var19.hasNext()) {
+                                          this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, this.getSoundSource(), 1.0F, 1.0F);
+                                          this.sweepAttack();
+                                          break label164;
+                                       }
 
-                                    var20 = (LivingEntity)var19.next();
-                                 } while(var20 == this);
-                              } while(var20 == var1);
-                           } while(this.isAlliedTo(var20));
-                        } while(var20 instanceof ArmorStand && ((ArmorStand)var20).isMarker());
+                                       var20 = (LivingEntity)var19.next();
+                                    } while(var20 == this);
+                                 } while(var20 == var1);
+                              } while(this.isAlliedTo(var20));
+                           } while(var20 instanceof ArmorStand && ((ArmorStand)var20).isMarker());
 
-                        if (this.distanceToSqr(var20) < 9.0) {
-                           var20.knockback(0.4000000059604645, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
-                           var20.hurt(this.damageSources().playerAttack(this), var17);
+                           if (this.distanceToSqr(var20) < 9.0) {
+                              var20.knockback(0.4000000059604645, (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
+                              var20.hurt(this.damageSources().playerAttack(this), var17);
+                           }
                         }
                      }
-                  }
 
-                  if (var1 instanceof ServerPlayer && var1.hurtMarked) {
-                     ((ServerPlayer)var1).connection.send(new ClientboundSetEntityMotionPacket(var1));
-                     var1.hurtMarked = false;
-                     var1.setDeltaMovement(var15);
-                  }
-
-                  if (var8) {
-                     this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, this.getSoundSource(), 1.0F, 1.0F);
-                     this.crit(var1);
-                  }
-
-                  if (!var8 && !var9) {
-                     if (var5) {
-                        this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
-                     } else {
-                        this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, this.getSoundSource(), 1.0F, 1.0F);
-                     }
-                  }
-
-                  if (var3 > 0.0F) {
-                     this.magicCrit(var1);
-                  }
-
-                  this.setLastHurtMob(var1);
-                  if (var1 instanceof LivingEntity) {
-                     EnchantmentHelper.doPostHurtEffects((LivingEntity)var1, this);
-                  }
-
-                  EnchantmentHelper.doPostDamageEffects(this, var1);
-                  ItemStack var23 = this.getMainHandItem();
-                  ItemEnchantments var24 = var23.getEnchantments();
-                  Object var25 = var1;
-                  if (var1 instanceof EnderDragonPart) {
-                     var25 = ((EnderDragonPart)var1).parentMob;
-                  }
-
-                  if (!this.level().isClientSide && !var23.isEmpty() && var25 instanceof LivingEntity) {
-                     var23.hurtEnemy((LivingEntity)var25, this);
-                     if (var23.isEmpty()) {
-                        this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                     }
-                  }
-
-                  EnchantmentHelper.doPostItemStackHurtEffects(this, var1, var24);
-                  if (var1 instanceof LivingEntity) {
-                     float var26 = var22 - ((LivingEntity)var1).getHealth();
-                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var26 * 10.0F));
-                     if (var14 > 0) {
-                        var1.igniteForSeconds(var14 * 4);
+                     if (var1 instanceof ServerPlayer && var1.hurtMarked) {
+                        ((ServerPlayer)var1).connection.send(new ClientboundSetEntityMotionPacket(var1));
+                        var1.hurtMarked = false;
+                        var1.setDeltaMovement(var15);
                      }
 
-                     if (this.level() instanceof ServerLevel && var26 > 2.0F) {
-                        int var21 = (int)((double)var26 * 0.5);
-                        ((ServerLevel)this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var21, 0.1, 0.0, 0.1, 0.2);
+                     if (var8) {
+                        this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, this.getSoundSource(), 1.0F, 1.0F);
+                        this.crit(var1);
                      }
-                  }
 
-                  this.causeFoodExhaustion(0.1F);
-               } else {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
-                  if (var13) {
-                     var1.clearFire();
+                     if (!var8 && !var9) {
+                        if (var5) {
+                           this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
+                        } else {
+                           this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, this.getSoundSource(), 1.0F, 1.0F);
+                        }
+                     }
+
+                     if (var3 > 0.0F) {
+                        this.magicCrit(var1);
+                     }
+
+                     this.setLastHurtMob(var1);
+                     if (var1 instanceof LivingEntity) {
+                        EnchantmentHelper.doPostHurtEffects((LivingEntity)var1, this);
+                     }
+
+                     EnchantmentHelper.doPostDamageEffects(this, var1);
+                     ItemStack var23 = this.getMainHandItem();
+                     Object var24 = var1;
+                     if (var1 instanceof EnderDragonPart) {
+                        var24 = ((EnderDragonPart)var1).parentMob;
+                     }
+
+                     if (!this.level().isClientSide && !var23.isEmpty() && var24 instanceof LivingEntity) {
+                        var23.hurtEnemy((LivingEntity)var24, this);
+                        if (var23.isEmpty()) {
+                           this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                        }
+                     }
+
+                     if (var1 instanceof LivingEntity) {
+                        float var25 = var22 - ((LivingEntity)var1).getHealth();
+                        this.awardStat(Stats.DAMAGE_DEALT, Math.round(var25 * 10.0F));
+                        if (var14 > 0) {
+                           var1.igniteForSeconds(var14 * 4);
+                        }
+
+                        if (this.level() instanceof ServerLevel && var25 > 2.0F) {
+                           int var26 = (int)((double)var25 * 0.5);
+                           ((ServerLevel)this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var26, 0.1, 0.0, 0.1, 0.2);
+                        }
+                     }
+
+                     this.causeFoodExhaustion(0.1F);
+                  } else {
+                     this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
+                     if (var13) {
+                        var1.clearFire();
+                     }
                   }
                }
-            }
 
+            }
          }
       }
    }
@@ -2072,7 +2070,7 @@ public abstract class Player extends LivingEntity {
          this.message = null;
       }
 
-      private BedSleepingProblem(Component var3) {
+      private BedSleepingProblem(final Component var3) {
          this.message = var3;
       }
 

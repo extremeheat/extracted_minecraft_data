@@ -483,11 +483,11 @@ public class ChunkHolder {
    }
 
    static record ChunkSaveDebug(Thread thread, CompletableFuture<?> future, String source) {
-      ChunkSaveDebug(Thread var1, CompletableFuture<?> var2, String var3) {
+      ChunkSaveDebug(Thread thread, CompletableFuture<?> future, String source) {
          super();
-         this.thread = var1;
-         this.future = var2;
-         this.source = var3;
+         this.thread = thread;
+         this.future = future;
+         this.source = source;
       }
 
       public Thread thread() {

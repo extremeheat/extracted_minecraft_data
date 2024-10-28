@@ -13,7 +13,7 @@ public enum LevelType {
    private final int index;
    private final Component name;
 
-   private LevelType(int var3, ResourceKey var4) {
+   private LevelType(final int var3, final ResourceKey var4) {
       this.index = var3;
       this.name = Component.translatable(var4.location().toLanguageKey("generator"));
    }

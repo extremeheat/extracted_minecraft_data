@@ -192,10 +192,10 @@ public class Enchantment implements FeatureElement {
    }
 
    public static record Cost(int base, int perLevel) {
-      public Cost(int var1, int var2) {
+      public Cost(int base, int perLevel) {
          super();
-         this.base = var1;
-         this.perLevel = var2;
+         this.base = base;
+         this.perLevel = perLevel;
       }
 
       public int calculate(int var1) {
@@ -214,17 +214,17 @@ public class Enchantment implements FeatureElement {
    public static record EnchantmentDefinition(TagKey<Item> supportedItems, Optional<TagKey<Item>> primaryItems, int weight, int maxLevel, Cost minCost, Cost maxCost, int anvilCost, FeatureFlagSet requiredFeatures, EquipmentSlot[] slots) {
       final Optional<TagKey<Item>> primaryItems;
 
-      public EnchantmentDefinition(TagKey<Item> var1, Optional<TagKey<Item>> var2, int var3, int var4, Cost var5, Cost var6, int var7, FeatureFlagSet var8, EquipmentSlot[] var9) {
+      public EnchantmentDefinition(TagKey<Item> supportedItems, Optional<TagKey<Item>> primaryItems, int weight, int maxLevel, Cost minCost, Cost maxCost, int anvilCost, FeatureFlagSet requiredFeatures, EquipmentSlot[] slots) {
          super();
-         this.supportedItems = var1;
-         this.primaryItems = var2;
-         this.weight = var3;
-         this.maxLevel = var4;
-         this.minCost = var5;
-         this.maxCost = var6;
-         this.anvilCost = var7;
-         this.requiredFeatures = var8;
-         this.slots = var9;
+         this.supportedItems = supportedItems;
+         this.primaryItems = primaryItems;
+         this.weight = weight;
+         this.maxLevel = maxLevel;
+         this.minCost = minCost;
+         this.maxCost = maxCost;
+         this.anvilCost = anvilCost;
+         this.requiredFeatures = requiredFeatures;
+         this.slots = slots;
       }
 
       public TagKey<Item> supportedItems() {

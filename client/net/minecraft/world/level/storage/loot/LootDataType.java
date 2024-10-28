@@ -22,12 +22,12 @@ public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> cod
    public static final LootDataType<LootItemFunction> MODIFIER;
    public static final LootDataType<LootTable> TABLE;
 
-   public LootDataType(ResourceKey<Registry<T>> var1, Codec<T> var2, String var3, Validator<T> var4) {
+   public LootDataType(ResourceKey<Registry<T>> registryKey, Codec<T> codec, String directory, Validator<T> validator) {
       super();
-      this.registryKey = var1;
-      this.codec = var2;
-      this.directory = var3;
-      this.validator = var4;
+      this.registryKey = registryKey;
+      this.codec = codec;
+      this.directory = directory;
+      this.validator = validator;
    }
 
    public void runValidation(ValidationContext var1, ResourceKey<T> var2, T var3) {

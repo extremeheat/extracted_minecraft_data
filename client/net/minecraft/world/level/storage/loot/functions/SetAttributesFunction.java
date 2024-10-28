@@ -48,7 +48,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       this.replace = var3;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetAttributesFunction> getType() {
       return LootItemFunctions.SET_ATTRIBUTES;
    }
 
@@ -103,14 +103,14 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC;
       public static final Codec<Modifier> CODEC;
 
-      Modifier(String var1, Holder<Attribute> var2, AttributeModifier.Operation var3, NumberProvider var4, List<EquipmentSlotGroup> var5, Optional<UUID> var6) {
+      Modifier(String name, Holder<Attribute> attribute, AttributeModifier.Operation operation, NumberProvider amount, List<EquipmentSlotGroup> slots, Optional<UUID> id) {
          super();
-         this.name = var1;
-         this.attribute = var2;
-         this.operation = var3;
-         this.amount = var4;
-         this.slots = var5;
-         this.id = var6;
+         this.name = name;
+         this.attribute = attribute;
+         this.operation = operation;
+         this.amount = amount;
+         this.slots = slots;
+         this.id = id;
       }
 
       public String name() {

@@ -71,6 +71,31 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
       return null;
    }
 
+   public void applyUnsavedChanges() {
+      Iterator var1 = this.children().iterator();
+
+      while(true) {
+         Entry var2;
+         do {
+            if (!var1.hasNext()) {
+               return;
+            }
+
+            var2 = (Entry)var1.next();
+         } while(!(var2 instanceof OptionEntry));
+
+         OptionEntry var3 = (OptionEntry)var2;
+         Iterator var4 = var3.options.values().iterator();
+
+         while(var4.hasNext()) {
+            AbstractWidget var5 = (AbstractWidget)var4.next();
+            if (var5 instanceof OptionInstance.OptionInstanceSliderButton var6) {
+               var6.applyUnsavedValue();
+            }
+         }
+      }
+   }
+
    public Optional<GuiEventListener> getMouseOver(double var1, double var3) {
       Iterator var5 = this.children().iterator();
 

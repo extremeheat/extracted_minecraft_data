@@ -13,9 +13,9 @@ public record ClientboundCookieRequestPacket(ResourceLocation key) implements Pa
       this(var1.readResourceLocation());
    }
 
-   public ClientboundCookieRequestPacket(ResourceLocation var1) {
+   public ClientboundCookieRequestPacket(ResourceLocation key) {
       super();
-      this.key = var1;
+      this.key = key;
    }
 
    private void write(FriendlyByteBuf var1) {

@@ -12,14 +12,14 @@ public record WorldGenAttemptDebugPayload(BlockPos pos, float scale, float red, 
       this(var1.readBlockPos(), var1.readFloat(), var1.readFloat(), var1.readFloat(), var1.readFloat(), var1.readFloat());
    }
 
-   public WorldGenAttemptDebugPayload(BlockPos var1, float var2, float var3, float var4, float var5, float var6) {
+   public WorldGenAttemptDebugPayload(BlockPos pos, float scale, float red, float green, float blue, float alpha) {
       super();
-      this.pos = var1;
-      this.scale = var2;
-      this.red = var3;
-      this.green = var4;
-      this.blue = var5;
-      this.alpha = var6;
+      this.pos = pos;
+      this.scale = scale;
+      this.red = red;
+      this.green = green;
+      this.blue = blue;
+      this.alpha = alpha;
    }
 
    private void write(FriendlyByteBuf var1) {

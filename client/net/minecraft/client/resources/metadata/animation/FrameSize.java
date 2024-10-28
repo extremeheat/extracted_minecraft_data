@@ -1,10 +1,10 @@
 package net.minecraft.client.resources.metadata.animation;
 
 public record FrameSize(int width, int height) {
-   public FrameSize(int var1, int var2) {
+   public FrameSize(int width, int height) {
       super();
-      this.width = var1;
-      this.height = var2;
+      this.width = width;
+      this.height = height;
    }
 
    public int width() {

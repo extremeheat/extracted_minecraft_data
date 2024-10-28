@@ -80,10 +80,10 @@ public class HoverEvent {
       public static final MapCodec<TypedHoverEvent<?>> CODEC;
       public static final MapCodec<TypedHoverEvent<?>> LEGACY_CODEC;
 
-      TypedHoverEvent(Action<T> var1, T var2) {
+      TypedHoverEvent(Action<T> action, T value) {
          super();
-         this.action = var1;
-         this.value = var2;
+         this.action = action;
+         this.value = value;
       }
 
       public Action<T> action() {
@@ -147,7 +147,7 @@ public class HoverEvent {
             }
 
             // $FF: synthetic method
-            public DataResult encode(Object var1, DynamicOps var2, Object var3) {
+            public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
                return this.encode((TypedHoverEvent)var1, var2, var3);
             }
          }).fieldOf("value");

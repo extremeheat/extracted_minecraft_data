@@ -12,14 +12,14 @@ import net.minecraft.resources.ResourceLocation;
 public record MapDecoration(Holder<MapDecorationType> type, byte x, byte y, byte rot, Optional<Component> name) {
    public static final StreamCodec<RegistryFriendlyByteBuf, MapDecoration> STREAM_CODEC;
 
-   public MapDecoration(Holder<MapDecorationType> var1, byte var2, byte var3, byte var4, Optional<Component> var5) {
+   public MapDecoration(Holder<MapDecorationType> type, byte x, byte y, byte rot, Optional<Component> name) {
       super();
-      var4 = (byte)(var4 & 15);
-      this.type = var1;
-      this.x = var2;
-      this.y = var3;
-      this.rot = var4;
-      this.name = var5;
+      rot = (byte)(rot & 15);
+      this.type = type;
+      this.x = x;
+      this.y = y;
+      this.rot = rot;
+      this.name = name;
    }
 
    public ResourceLocation getSpriteLocation() {

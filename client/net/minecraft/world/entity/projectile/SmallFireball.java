@@ -64,10 +64,6 @@ public class SmallFireball extends Fireball {
 
    }
 
-   public boolean isPickable() {
-      return false;
-   }
-
    public boolean hurt(DamageSource var1, float var2) {
       return false;
    }

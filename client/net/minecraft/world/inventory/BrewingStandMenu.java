@@ -39,22 +39,23 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       checkContainerDataCount(var4, 2);
       this.brewingStand = var3;
       this.brewingStandData = var4;
+      PotionBrewing var5 = var2.player.level().potionBrewing();
       this.addSlot(new PotionSlot(var3, 0, 56, 51));
       this.addSlot(new PotionSlot(var3, 1, 79, 58));
       this.addSlot(new PotionSlot(var3, 2, 102, 51));
-      this.ingredientSlot = this.addSlot(new IngredientsSlot(var3, 3, 79, 17));
+      this.ingredientSlot = this.addSlot(new IngredientsSlot(var5, var3, 3, 79, 17));
       this.addSlot(new FuelSlot(var3, 4, 17, 17));
       this.addDataSlots(var4);
 
-      int var5;
-      for(var5 = 0; var5 < 3; ++var5) {
-         for(int var6 = 0; var6 < 9; ++var6) {
-            this.addSlot(new Slot(var2, var6 + var5 * 9 + 9, 8 + var6 * 18, 84 + var5 * 18));
+      int var6;
+      for(var6 = 0; var6 < 3; ++var6) {
+         for(int var7 = 0; var7 < 9; ++var7) {
+            this.addSlot(new Slot(var2, var7 + var6 * 9 + 9, 8 + var7 * 18, 84 + var6 * 18));
          }
       }
 
-      for(var5 = 0; var5 < 9; ++var5) {
-         this.addSlot(new Slot(var2, var5, 8 + var5 * 18, 142));
+      for(var6 = 0; var6 < 9; ++var6) {
+         this.addSlot(new Slot(var2, var6, 8 + var6 * 18, 142));
       }
 
    }
@@ -78,7 +79,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
                if (!this.moveItemStackTo(var5, 3, 4, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(var3) && var3.getCount() == 1) {
+            } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(var3)) {
                if (!this.moveItemStackTo(var5, 0, 3, false)) {
                   return ItemStack.EMPTY;
                }
@@ -153,16 +154,15 @@ public class BrewingStandMenu extends AbstractContainerMenu {
    }
 
    static class IngredientsSlot extends Slot {
-      public IngredientsSlot(Container var1, int var2, int var3, int var4) {
-         super(var1, var2, var3, var4);
+      private final PotionBrewing potionBrewing;
+
+      public IngredientsSlot(PotionBrewing var1, Container var2, int var3, int var4, int var5) {
+         super(var2, var3, var4, var5);
+         this.potionBrewing = var1;
       }
 
       public boolean mayPlace(ItemStack var1) {
-         return PotionBrewing.isIngredient(var1);
-      }
-
-      public int getMaxStackSize() {
-         return 64;
+         return this.potionBrewing.isIngredient(var1);
       }
    }
 
@@ -177,10 +177,6 @@ public class BrewingStandMenu extends AbstractContainerMenu {
 
       public static boolean mayPlaceItem(ItemStack var0) {
          return var0.is(Items.BLAZE_POWDER);
-      }
-
-      public int getMaxStackSize() {
-         return 64;
       }
    }
 }

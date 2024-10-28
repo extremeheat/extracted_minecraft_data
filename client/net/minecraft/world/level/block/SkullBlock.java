@@ -95,7 +95,7 @@ public class SkullBlock extends AbstractSkullBlock {
 
       private final String name;
 
-      private Types(String var3) {
+      private Types(final String var3) {
          this.name = var3;
          TYPES.put(var3, this);
       }

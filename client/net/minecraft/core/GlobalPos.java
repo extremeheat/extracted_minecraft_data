@@ -16,10 +16,10 @@ public record GlobalPos(ResourceKey<Level> dimension, BlockPos pos) {
    public static final Codec<GlobalPos> CODEC;
    public static final StreamCodec<ByteBuf, GlobalPos> STREAM_CODEC;
 
-   public GlobalPos(ResourceKey<Level> var1, BlockPos var2) {
+   public GlobalPos(ResourceKey<Level> dimension, BlockPos pos) {
       super();
-      this.dimension = var1;
-      this.pos = var2;
+      this.dimension = dimension;
+      this.pos = pos;
    }
 
    public static GlobalPos of(ResourceKey<Level> var0, BlockPos var1) {

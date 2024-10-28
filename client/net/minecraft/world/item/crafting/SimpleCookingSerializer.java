@@ -24,7 +24,7 @@ public class SimpleCookingSerializer<T extends AbstractCookingRecipe> implements
             return var0.category;
          }), Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter((var0) -> {
             return var0.ingredient;
-         }), ItemStack.SINGLE_ITEM_CODEC.fieldOf("result").forGetter((var0) -> {
+         }), ItemStack.STRICT_SINGLE_ITEM_CODEC.fieldOf("result").forGetter((var0) -> {
             return var0.result;
          }), Codec.FLOAT.fieldOf("experience").orElse(0.0F).forGetter((var0) -> {
             return var0.experience;

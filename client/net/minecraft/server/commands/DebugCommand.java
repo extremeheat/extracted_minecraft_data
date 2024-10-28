@@ -132,7 +132,7 @@ public class DebugCommand {
                         }
 
                         // $FF: synthetic method
-                        public void execute(Object var1, ExecutionContext var2, Frame var3) {
+                        public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
                            this.execute((CommandSourceStack)var1, var2, var3);
                         }
                      }).bind(var16));
@@ -162,7 +162,7 @@ public class DebugCommand {
       }
 
       // $FF: synthetic method
-      public void runGuarded(ExecutionCommandSource var1, ContextChain var2, ChainModifiers var3, ExecutionControl var4) throws CommandSyntaxException {
+      public void runGuarded(final ExecutionCommandSource var1, final ContextChain var2, final ChainModifiers var3, final ExecutionControl var4) throws CommandSyntaxException {
          this.runGuarded((CommandSourceStack)var1, var2, var3, var4);
       }
    }

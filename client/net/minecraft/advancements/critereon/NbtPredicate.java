@@ -16,14 +16,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
 public record NbtPredicate(CompoundTag tag) {
-   public static final Codec<NbtPredicate> STRING_CODEC;
-   public static final Codec<NbtPredicate> COMPOUND_TAG_CODEC;
    public static final Codec<NbtPredicate> CODEC;
    public static final StreamCodec<ByteBuf, NbtPredicate> STREAM_CODEC;
 
-   public NbtPredicate(CompoundTag var1) {
+   public NbtPredicate(CompoundTag tag) {
       super();
-      this.tag = var1;
+      this.tag = tag;
    }
 
    public boolean matches(ItemStack var1) {
@@ -56,9 +54,7 @@ public record NbtPredicate(CompoundTag tag) {
    }
 
    static {
-      STRING_CODEC = TagParser.AS_CODEC.xmap(NbtPredicate::new, NbtPredicate::tag);
-      COMPOUND_TAG_CODEC = CompoundTag.CODEC.xmap(NbtPredicate::new, NbtPredicate::tag);
-      CODEC = Codec.withAlternative(STRING_CODEC, COMPOUND_TAG_CODEC);
+      CODEC = TagParser.LENIENT_CODEC.xmap(NbtPredicate::new, NbtPredicate::tag);
       STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(NbtPredicate::new, NbtPredicate::tag);
    }
 }

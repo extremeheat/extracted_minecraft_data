@@ -18,11 +18,11 @@ public record DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optiona
       return var0.group(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("tags", List.of()).forGetter(DamageSourcePredicate::tags), EntityPredicate.CODEC.optionalFieldOf("direct_entity").forGetter(DamageSourcePredicate::directEntity), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamageSourcePredicate::sourceEntity)).apply(var0, DamageSourcePredicate::new);
    });
 
-   public DamageSourcePredicate(List<TagPredicate<DamageType>> var1, Optional<EntityPredicate> var2, Optional<EntityPredicate> var3) {
+   public DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optional<EntityPredicate> directEntity, Optional<EntityPredicate> sourceEntity) {
       super();
-      this.tags = var1;
-      this.directEntity = var2;
-      this.sourceEntity = var3;
+      this.tags = tags;
+      this.directEntity = directEntity;
+      this.sourceEntity = sourceEntity;
    }
 
    public boolean matches(ServerPlayer var1, DamageSource var2) {

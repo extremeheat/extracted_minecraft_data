@@ -183,9 +183,9 @@ public class TeleportCommand {
    }
 
    private static record LookAtPosition(Vec3 position) implements LookAt {
-      LookAtPosition(Vec3 var1) {
+      LookAtPosition(Vec3 position) {
          super();
-         this.position = var1;
+         this.position = position;
       }
 
       public void perform(CommandSourceStack var1, Entity var2) {
@@ -198,10 +198,10 @@ public class TeleportCommand {
    }
 
    static record LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) implements LookAt {
-      LookAtEntity(Entity var1, EntityAnchorArgument.Anchor var2) {
+      LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) {
          super();
-         this.entity = var1;
-         this.anchor = var2;
+         this.entity = entity;
+         this.anchor = anchor;
       }
 
       public void perform(CommandSourceStack var1, Entity var2) {

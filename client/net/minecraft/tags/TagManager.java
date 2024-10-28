@@ -64,10 +64,10 @@ public class TagManager implements PreparableReloadListener {
    }
 
    public static record LoadResult<T>(ResourceKey<? extends Registry<T>> key, Map<ResourceLocation, Collection<Holder<T>>> tags) {
-      public LoadResult(ResourceKey<? extends Registry<T>> var1, Map<ResourceLocation, Collection<Holder<T>>> var2) {
+      public LoadResult(ResourceKey<? extends Registry<T>> key, Map<ResourceLocation, Collection<Holder<T>>> tags) {
          super();
-         this.key = var1;
-         this.tags = var2;
+         this.key = key;
+         this.tags = tags;
       }
 
       public ResourceKey<? extends Registry<T>> key() {

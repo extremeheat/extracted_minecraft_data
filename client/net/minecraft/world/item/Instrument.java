@@ -19,11 +19,11 @@ public record Instrument(Holder<SoundEvent> soundEvent, int useDuration, float r
    public static final Codec<Holder<Instrument>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Instrument>> STREAM_CODEC;
 
-   public Instrument(Holder<SoundEvent> var1, int var2, float var3) {
+   public Instrument(Holder<SoundEvent> soundEvent, int useDuration, float range) {
       super();
-      this.soundEvent = var1;
-      this.useDuration = var2;
-      this.range = var3;
+      this.soundEvent = soundEvent;
+      this.useDuration = useDuration;
+      this.range = range;
    }
 
    public Holder<SoundEvent> soundEvent() {

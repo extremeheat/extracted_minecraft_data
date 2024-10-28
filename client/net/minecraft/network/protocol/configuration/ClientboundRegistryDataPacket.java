@@ -16,10 +16,10 @@ public record ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> r
    private static final StreamCodec<ByteBuf, ResourceKey<? extends Registry<?>>> REGISTRY_KEY_STREAM_CODEC;
    public static final StreamCodec<FriendlyByteBuf, ClientboundRegistryDataPacket> STREAM_CODEC;
 
-   public ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> var1, List<RegistrySynchronization.PackedRegistryEntry> var2) {
+   public ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> registry, List<RegistrySynchronization.PackedRegistryEntry> entries) {
       super();
-      this.registry = var1;
-      this.entries = var2;
+      this.registry = registry;
+      this.entries = entries;
    }
 
    public PacketType<ClientboundRegistryDataPacket> type() {

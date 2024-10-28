@@ -398,7 +398,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       private final DrawState drawState;
       private boolean released;
 
-      RenderedBuffer(int var2, DrawState var3) {
+      RenderedBuffer(final int var2, final DrawState var3) {
          super();
          this.pointer = var2;
          this.drawState = var3;
@@ -447,15 +447,15 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
    public static record DrawState(VertexFormat format, int vertexCount, int indexCount, VertexFormat.Mode mode, VertexFormat.IndexType indexType, boolean indexOnly, boolean sequentialIndex) {
       final int vertexCount;
 
-      public DrawState(VertexFormat var1, int var2, int var3, VertexFormat.Mode var4, VertexFormat.IndexType var5, boolean var6, boolean var7) {
+      public DrawState(VertexFormat format, int vertexCount, int indexCount, VertexFormat.Mode mode, VertexFormat.IndexType indexType, boolean indexOnly, boolean sequentialIndex) {
          super();
-         this.format = var1;
-         this.vertexCount = var2;
-         this.indexCount = var3;
-         this.mode = var4;
-         this.indexType = var5;
-         this.indexOnly = var6;
-         this.sequentialIndex = var7;
+         this.format = format;
+         this.vertexCount = vertexCount;
+         this.indexCount = indexCount;
+         this.mode = mode;
+         this.indexType = indexType;
+         this.indexOnly = indexOnly;
+         this.sequentialIndex = sequentialIndex;
       }
 
       public int vertexBufferSize() {

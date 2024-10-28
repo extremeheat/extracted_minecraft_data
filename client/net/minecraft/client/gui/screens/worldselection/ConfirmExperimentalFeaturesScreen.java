@@ -112,7 +112,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       }
 
       class PackList extends ObjectSelectionList<PackListEntry> {
-         public PackList(DetailsScreen var1, Minecraft var2, Collection var3) {
+         public PackList(final DetailsScreen var1, final Minecraft var2, final Collection var3) {
             int var10002 = var1.width;
             int var10003 = var1.layout.getContentHeight();
             int var10004 = var1.layout.getHeaderHeight();
@@ -142,7 +142,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          private final Component message;
          private final MultiLineLabel splitMessage;
 
-         PackListEntry(Component var2, Component var3, MultiLineLabel var4) {
+         PackListEntry(final Component var2, final Component var3, final MultiLineLabel var4) {
             super();
             this.packId = var2;
             this.message = var3;

@@ -70,7 +70,7 @@ public class DataGenerator {
       private final String providerPrefix;
       private final PackOutput output;
 
-      PackGenerator(boolean var2, String var3, PackOutput var4) {
+      PackGenerator(final boolean var2, final String var3, final PackOutput var4) {
          super();
          this.toRun = var2;
          this.providerPrefix = var3;

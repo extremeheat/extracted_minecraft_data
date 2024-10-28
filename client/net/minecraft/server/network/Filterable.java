@@ -9,10 +9,10 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public record Filterable<T>(T raw, Optional<T> filtered) {
-   public Filterable(T var1, Optional<T> var2) {
+   public Filterable(T raw, Optional<T> filtered) {
       super();
-      this.raw = var1;
-      this.filtered = var2;
+      this.raw = raw;
+      this.filtered = filtered;
    }
 
    public static <T> Codec<Filterable<T>> codec(Codec<T> var0) {

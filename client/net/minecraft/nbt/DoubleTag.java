@@ -39,7 +39,7 @@ public class DoubleTag extends NumericTag {
       }
 
       // $FF: synthetic method
-      public Tag load(DataInput var1, NbtAccounter var2) throws IOException {
+      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
          return this.load(var1, var2);
       }
    };

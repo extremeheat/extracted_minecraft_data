@@ -245,10 +245,10 @@ public class CloneCommands {
    }
 
    private static record DimensionAndPosition(ServerLevel dimension, BlockPos position) {
-      DimensionAndPosition(ServerLevel var1, BlockPos var2) {
+      DimensionAndPosition(ServerLevel dimension, BlockPos position) {
          super();
-         this.dimension = var1;
-         this.position = var2;
+         this.dimension = dimension;
+         this.position = position;
       }
 
       public ServerLevel dimension() {
@@ -267,7 +267,7 @@ public class CloneCommands {
 
       private final boolean canOverlap;
 
-      private Mode(boolean var3) {
+      private Mode(final boolean var3) {
          this.canOverlap = var3;
       }
 
@@ -285,10 +285,10 @@ public class CloneCommands {
       final CompoundTag tag;
       final DataComponentMap components;
 
-      CloneBlockEntityInfo(CompoundTag var1, DataComponentMap var2) {
+      CloneBlockEntityInfo(CompoundTag tag, DataComponentMap components) {
          super();
-         this.tag = var1;
-         this.components = var2;
+         this.tag = tag;
+         this.components = components;
       }
 
       public CompoundTag tag() {
@@ -306,11 +306,11 @@ public class CloneCommands {
       @Nullable
       final CloneBlockEntityInfo blockEntityInfo;
 
-      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneBlockEntityInfo var3) {
+      CloneBlockInfo(BlockPos pos, BlockState state, @Nullable CloneBlockEntityInfo blockEntityInfo) {
          super();
-         this.pos = var1;
-         this.state = var2;
-         this.blockEntityInfo = var3;
+         this.pos = pos;
+         this.state = state;
+         this.blockEntityInfo = blockEntityInfo;
       }
 
       public BlockPos pos() {

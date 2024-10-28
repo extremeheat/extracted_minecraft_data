@@ -8,6 +8,7 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -24,6 +25,14 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
 
    public T empty() {
       return this.delegate.empty();
+   }
+
+   public T emptyMap() {
+      return this.delegate.emptyMap();
+   }
+
+   public T emptyList() {
+      return this.delegate.emptyList();
    }
 
    public <U> U convertTo(DynamicOps<U> var1, T var2) {
@@ -94,12 +103,24 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
       return this.delegate.mergeToMap(var1, var2);
    }
 
+   public DataResult<T> mergeToMap(T var1, Map<T, T> var2) {
+      return this.delegate.mergeToMap(var1, var2);
+   }
+
+   public DataResult<T> mergeToPrimitive(T var1, T var2) {
+      return this.delegate.mergeToPrimitive(var1, var2);
+   }
+
    public DataResult<Stream<Pair<T, T>>> getMapValues(T var1) {
       return this.delegate.getMapValues(var1);
    }
 
    public DataResult<Consumer<BiConsumer<T, T>>> getMapEntries(T var1) {
       return this.delegate.getMapEntries(var1);
+   }
+
+   public T createMap(Map<T, T> var1) {
+      return this.delegate.createMap(var1);
    }
 
    public T createMap(Stream<Pair<T, T>> var1) {

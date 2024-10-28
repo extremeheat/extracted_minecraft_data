@@ -335,10 +335,10 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    static record HiveDebugInfo(HiveDebugPayload.HiveInfo info, long lastSeen) {
       final HiveDebugPayload.HiveInfo info;
 
-      HiveDebugInfo(HiveDebugPayload.HiveInfo var1, long var2) {
+      HiveDebugInfo(HiveDebugPayload.HiveInfo info, long lastSeen) {
          super();
-         this.info = var1;
-         this.lastSeen = var2;
+         this.info = info;
+         this.lastSeen = lastSeen;
       }
 
       public HiveDebugPayload.HiveInfo info() {

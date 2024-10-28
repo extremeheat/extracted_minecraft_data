@@ -515,10 +515,10 @@ public class ChatComponent {
    }
 
    private static record DelayedMessageDeletion(MessageSignature signature, int deletableAfter) {
-      DelayedMessageDeletion(MessageSignature var1, int var2) {
+      DelayedMessageDeletion(MessageSignature signature, int deletableAfter) {
          super();
-         this.signature = var1;
-         this.deletableAfter = var2;
+         this.signature = signature;
+         this.deletableAfter = deletableAfter;
       }
 
       public MessageSignature signature() {

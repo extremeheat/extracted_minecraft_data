@@ -20,11 +20,11 @@ public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) 
    });
    public static final Codec<List<MapBanner>> LIST_CODEC;
 
-   public MapBanner(BlockPos var1, DyeColor var2, Optional<Component> var3) {
+   public MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) {
       super();
-      this.pos = var1;
-      this.color = var2;
-      this.name = var3;
+      this.pos = pos;
+      this.color = color;
+      this.name = name;
    }
 
    @Nullable

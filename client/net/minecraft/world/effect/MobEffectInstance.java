@@ -325,7 +325,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    // $FF: synthetic method
-   public int compareTo(Object var1) {
+   public int compareTo(final Object var1) {
       return this.compareTo((MobEffectInstance)var1);
    }
 
@@ -396,14 +396,14 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          return StreamCodec.composite(ByteBufCodecs.VAR_INT, Details::amplifier, ByteBufCodecs.VAR_INT, Details::duration, ByteBufCodecs.BOOL, Details::ambient, ByteBufCodecs.BOOL, Details::showParticles, ByteBufCodecs.BOOL, Details::showIcon, var0.apply(ByteBufCodecs::optional), Details::hiddenEffect, Details::new);
       });
 
-      Details(int var1, int var2, boolean var3, boolean var4, boolean var5, Optional<Details> var6) {
+      Details(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<Details> hiddenEffect) {
          super();
-         this.amplifier = var1;
-         this.duration = var2;
-         this.ambient = var3;
-         this.showParticles = var4;
-         this.showIcon = var5;
-         this.hiddenEffect = var6;
+         this.amplifier = amplifier;
+         this.duration = duration;
+         this.ambient = ambient;
+         this.showParticles = showParticles;
+         this.showIcon = showIcon;
+         this.hiddenEffect = hiddenEffect;
       }
 
       private static Details create(int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<Details> var5) {

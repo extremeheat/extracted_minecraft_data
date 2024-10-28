@@ -30,6 +30,7 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public class ShipwreckPieces {
+   private static final int NUMBER_OF_BLOCKS_ALLOWED_IN_WORLD_GEN_REGION = 32;
    static final BlockPos PIVOT = new BlockPos(4, 0, 15);
    private static final ResourceLocation[] STRUCTURE_LOCATION_BEACHED = new ResourceLocation[]{new ResourceLocation("shipwreck/with_mast"), new ResourceLocation("shipwreck/sideways_full"), new ResourceLocation("shipwreck/sideways_fronthalf"), new ResourceLocation("shipwreck/sideways_backhalf"), new ResourceLocation("shipwreck/rightsideup_full"), new ResourceLocation("shipwreck/rightsideup_fronthalf"), new ResourceLocation("shipwreck/rightsideup_backhalf"), new ResourceLocation("shipwreck/with_mast_degraded"), new ResourceLocation("shipwreck/rightsideup_full_degraded"), new ResourceLocation("shipwreck/rightsideup_fronthalf_degraded"), new ResourceLocation("shipwreck/rightsideup_backhalf_degraded")};
    private static final ResourceLocation[] STRUCTURE_LOCATION_OCEAN = new ResourceLocation[]{new ResourceLocation("shipwreck/with_mast"), new ResourceLocation("shipwreck/upsidedown_full"), new ResourceLocation("shipwreck/upsidedown_fronthalf"), new ResourceLocation("shipwreck/upsidedown_backhalf"), new ResourceLocation("shipwreck/sideways_full"), new ResourceLocation("shipwreck/sideways_fronthalf"), new ResourceLocation("shipwreck/sideways_backhalf"), new ResourceLocation("shipwreck/rightsideup_full"), new ResourceLocation("shipwreck/rightsideup_fronthalf"), new ResourceLocation("shipwreck/rightsideup_backhalf"), new ResourceLocation("shipwreck/with_mast_degraded"), new ResourceLocation("shipwreck/upsidedown_full_degraded"), new ResourceLocation("shipwreck/upsidedown_fronthalf_degraded"), new ResourceLocation("shipwreck/upsidedown_backhalf_degraded"), new ResourceLocation("shipwreck/sideways_full_degraded"), new ResourceLocation("shipwreck/sideways_fronthalf_degraded"), new ResourceLocation("shipwreck/sideways_backhalf_degraded"), new ResourceLocation("shipwreck/rightsideup_full_degraded"), new ResourceLocation("shipwreck/rightsideup_fronthalf_degraded"), new ResourceLocation("shipwreck/rightsideup_backhalf_degraded")};
@@ -39,9 +40,11 @@ public class ShipwreckPieces {
       super();
    }
 
-   public static void addPieces(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, boolean var5) {
+   public static ShipwreckPiece addRandomPiece(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, boolean var5) {
       ResourceLocation var6 = (ResourceLocation)Util.getRandom((Object[])(var5 ? STRUCTURE_LOCATION_BEACHED : STRUCTURE_LOCATION_OCEAN), var4);
-      var3.addPiece(new ShipwreckPiece(var0, var6, var1, var2, var5));
+      ShipwreckPiece var7 = new ShipwreckPiece(var0, var6, var1, var2, var5);
+      var3.addPiece(var7);
+      return var7;
    }
 
    static {
@@ -82,29 +85,45 @@ public class ShipwreckPieces {
       }
 
       public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         int var8 = var1.getMaxBuildHeight();
-         int var9 = 0;
-         Vec3i var10 = this.template.getSize();
-         Heightmap.Types var11 = this.isBeached ? Heightmap.Types.WORLD_SURFACE_WG : Heightmap.Types.OCEAN_FLOOR_WG;
-         int var12 = var10.getX() * var10.getZ();
-         if (var12 == 0) {
-            var9 = var1.getHeight(var11, this.templatePosition.getX(), this.templatePosition.getZ());
+         if (this.isTooBigToFitInWorldGenRegion()) {
+            super.postProcess(var1, var2, var3, var4, var5, var6, var7);
          } else {
-            BlockPos var13 = this.templatePosition.offset(var10.getX() - 1, 0, var10.getZ() - 1);
+            int var8 = var1.getMaxBuildHeight();
+            int var9 = 0;
+            Vec3i var10 = this.template.getSize();
+            Heightmap.Types var11 = this.isBeached ? Heightmap.Types.WORLD_SURFACE_WG : Heightmap.Types.OCEAN_FLOOR_WG;
+            int var12 = var10.getX() * var10.getZ();
+            if (var12 == 0) {
+               var9 = var1.getHeight(var11, this.templatePosition.getX(), this.templatePosition.getZ());
+            } else {
+               BlockPos var13 = this.templatePosition.offset(var10.getX() - 1, 0, var10.getZ() - 1);
 
-            int var16;
-            for(Iterator var14 = BlockPos.betweenClosed(this.templatePosition, var13).iterator(); var14.hasNext(); var8 = Math.min(var8, var16)) {
-               BlockPos var15 = (BlockPos)var14.next();
-               var16 = var1.getHeight(var11, var15.getX(), var15.getZ());
-               var9 += var16;
+               int var16;
+               for(Iterator var14 = BlockPos.betweenClosed(this.templatePosition, var13).iterator(); var14.hasNext(); var8 = Math.min(var8, var16)) {
+                  BlockPos var15 = (BlockPos)var14.next();
+                  var16 = var1.getHeight(var11, var15.getX(), var15.getZ());
+                  var9 += var16;
+               }
+
+               var9 /= var12;
             }
 
-            var9 /= var12;
+            this.adjustPositionHeight(this.isBeached ? this.calculateBeachedPosition(var8, var4) : var9);
+            super.postProcess(var1, var2, var3, var4, var5, var6, var7);
          }
+      }
 
-         int var17 = this.isBeached ? var8 - var10.getY() / 2 - var4.nextInt(3) : var9;
-         this.templatePosition = new BlockPos(this.templatePosition.getX(), var17, this.templatePosition.getZ());
-         super.postProcess(var1, var2, var3, var4, var5, var6, var7);
+      public boolean isTooBigToFitInWorldGenRegion() {
+         Vec3i var1 = this.template.getSize();
+         return var1.getX() > 32 || var1.getY() > 32;
+      }
+
+      public int calculateBeachedPosition(int var1, RandomSource var2) {
+         return var1 - this.template.getSize().getY() / 2 - var2.nextInt(3);
+      }
+
+      public void adjustPositionHeight(int var1) {
+         this.templatePosition = new BlockPos(this.templatePosition.getX(), var1, this.templatePosition.getZ());
       }
    }
 }

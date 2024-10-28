@@ -28,6 +28,7 @@ import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.structures.NbtToSnbt;
@@ -35,6 +36,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -51,6 +53,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 
 public class TestCommand {
@@ -130,7 +133,9 @@ public class TestCommand {
       var10002 = Commands.literal("runfailed").then(var1);
       var10003 = testFinder;
       Objects.requireNonNull(var10003);
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10001.then(runWithRetryOptionsAndBuildInfo(var10002, var10003::failedTests))).then(Commands.literal("resetclosest").executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10001.then(runWithRetryOptionsAndBuildInfo(var10002, var10003::failedTests))).then(Commands.literal("locate").then(Commands.argument("testName", TestFunctionArgument.testFunctionArgument()).executes((var0x) -> {
+         return ((Runner)testFinder.locateByName(var0x, "minecraft:" + TestFunctionArgument.getTestFunction(var0x, "testName").structureName())).locate();
+      })))).then(Commands.literal("resetclosest").executes((var0x) -> {
          return ((Runner)testFinder.nearest(var0x)).reset();
       }))).then(Commands.literal("resetthese").executes((var0x) -> {
          return ((Runner)testFinder.allNearby(var0x)).reset();
@@ -377,9 +382,9 @@ public class TestCommand {
    }
 
    private static record TestBatchSummaryDisplayer(CommandSourceStack source) implements GameTestBatchListener {
-      TestBatchSummaryDisplayer(CommandSourceStack var1) {
+      TestBatchSummaryDisplayer(CommandSourceStack source) {
          super();
-         this.source = var1;
+         this.source = source;
       }
 
       public void testBatchStarting(GameTestBatch var1) {
@@ -395,10 +400,10 @@ public class TestCommand {
    }
 
    public static record TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) implements GameTestListener {
-      public TestSummaryDisplayer(ServerLevel var1, MultipleTestTracker var2) {
+      public TestSummaryDisplayer(ServerLevel level, MultipleTestTracker tracker) {
          super();
-         this.level = var1;
-         this.tracker = var2;
+         this.level = level;
+         this.tracker = tracker;
       }
 
       public void testStructureLoaded(GameTestInfo var1) {
@@ -547,6 +552,40 @@ public class TestCommand {
 
       public int run() {
          return this.run(RetryOptions.noRetries());
+      }
+
+      public int locate() {
+         TestCommand.say(this.finder.source(), "Started locating test structures, this might take a while..");
+         MutableInt var1 = new MutableInt(0);
+         BlockPos var2 = BlockPos.containing(this.finder.source().getPosition());
+         this.finder.findStructureBlockPos().forEach((var3x) -> {
+            StructureBlockEntity var4 = (StructureBlockEntity)this.finder.source().getLevel().getBlockEntity(var3x);
+            if (var4 != null) {
+               Direction var5 = var4.getRotation().rotate(Direction.NORTH);
+               BlockPos var6 = var4.getBlockPos().relative((Direction)var5, 2);
+               int var7 = (int)var5.getOpposite().toYRot();
+               String var8 = String.format("/tp @s %d %d %d %d 0", var6.getX(), var6.getY(), var6.getZ(), var7);
+               int var9 = var2.getX() - var3x.getX();
+               int var10 = var2.getZ() - var3x.getZ();
+               int var11 = Mth.floor(Mth.sqrt((float)(var9 * var9 + var10 * var10)));
+               MutableComponent var12 = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", var3x.getX(), var3x.getY(), var3x.getZ())).withStyle((var1x) -> {
+                  return var1x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, var8)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.coordinates.tooltip")));
+               });
+               MutableComponent var13 = Component.literal("Found structure at: ").append((Component)var12).append(" (distance: " + var11 + ")");
+               this.finder.source().sendSuccess(() -> {
+                  return var13;
+               }, false);
+               var1.increment();
+            }
+         });
+         int var3 = var1.intValue();
+         if (var3 == 0) {
+            TestCommand.say(this.finder.source().getLevel(), "No such test structure found", ChatFormatting.RED);
+            return 0;
+         } else {
+            TestCommand.say(this.finder.source().getLevel(), "Finished locating, found " + var3 + " structure(s)", ChatFormatting.GREEN);
+            return 1;
+         }
       }
    }
 }

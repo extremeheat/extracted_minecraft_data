@@ -45,10 +45,10 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> location) {
          super();
-         this.player = var1;
-         this.location = var2;
+         this.player = player;
+         this.location = location;
       }
 
       public static Criterion<TriggerInstance> placedBlock(Block var0) {

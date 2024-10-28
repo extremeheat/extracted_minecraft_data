@@ -15,10 +15,10 @@ public record ClientboundRespawnPacket(CommonPlayerSpawnInfo commonPlayerSpawnIn
       this(new CommonPlayerSpawnInfo(var1), var1.readByte());
    }
 
-   public ClientboundRespawnPacket(CommonPlayerSpawnInfo var1, byte var2) {
+   public ClientboundRespawnPacket(CommonPlayerSpawnInfo commonPlayerSpawnInfo, byte dataToKeep) {
       super();
-      this.commonPlayerSpawnInfo = var1;
-      this.dataToKeep = var2;
+      this.commonPlayerSpawnInfo = commonPlayerSpawnInfo;
+      this.dataToKeep = dataToKeep;
    }
 
    private void write(RegistryFriendlyByteBuf var1) {

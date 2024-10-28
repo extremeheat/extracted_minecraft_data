@@ -375,7 +375,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    }
 
    // $FF: synthetic method
-   public DensityFunction.FunctionContext forIndex(int var1) {
+   public DensityFunction.FunctionContext forIndex(final int var1) {
       return this.forIndex(var1);
    }
 
@@ -383,7 +383,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private final DensityFunction noiseFiller;
       final double[][] values;
 
-      FlatCache(DensityFunction var2, boolean var3) {
+      FlatCache(final DensityFunction var2, final boolean var3) {
          super();
          this.noiseFiller = var2;
          this.values = new double[NoiseChunk.this.noiseSizeXZ + 1][NoiseChunk.this.noiseSizeXZ + 1];
@@ -518,7 +518,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private double valueZ1;
       private double value;
 
-      NoiseInterpolator(DensityFunction var2) {
+      NoiseInterpolator(final DensityFunction var2) {
          super();
          this.noiseFiller = var2;
          this.slice0 = this.allocateSlice(NoiseChunk.this.cellCountY, NoiseChunk.this.cellCountXZ);
@@ -602,7 +602,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       final DensityFunction noiseFiller;
       final double[] values;
 
-      CacheAllInCell(DensityFunction var2) {
+      CacheAllInCell(final DensityFunction var2) {
          super();
          this.noiseFiller = var2;
          this.values = new double[NoiseChunk.this.cellWidth * NoiseChunk.this.cellWidth * NoiseChunk.this.cellHeight];
@@ -681,7 +681,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       @Nullable
       private double[] lastArray;
 
-      CacheOnce(DensityFunction var2) {
+      CacheOnce(final DensityFunction var2) {
          super();
          this.function = var2;
       }

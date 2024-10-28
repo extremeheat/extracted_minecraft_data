@@ -12,14 +12,19 @@ import net.minecraft.server.network.Filterable;
 public record WritableBookContent(List<Filterable<String>> pages) implements BookContent<String, WritableBookContent> {
    public static final WritableBookContent EMPTY = new WritableBookContent(List.of());
    public static final int PAGE_EDIT_LENGTH = 1024;
+   public static final int MAX_PAGES = 100;
    private static final Codec<Filterable<String>> PAGE_CODEC = Filterable.codec(Codec.string(0, 1024));
    public static final Codec<List<Filterable<String>>> PAGES_CODEC;
    public static final Codec<WritableBookContent> CODEC;
    public static final StreamCodec<ByteBuf, WritableBookContent> STREAM_CODEC;
 
-   public WritableBookContent(List<Filterable<String>> var1) {
+   public WritableBookContent(List<Filterable<String>> pages) {
       super();
-      this.pages = var1;
+      if (pages.size() > 100) {
+         throw new IllegalArgumentException("Got " + pages.size() + " pages, but maximum is 100");
+      } else {
+         this.pages = pages;
+      }
    }
 
    public Stream<String> getPages(boolean var1) {
@@ -37,7 +42,7 @@ public record WritableBookContent(List<Filterable<String>> pages) implements Boo
    }
 
    // $FF: synthetic method
-   public Object withReplacedPages(List var1) {
+   public Object withReplacedPages(final List var1) {
       return this.withReplacedPages(var1);
    }
 

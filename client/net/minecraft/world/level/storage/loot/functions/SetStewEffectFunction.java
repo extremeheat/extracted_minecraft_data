@@ -34,7 +34,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
       this.effects = var2;
    }
 
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetStewEffectFunction> getType() {
       return LootItemFunctions.SET_STEW_EFFECT;
    }
 
@@ -95,10 +95,10 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
          return var0.group(BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(var0, EffectEntry::new);
       });
 
-      EffectEntry(Holder<MobEffect> var1, NumberProvider var2) {
+      EffectEntry(Holder<MobEffect> effect, NumberProvider duration) {
          super();
-         this.effect = var1;
-         this.duration = var2;
+         this.effect = effect;
+         this.duration = duration;
       }
 
       public Holder<MobEffect> effect() {

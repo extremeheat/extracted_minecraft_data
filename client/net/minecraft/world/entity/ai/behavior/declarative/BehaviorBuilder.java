@@ -289,27 +289,27 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
       }
 
       // $FF: synthetic method
-      public App ap4(App var1, App var2, App var3, App var4, App var5) {
+      public App ap4(final App var1, final App var2, final App var3, final App var4, final App var5) {
          return this.ap4(var1, var2, var3, var4, var5);
       }
 
       // $FF: synthetic method
-      public App ap3(App var1, App var2, App var3, App var4) {
+      public App ap3(final App var1, final App var2, final App var3, final App var4) {
          return this.ap3(var1, var2, var3, var4);
       }
 
       // $FF: synthetic method
-      public App ap2(App var1, App var2, App var3) {
+      public App ap2(final App var1, final App var2, final App var3) {
          return this.ap2(var1, var2, var3);
       }
 
       // $FF: synthetic method
-      public App point(Object var1) {
+      public App point(final Object var1) {
          return this.point(var1);
       }
 
       // $FF: synthetic method
-      public App map(Function var1, App var2) {
+      public App map(final Function var1, final App var2) {
          return this.map(var1, var2);
       }
 
@@ -341,7 +341,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
 
             // $FF: synthetic method
             @Nullable
-            public Object tryTrigger(ServerLevel var1x, LivingEntity var2, long var3) {
+            public Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
                return this.tryTrigger(var1x, var2, var3);
             }
          });
@@ -390,7 +390,7 @@ public class BehaviorBuilder<E extends LivingEntity, M> implements App<Mu<E>, M>
             }
 
             // $FF: synthetic method
-            public Object tryTrigger(ServerLevel var1x, LivingEntity var2, long var3) {
+            public Object tryTrigger(final ServerLevel var1x, final LivingEntity var2, final long var3) {
                return this.tryTrigger(var1x, var2, var3);
             }
          });

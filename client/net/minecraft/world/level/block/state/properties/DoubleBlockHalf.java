@@ -9,7 +9,7 @@ public enum DoubleBlockHalf implements StringRepresentable {
 
    private final Direction directionToOther;
 
-   private DoubleBlockHalf(Direction var3) {
+   private DoubleBlockHalf(final Direction var3) {
       this.directionToOther = var3;
    }
 

@@ -238,7 +238,7 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       private final double minValue;
       private final double maxValue;
 
-      public SettingsSlider(int var2, int var3, int var4, int var5, float var6, float var7) {
+      public SettingsSlider(final int var2, final int var3, final int var4, final int var5, final float var6, final float var7) {
          super(var2, var3, var4, 20, CommonComponents.EMPTY, 0.0);
          this.minValue = (double)var6;
          this.maxValue = (double)var7;

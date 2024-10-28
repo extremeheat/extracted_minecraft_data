@@ -13,9 +13,9 @@ public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignatu
       this(MessageSignature.Packed.read(var1));
    }
 
-   public ClientboundDeleteChatPacket(MessageSignature.Packed var1) {
+   public ClientboundDeleteChatPacket(MessageSignature.Packed messageSignature) {
       super();
-      this.messageSignature = var1;
+      this.messageSignature = messageSignature;
    }
 
    private void write(FriendlyByteBuf var1) {

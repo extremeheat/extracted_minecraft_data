@@ -11,13 +11,13 @@ public record DamagePredicate(MinMaxBounds.Doubles dealtDamage, MinMaxBounds.Dou
       return var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("dealt", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::dealtDamage), MinMaxBounds.Doubles.CODEC.optionalFieldOf("taken", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::takenDamage), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamagePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("blocked").forGetter(DamagePredicate::blocked), DamageSourcePredicate.CODEC.optionalFieldOf("type").forGetter(DamagePredicate::type)).apply(var0, DamagePredicate::new);
    });
 
-   public DamagePredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, Optional<EntityPredicate> var3, Optional<Boolean> var4, Optional<DamageSourcePredicate> var5) {
+   public DamagePredicate(MinMaxBounds.Doubles dealtDamage, MinMaxBounds.Doubles takenDamage, Optional<EntityPredicate> sourceEntity, Optional<Boolean> blocked, Optional<DamageSourcePredicate> type) {
       super();
-      this.dealtDamage = var1;
-      this.takenDamage = var2;
-      this.sourceEntity = var3;
-      this.blocked = var4;
-      this.type = var5;
+      this.dealtDamage = dealtDamage;
+      this.takenDamage = takenDamage;
+      this.sourceEntity = sourceEntity;
+      this.blocked = blocked;
+      this.type = type;
    }
 
    public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {

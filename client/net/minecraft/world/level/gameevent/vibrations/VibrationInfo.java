@@ -34,14 +34,14 @@ public record VibrationInfo(Holder<GameEvent> gameEvent, float distance, Vec3 po
       this(var1, var2, var3, var4 == null ? null : var4.getUUID(), getProjectileOwner(var4), var4);
    }
 
-   public VibrationInfo(Holder<GameEvent> var1, float var2, Vec3 var3, @Nullable UUID var4, @Nullable UUID var5, @Nullable Entity var6) {
+   public VibrationInfo(Holder<GameEvent> gameEvent, float distance, Vec3 pos, @Nullable UUID uuid, @Nullable UUID projectileOwnerUuid, @Nullable Entity entity) {
       super();
-      this.gameEvent = var1;
-      this.distance = var2;
-      this.pos = var3;
-      this.uuid = var4;
-      this.projectileOwnerUuid = var5;
-      this.entity = var6;
+      this.gameEvent = gameEvent;
+      this.distance = distance;
+      this.pos = pos;
+      this.uuid = uuid;
+      this.projectileOwnerUuid = projectileOwnerUuid;
+      this.entity = entity;
    }
 
    @Nullable

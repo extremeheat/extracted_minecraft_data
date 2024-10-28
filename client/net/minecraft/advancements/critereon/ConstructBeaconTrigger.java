@@ -27,10 +27,10 @@ public class ConstructBeaconTrigger extends SimpleCriterionTrigger<TriggerInstan
          return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("level", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::level)).apply(var0, TriggerInstance::new);
       });
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Ints var2) {
+      public TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Ints level) {
          super();
-         this.player = var1;
-         this.level = var2;
+         this.player = player;
+         this.level = level;
       }
 
       public static Criterion<TriggerInstance> constructedBeacon() {

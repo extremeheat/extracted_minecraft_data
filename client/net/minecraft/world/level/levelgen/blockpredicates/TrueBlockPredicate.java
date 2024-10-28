@@ -23,7 +23,7 @@ class TrueBlockPredicate implements BlockPredicate {
    }
 
    // $FF: synthetic method
-   public boolean test(Object var1, Object var2) {
+   public boolean test(final Object var1, final Object var2) {
       return this.test((WorldGenLevel)var1, (BlockPos)var2);
    }
 }
