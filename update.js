@@ -21,7 +21,8 @@ function getCommitSHA (version) {
 }
 
 async function decomp (version) {
-  exec('git pull')
+  try { exec('git pull origin') } catch (e) { console.log(e) }
+  // exec('git pull')
   exec('ls -R .git/refs/')
   if (getCommitSHA(version)) {
     console.log('Already have decompiled', version, 'no work to do')
