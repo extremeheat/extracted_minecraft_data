@@ -78,7 +78,7 @@ async function postprocess (repoData, version, oldVersion, isMajor, oldMajor) {
         payload: JSON.stringify({
           repo: repoData,
           mode: 'snapshot',
-          oldVersion: oldVersion,
+          oldVersion,
           newVersion: version,
           commit: sha
         })
@@ -115,5 +115,22 @@ async function main () {
   }
 }
 
-main()
+// main()
 
+async function fix () {
+  // https://github.com/extremeheat/extracted_minecraft_data/commit/612030ccc3f16172fa6136a617a519b152ccded5
+  await decomp('24w14a')
+  await decomp('1.20.5')
+  await decomp('1.20.6-rc1')
+  await decomp('1.20.6')
+  await decomp('24w18a')
+  // await decomp('24w19b')
+  // await decomp('24w20a')
+  await decomp('24w21b')
+  await decomp('1.21-rc1')
+  await decomp('1.21')
+  await decomp('1.21.1')
+  await decomp('1.21.2')
+  await decomp('1.21.3')
+}
+fix()
