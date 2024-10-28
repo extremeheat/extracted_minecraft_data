@@ -26,7 +26,11 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
       boolean var4 = true;
 
       try {
-         if (var3.readUnsignedByte() == 254) {
+         try {
+            if (var3.readUnsignedByte() != 254) {
+               return;
+            }
+
             SocketAddress var5 = var1.channel().remoteAddress();
             int var6 = var3.readableBytes();
             String var7;
@@ -55,10 +59,9 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
 
             var3.release();
             var4 = false;
-            return;
+         } catch (RuntimeException var11) {
          }
-      } catch (RuntimeException var11) {
-         return;
+
       } finally {
          if (var4) {
             var3.resetReaderIndex();
@@ -67,7 +70,6 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
          }
 
       }
-
    }
 
    private static boolean readCustomPayloadPacket(ByteBuf var0) {

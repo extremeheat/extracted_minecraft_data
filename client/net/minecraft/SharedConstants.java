@@ -14,16 +14,16 @@ import net.minecraft.world.level.ChunkPos;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = true;
+   public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 3838;
+   public static final int WORLD_VERSION = 3839;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "1.20.6-rc1";
+   public static final String VERSION_STRING = "1.20.6";
    /** @deprecated */
    @Deprecated
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 766;
@@ -182,7 +182,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742016;
+      return 766;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {
